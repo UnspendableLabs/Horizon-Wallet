@@ -7,8 +7,12 @@ class RecoverWalletButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      child: const Text('Recover Wallet'),
       onPressed: () => GoRouter.of(context).go('/recover_wallet'),
+      style: ButtonStyle(
+          fixedSize: MaterialStateProperty.all<Size?>(const Size(150.0, 60.0)),
+          textStyle: MaterialStateProperty.all<TextStyle?>(
+              const TextStyle(fontSize: 15))),
+      child: const Text('Recover Wallet'),
     );
   }
 }
@@ -19,8 +23,12 @@ class CreateWalletButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      child: const Text('CreateWalletPage'),
       onPressed: () => GoRouter.of(context).go('/create_wallet'),
+      style: ButtonStyle(
+          fixedSize: MaterialStateProperty.all<Size?>(const Size(200.0, 75.0)),
+          textStyle: MaterialStateProperty.all<TextStyle?>(
+              const TextStyle(fontSize: 15))),
+      child: const Text('Create Wallet'),
     );
   }
 }
@@ -30,11 +38,14 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [RecoverWalletButton(), CreateWalletButton()],
+        child: Container(
+          height: 250,
+          padding: const EdgeInsets.symmetric(vertical: 50.0),
+          child: const Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[CreateWalletButton(), RecoverWalletButton()]),
         ),
       ),
     );

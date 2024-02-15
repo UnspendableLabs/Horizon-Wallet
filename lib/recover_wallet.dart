@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // Define a custom Form widget.
 class RecoverWalletPage extends StatefulWidget {
@@ -26,7 +27,11 @@ class _RecoverWalletPageState extends State<RecoverWalletPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Retrieve Text Input'),
+        leading: IconButton(
+          icon: const Icon(Icons.navigate_before),
+          tooltip: 'Go back',
+          onPressed: () => GoRouter.of(context).go('/'),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

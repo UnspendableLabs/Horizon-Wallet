@@ -37,7 +37,9 @@ class MyApp extends StatelessWidget {
       routerConfig: _router,
       title: appTitle,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: const Color.fromRGBO(45, 45, 68, 1),
+            ),
         useMaterial3: true,
       ),
     );
