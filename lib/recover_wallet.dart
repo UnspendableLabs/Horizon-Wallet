@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // Define a custom Form widget.
-class SeedPhraseInput extends StatefulWidget {
-  const SeedPhraseInput({super.key});
+class RecoverWalletPage extends StatefulWidget {
+  const RecoverWalletPage({super.key});
 
   @override
-  State<SeedPhraseInput> createState() => _SeedPhraseInputState();
+  State<RecoverWalletPage> createState() => _RecoverWalletPageState();
 }
 
 // Define a corresponding State class.
 // This class holds the data related to the Form.
-class _SeedPhraseInputState extends State<SeedPhraseInput> {
+class _RecoverWalletPageState extends State<RecoverWalletPage> {
   // Create a text controller and use it to retrieve the current value
   // of the TextField.
   final myController = TextEditingController();
@@ -26,7 +27,11 @@ class _SeedPhraseInputState extends State<SeedPhraseInput> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Retrieve Text Input'),
+        leading: IconButton(
+          icon: const Icon(Icons.navigate_before),
+          tooltip: 'Go back',
+          onPressed: () => GoRouter.of(context).go('/'),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
