@@ -15,8 +15,30 @@ class CreateWalletPage extends StatelessWidget {
           onPressed: () => GoRouter.of(context).go('/'),
         ),
       ),
-      body: const Center(
-        child: Text('Generated seed phrase'),
+      body: Center(
+        child: TextButton(
+            onPressed: () => showDialog(
+                context: context,
+                builder: (BuildContext context) => Dialog(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Text('This is a typical dialog.'),
+                            const SizedBox(height: 15),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+            child: const Text('Create Wallet')),
       ),
     );
   }
