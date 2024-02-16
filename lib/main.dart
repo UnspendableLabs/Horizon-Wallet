@@ -1,8 +1,11 @@
 import 'package:counterparty_wallet/create_wallet.dart';
 import 'package:counterparty_wallet/home_page.dart';
 import 'package:counterparty_wallet/recover_wallet.dart';
+import 'package:counterparty_wallet/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+// Read value
 
 void main() {
   runApp(const MyApp());
@@ -17,6 +20,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/recover_wallet',
       builder: (context, state) => const RecoverWalletPage(),
+    ),
+    GoRoute(
+      path: '/wallet',
+      builder: (context, state) => const WalletPage(),
     ),
     GoRoute(
       path: '/',
