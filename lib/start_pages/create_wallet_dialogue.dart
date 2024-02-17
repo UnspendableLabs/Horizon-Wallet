@@ -16,22 +16,30 @@ class CreateWalletDialogueButton extends StatelessWidget {
 
         showDialog<String>(
           context: context,
-          builder: (BuildContext context) => Dialog.fullscreen(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(mnemonic),
-                const SizedBox(height: 15),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Close'),
+          builder: (BuildContext context) => Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4.0),
+                side: const BorderSide(
+                  color: Color.fromRGBO(86, 142, 96, 1),
                 ),
-              ],
-            ),
-          ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    BackButton(
+                      style: const ButtonStyle(
+                          alignment: AlignmentDirectional.topStart),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    Text(mnemonic),
+                    
+                  ],
+                ),
+              )),
         );
       },
       style: ButtonStyle(

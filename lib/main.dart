@@ -41,14 +41,21 @@ class MyApp extends StatelessWidget {
     const appTitle = 'Counterparty Wallet';
 
     return MaterialApp.router(
-      routerConfig: _router,
-      title: appTitle,
-      theme: ThemeData(
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color.fromRGBO(45, 45, 68, 1),
-            ),
-        useMaterial3: true,
-      ),
-    );
+        routerConfig: _router,
+        title: appTitle,
+        theme: ThemeData(
+            primaryColor: Colors.blueAccent,
+            colorScheme: const ColorScheme(
+                primary: Colors.white,
+                onPrimary: Color.fromRGBO(49, 49, 71, 1),
+                secondary: Color.fromRGBO(86, 142, 96, 1),
+                onSecondary: Colors.white,
+                brightness: Brightness.dark,
+                background: Colors.black,
+                onBackground: Colors.white,
+                error: Colors.red,
+                onError: Colors.white,
+                surface: Color.fromRGBO(49, 49, 71, 1),
+                onSurface: Colors.white)));
   }
 }
