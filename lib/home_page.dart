@@ -1,4 +1,4 @@
-import 'package:counterparty_wallet/wallet.dart';
+import 'package:counterparty_wallet/wallet_pages/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';

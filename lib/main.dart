@@ -1,7 +1,7 @@
-import 'package:counterparty_wallet/create_wallet.dart';
+import 'package:counterparty_wallet/start_pages/create_wallet.dart';
 import 'package:counterparty_wallet/home_page.dart';
-import 'package:counterparty_wallet/recover_wallet.dart';
-import 'package:counterparty_wallet/wallet.dart';
+import 'package:counterparty_wallet/start_pages/recover_wallet.dart';
+import 'package:counterparty_wallet/wallet_pages/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
