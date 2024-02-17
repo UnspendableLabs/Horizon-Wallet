@@ -1,5 +1,5 @@
-import 'package:counterparty_wallet/start_pages/create_wallet.dart';
 import 'package:counterparty_wallet/home_page.dart';
+import 'package:counterparty_wallet/start_pages/create_wallet_dialogue.dart';
 import 'package:counterparty_wallet/start_pages/recover_wallet.dart';
 import 'package:counterparty_wallet/wallet_pages/wallet.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +15,7 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/create_wallet',
-      builder: (context, state) => const CreateWalletPage(),
+      builder: (context, state) => const CreateWalletDialogueButton(),
     ),
     GoRoute(
       path: '/recover_wallet',

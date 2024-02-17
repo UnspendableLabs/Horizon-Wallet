@@ -1,62 +1,44 @@
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter/material.dart';
 
-class DialogExample extends StatelessWidget {
-  const DialogExample({super.key});
+class CreateWalletDialogueButton extends StatelessWidget {
+  const CreateWalletDialogueButton({super.key});
+
+  String generateMnemonic() {
+    return bip39.generateMnemonic(); // Generate a new mnemonic phrase
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        TextButton(
-          onPressed: () => showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => Dialog(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text('This is a typical dialog.'),
-                    const SizedBox(height: 15),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Close'),
-                    ),
-                  ],
+    return ElevatedButton(
+      onPressed: () {
+        final mnemonic = generateMnemonic();
+
+        showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => Dialog.fullscreen(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(mnemonic),
+                const SizedBox(height: 15),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Close'),
                 ),
-              ),
+              ],
             ),
           ),
-          child: const Text('Show Dialog'),
-        ),
-        const SizedBox(height: 10),
-        TextButton(
-          onPressed: () => showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => Dialog.fullscreen(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text('This is a fullscreen dialog.'),
-                  const SizedBox(height: 15),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Close'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          child: const Text('Show Fullscreen Dialog'),
-        ),
-      ],
+        );
+      },
+      style: ButtonStyle(
+          fixedSize: MaterialStateProperty.all<Size?>(const Size(200.0, 75.0)),
+          textStyle: MaterialStateProperty.all<TextStyle?>(
+              const TextStyle(fontSize: 15))),
+      child: const Text('Create Wallet'),
     );
   }
 }

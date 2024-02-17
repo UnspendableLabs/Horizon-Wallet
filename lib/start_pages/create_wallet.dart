@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+// TODO: remove file
 class CreateWalletPage extends StatelessWidget {
   const CreateWalletPage({super.key});
 
@@ -17,27 +18,29 @@ class CreateWalletPage extends StatelessWidget {
       ),
       body: Center(
         child: TextButton(
-            onPressed: () => showDialog(
-                context: context,
-                builder: (BuildContext context) => Dialog(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            const Text('This is a typical dialog.'),
-                            const SizedBox(height: 15),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Close'),
-                            ),
-                          ],
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) => Dialog(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              const Text('text'),
+                              const SizedBox(height: 15),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    )),
+                      ));
+            },
             child: const Text('Create Wallet')),
       ),
     );
