@@ -24,8 +24,8 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
 // Read value
-  Future<String> getSeedHex() async {
-    String value = await SecureStorage().readSecureData('seed_hex');
+  Future<String?> getSeedHex() async {
+    String? value = await SecureStorage().readSecureData('seed_hex');
     print('value: $value');
     return value;
   }

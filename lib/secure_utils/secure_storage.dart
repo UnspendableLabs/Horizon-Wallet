@@ -15,15 +15,14 @@ class SecureStorage {
     }
   }
 
-  Future<String> readSecureData(String key) async {
-    String value = "";
+  Future<String?> readSecureData(String key) async {
+    String? value;
     try {
       value = (await _storage.read(
-            key: key,
-            iOptions: _getIOSOptions(),
-            aOptions: _getAndroidOptions(),
-          )) ??
-          "";
+        key: key,
+        iOptions: _getIOSOptions(),
+        aOptions: _getAndroidOptions(),
+      ));
     } catch (e) {
       print(e);
     }
