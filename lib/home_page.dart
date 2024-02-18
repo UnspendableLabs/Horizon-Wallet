@@ -1,17 +1,8 @@
-import 'package:counterparty_wallet/wallet.dart';
+import 'package:counterparty_wallet/start_pages/create_wallet_dialogue.dart';
+import 'package:counterparty_wallet/wallet_pages/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
-
-// Create storage
-const storage = FlutterSecureStorage();
-
-// Read value
-Future<String?> getSeedPhrase() async {
-  String? value = await storage.read(key: 'seed_phrase');
-  print(value);
-  return value;
-}
 
 class RecoverWalletButton extends StatelessWidget {
   const RecoverWalletButton({super.key});
@@ -29,24 +20,18 @@ class RecoverWalletButton extends StatelessWidget {
   }
 }
 
-class CreateWalletButton extends StatelessWidget {
-  const CreateWalletButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () => GoRouter.of(context).go('/create_wallet'),
-      style: ButtonStyle(
-          fixedSize: MaterialStateProperty.all<Size?>(const Size(200.0, 75.0)),
-          textStyle: MaterialStateProperty.all<TextStyle?>(
-              const TextStyle(fontSize: 15))),
-      child: const Text('Create Wallet'),
-    );
-  }
-}
-
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  // Create storage
+  static const storage = FlutterSecureStorage();
+
+// Read value
+  Future<String?> getSeedPhrase() async {
+    String? value = await storage.read(key: 'seed_phrase');
+    print(value);
+    return value;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +60,10 @@ class WalletStartPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 50.0),
           child: const Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[CreateWalletButton(), RecoverWalletButton()]),
+              children: <Widget>[
+                CreateWalletDialogueButton(),
+                RecoverWalletButton()
+              ]),
         ),
       ),
     );
