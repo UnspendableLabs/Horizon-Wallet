@@ -1,7 +1,7 @@
-import 'package:counterparty_wallet/start_pages/create_wallet_dialogue.dart';
+import 'package:counterparty_wallet/secure_utils/secure_storage.dart';
+import 'package:counterparty_wallet/start_pages/create_wallet_dialog.dart';
 import 'package:counterparty_wallet/wallet_pages/wallet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 class RecoverWalletButton extends StatelessWidget {
@@ -23,20 +23,17 @@ class RecoverWalletButton extends StatelessWidget {
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  // Create storage
-  static const storage = FlutterSecureStorage();
-
 // Read value
-  Future<String?> getSeedPhrase() async {
-    String? value = await storage.read(key: 'seed_phrase');
-    print(value);
+  Future<String> getSeedHex() async {
+    String value = await SecureStorage().readSecureData('seed_hex');
+    print('value: $value');
     return value;
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
-        future: getSeedPhrase(),
+        future: getSeedHex(),
         builder: (context, AsyncSnapshot<String?> snapshot) {
           // TODO: verify snapshot data here is coming through as expected
           if (!snapshot.hasData) {
