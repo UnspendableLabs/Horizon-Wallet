@@ -1,18 +1,15 @@
-import 'package:bip39/bip39.dart' as bip39;
+import 'package:counterparty_wallet/secure_utils/bip39.dart';
+import 'package:counterparty_wallet/start_pages/confirm_create_wallet_dialog.dart';
 import 'package:flutter/material.dart';
 
 class CreateWalletDialogueButton extends StatelessWidget {
   const CreateWalletDialogueButton({super.key});
 
-  String generateMnemonic() {
-    return bip39.generateMnemonic(); // Generate a new mnemonic phrase
-  }
-
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        final mnemonic = generateMnemonic();
+        final mnemonic = Bip39().generateMnemonic();
 
         showDialog<String>(
           context: context,
@@ -36,7 +33,9 @@ class CreateWalletDialogueButton extends StatelessWidget {
                       },
                     ),
                     Text(mnemonic),
-                    
+                    ConfirmCreateWalletButtonAndDialogue(
+                      mnemonic: mnemonic,
+                    )
                   ],
                 ),
               )),

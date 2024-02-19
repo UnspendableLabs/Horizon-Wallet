@@ -1,3 +1,4 @@
+import 'package:counterparty_wallet/secure_utils/secure_storage.dart';
 import 'package:flutter/material.dart';
 
 class WalletPage extends StatelessWidget {
@@ -5,9 +6,22 @@ class WalletPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Text('Wallet Page'),
+        child: Container(
+          height: 250,
+          padding: const EdgeInsets.symmetric(vertical: 50.0),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                const Text('Wallet Page'),
+                ElevatedButton(
+                    onPressed: () async {
+                      await SecureStorage().deleteAll();
+                    },
+                    child: const Text('delete local storage'))
+              ]),
+        ),
       ),
     );
   }

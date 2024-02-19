@@ -1,5 +1,5 @@
 import 'package:counterparty_wallet/home_page.dart';
-import 'package:counterparty_wallet/start_pages/create_wallet_dialogue.dart';
+import 'package:counterparty_wallet/start_pages/create_wallet_dialog.dart';
 import 'package:counterparty_wallet/start_pages/recover_wallet.dart';
 import 'package:counterparty_wallet/wallet_pages/wallet.dart';
 import 'package:flutter/material.dart';
