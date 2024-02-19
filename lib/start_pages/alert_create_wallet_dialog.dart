@@ -1,13 +1,12 @@
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
 import 'package:counterparty_wallet/secure_utils/secure_storage.dart';
+import 'package:counterparty_wallet/start_pages/go_to_wallet_submit_button.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-class ConfirmCreateWalletButtonAndDialogue extends StatelessWidget {
+class AlertCreateWalletDialogueButton extends StatelessWidget {
   final String mnemonic;
 
-  const ConfirmCreateWalletButtonAndDialogue(
-      {required this.mnemonic, super.key});
+  const AlertCreateWalletDialogueButton({required this.mnemonic, super.key});
 
   Future<void> createAndStoreSeedHex(mnemonic) async {
     String seed = Bip39().mnemonicToSeedHex(mnemonic);
@@ -38,14 +37,8 @@ class ConfirmCreateWalletButtonAndDialogue extends StatelessWidget {
                       },
                     ),
                     Text(mnemonic),
-                    FilledButton(
-                        onPressed: () async {
-                          // TODO: add a loading page?
-                          await createAndStoreSeedHex(mnemonic);
-                          // ignore: use_build_context_synchronously
-                          GoRouter.of(context).go('/wallet');
-                        },
-                        child: const Text('Create wallet'))
+                    GoToWalletSubmitButton(
+                        mnemonic: mnemonic, submitText: 'Create Wallet')
                   ],
                 ),
               )),
