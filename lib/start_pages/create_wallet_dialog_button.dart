@@ -1,5 +1,5 @@
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/start_pages/confirm_create_wallet_dialog.dart';
+import 'package:counterparty_wallet/start_pages/alert_create_wallet_dialog.dart';
 import 'package:flutter/material.dart';
 
 class CreateWalletDialogueButton extends StatelessWidget {
@@ -33,7 +33,7 @@ class CreateWalletDialogueButton extends StatelessWidget {
                       },
                     ),
                     Text(mnemonic),
-                    ConfirmCreateWalletButtonAndDialogue(
+                    AlertCreateWalletDialogueButton(
                       mnemonic: mnemonic,
                     )
                   ],
