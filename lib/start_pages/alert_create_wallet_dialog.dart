@@ -8,14 +8,6 @@ class AlertCreateWalletDialogueButton extends StatelessWidget {
 
   const AlertCreateWalletDialogueButton({required this.mnemonic, super.key});
 
-  Future<void> createAndStoreSeedHex(mnemonic) async {
-    String seed = Bip39().mnemonicToSeedHex(mnemonic);
-    await SecureStorage().writeSecureData(
-      'seed_hex',
-      seed,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return FilledButton(
@@ -37,6 +29,7 @@ class AlertCreateWalletDialogueButton extends StatelessWidget {
                       },
                     ),
                     Text(mnemonic),
+                    // TODO: we will want a loading page on submit
                     GoToWalletSubmitButton(
                         mnemonic: mnemonic, submitText: 'Create Wallet')
                   ],

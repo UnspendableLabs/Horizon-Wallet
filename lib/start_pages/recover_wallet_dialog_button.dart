@@ -54,6 +54,7 @@ class _RecoverWalletPageState extends State<RecoverWalletDialogButton> {
                           hintText: "Text Field in Dialog"),
                     ),
                     // TODO: any validation on the seed phrase?
+                    // TODO: we will want a loading page on submit
                     GoToWalletSubmitButton(
                         mnemonic: _textFieldController.text,
                         submitText: 'Recover Wallet')
