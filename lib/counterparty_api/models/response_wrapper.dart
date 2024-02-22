@@ -1,5 +1,5 @@
 class ResponseWrapper {
-  final List<Object> result;
+  final List<dynamic> result;
   final String jsonrpc;
   final String id;
 
@@ -8,20 +8,10 @@ class ResponseWrapper {
     required this.jsonrpc,
     required this.id,
   });
-
-  factory ResponseWrapper.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'result': List<Object> result,
-        'asset': String jsonrpc,
-        'quanity': String id,
-      } =>
-        ResponseWrapper(
-          result: result,
-          jsonrpc: jsonrpc,
-          id: id,
-        ),
-      _ => throw const FormatException('Failed to load ResponseWrapper object.'),
-    };
+  factory ResponseWrapper.fromJson(Map<String, dynamic> data) {
+    final result = data['result'] as List<dynamic>;
+    final jsonrpc = data['jsonrpc'] as String;
+    final id = data['id'] as String;
+    return ResponseWrapper(result: result, jsonrpc: jsonrpc, id: id);
   }
 }

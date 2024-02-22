@@ -9,19 +9,10 @@ class Balance {
     required this.quantity,
   });
 
-  factory Balance.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'address': String address,
-        'asset': String asset,
-        'quanity': int quantity,
-      } =>
-        Balance(
-          address: address,
-          asset: asset,
-          quantity: quantity,
-        ),
-      _ => throw const FormatException('Failed to load balance object.'),
-    };
+  factory Balance.fromJson(Map<String, dynamic> data) {
+    final address = data['address'] as String;
+    final asset = data['asset'] as String;
+    final quantity = data['quantity'] as int;
+    return Balance(address: address, asset: asset, quantity: quantity);
   }
 }

@@ -1,5 +1,3 @@
-import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/secure_utils/secure_storage.dart';
 import 'package:counterparty_wallet/start_pages/go_to_wallet_submit_button.dart';
 import 'package:flutter/material.dart';
 
@@ -28,7 +26,7 @@ class AlertCreateWalletDialogueButton extends StatelessWidget {
                         Navigator.pop(context);
                       },
                     ),
-                    Text(mnemonic),
+                    SelectableText(mnemonic),
                     // TODO: we will want a loading page on submit
                     GoToWalletSubmitButton(
                         mnemonic: mnemonic, submitText: 'Create Wallet')

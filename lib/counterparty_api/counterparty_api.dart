@@ -1,12 +1,13 @@
 import 'dart:convert';
 
+import 'package:counterparty_wallet/counterparty_api/models/response_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class CounterpartyApi {
   Future<Object> fetchBalance(address) async {
     String url = dotenv.env['TESTNET_URL'] as String; // TODO
-    print('url: $url');
+
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -26,7 +27,8 @@ class CounterpartyApi {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return ResponseWrapper.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
     } else {
       throw Exception('Failed to load balance');
     }
