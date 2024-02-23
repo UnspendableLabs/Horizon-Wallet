@@ -25,7 +25,7 @@ Future<Object> createAddressAndFetchBalance(mnemonic) async {
   // mnemonic to seed
   Uint8List seed = bip39.mnemonicToSeed(mnemonic);
 
-  final address = hdWalletUtil.createBip44AddressFromSeed(seed);
+  final address = hdWalletUtil.createBip44AddressFromSeed(seed, 9);
 
   Object balances = await counterpartyApi.fetchBalance(address);
   return balances;

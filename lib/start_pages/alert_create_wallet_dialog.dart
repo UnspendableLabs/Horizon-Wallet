@@ -1,5 +1,6 @@
-import 'package:counterparty_wallet/start_pages/go_to_wallet_submit_button.dart';
+import 'package:counterparty_wallet/secure_utils/create_address_and_fetch_balance.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AlertCreateWalletDialogueButton extends StatelessWidget {
   final String mnemonic;
@@ -28,8 +29,15 @@ class AlertCreateWalletDialogueButton extends StatelessWidget {
                     ),
                     SelectableText(mnemonic),
                     // TODO: we will want a loading page on submit
-                    GoToWalletSubmitButton(
-                        mnemonic: mnemonic, submitText: 'Create Wallet')
+                    ElevatedButton(
+                      child: const Text('Create wallet'),
+                      onPressed: () async {
+                        await createAddressAndFetchBalance(mnemonic);
+
+                        // ignore: use_build_context_synchronously
+                        GoRouter.of(context).go('/wallet');
+                      },
+                    )
                   ],
                 ),
               )),
