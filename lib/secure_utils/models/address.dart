@@ -1,10 +1,7 @@
 class Address {
   String address;
-  String accountExtendedPubKey;
-  String accountExtendedPrivKey;
+  String publicKey;
+  String path;
 
-  Address(
-      {required this.address,
-      required this.accountExtendedPubKey,
-      required this.accountExtendedPrivKey});
+  Address({required this.address, required this.publicKey, required this.path});
 }
