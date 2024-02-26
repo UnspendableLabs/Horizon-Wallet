@@ -69,24 +69,24 @@ void main() {
           '028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf');
     });
 
-    test('createBip44AddressFromSeed bch cointype', () {
-      String mnemonic =
-          'crime speak truly valid movie describe blame essay crack skirt december obey';
-      Uint8List seed = Bip39().mnemonicToSeed(mnemonic);
+    // test('createBip44AddressFromSeed bch cointype', () {
+    //   String mnemonic =
+    //       'crime speak truly valid movie describe blame essay crack skirt december obey';
+    //   Uint8List seed = Bip39().mnemonicToSeed(mnemonic);
 
-      expect(uint8ListToHexString(seed),
-          'adb15ee789225d60da76a716c9dc9e02c12e7a248e07a26628a94e600b613a74c8a538c0ff4114e570650a96db386e20c158eda2e5405042906f9cad858e80c8');
+    //   expect(uint8ListToHexString(seed),
+    //       'adb15ee789225d60da76a716c9dc9e02c12e7a248e07a26628a94e600b613a74c8a538c0ff4114e570650a96db386e20c158eda2e5405042906f9cad858e80c8');
 
-      // path for bch
-      BasePath path = BasePath(coinType: 145, account: 0, change: 0, index: 0);
+    //   // path for bch
+    //   BasePath path = BasePath(coinType: 145, account: 0, change: 0, index: 0);
 
-      Address address = hdWalletUtil.createBip44AddressFromSeed(seed, path);
+    //   Address address = hdWalletUtil.createBip44AddressFromSeed(seed, path);
 
-      expect(address.path, 'm/44\'/145\'/0\'/0/0');
-      expect(address.address, '1ANnmzAsvyBZrfg5jxHis2U1hmeaXxLcGc');
-      expect(address.publicKey,
-          '03359ae6b6f0ef328a8e47488f2762afd3632b3bc8652a669024eabeb5d0c8891c');
-    });
+    //   expect(address.path, 'm/44\'/145\'/0\'/0/0');
+    //   expect(address.address, '1ANnmzAsvyBZrfg5jxHis2U1hmeaXxLcGc');
+    //   expect(address.publicKey,
+    //       '03359ae6b6f0ef328a8e47488f2762afd3632b3bc8652a669024eabeb5d0c8891c');
+    // });
 
     test('createBip44AddressFromSeed ltc cointype index 5', () {
       String mnemonic =

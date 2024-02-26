@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:counterparty_wallet/secure_utils/models/address.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
+import 'package:hd_wallet/hd_wallet.dart';
 import 'package:hd_wallet_kit/hd_wallet_kit.dart';
 import 'package:hd_wallet_kit/utils.dart';
 
@@ -33,6 +34,26 @@ class HDWalletUtil {
     return Address(
         address: address,
         publicKey: uint8ListToHexString(key.pubKey),
+        privateKey: '',
         path: key.toString());
+  }
+
+  Address createAddress(String seed, BasePath path) {
+    final node = BIP44.fromSeed(seed, coinType: path.coinType);
+
+    final privateKey = node.privateKeyHex(
+        account: path.account, change: path.change, index: path.index);
+
+    final publicKey = node.publicKeyHex(
+        account: path.account, change: path.change, index: path.index);
+
+    final address = node.address(
+        account: path.account, change: path.change, index: path.index);
+
+    return Address(
+        address: address,
+        publicKey: publicKey,
+        privateKey: privateKey,
+        path: node.toString());
   }
 }

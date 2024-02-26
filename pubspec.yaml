@@ -41,6 +41,7 @@ dependencies:
   http: ^1.2.1
   flutter_dotenv: ^5.1.0
   hd_wallet_kit: ^0.0.2
+  hd_wallet: ^0.0.9
 
 dev_dependencies:
   flutter_test:
