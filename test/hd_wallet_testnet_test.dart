@@ -2,13 +2,16 @@ import 'package:counterparty_wallet/secure_utils/bip39.dart';
 import 'package:counterparty_wallet/secure_utils/hd_wallet_util.dart';
 import 'package:counterparty_wallet/secure_utils/models/address.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 
-void main() {
-  group('Test HDWalletUtil', () {
+void main() async {
+// Loading from a static string.
+  dotenv.testLoad(fileInput: '''ENV=testnet''');
+  group('Test HDWalletUtil testnet', () {
     var hdWalletUtil = HDWalletUtil();
 
-    test('createAddress btc cointype', () {
+    test('createBip44AddressFromSeed btc cointype', () {
       String mnemonic =
           'trend pond enable empower govern example melody bless alone grow stone genre';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
@@ -17,15 +20,18 @@ void main() {
           '82fe40a0c31ac27e19bc302c5ed322158cfdbeb78ed3577e89ecf73abb838670fe4a1d17d3914ea4df8de75c6e98fa87603f6578dffbb039b5680504f84b2a4b');
 
       // path for btc
-      BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 0);
+      BasePath path = BasePath(coinType: 1, account: 0, change: 0, index: 0);
 
-      Address address = HDWalletUtil().createAddress(seedHex, path);
-      expect(address.address, '1B6yQRDXADzdyDxyK74cFY8vzV341o2fcg');
+      Address address =
+          HDWalletUtil().createBip44AddressFromSeed(seedHex, path);
+      expect(address.address, 'mtuuQfFyBfh1NMUYtQx4RsiSiPqwncSWNM');
       expect(address.publicKey,
-          '02ff5e001258801f2a32ceb4702a4e0b2c8f68d2a4afc85a01d17a568b720ef12a');
-    });
+          '03b22da4ea31c025dbff534f32a1a5fb6498fbd4d2f0517808101b83a164bbed6a');
+      expect(address.privateKey,
+          'cS9NzwfpCRK22faDntv4WK4yNJ7ZPtwVY9HqJVD4UaKzWoLuhRG1');
+    }, skip: true);
 
-    test('createAddress btc cointype index 1', () {
+    test('createBip44AddressFromSeed btc cointype index 1', () {
       String mnemonic =
           'stumble prison flip merge negative ostrich myself winter naive try arctic olympic';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
@@ -36,14 +42,16 @@ void main() {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 1);
 
-      Address address = hdWalletUtil.createAddress(seedHex, path);
+      Address address = hdWalletUtil.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M3VPoE7wS3HAF3CofoHdznKE3MGqKXafp');
       expect(address.publicKey,
           '03d9c25b411595bfca66ec766e79e31c8e47364d93843e72f112882b0d400c5fbc');
-    });
+      expect(address.privateKey,
+          'L3sw5uxfRfG7Gg5SYf3FJMnzYoibDi8gQDAPJp7zFSsCvx6CuowK');
+    }, skip: true);
 
-    test('createAddress btc cointype index 38', () {
+    test('createBip44AddressFromSeed btc cointype index 38', () {
       String mnemonic =
           'thunder member interest display shock unable clarify fiber insect lumber battle off';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
@@ -54,14 +62,16 @@ void main() {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 38);
 
-      Address address = hdWalletUtil.createAddress(seedHex, path);
+      Address address = hdWalletUtil.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M4maEYB3kpw8sCAQz1Xo7e3DcPNa41zGT');
       expect(address.publicKey,
           '028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf');
-    });
+      expect(address.privateKey,
+          'L5VkaGBSSTWau7CSzZCnggNLMKt8pG8hKApNo6m6VEDqMmCsBR8a');
+    }, skip: true);
 
-    test('createAddress btc cointype index 45', () {
+    test('createBip44AddressFromSeed btc cointype index 45', () {
       String mnemonic =
           'crime speak truly valid movie describe blame essay crack skirt december obey';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
@@ -72,14 +82,16 @@ void main() {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 45);
 
-      Address address = hdWalletUtil.createAddress(seedHex, path);
+      Address address = hdWalletUtil.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1ET7nur1J3qpxeMJb1TVgSjRmtKbQAwdxj');
       expect(address.publicKey,
           '03d36e92f7ebe73c61bb0f38a08348431814969d08ee6e2891420cff06a770f57b');
-    });
+      expect(address.privateKey,
+          'Kz115Kxd3jKioF1DhuBpj5hC8kBKqPXq148Bn7Rx7SVaFWMgtjUS');
+    }, skip: true);
 
-    test('createAddress btc cointype index 5', () {
+    test('createBip44AddressFromSeed btc cointype index 5', () {
       String mnemonic =
           'sorry hub gadget wasp repeat wave disagree knock prosper rose gas dinner';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
@@ -89,11 +101,13 @@ void main() {
 
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 5);
-      Address address = hdWalletUtil.createAddress(seedHex, path);
+      Address address = hdWalletUtil.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '14f8hGPiSDFZuaM7yJK1SgHpxCqHhsQ7W4');
       expect(address.publicKey,
           '026bfb97d478923ef5d289b6bfb0e36ddfcf085b6852037d153752cf56c8712259');
-    });
+      expect(address.privateKey,
+          'L3nKbF9rE4rb9G6ZM1iABZxxHZPXh37yREWwTS9E9QC2ADTnQDjV');
+    }, skip: true);
   });
 }

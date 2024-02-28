@@ -1,47 +1,17 @@
 import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
 import 'package:counterparty_wallet/secure_utils/models/address.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
+import 'package:dart_wif/dart_wif.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hd_wallet/hd_wallet.dart';
-import 'package:hd_wallet_kit/hd_wallet_kit.dart';
-import 'package:hd_wallet_kit/utils.dart';
 
 class HDWalletUtil {
-  Address createBip44AddressFromSeed(Uint8List seed, BasePath path) {
-    // create hd wallet from seed
-    final hdWallet = HDWallet.fromSeed(seed: seed);
-
-    // Derive a child key from the HD key using the defined path
-    final key = hdWallet.deriveKey(
-        purpose: Purpose.BIP44,
-        coinType: path.coinType,
-        account: path.account,
-        change: path.change,
-        index: path.index);
-
-    // This also produces the same this key.pubKey == publicKeyObject.publicKey
-    /*
-    final publicKeyObject = hdWallet.getPublicKey(
-        purpose: Purpose.BIP44,
-        coinType: 0,
-        account: 0,
-        change: 0,
-        index: 0);
-    */
-
-    final address = key.encodeAddress();
-
-    return Address(
-        address: address,
-        publicKey: uint8ListToHexString(key.pubKey),
-        privateKey: '',
-        path: key.toString());
-  }
-
-  Address createAddress(String seed, BasePath path) {
+  Address createBip44AddressFromSeed(String seed, BasePath path) {
     final node = BIP44.fromSeed(seed, coinType: path.coinType);
 
-    final privateKey = node.privateKeyHex(
+    final privateKeyHex = node.privateKeyHex(
         account: path.account, change: path.change, index: path.index);
 
     final publicKey = node.publicKeyHex(
@@ -50,10 +20,25 @@ class HDWalletUtil {
     final address = node.address(
         account: path.account, change: path.change, index: path.index);
 
+    Uint8List privateKey = Uint8List.fromList(hex.decode(privateKeyHex));
+
+    final WIF decoded =
+        WIF(version: _getVersion(), privateKey: privateKey, compressed: true);
+
+    String key =
+        wif.encode(decoded); // for the testnet use: Wif.encode(239, ...
+
     return Address(
-        address: address,
-        publicKey: publicKey,
-        privateKey: privateKey,
-        path: node.toString());
+      address: address,
+      publicKey: publicKey,
+      privateKey: key,
+    );
+  }
+
+  int _getVersion() {
+    if (dotenv.env['ENV'] == 'testnet') {
+      return 239;
+    }
+    return 128; // mainnet version
   }
 }

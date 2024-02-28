@@ -33,14 +33,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
-  base58check:
-    dependency: transitive
-    description:
-      name: base58check
-      sha256: "6c300dfc33e598d2fe26319e13f6243fea81eaf8204cb4c6b69ef20a625319a5"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   base_x:
     dependency: transitive
     description:
@@ -98,7 +90,7 @@ packages:
     source: hosted
     version: "1.18.0"
   convert:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: convert
       sha256: "0f08b14755d163f6e2134cb58222dd25ea2a2ee8a195e53983d57c075324d592"
@@ -129,6 +121,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
+  dart_base_x:
+    dependency: transitive
+    description:
+      name: dart_base_x
+      sha256: c8af4f6a6518daab4aa85bb27ee148221644e80446bb44117052b6f4674cdb23
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  dart_bs58:
+    dependency: transitive
+    description:
+      name: dart_bs58
+      sha256: e2fff08fca810d5215f6fca3ea713d8a4a9728aaf1b1658472863b2de7377234
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  dart_bs58check:
+    dependency: transitive
+    description:
+      name: dart_bs58check
+      sha256: "4284e606795a18c1df5a955928bdc4e1b6f908da7ab0e87f49db51b3774e9e6c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.2"
+  dart_wif:
+    dependency: "direct main"
+    description:
+      name: dart_wif
+      sha256: "30654dec66b6b1a5d493a8eb80bb10a4b2bcfaaae794ad7bd680bd78123df963"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   fake_async:
     dependency: transitive
     description:
@@ -264,14 +288,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.9"
-  hd_wallet_kit:
-    dependency: "direct main"
-    description:
-      name: hd_wallet_kit
-      sha256: "1667d78f59981e640f301572eb35ccc200097344f951e61f7428b429c5a6ee5c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
   hex:
     dependency: transitive
     description:

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:counterparty_wallet/counterparty_api/counterparty_api.dart';
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
 import 'package:counterparty_wallet/secure_utils/hd_wallet_util.dart';
@@ -16,20 +14,15 @@ Future<Object> createAddressAndFetchBalance(mnemonic) async {
   // generate seed hex from mnemonic
   String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-  // TODO OPEN QUESTION: SEED HEX vs Uint8List SEED?
   // write hex to storage
   await secureStorage.writeSecureData(
     'seed_hex',
     seedHex,
   );
 
-  // mnemonic to seed
-  Uint8List seed = bip39.mnemonicToSeed(mnemonic);
+  BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 0);
 
-  // path for xcp https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-  BasePath path = BasePath(coinType: 9, account: 0, change: 0, index: 0);
-
-  final address = hdWalletUtil.createBip44AddressFromSeed(seed, path);
+  final address = hdWalletUtil.createBip44AddressFromSeed(seedHex, path);
 
   Object balances = await counterpartyApi.fetchBalance(address);
   return balances;
