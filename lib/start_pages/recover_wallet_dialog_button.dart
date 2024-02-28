@@ -1,5 +1,6 @@
-import 'package:counterparty_wallet/start_pages/go_to_wallet_submit_button.dart';
+import 'package:counterparty_wallet/secure_utils/create_address_and_fetch_balance.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // Define a custom Form widget.
 class RecoverWalletDialogButton extends StatefulWidget {
@@ -14,14 +15,8 @@ class RecoverWalletDialogButton extends StatefulWidget {
 class _RecoverWalletPageState extends State<RecoverWalletDialogButton> {
   // Create a text controller and use it to retrieve the current value
   // of the TextField.
+  String mnemonic = '';
   final _textFieldController = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    _textFieldController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +45,22 @@ class _RecoverWalletPageState extends State<RecoverWalletDialogButton> {
                     ),
                     TextField(
                       controller: _textFieldController,
-                      decoration: const InputDecoration(
-                          hintText: "Text Field in Dialog"),
+                      onChanged: (v) {
+                        mnemonic = v;
+                        setState(() {});
+                      },
                     ),
                     // TODO: any validation on the seed phrase?
-                    GoToWalletSubmitButton(
-                        mnemonic: _textFieldController.text,
-                        submitText: 'Recover Wallet')
+                    // TODO: we will want a loading page on submit
+                    ElevatedButton(
+                      child: const Text('Recover wallet'),
+                      onPressed: () async {
+                        // TODO: allow recovery of old wallets
+                        await createAddressAndFetchBalance(mnemonic);
+                        // ignore: use_build_context_synchronously
+                        GoRouter.of(context).go('/wallet');
+                      },
+                    )
                   ],
                 ),
               )),

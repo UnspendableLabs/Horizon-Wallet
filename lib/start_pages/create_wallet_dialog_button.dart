@@ -32,7 +32,7 @@ class CreateWalletDialogueButton extends StatelessWidget {
                         Navigator.pop(context);
                       },
                     ),
-                    Text(mnemonic),
+                    SelectableText(mnemonic),
                     AlertCreateWalletDialogueButton(
                       mnemonic: mnemonic,
                     )
