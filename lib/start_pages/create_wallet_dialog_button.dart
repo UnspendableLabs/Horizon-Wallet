@@ -1,5 +1,5 @@
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/start_pages/alert_create_wallet_dialog.dart';
+import 'package:counterparty_wallet/start_pages/create_wallet_dialog.dart';
 import 'package:flutter/material.dart';
 
 class CreateWalletDialogueButton extends StatelessWidget {
@@ -12,40 +12,19 @@ class CreateWalletDialogueButton extends StatelessWidget {
         final mnemonic = Bip39().generateMnemonic();
 
         showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4.0),
-                side: const BorderSide(
-                  color: Color.fromRGBO(86, 142, 96, 1),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    BackButton(
-                      style: const ButtonStyle(
-                          alignment: AlignmentDirectional.topStart),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    SelectableText(mnemonic),
-                    AlertCreateWalletDialogueButton(
-                      mnemonic: mnemonic,
-                    )
-                  ],
-                ),
-              )),
-        );
+            context: context,
+            builder: (BuildContext context) =>
+                CreateWalletDialog(mnemonic: mnemonic));
       },
-      style: ButtonStyle(
-          fixedSize: MaterialStateProperty.all<Size?>(const Size(200.0, 75.0)),
-          textStyle: MaterialStateProperty.all<TextStyle?>(
-              const TextStyle(fontSize: 15))),
+      style: _buttonStyle(),
       child: const Text('Create Wallet'),
     );
+  }
+
+  ButtonStyle _buttonStyle() {
+    return ButtonStyle(
+        fixedSize: MaterialStateProperty.all<Size?>(const Size(200.0, 75.0)),
+        textStyle: MaterialStateProperty.all<TextStyle?>(
+            const TextStyle(fontSize: 15)));
   }
 }
