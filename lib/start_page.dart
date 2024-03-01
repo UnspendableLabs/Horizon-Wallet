@@ -1,5 +1,5 @@
-import 'package:counterparty_wallet/start_pages/create_wallet_dialog_button.dart';
-import 'package:counterparty_wallet/start_pages/recover_wallet_dialog_button.dart';
+import 'package:counterparty_wallet/wallet_creation_pages/create_wallet_button.dart';
+import 'package:counterparty_wallet/wallet_recovery_pages/recover_wallet_button.dart';
 import 'package:flutter/material.dart';
 
 class StartPage extends StatelessWidget {
@@ -14,10 +14,7 @@ class StartPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 50.0),
           child: const Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                CreateWalletDialogueButton(),
-                RecoverWalletDialogButton()
-              ]),
+              children: <Widget>[CreateWalletButton(), RecoverWalletButton()]),
         ),
       ),
     );

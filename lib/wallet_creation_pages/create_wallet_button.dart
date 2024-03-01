@@ -1,9 +1,9 @@
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/start_pages/create_wallet_dialog.dart';
+import 'package:counterparty_wallet/wallet_creation_pages/create_wallet_dialog.dart';
 import 'package:flutter/material.dart';
 
-class CreateWalletDialogueButton extends StatelessWidget {
-  const CreateWalletDialogueButton({super.key});
+class CreateWalletButton extends StatelessWidget {
+  const CreateWalletButton({super.key});
 
   @override
   Widget build(BuildContext context) {
