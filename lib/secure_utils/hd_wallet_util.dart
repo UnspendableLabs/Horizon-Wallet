@@ -5,7 +5,7 @@ import 'package:counterparty_wallet/secure_utils/models/address.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
 import 'package:dart_wif/dart_wif.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hd_wallet/hd_wallet.dart';
+import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
 
 class HDWalletUtil {
   Address createBip44AddressFromSeed(String seed, BasePath path) {
