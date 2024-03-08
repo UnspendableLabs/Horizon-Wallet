@@ -23,12 +23,12 @@ void main() async {
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 0);
 
       Address address =
-          counterwalletHDWalletUtil.createBip32AddressFromSeed(seedHex, path);
+          counterwalletHDWalletUtil.createBip32AddressFromSeed(mnemonic, path);
       // expect(address.address, '1B6yQRDXADzdyDxyK74cFY8vzV341o2fcg');
-      // expect(address.publicKey,
-      //     '02ff5e001258801f2a32ceb4702a4e0b2c8f68d2a4afc85a01d17a568b720ef12a');
-      // expect(address.privateKey,
-      // 'KxFniLGmDo8VMPFHXgB1tokQArFgXQtJKkUATWWqTMYL2TAg9EDt');
+      expect(address.publicKey,
+          '03f79f85ea147bc5e015e49ee5e1e4c9a22220d16b69cf3f4f7157d4614872ef8b');
+      expect(address.privateKey,
+          'L1TWCKogA5WVpFpczcchdV2uz3UnobNwJyevUiMAvDwKhiSu9hPy');
     });
   });
 }

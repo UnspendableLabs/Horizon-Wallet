@@ -1,20 +1,25 @@
 import 'dart:typed_data';
 
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
+import 'package:counterparty_wallet/secure_utils/models/address.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
+import 'package:hex/hex.dart';
 
 class CounterwalletHDWalletUtil {
   final bip39 = Bip39();
 
-  createBip32AddressFromSeed(String mnemonic, BasePath path) {
+  Address createBip32AddressFromSeed(String mnemonic, BasePath path) {
     Uint8List seed = bip39.mnemonicToSeed(mnemonic);
     NetworkType network = _getNetwork();
     final nodeFromSeed = BIP32.fromSeed(seed, network);
-    final addressKey = nodeFromSeed.derivePath('m/0\'/0/0');
-    final x = addressKey.toBase58();
-    final y = addressKey.toWIF();
+    final addressKey = nodeFromSeed.derivePath('m/0/0');
+
+    final privateKey = addressKey.toWIF();
+    final publicKey = HEX.encode(addressKey.publicKey);
+    // final neutered = 
+    return Address(address: '', publicKey: publicKey, privateKey: privateKey);
   }
 
   _getNetwork() {
