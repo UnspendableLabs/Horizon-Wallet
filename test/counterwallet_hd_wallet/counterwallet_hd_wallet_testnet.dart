@@ -7,6 +7,8 @@ void main() async {
   await dotenv.load();
 
   group('Test HDWalletUtil mainnet', () {
+    dotenv.testLoad(fileInput: '''ENV=testnet''');
+
     var counterwalletHDWalletUtil = CounterwalletHDWalletUtil();
 
     test('createBip32AddressFromSeed btc cointype', () {
@@ -15,11 +17,11 @@ void main() async {
 
       Address address =
           counterwalletHDWalletUtil.createBip32AddressFromSeed(mnemonic, 0);
-      expect(address.address, '19syhrFjaYhH1nbhenwWaLKRm4BXbKgLRr');
+      expect(address.address, 'mpPvzuLiPa8Xnu5KNMutQFXkd3nEZScLTE');
       expect(address.publicKey,
           '033602c9263d18189c2bc67e7ef09ab7fbff3d3ed0c2c71516565637bcb8d166b4');
       expect(address.privateKey,
-          'KzDAidSKrVYshLSuDmJtiYGcKo87xwkcEcJ4XAZhGC6GScpVtN2A');
+          'cQaABYSBHZF8rmvAcB825rmfx2RXdPrJJeSXdb2CmJkGhMsj5Csh');
     });
 
     test('createBip32AddressFromSeed btc cointype', () {
@@ -28,11 +30,11 @@ void main() async {
 
       Address address =
           counterwalletHDWalletUtil.createBip32AddressFromSeed(mnemonic, 0);
-      expect(address.address, '14h1pWTt7jBNm7QVD4LTQ7dSU1ncS44W6N');
+      expect(address.address, 'mjCy7ZYrvkcdYDt6vdJqE2qmL1PKN1Xs7P');
       expect(address.publicKey,
           '0379883a74a258be10bd69a037dbb85b765a78a73c60338a919848360fe8b8012a');
       expect(address.privateKey,
-          'KwNscRcbDDDiCsjrkihQLSQsnrGxrnYK539nTLXTRiWWSMNmPSUV');
+          'cMjs5LcSeGuyNKD898WXhkuwR5aNXEe195JFZkyxvqAWh6TiErf6');
     });
 
     test('createBip32AddressFromSeed btc cointype', () {
@@ -41,11 +43,11 @@ void main() async {
 
       Address address =
           counterwalletHDWalletUtil.createBip32AddressFromSeed(mnemonic, 12);
-      expect(address.address, '1LLmX9ksJhLSbtSFqu7V2h9LdMP4LWpnaW');
+      expect(address.address, 'mzripCqr7imhNzusZU5rrcMfVLymGX6Urv');
       expect(address.publicKey,
           '031dace6cae4dce49f05ca0e8d134a984b91475613f2011f461c2913f0bb9d24db');
       expect(address.privateKey,
-          'KyNSGWtjo4VKsHjX9P6EqUbLbDU8a3DDGCwRKSHSn7m3sxGt3rXg');
+          'cPjRjRtbE8Bb2jCnXnuNCo6QDSmYEVJuLF5tRrjxHER48hQ6Zhn7');
     });
 
     test('createBip32AddressFromSeed btc cointype', () {
@@ -54,11 +56,11 @@ void main() async {
 
       Address address =
           counterwalletHDWalletUtil.createBip32AddressFromSeed(mnemonic, 2);
-      expect(address.address, '16HKhrF9pCzKS6WTiVxt1H7ozAZKNCsyWS');
+      expect(address.address, 'mkoGzuL8dERaDCz5S4wFqCL8rAA2FBEA15');
       expect(address.publicKey,
           '024ce3f08b4e7ef004365122349c11dbb0f6c6e1424b4801d173063ccbeaa10e5d');
       expect(address.privateKey,
-          'L4TSYxrHvTPUP46yyuRoUJe2M4RV7ahU2APEn19id4caYr1xTWwk');
+          'cUpS1sr9MX5jYVaFNKEvqd95yHitn2oA6CXhtRcE8BGaob7rWKbM');
     });
   });
 }
