@@ -1,3 +1,5 @@
+enum AddressType { normal, bech32 }
+
 class Address {
   String address;
   String publicKey;

@@ -12,15 +12,6 @@ class CounterwalletRecoveryDialog extends StatefulWidget {
 class _RecoverWalletPageState extends State<CounterwalletRecoveryDialog> {
   final _textFieldController = TextEditingController();
 
-  // // TODO: move to shared
-  // Future<void> createAndStoreSeedHex(mnemonic) async {
-  //   String seed = Bip39().mnemonicToSeedHex(mnemonic);
-  //   await SecureStorage().writeSecureData(
-  //     'seed_hex',
-  //     seed,
-  //   );
-  // }
-
   @override
   void dispose() {
     _textFieldController.dispose();

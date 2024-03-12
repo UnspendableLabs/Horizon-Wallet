@@ -1,6 +1,6 @@
 import 'package:counterparty_wallet/counterparty_api/counterparty_api.dart';
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/secure_utils/hd_wallet_util.dart';
+import 'package:counterparty_wallet/secure_utils/bip44.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
 import 'package:counterparty_wallet/secure_utils/secure_storage.dart';
 
@@ -9,7 +9,7 @@ Future<Object> createAddressAndFetchBalance(mnemonic) async {
   var bip39 = Bip39();
   var counterpartyApi = CounterpartyApi();
   var secureStorage = SecureStorage();
-  var hdWalletUtil = HDWalletUtil();
+  var bip44Util = Bip44();
 
   // generate seed hex from mnemonic
   String seedHex = bip39.mnemonicToSeedHex(mnemonic);
@@ -22,7 +22,7 @@ Future<Object> createAddressAndFetchBalance(mnemonic) async {
 
   BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 0);
 
-  final address = hdWalletUtil.createBip44AddressFromSeed(seedHex, path);
+  final address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
   Object balances = await counterpartyApi.fetchBalance(address);
   return balances;

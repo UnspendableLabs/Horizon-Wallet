@@ -1,26 +1,33 @@
 import 'dart:typed_data';
 
+import 'package:counterparty_wallet/secure_utils/bech32.dart';
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
 import 'package:counterparty_wallet/secure_utils/models/address.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
 import 'package:hex/hex.dart';
 
-class CounterwalletHDWalletUtil {
+class Bip32 {
   final bip39 = Bip39();
+  final bech32Address = Bech32Address();
   final basePath = 'm/0\'/0/';
 
-  Address createBip32AddressFromSeed(String mnemonic, int index) {
+  Address createBip32AddressFromSeed(
+      String mnemonic, int index, AddressType addressType) {
     Uint8List seed = bip39.mnemonicToSeed(mnemonic);
     NetworkType network = _getNetwork();
     final nodeFromSeed = BIP32.fromSeed(seed, network);
     final addressKey = nodeFromSeed.derivePath(basePath + index.toString());
 
     final privateKey = addressKey.toWIF();
-    final publicKey = addressKey.publicKey;
+    Uint8List publicKey = addressKey.publicKey;
 
-    // final address = nodeFromSeed.address;
-    final address = btcAddress(addressKey.publicKey, _getVersion());
+    var address;
+    if (addressType == AddressType.normal) {
+      address = btcAddress(addressKey.publicKey, _getVersion());
+    } else if (addressType == AddressType.bech32) {
+      address = bech32Address.deriveBech32Address(publicKey);
+    }
     return Address(
         address: address,
         publicKey: HEX.encode(publicKey),
@@ -43,7 +50,6 @@ class CounterwalletHDWalletUtil {
 
   _getVersion() {
     if (dotenv.env['ENV'] == 'testnet') {
-      // wif hex source:  https://learnmeabitcoin.com/technical/keys/private-key/wif/
       return 0x6F; // testnet version
     }
     return 0x00;

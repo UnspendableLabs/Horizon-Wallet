@@ -7,7 +7,7 @@ import 'package:dart_wif/dart_wif.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
 
-class HDWalletUtil {
+class Bip44 {
   Address createBip44AddressFromSeed(String seed, BasePath path) {
     final node = BIP44.fromSeed(seed, coinType: path.coinType);
 
