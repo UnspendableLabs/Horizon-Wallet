@@ -35,9 +35,7 @@ class _RecoverWalletPageState extends State<CounterwalletRecoveryDialog> {
               ),
               FilledButton(
                   onPressed: () async {
-                    // await createAndStoreSeedHex(_textFieldController.text);
-                    // TODO: we will want a loading page here
-                    // TODO: fetch data
+
                     // ignore: use_build_context_synchronously
                     GoRouter.of(context).go('/wallet');
                   },

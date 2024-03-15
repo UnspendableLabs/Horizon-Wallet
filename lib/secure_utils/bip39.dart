@@ -14,4 +14,8 @@ class Bip39 {
   Uint8List mnemonicToSeed(mnemonic) {
     return bip39.mnemonicToSeed(mnemonic);
   }
+
+  String mnemonicToEntropy(mnemonic) {
+    return bip39.mnemonicToEntropy(mnemonic);
+  }
 }
