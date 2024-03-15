@@ -1,11 +1,11 @@
 enum AddressType { normal, bech32 }
 
-class Address {
+class WalletInfo {
   String address;
   String publicKey;
   String privateKey;
 
-  Address({
+  WalletInfo({
     required this.address,
     required this.publicKey,
     required this.privateKey,

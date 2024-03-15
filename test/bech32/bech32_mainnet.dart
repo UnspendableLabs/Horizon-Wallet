@@ -1,5 +1,5 @@
 import 'package:counterparty_wallet/secure_utils/bip32.dart';
-import 'package:counterparty_wallet/secure_utils/models/address.dart';
+import 'package:counterparty_wallet/secure_utils/models/wallet_info.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 
@@ -13,7 +13,7 @@ void main() async {
       String mnemonic =
           'trend pond enable empower govern example melody bless alone grow stone genre';
 
-      Address address =
+      WalletInfo address =
           bip32Util.createBip32AddressFromSeed(mnemonic, 0, AddressType.bech32);
       // expect(address.address, '19syhrFjaYhH1nbhenwWaLKRm4BXbKgLRr');
       expect(address.publicKey,
@@ -26,7 +26,7 @@ void main() async {
       String mnemonic =
           'crowd assume laugh area stick visa cricket mountain industry sustain very mask';
 
-      Address address =
+      WalletInfo address =
           bip32Util.createBip32AddressFromSeed(mnemonic, 0, AddressType.bech32);
       // expect(address.address, '14h1pWTt7jBNm7QVD4LTQ7dSU1ncS44W6N');
       expect(address.publicKey,
@@ -39,7 +39,7 @@ void main() async {
       String mnemonic =
           'fitness uncle finish promote car deny dish pact pepper bronze swift gallery';
 
-      Address address = bip32Util.createBip32AddressFromSeed(
+      WalletInfo address = bip32Util.createBip32AddressFromSeed(
           mnemonic, 12, AddressType.bech32);
       // expect(address.address, '1LLmX9ksJhLSbtSFqu7V2h9LdMP4LWpnaW');
       expect(address.publicKey,
@@ -52,7 +52,7 @@ void main() async {
       String mnemonic =
           'lecture job rare oil worth annual stem august doctor royal boring planet';
 
-      Address address =
+      WalletInfo address =
           bip32Util.createBip32AddressFromSeed(mnemonic, 2, AddressType.bech32);
       // expect(address.address, '16HKhrF9pCzKS6WTiVxt1H7ozAZKNCsyWS');
       expect(address.publicKey,

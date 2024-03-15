@@ -1,6 +1,6 @@
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
 import 'package:counterparty_wallet/secure_utils/bip44.dart';
-import 'package:counterparty_wallet/secure_utils/models/address.dart';
+import 'package:counterparty_wallet/secure_utils/models/wallet_info.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
@@ -22,7 +22,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 0);
 
-      Address address = Bip44().createBip44AddressFromSeed(seedHex, path);
+      WalletInfo address = Bip44().createBip44AddressFromSeed(seedHex, path);
       expect(address.address, '1B6yQRDXADzdyDxyK74cFY8vzV341o2fcg');
       expect(address.publicKey,
           '02ff5e001258801f2a32ceb4702a4e0b2c8f68d2a4afc85a01d17a568b720ef12a');
@@ -41,7 +41,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 1);
 
-      Address address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M3VPoE7wS3HAF3CofoHdznKE3MGqKXafp');
       expect(address.publicKey,
@@ -61,7 +61,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 38);
 
-      Address address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M4maEYB3kpw8sCAQz1Xo7e3DcPNa41zGT');
       expect(address.publicKey,
@@ -81,7 +81,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 45);
 
-      Address address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1ET7nur1J3qpxeMJb1TVgSjRmtKbQAwdxj');
       expect(address.publicKey,
@@ -100,7 +100,7 @@ void main() async {
 
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 5);
-      Address address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '14f8hGPiSDFZuaM7yJK1SgHpxCqHhsQ7W4');
       expect(address.publicKey,
