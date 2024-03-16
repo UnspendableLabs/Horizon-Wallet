@@ -1,5 +1,5 @@
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/wallet_creation_pages/create_wallet_dialog.dart';
+import 'package:counterparty_wallet/components/wallet_creation_pages/create_wallet_dialog.dart';
 import 'package:flutter/material.dart';
 
 class CreateWalletButton extends StatelessWidget {

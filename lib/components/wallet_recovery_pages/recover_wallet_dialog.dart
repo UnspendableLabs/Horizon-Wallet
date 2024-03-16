@@ -1,4 +1,4 @@
-import 'package:counterparty_wallet/common/back_button.dart';
+import 'package:counterparty_wallet/components/common/back_button.dart';
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
 import 'package:counterparty_wallet/secure_utils/secure_storage.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +49,7 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
               // TODO: any validation on the seed phrase?
               FilledButton(
                   onPressed: () async {
-                    print('DROPDOWN VALUE ${dropdownValue}');
+                    print('DROPDOWN VALUE $dropdownValue');
                     await createAndStoreSeedHex(_textFieldController.text);
                     // TODO: we will want a loading page here
                     // TODO: fetch data
