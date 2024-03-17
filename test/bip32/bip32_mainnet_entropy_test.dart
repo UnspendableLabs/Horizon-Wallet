@@ -19,7 +19,7 @@ void main() async {
           'trend pond enable empower govern example melody bless alone grow stone genre';
 
       String seed = bip39.mnemonicToEntropy(mnemonic);
-      print('SEED $seed');
+
       KeyPair keyPair =
           bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seed)), 0);
 
