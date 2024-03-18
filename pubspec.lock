@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
+  bech32:
+    dependency: "direct main"
+    description:
+      name: bech32
+      sha256: "156cbace936f7720c79a79d16a03efad343b1ef17106716e04b8b8e39f99f7f7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.2"
   bip39:
     dependency: "direct main"
     description:
@@ -165,10 +173,10 @@ packages:
     dependency: transitive
     description:
       name: ffi
-      sha256: "7bf0adc28a23d395f19f3f1eb21dd7cfd1dd9f8e1c50051c069122e6853bc878"
+      sha256: "493f37e7df1804778ff3a53bd691d8692ddf69702cf4c1c1096a2e41b4779e21"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
+    version: "2.1.2"
   file:
     dependency: transitive
     description:
@@ -190,6 +198,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.0"
+  flutter_hd_wallet:
+    dependency: "direct main"
+    description:
+      name: flutter_hd_wallet
+      sha256: "985d09492221bb4612f94221e257efa9881f9ab2dcbad8b9b9b785a8fd72ebb0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  flutter_js:
+    dependency: "direct main"
+    description:
+      name: flutter_js
+      sha256: "5bf5db354fe78fe24cb90a5fa6b4423d38712440c88e3445c3dc88bc134c452f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.0"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -280,14 +304,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "13.2.0"
-  hd_wallet:
-    dependency: "direct main"
-    description:
-      name: hd_wallet
-      sha256: "06150cc627baeef01685dee781b8b3fbb84ec1345c2f166d4ed310343a588138"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.9"
   hex:
     dependency: transitive
     description:
@@ -497,7 +513,7 @@ packages:
     source: hosted
     version: "2.1.8"
   pointycastle:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: pointycastle
       sha256: "43ac87de6e10afabc85c445745a7b799e04de84cebaa4fd7bf55a5e1e9604d29"
@@ -605,6 +621,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  sync_http:
+    dependency: transitive
+    description:
+      name: sync_http
+      sha256: "7f0cd72eca000d2e026bcd6f990b81d0ca06022ef4e32fb257b30d3d1014a961"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
   term_glyph:
     dependency: transitive
     description:
@@ -649,10 +673,10 @@ packages:
     dependency: transitive
     description:
       name: unorm_dart
-      sha256: "5b35bff83fce4d76467641438f9e867dc9bcfdb8c1694854f230579d68cd8f4b"
+      sha256: "23d8bf65605401a6a32cff99435fed66ef3dab3ddcad3454059165df46496a3b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.3.0"
   vector_math:
     dependency: transitive
     description:
@@ -681,10 +705,10 @@ packages:
     dependency: transitive
     description:
       name: web
-      sha256: "1d9158c616048c38f712a6646e317a3426da10e884447626167240d45209cbad"
+      sha256: "97da13628db363c635202ad97068d47c5b8aa555808e7a9411963c533b449b27"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.0"
+    version: "0.5.1"
   web_socket_channel:
     dependency: transitive
     description:
@@ -705,10 +729,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: "464f5674532865248444b4c3daca12bd9bf2d7c47f759ce2617986e7229494a8"
+      sha256: "8cb58b45c47dcb42ab3651533626161d6b67a2921917d8d429791f76972b3480"
       url: "https://pub.dev"
     source: hosted
-    version: "5.2.0"
+    version: "5.3.0"
   xdg_directories:
     dependency: transitive
     description:

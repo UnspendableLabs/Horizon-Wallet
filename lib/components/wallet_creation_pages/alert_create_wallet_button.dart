@@ -1,4 +1,4 @@
-import 'package:counterparty_wallet/wallet_creation_pages/alert_create_wallet_dialog.dart';
+import 'package:counterparty_wallet/components/wallet_creation_pages/alert_create_wallet_dialog.dart';
 import 'package:flutter/material.dart';
 
 class AlertCreateWalletButton extends StatelessWidget {

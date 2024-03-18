@@ -40,9 +40,12 @@ dependencies:
   bip39: ^1.0.6
   http: ^1.2.1
   flutter_dotenv: ^5.1.0
-  hd_wallet: ^0.0.9
   dart_wif: ^2.1.1
   convert: ^3.1.1
+  flutter_hd_wallet: ^0.0.1
+  bech32: ^0.2.2
+  pointycastle: ^3.7.4
+  flutter_js: ^0.8.0
 
 dev_dependencies:
   flutter_test:
