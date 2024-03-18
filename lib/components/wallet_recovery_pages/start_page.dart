@@ -1,6 +1,6 @@
-import 'package:counterparty_wallet/components/wallet_creation_pages/create_wallet_button.dart';
-import 'package:counterparty_wallet/components/wallet_recovery_pages/recover_wallet_button.dart';
 import 'package:flutter/material.dart';
+import 'package:uniparty/components/wallet_creation_pages/create_wallet_button.dart';
+import 'package:uniparty/components/wallet_recovery_pages/recover_wallet_button.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});

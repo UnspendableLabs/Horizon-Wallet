@@ -1,4 +1,4 @@
-package com.example.counterparty_wallet
+package com.example.uniparty
 
 import io.flutter.embedding.android.FlutterActivity
 

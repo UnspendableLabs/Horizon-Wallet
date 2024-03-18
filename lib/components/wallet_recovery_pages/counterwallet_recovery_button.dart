@@ -1,5 +1,5 @@
-import 'package:counterparty_wallet/components/wallet_recovery_pages/recover_wallet_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:uniparty/components/wallet_recovery_pages/recover_wallet_dialog.dart';
 
 class CounterwalletRecoverButton extends StatelessWidget {
   const CounterwalletRecoverButton({super.key});
@@ -21,7 +21,6 @@ class CounterwalletRecoverButton extends StatelessWidget {
   ButtonStyle _buttonStyle() {
     return ButtonStyle(
         fixedSize: MaterialStateProperty.all<Size?>(const Size(75.0, 50.0)),
-        textStyle: MaterialStateProperty.all<TextStyle?>(
-            const TextStyle(fontSize: 15)));
+        textStyle: MaterialStateProperty.all<TextStyle?>(const TextStyle(fontSize: 15)));
   }
 }

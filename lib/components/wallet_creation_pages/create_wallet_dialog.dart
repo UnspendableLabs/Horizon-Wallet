@@ -1,6 +1,6 @@
-import 'package:counterparty_wallet/components/common/back_button.dart';
-import 'package:counterparty_wallet/components/wallet_creation_pages/alert_create_wallet_button.dart';
 import 'package:flutter/material.dart';
+import 'package:uniparty/components/common/back_button.dart';
+import 'package:uniparty/components/wallet_creation_pages/alert_create_wallet_button.dart';
 
 class CreateWalletDialog extends StatelessWidget {
   final String mnemonic;
