@@ -9,6 +9,7 @@ void main() async {
   group('FreewalletRecovery mainnet', () {
     var freewalletRecovery = FreewalletRecovery();
 
+    // compatibility with freewallet verified by addresses/priv keys generated in freewallet
     test('recoverFreewallet bip39', () {
       String mnemonic =
           "silver similar slab poet cannon south antique finish large romance climb faculty";

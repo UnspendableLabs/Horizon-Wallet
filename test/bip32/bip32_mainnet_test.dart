@@ -14,6 +14,7 @@ void main() async {
     final bip32 = Bip32();
     final bip39 = Bip39();
 
+    // bip32 pub/priv keys verified from https://iancoleman.io/bip39/
     test('generates an expected public key and private key for index 0', () {
       String mnemonic =
           'trend pond enable empower govern example melody bless alone grow stone genre';

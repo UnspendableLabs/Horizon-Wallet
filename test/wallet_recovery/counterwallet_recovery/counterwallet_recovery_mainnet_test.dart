@@ -8,6 +8,9 @@ void main() async {
 
   group('CounterwalletRecovery', () {
     var counterwalletRecovery = CounterwalletRecovery();
+
+    // compatibility with counterwalley verified by addresses/priv keys generated in freewallet
+
     test('recoverCounterwalletFromFreewallet', () {
       String phrase =
           "stone freeze straight bus force crave admit any count driver complete lifeless";
