@@ -1,13 +1,14 @@
 import 'package:counterparty_wallet/secure_utils/bip39.dart';
 import 'package:counterparty_wallet/secure_utils/bip44.dart';
-import 'package:counterparty_wallet/secure_utils/models/wallet_info.dart';
 import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
+import 'package:counterparty_wallet/secure_utils/models/wallet_info.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 
 void main() async {
   await dotenv.load();
 
+  // https://iancoleman.io/bip39/
   group('Test Bip44 mainnet', () {
     var bip44Util = Bip44();
 
@@ -24,10 +25,9 @@ void main() async {
 
       WalletInfo address = Bip44().createBip44AddressFromSeed(seedHex, path);
       expect(address.address, '1B6yQRDXADzdyDxyK74cFY8vzV341o2fcg');
-      expect(address.publicKey,
-          '02ff5e001258801f2a32ceb4702a4e0b2c8f68d2a4afc85a01d17a568b720ef12a');
-      expect(address.privateKey,
-          'KxFniLGmDo8VMPFHXgB1tokQArFgXQtJKkUATWWqTMYL2TAg9EDt');
+      expect(
+          address.publicKey, '02ff5e001258801f2a32ceb4702a4e0b2c8f68d2a4afc85a01d17a568b720ef12a');
+      expect(address.privateKey, 'KxFniLGmDo8VMPFHXgB1tokQArFgXQtJKkUATWWqTMYL2TAg9EDt');
     });
 
     test('createBip44AddressFromSeed btc cointype index 1', () {
@@ -44,10 +44,9 @@ void main() async {
       WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M3VPoE7wS3HAF3CofoHdznKE3MGqKXafp');
-      expect(address.publicKey,
-          '03d9c25b411595bfca66ec766e79e31c8e47364d93843e72f112882b0d400c5fbc');
-      expect(address.privateKey,
-          'L3sw5uxfRfG7Gg5SYf3FJMnzYoibDi8gQDAPJp7zFSsCvx6CuowK');
+      expect(
+          address.publicKey, '03d9c25b411595bfca66ec766e79e31c8e47364d93843e72f112882b0d400c5fbc');
+      expect(address.privateKey, 'L3sw5uxfRfG7Gg5SYf3FJMnzYoibDi8gQDAPJp7zFSsCvx6CuowK');
     });
 
     test('createBip44AddressFromSeed btc cointype index 38', () {
@@ -64,10 +63,9 @@ void main() async {
       WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M4maEYB3kpw8sCAQz1Xo7e3DcPNa41zGT');
-      expect(address.publicKey,
-          '028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf');
-      expect(address.privateKey,
-          'L5VkaGBSSTWau7CSzZCnggNLMKt8pG8hKApNo6m6VEDqMmCsBR8a');
+      expect(
+          address.publicKey, '028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf');
+      expect(address.privateKey, 'L5VkaGBSSTWau7CSzZCnggNLMKt8pG8hKApNo6m6VEDqMmCsBR8a');
     });
 
     test('createBip44AddressFromSeed btc cointype index 45', () {
@@ -84,15 +82,13 @@ void main() async {
       WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1ET7nur1J3qpxeMJb1TVgSjRmtKbQAwdxj');
-      expect(address.publicKey,
-          '03d36e92f7ebe73c61bb0f38a08348431814969d08ee6e2891420cff06a770f57b');
-      expect(address.privateKey,
-          'Kz115Kxd3jKioF1DhuBpj5hC8kBKqPXq148Bn7Rx7SVaFWMgtjUS');
+      expect(
+          address.publicKey, '03d36e92f7ebe73c61bb0f38a08348431814969d08ee6e2891420cff06a770f57b');
+      expect(address.privateKey, 'Kz115Kxd3jKioF1DhuBpj5hC8kBKqPXq148Bn7Rx7SVaFWMgtjUS');
     });
 
     test('createBip44AddressFromSeed btc cointype index 5', () {
-      String mnemonic =
-          'sorry hub gadget wasp repeat wave disagree knock prosper rose gas dinner';
+      String mnemonic = 'sorry hub gadget wasp repeat wave disagree knock prosper rose gas dinner';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
 
       expect(seedHex,
@@ -103,10 +99,9 @@ void main() async {
       WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '14f8hGPiSDFZuaM7yJK1SgHpxCqHhsQ7W4');
-      expect(address.publicKey,
-          '026bfb97d478923ef5d289b6bfb0e36ddfcf085b6852037d153752cf56c8712259');
-      expect(address.privateKey,
-          'L3nKbF9rE4rb9G6ZM1iABZxxHZPXh37yREWwTS9E9QC2ADTnQDjV');
+      expect(
+          address.publicKey, '026bfb97d478923ef5d289b6bfb0e36ddfcf085b6852037d153752cf56c8712259');
+      expect(address.privateKey, 'L3nKbF9rE4rb9G6ZM1iABZxxHZPXh37yREWwTS9E9QC2ADTnQDjV');
     });
   });
 }

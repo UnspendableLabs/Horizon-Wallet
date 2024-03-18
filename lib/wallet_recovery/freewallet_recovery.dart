@@ -16,22 +16,22 @@ class FreewalletRecovery {
 
   List<WalletInfo> recoverFreewallet(String mnemonic) {
     List<WalletInfo> wallets = [];
-    String seed = bip39.mnemonicToEntropy(mnemonic);
+    String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
 
     for (var i = 0; i < 10; i++) {
       KeyPair keyPair =
-          bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seed)), i);
+          bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedEntropy)), i);
 
-      String normalAddress = legacyAddress.createAddress(keyPair.publicKey);
+      String normalAddress = legacyAddress.createAddress(keyPair.publicKeyIntList);
       WalletInfo walletInfoNormal = WalletInfo(
           address: normalAddress,
-          publicKey: hex.encode(keyPair.publicKey),
+          publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
-      String bech32Address = bech32.deriveBech32Address(keyPair.publicKey);
+      String bech32Address = bech32.deriveBech32Address(keyPair.publicKeyIntList);
       WalletInfo walletInfoBech32 = WalletInfo(
           address: bech32Address,
-          publicKey: hex.encode(keyPair.publicKey),
+          publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
       wallets.add(walletInfoNormal);

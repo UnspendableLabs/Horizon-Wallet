@@ -1,6 +1,4 @@
 import 'package:counterparty_wallet/components/common/back_button.dart';
-import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/secure_utils/secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,15 +14,6 @@ const List<String> list = <String>['counterwallet', 'freewallet', 'uniparty'];
 class _RecoverWalletPageState extends State<RecoverWalletDialog> {
   final _textFieldController = TextEditingController();
   String dropdownValue = list.first;
-
-  // TODO: move to shared
-  Future<void> createAndStoreSeedHex(mnemonic) async {
-    String seed = Bip39().mnemonicToSeedHex(mnemonic);
-    await SecureStorage().writeSecureData(
-      'seed_hex',
-      seed,
-    );
-  }
 
   @override
   void dispose() {
@@ -49,10 +38,6 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
               // TODO: any validation on the seed phrase?
               FilledButton(
                   onPressed: () async {
-                    print('DROPDOWN VALUE $dropdownValue');
-                    await createAndStoreSeedHex(_textFieldController.text);
-                    // TODO: we will want a loading page here
-                    // TODO: fetch data
                     // ignore: use_build_context_synchronously
                     GoRouter.of(context).go('/wallet');
                   },

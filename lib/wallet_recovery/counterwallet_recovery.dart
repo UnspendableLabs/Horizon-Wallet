@@ -18,10 +18,10 @@ class CounterwalletRecovery {
     String seedHex = mnemonicJs.wordsToSeed(words);
     KeyPair keyPair =
         bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedHex)), 0);
-    String normalAddress = legacyAddress.createAddress(keyPair.publicKey);
+    String normalAddress = legacyAddress.createAddress(keyPair.publicKeyIntList);
     WalletInfo wallet = WalletInfo(
         address: normalAddress,
-        publicKey: hex.encode(keyPair.publicKey),
+        publicKey: hex.encode(keyPair.publicKeyIntList),
         privateKey: keyPair.privateKey);
     return wallet;
   }
@@ -33,16 +33,16 @@ class CounterwalletRecovery {
       KeyPair keyPair =
           bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedHex)), i);
 
-      String normalAddress = legacyAddress.createAddress(keyPair.publicKey);
+      String normalAddress = legacyAddress.createAddress(keyPair.publicKeyIntList);
       WalletInfo walletInfoNormal = WalletInfo(
           address: normalAddress,
-          publicKey: hex.encode(keyPair.publicKey),
+          publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
-      String bech32Address = bech32.deriveBech32Address(keyPair.publicKey);
+      String bech32Address = bech32.deriveBech32Address(keyPair.publicKeyIntList);
       WalletInfo walletInfoBech32 = WalletInfo(
           address: bech32Address,
-          publicKey: hex.encode(keyPair.publicKey),
+          publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
       wallets.add(walletInfoNormal);

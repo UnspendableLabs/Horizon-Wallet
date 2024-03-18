@@ -19,9 +19,9 @@ class UnipartyRecovery {
 
     BasePath path = BasePath(coinType: _getCoinType(), account: 0, change: 0, index: 0);
     KeyPair keyPair = bip44.createBip44KeyPairFromSeed(seedHex, path);
-    String address = bech32.deriveBech32Address(keyPair.publicKey);
+    String address = bech32.deriveBech32Address(keyPair.publicKeyIntList);
     WalletInfo wallet = WalletInfo(
-        address: address, publicKey: hex.encode(keyPair.publicKey), privateKey: keyPair.privateKey);
+        address: address, publicKey: hex.encode(keyPair.publicKeyIntList), privateKey: keyPair.privateKey);
 
     wallets.add(wallet);
     return wallets;

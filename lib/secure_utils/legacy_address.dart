@@ -4,8 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
 
 class LegacyAddress {
-  String createAddress(Uint8List publicKey) {
-    return btcAddress(publicKey, _getVersion());
+  String createAddress(Uint8List publicKeyIntList) {
+    return btcAddress(publicKeyIntList, _getVersion());
   }
 
   _getVersion() {

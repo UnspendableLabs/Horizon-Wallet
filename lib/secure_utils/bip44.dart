@@ -23,7 +23,8 @@ class Bip44 {
     final WIF decoded = WIF(version: _getVersion(), privateKey: privateKey, compressed: true);
 
     String privateKeyWif = wif.encode(decoded); // testnet: Wif.encode(239, ...
-    return KeyPair(publicKey: Uint8List.fromList(hex.decode(publicKey)), privateKey: privateKeyWif);
+    return KeyPair(
+        publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), privateKey: privateKeyWif);
   }
 
   String createBip44LegacyAddress(BIP44 node, BasePath path) {
@@ -32,8 +33,8 @@ class Bip44 {
   }
 
   @Deprecated('Do not couple pub/priv key and address derivation')
-  WalletInfo createBip44AddressFromSeed(String seed, BasePath path) {
-    final node = BIP44.fromSeed(seed, coinType: path.coinType);
+  WalletInfo createBip44AddressFromSeed(String seedHex, BasePath path) {
+    final node = BIP44.fromSeed(seedHex, coinType: path.coinType);
 
     final privateKeyHex =
         node.privateKeyHex(account: path.account, change: path.change, index: path.index);

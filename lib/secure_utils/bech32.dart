@@ -5,9 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pointycastle/api.dart' as pointycastle;
 
 class Bech32Address {
-  String deriveBech32Address(Uint8List publicKey) {
+  String deriveBech32Address(Uint8List publicKeyIntList) {
     var sha256 = pointycastle.Digest("SHA-256");
-    var publicKeySha256 = sha256.process(publicKey);
+    var publicKeySha256 = sha256.process(publicKeyIntList);
 
     var ripemd160 = pointycastle.Digest('RIPEMD-160');
     var publicKeyRipemd160 = ripemd160.process(publicKeySha256);
