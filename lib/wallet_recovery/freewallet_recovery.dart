@@ -16,6 +16,8 @@ class FreewalletRecovery {
 
   List<WalletInfo> recoverFreewallet(String mnemonic) {
     List<WalletInfo> wallets = [];
+
+    // NOTE: known bug. do not fix. Freewallet uses entropy to generate addresses rather than the seed
     String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
 
     for (var i = 0; i < 10; i++) {
