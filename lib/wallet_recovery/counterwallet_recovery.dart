@@ -5,8 +5,8 @@ import 'package:uniparty/secure_utils/bech32.dart';
 import 'package:uniparty/secure_utils/bip32.dart';
 import 'package:uniparty/secure_utils/legacy_address.dart';
 import 'package:uniparty/secure_utils/mnemonic_js.dart';
-import 'package:uniparty/secure_utils/models/key_pair.dart';
-import 'package:uniparty/secure_utils/models/wallet_info.dart';
+import 'package:uniparty/models/key_pair.dart';
+import 'package:uniparty/models/wallet_node.dart';
 
 class CounterwalletRecovery {
   final mnemonicJs = MnemonicJs();

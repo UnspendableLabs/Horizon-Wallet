@@ -4,9 +4,9 @@ import 'package:convert/convert.dart';
 import 'package:dart_wif/dart_wif.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
-import 'package:uniparty/secure_utils/models/base_path.dart';
-import 'package:uniparty/secure_utils/models/key_pair.dart';
-import 'package:uniparty/secure_utils/models/wallet_info.dart';
+import 'package:uniparty/models/base_path.dart';
+import 'package:uniparty/models/key_pair.dart';
+import 'package:uniparty/models/wallet_node.dart';
 
 class Bip44 {
   KeyPair createBip44KeyPairFromSeed(String seedHex, BasePath path) {

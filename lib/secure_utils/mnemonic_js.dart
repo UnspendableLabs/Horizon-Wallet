@@ -5,9 +5,10 @@ import 'package:flutter_js/flutter_js.dart';
 // js copied from Counterwallet
 class MnemonicJs {
   String _jsResult = '';
-  JavascriptRuntime flutterJs = getJavascriptRuntime();
 
   String wordsToSeed(String phraseWords) {
+    JavascriptRuntime flutterJs = getJavascriptRuntime();
+
     try {
       JsEvalResult jsResult = flutterJs.evaluate("""
 //    Mnemonic.js v. 1.0.0

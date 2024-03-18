@@ -1,6 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/secure_utils/models/wallet_info.dart';
+import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/uniparty_recovery.dart';
 
 void main() async {

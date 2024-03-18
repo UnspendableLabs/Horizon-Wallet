@@ -1,12 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:uniparty/models/key_pair.dart';
+import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/secure_utils/bech32.dart';
 import 'package:uniparty/secure_utils/bip32.dart';
 import 'package:uniparty/secure_utils/bip39.dart';
 import 'package:uniparty/secure_utils/legacy_address.dart';
-import 'package:uniparty/secure_utils/models/key_pair.dart';
-import 'package:uniparty/secure_utils/models/wallet_info.dart';
 
 class FreewalletRecovery {
   final bip32 = Bip32();
@@ -18,7 +18,12 @@ class FreewalletRecovery {
     List<WalletNode> walletNodes = [];
 
     // NOTE: known bug. do not fix. Freewallet uses entropy to generate addresses rather than the seed
-    String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
+    String seedEntropy;
+    try {
+      seedEntropy = bip39.mnemonicToEntropy(mnemonic);
+    } catch (error) {
+      rethrow;
+    }
 
     for (var i = 0; i < 10; i++) {
       KeyPair keyPair =

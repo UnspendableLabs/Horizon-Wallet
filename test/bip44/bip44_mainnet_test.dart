@@ -2,8 +2,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/secure_utils/bip39.dart';
 import 'package:uniparty/secure_utils/bip44.dart';
-import 'package:uniparty/secure_utils/models/base_path.dart';
-import 'package:uniparty/secure_utils/models/wallet_info.dart';
+import 'package:uniparty/models/base_path.dart';
+import 'package:uniparty/models/wallet_node.dart';
 
 void main() async {
   await dotenv.load();
