@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_js/flutter_js.dart';
 
+// Counterwallet and Freewallet both use this method of generating a seed
+// js copied from Counterwallet
 class MnemonicJs {
   String _jsResult = '';
   JavascriptRuntime flutterJs = getJavascriptRuntime();

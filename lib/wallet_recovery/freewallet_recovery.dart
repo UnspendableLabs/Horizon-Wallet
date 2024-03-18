@@ -14,8 +14,8 @@ class FreewalletRecovery {
   final legacyAddress = LegacyAddress();
   final bech32 = Bech32Address();
 
-  List<WalletInfo> recoverFreewallet(String mnemonic) {
-    List<WalletInfo> wallets = [];
+  List<WalletNode> recoverFreewallet(String mnemonic) {
+    List<WalletNode> walletNodes = [];
 
     // NOTE: known bug. do not fix. Freewallet uses entropy to generate addresses rather than the seed
     String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
@@ -25,21 +25,21 @@ class FreewalletRecovery {
           bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedEntropy)), i);
 
       String normalAddress = legacyAddress.createAddress(keyPair.publicKeyIntList);
-      WalletInfo walletInfoNormal = WalletInfo(
+      WalletNode walletNodeNormal = WalletNode(
           address: normalAddress,
           publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
       String bech32Address = bech32.deriveBech32Address(keyPair.publicKeyIntList);
-      WalletInfo walletInfoBech32 = WalletInfo(
+      WalletNode walletNodeBech32 = WalletNode(
           address: bech32Address,
           publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
-      wallets.add(walletInfoNormal);
-      wallets.add(walletInfoBech32);
+      walletNodes.add(walletNodeNormal);
+      walletNodes.add(walletNodeBech32);
     }
 
-    return wallets;
+    return walletNodes;
   }
 }

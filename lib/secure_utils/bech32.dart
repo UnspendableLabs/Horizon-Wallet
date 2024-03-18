@@ -11,16 +11,16 @@ class Bech32Address {
 
     var ripemd160 = pointycastle.Digest('RIPEMD-160');
     var publicKeyRipemd160 = ripemd160.process(publicKeySha256);
-    List<int> ripemd5bit = to5bitArray(Uint8List.fromList(publicKeyRipemd160));
+    List<int> publicKeyRipemd5bit = to5bitArray(Uint8List.fromList(publicKeyRipemd160));
 
     List<int> version = [0]; // Assuming Bitcoin network
-    List<int> data = [...version, ...ripemd5bit];
+    List<int> data = [...version, ...publicKeyRipemd5bit];
 
     String hrp = _getHrp();
-    Bech32 bech32 = Bech32(hrp, data);
+    Bech32 rawBech32 = Bech32(hrp, data);
 
     var encoder = const Bech32Codec();
-    String bech32Address = encoder.encode(bech32);
+    String bech32Address = encoder.encode(rawBech32);
 
     return bech32Address;
   }

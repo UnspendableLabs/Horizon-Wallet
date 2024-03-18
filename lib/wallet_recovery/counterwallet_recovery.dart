@@ -14,41 +14,43 @@ class CounterwalletRecovery {
   final legacyAddress = LegacyAddress();
   final bech32 = Bech32Address();
 
-  WalletInfo recoverCounterwallet(String words) {
+  WalletNode recoverCounterwallet(String words) {
     String seedHex = mnemonicJs.wordsToSeed(words);
     KeyPair keyPair =
         bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedHex)), 0);
     String normalAddress = legacyAddress.createAddress(keyPair.publicKeyIntList);
-    WalletInfo wallet = WalletInfo(
+    WalletNode walletNode = WalletNode(
         address: normalAddress,
         publicKey: hex.encode(keyPair.publicKeyIntList),
         privateKey: keyPair.privateKey);
-    return wallet;
+    return walletNode;
   }
 
-  List<WalletInfo> recoverCounterwalletFromFreewallet(String words) {
-    List<WalletInfo> wallets = [];
+  // this is Counterwallet compatible according to Freewallet
+  // we are using this method to test since Counterwallet is down
+  List<WalletNode> recoverCounterwalletThroughFreewallet(String words) {
+    List<WalletNode> walletNodes = [];
     String seedHex = mnemonicJs.wordsToSeed(words);
     for (var i = 0; i < 10; i++) {
       KeyPair keyPair =
           bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedHex)), i);
 
       String normalAddress = legacyAddress.createAddress(keyPair.publicKeyIntList);
-      WalletInfo walletInfoNormal = WalletInfo(
+      WalletNode walletNodeNormal = WalletNode(
           address: normalAddress,
           publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
       String bech32Address = bech32.deriveBech32Address(keyPair.publicKeyIntList);
-      WalletInfo walletInfoBech32 = WalletInfo(
+      WalletNode walletNodeBech32 = WalletNode(
           address: bech32Address,
           publicKey: hex.encode(keyPair.publicKeyIntList),
           privateKey: keyPair.privateKey);
 
-      wallets.add(walletInfoNormal);
-      wallets.add(walletInfoBech32);
+      walletNodes.add(walletNodeNormal);
+      walletNodes.add(walletNodeBech32);
     }
 
-    return wallets;
+    return walletNodes;
   }
 }

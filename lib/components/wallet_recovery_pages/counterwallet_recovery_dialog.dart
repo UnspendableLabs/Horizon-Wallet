@@ -31,7 +31,7 @@ class _RecoverWalletPageState extends State<CounterwalletRecoveryDialog> {
               TextField(
                 controller: _textFieldController,
                 decoration: const InputDecoration(
-                    hintText: "input counterwallet seed phrase"),
+                    hintText: "input Counterwallet seed phrase"),
               ),
               FilledButton(
                   onPressed: () async {

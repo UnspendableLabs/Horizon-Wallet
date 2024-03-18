@@ -23,7 +23,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 0);
 
-      WalletInfo address = Bip44().createBip44AddressFromSeed(seedHex, path);
+      WalletNode address = Bip44().createBip44AddressFromSeed(seedHex, path);
       expect(address.address, '1B6yQRDXADzdyDxyK74cFY8vzV341o2fcg');
       expect(
           address.publicKey, '02ff5e001258801f2a32ceb4702a4e0b2c8f68d2a4afc85a01d17a568b720ef12a');
@@ -41,7 +41,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 1);
 
-      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M3VPoE7wS3HAF3CofoHdznKE3MGqKXafp');
       expect(
@@ -60,7 +60,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 38);
 
-      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1M4maEYB3kpw8sCAQz1Xo7e3DcPNa41zGT');
       expect(
@@ -79,7 +79,7 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 45);
 
-      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '1ET7nur1J3qpxeMJb1TVgSjRmtKbQAwdxj');
       expect(
@@ -96,7 +96,7 @@ void main() async {
 
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 5);
-      WalletInfo address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
 
       expect(address.address, '14f8hGPiSDFZuaM7yJK1SgHpxCqHhsQ7W4');
       expect(

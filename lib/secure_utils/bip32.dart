@@ -19,9 +19,9 @@ class Bip32 {
     if (dotenv.env['ENV'] == 'testnet') {
       // wif hex source:  https://learnmeabitcoin.com/technical/keys/private-key/wif/
       return NetworkType(
-          wif: 0xef, bip32: Bip32Type(public: 0x043587CF, private: 0x04358394)); // testnet version
+          wif: 0xef, bip32: Bip32Type(public: 0x043587CF, private: 0x04358394)); // testnet
     }
     return NetworkType(
-        wif: 0x80, bip32: Bip32Type(public: 0x0488b21e, private: 0x0488ade4)); // mainnet version
+        wif: 0x80, bip32: Bip32Type(public: 0x0488b21e, private: 0x0488ade4)); // mainnet
   }
 }

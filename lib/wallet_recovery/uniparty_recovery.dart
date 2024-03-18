@@ -12,19 +12,21 @@ class UnipartyRecovery {
   final bip39 = Bip39();
   final bech32 = Bech32Address();
 
-  List<WalletInfo> recoverUniparty(String mnemonic) {
+  List<WalletNode> recoverUniparty(String mnemonic) {
     String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-    List<WalletInfo> wallets = [];
+    List<WalletNode> nodes = [];
 
     BasePath path = BasePath(coinType: _getCoinType(), account: 0, change: 0, index: 0);
     KeyPair keyPair = bip44.createBip44KeyPairFromSeed(seedHex, path);
     String address = bech32.deriveBech32Address(keyPair.publicKeyIntList);
-    WalletInfo wallet = WalletInfo(
-        address: address, publicKey: hex.encode(keyPair.publicKeyIntList), privateKey: keyPair.privateKey);
+    WalletNode walletNode = WalletNode(
+        address: address,
+        publicKey: hex.encode(keyPair.publicKeyIntList),
+        privateKey: keyPair.privateKey);
 
-    wallets.add(wallet);
-    return wallets;
+    nodes.add(walletNode);
+    return nodes;
   }
 
   int _getCoinType() {

@@ -14,7 +14,7 @@ class CounterwalletRecoverButton extends StatelessWidget {
         );
       },
       style: _buttonStyle(),
-      child: const Text('Recover from counterwallet'),
+      child: const Text('Recover from Counterwallet'),
     );
   }
 

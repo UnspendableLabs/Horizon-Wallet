@@ -33,7 +33,7 @@ class Bip44 {
   }
 
   @Deprecated('Do not couple pub/priv key and address derivation')
-  WalletInfo createBip44AddressFromSeed(String seedHex, BasePath path) {
+  WalletNode createBip44AddressFromSeed(String seedHex, BasePath path) {
     final node = BIP44.fromSeed(seedHex, coinType: path.coinType);
 
     final privateKeyHex =
@@ -50,7 +50,7 @@ class Bip44 {
 
     String key = wif.encode(decoded); // for the testnet use: Wif.encode(239, ...
 
-    return WalletInfo(
+    return WalletNode(
       address: address,
       publicKey: publicKey,
       privateKey: key,
