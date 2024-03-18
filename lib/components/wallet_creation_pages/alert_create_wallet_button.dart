@@ -1,5 +1,5 @@
-import 'package:counterparty_wallet/components/wallet_creation_pages/alert_create_wallet_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:uniparty/components/wallet_creation_pages/alert_create_wallet_dialog.dart';
 
 class AlertCreateWalletButton extends StatelessWidget {
   final String mnemonic;
@@ -12,8 +12,7 @@ class AlertCreateWalletButton extends StatelessWidget {
       onPressed: () {
         showDialog<String>(
             context: context,
-            builder: (BuildContext context) =>
-                AlertCreateWalletDialog(mnemonic: mnemonic));
+            builder: (BuildContext context) => AlertCreateWalletDialog(mnemonic: mnemonic));
       },
       child: const Text('Create Wallet'),
     );

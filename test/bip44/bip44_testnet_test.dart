@@ -1,9 +1,9 @@
-import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/secure_utils/bip44.dart';
-import 'package:counterparty_wallet/secure_utils/models/wallet_info.dart';
-import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
+import 'package:uniparty/secure_utils/bip39.dart';
+import 'package:uniparty/secure_utils/bip44.dart';
+import 'package:uniparty/secure_utils/models/base_path.dart';
+import 'package:uniparty/secure_utils/models/wallet_info.dart';
 
 void main() async {
 // Loading from a static string.

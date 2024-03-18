@@ -1,6 +1,6 @@
 {
-    "name": "counterparty_wallet",
-    "description": "counterparty_wallet",
+    "name": "uniparty",
+    "description": "uniparty",
     "version": "1.0.0",
     "content_security_policy": {
         "extension_pages": "script-src 'self' ; object-src 'self'"

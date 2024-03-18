@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:counterparty_wallet/counterparty_api/models/response_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:uniparty/counterparty_api/models/response_wrapper.dart';
 
 class CounterpartyApi {
   Future<Object> fetchBalance(address) async {
@@ -27,8 +27,7 @@ class CounterpartyApi {
     );
 
     if (response.statusCode == 200) {
-      return ResponseWrapper.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>);
+      return ResponseWrapper.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
     } else {
       throw Exception('Failed to load balance');
     }

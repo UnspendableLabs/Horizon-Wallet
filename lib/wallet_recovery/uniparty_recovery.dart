@@ -1,11 +1,11 @@
 import 'package:convert/convert.dart';
-import 'package:counterparty_wallet/secure_utils/bech32.dart';
-import 'package:counterparty_wallet/secure_utils/bip39.dart';
-import 'package:counterparty_wallet/secure_utils/bip44.dart';
-import 'package:counterparty_wallet/secure_utils/models/base_path.dart';
-import 'package:counterparty_wallet/secure_utils/models/key_pair.dart';
-import 'package:counterparty_wallet/secure_utils/models/wallet_info.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:uniparty/secure_utils/bech32.dart';
+import 'package:uniparty/secure_utils/bip39.dart';
+import 'package:uniparty/secure_utils/bip44.dart';
+import 'package:uniparty/secure_utils/models/base_path.dart';
+import 'package:uniparty/secure_utils/models/key_pair.dart';
+import 'package:uniparty/secure_utils/models/wallet_info.dart';
 
 class UnipartyRecovery {
   final bip44 = Bip44();

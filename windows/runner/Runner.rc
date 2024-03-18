@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "counterparty_wallet" "\0"
+            VALUE "FileDescription", "uniparty" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "counterparty_wallet" "\0"
+            VALUE "InternalName", "uniparty" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "counterparty_wallet.exe" "\0"
-            VALUE "ProductName", "counterparty_wallet" "\0"
+            VALUE "OriginalFilename", "uniparty.exe" "\0"
+            VALUE "ProductName", "uniparty" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

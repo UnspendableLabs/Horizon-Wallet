@@ -1,4 +1,4 @@
-# counterparty_wallet
+# uniparty
 
 A new Flutter project.
 

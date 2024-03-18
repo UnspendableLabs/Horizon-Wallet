@@ -1,6 +1,6 @@
-import 'package:counterparty_wallet/components/common/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uniparty/components/common/back_button.dart';
 
 class CounterwalletRecoveryDialog extends StatefulWidget {
   const CounterwalletRecoveryDialog({super.key});
@@ -30,12 +30,10 @@ class _RecoverWalletPageState extends State<CounterwalletRecoveryDialog> {
               const CommonBackButton(),
               TextField(
                 controller: _textFieldController,
-                decoration: const InputDecoration(
-                    hintText: "input Counterwallet seed phrase"),
+                decoration: const InputDecoration(hintText: "input Counterwallet seed phrase"),
               ),
               FilledButton(
                   onPressed: () async {
-
                     // ignore: use_build_context_synchronously
                     GoRouter.of(context).go('/wallet');
                   },
