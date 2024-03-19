@@ -46,7 +46,6 @@ dependencies:
   bech32: ^0.2.2
   pointycastle: ^3.7.4
   flutter_js: ^0.8.0
-  ffi: ^2.1.2
 
 dev_dependencies:
   flutter_test:

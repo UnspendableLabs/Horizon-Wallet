@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/wallet_pages/wallet.dart';
-import 'package:uniparty/secure_utils/secure_storage.dart';
+import 'package:uniparty/utils/secure_storage.dart';
 import 'package:uniparty/start_page.dart';
 
 class AppRouter {

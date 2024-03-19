@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uniparty/components/wallet_creation_pages/create_wallet_dialog.dart';
-import 'package:uniparty/secure_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 
 class CreateWalletButton extends StatelessWidget {
   const CreateWalletButton({super.key});

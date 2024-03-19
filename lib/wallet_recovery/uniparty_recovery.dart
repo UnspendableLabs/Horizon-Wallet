@@ -3,9 +3,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:uniparty/models/base_path.dart';
 import 'package:uniparty/models/key_pair.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/secure_utils/bech32.dart';
-import 'package:uniparty/secure_utils/bip39.dart';
-import 'package:uniparty/secure_utils/bip44.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bech32.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip44.dart';
 
 class UnipartyRecovery {
   final bip44 = Bip44();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uniparty/secure_utils/secure_storage.dart';
+import 'package:uniparty/utils/secure_storage.dart';
 
 class WalletPage extends StatelessWidget {
   const WalletPage({super.key});

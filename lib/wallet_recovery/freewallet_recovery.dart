@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:uniparty/models/key_pair.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/secure_utils/bech32.dart';
-import 'package:uniparty/secure_utils/bip32.dart';
-import 'package:uniparty/secure_utils/bip39.dart';
-import 'package:uniparty/secure_utils/legacy_address.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bech32.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip32.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_address.dart';
 
 class FreewalletRecovery {
   final bip32 = Bip32();
