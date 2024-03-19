@@ -1,17 +1,17 @@
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
-import 'package:uniparty/bitcoin_wallet_utils/mnemonic_words.dart';
-import 'package:uniparty/models/wallet_type_enum.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_mnemonic_word_list.dart';
+import 'package:uniparty/models/wallet_types.dart';
 
 const invalidLengthError = 'seed phrase contains the wrong number of letters';
 const invalidWordsError = 'some words are not in the word list';
 const invalidNullPhrase = 'seed phrase may not be null';
 
-String? validateSeedPhrase(String? seedValue, String walletType) {
+String? validateSeedPhrase(String? seedValue, String recoveryWallet) {
   if (seedValue == null) {
     throw ArgumentError(invalidNullPhrase);
   }
   try {
-    if (walletType == FREEWALLET || walletType == UNIPARTY) {
+    if (recoveryWallet == FREEWALLET || recoveryWallet == UNIPARTY) {
       /*
         bip39 mnemonicToEntropy will throw if
         1. a word is xnot in the word list
@@ -20,7 +20,7 @@ String? validateSeedPhrase(String? seedValue, String walletType) {
         3. the checksum fails
       */
       Bip39().mnemonicToEntropy(seedValue);
-    } else if (walletType == COUNTERWALLET) {
+    } else if (recoveryWallet == COUNTERWALLET) {
       if (seedValue.split(" ").length != 12) {
         throw ArgumentError(invalidLengthError);
       }

@@ -18,8 +18,4 @@ class Bip39 {
   String mnemonicToEntropy(mnemonic) {
     return bip39.mnemonicToEntropy(mnemonic);
   }
-
-  bool isValidMnemonic(mnemonic) {
-    return bip39.validateMnemonic(mnemonic);
-  }
 }

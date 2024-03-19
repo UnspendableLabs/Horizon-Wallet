@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/common/back_button.dart';
-import 'package:uniparty/models/wallet_type_enum.dart';
+import 'package:uniparty/models/wallet_types.dart';
 import 'package:uniparty/utils/seed_phrase_validation.dart';
 
 class RecoverWalletDialog extends StatefulWidget {
@@ -15,7 +15,7 @@ const List<String> list = <String>[COUNTERWALLET, FREEWALLET, UNIPARTY];
 
 class _RecoverWalletPageState extends State<RecoverWalletDialog> {
   final _textFieldController = TextEditingController();
-  String dropdownWalletType = list.first;
+  String dropdownRecoveryWallet = list.first;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -37,7 +37,7 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                 controller: _textFieldController,
                 decoration: const InputDecoration(hintText: "input seed phrase"),
                 validator: (value) {
-                  return validateSeedPhrase(value, dropdownWalletType);
+                  return validateSeedPhrase(value, dropdownRecoveryWallet);
                 },
               ),
               FilledButton(
@@ -51,7 +51,7 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                   },
                   child: const Text('Recover wallet')),
               DropdownButton<String>(
-                value: dropdownWalletType,
+                value: dropdownRecoveryWallet,
                 icon: const Icon(Icons.arrow_downward),
                 elevation: 16,
                 style: const TextStyle(color: Colors.green),
@@ -62,7 +62,7 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                 onChanged: (String? value) {
                   // This is called when the user selects an item.
                   setState(() {
-                    dropdownWalletType = value!;
+                    dropdownRecoveryWallet = value!;
                   });
                 },
                 items: list.map<DropdownMenuItem<String>>((String value) {

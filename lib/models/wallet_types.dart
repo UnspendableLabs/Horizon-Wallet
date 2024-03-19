@@ -3,3 +3,5 @@
 const String COUNTERWALLET = 'counterwallet';
 const String FREEWALLET = 'freewallet';
 const String UNIPARTY = 'uniparty';
+
+enum WalletType { bip32, bip44 }

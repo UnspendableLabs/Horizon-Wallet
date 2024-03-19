@@ -1,14 +1,13 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_seed.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/wallet_recovery/counterwallet_recovery.dart';
+import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 
 void main() async {
   await dotenv.load();
 
   group('CounterwalletRecovery', () {
-    var counterwalletRecovery = CounterwalletRecovery();
-
     // compatibility with Counterwallet verified by addresses/priv keys generated in Freewallet
     // Counterwallet is currently down, so we test this functionality through Freewallet
 
@@ -99,8 +98,9 @@ void main() async {
             publicKey: "")
       };
 
-      List<WalletNode> recoveredNodes =
-          counterwalletRecovery.recoverCounterwalletThroughFreewallet(phrase);
+      String seedHex = LegacySeed().mnemonicToSeed(phrase);
+
+      List<WalletNode> recoveredNodes = recoverBip32Wallet(seedHex);
 
       for (var recoveredNode in recoveredNodes) {
         WalletNode? expectedWalletNode = expectedWalletNodes[recoveredNode.address];
