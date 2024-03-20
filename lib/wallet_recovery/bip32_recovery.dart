@@ -7,7 +7,7 @@ import 'package:uniparty/bitcoin_wallet_utils/legacy_address.dart';
 import 'package:uniparty/models/key_pair.dart';
 import 'package:uniparty/models/wallet_node.dart';
 
-List<WalletNode> recoverBip32Wallet(String seedEntropy) {
+List<WalletNode> recoverBip32Wallet(String seedHex) {
   final bip32 = Bip32();
   final legacyAddress = LegacyAddress();
   final bech32 = Bech32Address();
@@ -16,7 +16,7 @@ List<WalletNode> recoverBip32Wallet(String seedEntropy) {
 
   for (var i = 0; i < 10; i++) {
     KeyPair keyPair =
-        bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedEntropy)), i);
+        bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedHex)), i);
 
     String normalAddress = legacyAddress.createAddress(keyPair.publicKeyIntList);
     WalletNode walletNodeNormal = WalletNode(

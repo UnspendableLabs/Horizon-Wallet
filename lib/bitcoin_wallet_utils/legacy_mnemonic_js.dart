@@ -7,9 +7,8 @@ class MnemonicJs {
   String _jsResult = '';
 
   String wordsToSeed(String phraseWords) {
-    JavascriptRuntime flutterJs = getJavascriptRuntime();
-
     try {
+      JavascriptRuntime flutterJs = getJavascriptRuntime();
       JsEvalResult jsResult = flutterJs.evaluate("""
 //    Mnemonic.js v. 1.0.0
 
