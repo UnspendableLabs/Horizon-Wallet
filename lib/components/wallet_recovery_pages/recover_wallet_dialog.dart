@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/common/back_button.dart';
 import 'package:uniparty/models/wallet_types.dart';
 import 'package:uniparty/utils/seed_phrase_validation.dart';
+import 'package:uniparty/wallet_recovery/store_seed_and_wallet_type.dart';
 
 class RecoverWalletDialog extends StatefulWidget {
   const RecoverWalletDialog({super.key});
@@ -42,12 +43,12 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
               ),
               FilledButton(
                   onPressed: () async {
-                    if (!_formKey.currentState!.validate()) {
-                      // If the form is valid, display a snackbar. In the real world,
-                      // you'd often call a server or save the information in a database.
+                    if (_formKey.currentState!.validate()) {
+                      await storeSeedAndWalletType(
+                          _textFieldController.text, dropdownRecoveryWallet);
+                      // ignore: use_build_context_synchronously
+                      GoRouter.of(context).go('/wallet');
                     }
-                    // ignore: use_build_context_synchronously
-                    GoRouter.of(context).go('/wallet');
                   },
                   child: const Text('Recover wallet')),
               DropdownButton<String>(

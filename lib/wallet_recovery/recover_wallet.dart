@@ -1,43 +1,35 @@
-import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
-import 'package:uniparty/bitcoin_wallet_utils/legacy_seed.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/models/wallet_types.dart';
 import 'package:uniparty/utils/secure_storage.dart';
 import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 import 'package:uniparty/wallet_recovery/bip44_recovery.dart';
 
-Future<List<WalletNode>> recoverWallet(String mnemonic, String recoveryWallet) async {
+Future<List<WalletNode>> recoverWallet(BuildContext context) async {
   final secureStorage = SecureStorage();
 
-  List<WalletNode> walletNodes = [];
-  String seedHex = '';
-  WalletType walletType;
-  switch (recoveryWallet) {
-    case UNIPARTY:
-      walletType = WalletType.bip44;
+  String? seedHex = await secureStorage.readSecureData('seed_hex');
+  String? walletType = await secureStorage.readSecureData('wallet_type');
 
-      seedHex = Bip39().mnemonicToSeedHex(mnemonic);
+  List<WalletNode> walletNodes = [];
+
+  if (seedHex == null || walletType == null) {
+    // ignore: use_build_context_synchronously
+    GoRouter.of(context).go('/start');
+    return walletNodes;
+  }
+
+  switch (walletType) {
+    case bip44:
       walletNodes = recoverBip44Wallet(seedHex);
       break;
-    case FREEWALLET:
-      walletType = WalletType.bip32;
-
-      // NOTE: known bug. do not fix. Freewallet uses entropy to generate addresses rather than the seed
-      seedHex = Bip39().mnemonicToEntropy(mnemonic);
-      walletNodes = recoverBip32Wallet(seedHex);
-      break;
-    case COUNTERWALLET:
-      walletType = WalletType.bip32;
-
-      seedHex = LegacySeed().mnemonicToSeed(mnemonic);
+    case bip32:
       walletNodes = recoverBip32Wallet(seedHex);
       break;
     default:
-      throw UnsupportedError('wallet $recoveryWallet not supported');
+      throw UnsupportedError('wallet type $walletType not supported');
   }
-
-  await secureStorage.writeSecureData('seed_hex', seedHex);
-  await secureStorage.writeSecureData('wallet_type', walletType.name);
 
   return walletNodes;
 }
