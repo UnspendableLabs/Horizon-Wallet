@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/common/back_button.dart';
+import 'package:uniparty/models/wallet_types.dart';
+import 'package:uniparty/wallet_recovery/store_seed_and_wallet_type.dart';
 
 class AlertCreateWalletDialog extends StatelessWidget {
   final String mnemonic;
@@ -20,6 +22,7 @@ class AlertCreateWalletDialog extends StatelessWidget {
               SelectableText(mnemonic),
               FilledButton(
                   onPressed: () async {
+                    await storeSeedAndWalletType(mnemonic, UNIPARTY);
                     // ignore: use_build_context_synchronously
                     GoRouter.of(context).go('/wallet');
                   },

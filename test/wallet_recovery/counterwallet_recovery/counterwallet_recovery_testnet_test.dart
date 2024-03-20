@@ -1,14 +1,15 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/secure_utils/models/wallet_info.dart';
-import 'package:uniparty/wallet_recovery/counterwallet_recovery.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_seed.dart';
+import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 
 void main() async {
   await dotenv.load();
 
   group('CounterwalletRecovery', () {
-    var counterwalletRecovery = CounterwalletRecovery();
     dotenv.testLoad(fileInput: '''ENV=testnet''');
+
     test('recoverCounterwalletThroughFreewallet', () {
       String phrase =
           "stone freeze straight bus force crave admit any count driver complete lifeless";
@@ -96,8 +97,9 @@ void main() async {
             publicKey: "")
       };
 
-      List<WalletNode> recoveredNodes =
-          counterwalletRecovery.recoverCounterwalletThroughFreewallet(phrase);
+      String seedHex = LegacySeed().mnemonicToSeed(phrase);
+
+      List<WalletNode> recoveredNodes = recoverBip32Wallet(seedHex);
 
       for (var node in recoveredNodes) {
         WalletNode? walletNode = expectedWalletNodes[node.address];

@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
-import 'package:uniparty/secure_utils/models/key_pair.dart';
+import 'package:uniparty/models/key_pair.dart';
 
 class Bip32 {
   final basePath = 'm/0\'/0/';

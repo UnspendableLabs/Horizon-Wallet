@@ -1,5 +1,3 @@
-enum AddressType { normal, bech32 }
-
 class WalletNode {
   String address;
   String publicKey;

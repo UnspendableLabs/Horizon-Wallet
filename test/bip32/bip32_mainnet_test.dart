@@ -3,9 +3,9 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/secure_utils/bip32.dart';
-import 'package:uniparty/secure_utils/bip39.dart';
-import 'package:uniparty/secure_utils/models/key_pair.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip32.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/models/key_pair.dart';
 
 void main() async {
   await dotenv.load();

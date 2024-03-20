@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/common/back_button.dart';
+import 'package:uniparty/models/wallet_types.dart';
+import 'package:uniparty/utils/seed_phrase_validation.dart';
+import 'package:uniparty/wallet_recovery/store_seed_and_wallet_type.dart';
 
 class RecoverWalletDialog extends StatefulWidget {
   const RecoverWalletDialog({super.key});
@@ -9,11 +12,12 @@ class RecoverWalletDialog extends StatefulWidget {
   State<RecoverWalletDialog> createState() => _RecoverWalletPageState();
 }
 
-const List<String> list = <String>['counterwallet', 'freewallet', 'uniparty'];
+const List<String> list = <String>[COUNTERWALLET, FREEWALLET, UNIPARTY];
 
 class _RecoverWalletPageState extends State<RecoverWalletDialog> {
   final _textFieldController = TextEditingController();
-  String dropdownValue = list.first;
+  String dropdownRecoveryWallet = list.first;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -25,25 +29,30 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
   Widget build(BuildContext context) {
     return Dialog(
         shape: _getShape(),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
+        child: Form(
+          key: _formKey,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               const CommonBackButton(),
-              TextField(
+              TextFormField(
                 controller: _textFieldController,
                 decoration: const InputDecoration(hintText: "input seed phrase"),
+                validator: (value) {
+                  return validateSeedPhrase(value, dropdownRecoveryWallet);
+                },
               ),
-              // TODO: any validation on the seed phrase?
               FilledButton(
                   onPressed: () async {
-                    // ignore: use_build_context_synchronously
-                    GoRouter.of(context).go('/wallet');
+                    if (_formKey.currentState!.validate()) {
+                      await storeSeedAndWalletType(
+                          _textFieldController.text, dropdownRecoveryWallet);
+                      // ignore: use_build_context_synchronously
+                      GoRouter.of(context).go('/wallet');
+                    }
                   },
                   child: const Text('Recover wallet')),
               DropdownButton<String>(
-                value: dropdownValue,
+                value: dropdownRecoveryWallet,
                 icon: const Icon(Icons.arrow_downward),
                 elevation: 16,
                 style: const TextStyle(color: Colors.green),
@@ -54,7 +63,7 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                 onChanged: (String? value) {
                   // This is called when the user selects an item.
                   setState(() {
-                    dropdownValue = value!;
+                    dropdownRecoveryWallet = value!;
                   });
                 },
                 items: list.map<DropdownMenuItem<String>>((String value) {
