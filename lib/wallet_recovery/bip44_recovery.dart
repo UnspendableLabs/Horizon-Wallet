@@ -18,7 +18,8 @@ List<WalletNode> recoverBip44Wallet(String seedHex) {
   WalletNode walletNode = WalletNode(
       address: address,
       publicKey: hex.encode(keyPair.publicKeyIntList),
-      privateKey: keyPair.privateKey);
+      privateKey: keyPair.privateKey,
+      index: path.index);
 
   nodes.add(walletNode);
   return nodes;

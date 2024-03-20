@@ -15,6 +15,7 @@ List<WalletNode> recoverBip32Wallet(String seedHex) {
   List<WalletNode> walletNodes = [];
 
   for (var i = 0; i < 10; i++) {
+    print('WHERE ARE WE $i');
     KeyPair keyPair =
         bip32.createBip32PubKeyPrivateKeyFromSeed(Uint8List.fromList(hex.decode(seedHex)), i);
 
@@ -22,13 +23,15 @@ List<WalletNode> recoverBip32Wallet(String seedHex) {
     WalletNode walletNodeNormal = WalletNode(
         address: normalAddress,
         publicKey: hex.encode(keyPair.publicKeyIntList),
-        privateKey: keyPair.privateKey);
+        privateKey: keyPair.privateKey,
+        index: i);
 
     String bech32Address = bech32.deriveBech32Address(keyPair.publicKeyIntList);
     WalletNode walletNodeBech32 = WalletNode(
         address: bech32Address,
         publicKey: hex.encode(keyPair.publicKeyIntList),
-        privateKey: keyPair.privateKey);
+        privateKey: keyPair.privateKey,
+        index: i);
 
     walletNodes.add(walletNodeNormal);
     walletNodes.add(walletNodeBech32);

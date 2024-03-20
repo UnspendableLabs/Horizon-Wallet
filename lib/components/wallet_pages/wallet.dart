@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:uniparty/components/wallet_pages/wallet_container.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/utils/secure_storage.dart';
 import 'package:uniparty/wallet_recovery/recover_wallet.dart';
 
 class WalletPage extends StatelessWidget {
@@ -20,29 +20,20 @@ class WalletPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
         body: FutureBuilder(
             future: _loadData(context),
             builder: (BuildContext ctx, AsyncSnapshot<List> snapshot) => snapshot.hasData
-                ? Center(
-                    child: Container(
-                      height: 250,
-                      padding: const EdgeInsets.symmetric(vertical: 50.0),
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            const Text('Wallet Page'),
-                            ElevatedButton(
-                                onPressed: () async {
-                                  await SecureStorage().deleteAll();
-                                },
-                                child: const Text('delete local storage'))
-                          ]),
-                    ),
+                ? SizedBox(
+                    height: screenSize.height,
+                    // padding: const EdgeInsets.symmetric(vertical: 50.0),
+                    child: WalletContainer(snapshotData: snapshot.data),
                   )
                 : const Center(
                     // render the loading indicator
-                    child: CircularProgressIndicator(),
+                    child: Text('Loading...'),
                   )));
   }
 }

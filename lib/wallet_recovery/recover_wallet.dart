@@ -8,10 +8,12 @@ import 'package:uniparty/wallet_recovery/bip44_recovery.dart';
 
 Future<List<WalletNode>> recoverWallet(BuildContext context) async {
   final secureStorage = SecureStorage();
+  print('BEFORE READ');
 
   String? seedHex = await secureStorage.readSecureData('seed_hex');
   String? walletType = await secureStorage.readSecureData('wallet_type');
 
+  print('READ SEED: $seedHex');
   List<WalletNode> walletNodes = [];
 
   if (seedHex == null || walletType == null) {

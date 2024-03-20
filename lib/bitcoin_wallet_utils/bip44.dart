@@ -50,11 +50,7 @@ class Bip44 {
 
     String key = wif.encode(decoded); // for the testnet use: Wif.encode(239, ...
 
-    return WalletNode(
-      address: address,
-      publicKey: publicKey,
-      privateKey: key,
-    );
+    return WalletNode(address: address, publicKey: publicKey, privateKey: key, index: path.index);
   }
 
   int _getVersion() {
