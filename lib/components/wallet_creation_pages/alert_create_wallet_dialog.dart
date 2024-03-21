@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/common/back_button.dart';
-import 'package:uniparty/models/wallet_types.dart';
+import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/wallet_recovery/store_seed_and_wallet_type.dart';
 
 class AlertCreateWalletDialog extends StatelessWidget {

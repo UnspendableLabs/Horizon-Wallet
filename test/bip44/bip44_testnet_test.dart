@@ -1,13 +1,15 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:typed_data';
+
+import 'package:convert/convert.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip44.dart';
 import 'package:uniparty/models/base_path.dart';
-import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/models/key_pair.dart';
 
 void main() async {
 // Loading from a static string.
-  dotenv.testLoad(fileInput: '''ENV=testnet''');
   group('Test Bip44 testnet', () {
     var bip44Util = Bip44();
 
@@ -22,11 +24,12 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 1, account: 0, change: 0, index: 0);
 
-      WalletNode address = Bip44().createBip44AddressFromSeed(seedHex, path);
-      expect(address.address, 'mtuuQfFyBfh1NMUYtQx4RsiSiPqwncSWNM');
+      KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
       expect(
-          address.publicKey, '03b22da4ea31c025dbff534f32a1a5fb6498fbd4d2f0517808101b83a164bbed6a');
-      expect(address.privateKey, 'cS9NzwfpCRK22faDntv4WK4yNJ7ZPtwVY9HqJVD4UaKzWoLuhRG1');
+          keyPair.publicKeyIntList,
+          Uint8List.fromList(
+              hex.decode('03b22da4ea31c025dbff534f32a1a5fb6498fbd4d2f0517808101b83a164bbed6a')));
+      expect(keyPair.privateKey, 'cS9NzwfpCRK22faDntv4WK4yNJ7ZPtwVY9HqJVD4UaKzWoLuhRG1');
     }, skip: true);
 
     test('createBip44AddressFromSeed btc cointype index 1', () {
@@ -40,12 +43,13 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 1);
 
-      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(address.address, '1M3VPoE7wS3HAF3CofoHdznKE3MGqKXafp');
       expect(
-          address.publicKey, '03d9c25b411595bfca66ec766e79e31c8e47364d93843e72f112882b0d400c5fbc');
-      expect(address.privateKey, 'L3sw5uxfRfG7Gg5SYf3FJMnzYoibDi8gQDAPJp7zFSsCvx6CuowK');
+          keyPair.publicKeyIntList,
+          Uint8List.fromList(
+              hex.decode('03d9c25b411595bfca66ec766e79e31c8e47364d93843e72f112882b0d400c5fbc')));
+      expect(keyPair.privateKey, 'L3sw5uxfRfG7Gg5SYf3FJMnzYoibDi8gQDAPJp7zFSsCvx6CuowK');
     }, skip: true);
 
     test('createBip44AddressFromSeed btc cointype index 38', () {
@@ -59,12 +63,13 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 38);
 
-      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(address.address, '1M4maEYB3kpw8sCAQz1Xo7e3DcPNa41zGT');
       expect(
-          address.publicKey, '028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf');
-      expect(address.privateKey, 'L5VkaGBSSTWau7CSzZCnggNLMKt8pG8hKApNo6m6VEDqMmCsBR8a');
+          keyPair.publicKeyIntList,
+          Uint8List.fromList(
+              hex.decode('028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf')));
+      expect(keyPair.privateKey, 'L5VkaGBSSTWau7CSzZCnggNLMKt8pG8hKApNo6m6VEDqMmCsBR8a');
     }, skip: true);
 
     test('createBip44AddressFromSeed btc cointype index 45', () {
@@ -78,12 +83,13 @@ void main() async {
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 45);
 
-      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(address.address, '1ET7nur1J3qpxeMJb1TVgSjRmtKbQAwdxj');
       expect(
-          address.publicKey, '03d36e92f7ebe73c61bb0f38a08348431814969d08ee6e2891420cff06a770f57b');
-      expect(address.privateKey, 'Kz115Kxd3jKioF1DhuBpj5hC8kBKqPXq148Bn7Rx7SVaFWMgtjUS');
+          keyPair.publicKeyIntList,
+          Uint8List.fromList(
+              hex.decode('03d36e92f7ebe73c61bb0f38a08348431814969d08ee6e2891420cff06a770f57b')));
+      expect(keyPair.privateKey, 'Kz115Kxd3jKioF1DhuBpj5hC8kBKqPXq148Bn7Rx7SVaFWMgtjUS');
     }, skip: true);
 
     test('createBip44AddressFromSeed btc cointype index 5', () {
@@ -95,12 +101,13 @@ void main() async {
 
       // path for btc
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 5);
-      WalletNode address = bip44Util.createBip44AddressFromSeed(seedHex, path);
+      KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(address.address, '14f8hGPiSDFZuaM7yJK1SgHpxCqHhsQ7W4');
       expect(
-          address.publicKey, '026bfb97d478923ef5d289b6bfb0e36ddfcf085b6852037d153752cf56c8712259');
-      expect(address.privateKey, 'L3nKbF9rE4rb9G6ZM1iABZxxHZPXh37yREWwTS9E9QC2ADTnQDjV');
+          keyPair.publicKeyIntList,
+          Uint8List.fromList(
+              hex.decode('026bfb97d478923ef5d289b6bfb0e36ddfcf085b6852037d153752cf56c8712259')));
+      expect(keyPair.privateKey, 'L3nKbF9rE4rb9G6ZM1iABZxxHZPXh37yREWwTS9E9QC2ADTnQDjV');
     }, skip: true);
   });
 }

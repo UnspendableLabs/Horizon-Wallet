@@ -1,6 +1,6 @@
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_mnemonic_word_list.dart';
-import 'package:uniparty/models/wallet_types.dart';
+import 'package:uniparty/models/constants.dart';
 
 const invalidLengthError = 'seed phrase contains the wrong number of letters';
 const invalidWordsError = 'some words are not in the word list';

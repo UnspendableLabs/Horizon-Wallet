@@ -1,48 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/utils/secure_storage.dart';
-import 'package:uniparty/wallet_recovery/recover_wallet.dart';
+import 'package:uniparty/components/wallet_pages/wallet_container.dart';
+import 'package:uniparty/models/constants.dart';
 
-class WalletPage extends StatelessWidget {
-  const WalletPage({super.key});
+class Wallet extends StatefulWidget {
+  const Wallet({super.key});
 
-  Future<List<WalletNode>> _loadData(context) async {
-    List<WalletNode> walletNodes = [];
-    try {
-      walletNodes = await recoverWallet(context);
-    } catch (err) {
-      print(err);
-    }
-    print('WALLET NODES $walletNodes');
+  @override
+  State<Wallet> createState() => _WalletState();
+}
 
-    return walletNodes;
-  }
+const List<String> networkList = <String>[MAINNET, TESTNET];
+
+class _WalletState extends State<Wallet> {
+  String dropdownNetwork = networkList.first;
 
   @override
   Widget build(BuildContext context) {
+    var screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
-        body: FutureBuilder(
-            future: _loadData(context),
-            builder: (BuildContext ctx, AsyncSnapshot<List> snapshot) => snapshot.hasData
-                ? Center(
-                    child: Container(
-                      height: 250,
-                      padding: const EdgeInsets.symmetric(vertical: 50.0),
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            const Text('Wallet Page'),
-                            ElevatedButton(
-                                onPressed: () async {
-                                  await SecureStorage().deleteAll();
-                                },
-                                child: const Text('delete local storage'))
-                          ]),
-                    ),
-                  )
-                : const Center(
-                    // render the loading indicator
-                    child: CircularProgressIndicator(),
-                  )));
+        appBar: AppBar(
+          title: const Text(
+            'UNIPARTY',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 40,
+              overflow: TextOverflow.visible,
+            ),
+          ),
+          backgroundColor: Colors.black,
+          leadingWidth: screenSize.width / 4,
+          leading: DropdownButton(
+            isExpanded: true,
+            value: dropdownNetwork,
+            underline: Container(),
+            iconSize: 0.0,
+            onChanged: (String? value) {
+              // This is called when the user selects an item.
+              setState(() {
+                dropdownNetwork = value!;
+              });
+            },
+            items: networkList.map<DropdownMenuItem<String>>((var value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Center(
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        body: WalletContainer(network: dropdownNetwork));
   }
 }

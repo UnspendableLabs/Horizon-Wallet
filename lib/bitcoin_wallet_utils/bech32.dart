@@ -1,11 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:bech32/bech32.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pointycastle/api.dart' as pointycastle;
 
 class Bech32Address {
-  String deriveBech32Address(Uint8List publicKeyIntList) {
+  String deriveBech32Address(Uint8List publicKeyIntList, String network) {
     var sha256 = pointycastle.Digest("SHA-256");
     var publicKeySha256 = sha256.process(publicKeyIntList);
 
@@ -16,7 +15,7 @@ class Bech32Address {
     List<int> version = [0]; // Assuming Bitcoin network
     List<int> data = [...version, ...publicKeyRipemd5bit];
 
-    String hrp = _getHrp();
+    String hrp = _getHrp(network);
     Bech32 rawBech32 = Bech32(hrp, data);
 
     var encoder = const Bech32Codec();
@@ -48,8 +47,8 @@ class Bech32Address {
     return bits5Array;
   }
 
-  _getHrp() {
-    if (dotenv.env['ENV'] == 'testnet') {
+  _getHrp(String network) {
+    if (network == 'testnet') {
       // source:  https://bitcoin.stackexchange.com/questions/70507/how-to-create-a-bech32-address-from-a-public-key
       return 'tb'; // testnet
     }
