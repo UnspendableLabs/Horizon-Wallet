@@ -1,6 +1,6 @@
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_seed.dart';
-import 'package:uniparty/models/wallet_types.dart';
+import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/utils/secure_storage.dart';
 
 Future<void> storeSeedAndWalletType(String mnemonic, String recoveryWallet) async {

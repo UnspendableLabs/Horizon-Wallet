@@ -1,12 +1,10 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 
 void main() async {
-  await dotenv.load();
-
   group('FreewalletRecovery mainnet', () {
     final bip39 = Bip39();
 
@@ -120,7 +118,7 @@ void main() async {
 
       String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
 
-      List<WalletNode> recoveredNodes = recoverBip32Wallet(seedEntropy);
+      List<WalletNode> recoveredNodes = recoverBip32Wallet(seedEntropy, MAINNET);
 
       for (var recoveredNode in recoveredNodes) {
         WalletNode? walletNode = expectedWalletNodes[recoveredNode.address];

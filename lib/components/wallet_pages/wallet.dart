@@ -1,39 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:uniparty/components/wallet_pages/wallet_container.dart';
-import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/wallet_recovery/recover_wallet.dart';
+import 'package:uniparty/models/constants.dart';
 
-class WalletPage extends StatelessWidget {
-  const WalletPage({super.key});
+class Wallet extends StatefulWidget {
+  const Wallet({super.key});
 
-  Future<List<WalletNode>> _loadData(context) async {
-    List<WalletNode> walletNodes = [];
-    try {
-      walletNodes = await recoverWallet(context);
-    } catch (err) {
-      print(err);
-    }
-    print('WALLET NODES $walletNodes');
+  @override
+  State<Wallet> createState() => _WalletState();
+}
 
-    return walletNodes;
-  }
+const List<String> networkList = <String>[MAINNET, TESTNET];
+
+class _WalletState extends State<Wallet> {
+  String dropdownNetwork = networkList.first;
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
-        body: FutureBuilder(
-            future: _loadData(context),
-            builder: (BuildContext ctx, AsyncSnapshot<List> snapshot) => snapshot.hasData
-                ? SizedBox(
-                    height: screenSize.height,
-                    // padding: const EdgeInsets.symmetric(vertical: 50.0),
-                    child: WalletContainer(snapshotData: snapshot.data),
-                  )
-                : const Center(
-                    // render the loading indicator
-                    child: Text('Loading...'),
-                  )));
+        appBar: AppBar(
+          title: const Text(
+            'UNIPARTY',
+            style: TextStyle(color: Colors.white, fontSize: 40, overflow: TextOverflow.visible),
+          ),
+          backgroundColor: Colors.black,
+          actions: [
+            DropdownButton<String>(
+              value: dropdownNetwork,
+              icon: const Icon(Icons.arrow_downward),
+              elevation: 16,
+              style: const TextStyle(color: Color.fromRGBO(159, 194, 244, 1.0)),
+              underline: Container(
+                height: 2,
+                color: const Color.fromRGBO(159, 194, 244, 1.0),
+              ),
+              onChanged: (String? value) {
+                // This is called when the user selects an item.
+                setState(() {
+                  dropdownNetwork = value!;
+                });
+              },
+              items: networkList.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            )
+          ],
+        ),
+        body: WalletContainer(network: dropdownNetwork));
   }
 }

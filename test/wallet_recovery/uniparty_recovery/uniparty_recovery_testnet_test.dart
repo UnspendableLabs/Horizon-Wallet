@@ -1,24 +1,21 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/bip44_recovery.dart';
 
 void main() async {
-  await dotenv.load();
   final bip39 = Bip39();
 
   // TODO: verify testnet bech32 addresses
   group('Uniparty recovery testnet', () {
-    dotenv.testLoad(fileInput: '''ENV=testnet''');
-
     test('bip39 + bip44 test1', () {
       String mnemonic =
           'trend pond enable empower govern example melody bless alone grow stone genre';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -34,7 +31,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -50,7 +47,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -66,7 +63,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -81,7 +78,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
 
       WalletNode walletNode = walletNodes[0];
 

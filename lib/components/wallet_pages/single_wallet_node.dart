@@ -22,7 +22,7 @@ class SingleWalletNode extends StatelessWidget {
             Text(
                 style: const TextStyle(
                     color: Colors.white, fontSize: 20, overflow: TextOverflow.visible),
-                '${walletNode.address.startsWith('bc1q') ? 'Segwit ' : ''}Address ${walletNode.index + 1}'),
+                '${_getAddressPrefix(walletNode.address)} Address ${walletNode.index + 1}'),
             Text(
               style: const TextStyle(color: Color.fromRGBO(159, 194, 244, 1.0)),
               walletNode.address,
@@ -32,5 +32,12 @@ class SingleWalletNode extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getAddressPrefix(String address) {
+    if (address.startsWith('bc1q') || address.startsWith('tb1')) {
+      return 'Segwit';
+    }
+    return 'Legacy';
   }
 }

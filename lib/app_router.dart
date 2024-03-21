@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/wallet_pages/wallet.dart';
-import 'package:uniparty/utils/secure_storage.dart';
 import 'package:uniparty/start_page.dart';
+import 'package:uniparty/utils/secure_storage.dart';
 
 class AppRouter {
   GoRouter get router => _goRouter;
@@ -18,7 +18,7 @@ class AppRouter {
     routes: <GoRoute>[
       GoRoute(
         path: '/wallet',
-        builder: (context, state) => const WalletPage(),
+        builder: (context, state) => const Wallet(),
       ),
       GoRoute(path: '/start', builder: (context, state) => const StartPage())
     ],

@@ -1,12 +1,11 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/bip44_recovery.dart';
 
 void main() async {
   final bip39 = Bip39();
-  await dotenv.load();
 
   // A Bech32 address encoded (p2wpkh): HRP + Separator + Data values verified from https://secretscan.org/Bech32
   group('Uniparty recovery mainnet', () {
@@ -16,7 +15,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, MAINNET);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -32,7 +31,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, MAINNET);
       WalletNode walletNode = walletNodes[0];
 
       expect(walletNode.address, 'bc1qkxce32pm8mcy7xewk3kw0mw5sca3ryq5w8rkk6');
@@ -47,7 +46,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, MAINNET);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -63,7 +62,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, MAINNET);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -78,7 +77,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex);
+      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, MAINNET);
 
       WalletNode walletNode = walletNodes[0];
 
