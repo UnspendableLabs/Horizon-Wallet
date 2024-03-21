@@ -16,37 +16,43 @@ class _WalletState extends State<Wallet> {
 
   @override
   Widget build(BuildContext context) {
+    var screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
         appBar: AppBar(
           title: const Text(
             'UNIPARTY',
-            style: TextStyle(color: Colors.white, fontSize: 40, overflow: TextOverflow.visible),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 40,
+              overflow: TextOverflow.visible,
+            ),
           ),
           backgroundColor: Colors.black,
-          actions: [
-            DropdownButton<String>(
-              value: dropdownNetwork,
-              icon: const Icon(Icons.arrow_downward),
-              elevation: 16,
-              style: const TextStyle(color: Color.fromRGBO(159, 194, 244, 1.0)),
-              underline: Container(
-                height: 2,
-                color: const Color.fromRGBO(159, 194, 244, 1.0),
-              ),
-              onChanged: (String? value) {
-                // This is called when the user selects an item.
-                setState(() {
-                  dropdownNetwork = value!;
-                });
-              },
-              items: networkList.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            )
-          ],
+          leadingWidth: screenSize.width / 4,
+          leading: DropdownButton(
+            isExpanded: true,
+            value: dropdownNetwork,
+            underline: Container(),
+            iconSize: 0.0,
+            onChanged: (String? value) {
+              // This is called when the user selects an item.
+              setState(() {
+                dropdownNetwork = value!;
+              });
+            },
+            items: networkList.map<DropdownMenuItem<String>>((var value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Center(
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
         body: WalletContainer(network: dropdownNetwork));
   }
