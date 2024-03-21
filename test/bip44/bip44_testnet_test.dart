@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip44.dart';
@@ -11,7 +10,6 @@ import 'package:uniparty/models/key_pair.dart';
 
 void main() async {
 // Loading from a static string.
-  dotenv.testLoad(fileInput: '''ENV=testnet''');
   group('Test Bip44 testnet', () {
     var bip44Util = Bip44();
 
