@@ -27,7 +27,7 @@ class SingleWalletNode extends StatelessWidget {
               style: const TextStyle(color: Color.fromRGBO(159, 194, 244, 1.0)),
               walletNode.address,
               overflow: TextOverflow.ellipsis,
-            )
+            ) // TODO: use BalanceText widget and display balances
           ],
         ),
       ),
