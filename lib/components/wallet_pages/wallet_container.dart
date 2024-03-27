@@ -42,11 +42,11 @@ class WalletContainer extends StatelessWidget {
                             Expanded(
                               child: Container(
                                 height: screenSize.height,
-                                decoration: BoxDecoration(
-                                  border:
-                                      Border.all(color: const Color.fromRGBO(159, 194, 244, 1.0)),
-                                  color: const Color.fromRGBO(27, 27, 37, 1.0),
-                                ),
+                                // decoration: BoxDecoration(
+                                //   border:
+                                //       Border.all(color: const Color.fromRGBO(159, 194, 244, 1.0)),
+                                //   color: const Color.fromRGBO(27, 27, 37, 1.0),
+                                // ),
                                 child: ListView.builder(
                                   scrollDirection: Axis.horizontal,
                                   itemCount: snapshot.data!.length,
@@ -61,7 +61,12 @@ class WalletContainer extends StatelessWidget {
                             ),
                             Container(
                               width: screenSize.width / 5,
-                              color: const Color.fromRGBO(27, 27, 37, 1.0),
+                              decoration: const BoxDecoration(
+                                border: Border.symmetric(
+                                    vertical: BorderSide(
+                                        width: 1, color: Color.fromRGBO(59, 59, 66, 1.0))),
+                                color: Color.fromRGBO(27, 27, 37, 1.0),
+                              ),
                               child: const Column(
                                 children: [
                                   BalanceTotal(),
