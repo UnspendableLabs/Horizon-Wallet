@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
             colorScheme: const ColorScheme(
                 primary: Colors.white,
                 onPrimary: Color.fromRGBO(49, 49, 71, 1),
-                secondary: Color.fromRGBO(86, 142, 96, 1),
+                secondary: Color.fromRGBO(159, 194, 244, 1.0),
                 onSecondary: Colors.white,
                 brightness: Brightness.dark,
                 background: Colors.black,

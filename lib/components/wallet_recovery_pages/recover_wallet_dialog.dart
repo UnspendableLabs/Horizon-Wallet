@@ -82,7 +82,7 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
     return RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(4.0),
       side: const BorderSide(
-        color: Color.fromRGBO(86, 142, 96, 1),
+        color: Color.fromRGBO(159, 194, 244, 1.0),
       ),
     );
   }
