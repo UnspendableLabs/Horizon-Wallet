@@ -40,13 +40,8 @@ class WalletContainer extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: Container(
+                              child: SizedBox(
                                 height: screenSize.height,
-                                // decoration: BoxDecoration(
-                                //   border:
-                                //       Border.all(color: const Color.fromRGBO(159, 194, 244, 1.0)),
-                                //   color: const Color.fromRGBO(27, 27, 37, 1.0),
-                                // ),
                                 child: ListView.builder(
                                   scrollDirection: Axis.horizontal,
                                   itemCount: snapshot.data!.length,
