@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:uniparty/components/wallet_pages/balance_text.dart';
 
-class TotalView extends StatelessWidget {
-  const TotalView({super.key});
+class BalanceTotal extends StatelessWidget {
+  const BalanceTotal({super.key});
 
   @override
   Widget build(BuildContext context) {

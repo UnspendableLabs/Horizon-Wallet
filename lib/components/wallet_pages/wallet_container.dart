@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:uniparty/components/wallet_pages/balance_total.dart';
 import 'package:uniparty/components/wallet_pages/single_wallet_node.dart';
-import 'package:uniparty/components/wallet_pages/total_view.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/recover_wallet.dart';
 
@@ -60,35 +60,18 @@ class WalletContainer extends StatelessWidget {
                               ),
                             ),
                             Container(
-                              width: screenSize.width /
-                                  5, // Adjust the width of the fixed column as needed
+                              width: screenSize.width / 5,
                               color: const Color.fromRGBO(27, 27, 37, 1.0),
-                              // You can place your content for the fixed column here
-                              // For example:
                               child: const Column(
                                 children: [
-                                  TotalView(),
-                                  // Other widgets...
+                                  BalanceTotal(),
                                 ],
                               ),
                             ),
                           ],
-                        )
-                        // child: ListView(
-                        //   // This next line does the trick.
-                        //   scrollDirection: Axis.horizontal,
-                        //   children: [
-                        //     ...(snapshot.data as List<WalletNode>)
-                        //         .map((WalletNode walletNode) => SingleWalletNode(
-                        //               walletNode: walletNode,
-                        //               containerSize: screenSize,
-                        //             ))
-                        //   ],
-                        // ),
-                        ),
+                        )),
                   )
                 : const Center(
-                    // render the loading indicator
                     child: Text('Loading...'),
                   )));
   }

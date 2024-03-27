@@ -55,10 +55,10 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                 value: dropdownRecoveryWallet,
                 icon: const Icon(Icons.arrow_downward),
                 elevation: 16,
-                style: const TextStyle(color: Colors.green),
+                style: const TextStyle(color: Color.fromRGBO(159, 194, 244, 1.0)),
                 underline: Container(
                   height: 2,
-                  color: Colors.green,
+                  color: const Color.fromRGBO(159, 194, 244, 1.0),
                 ),
                 onChanged: (String? value) {
                   // This is called when the user selects an item.
