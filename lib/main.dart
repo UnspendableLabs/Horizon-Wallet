@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:redux/redux.dart';
+import 'package:redux_thunk/redux_thunk.dart';
 import 'package:uniparty/app_router.dart';
+import 'package:uniparty/redux/app_store.dart';
 
 void main() async {
   await dotenv.load();
@@ -10,12 +13,14 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+
+  final store = Store<AppState>(appReducer,
+      initialState: AppState.initial(), middleware: [thunkMiddleware(store, action, (action) => null)]);
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     const appTitle = 'Uniparty';
-
-    return MaterialApp.router(
+    return StoreProvider(      store: store,child:    MaterialApp.router(
         routerConfig: AppRouter().router,
         title: appTitle,
         theme: ThemeData(
@@ -32,5 +37,7 @@ class MyApp extends StatelessWidget {
                 onError: Colors.white,
                 surface: Color.fromRGBO(49, 49, 71, 1),
                 onSurface: Colors.white)));
+)
+
   }
 }
