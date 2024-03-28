@@ -23,11 +23,6 @@ class AppState {
   }
 
   @override
-  int get hashCode =>
-      //isLoading.hash Code ^
-      walletRetrieveInfoState.hashCode;
-
-  @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is AppState && walletRetrieveInfoState == other.walletRetrieveInfoState;

@@ -6,6 +6,7 @@ import 'package:uniparty/utils/secure_storage.dart';
 ThunkAction saveWalletRetrieveInfo(String seedHex, String walletType) {
   return (Store store) async {
     Future(() async {
+      print('DO WE GET HERe');
       store.dispatch(StartLoadingAction());
       final secureStorage = SecureStorage();
       await secureStorage.writeSecureData('seed_hex', seedHex);
