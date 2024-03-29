@@ -50,13 +50,15 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                     ),
                     FilledButton(
                         onPressed: () async {
+                          print('VIEWMODEL: $viewModel');
                           if (_formKey.currentState!.validate()) {
                             WalletRetrieveInfo walletInfo = getSeedHexAndWalletType(
                                 _textFieldController.text, dropdownRecoveryWallet);
                             await viewModel.saveInfo(walletInfo.seedHex, walletInfo.walletType);
+                            // viewModel.saveToState(walletInfo.seedHex, walletInfo.walletType);
                             // store.dispatch(WalletRetreiveInfoSaveAction(
                             //     walletInfo.seedHex, walletInfo.walletType));
-
+                            print('here?');
                             // ignore: use_build_context_synchronously
                             GoRouter.of(context).go('/wallet');
                           }
