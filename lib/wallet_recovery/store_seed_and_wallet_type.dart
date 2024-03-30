@@ -27,7 +27,4 @@ WalletRetrieveInfo getSeedHexAndWalletType(String mnemonic, String recoveryWalle
       throw UnsupportedError('wallet $recoveryWallet not supported');
   }
   return WalletRetrieveInfo(seedHex: seedHex, walletType: walletType);
-
-  // await secureStorage.writeSecureData('seed_hex', seedHex);
-  // await secureStorage.writeSecureData('wallet_type', walletType);
 }

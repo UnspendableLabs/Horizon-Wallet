@@ -13,17 +13,4 @@ class AppState {
       walletRetrieveInfoState: WalletRetrieveInfoState.initial(),
     );
   }
-
-  AppState copyWith({
-    required WalletRetrieveInfoState walletRetrieveInfoState,
-  }) {
-    return AppState(
-      walletRetrieveInfoState: this.walletRetrieveInfoState,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AppState && walletRetrieveInfoState == other.walletRetrieveInfoState;
 }

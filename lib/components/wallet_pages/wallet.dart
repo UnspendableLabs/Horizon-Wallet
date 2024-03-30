@@ -13,7 +13,7 @@ const List<String> networkList = <String>[MAINNET, TESTNET];
 
 class _WalletState extends State<Wallet> {
   String dropdownNetwork = networkList.first;
-  
+
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
