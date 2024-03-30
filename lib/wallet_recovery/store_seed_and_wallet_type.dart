@@ -1,11 +1,9 @@
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_seed.dart';
 import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/utils/secure_storage.dart';
+import 'package:uniparty/models/wallet_retrieve_info.dart';
 
-Future<void> storeSeedAndWalletType(String mnemonic, String recoveryWallet) async {
-  final secureStorage = SecureStorage();
-
+WalletRetrieveInfo getSeedHexAndWalletType(String mnemonic, String recoveryWallet) {
   String seedHex = '';
   String walletType;
   switch (recoveryWallet) {
@@ -28,7 +26,5 @@ Future<void> storeSeedAndWalletType(String mnemonic, String recoveryWallet) asyn
     default:
       throw UnsupportedError('wallet $recoveryWallet not supported');
   }
-
-  await secureStorage.writeSecureData('seed_hex', seedHex);
-  await secureStorage.writeSecureData('wallet_type', walletType);
+  return WalletRetrieveInfo(seedHex: seedHex, walletType: walletType);
 }
