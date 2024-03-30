@@ -59,8 +59,9 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                             // store.dispatch(WalletRetreiveInfoSaveAction(
                             //     walletInfo.seedHex, walletInfo.walletType));
                             print('here?');
+                            viewModel.saveToState(walletInfo.seedHex, walletInfo.walletType);
                             // ignore: use_build_context_synchronously
-                            GoRouter.of(context).go('/wallet');
+                            context.push('/wallet');
                           }
                         },
                         child: const Text('Recover wallet')),

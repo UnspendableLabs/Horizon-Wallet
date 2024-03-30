@@ -2,12 +2,12 @@ import 'package:meta/meta.dart';
 
 @immutable
 class WalletRetrieveInfoState {
-  final bool isLoading;
+  final bool? isLoading;
   final String? seedHex;
   final String? walletType;
 
   const WalletRetrieveInfoState({
-    required this.isLoading,
+    this.isLoading,
     @required this.seedHex,
     @required this.walletType,
   });
@@ -17,11 +17,8 @@ class WalletRetrieveInfoState {
   }
 
   WalletRetrieveInfoState copyWith(
-      {required bool isLoading, @required String? seedHex, @required String? walletType}) {
-    return WalletRetrieveInfoState(
-        isLoading: this.isLoading,
-        seedHex: seedHex ?? this.seedHex,
-        walletType: walletType ?? this.walletType);
+      {bool? isLoading, @required String? seedHex, @required String? walletType}) {
+    return WalletRetrieveInfoState(isLoading: isLoading, seedHex: seedHex, walletType: walletType);
   }
 
   @override
