@@ -11,6 +11,6 @@ class WalletRetrieveInfoState {
   });
 
   factory WalletRetrieveInfoState.initial() {
-    return const WalletRetrieveInfoState( seedHex: null, walletType: null);
+    return const WalletRetrieveInfoState(seedHex: null, walletType: null);
   }
 }

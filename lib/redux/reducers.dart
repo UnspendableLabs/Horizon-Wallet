@@ -9,7 +9,11 @@ AppState appReducer(state, action) {
 
 walletRetrieveInfoReducer(AppState state, action) {
   if (action is WalletRetreiveInfoSaveAction) {
-    return WalletRetrieveInfoState(seedHex: action.seedHex, walletType: action.walletType);
+    return WalletRetrieveInfoState(
+        seedHex: action.seedHex, walletType: action.walletType);
   }
-  return WalletRetrieveInfoState.initial();
+
+  return WalletRetrieveInfoState(
+      seedHex: state.walletRetrieveInfoState.seedHex,
+      walletType: state.walletRetrieveInfoState.walletType);
 }

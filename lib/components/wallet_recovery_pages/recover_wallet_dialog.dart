@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/common/back_button.dart';
+import 'package:uniparty/components/wallet_pages/wallet.dart';
 import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
 import 'package:uniparty/redux/app_store.dart';
@@ -51,14 +51,17 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                     FilledButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            WalletRetrieveInfo walletInfo = getSeedHexAndWalletType(
-                                _textFieldController.text, dropdownRecoveryWallet);
+                            WalletRetrieveInfo walletInfo =
+                                getSeedHexAndWalletType(_textFieldController.text, dropdownRecoveryWallet);
                             await viewModel.saveInfo(walletInfo.seedHex, walletInfo.walletType);
 
                             viewModel.saveToState(walletInfo.seedHex, walletInfo.walletType);
 
-                            // ignore: use_build_context_synchronously
-                            context.push('/wallet');
+                            Navigator.push(
+                              // ignore: use_build_context_synchronously
+                              context,
+                              MaterialPageRoute(builder: (context) => const Wallet()),
+                            );
                           }
                         },
                         child: const Text('Recover wallet')),

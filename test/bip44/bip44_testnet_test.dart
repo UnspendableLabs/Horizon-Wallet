@@ -9,13 +9,11 @@ import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/key_pair.dart';
 
 void main() async {
-// Loading from a static string.
   group('Test Bip44 testnet', () {
     var bip44Util = Bip44();
 
     test('createBip44AddressFromSeed btc cointype', () {
-      String mnemonic =
-          'trend pond enable empower govern example melody bless alone grow stone genre';
+      String mnemonic = 'trend pond enable empower govern example melody bless alone grow stone genre';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
 
       expect(seedHex,
@@ -25,16 +23,13 @@ void main() async {
       BasePath path = BasePath(coinType: 1, account: 0, change: 0, index: 0);
 
       KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
-      expect(
-          keyPair.publicKeyIntList,
-          Uint8List.fromList(
-              hex.decode('03b22da4ea31c025dbff534f32a1a5fb6498fbd4d2f0517808101b83a164bbed6a')));
+      expect(keyPair.publicKeyIntList,
+          Uint8List.fromList(hex.decode('03b22da4ea31c025dbff534f32a1a5fb6498fbd4d2f0517808101b83a164bbed6a')));
       expect(keyPair.privateKey, 'cS9NzwfpCRK22faDntv4WK4yNJ7ZPtwVY9HqJVD4UaKzWoLuhRG1');
     }, skip: true);
 
     test('createBip44AddressFromSeed btc cointype index 1', () {
-      String mnemonic =
-          'stumble prison flip merge negative ostrich myself winter naive try arctic olympic';
+      String mnemonic = 'stumble prison flip merge negative ostrich myself winter naive try arctic olympic';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
 
       expect(seedHex,
@@ -45,16 +40,13 @@ void main() async {
 
       KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(
-          keyPair.publicKeyIntList,
-          Uint8List.fromList(
-              hex.decode('03d9c25b411595bfca66ec766e79e31c8e47364d93843e72f112882b0d400c5fbc')));
+      expect(keyPair.publicKeyIntList,
+          Uint8List.fromList(hex.decode('03d9c25b411595bfca66ec766e79e31c8e47364d93843e72f112882b0d400c5fbc')));
       expect(keyPair.privateKey, 'L3sw5uxfRfG7Gg5SYf3FJMnzYoibDi8gQDAPJp7zFSsCvx6CuowK');
     }, skip: true);
 
     test('createBip44AddressFromSeed btc cointype index 38', () {
-      String mnemonic =
-          'thunder member interest display shock unable clarify fiber insect lumber battle off';
+      String mnemonic = 'thunder member interest display shock unable clarify fiber insect lumber battle off';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
 
       expect(seedHex,
@@ -65,16 +57,13 @@ void main() async {
 
       KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(
-          keyPair.publicKeyIntList,
-          Uint8List.fromList(
-              hex.decode('028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf')));
+      expect(keyPair.publicKeyIntList,
+          Uint8List.fromList(hex.decode('028b58030c35af75abc486ebbe34ddcb45f032b02d676dc2818b243ebeca4097bf')));
       expect(keyPair.privateKey, 'L5VkaGBSSTWau7CSzZCnggNLMKt8pG8hKApNo6m6VEDqMmCsBR8a');
     }, skip: true);
 
     test('createBip44AddressFromSeed btc cointype index 45', () {
-      String mnemonic =
-          'crime speak truly valid movie describe blame essay crack skirt december obey';
+      String mnemonic = 'crime speak truly valid movie describe blame essay crack skirt december obey';
       String seedHex = Bip39().mnemonicToSeedHex(mnemonic);
 
       expect(seedHex,
@@ -85,10 +74,8 @@ void main() async {
 
       KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(
-          keyPair.publicKeyIntList,
-          Uint8List.fromList(
-              hex.decode('03d36e92f7ebe73c61bb0f38a08348431814969d08ee6e2891420cff06a770f57b')));
+      expect(keyPair.publicKeyIntList,
+          Uint8List.fromList(hex.decode('03d36e92f7ebe73c61bb0f38a08348431814969d08ee6e2891420cff06a770f57b')));
       expect(keyPair.privateKey, 'Kz115Kxd3jKioF1DhuBpj5hC8kBKqPXq148Bn7Rx7SVaFWMgtjUS');
     }, skip: true);
 
@@ -103,10 +90,8 @@ void main() async {
       BasePath path = BasePath(coinType: 0, account: 0, change: 0, index: 5);
       KeyPair keyPair = bip44Util.createBip44KeyPairFromSeed(seedHex, path, TESTNET);
 
-      expect(
-          keyPair.publicKeyIntList,
-          Uint8List.fromList(
-              hex.decode('026bfb97d478923ef5d289b6bfb0e36ddfcf085b6852037d153752cf56c8712259')));
+      expect(keyPair.publicKeyIntList,
+          Uint8List.fromList(hex.decode('026bfb97d478923ef5d289b6bfb0e36ddfcf085b6852037d153752cf56c8712259')));
       expect(keyPair.privateKey, 'L3nKbF9rE4rb9G6ZM1iABZxxHZPXh37yREWwTS9E9QC2ADTnQDjV');
     }, skip: true);
   });
