@@ -1,17 +1,20 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
-import 'package:uniparty/app_router.dart';
 import 'package:uniparty/redux/app_store.dart';
 import 'package:uniparty/redux/reducers.dart';
+import 'package:uniparty/start_page.dart';
 
 void main() async {
   await dotenv.load();
 
-  final store = Store<AppState>(appReducer,
-      initialState: AppState.initial(), middleware: [thunkMiddleware]);
+  // initialize the store; this is the global state manager for the application
+  final store = Store<AppState>(appReducer, initialState: AppState.initial(), middleware: [thunkMiddleware]);
+
+  // run the application
   runApp(MyApp(store: store));
 }
 
@@ -26,11 +29,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const appTitle = 'Uniparty';
+    // fire off the initial dispatch; this will see if the seedHex and walletType are already in secure storage and set the state
+
     return StoreProvider(
         store: store,
-        child: MaterialApp.router(
-            routerConfig: AppRouter().router,
+        child: MaterialApp(
             title: appTitle,
+            home: const StartPage(),
             theme: ThemeData(
                 primaryColor: Colors.blueAccent,
                 colorScheme: const ColorScheme(

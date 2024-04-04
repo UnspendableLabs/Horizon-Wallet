@@ -8,9 +8,14 @@ class WalletRetrieveInfoViewModel {
 
   final Function(String, String) saveInfo;
   final Function(String, String) saveToState;
+  final Function() getWalletInfoAndSetState;
 
   WalletRetrieveInfoViewModel(
-      {this.seedHex, this.walletType, required this.saveInfo, required this.saveToState});
+      {this.seedHex,
+      this.walletType,
+      required this.saveInfo,
+      required this.saveToState,
+      required this.getWalletInfoAndSetState});
 
   static WalletRetrieveInfoViewModel fromStore(Store<AppState> store) {
     return WalletRetrieveInfoViewModel(
@@ -21,6 +26,10 @@ class WalletRetrieveInfoViewModel {
         },
         saveToState: (String seedHex, String walletType) {
           store.dispatch(saveInfoThunk(seedHex, walletType));
+        },
+        getWalletInfoAndSetState: () async {
+          await store.dispatch(
+              getWalletInfo(store.state.walletRetrieveInfoState.seedHex, store.state.walletRetrieveInfoState.walletType));
         });
   }
 }

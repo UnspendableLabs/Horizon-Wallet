@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:go_router/go_router.dart';
 import 'package:uniparty/components/common/back_button.dart';
+import 'package:uniparty/components/wallet_pages/wallet.dart';
 import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
-import 'package:uniparty/redux/actions.dart';
-import 'package:uniparty/redux/middleware/secure_storage_thunk_middleware.dart';
+import 'package:uniparty/redux/app_store.dart';
+import 'package:uniparty/redux/models/wallet_retrieve_info_view.dart';
 import 'package:uniparty/wallet_recovery/store_seed_and_wallet_type.dart';
 
 class AlertCreateWalletDialog extends StatelessWidget {
@@ -15,9 +15,9 @@ class AlertCreateWalletDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector(
-        converter: ((store) => store.dispatch),
-        builder: (context, dispatch) {
+    return StoreConnector<AppState, WalletRetrieveInfoViewModel>(
+        converter: ((store) => WalletRetrieveInfoViewModel.fromStore(store)),
+        builder: (context, viewModel) {
           return AlertDialog(
               title: const Text('Have you written down your seed phrase?'),
               content: Padding(
@@ -29,15 +29,16 @@ class AlertCreateWalletDialog extends StatelessWidget {
                     SelectableText(mnemonic),
                     FilledButton(
                         onPressed: () async {
-                          WalletRetrieveInfo walletInfo =
-                              getSeedHexAndWalletType(mnemonic, UNIPARTY);
-                          await dispatch(
-                              saveWalletRetrieveInfo(walletInfo.seedHex, walletInfo.walletType));
-                          dispatch(WalletRetreiveInfoSaveAction(
-                              walletInfo.seedHex, walletInfo.walletType));
+                          WalletRetrieveInfo walletInfo = getSeedHexAndWalletType(mnemonic, UNIPARTY);
+                          await viewModel.saveInfo(walletInfo.seedHex, walletInfo.walletType);
 
-                          // ignore: use_build_context_synchronously
-                          GoRouter.of(context).go('/wallet');
+                          viewModel.saveToState(walletInfo.seedHex, walletInfo.walletType);
+
+                          Navigator.push(
+                            // ignore: use_build_context_synchronously
+                            context,
+                            MaterialPageRoute(builder: (context) => const Wallet()),
+                          );
                         },
                         child: const Text('Create wallet'))
                   ],

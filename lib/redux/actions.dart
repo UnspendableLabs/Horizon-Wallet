@@ -1,6 +1,3 @@
-class StartLoadingAction {
-  StartLoadingAction();
-}
 
 class WalletRetreiveInfoSaveAction {
   final String seedHex;
