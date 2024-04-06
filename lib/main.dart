@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:uniparty/bloc/data_bloc.dart';
 import 'package:uniparty/start_page.dart';
 
 void main() async {
@@ -21,7 +23,10 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
         title: appTitle,
-        home: const StartPage(),
+        home: BlocProvider(
+          create: (context) => DataBloc(),
+          child: const HomePage(),
+        ),
         theme: ThemeData(
             primaryColor: Colors.blueAccent,
             colorScheme: const ColorScheme(

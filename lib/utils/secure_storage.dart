@@ -8,7 +8,7 @@ class SecureStorage {
     await _storage.write(key: 'wallet_info', value: WalletRetrieveInfo.serialize(model));
   }
 
-  Future<WalletRetrieveInfo?> readWalletRetrieveInfo(WalletRetrieveInfo model) async {
+  Future<WalletRetrieveInfo?> readWalletRetrieveInfo() async {
     String? walletInfo = await _storage.read(key: 'wallet_info');
     if (walletInfo == null) {
       return null;

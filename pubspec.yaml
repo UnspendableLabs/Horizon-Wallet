@@ -48,7 +48,8 @@ dependencies:
   flutter_js: ^0.8.0
 
   meta: any
-  bloc: ^8.1.4
+  flutter_bloc: ^8.1.5
+  injector: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
