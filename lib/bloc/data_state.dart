@@ -1,9 +1,26 @@
 import 'package:uniparty/models/wallet_retrieve_info.dart';
 
 class DataState {
-  final WalletRetrieveInfo? data;
-  final bool isLoading;
-  final String? error;
+  final Initial? initial;
+  final Loading? loading;
+  final Success? success;
+  final Failure? failure;
 
-  DataState({this.data, this.isLoading = true, this.error});
+  DataState({this.initial, this.success, this.loading, this.failure});
+}
+
+class Initial {}
+
+class Loading {}
+
+class Success {
+  final WalletRetrieveInfo data;
+  Success({
+    required this.data,
+  });
+}
+
+class Failure {
+  final String message;
+  Failure({required this.message});
 }

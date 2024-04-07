@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:uniparty/bloc/data_bloc.dart';
+import 'package:uniparty/components/wallet_pages/wallet.dart';
 import 'package:uniparty/home_page.dart';
 
 void main() async {
@@ -27,6 +28,9 @@ class MyApp extends StatelessWidget {
           create: (context) => DataBloc(),
           child: const HomePage(),
         ),
+        routes: {
+          '/wallet': (context) => const Wallet(),
+        },
         theme: ThemeData(
             primaryColor: Colors.blueAccent,
             colorScheme: const ColorScheme(

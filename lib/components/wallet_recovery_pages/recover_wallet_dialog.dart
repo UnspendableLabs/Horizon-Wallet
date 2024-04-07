@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/bloc/bloc_events.dart';
+import 'package:uniparty/bloc/data_events.dart';
 import 'package:uniparty/bloc/data_bloc.dart';
 import 'package:uniparty/bloc/data_state.dart';
 import 'package:uniparty/components/common/back_button.dart';
