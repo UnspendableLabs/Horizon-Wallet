@@ -28,9 +28,7 @@ class MyApp extends StatelessWidget {
           create: (context) => DataBloc(),
           child: const HomePage(),
         ),
-        routes: {
-          '/wallet': (context) => const Wallet(),
-        },
+        routes: {'/wallet': (context) => const Wallet()},
         theme: ThemeData(
             primaryColor: Colors.blueAccent,
             colorScheme: const ColorScheme(

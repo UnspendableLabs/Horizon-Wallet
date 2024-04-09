@@ -18,16 +18,42 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     // Dispatch the FetchDataEvent when the widget is initialized
-    print('init?');
-    BlocProvider.of<DataBloc>(context).add(FetchDataEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener(
+    BlocProvider.of<DataBloc>(context).add(FetchDataEvent());
+
+    return BlocBuilder(
+        bloc: BlocProvider.of<DataBloc>(context),
+        builder: (BuildContext context, DataState state) {
+          print('state loading: ${state.loading}');
+          print('state initial: ${state.initial}');
+          print('state success: ${state.success}');
+          print('state failure: ${state.failure}');
+          if (state.loading != null) {
+            return const Text('Loading...');
+          }
+          if (state.initial != null) {
+            return const CreateAndRecoverPage();
+          }
+          if (state.success != null) {
+            return const Wallet();
+          }
+          if (state.failure != null) {
+            return ErrorWidget('${state.failure}');
+          }
+
+          return const Text('no state');
+        });
+  }
+}
+
+/**
+ * return BlocListener(
       bloc: BlocProvider.of<DataBloc>(context),
       listener: (BuildContext context, DataState state) {
-        if (state is Success) {
+        if (state.success != null) {
           Navigator.of(context).pushNamed('/wallet');
         }
       },
@@ -50,25 +76,4 @@ class _HomePageState extends State<HomePage> {
             return const Text('no state');
           }),
     );
-
-    // return BlocBuilder<DataBloc, DataState>(
-    //   builder: (context, state) {
-    //     print('DO WE GET HERE? ${state.isLoading}');
-    //     print(state.error);
-    //     print(state.data);
-    //     if (state.isLoading) {
-    //       return const Center(
-    //         child: CircularProgressIndicator(),
-    //       );
-    //     } else if (state.error != null) {
-    //       return Center(
-    //         child: Text('${state.error}'),
-    //       );
-    //     } else if (state.data == null) {
-    //       return const CreateAndRecoverPage();
-    //     }
-    //     return const Wallet();
-    //   },
-    // );
-  }
-}
+ */

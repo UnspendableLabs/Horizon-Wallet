@@ -10,7 +10,6 @@ class DataBloc extends Bloc<DataEvent, DataState> {
   DataBloc() : super(DataState(initial: null, loading: Loading(), success: null, failure: null)) {
     on<FetchDataEvent>((event, emit) async {
       try {
-        print('fetching??');
         //TODO: pull out to a separate service
         WalletRetrieveInfo? walletRetrieveInfo = await _secureStorage.readWalletRetrieveInfo();
 
@@ -22,10 +21,12 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         emit(DataState(initial: Initial(), loading: null, success: null, failure: Failure(message: e.toString())));
       }
     });
+
     on<SetDataEvent>((event, emit) async {
-      print('setting state???');
+      emit(DataState(initial: null, loading: Loading(), success: null, failure: null));
+
       await _secureStorage.writeWalletRetrieveInfo(event.walletRetrieveInfo);
-      print('setting state: ${event.walletRetrieveInfo}');
+
       emit(DataState(initial: null, loading: null, success: Success(data: event.walletRetrieveInfo), failure: null));
     });
   }

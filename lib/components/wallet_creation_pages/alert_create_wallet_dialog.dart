@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/bloc/data_events.dart';
 import 'package:uniparty/bloc/data_bloc.dart';
+import 'package:uniparty/bloc/data_events.dart';
 import 'package:uniparty/bloc/data_state.dart';
 import 'package:uniparty/components/common/back_button.dart';
-import 'package:uniparty/components/wallet_pages/wallet.dart';
 import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
 import 'package:uniparty/wallet_recovery/store_seed_and_wallet_type.dart';
@@ -31,14 +30,10 @@ class AlertCreateWalletDialog extends StatelessWidget {
                     FilledButton(
                         onPressed: () async {
                           WalletRetrieveInfo walletInfo = getSeedHexAndWalletType(mnemonic, UNIPARTY);
-                          print('WALLETINFO $walletInfo');
+
                           BlocProvider.of<DataBloc>(context).add(SetDataEvent(walletRetrieveInfo: walletInfo));
 
-                          Navigator.push(
-                            // ignore: use_build_context_synchronously
-                            context,
-                            MaterialPageRoute(builder: (context) => const Wallet()),
-                          );
+                          Navigator.of(context).pushNamed('/wallet');
                         },
                         child: const Text('Create wallet'))
                   ],
