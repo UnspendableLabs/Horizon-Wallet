@@ -15,7 +15,6 @@ List<WalletNode> recoverBip32Wallet(String seedHex, String network) {
   List<WalletNode> walletNodes = [];
 
   for (var i = 0; i < 10; i++) {
-    print('WHERE ARE WE $i');
     KeyPair keyPair = bip32.createBip32PubKeyPrivateKeyFromSeed(
         Uint8List.fromList(hex.decode(seedHex)), network, i);
 

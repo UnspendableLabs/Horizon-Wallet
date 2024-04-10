@@ -9,7 +9,6 @@ WalletRetrieveInfo getSeedHexAndWalletType(String mnemonic, String recoveryWalle
   print('RECOVERY WALLET: $recoveryWallet');
   switch (recoveryWallet) {
     case (UNIPARTY):
-      print('in the case');
       walletType = bip44;
       seedHex = Bip39().mnemonicToSeedHex(mnemonic);
       break;
@@ -25,9 +24,7 @@ WalletRetrieveInfo getSeedHexAndWalletType(String mnemonic, String recoveryWalle
       seedHex = LegacySeed().mnemonicToSeed(mnemonic);
       break;
     default:
-      print('here?');
       throw UnsupportedError('wallet $recoveryWallet not supported');
   }
-  print('do we get here? $walletType');
   return WalletRetrieveInfo(seedHex: seedHex, walletType: walletType);
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uniparty/components/wallet_pages/wallet_container.dart';
 import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/models/wallet_retrieve_info.dart';
 
 class Wallet extends StatefulWidget {
-  const Wallet({super.key});
+  final WalletRetrieveInfo payload;
+
+  const Wallet({required this.payload, super.key});
 
   @override
   State<Wallet> createState() => _WalletState();
@@ -54,6 +57,6 @@ class _WalletState extends State<Wallet> {
             }).toList(),
           ),
         ),
-        body: WalletContainer(network: dropdownNetwork));
+        body: WalletContainer(payload: widget.payload, network: dropdownNetwork));
   }
 }

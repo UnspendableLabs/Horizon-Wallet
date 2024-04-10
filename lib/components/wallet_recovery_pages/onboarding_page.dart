@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:uniparty/components/wallet_creation_pages/create_wallet_button.dart';
 import 'package:uniparty/components/wallet_recovery_pages/recover_wallet_button.dart';
 
-class CreateAndRecoverPage extends StatelessWidget {
-  const CreateAndRecoverPage({super.key});
+class OnboardingPage extends StatelessWidget {
+  const OnboardingPage({super.key});
 
   @override
   Widget build(BuildContext context) {

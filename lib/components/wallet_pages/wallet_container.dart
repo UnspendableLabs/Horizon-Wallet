@@ -5,11 +5,13 @@ import 'package:uniparty/bloc/data_state.dart';
 import 'package:uniparty/components/wallet_pages/balance_total.dart';
 import 'package:uniparty/components/wallet_pages/single_wallet_node.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/models/wallet_retrieve_info.dart';
 import 'package:uniparty/wallet_recovery/recover_wallet.dart';
 
 class WalletContainer extends StatefulWidget {
   final String network;
-  const WalletContainer({required this.network, super.key});
+  final WalletRetrieveInfo payload;
+  const WalletContainer({required this.payload, required this.network, super.key});
 
   @override
   State<WalletContainer> createState() => _WalletContainerState();
@@ -19,12 +21,13 @@ class _WalletContainerState extends State<WalletContainer> {
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
+    print('widget.payload.seedHex ${widget.payload.seedHex}');
 
     return BlocProvider(
         create: (context) => DataBloc(),
         child: BlocBuilder<DataBloc, DataState>(builder: (context, state) {
           List<WalletNode> walletNodes =
-              recoverWallet(context, widget.network, state.success?.data.seedHex, state.success?.data.walletType);
+              recoverWallet(context, widget.network, widget.payload.seedHex, widget.payload.walletType);
           return Scaffold(
             body: Container(
                 margin: EdgeInsets.symmetric(horizontal: screenSize.width / 10, vertical: screenSize.width / 20),
@@ -43,6 +46,7 @@ class _WalletContainerState extends State<WalletContainer> {
                           itemCount: walletNodes.length,
                           itemBuilder: (BuildContext context, int index) {
                             return SingleWalletNode(
+                              network: widget.network,
                               walletNode: walletNodes[index],
                               containerSize: screenSize,
                             );

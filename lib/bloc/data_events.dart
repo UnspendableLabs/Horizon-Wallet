@@ -5,6 +5,11 @@ abstract class DataEvent {}
 class FetchDataEvent extends DataEvent {}
 
 class SetDataEvent extends DataEvent {
-  final WalletRetrieveInfo walletRetrieveInfo;
-  SetDataEvent({required this.walletRetrieveInfo});
+  final WalletRetrieveInfo data;
+  SetDataEvent({required this.data});
+}
+
+class WriteDataEvent extends DataEvent {
+  final WalletRetrieveInfo data;
+  WriteDataEvent({required this.data});
 }

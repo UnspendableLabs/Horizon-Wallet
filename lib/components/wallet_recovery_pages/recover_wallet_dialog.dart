@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bloc/data_bloc.dart';
 import 'package:uniparty/bloc/data_events.dart';
 import 'package:uniparty/bloc/data_state.dart';
@@ -54,9 +55,13 @@ class _RecoverWalletPageState extends State<RecoverWalletDialog> {
                             WalletRetrieveInfo walletInfo =
                                 getSeedHexAndWalletType(_textFieldController.text, dropdownRecoveryWallet);
 
-                            BlocProvider.of<DataBloc>(context).add(SetDataEvent(walletRetrieveInfo: walletInfo));
+                            BlocProvider.of<DataBloc>(context).add(WriteDataEvent(data: walletInfo));
 
-                            Navigator.of(context).pushNamed('/wallet');
+                            Navigator.pushNamed(
+                              context,
+                              AppRouter.walletPage,
+                              arguments: walletInfo,
+                            );
                           }
                         },
                         child: const Text('Recover wallet')),
