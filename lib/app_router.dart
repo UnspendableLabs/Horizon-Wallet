@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/bloc/data_bloc.dart';
 import 'package:uniparty/components/wallet_pages/wallet.dart';
 import 'package:uniparty/components/wallet_recovery_pages/onboarding_page.dart';
-import 'package:uniparty/models/wallet_retrieve_info.dart';
 
 class AppRouter {
   static const onboardingPage = 'onboardingPage';
@@ -28,9 +27,10 @@ class AppRouter {
             }
             return BlocProvider(
               create: (_) => DataBloc(),
+              // child: Text('Wllet'),
               child: Wallet(
-                payload: settings.arguments! as WalletRetrieveInfo,
-              ),
+                  // payload: settings.arguments! as WalletRetrieveInfo,
+                  ),
             );
           },
         );
