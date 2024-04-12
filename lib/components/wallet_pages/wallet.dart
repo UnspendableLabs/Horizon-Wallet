@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uniparty/components/wallet_pages/balance_total.dart';
+import 'package:uniparty/components/wallet_pages/single_wallet_node.dart';
 import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
 import 'package:uniparty/utils/secure_storage.dart';
+import 'package:uniparty/wallet_recovery/create_wallet.dart';
 
 class NetworkEvent {
   final String network;
@@ -35,7 +39,7 @@ final class WalletLoading extends WalletState {
 }
 
 final class WalletSuccess extends WalletState {
-  final WalletRetrieveInfo data;
+  final List<WalletNode> data;
   const WalletSuccess({required this.data});
 }
 
@@ -52,17 +56,18 @@ class WalletLoadEvent {
 class WalletBloc extends Bloc<WalletLoadEvent, WalletState> {
   final SecureStorage secureStorage = SecureStorage();
 
-  WalletBloc() : super(WalletInitial()) {
+  WalletBloc() : super(const WalletInitial()) {
     on<WalletLoadEvent>((event, emit) => onWalletLoad(event, emit));
   }
 }
 
 Future<void> onWalletLoad(WalletLoadEvent event, Emitter<WalletState> emit) async {
-  // ignore: prefer_const_constructors
-  emit(WalletLoading());
+  emit(const WalletLoading());
+
   var walletInfo = await SecureStorage().readWalletRetrieveInfo();
-  await Future.delayed(Duration(seconds: 2));
-  emit(WalletSuccess(data: WalletRetrieveInfo(seedHex: walletInfo!.seedHex, walletType: walletInfo!.walletType)));
+  List<WalletNode> walletNodes = createWallet(event.network, walletInfo!.seedHex, walletInfo.walletType);
+
+  emit(WalletSuccess(data: walletNodes));
 }
 
 class Wallet extends StatefulWidget {
@@ -113,6 +118,7 @@ class _WalletState extends State<Wallet> {
                       ),
                     ),
                     backgroundColor: Colors.black,
+                    leadingWidth: screenSize.width / 4,
                     leading: BlocBuilder<NetworkBloc, NetworkState>(
                       builder: (context, state) {
                         return DropdownButton(
@@ -137,44 +143,59 @@ class _WalletState extends State<Wallet> {
                           }).toList(),
                         );
                       },
-                    )
-                    // leadingWidth: screenSize.width / 4,
-                    // leading: DropdownButton(
-                    //   isExpanded: true,
-                    //   value: dropdownNetwork,
-                    //   underline: Container(),
-                    //   iconSize: 0.0,
-                    //   onChanged: (String? value) {
-                    //     // This is called when the user selects an item.
-                    //     setState(() {
-                    //       dropdownNetwork = value!;
-                    //     });
-                    //   },
-                    //   items: networkList.map<DropdownMenuItem<String>>((var value) {
-                    //     return DropdownMenuItem<String>(
-                    //       value: value,
-                    //       child: Center(
-                    //         child: Text(
-                    //           value,
-                    //           textAlign: TextAlign.center,
-                    //         ),
-                    //       ),
-                    //     );
-                    //   }).toList(),
-                    // ),
-                    ),
+                    )),
                 body: BlocBuilder<NetworkBloc, NetworkState>(
-                  builder: (context, state) {
-                    return BlocBuilder<WalletBloc, WalletState>(builder: (context, state) {
-                      return switch (state) {
-                        WalletInitial() => Text('WalletInitial'),
-                        WalletLoading() => Text('WalletLoading'),
-                        WalletSuccess() => Text('WalletSuccess ${state.data.walletType}'),
-                        WalletError() => Text('WalletError'),
-                      };
-                    });
+                  builder: (context, networkState) {
+                    return Scaffold(
+                        body: Container(
+                            margin: EdgeInsets.symmetric(horizontal: screenSize.width / 10, vertical: screenSize.width / 20),
+                            height: screenSize.height,
+                            width: screenSize.width,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: const Color.fromRGBO(159, 194, 244, 1.0)),
+                              color: const Color.fromRGBO(27, 27, 37, 1.0),
+                            ),
+                            child: BlocBuilder<WalletBloc, WalletState>(builder: (context, walletState) {
+                              return switch (walletState) {
+                                WalletInitial() => const Text('WalletInitial'),
+                                WalletLoading() => const Center(child: Text('Loading...')),
+                                WalletSuccess() => Row(
+                                    children: [
+                                      Expanded(
+                                        child: SizedBox(
+                                          height: screenSize.height,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: walletState.data.length,
+                                            itemBuilder: (BuildContext context, int index) {
+                                              return SingleWalletNode(
+                                                network: networkState.network,
+                                                walletNode: walletState.data[index],
+                                                containerSize: screenSize,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: screenSize.width / 5,
+                                        decoration: const BoxDecoration(
+                                          border: Border.symmetric(
+                                              vertical: BorderSide(width: 1, color: Color.fromRGBO(59, 59, 66, 1.0))),
+                                          color: Color.fromRGBO(27, 27, 37, 1.0),
+                                        ),
+                                        child: const Column(
+                                          children: [
+                                            BalanceTotal(),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                WalletError() => Center(child: Text(walletState.message)),
+                              };
+                            })));
                   },
                 ))));
-    // body: WalletContainer(payload: widget.payload, network: dropdownNetwork));
   }
 }

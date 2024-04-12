@@ -8,7 +8,7 @@ import 'package:uniparty/components/common/back_button.dart';
 import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
 import 'package:uniparty/utils/seed_phrase_validation.dart';
-import 'package:uniparty/wallet_recovery/store_seed_and_wallet_type.dart';
+import 'package:uniparty/wallet_recovery/get_seed_and_wallet_type.dart';
 
 class RecoverWalletFlow extends StatefulWidget {
   const RecoverWalletFlow({super.key});
@@ -32,6 +32,7 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
 
   @override
   Widget build(BuildContext context) {
+    print('dropdownRecoveryWallet: $dropdownRecoveryWallet');
     return BlocProvider(
         create: (context) => DataBloc(),
         child: BlocBuilder<DataBloc, DataState>(builder: (context, state) {
@@ -62,9 +63,8 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                         WalletRetrieveInfo walletInfo =
                                             getSeedHexAndWalletType(_textFieldController.text, dropdownRecoveryWallet);
 
-                                        await Future.delayed(const Duration(milliseconds: 500));
-
                                         BlocProvider.of<DataBloc>(context).add(WriteDataEvent(data: walletInfo));
+                                        await Future.delayed(const Duration(milliseconds: 500));
 
                                         Navigator.pushNamed(
                                           // ignore: use_build_context_synchronously
@@ -85,6 +85,7 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                     color: const Color.fromRGBO(159, 194, 244, 1.0),
                                   ),
                                   onChanged: (String? value) {
+                                    print('selected wallet type: $value');
                                     // This is called when the user selects an item.
                                     setState(() {
                                       dropdownRecoveryWallet = value!;
