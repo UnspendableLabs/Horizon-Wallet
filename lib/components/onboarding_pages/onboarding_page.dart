@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:uniparty/components/onboarding_pages/create_wallet_flow.dart';
-import 'package:uniparty/components/onboarding_pages/recover_wallet_flow.dart';
+import 'package:uniparty/components/onboarding_pages/onboarding_stateful_widget.dart';
 
-class OnboardingPage extends StatelessWidget {
-  const OnboardingPage({super.key});
+class OnboardingPageWrapper extends StatelessWidget {
+  const OnboardingPageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +11,7 @@ class OnboardingPage extends StatelessWidget {
         child: Container(
           height: 250,
           padding: const EdgeInsets.symmetric(vertical: 50.0),
-          child: const Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[CreateWalletFlow(), RecoverWalletFlow()]),
+          child: OnboardingPage(),
         ),
       ),
     );

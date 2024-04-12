@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/components/wallet_pages/balance_total.dart';
-import 'package:uniparty/components/wallet_pages/single_wallet_node.dart';
+import 'package:get_it/get_it.dart';
 import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
-import 'package:uniparty/utils/secure_storage.dart';
-import 'package:uniparty/wallet_recovery/create_wallet.dart';
+import 'package:uniparty/services/key_value_store.dart';
 
 class NetworkEvent {
   final String network;
@@ -54,8 +52,6 @@ class WalletLoadEvent {
 }
 
 class WalletBloc extends Bloc<WalletLoadEvent, WalletState> {
-  final SecureStorage secureStorage = SecureStorage();
-
   WalletBloc() : super(const WalletInitial()) {
     on<WalletLoadEvent>((event, emit) => onWalletLoad(event, emit));
   }
@@ -64,16 +60,21 @@ class WalletBloc extends Bloc<WalletLoadEvent, WalletState> {
 Future<void> onWalletLoad(WalletLoadEvent event, Emitter<WalletState> emit) async {
   emit(const WalletLoading());
 
-  String? walletInfoJson = await SecureStorage().readSecureData(key: 'wallet_info');
+  // reading from secure storage blocks rendering
+  // delaying allows UI to update
+  // Future.delayed(const Duration(milliseconds: 50));
+  String? walletInfoJson = await GetIt.I.get<KeyValueService>().get('wallet_info');
+  // String? walletInfoJson = null;
   if (walletInfoJson == null) {
     emit(const WalletError(message: 'Wallet info not found'));
     return;
   }
 
   WalletRetrieveInfo? walletInfo = WalletRetrieveInfo.deserialize(walletInfoJson);
-  List<WalletNode> walletNodes = createWallet(event.network, walletInfo!.seedHex, walletInfo.walletType);
+  // List<WalletNode> walletNodes = createWallet(event.network, walletInfo!.seedHex, walletInfo.walletType);
+  emit(WalletError(message: walletInfoJson));
 
-  emit(WalletSuccess(data: walletNodes));
+  // emit(WalletSuccess(data: walletNodes));
 }
 
 class Wallet extends StatefulWidget {
@@ -165,39 +166,40 @@ class _WalletState extends State<Wallet> {
                               return switch (walletState) {
                                 WalletInitial() => const Text('WalletInitial'),
                                 WalletLoading() => const Center(child: Text('Loading...')),
-                                WalletSuccess() => Row(
-                                    children: [
-                                      Expanded(
-                                        child: SizedBox(
-                                          height: screenSize.height,
-                                          child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: walletState.data.length,
-                                            itemBuilder: (BuildContext context, int index) {
-                                              return SingleWalletNode(
-                                                network: networkState.network,
-                                                walletNode: walletState.data[index],
-                                                containerSize: screenSize,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: screenSize.width / 5,
-                                        decoration: const BoxDecoration(
-                                          border: Border.symmetric(
-                                              vertical: BorderSide(width: 1, color: Color.fromRGBO(59, 59, 66, 1.0))),
-                                          color: Color.fromRGBO(27, 27, 37, 1.0),
-                                        ),
-                                        child: const Column(
-                                          children: [
-                                            BalanceTotal(),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                // WalletSuccess() => Row(
+                                //     children: [
+                                //       Expanded(
+                                //         child: SizedBox(
+                                //           height: screenSize.height,
+                                //           child: ListView.builder(
+                                //             scrollDirection: Axis.horizontal,
+                                //             itemCount: walletState.data.length,
+                                //             itemBuilder: (BuildContext context, int index) {
+                                //               return SingleWalletNode(
+                                //                 network: networkState.network,
+                                //                 walletNode: walletState.data[index],
+                                //                 containerSize: screenSize,
+                                //               );
+                                //             },
+                                //           ),
+                                //         ),
+                                //       ),
+                                //       Container(
+                                //         width: screenSize.width / 5,
+                                //         decoration: const BoxDecoration(
+                                //           border: Border.symmetric(
+                                //               vertical: BorderSide(width: 1, color: Color.fromRGBO(59, 59, 66, 1.0))),
+                                //           color: Color.fromRGBO(27, 27, 37, 1.0),
+                                //         ),
+                                //         child: const Column(
+                                //           children: [
+                                //             BalanceTotal(),
+                                //           ],
+                                //         ),
+                                //       ),
+                                //     ],
+                                //   ),
+                                WalletSuccess() => Text('WalletSuccess ${walletState.data[0].address}'),
                                 WalletError() => Center(child: Text(walletState.message)),
                               };
                             })));

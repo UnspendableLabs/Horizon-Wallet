@@ -10,8 +10,11 @@ import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
 import 'package:uniparty/wallet_recovery/get_seed_and_wallet_type.dart';
 
+
+
 class CreateWalletFlow extends StatelessWidget {
   const CreateWalletFlow({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +56,7 @@ class CreateWalletFlow extends StatelessWidget {
 
                                                     BlocProvider.of<DataBloc>(context).add(WriteDataEvent(data: walletInfo));
 
-                                                    await Future.delayed(const Duration(milliseconds: 500));
+                                                    // await Future.delayed(const Duration(milliseconds: 500));
 
                                                     Navigator.pushNamed(
                                                       // ignore: use_build_context_synchronously

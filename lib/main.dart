@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
+import 'package:uniparty/services/key_value_store.dart';
 
 void main() async {
   await dotenv.load();
   // run the application
+
+  GetIt.I.registerSingleton<KeyValueService>(SharedSettingsKeyValueServiceImpl());
+  // Bloc.observer = GlobalBlocObserver();
+
   runApp(const MyApp());
 }
 

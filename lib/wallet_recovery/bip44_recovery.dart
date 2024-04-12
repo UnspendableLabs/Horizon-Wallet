@@ -11,14 +11,18 @@ List<WalletNode> recoverBip44Wallet(String seedHex, String network) {
 
   List<WalletNode> nodes = [];
 
+  print(DateTime.now());
   BasePath path = BasePath(coinType: _getCoinType(network), account: 0, change: 0, index: 0);
+  print(DateTime.now());
+
   KeyPair keyPair = bip44.createBip44KeyPairFromSeed(seedHex, path, network);
+  print(DateTime.now());
+
   String address = bech32.deriveBech32Address(keyPair.publicKeyIntList, network);
+  print(DateTime.now());
+
   WalletNode walletNode = WalletNode(
-      address: address,
-      publicKey: hex.encode(keyPair.publicKeyIntList),
-      privateKey: keyPair.privateKey,
-      index: path.index);
+      address: address, publicKey: hex.encode(keyPair.publicKeyIntList), privateKey: keyPair.privateKey, index: path.index);
 
   nodes.add(walletNode);
   return nodes;

@@ -8,22 +8,19 @@ import 'package:uniparty/models/key_pair.dart';
 
 class Bip44 {
   KeyPair createBip44KeyPairFromSeed(String seedHex, BasePath path, String network) {
+    print('in createBip44KeyPairFromSeed ${DateTime.now()}');
     BIP44 node = BIP44.fromSeed(seedHex, coinType: path.coinType);
-
-    final privateKeyHex =
-        node.privateKeyHex(account: path.account, change: path.change, index: path.index);
-
-    String publicKey =
-        node.publicKeyHex(account: path.account, change: path.change, index: path.index);
-
+    // print('node created ${DateTime.now()}');
+    final privateKeyHex = node.privateKeyHex(account: path.account, change: path.change, index: path.index);
+    // print('private key hex ${DateTime.now()}');
+    String publicKey = node.publicKeyHex(account: path.account, change: path.change, index: path.index);
+    // print('public key hex ${DateTime.now()}');
     Uint8List privateKey = Uint8List.fromList(hex.decode(privateKeyHex));
-
-    final WIF decoded =
-        WIF(version: _getVersion(network), privateKey: privateKey, compressed: true);
-
+    // print('private key ${DateTime.now()}');
+    final WIF decoded = WIF(version: _getVersion(network), privateKey: privateKey, compressed: true);
+    // print('decoded ${DateTime.now()}');
     String privateKeyWif = wif.encode(decoded); // testnet: Wif.encode(239, ...
-    return KeyPair(
-        publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), privateKey: privateKeyWif);
+    return KeyPair(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), privateKey: privateKeyWif);
   }
 
   String createBip44LegacyAddress(BIP44 node, BasePath path) {

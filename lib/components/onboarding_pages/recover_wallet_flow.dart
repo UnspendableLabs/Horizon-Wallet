@@ -90,7 +90,7 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                                   getSeedHexAndWalletType(_textFieldController.text, state.walletType);
 
                                               BlocProvider.of<DataBloc>(context).add(WriteDataEvent(data: walletInfo));
-                                              await Future.delayed(const Duration(milliseconds: 500));
+                                              // await Future.delayed(const Duration(milliseconds: 500));
 
                                               Navigator.pushNamed(
                                                 // ignore: use_build_context_synchronously
