@@ -27,8 +27,12 @@ class AppRouter {
             if (settings.arguments == null) {
               // what to do?
             }
-            return BlocProvider(
-              create: (_) => DataBloc(),
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<DataBloc>(create: (_) => DataBloc()),
+                BlocProvider<WalletBloc>(create: (_) => WalletBloc()),
+                BlocProvider<NetworkBloc>(create: (_) => NetworkBloc())
+              ],
               // child: Text('Wllet'),
               child: Wallet(
                   // payload: settings.arguments! as WalletRetrieveInfo,

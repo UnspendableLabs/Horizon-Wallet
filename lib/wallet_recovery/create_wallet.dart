@@ -3,7 +3,7 @@ import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 import 'package:uniparty/wallet_recovery/bip44_recovery.dart';
 
-List<WalletNode> createWallet(String network, String? seedHex, String? walletType) {
+Future<List<WalletNode>> createWallet(String network, String? seedHex, String? walletType) async {
   List<WalletNode> walletNodes = [];
 
   if (seedHex == null || walletType == null) {
