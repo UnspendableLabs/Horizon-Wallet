@@ -60,8 +60,9 @@ class WalletBloc extends Bloc<WalletLoadEvent, WalletState> {
 Future<void> onWalletLoad(WalletLoadEvent event, Emitter<WalletState> emit) async {
   // ignore: prefer_const_constructors
   emit(WalletLoading());
+  var walletInfo = await SecureStorage().readWalletRetrieveInfo();
   await Future.delayed(Duration(seconds: 2));
-  emit(WalletSuccess(data: WalletRetrieveInfo(seedHex: 'seedHex', walletType: event.network)));
+  emit(WalletSuccess(data: WalletRetrieveInfo(seedHex: walletInfo!.seedHex, walletType: walletInfo!.walletType)));
 }
 
 class Wallet extends StatefulWidget {
@@ -167,7 +168,7 @@ class _WalletState extends State<Wallet> {
                     return BlocBuilder<WalletBloc, WalletState>(builder: (context, state) {
                       return switch (state) {
                         WalletInitial() => Text('WalletInitial'),
-                        WalletLoading() => Text('WalletLoading'), 
+                        WalletLoading() => Text('WalletLoading'),
                         WalletSuccess() => Text('WalletSuccess ${state.data.walletType}'),
                         WalletError() => Text('WalletError'),
                       };

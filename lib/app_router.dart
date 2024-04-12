@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/bloc/data_bloc.dart';
 import 'package:uniparty/components/wallet_pages/wallet.dart';
-import 'package:uniparty/components/wallet_recovery_pages/onboarding_page.dart';
+import 'package:uniparty/components/onboarding_pages/onboarding_page.dart';
 
 class AppRouter {
   static const onboardingPage = 'onboardingPage';

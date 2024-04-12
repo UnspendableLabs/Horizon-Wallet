@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uniparty/models/wallet_retrieve_info.dart';
 
+// TODO
 class SecureStorage {
   static const _storage = FlutterSecureStorage();
 
@@ -25,6 +26,7 @@ class SecureStorage {
       );
       // _readAll();
     } catch (e) {
+      // ERROR TODO
       print(e);
     }
   }

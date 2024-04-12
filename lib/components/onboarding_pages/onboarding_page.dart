@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uniparty/components/wallet_creation_pages/create_wallet_button.dart';
-import 'package:uniparty/components/wallet_recovery_pages/recover_wallet_button.dart';
+import 'package:uniparty/components/onboarding_pages/create_wallet_flow.dart';
+import 'package:uniparty/components/onboarding_pages/recover_wallet_flow.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
@@ -14,7 +14,7 @@ class OnboardingPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 50.0),
           child: const Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[CreateWalletButton(), RecoverWalletButton()]),
+              children: <Widget>[CreateWalletFlow(), RecoverWalletFlow()]),
         ),
       ),
     );
