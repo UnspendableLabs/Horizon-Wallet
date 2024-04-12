@@ -1,22 +1,8 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:uniparty/models/wallet_retrieve_info.dart';
 
 // TODO
 class SecureStorage {
   static const _storage = FlutterSecureStorage();
-
-  Future<void> writeWalletRetrieveInfo(WalletRetrieveInfo model) async {
-    await _storage.write(key: 'wallet_info', value: WalletRetrieveInfo.serialize(model));
-  }
-
-  Future<WalletRetrieveInfo?> readWalletRetrieveInfo() async {
-    String? walletInfo = await _storage.read(key: 'wallet_info');
-    if (walletInfo == null) {
-      return null;
-    }
-    WalletRetrieveInfo model = WalletRetrieveInfo.deserialize(walletInfo);
-    return model;
-  }
 
   Future<void> deleteAll() async {
     try {
@@ -31,7 +17,7 @@ class SecureStorage {
     }
   }
 
-  Future<String?> readSecureData(String key) async {
+  Future<String?> readSecureData({required String key}) async {
     String? value;
     try {
       value = (await _storage.read(
@@ -57,7 +43,7 @@ class SecureStorage {
     }
   }
 
-  Future<void> writeSecureData(String key, String value) async {
+  Future<void> writeSecureData({required String key, required String value}) async {
     try {
       await _storage.write(
         key: key,

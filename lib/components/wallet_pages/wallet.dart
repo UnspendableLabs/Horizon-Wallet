@@ -62,9 +62,15 @@ class WalletBloc extends Bloc<WalletLoadEvent, WalletState> {
 }
 
 Future<void> onWalletLoad(WalletLoadEvent event, Emitter<WalletState> emit) async {
-  emit(WalletLoading());
+  emit(const WalletLoading());
 
-  var walletInfo = await SecureStorage().readWalletRetrieveInfo();
+  String? walletInfoJson = await SecureStorage().readSecureData(key: 'wallet_info');
+  if (walletInfoJson == null) {
+    emit(const WalletError(message: 'Wallet info not found'));
+    return;
+  }
+
+  WalletRetrieveInfo? walletInfo = WalletRetrieveInfo.deserialize(walletInfoJson);
   List<WalletNode> walletNodes = createWallet(event.network, walletInfo!.seedHex, walletInfo.walletType);
 
   emit(WalletSuccess(data: walletNodes));
