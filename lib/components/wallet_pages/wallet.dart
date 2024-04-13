@@ -1,86 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
+import 'package:uniparty/bloc/network_bloc.dart';
+import 'package:uniparty/bloc/wallet_bloc.dart';
 import 'package:uniparty/components/wallet_pages/balance_total.dart';
 import 'package:uniparty/components/wallet_pages/single_wallet_node.dart';
 import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/models/wallet_retrieve_info.dart';
-import 'package:uniparty/services/key_value_store.dart';
-import 'package:uniparty/wallet_recovery/create_wallet.dart';
-
-class NetworkEvent {
-  final String network;
-  NetworkEvent({required this.network});
-}
-
-class NetworkState {
-  final String network;
-  NetworkState({required this.network});
-}
-
-class NetworkBloc extends Bloc<NetworkEvent, NetworkState> {
-  NetworkBloc() : super(NetworkState(network: MAINNET)) {
-    on<NetworkEvent>((event, emit) {
-      emit(NetworkState(network: event.network));
-    });
-  }
-}
-
-sealed class WalletState {
-  const WalletState();
-}
-
-final class WalletInitial extends WalletState {
-  const WalletInitial();
-}
-
-final class WalletLoading extends WalletState {
-  const WalletLoading();
-}
-
-final class WalletSuccess extends WalletState {
-  final List<WalletNode> data;
-  const WalletSuccess({required this.data});
-}
-
-final class WalletError extends WalletState {
-  final String message;
-  const WalletError({required this.message});
-}
-
-class WalletLoadEvent {
-  final String network;
-  WalletLoadEvent({required this.network});
-}
-
-class WalletBloc extends Bloc<WalletLoadEvent, WalletState> {
-  WalletBloc() : super(const WalletInitial()) {
-    on<WalletLoadEvent>((event, emit) => onWalletLoad(event, emit));
-  }
-}
-
-Future<void> onWalletLoad(WalletLoadEvent event, Emitter<WalletState> emit) async {
-  emit(const WalletLoading());
-
-  // reading from secure storage blocks rendering
-  // delaying allows UI to update
-  // Future.delayed(const Duration(milliseconds: 50));
-  String? walletInfoJson = await GetIt.I.get<KeyValueService>().get('wallet_info');
-  // String? walletInfoJson = null;
-  if (walletInfoJson == null) {
-    emit(const WalletError(message: 'Wallet info not found'));
-    return;
-  }
-
-  WalletRetrieveInfo? walletInfo = WalletRetrieveInfo.deserialize(walletInfoJson);
-  List<WalletNode> walletNodes = await createWallet(event.network, walletInfo!.seedHex, walletInfo.walletType);
-  // emit(WalletError(message: walletInfoJson));
-
-  emit(WalletSuccess(data: walletNodes));
-}
 
 class Wallet extends StatefulWidget {
   const Wallet({super.key});
@@ -94,13 +18,12 @@ const List<String> networkList = <String>[MAINNET, TESTNET];
 class _WalletState extends State<Wallet> {
   String dropdownNetwork = networkList.first;
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   print('didChangeDependencies');
-  //   var network = BlocProvider.of<NetworkBloc>(context).state.network;
-  //   BlocProvider.of<WalletBloc>(context).add(WalletLoadEvent(network: network));
-  // }
+  @override
+  void initState() {
+    super.initState();
+    var network = BlocProvider.of<NetworkBloc>(context).state.network;
+    BlocProvider.of<WalletBloc>(context).add(WalletLoadEvent(network: network));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +119,6 @@ class _WalletState extends State<Wallet> {
                                   ),
                                 ],
                               ),
-                            // WalletSuccess() => Text('WalletSuccess ${walletState.data[0].address}'),
                             WalletError() => Center(child: Text(walletState.message)),
                           };
                         })));

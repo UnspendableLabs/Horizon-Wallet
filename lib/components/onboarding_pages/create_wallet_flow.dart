@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
-import 'package:uniparty/bloc/data_bloc.dart';
-import 'package:uniparty/bloc/data_events.dart';
-import 'package:uniparty/bloc/data_state.dart';
+import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/components/common/back_button.dart';
 import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/wallet_retrieve_info.dart';
+import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/wallet_recovery/get_seed_and_wallet_type.dart';
-
-
 
 class CreateWalletFlow extends StatelessWidget {
   const CreateWalletFlow({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +33,8 @@ class CreateWalletFlow extends StatelessWidget {
                           showDialog<String>(
                               context: context,
                               builder: (BuildContext context) => BlocProvider(
-                                  create: (context) => DataBloc(),
-                                  child: BlocBuilder<DataBloc, DataState>(builder: (context, state) {
+                                  create: (context) => StoredWalletDataBloc(),
+                                  child: BlocBuilder<StoredWalletDataBloc, StoredWalletDataState>(builder: (context, state) {
                                     return AlertDialog(
                                         title: const Text('Have you written down your seed phrase?'),
                                         content: Padding(
@@ -51,10 +46,11 @@ class CreateWalletFlow extends StatelessWidget {
                                               SelectableText(mnemonic),
                                               FilledButton(
                                                   onPressed: () async {
-                                                    WalletRetrieveInfo walletInfo =
+                                                    StoredWalletData walletData =
                                                         getSeedHexAndWalletType(mnemonic, UNIPARTY);
 
-                                                    BlocProvider.of<DataBloc>(context).add(WriteDataEvent(data: walletInfo));
+                                                    BlocProvider.of<StoredWalletDataBloc>(context)
+                                                        .add(WriteStoredWalletDataEvent(data: walletData));
 
                                                     // await Future.delayed(const Duration(milliseconds: 500));
 
@@ -62,7 +58,6 @@ class CreateWalletFlow extends StatelessWidget {
                                                       // ignore: use_build_context_synchronously
                                                       context,
                                                       AppRouter.walletPage,
-                                                      arguments: walletInfo,
                                                     );
                                                   },
                                                   child: const Text('Create wallet'))

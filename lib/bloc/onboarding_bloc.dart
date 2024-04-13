@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/services/key_value_store.dart';
 
 sealed class OnboardingEvent {}
@@ -38,8 +39,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   OnboardingBloc() : super(const OnboardingInitial()) {
     on<InferOnboardingStepEvent>((event, emit) async {
       emit(const OnboardingLoading());
-      String? walletInfo = await GetIt.I.get<KeyValueService>().get('wallet_info');
-      if (walletInfo != null) {
+      String? walletData = await GetIt.I.get<KeyValueService>().get(STORED_WALLET_DATA_KEY);
+      if (walletData != null) {
         emit(const OnboardingSuccess(onboardingStep: OnboardingStep.done));
         return;
       }

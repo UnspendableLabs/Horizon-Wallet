@@ -6,10 +6,8 @@ import 'package:uniparty/services/key_value_store.dart';
 
 void main() async {
   await dotenv.load();
-  // run the application
 
   GetIt.I.registerSingleton<KeyValueService>(SharedSettingsKeyValueServiceImpl());
-  // Bloc.observer = GlobalBlocObserver();
 
   runApp(const MyApp());
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/bloc/data_bloc.dart';
+import 'package:uniparty/bloc/network_bloc.dart';
 import 'package:uniparty/bloc/onboarding_bloc.dart';
+import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
+import 'package:uniparty/bloc/wallet_bloc.dart';
 import 'package:uniparty/components/onboarding_pages/onboarding_page.dart';
 import 'package:uniparty/components/wallet_pages/wallet.dart';
 
@@ -24,19 +26,15 @@ class AppRouter {
         return CupertinoPageRoute(
           settings: settings,
           builder: (context) {
-            if (settings.arguments == null) {
-              // what to do?
-            }
             return MultiBlocProvider(
               providers: [
-                BlocProvider<DataBloc>(create: (_) => DataBloc()),
-                BlocProvider<WalletBloc>(create: (_) => WalletBloc()),
+                BlocProvider<StoredWalletDataBloc>(create: (_) => StoredWalletDataBloc()),
+                BlocProvider<WalletBloc>(create: (_) {
+                  return WalletBloc();
+                }),
                 BlocProvider<NetworkBloc>(create: (_) => NetworkBloc())
               ],
-              // child: Text('Wllet'),
-              child: Wallet(
-                  // payload: settings.arguments! as WalletRetrieveInfo,
-                  ),
+              child: const Wallet(),
             );
           },
         );

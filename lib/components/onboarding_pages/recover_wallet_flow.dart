@@ -1,31 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/app_router.dart';
-import 'package:uniparty/bloc/data_bloc.dart';
-import 'package:uniparty/bloc/data_events.dart';
+import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
+import 'package:uniparty/bloc/wallet_type_bloc.dart';
 import 'package:uniparty/components/common/back_button.dart';
 import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/wallet_retrieve_info.dart';
+import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/utils/seed_phrase_validation.dart';
 import 'package:uniparty/wallet_recovery/get_seed_and_wallet_type.dart';
-
-class WalletTypeEvent {
-  final String walletType;
-  WalletTypeEvent({required this.walletType});
-}
-
-class WalletTypeState {
-  final String walletType;
-  WalletTypeState({required this.walletType});
-}
-
-class WalletTypeBloc extends Bloc<WalletTypeEvent, WalletTypeState> {
-  WalletTypeBloc() : super(WalletTypeState(walletType: COUNTERWALLET)) {
-    on<WalletTypeEvent>((event, emit) {
-      emit(WalletTypeState(walletType: event.walletType));
-    });
-  }
-}
 
 class RecoverWalletFlow extends StatefulWidget {
   const RecoverWalletFlow({super.key});
@@ -64,8 +46,8 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                             BlocProvider<WalletTypeBloc>(
                               create: (BuildContext context) => WalletTypeBloc(),
                             ),
-                            BlocProvider<DataBloc>(
-                              create: (BuildContext context) => DataBloc(),
+                            BlocProvider<StoredWalletDataBloc>(
+                              create: (BuildContext context) => StoredWalletDataBloc(),
                             ),
                           ],
                           child: BlocBuilder<WalletTypeBloc, WalletTypeState>(builder: (context, state) {
@@ -86,17 +68,18 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                       FilledButton(
                                           onPressed: () async {
                                             if (_formKey.currentState!.validate()) {
-                                              WalletRetrieveInfo walletInfo =
+                                              StoredWalletData walletData =
                                                   getSeedHexAndWalletType(_textFieldController.text, state.walletType);
 
-                                              BlocProvider.of<DataBloc>(context).add(WriteDataEvent(data: walletInfo));
+                                              BlocProvider.of<StoredWalletDataBloc>(context)
+                                                  .add(WriteStoredWalletDataEvent(data: walletData));
                                               // await Future.delayed(const Duration(milliseconds: 500));
 
                                               Navigator.pushNamed(
                                                 // ignore: use_build_context_synchronously
                                                 context,
                                                 AppRouter.walletPage,
-                                                arguments: walletInfo,
+                                                arguments: walletData,
                                               );
                                             }
                                           },

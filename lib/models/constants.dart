@@ -11,3 +11,5 @@ const String WALLET_TYPE_SECURE_STORAGE_KEY = 'wallet_type';
 
 const String bip44 = 'bip44';
 const String bip32 = 'bip32';
+
+const String STORED_WALLET_DATA_KEY = 'stored_wallet_data';
