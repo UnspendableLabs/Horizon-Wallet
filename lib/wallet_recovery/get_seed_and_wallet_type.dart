@@ -1,15 +1,14 @@
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_seed.dart';
 import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/wallet_retrieve_info.dart';
+import 'package:uniparty/models/stored_wallet_data.dart';
 
-WalletRetrieveInfo getSeedHexAndWalletType(String mnemonic, String recoveryWallet) {
+StoredWalletData getSeedHexAndWalletType(String mnemonic, String recoveryWallet) {
   String seedHex = '';
   String walletType;
   switch (recoveryWallet) {
     case UNIPARTY:
       walletType = bip44;
-
       seedHex = Bip39().mnemonicToSeedHex(mnemonic);
       break;
     case FREEWALLET:
@@ -26,5 +25,5 @@ WalletRetrieveInfo getSeedHexAndWalletType(String mnemonic, String recoveryWalle
     default:
       throw UnsupportedError('wallet $recoveryWallet not supported');
   }
-  return WalletRetrieveInfo(seedHex: seedHex, walletType: walletType);
+  return StoredWalletData(seedHex: seedHex, walletType: walletType);
 }

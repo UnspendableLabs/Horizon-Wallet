@@ -1,16 +1,36 @@
 # uniparty
 
-A new Flutter project.
+A bip39 wallet for XCP and bitcoin. Compatible with Freewallet and Counterwallet.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+To run locally:
 
-A few resources to get you started if this is your first Flutter project:
+1. Install dependencies:
+`flutter pub get`
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+2. Add a .env file to the root of the application which includes:
+```
+TESTNET_URL=https://api.counterparty.io:14001
+MAINNET_URL=https://api.counterparty.io:4001
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3. Run the application
+
+    - To run the application as a web app:
+    `flutter build web --web-renderer html --csp`
+
+    - To run the application as a chrome extension:
+        a. build the application
+        `flutter run -d Chrome`
+
+        b. open your Chrome browser and navigate to chrome://extensions
+
+        c. enable Developer mode on the top right corner of the extensions page
+
+        d. click the "Load unpacked" button
+
+        e.  Select the `<flutter_project_dir>/build/web` folder.
+
+    - To use a Chrome substitute (such as Chromium), export the following from your shell env:
+    `export CHROME_EXECUTABLE=$(which chromium)`

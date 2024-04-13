@@ -9,21 +9,17 @@ import 'package:uniparty/models/key_pair.dart';
 class Bip44 {
   KeyPair createBip44KeyPairFromSeed(String seedHex, BasePath path, String network) {
     BIP44 node = BIP44.fromSeed(seedHex, coinType: path.coinType);
+    final privateKeyHex = node.privateKeyHex(account: path.account, change: path.change, index: path.index);
 
-    final privateKeyHex =
-        node.privateKeyHex(account: path.account, change: path.change, index: path.index);
-
-    String publicKey =
-        node.publicKeyHex(account: path.account, change: path.change, index: path.index);
+    String publicKey = node.publicKeyHex(account: path.account, change: path.change, index: path.index);
 
     Uint8List privateKey = Uint8List.fromList(hex.decode(privateKeyHex));
 
-    final WIF decoded =
-        WIF(version: _getVersion(network), privateKey: privateKey, compressed: true);
+    final WIF decoded = WIF(version: _getVersion(network), privateKey: privateKey, compressed: true);
 
-    String privateKeyWif = wif.encode(decoded); // testnet: Wif.encode(239, ...
-    return KeyPair(
-        publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), privateKey: privateKeyWif);
+    String privateKeyWif = wif.encode(decoded);
+
+    return KeyPair(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), privateKey: privateKeyWif);
   }
 
   String createBip44LegacyAddress(BIP44 node, BasePath path) {
