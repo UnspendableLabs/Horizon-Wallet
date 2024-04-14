@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/models/constants.dart';
@@ -6,7 +7,7 @@ import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 
 void main() async {
   group('FreewalletRecovery mainnet', () {
-    final bip39 = Bip39();
+    final bip39 = GetIt.I.get<Bip39Service>();
 
     // compatibility with freewallet verified by addresses/priv keys generated in freewallet
     test('bip39 + bip32 recovery', () {

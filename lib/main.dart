@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/services/key_value_store.dart';
 
 void main() async {
   await dotenv.load();
 
   GetIt.I.registerSingleton<KeyValueService>(SharedSettingsKeyValueServiceImpl());
+  GetIt.I.registerSingleton<Bip39Service>(Bip39Impl());
 
   runApp(const MyApp());
 }

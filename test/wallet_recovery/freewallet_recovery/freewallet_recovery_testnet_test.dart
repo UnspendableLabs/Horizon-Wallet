@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/models/constants.dart';
@@ -6,11 +7,10 @@ import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 
 void main() async {
   group('FreewalletRecovery testnet', () {
-    final bip39 = Bip39();
+    final bip39 = GetIt.I.get<Bip39Service>();
 
     test('bip39 + bip32 recovery', () {
-      String mnemonic =
-          "silver similar slab poet cannon south antique finish large romance climb faculty";
+      String mnemonic = "silver similar slab poet cannon south antique finish large romance climb faculty";
 
       Map<String, WalletNode> expectedWalletNodes = {
         "moVDsJ42wbUeAj9emD6LYxYmB9jX4bQ9u9": WalletNode(

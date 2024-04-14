@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_mnemonic_word_list.dart';
 import 'package:uniparty/models/constants.dart';
@@ -19,7 +20,7 @@ String? validateSeedPhrase(String? seedValue, String recoveryWallet) {
         3. entropy is invalid
         3. the checksum fails
       */
-      Bip39().mnemonicToEntropy(seedValue);
+      GetIt.I.get<Bip39Service>().mnemonicToEntropy(seedValue);
     } else if (recoveryWallet == COUNTERWALLET) {
       if (seedValue.split(" ").length != 12) {
         throw ArgumentError(invalidLengthError);

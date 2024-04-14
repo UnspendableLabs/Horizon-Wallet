@@ -66,7 +66,7 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                         },
                                       ),
                                       FilledButton(
-                                          onPressed: () async {
+                                          onPressed: () {
                                             if (_formKey.currentState!.validate()) {
                                               StoredWalletData walletData =
                                                   getSeedHexAndWalletType(_textFieldController.text, state.walletType);
