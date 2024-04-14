@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/models/constants.dart';
 import 'package:uniparty/models/stored_wallet_data.dart';
-import 'package:uniparty/services/key_value_store.dart';
+import 'package:uniparty/services/key_value_store_service.dart';
 
 abstract class StoredWalletDataEvent {}
 
@@ -22,6 +22,7 @@ class StoredWalletDataBloc extends Bloc<StoredWalletDataEvent, StoredWalletDataS
   StoredWalletDataBloc() : super(StoredWalletDataState(data: null)) {
     on<WriteStoredWalletDataEvent>((event, emit) async {
       String walletDataJson = StoredWalletData.serialize(event.data);
+      print('stored wallet data: $walletDataJson');
       await GetIt.I.get<KeyValueService>().set(STORED_WALLET_DATA_KEY, walletDataJson);
 
       emit(StoredWalletDataState(data: event.data));

@@ -1,4 +1,4 @@
-class LegacySeed {
+class LegacyMnemonic {
   // final mnemonicJs = MnemonicJs();
 
   String mnemonicToSeed(String mnemonic) {

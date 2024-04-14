@@ -2,11 +2,20 @@ import 'dart:typed_data';
 
 import 'package:bech32/bech32.dart';
 import 'package:pointycastle/api.dart' as pointycastle;
+import 'package:uniparty/bitcoin_wallet_utils/address_utils/address_service.dart';
 
-class Bech32Address {
-  String deriveBech32Address(Uint8List publicKeyIntList, String network) {
+class Bech32AddressArgs {
+  final Uint8List publicKeyIntList;
+  final String network;
+  Bech32AddressArgs({required this.publicKeyIntList, required this.network});
+}
+
+class Bech32Address extends AddressService {
+  @override
+  String deriveAddress(dynamic args) {
+    Bech32AddressArgs typedArgs = args as Bech32AddressArgs;
     var sha256 = pointycastle.Digest("SHA-256");
-    var publicKeySha256 = sha256.process(publicKeyIntList);
+    var publicKeySha256 = sha256.process(typedArgs.publicKeyIntList);
 
     var ripemd160 = pointycastle.Digest('RIPEMD-160');
     var publicKeyRipemd160 = ripemd160.process(publicKeySha256);
@@ -15,7 +24,7 @@ class Bech32Address {
     List<int> version = [0]; // Assuming Bitcoin network
     List<int> data = [...version, ...publicKeyRipemd5bit];
 
-    String hrp = _getHrp(network);
+    String hrp = _getHrp(typedArgs.network);
     Bech32 rawBech32 = Bech32(hrp, data);
 
     var encoder = const Bech32Codec();

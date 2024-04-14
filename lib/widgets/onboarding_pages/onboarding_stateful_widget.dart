@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bloc/onboarding_bloc.dart';
-import 'package:uniparty/components/onboarding_pages/create_wallet_flow.dart';
-import 'package:uniparty/components/onboarding_pages/recover_wallet_flow.dart';
+import 'package:uniparty/widgets/onboarding_pages/create_wallet_flow.dart';
+import 'package:uniparty/widgets/onboarding_pages/recover_wallet_flow.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});

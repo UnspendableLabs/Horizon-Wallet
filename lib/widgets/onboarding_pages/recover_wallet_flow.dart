@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/bloc/wallet_type_bloc.dart';
-import 'package:uniparty/components/common/back_button.dart';
 import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/stored_wallet_data.dart';
-import 'package:uniparty/utils/seed_phrase_validation.dart';
-import 'package:uniparty/wallet_recovery/get_seed_and_wallet_type.dart';
+import 'package:uniparty/models/create_wallet_args.dart';
+import 'package:uniparty/services/seed_ops_service.dart';
+import 'package:uniparty/widgets/common/back_button.dart';
 
 class RecoverWalletFlow extends StatefulWidget {
   const RecoverWalletFlow({super.key});
@@ -16,7 +16,11 @@ class RecoverWalletFlow extends StatefulWidget {
   State<RecoverWalletFlow> createState() => _RecoverWalletFlowState();
 }
 
-const List<String> list = <String>[COUNTERWALLET, FREEWALLET, UNIPARTY];
+const List<RecoveryWalletEnum> list = <RecoveryWalletEnum>[
+  RecoveryWalletEnum.counterwallet,
+  RecoveryWalletEnum.freewallet,
+  RecoveryWalletEnum.uniparty
+];
 
 class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
   final _textFieldController = TextEditingController();
@@ -30,12 +34,12 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<WalletTypeBloc>(
-        create: (BuildContext context) => WalletTypeBloc(),
-        child: BlocListener<WalletTypeBloc, WalletTypeState>(
-            listenWhen: (previous, current) => previous.walletType != current.walletType,
+    return BlocProvider<WalletRecoveryBloc>(
+        create: (BuildContext context) => WalletRecoveryBloc(),
+        child: BlocListener<WalletRecoveryBloc, WalletRecoveryState>(
+            listenWhen: (previous, current) => previous.recoveryWallet != current.recoveryWallet,
             listener: (context, state) {
-              BlocProvider.of<WalletTypeBloc>(context).add(WalletTypeEvent(walletType: state.walletType));
+              BlocProvider.of<WalletRecoveryBloc>(context).add(WalletRecoveryEvent(recoveryWallet: state.recoveryWallet));
             },
             child: ElevatedButton(
               onPressed: () {
@@ -43,14 +47,14 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                     context: context,
                     builder: (BuildContext context) => MultiBlocProvider(
                           providers: [
-                            BlocProvider<WalletTypeBloc>(
-                              create: (BuildContext context) => WalletTypeBloc(),
+                            BlocProvider<WalletRecoveryBloc>(
+                              create: (BuildContext context) => WalletRecoveryBloc(),
                             ),
                             BlocProvider<StoredWalletDataBloc>(
                               create: (BuildContext context) => StoredWalletDataBloc(),
                             ),
                           ],
-                          child: BlocBuilder<WalletTypeBloc, WalletTypeState>(builder: (context, state) {
+                          child: BlocBuilder<WalletRecoveryBloc, WalletRecoveryState>(builder: (context, state) {
                             return Dialog(
                                 shape: _getShape(),
                                 child: Form(
@@ -62,30 +66,33 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                         controller: _textFieldController,
                                         decoration: const InputDecoration(hintText: "input seed phrase"),
                                         validator: (value) {
-                                          return validateSeedPhrase(value, state.walletType);
+                                          return GetIt.I.get<SeedOpsService>().validateMnemonic(value, state.recoveryWallet);
+                                          // return validateSeedPhrase(value, state.recoveryWallet);
                                         },
                                       ),
                                       FilledButton(
                                           onPressed: () {
                                             if (_formKey.currentState!.validate()) {
-                                              StoredWalletData walletData =
-                                                  getSeedHexAndWalletType(_textFieldController.text, state.walletType);
+                                              // StoredWalletData walletData =
+                                              //     getSeedHexAndWalletRecovery(_textFieldController.text, state.walletType);
 
-                                              BlocProvider.of<StoredWalletDataBloc>(context)
-                                                  .add(WriteStoredWalletDataEvent(data: walletData));
+                                              // BlocProvider.of<StoredWalletDataBloc>(context)
+                                              //     .add(WriteStoredWalletDataEvent(data: walletData));
                                               // await Future.delayed(const Duration(milliseconds: 500));
 
                                               Navigator.pushNamed(
                                                 // ignore: use_build_context_synchronously
                                                 context,
                                                 AppRouter.walletPage,
-                                                arguments: walletData,
+                                                arguments: CreateWalletPayload(
+                                                    mnemonic: _textFieldController.text,
+                                                    recoveryWallet: state.recoveryWallet),
                                               );
                                             }
                                           },
                                           child: const Text('Recover wallet')),
-                                      DropdownButton<String>(
-                                        value: state.walletType,
+                                      DropdownButton<RecoveryWalletEnum>(
+                                        value: state.recoveryWallet,
                                         icon: const Icon(Icons.arrow_downward),
                                         elevation: 16,
                                         style: const TextStyle(color: Color.fromRGBO(159, 194, 244, 1.0)),
@@ -93,14 +100,15 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                           height: 2,
                                           color: const Color.fromRGBO(159, 194, 244, 1.0),
                                         ),
-                                        onChanged: (String? value) {
+                                        onChanged: (RecoveryWalletEnum? value) {
                                           // This is called when the user selects an item.
-                                          BlocProvider.of<WalletTypeBloc>(context).add(WalletTypeEvent(walletType: value!));
+                                          BlocProvider.of<WalletRecoveryBloc>(context)
+                                              .add(WalletRecoveryEvent(recoveryWallet: value!));
                                         },
-                                        items: list.map<DropdownMenuItem<String>>((String value) {
-                                          return DropdownMenuItem<String>(
+                                        items: list.map<DropdownMenuItem<RecoveryWalletEnum>>((RecoveryWalletEnum value) {
+                                          return DropdownMenuItem<RecoveryWalletEnum>(
                                             value: value,
-                                            child: Text(value),
+                                            child: Text(value.name),
                                           );
                                         }).toList(),
                                       )
