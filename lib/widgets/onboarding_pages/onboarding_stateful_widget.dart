@@ -49,6 +49,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class CreateOrRecover extends StatelessWidget {
+  const CreateOrRecover({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const Column(

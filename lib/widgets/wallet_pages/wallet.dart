@@ -34,7 +34,7 @@ class _WalletState extends State<Wallet> {
     return BlocListener<NetworkBloc, NetworkState>(
         listenWhen: (previous, current) => previous.network != current.network,
         listener: (context, state) {
-          BlocProvider.of<WalletBloc>(context).add(WalletLoadEvent(network: state.network));
+          BlocProvider.of<WalletBloc>(context).add(WalletInitEvent(network: state.network));
         },
         child: Scaffold(
             appBar: AppBar(
