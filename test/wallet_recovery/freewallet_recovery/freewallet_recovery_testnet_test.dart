@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
+import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 

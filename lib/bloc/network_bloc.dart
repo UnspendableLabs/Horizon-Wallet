@@ -1,18 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/common/constants.dart';
 
 class NetworkEvent {
-  final String network;
+  final NetworkEnum network;
   NetworkEvent({required this.network});
 }
 
 class NetworkState {
-  final String network;
+  final NetworkEnum network;
   NetworkState({required this.network});
 }
 
 class NetworkBloc extends Bloc<NetworkEvent, NetworkState> {
-  NetworkBloc() : super(NetworkState(network: MAINNET)) {
+  NetworkBloc() : super(NetworkState(network: NetworkEnum.mainnet)) {
     on<NetworkEvent>((event, emit) {
       emit(NetworkState(network: event.network));
     });

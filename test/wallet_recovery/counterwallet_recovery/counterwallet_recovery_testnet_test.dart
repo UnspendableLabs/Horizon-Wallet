@@ -1,14 +1,13 @@
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/legacy_seed.dart';
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/bitcoin_wallet_utils/seed_utils/legacy_mnemonic.dart';
+import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 
 void main() async {
   group('CounterwalletRecovery', () {
     test('recoverCounterwalletThroughFreewallet', () {
-      String phrase =
-          "stone freeze straight bus force crave admit any count driver complete lifeless";
+      String phrase = "stone freeze straight bus force crave admit any count driver complete lifeless";
 
       Map<String, WalletNode> expectedWalletNodes = {
         "mxPywFoCKSi6xxY2Xu5sXqfEUFsNtSKKPf": WalletNode(
@@ -113,7 +112,7 @@ void main() async {
             index: 9)
       };
 
-      String seedHex = LegacySeed().mnemonicToSeed(phrase);
+      String seedHex = LegacyMnemonic().mnemonicToSeed(phrase);
 
       List<WalletNode> recoveredNodes = recoverBip32Wallet(seedHex, TESTNET);
 

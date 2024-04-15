@@ -4,8 +4,9 @@ import 'package:uniparty/bloc/network_bloc.dart';
 import 'package:uniparty/bloc/onboarding_bloc.dart';
 import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/bloc/wallet_bloc.dart';
-import 'package:uniparty/components/onboarding_pages/onboarding_page.dart';
-import 'package:uniparty/components/wallet_pages/wallet.dart';
+import 'package:uniparty/widgets/onboarding_pages/onboarding_page.dart';
+import 'package:uniparty/widgets/wallet_pages/wallet.dart';
+import 'package:uniparty/models/create_wallet_payload.dart';
 
 class AppRouter {
   static const onboardingPage = 'onboardingPage';
@@ -34,7 +35,10 @@ class AppRouter {
                 }),
                 BlocProvider<NetworkBloc>(create: (_) => NetworkBloc())
               ],
-              child: const Wallet(),
+              child: Wallet(
+                // optional payload that is sent on wallet creation
+                payload: settings.arguments as CreateWalletPayload?,
+              ),
             );
           },
         );
