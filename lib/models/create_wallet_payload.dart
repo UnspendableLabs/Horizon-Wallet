@@ -1,4 +1,4 @@
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/common/constants.dart';
 
 class CreateWalletPayload {
   String mnemonic;

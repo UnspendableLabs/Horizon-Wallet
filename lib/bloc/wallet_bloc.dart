@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/create_wallet_args.dart';
+import 'package:uniparty/common/constants.dart';
+import 'package:uniparty/models/create_wallet_payload.dart';
+import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/services/create_wallet_service.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 
@@ -31,13 +33,14 @@ final class WalletError extends WalletState {
 sealed class WalletEvent {}
 
 class WalletLoadEvent extends WalletEvent {
-  final String network;
+  final NetworkEnum network;
   WalletLoadEvent({required this.network});
 }
 
 class WalletInitEvent extends WalletEvent {
+  final NetworkEnum network;
   final CreateWalletPayload? payload;
-  WalletInitEvent({this.payload});
+  WalletInitEvent({required this.network, this.payload});
 }
 
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
@@ -50,55 +53,74 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
 Future<void> onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) async {
   emit(const WalletLoading());
 
-  String? walletDataJson = await GetIt.I.get<KeyValueService>().get(STORED_WALLET_DATA_KEY);
+  await Future.delayed(const Duration(seconds: 1));
 
-  if (walletDataJson == null) {
-    if (event.payload != null) {
-      SeedOpsService seedOpsService = GetIt.I.get<SeedOpsService>();
+  SeedOpsService seedOpsService = GetIt.I.get<SeedOpsService>();
+  KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
 
-      String seedHex = await seedOpsService.getSeedHex(event.payload!.mnemonic, event.payload!.recoveryWallet);
-      WalletTypeEnum walletType = seedOpsService.getWalletType(event.payload!.recoveryWallet);
-      print('seedHex $seedHex walletType $walletType');
+  String? walletDataJson = await keyValueService.get(STORED_WALLET_DATA_KEY);
 
-      
-      emit(const WalletSuccess(data: []));
+  if (walletDataJson != null) {
+    StoredWalletData walletData = StoredWalletData.deserialize(walletDataJson);
 
+    if (event.network == NetworkEnum.mainnet) {
+      emit(WalletSuccess(data: walletData.mainnetNodes));
       return;
-      // String walletType = event.payload!.recoveryWallet;
     }
-    emit(const WalletError(message: 'Wallet info not found'));
 
+    if (event.network == NetworkEnum.testnet) {
+      emit(WalletSuccess(data: walletData.testnetNodes));
+      return;
+    }
     return;
   }
 
-  await Future.delayed(const Duration(seconds: 2));
+  if (walletDataJson == null) {
+    // if walletDataJson is null, then we are creating a new wallet
+    if (event.payload != null) {
+      // first generate the seed hex
+      String seedHex = await seedOpsService.getSeedHex(event.payload!.mnemonic, event.payload!.recoveryWallet);
+      WalletTypeEnum walletType = seedOpsService.getWalletType(event.payload!.recoveryWallet);
 
-  emit(const WalletSuccess(data: []));
+      // then create the wallet nodes for both mainnet and testnet
+      List<WalletNode> mainnetNodes =
+          await GetIt.I.get<CreateWalletService>().createWallet(NetworkEnum.mainnet, seedHex, walletType);
+
+      List<WalletNode> testnetNodes =
+          await GetIt.I.get<CreateWalletService>().createWallet(NetworkEnum.testnet, seedHex, walletType);
+
+      // store seedHex, walletType, mainnetNodes, and testnetNodes in secure storage
+      String walletJson = StoredWalletData.serialize(StoredWalletData(
+          seedHex: seedHex, walletType: walletType, mainnetNodes: mainnetNodes, testnetNodes: testnetNodes));
+      keyValueService.set(STORED_WALLET_DATA_KEY, walletJson);
+
+      // set mainnetNodes state since we always initialize with mainnet
+      emit(WalletSuccess(data: mainnetNodes));
+
+      return;
+    }
+  }
+  // any other state than the above is an error state
+  emit(const WalletError(message: 'Wallet info not found'));
 }
 
 Future<void> onWalletLoad(WalletLoadEvent event, Emitter<WalletState> emit) async {
-  emit(const WalletLoading());
+  KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
 
-  await Future.delayed(const Duration(seconds: 2));
+  String? walletDataJson = await keyValueService.get(STORED_WALLET_DATA_KEY);
 
-  emit(const WalletSuccess(data: []));
+  if (walletDataJson != null) {
+    StoredWalletData walletData = StoredWalletData.deserialize(walletDataJson);
+
+    if (event.network == NetworkEnum.mainnet) {
+      emit(WalletSuccess(data: walletData.mainnetNodes));
+      return;
+    }
+
+    if (event.network == NetworkEnum.testnet) {
+      emit(WalletSuccess(data: walletData.testnetNodes));
+      return;
+    }
+    return;
+  }
 }
-
-// Future<void> onWalletLoad(WalletLoadEvent event, Emitter<WalletState> emit) async {
-//   emit(const WalletLoading());
-//   // reading from secure storage blocks rendering
-//   // delaying allows UI to update
-//   // Future.delayed(const Duration(milliseconds: 50));
-//   String? walletDataJson = await GetIt.I.get<KeyValueService>().get(STORED_WALLET_DATA_KEY);
-//   print('read? $walletDataJson');
-//   // String? walletDataJson = null;
-//   if (walletDataJson == null) {
-//     emit(const WalletError(message: 'Wallet info not found'));
-//     return;
-//   }
-
-//   StoredWalletData? walletData = StoredWalletData.deserialize(walletDataJson);
-//   List<WalletNode> walletNodes = await createWallet(event.network, walletData!.seedHex, walletData.walletType);
-
-//   emit(WalletSuccess(data: walletNodes));
-// }

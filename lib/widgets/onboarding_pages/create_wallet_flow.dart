@@ -5,8 +5,8 @@ import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
 import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/widgets/common/back_button.dart';
-import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/create_wallet_args.dart';
+import 'package:uniparty/common/constants.dart';
+import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 

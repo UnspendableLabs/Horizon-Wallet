@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/legacy_mnemonic.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/legacy_mnemonic_word_list.dart';
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/common/constants.dart';
 
 const invalidLengthError = 'seed phrase contains the wrong number of letters';
 const invalidWordsError = 'some words are not in the word list';
@@ -64,7 +64,7 @@ class SeedOpsService {
   }
 
   Future<String> getSeedHex(String mnemonic, RecoveryWalletEnum recoveryWallet) async {
-    await Future.delayed(const Duration(milliseconds: 5)); // simulate async
+    // await Future.delayed(const Duration(milliseconds: 5)); // simulate async
     var bip39 = GetIt.I.get<Bip39Service>();
     switch (recoveryWallet) {
       case RecoveryWalletEnum.uniparty:

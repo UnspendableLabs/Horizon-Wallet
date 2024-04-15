@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
 import 'package:uniparty/bitcoin_wallet_utils/pub_priv_key_utils/bip44_key_pair.dart';
 import 'package:uniparty/models/base_path.dart';
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/key_pair.dart';
 
 void main() async {

@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/common/constants.dart';
 
 class WalletRecoveryEvent {
   final RecoveryWalletEnum recoveryWallet;

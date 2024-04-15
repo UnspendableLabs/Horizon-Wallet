@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/models/wallet_node.dart';
 
 class SingleWalletNode extends StatefulWidget {
   final WalletNode walletNode;
   final Size containerSize;
-  final String network;
+  final NetworkEnum network;
   const SingleWalletNode({required this.walletNode, required this.containerSize, required this.network, super.key});
 
   @override

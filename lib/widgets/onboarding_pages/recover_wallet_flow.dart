@@ -4,8 +4,8 @@ import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/bloc/wallet_type_bloc.dart';
-import 'package:uniparty/models/constants.dart';
-import 'package:uniparty/models/create_wallet_args.dart';
+import 'package:uniparty/common/constants.dart';
+import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 import 'package:uniparty/widgets/common/back_button.dart';
 

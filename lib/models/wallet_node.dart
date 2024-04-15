@@ -17,7 +17,7 @@ class WalletNode {
         address: jsonData['address'],
         publicKey: jsonData['public_key'],
         privateKey: jsonData['private_key'],
-        index: jsonData['index'].toInt(),
+        index: int.parse(jsonData['index']),
       );
 
   static Map<String, dynamic> toMap(WalletNode model) => <String, dynamic>{

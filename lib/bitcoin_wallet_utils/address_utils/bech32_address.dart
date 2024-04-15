@@ -3,19 +3,13 @@ import 'dart:typed_data';
 import 'package:bech32/bech32.dart';
 import 'package:pointycastle/api.dart' as pointycastle;
 import 'package:uniparty/bitcoin_wallet_utils/address_utils/address_service.dart';
-
-class Bech32AddressArgs {
-  final Uint8List publicKeyIntList;
-  final String network;
-  Bech32AddressArgs({required this.publicKeyIntList, required this.network});
-}
+import 'package:uniparty/common/constants.dart';
 
 class Bech32Address extends AddressService {
   @override
-  String deriveAddress(dynamic args) {
-    Bech32AddressArgs typedArgs = args as Bech32AddressArgs;
+  String deriveAddress(AddressArgs args) {
     var sha256 = pointycastle.Digest("SHA-256");
-    var publicKeySha256 = sha256.process(typedArgs.publicKeyIntList);
+    var publicKeySha256 = sha256.process(args.publicKeyIntList);
 
     var ripemd160 = pointycastle.Digest('RIPEMD-160');
     var publicKeyRipemd160 = ripemd160.process(publicKeySha256);
@@ -24,7 +18,7 @@ class Bech32Address extends AddressService {
     List<int> version = [0]; // Assuming Bitcoin network
     List<int> data = [...version, ...publicKeyRipemd5bit];
 
-    String hrp = _getHrp(typedArgs.network);
+    String hrp = _getHrp(args.network);
     Bech32 rawBech32 = Bech32(hrp, data);
 
     var encoder = const Bech32Codec();
@@ -56,11 +50,13 @@ class Bech32Address extends AddressService {
     return bits5Array;
   }
 
-  _getHrp(String network) {
-    if (network == 'testnet') {
-      // source:  https://bitcoin.stackexchange.com/questions/70507/how-to-create-a-bech32-address-from-a-public-key
-      return 'tb'; // testnet
+  _getHrp(NetworkEnum network) {
+    // source:  https://bitcoin.stackexchange.com/questions/70507/how-to-create-a-bech32-address-from-a-public-key
+    switch (network) {
+      case NetworkEnum.testnet:
+        return 'tb';
+      case NetworkEnum.mainnet:
+        return 'bc';
     }
-    return 'bc'; // mainnet
   }
 }

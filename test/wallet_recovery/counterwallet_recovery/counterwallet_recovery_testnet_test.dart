@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/legacy_mnemonic.dart';
-import 'package:uniparty/models/constants.dart';
+import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/wallet_recovery/bip32_recovery.dart';
 
