@@ -36,6 +36,7 @@ class AppRouter {
                 BlocProvider<NetworkBloc>(create: (_) => NetworkBloc())
               ],
               child: Wallet(
+                // optional payload that is sent on wallet creation
                 payload: settings.arguments as CreateWalletPayload?,
               ),
             );

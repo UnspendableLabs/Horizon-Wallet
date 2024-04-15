@@ -85,7 +85,6 @@ class _WalletState extends State<Wallet> {
                           color: const Color.fromRGBO(27, 27, 37, 1.0),
                         ),
                         child: BlocBuilder<WalletBloc, WalletState>(builder: (context, walletState) {
-                          print('walletState: $walletState');
                           return switch (walletState) {
                             WalletInitial() => const Text('WalletInitial'),
                             WalletLoading() => const Center(child: Text('Loading...')),
@@ -123,7 +122,6 @@ class _WalletState extends State<Wallet> {
                                 ],
                               ),
                             WalletError() => Center(child: Text(walletState.message)),
-                            // WalletSuccess() => Text('Succes'),
                           };
                         })));
               },

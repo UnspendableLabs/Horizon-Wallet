@@ -22,7 +22,7 @@ class StoredWalletDataBloc extends Bloc<StoredWalletDataEvent, StoredWalletDataS
   StoredWalletDataBloc() : super(StoredWalletDataState(data: null)) {
     on<WriteStoredWalletDataEvent>((event, emit) async {
       String walletDataJson = StoredWalletData.serialize(event.data);
-      print('stored wallet data: $walletDataJson');
+
       await GetIt.I.get<KeyValueService>().set(STORED_WALLET_DATA_KEY, walletDataJson);
 
       emit(StoredWalletDataState(data: event.data));

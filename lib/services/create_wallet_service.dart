@@ -24,7 +24,6 @@ class CreateWalletService {
     switch (walletType) {
       case WalletTypeEnum.bip44:
         for (var i = 0; i < numAddresses; i++) {
-          print('Creating address $i');
           BasePath path = BasePath(coinType: _getCoinType(network), account: 0, change: 0, index: i);
 
           KeyPair keyPair =
@@ -45,7 +44,6 @@ class CreateWalletService {
         String basePath = 'm/0\'/0/';
 
         for (var i = 0; i < numAddresses; i++) {
-          print('Creating address $i');
           String path = basePath + i.toString();
           KeyPair keyPair = bip32.createPublicPrivateKeyPairForPath(
               Bip32KeyPairArgs(seedIntList: Uint8List.fromList(hex.decode(seedHex)), path: path, network: network));

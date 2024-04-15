@@ -4,11 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
 import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
-import 'package:uniparty/widgets/common/back_button.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
-import 'package:uniparty/models/stored_wallet_data.dart';
-import 'package:uniparty/services/seed_ops_service.dart';
+import 'package:uniparty/widgets/common/back_button.dart';
 
 class CreateWalletFlow extends StatelessWidget {
   const CreateWalletFlow({super.key});
@@ -90,12 +88,8 @@ class _CreateWalletDialogState extends State<CreateWalletDialog> {
                     });
                     return;
                   }
-                  // StoredWalletData walletData = getSeedHexAndWalletType(widget.mnemonic, UNIPARTY);
-                  // BlocProvider.of<StoredWalletDataBloc>(context).add(WriteStoredWalletDataEvent(data: walletData));
 
-                  // await Future.delayed(const Duration(milliseconds: 500));
                   Navigator.pushNamed(
-                    // ignore: use_build_context_synchronously
                     context,
                     AppRouter.walletPage,
                     arguments: CreateWalletPayload(mnemonic: widget.mnemonic, recoveryWallet: RecoveryWalletEnum.uniparty),

@@ -67,21 +67,12 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                         decoration: const InputDecoration(hintText: "input seed phrase"),
                                         validator: (value) {
                                           return GetIt.I.get<SeedOpsService>().validateMnemonic(value, state.recoveryWallet);
-                                          // return validateSeedPhrase(value, state.recoveryWallet);
                                         },
                                       ),
                                       FilledButton(
                                           onPressed: () {
                                             if (_formKey.currentState!.validate()) {
-                                              // StoredWalletData walletData =
-                                              //     getSeedHexAndWalletRecovery(_textFieldController.text, state.walletType);
-
-                                              // BlocProvider.of<StoredWalletDataBloc>(context)
-                                              //     .add(WriteStoredWalletDataEvent(data: walletData));
-                                              // await Future.delayed(const Duration(milliseconds: 500));
-
                                               Navigator.pushNamed(
-                                                // ignore: use_build_context_synchronously
                                                 context,
                                                 AppRouter.walletPage,
                                                 arguments: CreateWalletPayload(
