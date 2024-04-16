@@ -55,6 +55,7 @@ dependencies:
   shared_preferences: ^2.2.3
   get_it: ^7.6.9
   flutter_secure_storage: ^9.0.0
+  logger: ^2.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -32,11 +32,6 @@ final class WalletError extends WalletState {
 
 sealed class WalletEvent {}
 
-class WalletLoadEvent extends WalletEvent {
-  final NetworkEnum network;
-  WalletLoadEvent({required this.network});
-}
-
 class WalletInitEvent extends WalletEvent {
   final NetworkEnum network;
   final CreateWalletPayload? payload;
@@ -45,11 +40,11 @@ class WalletInitEvent extends WalletEvent {
 
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
   WalletBloc() : super(const WalletInitial()) {
-    on<WalletInitEvent>((event, emit) => onWalletInit(event, emit));
+    on<WalletInitEvent>((event, emit) => _onWalletInit(event, emit));
   }
 }
 
-Future<void> onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) async {
+Future<void> _onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) async {
   emit(const WalletLoading());
 
   await Future.delayed(const Duration(seconds: 1));
@@ -57,22 +52,24 @@ Future<void> onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) asyn
   SeedOpsService seedOpsService = GetIt.I.get<SeedOpsService>();
   KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
 
+  // read secure storage
   String? walletDataJson = await keyValueService.get(STORED_WALLET_DATA_KEY);
 
   if (walletDataJson != null) {
+    // if secure storage has any data, deserialize
     StoredWalletData walletData = StoredWalletData.deserialize(walletDataJson);
 
+    // wallet data is initialized with mainnet, so we can trust that mainnetNodes is already populated
     if (event.network == NetworkEnum.mainnet) {
-      emit(WalletSuccess(data: walletData.mainnetNodes));
-      return;
+      return emit(WalletSuccess(data: walletData.mainnetNodes));
     }
 
     if (event.network == NetworkEnum.testnet) {
+      // if testnet wallet has not been initialized, create
       if (walletData.testnetNodes.isEmpty) {
-        // if testnet wallet has not been initialized, create
         List<WalletNode> testnetNodes = await GetIt.I
             .get<CreateWalletService>()
-            .createWallet(NetworkEnum.mainnet, walletData.seedHex, walletData.walletType);
+            .createWallet(NetworkEnum.testnet, walletData.seedHex, walletData.walletType);
 
         // store testnetNodes in secure storage
         String walletJson = StoredWalletData.serialize(StoredWalletData(
@@ -82,13 +79,14 @@ Future<void> onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) asyn
             testnetNodes: testnetNodes));
 
         keyValueService.set(STORED_WALLET_DATA_KEY, walletJson);
-        emit(WalletSuccess(data: testnetNodes));
-        return;
+        return emit(WalletSuccess(data: testnetNodes));
+      } else {
+        return emit(WalletSuccess(data: walletData.testnetNodes));
       }
-      emit(WalletSuccess(data: walletData.testnetNodes));
-      return;
     }
-    return;
+
+    // there is data in secure storage but wallet nodes were not found for mainnet or testnet, display an error
+    return emit(const WalletError(message: 'wallet data not found'));
   }
 
   if (walletDataJson == null) {

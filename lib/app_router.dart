@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uniparty/bloc/balance_bloc.dart';
 import 'package:uniparty/bloc/network_bloc.dart';
 import 'package:uniparty/bloc/onboarding_bloc.dart';
 import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/bloc/wallet_bloc.dart';
+import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/widgets/onboarding_pages/onboarding_page.dart';
 import 'package:uniparty/widgets/wallet_pages/wallet.dart';
-import 'package:uniparty/models/create_wallet_payload.dart';
 
 class AppRouter {
   static const onboardingPage = 'onboardingPage';
@@ -30,10 +31,9 @@ class AppRouter {
             return MultiBlocProvider(
               providers: [
                 BlocProvider<StoredWalletDataBloc>(create: (_) => StoredWalletDataBloc()),
-                BlocProvider<WalletBloc>(create: (_) {
-                  return WalletBloc();
-                }),
-                BlocProvider<NetworkBloc>(create: (_) => NetworkBloc())
+                BlocProvider<WalletBloc>(create: (_) => WalletBloc()),
+                BlocProvider<NetworkBloc>(create: (_) => NetworkBloc()),
+                BlocProvider(create: (_) => BalanceBloc())
               ],
               child: Wallet(
                 // optional payload that is sent on wallet creation

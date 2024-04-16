@@ -11,8 +11,8 @@ To run locally:
 
 2. Add a .env file to the root of the application which includes:
 ```
-TESTNET_URL=https://api.counterparty.io:14001
-MAINNET_URL=https://api.counterparty.io:4001
+TESTNET_URL=https://api.counterparty.io:14000
+MAINNET_URL=https://api.counterparty.io:4000
 ```
 
 3. Run the application

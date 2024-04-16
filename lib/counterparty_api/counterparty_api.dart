@@ -3,10 +3,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
+import 'package:logger/logger.dart';
+import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/models/response_wrapper.dart';
 
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
+
 class CounterpartyApi {
-  Future<Object> fetchBalance(String address, String network) async {
+  Future<Object> fetchBalance(String address, NetworkEnum network) async {
     String url = _getUrl(network);
 
     try {
@@ -28,20 +35,28 @@ class CounterpartyApi {
         }),
       );
       if (response.statusCode == 200) {
-        return ResponseWrapper.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+        var res = ResponseWrapper.fromJson(jsonDecode(response.body));
+        return res;
       } else {
         throw Exception('Failed to load balance');
       }
     } catch (error) {
+      if (error is ClientException) {
+        logger.e(error.message, error: error);
+
+        throw ErrorDescription(error.message);
+      }
+
       throw ErrorDescription('error from balance fetch');
     }
   }
 
-  _getUrl(String network) {
-    if (network == 'mainnet') {
-      return dotenv.env['MAINNET_URL'];
-    } else {
-      return dotenv.env['TESTNET_URL'];
+  _getUrl(NetworkEnum network) {
+    switch (network) {
+      case NetworkEnum.mainnet:
+        return dotenv.env['MAINNET_URL'];
+      case NetworkEnum.testnet:
+        return dotenv.env['TESTNET_URL'];
     }
   }
 }
