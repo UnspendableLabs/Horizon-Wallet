@@ -3,11 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
-import 'package:uniparty/bloc/wallet_type_bloc.dart';
+import 'package:uniparty/bloc/wallet_recovery_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 import 'package:uniparty/widgets/common/back_button.dart';
+import 'package:uniparty/widgets/common/common_dialog_shape.dart';
 
 class RecoverWalletFlow extends StatefulWidget {
   const RecoverWalletFlow({super.key});
@@ -56,7 +57,7 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                           ],
                           child: BlocBuilder<WalletRecoveryBloc, WalletRecoveryState>(builder: (context, state) {
                             return Dialog(
-                                shape: _getShape(),
+                                shape: getDialogShape(),
                                 child: Form(
                                   key: _formKey,
                                   child: Column(
@@ -118,14 +119,5 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
     return ButtonStyle(
         fixedSize: MaterialStateProperty.all<Size?>(const Size(150.0, 50.0)),
         textStyle: MaterialStateProperty.all<TextStyle?>(const TextStyle(fontSize: 15)));
-  }
-
-  ShapeBorder _getShape() {
-    return RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(4.0),
-      side: const BorderSide(
-        color: Color.fromRGBO(159, 194, 244, 1.0),
-      ),
-    );
   }
 }

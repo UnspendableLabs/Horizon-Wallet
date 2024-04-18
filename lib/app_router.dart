@@ -33,7 +33,7 @@ class AppRouter {
                 BlocProvider<StoredWalletDataBloc>(create: (_) => StoredWalletDataBloc()),
                 BlocProvider<WalletBloc>(create: (_) => WalletBloc()),
                 BlocProvider<NetworkBloc>(create: (_) => NetworkBloc()),
-                BlocProvider(create: (_) => BalanceBloc())
+                BlocProvider<BalanceBloc>(create: (_) => BalanceBloc()),
               ],
               child: Wallet(
                 // optional payload that is sent on wallet creation
