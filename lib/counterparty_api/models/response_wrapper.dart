@@ -1,5 +1,5 @@
 class ResponseWrapper {
-  final List<dynamic> result;
+  final dynamic result;
   final String jsonrpc;
   final String id;
 

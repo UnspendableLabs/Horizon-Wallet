@@ -13,6 +13,6 @@ class Transaction {
       required this.destinationAddress,
       required this.quantity,
       required this.asset,
-      required this.memo,
-      required this.memoIsHex});
+      this.memo,
+      this.memoIsHex});
 }

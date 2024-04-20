@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/constants.dart';
+import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/models/transaction.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
@@ -14,13 +15,17 @@ class TransactionInitial extends TransactionState {
   TransactionInitial({required this.sourceAddressOptions});
 }
 
-class TransactionLoading extends TransactionState {
-  TransactionLoading();
+class InitializeTransactionLoading extends TransactionState {
+  InitializeTransactionLoading();
+}
+
+class SendTransactionLoading extends TransactionState {
+  SendTransactionLoading();
 }
 
 class TransactionSuccess extends TransactionState {
   final Transaction transaction;
-  TransactionSuccess({required this.transaction});
+   TransactionSuccess({required this.transaction});
 }
 
 class TransactionError extends TransactionState {
@@ -44,26 +49,40 @@ class SendTransactionEvent extends TransactionEvent {
 }
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
-  TransactionBloc() : super(TransactionLoading()) {
-    on<InitializeTransactionEvent>((event, emit) async {
-      emit(TransactionLoading());
-      KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
-      String? walletJson = await keyValueService.get(STORED_WALLET_DATA_KEY);
-      if (walletJson == null) {
-        emit(TransactionError(message: 'No wallet data found'));
-        return;
-      }
-      StoredWalletData walletData = StoredWalletData.deserialize(walletJson);
+  TransactionBloc() : super(InitializeTransactionLoading()) {
+    on<InitializeTransactionEvent>((event, emit) async => await _onInitializeTransaction(event, emit));
 
-      if (event.network == NetworkEnum.mainnet) {
-        emit(TransactionInitial(sourceAddressOptions: walletData.mainnetNodes.map((e) => e.address).toList()));
-      } else {
-        emit(TransactionInitial(sourceAddressOptions: walletData.testnetNodes.map((e) => e.address).toList()));
-      }
-    });
-    on<TransactionEvent>((event, emit) {
-      emit(TransactionLoading());
+    on<SendTransactionEvent>((event, emit) {
+      emit(SendTransactionLoading());
       // emit(_buildTransactionState(event));
     });
+  }
+}
+
+_onInitializeTransaction(event, emit) async {
+  emit(InitializeTransactionLoading());
+  KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
+  String? walletJson = await keyValueService.get(STORED_WALLET_DATA_KEY);
+  if (walletJson == null) {
+    emit(TransactionError(message: 'No wallet data found'));
+    return;
+  }
+  StoredWalletData walletData = StoredWalletData.deserialize(walletJson);
+
+  if (event.network == NetworkEnum.mainnet) {
+    emit(TransactionInitial(sourceAddressOptions: walletData.mainnetNodes.map((e) => e.address).toList()));
+  } else {
+    emit(TransactionInitial(sourceAddressOptions: walletData.testnetNodes.map((e) => e.address).toList()));
+  }
+}
+
+_onSendTransactionEvent(event, emit) async {
+  emit(SendTransactionLoading());
+  final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
+  try {
+    final response = await counterpartyApi.createSendTransaction(event.transaction, event.network);
+    emit(TransactionSuccess(transaction: event.transaction));
+  } catch (error) {
+    emit(TransactionError(message: error.toString()));
   }
 }

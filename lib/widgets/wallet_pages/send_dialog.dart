@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/bloc/transaction_bloc.dart';
 import 'package:uniparty/common/constants.dart';
+import 'package:uniparty/models/transaction.dart';
 import 'package:uniparty/widgets/common/common_dialog_shape.dart';
 
 class SendDialog extends StatefulWidget {
@@ -53,6 +54,7 @@ class _SendDialogState extends State<SendDialog> {
         shape: getDialogShape(),
         child: BlocBuilder<TransactionBloc, TransactionState>(builder: (context, transactionState) {
           return switch (transactionState) {
+            InitializeTransactionLoading() => const Text('loading...'),
             TransactionInitial() => Padding(
                 padding: const EdgeInsets.all(15),
                 child: Form(
@@ -60,11 +62,31 @@ class _SendDialogState extends State<SendDialog> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
+                    Wrap(
+                      children: [
+                        DropdownButtonFormField<String>(
+                            value: transactionState.sourceAddressOptions[0],
+                            decoration: const InputDecoration(labelText: "Source address"),
+                            onChanged: (String? value) {
+                              setState(() {
+                                _sourceAddress = value!;
+                              });
+                            },
+                            items: transactionState.sourceAddressOptions.map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(
+                                  value,
+                                ),
+                              );
+                            }).toList())
+                      ],
+                    ),
                     SizedBox(
                       width: screenSize.width / 2,
                       child: TextFormField(
                         controller: _destinationAddressTextController,
-                        decoration: const InputDecoration(hintText: "address"),
+                        decoration: const InputDecoration(labelText: "Destination address"),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter some text';
@@ -81,34 +103,17 @@ class _SendDialogState extends State<SendDialog> {
                     SizedBox(
                         width: screenSize.width / 2,
                         child: TextField(
-                            decoration: const InputDecoration(labelText: "Enter your number"),
+                            decoration: const InputDecoration(labelText: "Quantity"),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            // inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
                             controller: _quantityTextController,
                             onChanged: (value) {
                               setState(() {
                                 _quantity = double.parse(value);
                               });
                             })),
-                    DropdownButton<String>(
-                        value: transactionState.sourceAddressOptions[0],
-                        onChanged: (String? value) {
-                          setState(() {
-                            _sourceAddress = value!;
-                          });
-                        },
-                        items: transactionState.sourceAddressOptions.map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Center(
-                              child: Text(
-                                value,
-                              ),
-                            ),
-                          );
-                        }).toList()),
-                    DropdownButton<AssetEnum>(
+                    DropdownButtonFormField<AssetEnum>(
                       value: _asset,
+                      decoration: const InputDecoration(labelText: "Asset"),
                       onChanged: (AssetEnum? value) {
                         setState(() {
                           _asset = value!;
@@ -127,7 +132,17 @@ class _SendDialogState extends State<SendDialog> {
                     ),
                     Wrap(
                       children: <Widget>[
-                        CupertinoButton(child: const Text('Send'), onPressed: () {}),
+                        CupertinoButton(
+                            child: const Text('Send'),
+                            onPressed: () {
+                              BlocProvider.of<TransactionBloc>(context).add(SendTransactionEvent(
+                                  transaction: Transaction(
+                                      sourceAddress: _sourceAddress,
+                                      destinationAddress: _destinationAddress,
+                                      asset: _asset,
+                                      quantity: _quantity),
+                                  network: widget.network));
+                            }),
                         CupertinoButton(
                           child: const Text('Cancel'),
                           onPressed: () {
@@ -139,108 +154,10 @@ class _SendDialogState extends State<SendDialog> {
                   ],
                 )),
               ),
-            TransactionLoading() => const Text('transaction loading...'),
+            SendTransactionLoading() => const Text('sending transaction...'),
             TransactionSuccess() => const Text('transaction success'),
             TransactionError() => Text('transaction error: ${transactionState.message}'),
           };
         }));
-
-    // return BlocBuilder<TransactionBloc, TransactionState>(builder: (context, transactionState) {
-    //   return switch (transactionState) {
-    //     TransactionInitial() => Dialog(
-    //         shape: getDialogShape(),
-    //         child: Padding(
-    //           padding: const EdgeInsets.all(15),
-    //           child: Form(
-    //               child: Column(
-    //             mainAxisSize: MainAxisSize.min,
-    //             crossAxisAlignment: CrossAxisAlignment.center,
-    //             children: <Widget>[
-    //               const CommonBackButton(),
-    //               SizedBox(
-    //                 width: screenSize.width / 2,
-    //                 child: TextFormField(
-    //                   controller: _destinationAddressTextController,
-    //                   decoration: const InputDecoration(hintText: "address"),
-    //                   validator: (value) {
-    //                     if (value == null || value.isEmpty) {
-    //                       return 'Please enter some text';
-    //                     }
-    //                     return null;
-    //                   },
-    //                   onChanged: (value) {
-    //                     setState(() {
-    //                       _destinationAddress = value;
-    //                     });
-    //                   },
-    //                 ),
-    //               ),
-    //               SizedBox(
-    //                   width: screenSize.width / 2,
-    //                   child: TextField(
-    //                       decoration: const InputDecoration(labelText: "Enter your number"),
-    //                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-    //                       // inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
-    //                       controller: _quantityTextController,
-    //                       onChanged: (value) {
-    //                         setState(() {
-    //                           _quantity = double.parse(value);
-    //                         });
-    //                       })),
-    //               DropdownButton<String>(
-    //                   value: transactionState.sourceAddressOptions[0],
-    //                   onChanged: (String? value) {
-    //                     setState(() {
-    //                       _sourceAddress = value!;
-    //                     });
-    //                   },
-    //                   items: transactionState.sourceAddressOptions.map<DropdownMenuItem<String>>((String value) {
-    //                     return DropdownMenuItem<String>(
-    //                       value: value,
-    //                       child: Center(
-    //                         child: Text(
-    //                           value,
-    //                         ),
-    //                       ),
-    //                     );
-    //                   }).toList()),
-    //               DropdownButton<AssetEnum>(
-    //                 value: _asset,
-    //                 onChanged: (AssetEnum? value) {
-    //                   setState(() {
-    //                     _asset = value!;
-    //                   });
-    //                 },
-    //                 items: assetList.map<DropdownMenuItem<AssetEnum>>((var value) {
-    //                   return DropdownMenuItem<AssetEnum>(
-    //                     value: value,
-    //                     child: Center(
-    //                       child: Text(
-    //                         value.name,
-    //                       ),
-    //                     ),
-    //                   );
-    //                 }).toList(),
-    //               ),
-    //               Wrap(
-    //                 children: <Widget>[
-    //                   CupertinoButton(child: const Text('Send'), onPressed: () {}),
-    //                   CupertinoButton(
-    //                     child: const Text('Cancel'),
-    //                     onPressed: () {
-    //                       Navigator.pop(context);
-    //                     },
-    //                   ),
-    //                 ],
-    //               ),
-    //             ],
-    //           )),
-    //         )),
-    //     TransactionLoading() => const Text('transaction loading...'),
-    //     TransactionSuccess() => const Text('transaction success'),
-    //     TransactionError() => Text('transaction error: ${transactionState.message}'),
-    //   };
-    // });
-    // });
   }
 }

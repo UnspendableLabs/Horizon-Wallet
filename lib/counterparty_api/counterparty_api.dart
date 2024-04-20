@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
@@ -50,15 +49,12 @@ class CounterpartyApi {
     } catch (error) {
       if (error is ClientException) {
         logger.e(error.message, error: error);
-
-        throw ErrorDescription(error.message);
       }
-
-      throw ErrorDescription('error from balance fetch');
+      rethrow;
     }
   }
 
-  Future<Object> createSendTransaction(Transaction transaction, NetworkEnum network) async {
+  Future<String> createSendTransaction(Transaction transaction, NetworkEnum network) async {
     String url = _getUrl(network);
 
     try {
@@ -85,18 +81,15 @@ class CounterpartyApi {
       if (response.statusCode == 200) {
         var res = ResponseWrapper.fromJson(jsonDecode(response.body));
 
-        return res;
+        return res.result;
       } else {
-        throw Exception('Failed to create send transaction');
+        throw Exception('Failed to create send transaction: ${response.statusCode} ${response.body}');
       }
     } catch (error) {
       if (error is ClientException) {
         logger.e(error.message, error: error);
-
-        throw ErrorDescription(error.message);
       }
-
-      throw ErrorDescription('error from balance fetch');
+      rethrow;
     }
   }
 
