@@ -24,8 +24,8 @@ class SendTransactionLoading extends TransactionState {
 }
 
 class TransactionSuccess extends TransactionState {
-  final Transaction transaction;
-   TransactionSuccess({required this.transaction});
+  final String transactionHex;
+  TransactionSuccess({required this.transactionHex});
 }
 
 class TransactionError extends TransactionState {
@@ -52,10 +52,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   TransactionBloc() : super(InitializeTransactionLoading()) {
     on<InitializeTransactionEvent>((event, emit) async => await _onInitializeTransaction(event, emit));
 
-    on<SendTransactionEvent>((event, emit) {
-      emit(SendTransactionLoading());
-      // emit(_buildTransactionState(event));
-    });
+    on<SendTransactionEvent>((event, emit) async => _onSendTransactionEvent(event, emit));
   }
 }
 
@@ -81,7 +78,7 @@ _onSendTransactionEvent(event, emit) async {
   final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
   try {
     final response = await counterpartyApi.createSendTransaction(event.transaction, event.network);
-    emit(TransactionSuccess(transaction: event.transaction));
+    emit(TransactionSuccess(transactionHex: response));
   } catch (error) {
     emit(TransactionError(message: error.toString()));
   }
