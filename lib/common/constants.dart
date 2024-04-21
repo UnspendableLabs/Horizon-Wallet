@@ -6,4 +6,6 @@ enum WalletTypeEnum { bip44, bip32 }
 
 enum NetworkEnum { mainnet, testnet }
 
+enum AssetEnum { BTC, XCP }
+
 const String STORED_WALLET_DATA_KEY = 'stored_wallet_data';

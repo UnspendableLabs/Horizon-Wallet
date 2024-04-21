@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
+import 'package:uniparty/counterparty_api/models/balance.dart';
 
 sealed class BalanceState {
   const BalanceState();
@@ -16,8 +17,8 @@ final class BalanceLoading extends BalanceState {
 }
 
 final class BalanceSuccess extends BalanceState {
-  final dynamic data;
-  const BalanceSuccess({required this.data});
+  final List<Balance> balances;
+  const BalanceSuccess({required this.balances});
 }
 
 final class BalanceError extends BalanceState {
@@ -40,15 +41,11 @@ class BalanceBloc extends Bloc<LoadBalanceEvent, BalanceState> {
 _onBalanceLoad(LoadBalanceEvent event, Emitter<BalanceState> emit) async {
   emit(const BalanceLoading());
   final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
-  // final obj = await counterpartyApi.fetchBalance(widget.walletNode.address, widget.network);
-  // print('balance $obj');
-  // return obj.toString();
 
   try {
-    final balance = await counterpartyApi.fetchBalance(event.address, event.network);
-    emit(BalanceSuccess(data: balance));
+    final balances = await counterpartyApi.fetchBalance(event.address, event.network);
+    emit(BalanceSuccess(balances: balances));
   } catch (error) {
-    emit(BalanceError(message: ''));
+    emit(BalanceError(message: error.toString()));
   }
-  // print('BALANCE? $balance');
 }

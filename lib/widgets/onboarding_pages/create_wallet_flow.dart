@@ -7,6 +7,7 @@ import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/widgets/common/back_button.dart';
+import 'package:uniparty/widgets/common/common_dialog_shape.dart';
 
 class CreateWalletFlow extends StatelessWidget {
   const CreateWalletFlow({super.key});
@@ -57,7 +58,7 @@ class _CreateWalletDialogState extends State<CreateWalletDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-        shape: _getShape(),
+        shape: getDialogShape(),
         child: Padding(
           padding: const EdgeInsets.all(15),
           child: Column(
@@ -104,11 +105,4 @@ class _CreateWalletDialogState extends State<CreateWalletDialog> {
   }
 }
 
-ShapeBorder _getShape() {
-  return RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(4.0),
-    side: const BorderSide(
-      color: Color.fromRGBO(159, 194, 244, 1.0),
-    ),
-  );
-}
+
