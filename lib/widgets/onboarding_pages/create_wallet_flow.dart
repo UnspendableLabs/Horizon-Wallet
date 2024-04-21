@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
-import 'package:uniparty/bloc/stored_wallet_data_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/widgets/common/back_button.dart';
@@ -20,13 +18,7 @@ class CreateWalletFlow extends StatelessWidget {
         onPressed: () {
           final mnemonic = GetIt.I.get<Bip39Service>().generateMnemonic();
 
-          showDialog<String>(
-              context: context,
-              builder: (BuildContext context) => BlocProvider(
-                  create: (context) => StoredWalletDataBloc(),
-                  child: BlocBuilder<StoredWalletDataBloc, StoredWalletDataState>(builder: (context, state) {
-                    return CreateWalletDialog(mnemonic: mnemonic);
-                  })));
+          showDialog<String>(context: context, builder: (BuildContext context) => CreateWalletDialog(mnemonic: mnemonic));
         });
   }
 

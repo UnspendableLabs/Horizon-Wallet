@@ -46,7 +46,6 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
 
 Future<void> _onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) async {
   emit(const WalletLoading());
-
   await Future.delayed(const Duration(seconds: 1));
 
   SeedOpsService seedOpsService = GetIt.I.get<SeedOpsService>();
