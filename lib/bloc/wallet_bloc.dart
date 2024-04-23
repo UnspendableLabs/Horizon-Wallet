@@ -22,7 +22,8 @@ final class WalletLoading extends WalletState {
 
 final class WalletSuccess extends WalletState {
   final WalletNode activeWallet;
-  const WalletSuccess({required this.activeWallet});
+  final List<WalletNode> allWallets;
+  const WalletSuccess({required this.activeWallet, required this.allWallets});
 }
 
 final class WalletError extends WalletState {
@@ -53,11 +54,11 @@ Future<void> _onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) asy
     KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
 
     // attempt to retrieve the active address for the network
-    String? activeWalletJson = await _getActiveWalletForNetwork(event.network, keyValueService);
+    WalletNode? activeWallet = await _getActiveWalletForNetwork(event.network, keyValueService);
+    List<WalletNode>? walletNodes = await _getWalletNodesForNetwork(event, keyValueService);
 
-    if (activeWalletJson != null) {
-      WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
-      emit(WalletSuccess(activeWallet: activeWallet));
+    if (activeWallet != null && walletNodes != null) {
+      emit(WalletSuccess(activeWallet: activeWallet, allWallets: walletNodes));
       return;
     }
 
@@ -80,31 +81,33 @@ Future<void> _onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) asy
       WalletNode activeWallet = walletNodes[0];
 
       await _storeActiveWallet(event.network, activeWallet, keyValueService);
-      emit(WalletSuccess(activeWallet: activeWallet));
+      emit(WalletSuccess(activeWallet: activeWallet, allWallets: walletNodes));
       return;
     } else {
       // if wallet data is found in secure storage, deserialize
       StoredWalletData walletData = StoredWalletData.deserialize(walletDataJson);
 
       // get or create all the wallets for the network
-      List<WalletNode> wallets = await _getOrCreateWalletNodesForNetwork(event, walletData, keyValueService);
+      List<WalletNode> walletNodes = await _getOrCreateWalletNodesForNetwork(event, walletData, keyValueService);
 
       // set the active wallet
-      WalletNode activeWallet = wallets[0];
+      WalletNode activeWallet = walletNodes[0];
       await _storeActiveWallet(event.network, activeWallet, keyValueService);
-      emit(WalletSuccess(activeWallet: activeWallet));
+      emit(WalletSuccess(activeWallet: activeWallet, allWallets: walletNodes));
     }
   } catch (error) {
     emit(const WalletError(message: 'Error fetching or creating wallet.'));
   }
 }
 
-Future<String?> _getActiveWalletForNetwork(NetworkEnum network, KeyValueService keyValueService) async {
+Future<WalletNode?> _getActiveWalletForNetwork(NetworkEnum network, KeyValueService keyValueService) async {
   switch (network) {
     case NetworkEnum.mainnet:
-      return await keyValueService.get(ACTIVE_MAINNET_WALLET_KEY);
+      String? activeWalletJson = await keyValueService.get(ACTIVE_MAINNET_WALLET_KEY);
+      return activeWalletJson != null ? WalletNode.deserialize(activeWalletJson) : null;
     case NetworkEnum.testnet:
-      return await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
+      String? activeWalletJson = await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
+      return activeWalletJson != null ? WalletNode.deserialize(activeWalletJson) : null;
   }
 }
 
@@ -143,28 +146,34 @@ Future<void> _storeActiveWallet(NetworkEnum network, WalletNode activeWallet, Ke
   }
 }
 
-Future<List<WalletNode>> _getOrCreateWalletNodesForNetwork(
-    WalletInitEvent event, StoredWalletData walletData, KeyValueService keyValueService) async {
+Future<List<WalletNode>?> _getWalletNodesForNetwork(WalletInitEvent event, KeyValueService keyValueService) async {
   switch (event.network) {
     case NetworkEnum.mainnet:
       String? mainnetNodesJson = await keyValueService.get(MAINNET_WALLET_NODES_KEY);
-      if (mainnetNodesJson != null) {
-        return WalletNode.deserializeList(mainnetNodesJson);
-      } else {
-        List<WalletNode> mainnetNodes =
-            await GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
-        _storeWalletNodesForNetwork(event.network, mainnetNodes, keyValueService);
-        return mainnetNodes;
-      }
+      return mainnetNodesJson != null ? WalletNode.deserializeList(mainnetNodesJson) : null;
     case NetworkEnum.testnet:
       String? testnetNodesJson = await keyValueService.get(TESTNET_WALLET_NODES_KEY);
-      if (testnetNodesJson != null) {
-        return WalletNode.deserializeList(testnetNodesJson);
-      } else {
-        List<WalletNode> testnetNodes =
-            await GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
-        _storeWalletNodesForNetwork(event.network, testnetNodes, keyValueService);
-        return testnetNodes;
-      }
+      return testnetNodesJson != null ? WalletNode.deserializeList(testnetNodesJson) : null;
+  }
+}
+
+Future<List<WalletNode>> _getOrCreateWalletNodesForNetwork(
+    WalletInitEvent event, StoredWalletData walletData, KeyValueService keyValueService) async {
+  List<WalletNode>? walletNodes = await _getWalletNodesForNetwork(event, keyValueService);
+  if (walletNodes != null) {
+    return walletNodes;
+  }
+  switch (event.network) {
+    case NetworkEnum.mainnet:
+      List<WalletNode> mainnetNodes =
+          await GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+      _storeWalletNodesForNetwork(event.network, mainnetNodes, keyValueService);
+      return mainnetNodes;
+
+    case NetworkEnum.testnet:
+      List<WalletNode> testnetNodes =
+          await GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+      _storeWalletNodesForNetwork(event.network, testnetNodes, keyValueService);
+      return testnetNodes;
   }
 }
