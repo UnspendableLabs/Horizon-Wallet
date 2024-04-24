@@ -6,8 +6,9 @@ import 'package:uniparty/bloc/wallet_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/widgets/wallet_pages/active_wallet_node.dart';
+import 'package:uniparty/widgets/wallet_pages/multi_address_dialog.dart';
 import 'package:uniparty/widgets/wallet_pages/send_dialog.dart';
-import 'package:uniparty/widgets/wallet_pages/single_wallet_node.dart';
 
 class Wallet extends StatefulWidget {
   final CreateWalletPayload? payload;
@@ -102,7 +103,7 @@ class _WalletState extends State<Wallet> {
         Expanded(
           child: SizedBox(
             height: screenSize.height,
-            child: SingleWalletNode(
+            child: ActiveWalletNode(
               network: network,
               activeWallet: activeWallet,
               width: screenSize.width / 1.25,
@@ -113,7 +114,7 @@ class _WalletState extends State<Wallet> {
     );
   }
 
-  List<Widget> _buildAppBarActions(Size screenSize, NetworkEnum network, List<WalletNode> walletNodes) {
+  List<Widget> _buildAppBarActions(Size screenSize, NetworkEnum network) {
     List<Widget> actionWidgets = <Widget>[
       Padding(
         padding: EdgeInsets.only(right: screenSize.width / 8),
@@ -133,27 +134,33 @@ class _WalletState extends State<Wallet> {
         ),
       ),
     ];
-    if (walletNodes.length > 1) {
-      actionWidgets.add(BlocBuilder<WalletBloc, WalletState>(builder: (context, walletState) {
-        return Padding(
-          padding: EdgeInsets.only(right: screenSize.width / 8),
-          child: IconButton(
-            icon: const Icon(Icons.send, color: Colors.white),
-            onPressed: () {
-              showDialog<String>(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return BlocProvider<TransactionBloc>(
-                        create: (_) => TransactionBloc(),
-                        child: SendDialog(
-                          network: network,
-                        ));
-                  });
-            },
-          ),
-        );
-      }));
-    }
+    actionWidgets.add(BlocBuilder<WalletBloc, WalletState>(builder: (context, walletState) {
+      return switch (walletState) {
+        WalletInitial() => Container(),
+        WalletLoading() => Container(),
+        WalletSuccess() => walletState.allWallets.length > 1
+            ? Padding(
+                padding: EdgeInsets.only(right: screenSize.width / 8),
+                child: IconButton(
+                  icon: const Icon(Icons.plus_one, color: Colors.white),
+                  onPressed: () {
+                    showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return BlocProvider<TransactionBloc>(
+                              create: (_) => TransactionBloc(),
+                              child: MultiAddressDialog(
+                                walletNodes: walletState.allWallets,
+                                network: network,
+                              ));
+                        });
+                  },
+                ),
+              )
+            : Container(),
+        WalletError() => Container(),
+      };
+    }));
     return actionWidgets;
   }
 }

@@ -5,17 +5,17 @@ import 'package:uniparty/bloc/network_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 
-class SingleWalletNode extends StatefulWidget {
+class ActiveWalletNode extends StatefulWidget {
   final WalletNode activeWallet;
   final double width;
   final NetworkEnum network;
-  const SingleWalletNode({required this.activeWallet, required this.width, required this.network, super.key});
+  const ActiveWalletNode({required this.activeWallet, required this.width, required this.network, super.key});
 
   @override
-  State<SingleWalletNode> createState() => _SingleWalletNode();
+  State<ActiveWalletNode> createState() => _ActiveWalletNode();
 }
 
-class _SingleWalletNode extends State<SingleWalletNode> {
+class _ActiveWalletNode extends State<ActiveWalletNode> {
   @override
   void initState() {
     super.initState();
