@@ -147,8 +147,8 @@ class _WalletState extends State<Wallet> {
                     showDialog<String>(
                         context: context,
                         builder: (BuildContext context) {
-                          return BlocProvider<TransactionBloc>(
-                              create: (_) => TransactionBloc(),
+                          return BlocProvider<WalletBloc>(
+                              create: (_) => WalletBloc(),
                               child: MultiAddressDialog(
                                 walletNodes: walletState.allWallets,
                                 network: network,
