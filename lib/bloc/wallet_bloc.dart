@@ -39,30 +39,11 @@ class WalletInitEvent extends WalletEvent {
   WalletInitEvent({required this.network, this.payload});
 }
 
-// class SetActiveWalletEvent extends WalletEvent {
-//   final WalletNode walletNode;
-//   final NetworkEnum network;
-//   SetActiveWalletEvent({required this.walletNode, required this.network});
-// }
-
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
   WalletBloc() : super(const WalletInitial()) {
     on<WalletInitEvent>((event, emit) => _onWalletInit(event, emit));
-    // on<SetActiveWalletEvent>((event, emit) => _onSetActiveWallet(event, emit));
   }
 }
-
-// Future<void> _onSetActiveWallet(event, emit) async {
-//   emit(const WalletLoading());
-//   KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
-//   await storeActiveWallet(event.network, event.walletNode, keyValueService);
-//   List<WalletNode>? walletNodes = await _getWalletNodesForNetwork(event, keyValueService);
-//   if (walletNodes == null) {
-//     emit(const WalletError(message: 'Error setting active wallet.'));
-//     return;
-//   }
-//   emit(WalletSuccess(activeWallet: event.walletNode, allWallets: walletNodes));
-// }
 
 Future<void> _onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) async {
   emit(const WalletLoading());
