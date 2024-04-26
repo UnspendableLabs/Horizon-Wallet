@@ -35,38 +35,36 @@ class _MultiAddressDialogState extends State<MultiAddressDialog> {
   Widget build(BuildContext context) {
     return BlocBuilder<WalletBloc, WalletState>(builder: (context, walletState) {
       return Dialog(
-          shape: getDialogShape(),
-          child: Padding(
-            padding: EdgeInsets.all(15),
-            child: ListView.builder(
-                scrollDirection: Axis.vertical,
-                padding: const EdgeInsets.all(8),
-                itemCount: widget.walletNodes.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    decoration:
-                        const BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Colors.white, width: 1))),
-                    child: Column(children: [
-                      TextButton(
-                        child: Text(widget.walletNodes[index].address,
-                            style: const TextStyle(color: Colors.white, fontSize: 20, overflow: TextOverflow.visible)),
-                        onPressed: () async {
-                          KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
+        shape: getDialogShape(),
+        child: ListView.builder(
+            scrollDirection: Axis.vertical,
+            padding: const EdgeInsets.all(8),
+            itemCount: widget.walletNodes.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Container(
+                decoration:
+                    const BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: Colors.white, width: 1))),
+                child: Column(children: [
+                  TextButton(
+                    child: Text(widget.walletNodes[index].address,
+                        style: const TextStyle(color: Colors.white, fontSize: 20, overflow: TextOverflow.visible)),
+                    onPressed: () async {
+                      KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
 
-                          await storeActiveWallet(widget.network, widget.walletNodes[index], keyValueService);
+                      await storeActiveWallet(widget.network, widget.walletNodes[index], keyValueService);
 
-                          Navigator.pushNamed(
-                            // ignore: use_build_context_synchronously
-                            context,
-                            AppRouter.walletPage,
-                          );
-                        },
-                      ),
-                      SingleAddressDisplay(address: widget.walletNodes[index].address, network: widget.network)
-                    ]),
-                  );
-                }),
-          ));
+                      Navigator.pushNamed(
+                        // ignore: use_build_context_synchronously
+                        context,
+                        AppRouter.walletPage,
+                      );
+                    },
+                  ),
+                  SingleAddressDisplay(address: widget.walletNodes[index].address, network: widget.network)
+                ]),
+              );
+            }),
+      );
     });
   }
 }

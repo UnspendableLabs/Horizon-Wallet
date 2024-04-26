@@ -146,13 +146,19 @@ class _WalletState extends State<Wallet> {
                   onPressed: () {
                     showDialog<String>(
                         context: context,
+                        barrierDismissible: true,
                         builder: (BuildContext context) {
                           return BlocProvider<WalletBloc>(
                               create: (_) => WalletBloc(),
-                              child: MultiAddressDialog(
-                                walletNodes: walletState.allWallets,
-                                network: network,
-                              ));
+                              child: Padding(
+                                  padding: const EdgeInsets.only(left: 200, right: 200, top: 100, bottom: 100),
+                                  child: SizedBox(
+                                      height: 150,
+                                      width: 150,
+                                      child: MultiAddressDialog(
+                                        walletNodes: walletState.allWallets,
+                                        network: network,
+                                      ))));
                         });
                   },
                 ),
