@@ -29,5 +29,10 @@ class WalletNode {
 
   static String serialize(WalletNode model) => json.encode(WalletNode.toMap(model));
 
+  static String serializeList(List<WalletNode> model) => json.encode(model.map((node) => WalletNode.toMap(node)).toList());
+
   static WalletNode deserialize(String json) => WalletNode.fromJson(jsonDecode(json));
+
+  static List<WalletNode> deserializeList(String json) =>
+      jsonDecode(json).map<WalletNode>((node) => WalletNode.fromJson(node)).toList();
 }

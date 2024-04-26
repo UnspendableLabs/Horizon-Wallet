@@ -6,9 +6,9 @@ import 'package:uniparty/bloc/wallet_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/widgets/wallet_pages/balance_total.dart';
+import 'package:uniparty/widgets/wallet_pages/active_wallet_node.dart';
+import 'package:uniparty/widgets/wallet_pages/multi_address_dialog.dart';
 import 'package:uniparty/widgets/wallet_pages/send_dialog.dart';
-import 'package:uniparty/widgets/wallet_pages/single_wallet_node.dart';
 
 class Wallet extends StatefulWidget {
   final CreateWalletPayload? payload;
@@ -71,25 +71,7 @@ class _WalletState extends State<Wallet> {
                       );
                     }).toList(),
                   ),
-                  actions: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(right: screenSize.width / 8),
-                      child: IconButton(
-                        icon: const Icon(Icons.send, color: Colors.white),
-                        onPressed: () {
-                          showDialog<String>(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return BlocProvider<TransactionBloc>(
-                                    create: (_) => TransactionBloc(),
-                                    child: SendDialog(
-                                      network: state.network,
-                                    ));
-                              });
-                        },
-                      ),
-                    ),
-                  ]),
+                  actions: _buildAppBarActions(screenSize, state.network)),
               body: BlocBuilder<NetworkBloc, NetworkState>(
                 builder: (context, networkState) {
                   return Scaffold(
@@ -105,7 +87,8 @@ class _WalletState extends State<Wallet> {
                             return switch (walletState) {
                               WalletInitial() => const Text('WalletInitial'),
                               WalletLoading() => const Center(child: Text('Loading...')),
-                              WalletSuccess() => _buildWalletContainer(screenSize, walletState.data, networkState.network),
+                              WalletSuccess() =>
+                                _buildWalletContainer(screenSize, walletState.activeWallet, networkState.network),
                               WalletError() => Center(child: Text(walletState.message)),
                             };
                           })));
@@ -114,59 +97,76 @@ class _WalletState extends State<Wallet> {
         }));
   }
 
-  Row _buildWalletContainer(Size screenSize, List<WalletNode> walletNodes, NetworkEnum network) {
-    var row = Row(
+  Row _buildWalletContainer(Size screenSize, WalletNode activeWallet, NetworkEnum network) {
+    return Row(
       children: [
         Expanded(
           child: SizedBox(
             height: screenSize.height,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: walletNodes.length,
-              itemBuilder: (BuildContext context, int index) {
-                return SingleWalletNode(
-                  network: network,
-                  walletNode: walletNodes[index],
-                  width: _getSingleWalletNodeWidth(walletNodes.length, screenSize),
-                );
-              },
+            child: ActiveWalletNode(
+              network: network,
+              activeWallet: activeWallet,
+              width: screenSize.width / 1.25,
             ),
           ),
         ),
       ],
     );
-
-    if (walletNodes.length > 1) {
-      row.children.add(Container(
-        width: _getBalanceDisplayWidth(walletNodes.length, screenSize),
-        decoration: const BoxDecoration(
-          border: Border.symmetric(vertical: BorderSide(width: 1, color: Color.fromRGBO(59, 59, 66, 1.0))),
-          color: Color.fromRGBO(27, 27, 37, 1.0),
-        ),
-        child: const Column(
-          children: [
-            BalanceTotal(),
-          ],
-        ),
-      ));
-    }
-    return row;
   }
 
-  double _getSingleWalletNodeWidth(int walletNodesLength, Size screenSize) {
-    if (walletNodesLength == 1) {
-      return screenSize.width / 1.25;
-    }
-    if (walletNodesLength == 2) {
-      return screenSize.width / 3.75;
-    }
-    return screenSize.width / 5;
-  }
-
-  _getBalanceDisplayWidth(int walletNodesLength, Size screenSize) {
-    if (walletNodesLength == 2) {
-      return screenSize.width / 3.75;
-    }
-    return screenSize.width / 5;
+  List<Widget> _buildAppBarActions(Size screenSize, NetworkEnum network) {
+    List<Widget> actionWidgets = <Widget>[
+      Padding(
+        padding: EdgeInsets.only(right: screenSize.width / 8),
+        child: IconButton(
+          icon: const Icon(Icons.send, color: Colors.white),
+          onPressed: () {
+            showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return BlocProvider<TransactionBloc>(
+                      create: (_) => TransactionBloc(),
+                      child: SendDialog(
+                        network: network,
+                      ));
+                });
+          },
+        ),
+      ),
+    ];
+    actionWidgets.add(BlocBuilder<WalletBloc, WalletState>(builder: (context, walletState) {
+      return switch (walletState) {
+        WalletInitial() => Container(),
+        WalletLoading() => Container(),
+        WalletSuccess() => walletState.allWallets.length > 1
+            ? Padding(
+                padding: EdgeInsets.only(right: screenSize.width / 8),
+                child: IconButton(
+                  icon: const Icon(Icons.plus_one, color: Colors.white),
+                  onPressed: () {
+                    showDialog<String>(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          return BlocProvider<WalletBloc>(
+                              create: (_) => WalletBloc(),
+                              child: Padding(
+                                  padding: const EdgeInsets.only(left: 200, right: 200, top: 100, bottom: 100),
+                                  child: SizedBox(
+                                      height: 150,
+                                      width: 150,
+                                      child: MultiAddressDialog(
+                                        walletNodes: walletState.allWallets,
+                                        network: network,
+                                      ))));
+                        });
+                  },
+                ),
+              )
+            : Container(),
+        WalletError() => Container(),
+      };
+    }));
+    return actionWidgets;
   }
 }

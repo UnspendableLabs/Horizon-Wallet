@@ -11,7 +11,7 @@ class OnboardingPageWrapper extends StatelessWidget {
         child: Container(
           height: 250,
           padding: const EdgeInsets.symmetric(vertical: 50.0),
-          child: OnboardingPage(),
+          child: const OnboardingPage(),
         ),
       ),
     );

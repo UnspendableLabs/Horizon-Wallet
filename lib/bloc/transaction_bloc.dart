@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/models/transaction.dart';
+import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
 sealed class TransactionState {
@@ -59,18 +61,10 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 _onInitializeTransaction(event, emit) async {
   emit(InitializeTransactionLoading());
   KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
-  String? walletJson = await keyValueService.get(STORED_WALLET_DATA_KEY);
-  if (walletJson == null) {
-    emit(TransactionError(message: 'No wallet data found'));
-    return;
-  }
-  StoredWalletData walletData = StoredWalletData.deserialize(walletJson);
 
-  if (event.network == NetworkEnum.mainnet) {
-    emit(TransactionInitial(sourceAddressOptions: walletData.mainnetNodes.map((e) => e.address).toList()));
-  } else {
-    emit(TransactionInitial(sourceAddressOptions: walletData.testnetNodes.map((e) => e.address).toList()));
-  }
+  List<String> addressOptions = await _getAddressOptionsForNetwork(emit, event.network, keyValueService);
+
+  emit(TransactionInitial(sourceAddressOptions: addressOptions));
 }
 
 _onSendTransactionEvent(event, emit) async {
@@ -81,5 +75,31 @@ _onSendTransactionEvent(event, emit) async {
     emit(TransactionSuccess(transactionHex: response));
   } catch (error) {
     emit(TransactionError(message: error.toString()));
+  }
+}
+
+Future<List<String>> _getAddressOptionsForNetwork(emit, NetworkEnum network, KeyValueService keyValueService) async {
+  switch (network) {
+    case NetworkEnum.mainnet:
+      String? mainnetNodesJson = await keyValueService.get(MAINNET_WALLET_NODES_KEY);
+
+      if (mainnetNodesJson == null) {
+        return emit(TransactionError(message: 'No mainnet wallet nodes found'));
+      }
+
+      List<WalletNode> mainnetNodes = WalletNode.deserializeList(mainnetNodesJson);
+
+      return mainnetNodes.map((e) => e.address).toList();
+
+    case NetworkEnum.testnet:
+      String? testnetNodesJson = await keyValueService.get(TESTNET_WALLET_NODES_KEY);
+
+      if (testnetNodesJson == null) {
+        return emit(TransactionError(message: 'No testnet wallet nodes found'));
+      }
+
+      List<WalletNode> testnetNodes = WalletNode.deserializeList(testnetNodesJson);
+
+      return testnetNodes.map((e) => e.address).toList();
   }
 }

@@ -41,7 +41,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     }, builder: (context, state) {
       return switch (state) {
         OnboardingInitial() || OnboardingLoading() => const Text('Loading...'),
-        OnboardingSuccess(onboardingStep: final onboardingStep) => CreateOrRecover(), // TODO? match onboardingStep?
+        OnboardingSuccess(onboardingStep: final onboardingStep) => const CreateOrRecover(), // TODO? match onboardingStep?
         OnboardingError() => throw ErrorDescription('Onboarding error'),
       };
     });
