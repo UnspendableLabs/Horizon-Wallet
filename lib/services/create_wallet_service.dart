@@ -12,7 +12,7 @@ import 'package:uniparty/models/key_pair.dart';
 import 'package:uniparty/models/wallet_node.dart';
 
 class CreateWalletService {
-  final bip44 = Bip44KeyPair();
+  final bip44 = Bip44KeyPairService();
   final bech32 = Bech32Address();
   final bip32 = Bip32KeyPairService();
   final legacyAddress = LegacyAddress();

@@ -4,8 +4,8 @@ import 'package:convert/convert.dart';
 import 'package:dart_wif/dart_wif.dart';
 import 'package:flutter_hd_wallet/flutter_hd_wallet.dart';
 import 'package:uniparty/bitcoin_wallet_utils/pub_priv_key_utils/pub_priv_key_service.dart';
-import 'package:uniparty/models/base_path.dart';
 import 'package:uniparty/common/constants.dart';
+import 'package:uniparty/models/base_path.dart';
 import 'package:uniparty/models/key_pair.dart';
 
 class Bip44KeyPairArgs {
@@ -15,7 +15,7 @@ class Bip44KeyPairArgs {
   Bip44KeyPairArgs({required this.seedHex, required this.path, required this.network});
 }
 
-class Bip44KeyPair extends PublicPrivateKeyService {
+class Bip44KeyPairService extends PublicPrivateKeyService {
   @override
   KeyPair createPublicPrivateKeyPairForPath(dynamic args) {
     Bip44KeyPairArgs typedArgs = args as Bip44KeyPairArgs;
