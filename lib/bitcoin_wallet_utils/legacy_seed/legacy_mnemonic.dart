@@ -1,4 +1,4 @@
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/legacy_mnemonic_js.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic_js.dart';
 
 class LegacyMnemonic {
   // final mnemonicJs = MnemonicJs();

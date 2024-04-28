@@ -9,6 +9,29 @@ abstract class Bip39Service {
   String mnemonicToEntropy(String mnemonic);
 }
 
+// TODO: should we use dartsv for seed??
+
+// class Bip39DartSVImpl {
+//   // @override
+//   Future<String> generateMnemonic() async {
+//     return await Mnemonic().generateMnemonic();
+//   }
+
+//   String mnemonicToSeedHex(String mnemonic) {
+//     return Mnemonic().toSeedHex(mnemonic);
+//   }
+
+//   @override
+//   Uint8List mnemonicToSeed(String mnemonic) {
+//     return bip39.mnemonicToSeed(mnemonic);
+//   }
+
+//   @override
+//   String mnemonicToEntropy(String mnemonic) {
+//     return bip39.mnemonicToEntropy(mnemonic);
+//   }
+// }
+
 class Bip39Impl implements Bip39Service {
   @override
   String generateMnemonic() {

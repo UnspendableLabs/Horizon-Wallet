@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  buffer:
+    dependency: transitive
+    description:
+      name: buffer
+      sha256: "389da2ec2c16283c8787e0adaede82b1842102f8c8aae2f49003a766c5c6b3d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.3"
   characters:
     dependency: transitive
     description:
@@ -169,6 +177,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  dartsv:
+    dependency: "direct main"
+    description:
+      name: dartsv
+      sha256: "30d168db968545f1bfbfd4e5cf160e5db4e9272b5994e986ab1c18dfb8ee9d54"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
+  decimal:
+    dependency: transitive
+    description:
+      name: decimal
+      sha256: "24a261d5d5c87e86c7651c417a5dbdf8bcd7080dd592533910e8d0505a279f21"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.3"
   fake_async:
     dependency: transitive
     description:
@@ -218,10 +242,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_hd_wallet
-      sha256: "985d09492221bb4612f94221e257efa9881f9ab2dcbad8b9b9b785a8fd72ebb0"
+      sha256: ee01d97b108f3df1384bf217e9162a70dd48957c1b84d09ddc67a6f5bc39be6a
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "0.0.1"
   flutter_js:
     dependency: "direct main"
     description:
@@ -584,6 +608,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  rational:
+    dependency: transitive
+    description:
+      name: rational
+      sha256: ba58e9e18df9abde280e8b10051e4bce85091e41e8e7e411b6cde2e738d357cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.2"
+  resource_portable:
+    dependency: transitive
+    description:
+      name: resource_portable
+      sha256: "76af61ea5af4719f0a5a9776dddb7bc61e0a85fa5b7978423cc20566f2f97b53"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -701,6 +741,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      sha256: "1fc9ffe69d4df602376b52949af107d8f5703b77cda567c4d7d86a0693120f23"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0"
   stack_trace:
     dependency: transitive
     description:
@@ -777,10 +825,10 @@ packages:
     dependency: transitive
     description:
       name: unorm_dart
-      sha256: "23d8bf65605401a6a32cff99435fed66ef3dab3ddcad3454059165df46496a3b"
+      sha256: "5b35bff83fce4d76467641438f9e867dc9bcfdb8c1694854f230579d68cd8f4b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "0.2.0"
   vector_math:
     dependency: transitive
     description:

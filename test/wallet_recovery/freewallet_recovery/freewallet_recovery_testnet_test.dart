@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39_seed/bip39.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/create_wallet_service.dart';

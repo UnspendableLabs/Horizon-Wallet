@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/pub_priv_key_utils/bip32_key_pair.dart';
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip32/bip32_key_pair.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39_seed/bip39.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/key_pair.dart';
 

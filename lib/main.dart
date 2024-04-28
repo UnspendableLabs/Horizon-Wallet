@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39_seed/bip39.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/services/create_wallet_service.dart';
 import 'package:uniparty/services/key_value_store_service.dart';

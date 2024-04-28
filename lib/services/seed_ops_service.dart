@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/legacy_mnemonic.dart';
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/legacy_mnemonic_word_list.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39_seed/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic_word_list.dart';
 import 'package:uniparty/common/constants.dart';
 
 const invalidLengthError = 'seed phrase contains the wrong number of letters';
