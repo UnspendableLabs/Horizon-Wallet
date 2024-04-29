@@ -14,8 +14,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes =
-          await createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -29,8 +28,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes =
-          await createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -44,8 +42,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes =
-          await createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -59,8 +56,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes =
-          await createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -74,8 +70,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes =
-          await createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 

@@ -10,7 +10,7 @@ import 'package:uniparty/models/create_address_payload.dart';
 import 'package:uniparty/models/wallet_node.dart';
 
 class CreateWalletService {
-  Future<List<WalletNode>> createWallet(NetworkEnum network, String seedHex, WalletTypeEnum walletType) async {
+  List<WalletNode> createWallet(NetworkEnum network, String seedHex, WalletTypeEnum walletType) {
     int numAddresses = _numAddresses(walletType);
     List<WalletNode> walletNodes = [];
 
@@ -59,9 +59,6 @@ class CreateWalletService {
           String privateKey = xpriv.toWIF();
 
           // Freewallet derives 10 legacy and 10 bech32 addresses on initialization.
-          // This does the same; maybe we dont want to derive all 20?
-          // String legacyAddress = deriveLegacyAddress(
-          //     CreateAddressPayload(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), network: network));
           String legacyAddress = deriveLegacyAdd(svpubKey, network);
 
           WalletNode walletNodeNormal =

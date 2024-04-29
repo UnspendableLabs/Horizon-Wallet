@@ -119,8 +119,7 @@ void main() async {
 
       String seedHex = LegacyMnemonic().mnemonicToSeed(phrase);
 
-      List<WalletNode> recoveredNodes =
-          await createWalletService.createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip32);
+      List<WalletNode> recoveredNodes = createWalletService.createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip32);
 
       for (var recoveredNode in recoveredNodes) {
         WalletNode? expectedWalletNode = expectedWalletNodes[recoveredNode.address];

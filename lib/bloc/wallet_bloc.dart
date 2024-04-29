@@ -73,7 +73,7 @@ Future<void> _onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) asy
 
       // then create the wallet nodes for the network
       List<WalletNode> walletNodes =
-          await GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+          GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
 
       // store all walletNodes in secure storage
       await _storeWalletNodesForNetwork(event.network, walletNodes, keyValueService);
@@ -166,13 +166,13 @@ Future<List<WalletNode>> _getOrCreateWalletNodesForNetwork(
   switch (event.network) {
     case NetworkEnum.mainnet:
       List<WalletNode> mainnetNodes =
-          await GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+          GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
       _storeWalletNodesForNetwork(event.network, mainnetNodes, keyValueService);
       return mainnetNodes;
 
     case NetworkEnum.testnet:
       List<WalletNode> testnetNodes =
-          await GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+          GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
       _storeWalletNodesForNetwork(event.network, testnetNodes, keyValueService);
       return testnetNodes;
   }
