@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:dartsv/dartsv.dart';
 
 abstract class Bip39Service {
   String generateMnemonic();

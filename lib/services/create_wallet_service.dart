@@ -1,40 +1,42 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bech_32_address/bech32_address.dart';
-import 'package:uniparty/bitcoin_wallet_utils/legacy_address/legacy_address.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip32/bip32_key_pair.dart';
-import 'package:uniparty/bitcoin_wallet_utils/pub_priv_key_utils/bip44_key_pair.dart';
+import 'package:dartsv/dartsv.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bech32_address.dart';
+import 'package:uniparty/bitcoin_wallet_utils/key_derivation.dart';
+import 'package:uniparty/bitcoin_wallet_utils/legacy_address.dart';
 import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/base_path.dart';
 import 'package:uniparty/models/create_address_payload.dart';
-import 'package:uniparty/models/key_pair.dart';
 import 'package:uniparty/models/wallet_node.dart';
 
 class CreateWalletService {
-  final bip44 = Bip44KeyPairService();
-  final bip32 = Bip32KeyPairService();
-
   Future<List<WalletNode>> createWallet(NetworkEnum network, String seedHex, WalletTypeEnum walletType) async {
     int numAddresses = _numAddresses(walletType);
     List<WalletNode> walletNodes = [];
 
     switch (walletType) {
       case WalletTypeEnum.bip44:
+        String basePath = 'm/44\'/${_getCoinType(network)}\'/0\'/0/';
+
         for (var i = 0; i < numAddresses; i++) {
-          BasePath path = BasePath(coinType: _getCoinType(network), account: 0, change: 0, index: i);
+          HDPrivateKey seededKey = deriveSeededKey(seedHex, network);
 
-          KeyPair keyPair =
-              bip44.createPublicPrivateKeyPairForPath(Bip44KeyPairArgs(seedHex: seedHex, path: path, network: network));
+          String path = basePath + i.toString();
 
-          String address =
-              deriveBech32Address(CreateAddressPayload(publicKeyIntList: keyPair.publicKeyIntList, network: network));
+          HDPrivateKey derivedKey = deriveChildKey(seededKey, path);
 
-          WalletNode walletNode = WalletNode(
-              address: address,
-              publicKey: hex.encode(keyPair.publicKeyIntList),
-              privateKey: keyPair.privateKey,
-              index: path.index);
+          derivedKey.networkType = getNetworkType(network);
+          SVPrivateKey xpriv = derivedKey.privateKey;
+          HDPublicKey xPub = derivedKey.hdPublicKey;
+          SVPublicKey svpubKey = xPub.publicKey;
+
+          String publicKey = svpubKey.toHex();
+          String privateKey = xpriv.toWIF();
+
+          String address = deriveBech32Address(
+              CreateAddressPayload(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), network: network));
+
+          WalletNode walletNode = WalletNode(address: address, publicKey: publicKey, privateKey: privateKey, index: i);
 
           walletNodes.add(walletNode);
         }
@@ -43,31 +45,35 @@ class CreateWalletService {
         String basePath = 'm/0\'/0/';
 
         for (var i = 0; i < numAddresses; i++) {
+          HDPrivateKey seededKey = deriveSeededKey(seedHex, network);
+
           String path = basePath + i.toString();
-          KeyPair keyPair = bip32.createPublicPrivateKeyPairForPath(
-              Bip32KeyPairArgs(seedIntList: Uint8List.fromList(hex.decode(seedHex)), path: path, network: network));
+
+          HDPrivateKey derivedKey = deriveChildKey(seededKey, path);
+
+          derivedKey.networkType = getNetworkType(network);
+          SVPrivateKey xpriv = derivedKey.privateKey;
+          HDPublicKey xPub = derivedKey.hdPublicKey;
+          SVPublicKey svpubKey = xPub.publicKey;
+          String publicKey = svpubKey.toHex();
+          String privateKey = xpriv.toWIF();
 
           // Freewallet derives 10 legacy and 10 bech32 addresses on initialization.
           // This does the same; maybe we dont want to derive all 20?
-          String legacyAddress =
-              deriveLegacyAddress(CreateAddressPayload(publicKeyIntList: keyPair.publicKeyIntList, network: network));
+          // String legacyAddress = deriveLegacyAddress(
+          //     CreateAddressPayload(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), network: network));
+          String legacyAddress = deriveLegacyAdd(svpubKey, network);
 
-          WalletNode walletNodeNormal = WalletNode(
-              address: legacyAddress,
-              publicKey: hex.encode(keyPair.publicKeyIntList),
-              privateKey: keyPair.privateKey,
-              index: i);
+          WalletNode walletNodeNormal =
+              WalletNode(address: legacyAddress, publicKey: publicKey, privateKey: privateKey, index: i);
 
           walletNodes.add(walletNodeNormal);
 
-          String bech32Address =
-              deriveBech32Address(CreateAddressPayload(publicKeyIntList: keyPair.publicKeyIntList, network: network));
+          String bech32Address = deriveBech32Address(
+              CreateAddressPayload(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), network: network));
 
-          WalletNode walletNodeBech32 = WalletNode(
-              address: bech32Address,
-              publicKey: hex.encode(keyPair.publicKeyIntList),
-              privateKey: keyPair.privateKey,
-              index: i);
+          WalletNode walletNodeBech32 =
+              WalletNode(address: bech32Address, publicKey: publicKey, privateKey: privateKey, index: i);
 
           walletNodes.add(walletNodeBech32);
         }

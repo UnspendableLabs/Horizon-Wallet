@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip39_seed/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/widgets/common/back_button.dart';
