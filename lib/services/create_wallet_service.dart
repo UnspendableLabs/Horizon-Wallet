@@ -6,7 +6,6 @@ import 'package:uniparty/bitcoin_wallet_utils/bech32_address.dart';
 import 'package:uniparty/bitcoin_wallet_utils/key_derivation.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_address.dart';
 import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/create_address_payload.dart';
 import 'package:uniparty/models/wallet_node.dart';
 
 class CreateWalletService {
@@ -33,8 +32,7 @@ class CreateWalletService {
           String publicKey = svpubKey.toHex();
           String privateKey = xpriv.toWIF();
 
-          String address = deriveBech32Address(
-              CreateAddressPayload(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), network: network));
+          String address = deriveBech32Address(Uint8List.fromList(hex.decode(publicKey)), network);
 
           WalletNode walletNode = WalletNode(address: address, publicKey: publicKey, privateKey: privateKey, index: i);
 
@@ -59,15 +57,14 @@ class CreateWalletService {
           String privateKey = xpriv.toWIF();
 
           // Freewallet derives 10 legacy and 10 bech32 addresses on initialization.
-          String legacyAddress = deriveLegacyAdd(svpubKey, network);
+          String legacyAddress = deriveLegacyAddress(svpubKey, network);
 
           WalletNode walletNodeNormal =
               WalletNode(address: legacyAddress, publicKey: publicKey, privateKey: privateKey, index: i);
 
           walletNodes.add(walletNodeNormal);
 
-          String bech32Address = deriveBech32Address(
-              CreateAddressPayload(publicKeyIntList: Uint8List.fromList(hex.decode(publicKey)), network: network));
+          String bech32Address = deriveBech32Address(Uint8List.fromList(hex.decode(publicKey)), network);
 
           WalletNode walletNodeBech32 =
               WalletNode(address: bech32Address, publicKey: publicKey, privateKey: privateKey, index: i);

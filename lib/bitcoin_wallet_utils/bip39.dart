@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
-import 'package:dartsv/dartsv.dart';
 
 abstract class Bip39Service {
   String generateMnemonic();
@@ -10,28 +9,7 @@ abstract class Bip39Service {
   String mnemonicToEntropy(String mnemonic);
 }
 
-// TODO: should we use dartsv for seed??
-
-// class Bip39DartSVImpl {
-//   // @override
-//   Future<String> generateMnemonic() async {
-//     return await Mnemonic().generateMnemonic();
-//   }
-
-//   String mnemonicToSeedHex(String mnemonic) {
-//     return Mnemonic().toSeedHex(mnemonic);
-//   }
-
-//   @override
-//   Uint8List mnemonicToSeed(String mnemonic) {
-//     return bip39.mnemonicToSeed(mnemonic);
-//   }
-
-//   @override
-//   String mnemonicToEntropy(String mnemonic) {
-//     return bip39.mnemonicToEntropy(mnemonic);
-//   }
-// }
+// TODO: should we use dartsv for seed?? it has all the same methods but slightly worse error handling
 
 class Bip39Impl implements Bip39Service {
   @override

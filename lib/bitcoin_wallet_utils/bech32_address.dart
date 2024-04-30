@@ -3,11 +3,10 @@ import 'dart:typed_data';
 import 'package:bech32/bech32.dart';
 import 'package:pointycastle/api.dart' as pointycastle;
 import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/create_address_payload.dart';
 
-String deriveBech32Address(CreateAddressPayload args) {
+String deriveBech32Address(Uint8List publicKeyIntList, NetworkEnum network) {
   var sha256 = pointycastle.Digest("SHA-256");
-  var publicKeySha256 = sha256.process(args.publicKeyIntList);
+  var publicKeySha256 = sha256.process(publicKeyIntList);
 
   var ripemd160 = pointycastle.Digest('RIPEMD-160');
   var publicKeyRipemd160 = ripemd160.process(publicKeySha256);
@@ -16,7 +15,7 @@ String deriveBech32Address(CreateAddressPayload args) {
   List<int> version = [0]; // Assuming Bitcoin network
   List<int> data = [...version, ...publicKeyRipemd5bit];
 
-  String hrp = _getHrp(args.network);
+  String hrp = _getHrp(network);
   Bech32 rawBech32 = Bech32(hrp, data);
 
   var encoder = const Bech32Codec();
