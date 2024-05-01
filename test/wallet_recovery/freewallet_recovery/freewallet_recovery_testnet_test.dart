@@ -1,13 +1,12 @@
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/services/create_wallet_service.dart';
 
 void main() async {
   group('FreewalletRecovery testnet', () {
     final bip39 = Bip39Impl();
-    CreateWalletService createWalletService = CreateWalletService();
 
     test('bip39 + bip32 recovery', () async {
       String mnemonic = "silver similar slab poet cannon south antique finish large romance climb faculty";
@@ -117,8 +116,7 @@ void main() async {
 
       String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
 
-      List<WalletNode> recoveredNodes =
-          createWalletService.createWallet(NetworkEnum.testnet, seedEntropy, WalletTypeEnum.bip32);
+      List<WalletNode> recoveredNodes = createWallet(NetworkEnum.testnet, seedEntropy, WalletTypeEnum.bip32);
 
       for (var recoveredNode in recoveredNodes) {
         WalletNode? walletNode = expectedWalletNodes[recoveredNode.address];

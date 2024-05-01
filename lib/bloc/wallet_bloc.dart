@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/services/create_wallet_service.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 
@@ -72,8 +72,7 @@ Future<void> _onWalletInit(WalletInitEvent event, Emitter<WalletState> emit) asy
           await _createAndStoreSeedhexAndWalletType(event.payload, seedOpsService, keyValueService);
 
       // then create the wallet nodes for the network
-      List<WalletNode> walletNodes =
-          GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+      List<WalletNode> walletNodes = createWallet(event.network, walletData.seedHex, walletData.walletType);
 
       // store all walletNodes in secure storage
       await _storeWalletNodesForNetwork(event.network, walletNodes, keyValueService);
@@ -165,14 +164,12 @@ Future<List<WalletNode>> _getOrCreateWalletNodesForNetwork(
   }
   switch (event.network) {
     case NetworkEnum.mainnet:
-      List<WalletNode> mainnetNodes =
-          GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+      List<WalletNode> mainnetNodes = createWallet(event.network, walletData.seedHex, walletData.walletType);
       _storeWalletNodesForNetwork(event.network, mainnetNodes, keyValueService);
       return mainnetNodes;
 
     case NetworkEnum.testnet:
-      List<WalletNode> testnetNodes =
-          GetIt.I.get<CreateWalletService>().createWallet(event.network, walletData.seedHex, walletData.walletType);
+      List<WalletNode> testnetNodes = createWallet(event.network, walletData.seedHex, walletData.walletType);
       _storeWalletNodesForNetwork(event.network, testnetNodes, keyValueService);
       return testnetNodes;
   }

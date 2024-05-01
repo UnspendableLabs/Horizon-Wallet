@@ -1,20 +1,19 @@
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/services/create_wallet_service.dart';
 
 void main() async {
   // TODO: verify testnet bech32 addresses
   group('Uniparty recovery testnet', () {
-    final createWalletService = CreateWalletService();
     final bip39 = Bip39Impl();
     test('bip39 + bip44 test1', () async {
       String mnemonic = 'trend pond enable empower govern example melody bless alone grow stone genre';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -28,7 +27,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -42,7 +41,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -56,7 +55,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -70,7 +69,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 

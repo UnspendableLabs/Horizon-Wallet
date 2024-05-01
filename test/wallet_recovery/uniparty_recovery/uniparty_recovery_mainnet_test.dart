@@ -1,13 +1,12 @@
 import 'package:test/test.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/services/create_wallet_service.dart';
 
 void main() async {
   // A Bech32 address encoded (p2wpkh): HRP + Separator + Data values verified from https://secretscan.org/Bech32
   group('Uniparty recovery mainnet', () {
-    final createWalletService = CreateWalletService();
     final bip39 = Bip39Impl();
 
     test('bip39 + bip44 test1', () async {
@@ -15,7 +14,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -28,7 +27,7 @@ void main() async {
       String mnemonic = 'stumble prison flip merge negative ostrich myself winter naive try arctic olympic';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
       WalletNode walletNode = walletNodes[0];
 
       expect(walletNode.address, 'bc1qkxce32pm8mcy7xewk3kw0mw5sca3ryq5w8rkk6');
@@ -40,7 +39,7 @@ void main() async {
       String mnemonic = 'thunder member interest display shock unable clarify fiber insect lumber battle off';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -53,7 +52,7 @@ void main() async {
       String mnemonic = 'crime speak truly valid movie describe blame essay crack skirt december obey';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
       WalletNode walletNode = walletNodes[0];
 
       expect(walletNode.address, 'bc1qc3ffwuye6m0lddfuxur2rc49c4scdkyj9x3gc6');
@@ -66,7 +65,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWalletService.createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.mainnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
