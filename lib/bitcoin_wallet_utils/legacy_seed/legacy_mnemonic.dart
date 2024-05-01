@@ -1,12 +1,10 @@
-import 'package:uniparty/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic_js.dart';
-
 class LegacyMnemonic {
   // final mnemonicJs = MnemonicJs();
 
   String mnemonicToSeed(String mnemonic) {
     // TODO: fix!
-    // return '';
-    MnemonicJs mnemonicJs = MnemonicJs();
-    return mnemonicJs.wordsToSeed(mnemonic);
+    return '';
+    // MnemonicJs mnemonicJs = MnemonicJs();
+    // return mnemonicJs.wordsToSeed(mnemonic);
   }
 }
