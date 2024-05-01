@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
-import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/models/transaction.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
