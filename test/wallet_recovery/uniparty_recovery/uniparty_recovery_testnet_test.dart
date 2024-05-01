@@ -1,21 +1,19 @@
-import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/seed_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/wallet_recovery/bip44_recovery.dart';
 
 void main() async {
-  final bip39 = GetIt.I.get<Bip39Service>();
-
   // TODO: verify testnet bech32 addresses
   group('Uniparty recovery testnet', () {
-    test('bip39 + bip44 test1', () {
+    final bip39 = Bip39Impl();
+    test('bip39 + bip44 test1', () async {
       String mnemonic = 'trend pond enable empower govern example melody bless alone grow stone genre';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -24,12 +22,12 @@ void main() async {
       expect(walletNode.privateKey, 'cS9NzwfpCRK22faDntv4WK4yNJ7ZPtwVY9HqJVD4UaKzWoLuhRG1');
     });
 
-    test('bip39 + bip44 test2', () {
+    test('bip39 + bip44 test2', () async {
       String mnemonic = 'stumble prison flip merge negative ostrich myself winter naive try arctic olympic';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -38,12 +36,12 @@ void main() async {
       expect(walletNode.privateKey, 'cQCThVTEueEX6jL3umWStyTyEjP7Gk9fufcgsUu6JmA3321JZaPo');
     });
 
-    test('bip39 + bip44 test3', () {
+    test('bip39 + bip44 test3', () async {
       String mnemonic = 'thunder member interest display shock unable clarify fiber insect lumber battle off';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -52,12 +50,12 @@ void main() async {
       expect(walletNode.privateKey, 'cV216FvuzS89eUR8XzrbR2pUYzG5xoCF7fVsVhWppwfRn9JqwCr7');
     });
 
-    test('bip39 + bip44 test4', () {
+    test('bip39 + bip44 test4', () async {
       String mnemonic = 'crime speak truly valid movie describe blame essay crack skirt december obey';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -66,12 +64,12 @@ void main() async {
       expect(walletNode.privateKey, 'cR9pSgzwRq4mEqjNUtia1d1FrJrGBcYW2ZiksasVPSGoKfEfg9RR');
     });
 
-    test('recoverUnparty5', () {
+    test('recoverUnparty5', () async {
       String mnemonic = 'sorry hub gadget wasp repeat wave disagree knock prosper rose gas dinner';
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = recoverBip44Wallet(seedHex, TESTNET);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
 
       WalletNode walletNode = walletNodes[0];
 

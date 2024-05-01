@@ -4,6 +4,7 @@ import 'package:uniparty/bloc/balance_bloc.dart';
 import 'package:uniparty/bloc/network_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/widgets/wallet_pages/single_address_display.dart';
 
 class ActiveWalletNode extends StatefulWidget {
   final WalletNode activeWallet;
@@ -44,7 +45,7 @@ class _ActiveWalletNode extends State<ActiveWalletNode> {
               return switch (balanceState) {
                 BalanceInitial() => const Text('balance initial'),
                 BalanceLoading() => const Text('balance loading...'),
-                BalanceSuccess() => Text('succees'),
+                BalanceSuccess() => SingleAddressDisplay(address: widget.activeWallet.address, network: widget.network),
                 BalanceError() => Text('balance error: ${balanceState.message}'),
               };
             })

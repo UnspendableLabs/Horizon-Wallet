@@ -9,6 +9,8 @@ abstract class Bip39Service {
   String mnemonicToEntropy(String mnemonic);
 }
 
+// TODO: should we use dartsv for seed?? it has all the same methods but slightly worse error handling
+
 class Bip39Impl implements Bip39Service {
   @override
   String generateMnemonic() {
