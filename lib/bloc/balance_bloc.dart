@@ -44,7 +44,6 @@ _onBalanceLoad(LoadBalanceEvent event, Emitter<BalanceState> emit) async {
 
   try {
     final balances = await counterpartyApi.fetchBalance(event.address, event.network);
-    // await counterpartyApi.createBurn(event.address, event.network);
     emit(BalanceSuccess(balances: balances));
   } catch (error) {
     emit(BalanceError(message: error.toString()));

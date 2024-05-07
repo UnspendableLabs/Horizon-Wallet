@@ -45,6 +45,7 @@ class _ActiveWalletNode extends State<ActiveWalletNode> {
                 BalanceInitial() => const Text('balance initial'),
                 BalanceLoading() => const Text('balance loading...'),
                 BalanceSuccess() => balanceState.balances.isEmpty
+                    // TODO: fetch btc and display
                     ? Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[

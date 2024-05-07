@@ -94,11 +94,12 @@ _onSendTransactionEvent(event, emit) async {
     Map<String, UniUTXO> utxoMap = {for (var e in utxos) e.txid: e};
     print('utxoMap: $utxoMap');
 
-    // Transaction tx = Transaction.fromHex(newestBurn);
     print('HERE WE ARE BEFORE TX');
     Uint8List buffer = Uint8List.fromList(HEX.decode(newestBurn));
 
     BitcoinjsTransaction transaction = parseTransaction(buffer);
+
+    // TransactionBuilder txb = new TransactionBuilder();
 
     // Handle adding inputs
     for (var i = 0; i < transaction.ins.length; i++) {
@@ -111,30 +112,7 @@ _onSendTransactionEvent(event, emit) async {
       // if (prev) txb.addInput(tx.ins[i].hash.toString('hex'), prev.vout, null, input.output);
     }
 
-    // print('PREV BURN TRANSACTION: ${transaction.serialize()}');
-    // debugger(when: true);
-    // try {
-    //   Transaction mostRecentBurnTransaction = Transaction.fromHex(mostRecentBurnHex);
-    //   print('MOST RECENT BURN TRANSACTION: ${mostRecentBurnTransaction.toObject()}');
-    // } catch (e) {
-    //   if (e is ScriptException) {
-    //     print('ScriptException: ${e.cause}');
-    //     print('ScriptException: ${e.error}');
-    //     rethrow;
-    //   }
-    // }
-
     debugger(when: true);
-    // final signer = TransactionSigner(SighashType.SIGHASH_ALL.value, SVPrivateKey.fromWIF(activeWallet.privateKey));
-
-    // debugger(when: true);
-    // print(Transaction.fromHex(b1Hex).toObject());
-
-    // for (var output in outputList) {
-    //   print(output.toObject());
-    // }
-    // print(outputList[0].toObject());
-    // emit(TransactionSuccess(transactionHex: hex));
   } catch (error) {
     rethrow;
     // emit(TransactionError(message: error.toString()));
