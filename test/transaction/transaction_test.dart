@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:uniparty/models/bitcoinjs_transaction.dart';
+import 'package:uniparty/models/transaction.dart';
 
 // class BitcoinjsTransaction {
 //   int version;
@@ -38,7 +38,7 @@ void main() async {
       String tx  =
           '01000000019755f4f1def5f08d32ea2d43c9b46a6af38187266ee2520d5b1255b26462648f000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888acffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac59810a00000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888ac00000000';
 
-      BitcoinjsTransaction parsed = BitcoinjsTransaction.fromHex(tx);
+      Transaction parsed = Transaction.fromHex(tx);
 
       expect (parsed.version, 1);
       expect (parsed.hasWitnesses, false);

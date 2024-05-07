@@ -3,24 +3,24 @@ import 'dart:typed_data';
 import 'package:uniparty/models/buffer_reader.dart';
 import 'package:hex/hex.dart';
 
-class BitcoinjsTransaction {
+class Transaction {
   int version;
   List<TxInput> ins = [];
   List<TxOutput> outs = [];
   int locktime;
   bool hasWitnesses = false;
 
-  BitcoinjsTransaction({this.version = 1, this.locktime = 0});
+  Transaction({this.version = 1, this.locktime = 0});
 
   bool checkWitnesses() {
     return ins.any((input) => input.witness.isNotEmpty);
   }
 
-  factory BitcoinjsTransaction.fromHex(String txHex) {
+  factory Transaction.fromHex(String txHex) {
 
     final buffer = Uint8List.fromList( HEX.decode(txHex));
     final reader = BufferReader(buffer);
-    final tx = BitcoinjsTransaction();
+    final tx = Transaction();
     tx.version = reader.readInt32();
     final marker = reader.readUInt8();
     final flag = reader.readUInt8();

@@ -6,10 +6,11 @@ import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
-import 'package:uniparty/models/bitcoinjs_transaction.dart';
+import 'package:uniparty/models/transaction.dart';
 import 'package:uniparty/models/send_transaction.dart';
 import 'package:uniparty/models/internal_utxo.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/services/bitcoin/transaction/parser.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
 sealed class TransactionState {
@@ -75,6 +76,7 @@ _onSendTransactionEvent(event, emit) async {
   emit(SendTransactionLoading());
   final keyValueService = GetIt.I.get<KeyValueService>();
   final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
+  final TransactionParserI transactionParser = GetIt.I.get<TransactionParserI>();
   try {
     // final response = await counterpartyApi.createSendTransaction(event.transaction, event.network);
 
@@ -97,14 +99,16 @@ _onSendTransactionEvent(event, emit) async {
     print('HERE WE ARE BEFORE TX');
     Uint8List buffer = Uint8List.fromList(HEX.decode(newestBurn));
 
-    BitcoinjsTransaction transaction = parseTransaction(buffer);
+  
+
+    Transaction transaction = transactionParser.fromHex(newestBurn);
 
     // TransactionBuilder txb = new TransactionBuilder();
 
     // Handle adding inputs
     for (var i = 0; i < transaction.ins.length; i++) {
       // We get reversed tx hashes somehow after parsing
-      var txhash = HEX.encode(transaction.ins[i].hash.reversed.toList());
+      var txhash = transaction.ins[i].hash;
       print('txhash: $txhash');
       // print()
       var prev = utxoMap[txhash];
