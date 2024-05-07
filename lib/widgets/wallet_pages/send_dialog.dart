@@ -136,7 +136,7 @@ class _SendDialogState extends State<SendDialog> {
                             child: const Text('Send'),
                             onPressed: () {
                               BlocProvider.of<TransactionBloc>(context).add(SendTransactionEvent(
-                                  transaction: Transaction(
+                                  sendTransaction: SendTransaction(
                                       sourceAddress: _sourceAddress,
                                       destinationAddress: _destinationAddress,
                                       asset: _asset,

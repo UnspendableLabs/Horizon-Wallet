@@ -1,8 +1,14 @@
+import 'dart:developer';
+import 'dart:typed_data';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hex/hex.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
+import 'package:uniparty/models/bitcoinjs_transaction.dart';
 import 'package:uniparty/models/transaction.dart';
+import 'package:uniparty/models/utxo.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
@@ -43,9 +49,9 @@ class InitializeTransactionEvent extends TransactionEvent {
 }
 
 class SendTransactionEvent extends TransactionEvent {
-  final Transaction transaction;
+  final SendTransaction sendTransaction;
   final NetworkEnum network;
-  SendTransactionEvent({required this.transaction, required this.network});
+  SendTransactionEvent({required this.sendTransaction, required this.network});
 }
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
@@ -67,12 +73,71 @@ _onInitializeTransaction(event, emit) async {
 
 _onSendTransactionEvent(event, emit) async {
   emit(SendTransactionLoading());
+  final keyValueService = GetIt.I.get<KeyValueService>();
   final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
   try {
-    final response = await counterpartyApi.createSendTransaction(event.transaction, event.network);
-    emit(TransactionSuccess(transactionHex: response));
+    // final response = await counterpartyApi.createSendTransaction(event.transaction, event.network);
+
+    String prevBurnHex =
+        '01000000019755f4f1def5f08d32ea2d43c9b46a6af38187266ee2520d5b1255b26462648f000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888acffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac59810a00000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888ac00000000';
+    String mostRecentBurnHex =
+        '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac38150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
+    String newestBurn =
+        '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac61150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
+    String? activeWalletJson = await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
+    if (activeWalletJson == null) {
+      return emit(TransactionError(message: 'No active wallet found'));
+    }
+    WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
+    final utxos = await counterpartyApi.getUnspentTxOut(activeWallet.address, event.network);
+
+    Map<String, UniUTXO> utxoMap = {for (var e in utxos) e.txid: e};
+    print('utxoMap: $utxoMap');
+
+    // Transaction tx = Transaction.fromHex(newestBurn);
+    print('HERE WE ARE BEFORE TX');
+    Uint8List buffer = Uint8List.fromList(HEX.decode(newestBurn));
+
+    BitcoinjsTransaction transaction = parseTransaction(buffer);
+
+    // Handle adding inputs
+    for (var i = 0; i < transaction.ins.length; i++) {
+      // We get reversed tx hashes somehow after parsing
+      var txhash = HEX.encode(transaction.ins[i].hash.reversed.toList());
+      print('txhash: $txhash');
+      // print()
+      var prev = utxoMap[txhash];
+      print('prev: $prev');
+      // if (prev) txb.addInput(tx.ins[i].hash.toString('hex'), prev.vout, null, input.output);
+    }
+
+    // print('PREV BURN TRANSACTION: ${transaction.serialize()}');
+    // debugger(when: true);
+    // try {
+    //   Transaction mostRecentBurnTransaction = Transaction.fromHex(mostRecentBurnHex);
+    //   print('MOST RECENT BURN TRANSACTION: ${mostRecentBurnTransaction.toObject()}');
+    // } catch (e) {
+    //   if (e is ScriptException) {
+    //     print('ScriptException: ${e.cause}');
+    //     print('ScriptException: ${e.error}');
+    //     rethrow;
+    //   }
+    // }
+
+    debugger(when: true);
+    // final signer = TransactionSigner(SighashType.SIGHASH_ALL.value, SVPrivateKey.fromWIF(activeWallet.privateKey));
+
+    // debugger(when: true);
+    // print(Transaction.fromHex(b1Hex).toObject());
+
+    // for (var output in outputList) {
+    //   print(output.toObject());
+    // }
+    // print(outputList[0].toObject());
+    // emit(TransactionSuccess(transactionHex: hex));
   } catch (error) {
-    emit(TransactionError(message: error.toString()));
+    rethrow;
+    // emit(TransactionError(message: error.toString()));
   }
 }
 

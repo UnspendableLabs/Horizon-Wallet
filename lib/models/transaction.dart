@@ -1,6 +1,6 @@
 import 'package:uniparty/common/constants.dart';
 
-class Transaction {
+class SendTransaction {
   final String sourceAddress;
   final String destinationAddress;
   final double quantity;
@@ -8,7 +8,7 @@ class Transaction {
   final String? memo;
   final bool? memoIsHex;
 
-  Transaction(
+  SendTransaction(
       {required this.sourceAddress,
       required this.destinationAddress,
       required this.quantity,

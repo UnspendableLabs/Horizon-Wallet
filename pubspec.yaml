@@ -49,6 +49,8 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   logger: ^2.2.0
   dartsv: ^2.0.2
+  flutter_bitcoin: ^1.0.1
+  bitcoin_base: ^4.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
