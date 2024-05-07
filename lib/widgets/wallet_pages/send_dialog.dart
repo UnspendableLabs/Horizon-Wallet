@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/bloc/transaction_bloc.dart';
 import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/transaction.dart';
+import 'package:uniparty/models/send_transaction.dart';
 import 'package:uniparty/widgets/common/common_dialog_shape.dart';
 
 class SendDialog extends StatefulWidget {

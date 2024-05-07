@@ -7,8 +7,8 @@ import 'package:hex/hex.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/models/bitcoinjs_transaction.dart';
-import 'package:uniparty/models/transaction.dart';
-import 'package:uniparty/models/utxo.dart';
+import 'package:uniparty/models/send_transaction.dart';
+import 'package:uniparty/models/internal_utxo.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
@@ -91,7 +91,7 @@ _onSendTransactionEvent(event, emit) async {
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
     final utxos = await counterpartyApi.getUnspentTxOut(activeWallet.address, event.network);
 
-    Map<String, UniUTXO> utxoMap = {for (var e in utxos) e.txid: e};
+    Map<String, InternalUTXO> utxoMap = {for (var e in utxos) e.txid: e};
     print('utxoMap: $utxoMap');
 
     print('HERE WE ARE BEFORE TX');
