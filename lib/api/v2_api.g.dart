@@ -11,7 +11,8 @@ Response<T> _$ResponseFromJson<T>(
   T Function(Object? json) fromJsonT,
 ) =>
     Response<T>(
-      result: fromJsonT(json['result']),
+      result: _$nullableGenericFromJson(json['result'], fromJsonT),
+      error: json['error'] as String?,
     );
 
 Map<String, dynamic> _$ResponseToJson<T>(
@@ -19,8 +20,21 @@ Map<String, dynamic> _$ResponseToJson<T>(
   Object? Function(T value) toJsonT,
 ) =>
     <String, dynamic>{
-      'result': toJsonT(instance.result),
+      'result': _$nullableGenericToJson(instance.result, toJsonT),
+      'error': instance.error,
     };
+
+T? _$nullableGenericFromJson<T>(
+  Object? input,
+  T Function(Object? json) fromJson,
+) =>
+    input == null ? null : fromJson(input);
+
+Object? _$nullableGenericToJson<T>(
+  T? input,
+  Object? Function(T value) toJson,
+) =>
+    input == null ? null : toJson(input);
 
 Block _$BlockFromJson(Map<String, dynamic> json) => Block(
       blockIndex: (json['block_index'] as num).toInt(),
@@ -765,200 +779,6 @@ class _V2Api implements V2Api {
       (json) => json is List<dynamic>
           ? json
               .map<Cancel>((i) => Cancel.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
-    return value;
-  }
-
-  @override
-  Future<Response<List<Destruction>>> getDestructions(
-    int blockIndex,
-    bool verbose,
-  ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'verbose': verbose};
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Destruction>>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/destructions',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final value = Response<List<Destruction>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Destruction>(
-                  (i) => Destruction.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
-    return value;
-  }
-
-  @override
-  Future<Response<List<Issuance>>> getIssuancesByBlock(
-    int blockIndex,
-    bool verbose,
-  ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'verbose': verbose};
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Issuance>>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/issuances',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final value = Response<List<Issuance>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Issuance>(
-                  (i) => Issuance.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
-    return value;
-  }
-
-  @override
-  Future<Response<List<Send>>> getSendsByBlock(
-    int blockIndex,
-    bool verbose,
-    int limit,
-    int offset,
-  ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{
-      r'verbose': verbose,
-      r'limit': limit,
-      r'offset': offset,
-    };
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Send>>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/sends',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final value = Response<List<Send>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Send>((i) => Send.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
-    return value;
-  }
-
-  @override
-  Future<Response<List<Dispense>>> getDispensesByBlock(
-    int blockIndex,
-    bool verbose,
-  ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'verbose': verbose};
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Dispense>>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/dispenses',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final value = Response<List<Dispense>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Dispense>(
-                  (i) => Dispense.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
-    return value;
-  }
-
-  @override
-  Future<Response<List<Sweep>>> getSweepsByBlock(
-    int blockIndex,
-    bool verbose,
-  ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'verbose': verbose};
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Sweep>>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/sweeps',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final value = Response<List<Sweep>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Sweep>((i) => Sweep.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );
