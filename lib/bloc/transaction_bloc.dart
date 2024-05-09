@@ -14,9 +14,12 @@ import 'package:uniparty/models/internal_utxo.dart';
 import 'package:uniparty/models/send_transaction.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
-import 'package:uniparty/ecpair.dart' as ECPair;
 
 
+import 'package:uniparty/ecpair_js.dart' as ecpair;
+import 'package:uniparty/tiny_secp256k1_js.dart' as tinysecp256k1js;
+
+dynamic ECPair = ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
 
 sealed class TransactionState {
@@ -147,77 +150,38 @@ _onSendTransactionEvent(event, emit) async {
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
-    dynamic ecp = ECPair.ecpair.fromWIF(activeWallet.privateKey);
 
 
-    debugger(when: true);
+    // JSObject o = JSObject();
+    //
 
-    // TODO wrap the JSTransaction such that we don't call toDart here
+    dynamic signer = ECPair.fromWIF(activeWallet.privateKey, ecpair.testnet);
 
+    // TODO handle segwit / legacy / etc
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
-      // We get reversed tx hashes after parsing
-
       
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 
-
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+
       var prev = utxoMap[txHash];
 
-      // var txhash = transaction.ins.toDart[i].hash.toDart.reversed.toList().map();
-      //
-      // print('txhash: $txhash');
-      // // print()
-      // print('prev: $prev');
-      //
-      //
-      bool isBech32 = activeWallet.address.startsWith('tb');
-      //
-      //
-      Uint8List publicKeyBytes = Uint8List.fromList(HEX.decode(activeWallet.publicKey));
-      //
-
-/**
- * function p2wpkh(a, opts) {
-  if (!a.address && !a.hash && !a.output && !a.pubkey && !a.witness)
-    throw new TypeError('Not enough data');
- */
       if (prev != null) {
-
-
-        // only adding inputs that we own
         psbt.addInput(input);
+      }
+
+    }
+
+    for ( var i = 0; i < transaction.outs.toDart.length; i++) {
+
+      bitcoinjs.TxOutput output = transaction.outs.toDart[i];
+
+      psbt.addOutput(output);
+
+    }
 
         debugger(when: true);
 
-        // var script = isBech32
-        //     ? bitcoinjs.p2wpkh(DartPayment(
-        //         network: 'testnet',
-        //         pubkey: publicKeyBytes.toJS,
-        //         address: activeWallet.address,
-        //         hash: txHash,
-        //         
-        //       ).toJSBox)
-        //     // : bitcoinjs.p2wpkh(bitcoinjs.Payment('testnet', publicKeyBytes.toJS));
-        //     : bitcoinjs.p2wpkh(
-        //         DartPayment(network: 'testnet', pubkey: publicKeyBytes.toJS, address: activeWallet.address, hash: txHash)
-        //             .toJSBox);
-
-
-        //
-        // payment = bitcoinjs.Payment('testnet', prev.script);
-
-        // txb.addInput(tx.ins[i].hash.toString('hex'), prev.vout, null, input.output);
-        // psbt.addInput({
-        //   hash: txhash,
-        //   index: prev.vout,
-        //   // witnessScript
-        //   // sequence: transaction.ins[i].sequence,
-        //   // witnessUtxo: {script: prev.script, value: prev.value}
-        // });
-      }
-      // if (prev) txb.addInput(tx.ins[i].hash.toString('hex'), prev.vout, null, input.output);
-    }
   } catch (error) {
     rethrow;
     // emit(TransactionError(message: error.toString()));
