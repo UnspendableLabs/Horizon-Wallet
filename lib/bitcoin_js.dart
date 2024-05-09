@@ -29,7 +29,7 @@ extension type Payment._(JSObject _) implements JSObject {
 }
 
 @JS("payments.p2wpkh")
-external Payment p2wpkh(Payment payment);
+external Payment p2wpkh(JSObject options);
 
 @JS("payments.p2pkh")
 external Payment p2pkh(Payment payment);
