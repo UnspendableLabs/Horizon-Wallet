@@ -13,6 +13,7 @@ import 'package:uniparty/models/internal_utxo.dart';
 // import 'package:uniparty/models/transaction.dart';
 import 'package:uniparty/models/send_transaction.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/services/bitcoind.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
 import 'package:uniparty/ecpair_js.dart' as ecpair;
@@ -119,12 +120,13 @@ class DartPayment {
 
 _onSendTransactionEvent(event, emit) async {
   emit(SendTransactionLoading());
+  final bitcoinService = GetIt.I.get<BitcoindService>();
   final keyValueService = GetIt.I.get<KeyValueService>();
   final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
   // final TransactionParserI transactionParser = GetIt.I.get<TransactionParserI>();
 
   try {
-    
+
 
 
 
@@ -142,13 +144,13 @@ _onSendTransactionEvent(event, emit) async {
       return emit(TransactionError(message: 'No active wallet found'));
     }
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
-    
+
     debugger(when: true);
 
 
 
     final response = await counterpartyApi.createSendTransaction(event.sendTransaction, event.network, activeWallet.address);
-    
+
 
     final utxos = await counterpartyApi.getUnspentTxOut(
         activeWallet.address, event.network);
@@ -207,6 +209,7 @@ _onSendTransactionEvent(event, emit) async {
 
     String txHex = tx.toHex();
 
+    bitcoinService.sendrawtransaction(txHex);
 
     print(txHex);
 
