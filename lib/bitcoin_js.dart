@@ -30,12 +30,17 @@ extension type Transaction._(JSObject _) implements JSObject {
   external static Transaction fromHex(JSString hex); // TODO just use string
   external JSArray<TxInput> ins;
   external JSArray<TxOutput> outs;
+  external String toHex();
 }
 
 extension type Psbt._(JSObject _) implements JSObject {
   external Psbt(); // TODO: augment the constructor
   external Psbt addInput(TxInput input);
   external Psbt addOutput(TxOutput output);
+
+  external void signAllInputs(JSObject signer);
+  external Transaction extractTransaction();
+
 }
 
 extension type Payment._(JSObject _) implements JSObject {

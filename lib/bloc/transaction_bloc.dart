@@ -124,12 +124,15 @@ _onSendTransactionEvent(event, emit) async {
   // final TransactionParserI transactionParser = GetIt.I.get<TransactionParserI>();
 
   try {
-    // final response = await counterpartyApi.createSendTransaction(event.transaction, event.network);
+    
 
-    String prevBurnHex =
-        '01000000019755f4f1def5f08d32ea2d43c9b46a6af38187266ee2520d5b1255b26462648f000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888acffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac59810a00000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888ac00000000';
-    String mostRecentBurnHex =
-        '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac38150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
+
+
+
+    // String prevBurnHex =
+    //     '01000000019755f4f1def5f08d32ea2d43c9b46a6af38187266ee2520d5b1255b26462648f000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888acffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac59810a00000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888ac00000000';
+    // String mostRecentBurnHex =
+    //     '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac38150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
     String newestBurn =
         '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac61150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
 
@@ -139,6 +142,11 @@ _onSendTransactionEvent(event, emit) async {
       return emit(TransactionError(message: 'No active wallet found'));
     }
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
+    
+
+    debugger(when: true);
+    final response = await counterpartyApi.createSendTransaction(event.sendTransaction, event.network, activeWallet.address);
+    
 
     final utxos = await counterpartyApi.getUnspentTxOut(
         activeWallet.address, event.network);
@@ -188,6 +196,21 @@ _onSendTransactionEvent(event, emit) async {
 
       psbt.addOutput(output);
     }
+
+    psbt.signAllInputs(signer);
+
+    bitcoinjs.Transaction tx = psbt.extractTransaction();
+
+
+    String txHex = tx.toHex();
+
+
+    print(txHex);
+
+
+
+    // final payment = DartPayment(t
+
 
     debugger(when: true);
   } catch (error) {

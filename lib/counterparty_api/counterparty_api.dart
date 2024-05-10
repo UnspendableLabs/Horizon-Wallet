@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -124,7 +125,7 @@ class CounterpartyApi {
     }
   }
 
-  Future<String> createSendTransaction(SendTransaction sendTransaction, NetworkEnum network) async {
+  Future<String> createSendTransaction(SendTransaction sendTransaction, NetworkEnum network, String source) async {
     String url = _getUrl(network);
 
     try {
@@ -137,7 +138,7 @@ class CounterpartyApi {
         body: jsonEncode(<String, dynamic>{
           "method": "create_send",
           "params": {
-            "source": sendTransaction.sourceAddress,
+            "source": source,
             "destination": sendTransaction.destinationAddress,
             "asset": sendTransaction.asset.name,
             "quantity": sendTransaction.quantity,
