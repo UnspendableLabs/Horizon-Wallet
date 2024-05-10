@@ -5,6 +5,11 @@ import 'dart:js_interop';
 
 
 
+extension type WitnessUTXO._(JSObject o) implements JSObject {
+  external WitnessUTXO({ JSUint8Array script, JSNumber value });
+}
+
+
 
 // extension TxInput {
 extension type TxInput._(JSObject _) implements JSObject {
@@ -13,6 +18,7 @@ extension type TxInput._(JSObject _) implements JSObject {
   external JSUint8Array script;
   external int sequence;
   external JSUint8Array witness;
+  external WitnessUTXO? witnessUtxo;
 }
 
 extension type TxOutput._(JSObject _) implements JSObject {
@@ -36,10 +42,21 @@ extension type Payment._(JSObject _) implements JSObject {
   external Payment(String network, JSUint8Array pubkey);
   external String network; // TODO: refine type
   external JSUint8Array pubkey;
+  external JSUint8Array output;
 }
+
+
+
 
 @JS("payments.p2wpkh")
 external Payment p2wpkh(JSObject options);
 
 @JS("payments.p2pkh")
 external Payment p2pkh(Payment payment);
+
+
+extension type PaymentOptions._(JSObject o) implements JSObject {
+  external PaymentOptions({ JSAny pubkey, JSAny network });
+  // external int get a;
+  // external int get b;
+}

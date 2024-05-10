@@ -15,12 +15,10 @@ import 'package:uniparty/models/send_transaction.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
-
 import 'package:uniparty/ecpair_js.dart' as ecpair;
 import 'package:uniparty/tiny_secp256k1_js.dart' as tinysecp256k1js;
 
 dynamic ECPair = ecpair.ECPairFactory(tinysecp256k1js.ecc);
-
 
 sealed class TransactionState {
   const TransactionState();
@@ -66,9 +64,11 @@ class SendTransactionEvent extends TransactionEvent {
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   TransactionBloc() : super(InitializeTransactionLoading()) {
-    on<InitializeTransactionEvent>((event, emit) async => await _onInitializeTransaction(event, emit));
+    on<InitializeTransactionEvent>(
+        (event, emit) async => await _onInitializeTransaction(event, emit));
 
-    on<SendTransactionEvent>((event, emit) async => _onSendTransactionEvent(event, emit));
+    on<SendTransactionEvent>(
+        (event, emit) async => _onSendTransactionEvent(event, emit));
   }
 }
 
@@ -76,7 +76,8 @@ _onInitializeTransaction(event, emit) async {
   emit(InitializeTransactionLoading());
   KeyValueService keyValueService = GetIt.I.get<KeyValueService>();
 
-  List<String> addressOptions = await _getAddressOptionsForNetwork(emit, event.network, keyValueService);
+  List<String> addressOptions =
+      await _getAddressOptionsForNetwork(emit, event.network, keyValueService);
 
   emit(TransactionInitial(sourceAddressOptions: addressOptions));
 }
@@ -109,7 +110,11 @@ class DartPayment {
   String address;
   String hash;
 
-  DartPayment({required this.network, required this.pubkey, required this.address, required this.hash});
+  DartPayment(
+      {required this.network,
+      required this.pubkey,
+      required this.address,
+      required this.hash});
 }
 
 _onSendTransactionEvent(event, emit) async {
@@ -128,13 +133,15 @@ _onSendTransactionEvent(event, emit) async {
     String newestBurn =
         '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac61150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
 
-    String? activeWalletJson = await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
+    String? activeWalletJson =
+        await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
     if (activeWalletJson == null) {
       return emit(TransactionError(message: 'No active wallet found'));
     }
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
 
-    final utxos = await counterpartyApi.getUnspentTxOut(activeWallet.address, event.network);
+    final utxos = await counterpartyApi.getUnspentTxOut(
+        activeWallet.address, event.network);
 
     Map<String, InternalUTXO> utxoMap = {for (var e in utxos) e.txid: e};
     print('utxoMap: $utxoMap');
@@ -146,11 +153,10 @@ _onSendTransactionEvent(event, emit) async {
 
     // TransactionBuilder txb = new TransactionBuilder();
 
-    bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(newestBurn.toJS);
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(newestBurn.toJS);
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
-
-
 
     // JSObject o = JSObject();
     //
@@ -158,8 +164,11 @@ _onSendTransactionEvent(event, emit) async {
     dynamic signer = ECPair.fromWIF(activeWallet.privateKey, ecpair.testnet);
 
     // TODO handle segwit / legacy / etc
+
+    var script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
+        pubkey: signer.publicKey, network: ecpair.testnet));
+
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
-      
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
@@ -167,48 +176,52 @@ _onSendTransactionEvent(event, emit) async {
       var prev = utxoMap[txHash];
 
       if (prev != null) {
+        // input.witnessUtxo = { script }
+        input.witnessUtxo = bitcoinjs.WitnessUTXO(
+            script: script.output, value: prev.value.toJS);
         psbt.addInput(input);
       }
-
     }
 
-    for ( var i = 0; i < transaction.outs.toDart.length; i++) {
-
+    for (var i = 0; i < transaction.outs.toDart.length; i++) {
       bitcoinjs.TxOutput output = transaction.outs.toDart[i];
 
       psbt.addOutput(output);
-
     }
 
-        debugger(when: true);
-
+    debugger(when: true);
   } catch (error) {
     rethrow;
     // emit(TransactionError(message: error.toString()));
   }
 }
 
-Future<List<String>> _getAddressOptionsForNetwork(emit, NetworkEnum network, KeyValueService keyValueService) async {
+Future<List<String>> _getAddressOptionsForNetwork(
+    emit, NetworkEnum network, KeyValueService keyValueService) async {
   switch (network) {
     case NetworkEnum.mainnet:
-      String? mainnetNodesJson = await keyValueService.get(MAINNET_WALLET_NODES_KEY);
+      String? mainnetNodesJson =
+          await keyValueService.get(MAINNET_WALLET_NODES_KEY);
 
       if (mainnetNodesJson == null) {
         return emit(TransactionError(message: 'No mainnet wallet nodes found'));
       }
 
-      List<WalletNode> mainnetNodes = WalletNode.deserializeList(mainnetNodesJson);
+      List<WalletNode> mainnetNodes =
+          WalletNode.deserializeList(mainnetNodesJson);
 
       return mainnetNodes.map((e) => e.address).toList();
 
     case NetworkEnum.testnet:
-      String? testnetNodesJson = await keyValueService.get(TESTNET_WALLET_NODES_KEY);
+      String? testnetNodesJson =
+          await keyValueService.get(TESTNET_WALLET_NODES_KEY);
 
       if (testnetNodesJson == null) {
         return emit(TransactionError(message: 'No testnet wallet nodes found'));
       }
 
-      List<WalletNode> testnetNodes = WalletNode.deserializeList(testnetNodesJson);
+      List<WalletNode> testnetNodes =
+          WalletNode.deserializeList(testnetNodesJson);
 
       return testnetNodes.map((e) => e.address).toList();
   }
