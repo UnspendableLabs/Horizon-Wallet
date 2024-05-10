@@ -722,7 +722,32 @@ abstract class V2Api {
   //     Compose Issuance
   //     Compose MPMA
   //     Compose Order
+
+
   //     Compose Send
+
+// GET
+// https://api.counterparty.io/addresses/{address}/compose/send{?destination}{&asset}{&quantity}{&memo}{&memo_is_hex}{&use_enhanced_send}{&encoding}{&fee_per_kb}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&verbose}
+
+ // {
+ //        "result": {
+ //            "rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff020000000000000000306a2e0d1e454cefefcbe167ffa672ce93608ec55d2594e5d1946a774e4e944f50dfb46943bffd3b68866791f7f496f8c270060406000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
+ //            "params": {
+ //                "source": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
+ //                "destination": "1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev",
+ //                "asset": "XCP",
+ //                "quantity": 1000,
+ //                "memo": null,
+ //                "memo_is_hex": false,
+ //                "use_enhanced_send": true
+ //            },
+ //            "name": "send"
+ //        }
+ //    }
+
+  @GET("/addresses/{address}/compose/send")
+  Future<Res
+
   //     Compose Sweep
   // Assets
   //     Get Valid Assets

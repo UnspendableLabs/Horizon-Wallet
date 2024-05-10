@@ -39,6 +39,9 @@ extension type Psbt._(JSObject _) implements JSObject {
   external Psbt addOutput(TxOutput output);
 
   external void signAllInputs(JSObject signer);
+  external void finalizeAllInputs();
+
+
   external Transaction extractTransaction();
 
 }

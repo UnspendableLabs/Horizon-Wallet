@@ -133,8 +133,8 @@ _onSendTransactionEvent(event, emit) async {
     //     '01000000019755f4f1def5f08d32ea2d43c9b46a6af38187266ee2520d5b1255b26462648f000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888acffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac59810a00000000001976a914e3d4787f20cf11c0d10234bce832f99817c73d4888ac00000000';
     // String mostRecentBurnHex =
     //     '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac38150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
-    String newestBurn =
-        '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac61150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
+    // String newestBurn =
+    //     '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac61150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
 
     String? activeWalletJson =
         await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
@@ -143,8 +143,10 @@ _onSendTransactionEvent(event, emit) async {
     }
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
     
-
     debugger(when: true);
+
+
+
     final response = await counterpartyApi.createSendTransaction(event.sendTransaction, event.network, activeWallet.address);
     
 
@@ -154,15 +156,14 @@ _onSendTransactionEvent(event, emit) async {
     Map<String, InternalUTXO> utxoMap = {for (var e in utxos) e.txid: e};
     print('utxoMap: $utxoMap');
 
-    print('HERE WE ARE BEFORE TX');
-    Uint8List buffer = Uint8List.fromList(HEX.decode(newestBurn));
+
 
     // Transaction transaction = transactionParser.fromHex(newestBurn);
 
     // TransactionBuilder txb = new TransactionBuilder();
 
     bitcoinjs.Transaction transaction =
-        bitcoinjs.Transaction.fromHex(newestBurn.toJS);
+        bitcoinjs.Transaction.fromHex(response.toJS);
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
@@ -198,6 +199,8 @@ _onSendTransactionEvent(event, emit) async {
     }
 
     psbt.signAllInputs(signer);
+
+    psbt.finalizeAllInputs();
 
     bitcoinjs.Transaction tx = psbt.extractTransaction();
 

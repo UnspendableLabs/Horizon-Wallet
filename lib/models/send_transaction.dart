@@ -15,4 +15,6 @@ class SendTransaction {
       required this.asset,
       this.memo,
       this.memoIsHex});
+
+
 }

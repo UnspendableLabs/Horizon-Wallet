@@ -150,9 +150,12 @@ class CounterpartyApi {
         }),
       );
       if (response.statusCode == 200) {
-        var res = ResponseWrapper.fromJson(jsonDecode(response.body));
 
-        return res.result;
+
+        var res = jsonDecode(response.body);
+
+        return res["result"];
+
       } else {
         throw Exception('Failed to create send transaction: ${response.statusCode} ${response.body}');
       }
