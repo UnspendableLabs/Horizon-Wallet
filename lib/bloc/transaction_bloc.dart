@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:js_interop';
+import 'dart:js_util';
 import 'dart:typed_data';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,6 +19,19 @@ import 'package:uniparty/services/key_value_store_service.dart';
 
 import 'package:uniparty/ecpair_js.dart' as ecpair;
 import 'package:uniparty/tiny_secp256k1_js.dart' as tinysecp256k1js;
+
+import "package:uniparty/api/v2_api.dart" as v2_api;
+
+
+import 'package:dio/dio.dart';
+
+
+// TODO: move this to service def 
+final dio = Dio();
+final client = v2_api.V2Api(dio);
+
+
+
 
 dynamic ECPair = ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
@@ -127,7 +141,20 @@ _onSendTransactionEvent(event, emit) async {
 
   try {
 
+    String? activeWalletJson =
+        await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
+    if (activeWalletJson == null) {
+      return emit(TransactionError(message: 'No active wallet found'));
+    }
+    WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
 
+    final source = activeWallet.address;
+    final destination = event.sendTransaction.destinationAddress;
+    final quantity = event.sendTransaction.quantity;
+    // TODO: Make asset dynamic ( probably shouldn't use enum to model asset type since we won't know all possible assets )
+    // final asset = event.sendTransaction.asset;
+    // final memo = event.sendTransaction.memo;
+    // final memoIsHex = event.sendTransaction.memoIsHex;
 
 
 
@@ -138,18 +165,17 @@ _onSendTransactionEvent(event, emit) async {
     // String newestBurn =
     //     '02000000000101f44045600ea785218b4fff27d2224a6d26e88446ec201ab04eb089caaf691b5900000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed96ffffffff0258020000000000001976a914a11b66a67b3ff69671c8f82254099faf374b800e88ac61150f0000000000160014bbfb0e0b6e264fef37aadf6b4f3f5c0fd997ed9602000000000000';
 
-    String? activeWalletJson =
-        await keyValueService.get(ACTIVE_TESTNET_WALLET_KEY);
-    if (activeWalletJson == null) {
-      return emit(TransactionError(message: 'No active wallet found'));
-    }
-    WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
+
+  
+
 
     debugger(when: true);
 
-
-
     final response = await counterpartyApi.createSendTransaction(event.sendTransaction, event.network, activeWallet.address);
+
+    // V2 not running on testnet
+    // final response2 = await client.composeSend(source, destination, "xcp", quantity );
+
 
 
     final utxos = await counterpartyApi.getUnspentTxOut(
