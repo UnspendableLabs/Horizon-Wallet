@@ -15,8 +15,10 @@ void main() async {
   GetIt.I.registerSingleton<Bip39Service>(Bip39Impl());
   GetIt.I.registerLazySingleton<SeedOpsService>(() => SeedOpsService());
   GetIt.I.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
+
+  //TODO: inject correct network
   GetIt.I.registerSingleton<BitcoindService>(
-      BitcoindServiceHttpImpl(rpcUser: 'rpc', rpcPassword: 'rpc', rpcUrl: 'https://api.counterparty.io/8332/'));
+      BitcoindServiceHttpImpl(rpcUser: 'rpc', rpcPassword: 'rpc', rpcUrl: 'https://api.counterparty.io/18332/'));
 
   runApp(const MyApp());
 }
