@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 part 'v2_api.g.dart';
 
@@ -100,27 +101,27 @@ class EventCount {
     required this.eventCount,
   });
 
-  factory EventCount.fromJson(Map<String, dynamic> json) => _$EventCountFromJson(json);
-
+  factory EventCount.fromJson(Map<String, dynamic> json) =>
+      _$EventCountFromJson(json);
 }
 
- // {
- //                "block_index": 840464,
- //                "address": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
- //                "asset": "UNNEGOTIABLE",
- //                "quantity": 1,
- //                "calling_function": "issuance",
- //                "event": "876a6cfbd4aa22ba4fa85c2e1953a1c66649468a43a961ad16ea4d5329e3e4c5",
- //                "tx_index": 2726605,
- //                "asset_info": {
- //                    "asset_longname": null,
- //                    "description": "https://zawqddvy75sz6dwqllsrupumldqwi26kk3amlz4fqci7hrsuqcfq.arweave.net/yC0Bjrj_ZZ8O0FrlGj6MWOFka8pWwMXnhYCR88ZUgIs/UNNEG.json",
- //                    "issuer": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
- //                    "divisible": 0,
- //                    "locked": 1
- //                },
- //                "quantity_normalized": "1"
- //            }
+// {
+//                "block_index": 840464,
+//                "address": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
+//                "asset": "UNNEGOTIABLE",
+//                "quantity": 1,
+//                "calling_function": "issuance",
+//                "event": "876a6cfbd4aa22ba4fa85c2e1953a1c66649468a43a961ad16ea4d5329e3e4c5",
+//                "tx_index": 2726605,
+//                "asset_info": {
+//                    "asset_longname": null,
+//                    "description": "https://zawqddvy75sz6dwqllsrupumldqwi26kk3amlz4fqci7hrsuqcfq.arweave.net/yC0Bjrj_ZZ8O0FrlGj6MWOFka8pWwMXnhYCR88ZUgIs/UNNEG.json",
+//                    "issuer": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
+//                    "divisible": 0,
+//                    "locked": 1
+//                },
+//                "quantity_normalized": "1"
+//            }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AssetInfo {
@@ -134,9 +135,10 @@ class AssetInfo {
     required this.description,
     required this.divisible,
     required this.locked,
-    this.issuer, // TODO: validate shape 
+    this.issuer, // TODO: validate shape
   });
-  factory AssetInfo.fromJson(Map<String, dynamic> json) => _$AssetInfoFromJson(json);
+  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
+      _$AssetInfoFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -151,7 +153,6 @@ class Credit {
   final AssetInfo assetInfo;
   final String quantityNormalized;
 
-
   const Credit({
     required this.blockIndex,
     required this.address,
@@ -164,9 +165,7 @@ class Credit {
     required this.quantityNormalized,
   });
 
-
   factory Credit.fromJson(Map<String, dynamic> json) => _$CreditFromJson(json);
-
 }
 
 // {
@@ -210,14 +209,12 @@ class Debit {
   });
 
   factory Debit.fromJson(Map<String, dynamic> json) => _$DebitFromJson(json);
-
-
 }
 
-  // {
-  //               "type": "order",
-  //               "object_id": "533d5c0ecd8ca9c2946d3298cc5e570eee55b62b887dd85c95de6de4fdc7f441"
-  //           },
+// {
+//               "type": "order",
+//               "object_id": "533d5c0ecd8ca9c2946d3298cc5e570eee55b62b887dd85c95de6de4fdc7f441"
+//           },
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Expiration {
@@ -227,18 +224,18 @@ class Expiration {
     required this.type,
     required this.objectId,
   });
-  factory Expiration.fromJson(Map<String, dynamic> json) => _$ExpirationFromJson(json);
+  factory Expiration.fromJson(Map<String, dynamic> json) =>
+      _$ExpirationFromJson(json);
 }
 
-
-  // {
-  //               "tx_index": 2725738,
-  //               "tx_hash": "793af9129c7368f974c3ea0c87ad38131f0d82d19fbaf1adf8aaf2e657ec42b8",
-  //               "block_index": 839746,
-  //               "source": "1E6tyJ2zCyX74XgEK8t9iNMjxjNVLCGR1u",
-  //               "offer_hash": "04b258ac37f73e3b9a8575110320d67c752e1baace0f516da75845f388911735",
-  //               "status": "valid"
-  //           },
+// {
+//               "tx_index": 2725738,
+//               "tx_hash": "793af9129c7368f974c3ea0c87ad38131f0d82d19fbaf1adf8aaf2e657ec42b8",
+//               "block_index": 839746,
+//               "source": "1E6tyJ2zCyX74XgEK8t9iNMjxjNVLCGR1u",
+//               "offer_hash": "04b258ac37f73e3b9a8575110320d67c752e1baace0f516da75845f388911735",
+//               "status": "valid"
+//           },
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Cancel {
   final int txIndex;
@@ -304,33 +301,32 @@ class Destruction {
     required this.quantityNormalized,
   });
 
-  factory Destruction.fromJson(Map<String, dynamic> json) => _$DestructionFromJson(json);
-
+  factory Destruction.fromJson(Map<String, dynamic> json) =>
+      _$DestructionFromJson(json);
 }
 
 // issuance
-  // {
-  //               "tx_index": 2726605,
-  //               "tx_hash": "876a6cfbd4aa22ba4fa85c2e1953a1c66649468a43a961ad16ea4d5329e3e4c5",
-  //               "msg_index": 0,
-  //               "block_index": 840464,
-  //               "asset": "UNNEGOTIABLE",
-  //               "quantity": 1,
-  //               "divisible": 0,
-  //               "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
-  //               "issuer": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
-  //               "transfer": 0,
-  //               "callable": 0,
-  //               "call_date": 0,
-  //               "call_price": 0.0,
-  //               "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
-  //               "fee_paid": 50000000,
-  //               "locked": 0,
-  //               "status": "valid",
-  //               "asset_longname": null,
-  //               "reset": 0
-  //           }
-
+// {
+//               "tx_index": 2726605,
+//               "tx_hash": "876a6cfbd4aa22ba4fa85c2e1953a1c66649468a43a961ad16ea4d5329e3e4c5",
+//               "msg_index": 0,
+//               "block_index": 840464,
+//               "asset": "UNNEGOTIABLE",
+//               "quantity": 1,
+//               "divisible": 0,
+//               "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
+//               "issuer": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
+//               "transfer": 0,
+//               "callable": 0,
+//               "call_date": 0,
+//               "call_price": 0.0,
+//               "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
+//               "fee_paid": 50000000,
+//               "locked": 0,
+//               "status": "valid",
+//               "asset_longname": null,
+//               "reset": 0
+//           }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Issuance {
@@ -377,7 +373,7 @@ class Issuance {
   });
 }
 
-// Send 
+// Send
 // {
 //                 "tx_index": 2726604,
 //                 "tx_hash": "b4bbb14c99dd260eb634243e5c595e1b7213459979857a32850de84989bb71ec",
@@ -430,7 +426,6 @@ class Send {
   });
 
   factory Send.fromJson(Map<String, dynamic> json) => _$SendFromJson(json);
-
 }
 
 // Dispense
@@ -470,7 +465,6 @@ class Send {
 //                 }
 //             }
 
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Dispenser {
   final int txIndex;
@@ -505,16 +499,14 @@ class Dispenser {
     required this.giveQuantityNormalized,
     required this.giveRemainingNormalized,
     required this.escrowQuantityNormalized,
-    });
+  });
 
-    factory Dispenser.fromJson(Map<String, dynamic> json) => _$DispenserFromJson(json);
-      
-
-
+  factory Dispenser.fromJson(Map<String, dynamic> json) =>
+      _$DispenserFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class  Dispense {
+class Dispense {
   final int txIndex;
   final int dispenseIndex;
   final String txHash;
@@ -541,9 +533,8 @@ class  Dispense {
     required this.assetInfo,
   });
 
-
-  factory Dispense.fromJson(Map<String, dynamic> json) => _$DispenseFromJson(json);
-
+  factory Dispense.fromJson(Map<String, dynamic> json) =>
+      _$DispenseFromJson(json);
 }
 
 // Sweep
@@ -570,7 +561,6 @@ class Sweep {
   final String? memo;
   final int feePaid;
 
-
   const Sweep({
     required this.txIndex,
     required this.txHash,
@@ -583,15 +573,63 @@ class Sweep {
     required this.feePaid,
   });
 
-
   factory Sweep.fromJson(Map<String, dynamic> json) => _$SweepFromJson(json);
-
 }
 
-// Rest
+// {
+//             "rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff020000000000000000306a2e0d1e454cefefcbe167ffa672ce93608ec55d2594e5d1946a774e4e944f50dfb46943bffd3b68866791f7f496f8c270060406000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
+//             "params": {
+//                 "source": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
+//                 "destination": "1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev",
+//                 "asset": "XCP",
+//                 "quantity": 1000,
+//                 "memo": null,
+//                 "memo_is_hex": false,
+//                 "use_enhanced_send": true
+//             },
+//             "name": "send"
+//         }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SendTxParams {
+  final String source;
+  final String destination;
+  final String asset;
+  final int quantity;
+  final String? memo;
+  final bool memoIsHex;
+  final bool useEnhancedSend;
+  const SendTxParams({
+    required this.source,
+    required this.destination,
+    required this.asset,
+    required this.quantity,
+    this.memo,
+    required this.memoIsHex,
+    required this.useEnhancedSend,
+  });
+  factory SendTxParams.fromJson(Map<String, dynamic> json) =>
+      _$SendTxParamsFromJson(json);
+}
 
-@RestApi(baseUrl: "https://api.counterparty.io/api/v2")
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SendTx {
+  final String rawTransaction;
+  final SendTxParams params;
+  final String name;
+
+  const SendTx({
+    required this.rawTransaction,
+    required this.params,
+    required this.name,
+  });
+
+  factory SendTx.fromJson(Map<String, dynamic> json) => _$SendTxFromJson(json);
+}
+
+// TODO: inject baseURL ( or make dynamic)
+// @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
+@RestApi(baseUrl: "http://rpc:rpc@api4.counterparty.io:14000/v2")
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 
@@ -686,7 +724,6 @@ abstract class V2Api {
     @Query("verbose") bool verbose,
   );
 
-
   //     Get Issuances By Block
   //     Get Sends By Block
   //     Get Dispenses By Block
@@ -722,32 +759,39 @@ abstract class V2Api {
   //     Compose Issuance
   //     Compose MPMA
   //     Compose Order
-
-
   //     Compose Send
 
 // GET
 // https://api.counterparty.io/addresses/{address}/compose/send{?destination}{&asset}{&quantity}{&memo}{&memo_is_hex}{&use_enhanced_send}{&encoding}{&fee_per_kb}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&verbose}
 
- // {
- //        "result": {
- //            "rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff020000000000000000306a2e0d1e454cefefcbe167ffa672ce93608ec55d2594e5d1946a774e4e944f50dfb46943bffd3b68866791f7f496f8c270060406000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
- //            "params": {
- //                "source": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
- //                "destination": "1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev",
- //                "asset": "XCP",
- //                "quantity": 1000,
- //                "memo": null,
- //                "memo_is_hex": false,
- //                "use_enhanced_send": true
- //            },
- //            "name": "send"
- //        }
- //    }
-
+// TODO add all query params
   @GET("/addresses/{address}/compose/send")
-  Future<Res
+  Future<Response<SendTx>> composeSend(
+    @Path("address") String address,
+    @Query("destination") String destination,
+    @Query("asset") String asset,
+    @Query("quantity") int quantity,
+  );
 
+  // {
+  //        "result": {
+  //            "rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff020000000000000000306a2e0d1e454cefefcbe167ffa672ce93608ec55d2594e5d1946a774e4e944f50dfb46943bffd3b68866791f7f496f8c270060406000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
+  //            "params": {
+  //                "source": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
+  //                "destination": "1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev",
+  //                "asset": "XCP",
+  //                "quantity": 1000,
+  //                "memo": null,
+  //                "memo_is_hex": false,
+  //                "use_enhanced_send": true
+  //            },
+  //            "name": "send"
+  //        }
+  //    }
+
+  // @GET("/addresses/{address}/compose/send")
+  // Future<Res
+  //
   //     Compose Sweep
   // Assets
   //     Get Valid Assets
@@ -889,7 +933,6 @@ abstract class V2Api {
   //     Get All Mempool Events
   //     Get Mempool Events By Name
   //
-}
 
 // {
 //   "result": {
@@ -4497,3 +4540,4 @@ abstract class V2Api {
 //   }
 // }
 //
+}

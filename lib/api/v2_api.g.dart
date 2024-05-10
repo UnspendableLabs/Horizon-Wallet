@@ -392,6 +392,39 @@ Map<String, dynamic> _$SweepToJson(Sweep instance) => <String, dynamic>{
       'fee_paid': instance.feePaid,
     };
 
+SendTxParams _$SendTxParamsFromJson(Map<String, dynamic> json) => SendTxParams(
+      source: json['source'] as String,
+      destination: json['destination'] as String,
+      asset: json['asset'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      memo: json['memo'] as String?,
+      memoIsHex: json['memo_is_hex'] as bool,
+      useEnhancedSend: json['use_enhanced_send'] as bool,
+    );
+
+Map<String, dynamic> _$SendTxParamsToJson(SendTxParams instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'asset': instance.asset,
+      'quantity': instance.quantity,
+      'memo': instance.memo,
+      'memo_is_hex': instance.memoIsHex,
+      'use_enhanced_send': instance.useEnhancedSend,
+    };
+
+SendTx _$SendTxFromJson(Map<String, dynamic> json) => SendTx(
+      rawTransaction: json['raw_transaction'] as String,
+      params: SendTxParams.fromJson(json['params'] as Map<String, dynamic>),
+      name: json['name'] as String,
+    );
+
+Map<String, dynamic> _$SendTxToJson(SendTx instance) => <String, dynamic>{
+      'raw_transaction': instance.rawTransaction,
+      'params': instance.params,
+      'name': instance.name,
+    };
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
@@ -403,7 +436,7 @@ class _V2Api implements V2Api {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://api.counterparty.io/api/v2';
+    baseUrl ??= 'http://rpc:rpc@api4.counterparty.io:14000/v2';
   }
 
   final Dio _dio;
@@ -781,6 +814,83 @@ class _V2Api implements V2Api {
               .map<Cancel>((i) => Cancel.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<List<Destruction>>> getDestructions(
+    int blockIndex,
+    bool verbose,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'verbose': verbose};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Destruction>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/blocks/${blockIndex}/destructions',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<List<Destruction>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Destruction>(
+                  (i) => Destruction.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<SendTx>> composeSend(
+    String address,
+    String destination,
+    String asset,
+    int quantity,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destination': destination,
+      r'asset': asset,
+      r'quantity': quantity,
+    };
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<SendTx>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/send',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<SendTx>.fromJson(
+      _result.data!,
+      (json) => SendTx.fromJson(json as Map<String, dynamic>),
     );
     return value;
   }
