@@ -7,7 +7,7 @@ import 'package:http/http.dart';
 import 'package:logger/logger.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/models/balance.dart';
-import 'package:uniparty/counterparty_api/models/response_wrapper.dart';
+import 'package:uniparty/counterparty_api/models/counterparty_response_wrapper.dart';
 import 'package:uniparty/models/internal_utxo.dart';
 import 'package:uniparty/models/send_transaction.dart';
 
@@ -29,7 +29,7 @@ class CounterpartyApi {
   //     );
   //     if (response.statusCode == 200) {
   //       print('BALANCE RESPONSE: ${response.body}');
-  //       var res = ResponseWrapper.fromJson(jsonDecode(response.body));
+  //       var res = CounterpartyResponseWrapper.fromJson(jsonDecode(response.body));
 
   //       final List<Balance> balances = [];
   //       for (var item in res.result) {
@@ -71,7 +71,7 @@ class CounterpartyApi {
       );
       if (response.statusCode == 200) {
         print('BALANCE RESPONSE: ${response.body}');
-        var res = ResponseWrapper.fromJson(jsonDecode(response.body));
+        var res = CounterpartyResponseWrapper.fromJson(jsonDecode(response.body));
 
         final List<Balance> balances = [];
         for (var item in res.result) {
@@ -108,7 +108,7 @@ class CounterpartyApi {
       );
       if (response.statusCode == 200) {
         print('UTXO RESPONSE: ${response.body}');
-        var res = ResponseWrapper.fromJson(jsonDecode(response.body));
+        var res = CounterpartyResponseWrapper.fromJson(jsonDecode(response.body));
         List<InternalUTXO> utxos = [];
         for (var item in res.result) {
           utxos.add(InternalUTXO.fromJson(item));
@@ -150,12 +150,9 @@ class CounterpartyApi {
         }),
       );
       if (response.statusCode == 200) {
-
-
         var res = jsonDecode(response.body);
 
         return res["result"];
-
       } else {
         throw Exception('Failed to create send transaction: ${response.statusCode} ${response.body}');
       }

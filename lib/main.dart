@@ -5,6 +5,7 @@ import 'package:uniparty/app_router.dart';
 import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/services/bitcoind.dart';
+import 'package:uniparty/services/blockcypher.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 
@@ -19,6 +20,8 @@ void main() async {
   //TODO: inject correct network
   GetIt.I.registerSingleton<BitcoindService>(
       BitcoindServiceHttpImpl(rpcUser: 'rpc', rpcPassword: 'rpc', rpcUrl: 'https://api.counterparty.io/18332/'));
+
+  GetIt.I.registerSingleton<BlockCypherService>(BlockCypherImpl(url: 'https://api.blockcypher.com/v1/btc/test3/addrs/'));
 
   runApp(const MyApp());
 }
