@@ -35,6 +35,10 @@ extension type Transaction._(JSObject _) implements JSObject {
 
 extension type Psbt._(JSObject _) implements JSObject {
   external Psbt(); // TODO: augment the constructor
+
+  external static Psbt fromHex(JSString hex); // TODO just use string
+
+
   external Psbt addInput(TxInput input);
   external Psbt addOutput(TxOutput output);
 

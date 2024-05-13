@@ -169,14 +169,15 @@ _onSendTransactionEvent(event, emit) async {
   
 
 
-    debugger(when: true);
 
     final response = await counterpartyApi.createSendTransaction(event.sendTransaction, event.network, activeWallet.address);
 
+    print(response);
+
     // V2 not running on testnet
-    // final response2 = await client.composeSend(source, destination, "xcp", quantity );
+    final response2 = await client.composeSend(source, destination, "xcp", quantity );
 
-
+    debugger(when: true);
 
     final utxos = await counterpartyApi.getUnspentTxOut(
         activeWallet.address, event.network);
@@ -184,11 +185,6 @@ _onSendTransactionEvent(event, emit) async {
     Map<String, InternalUTXO> utxoMap = {for (var e in utxos) e.txid: e};
     print('utxoMap: $utxoMap');
 
-
-
-    // Transaction transaction = transactionParser.fromHex(newestBurn);
-
-    // TransactionBuilder txb = new TransactionBuilder();
 
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(response.toJS);
@@ -235,16 +231,11 @@ _onSendTransactionEvent(event, emit) async {
 
     String txHex = tx.toHex();
 
-    bitcoinService.sendrawtransaction(txHex);
-
     print(txHex);
 
 
 
-    // final payment = DartPayment(t
 
-
-    debugger(when: true);
   } catch (error) {
     rethrow;
     // emit(TransactionError(message: error.toString()));
