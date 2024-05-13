@@ -10,7 +10,7 @@ import 'package:uniparty/counterparty_api/models/btc_balance_response.dart';
 // 367135
 
 abstract class BlockCypherService {
-  Future<List<Balance>> fetchBalance(String signedHex);
+  Future<List<Balance>> fetchBalance(String signedHex, NetworkEnum network);
 }
 
 class BlockCypherImpl implements BlockCypherService {
@@ -18,12 +18,14 @@ class BlockCypherImpl implements BlockCypherService {
 
   BlockCypherImpl({required this.url});
   @override
-  Future<List<Balance>> fetchBalance(String address) async {
+  Future<List<Balance>> fetchBalance(String address, NetworkEnum network) async {
     try {
       final response = await http.get(
-        Uri.parse("$url$address/balance"),
+        Uri.parse("$url${_network(network)}/$address/balance"),
         headers: <String, String>{
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE, HEAD',
         },
       );
       if (response.statusCode == 200) {
@@ -39,5 +41,9 @@ class BlockCypherImpl implements BlockCypherService {
 
       rethrow;
     }
+  }
+
+  _network(NetworkEnum network) {
+    return network == NetworkEnum.mainnet ? 'main' : 'test3';
   }
 }
