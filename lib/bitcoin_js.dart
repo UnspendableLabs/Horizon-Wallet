@@ -1,6 +1,5 @@
 @JS('bitcoin')
 library;
-
 import 'dart:js_interop';
 
 
@@ -64,7 +63,7 @@ extension type Payment._(JSObject _) implements JSObject {
 external Payment p2wpkh(JSObject options);
 
 @JS("payments.p2pkh")
-external Payment p2pkh(Payment payment);
+external Payment p2pkh(JSObject payment);
 
 
 extension type PaymentOptions._(JSObject o) implements JSObject {
