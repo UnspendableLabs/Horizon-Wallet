@@ -414,15 +414,46 @@ Map<String, dynamic> _$SendTxParamsToJson(SendTxParams instance) =>
     };
 
 SendTx _$SendTxFromJson(Map<String, dynamic> json) => SendTx(
-      rawTransaction: json['raw_transaction'] as String,
+      rawtransaction: json['rawtransaction'] as String,
       params: SendTxParams.fromJson(json['params'] as Map<String, dynamic>),
       name: json['name'] as String,
     );
 
 Map<String, dynamic> _$SendTxToJson(SendTx instance) => <String, dynamic>{
-      'raw_transaction': instance.rawTransaction,
+      'rawtransaction': instance.rawtransaction,
       'params': instance.params,
       'name': instance.name,
+    };
+
+Unpack _$UnpackFromJson(Map<String, dynamic> json) => Unpack(
+      messageType: json['message_type'] as String,
+      messageTypeId: (json['message_type_id'] as num).toInt(),
+      messageData: json['message_data'] as Map<String, dynamic>,
+    );
+
+Map<String, dynamic> _$UnpackToJson(Unpack instance) => <String, dynamic>{
+      'message_type': instance.messageType,
+      'message_type_id': instance.messageTypeId,
+      'message_data': instance.messageData,
+    };
+
+Info _$InfoFromJson(Map<String, dynamic> json) => Info(
+      source: json['source'] as String,
+      destination: json['destination'] as String,
+      btcAmount: (json['btc_amount'] as num).toDouble(),
+      fee: (json['fee'] as num).toInt(),
+      data: json['data'] as String,
+      unpackedData:
+          Unpack.fromJson(json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$InfoToJson(Info instance) => <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'unpacked_data': instance.unpackedData.toJson(),
     };
 
 // **************************************************************************
@@ -436,7 +467,7 @@ class _V2Api implements V2Api {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://rpc:rpc@api4.counterparty.io:14000/v2';
+    baseUrl ??= 'http://localhost:14000/v2';
   }
 
   final Dio _dio;
@@ -852,6 +883,68 @@ class _V2Api implements V2Api {
                   (i) => Destruction.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<Info>> getTransactionInfo(String rawtransaction) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'rawtransaction': rawtransaction
+    };
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<Info>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/transactions/info',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<Info>.fromJson(
+      _result.data!,
+      (json) => Info.fromJson(json as Map<String, dynamic>),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<Unpack>> unpackTransaction(String datahex) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'datahex': datahex};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<Unpack>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/transactions/unpack',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<Unpack>.fromJson(
+      _result.data!,
+      (json) => Unpack.fromJson(json as Map<String, dynamic>),
     );
     return value;
   }

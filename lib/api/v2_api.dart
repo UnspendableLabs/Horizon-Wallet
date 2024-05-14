@@ -614,12 +614,12 @@ class SendTxParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class SendTx {
-  final String rawTransaction;
+  final String rawtransaction;
   final SendTxParams params;
   final String name;
 
   const SendTx({
-    required this.rawTransaction,
+    required this.rawtransaction,
     required this.params,
     required this.name,
   });
@@ -627,9 +627,89 @@ class SendTx {
   factory SendTx.fromJson(Map<String, dynamic> json) => _$SendTxFromJson(json);
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class Unpack {
+  final String messageType;
+  final int messageTypeId;
+  final Map<String, dynamic> messageData;
+
+
+  const Unpack({
+    required this.messageType,
+    required this.messageTypeId,
+    required this.messageData,
+  });
+
+
+  factory Unpack.fromJson(Map<String, dynamic> json) =>
+      _$UnpackFromJson(json);
+
+
+  Map<String, dynamic> toJson() => _$UnpackToJson(this);
+
+}
+
+        //
+        // "result": {
+        //     "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
+        //     "destination": "",
+        //     "btc_amount": 0,
+        //     "fee": 56565,
+        //     "data": "16010b9142801429a60000000000000001000000554e4e45474f544941424c45205745204d555354204245434f4d4520554e4e45474f544941424c4520574520415245",
+        //     "unpacked_data": {
+        //         "message_type": "issuance",
+        //         "message_type_id": 22,
+        //         "message_data": {
+        //             "asset_id": 75313533584419238,
+        //             "asset": "UNNEGOTIABLE",
+        //             "subasset_longname": null,
+        //             "quantity": 1,
+        //             "divisible": false,
+        //             "lock": false,
+        //             "reset": false,
+        //             "callable": false,
+        //             "call_date": 0,
+        //             "call_price": 0.0,
+        //             "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
+        //             "status": "valid"
+        //         }
+        //     }
+        // }
+@JsonSerializable(explicitToJson:true, fieldRename: FieldRename.snake)
+class Info {
+  final String source;
+  final String destination;
+  final double btcAmount;
+  final int fee;
+  final String data;
+  final Unpack unpackedData;
+
+
+  const Info({
+    required this.source,
+    required this.destination,
+    required this.btcAmount,
+    required this.fee,
+    required this.data,
+    required this.unpackedData,
+  });
+
+
+  factory Info.fromJson(Map<String, dynamic> json) =>
+      _$InfoFromJson(json);
+  
+
+  // TODO: this doesnt actually show all the send data
+  Map<String, dynamic> toJson() => _$InfoToJson(this);
+}
+
+
+
+
+
 // TODO: inject baseURL ( or make dynamic)
 // @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
-@RestApi(baseUrl: "http://rpc:rpc@api4.counterparty.io:14000/v2")
+@RestApi(baseUrl: "http://localhost:14000/v2")
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 
@@ -730,7 +810,29 @@ abstract class V2Api {
   //     Get Sweeps By Block
   // Transactions
   //     Info
+
+
+  @GET("/transactions/info")
+  Future<Response<Info>> getTransactionInfo(
+    @Query("rawtransaction") String rawtransaction,
+    // TODO: add these back and make optional
+    // @Query("block_index") int blockIndex, 
+    // @Query("verbose") bool verbose,
+  );
+
   //     Unpack
+// https://api.counterparty.io/transactions/unpack{?datahex}{&block_index}{&verbose}
+
+  @GET("/transactions/unpack")
+  Future<Response<Unpack>> unpackTransaction(
+    @Query("datahex") String datahex,
+    // TODO: add these back and make optional
+    // @Query("block_index") int blockIndex, 
+    // @Query("verbose") bool verbose,
+  );
+
+
+
   //     Get Transaction By Hash
   // Addresses
   //     Get Address Balances
