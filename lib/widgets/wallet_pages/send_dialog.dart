@@ -5,6 +5,7 @@ import 'package:uniparty/bloc/transaction_bloc.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/send_transaction.dart';
 import 'package:uniparty/widgets/common/common_dialog_shape.dart';
+import 'package:uniparty/widgets/common/object_properties.dart' as object_properties;
 
 class SendDialog extends StatefulWidget {
   final NetworkEnum network;
@@ -26,9 +27,9 @@ class _SendDialogState extends State<SendDialog> {
   final _quantityTextController = TextEditingController();
 
   // Variables to hold the values of the inputs
-  String _destinationAddress = '';
-  double _quantity = 0.0;
-  AssetEnum _asset = AssetEnum.BTC;
+  String _destinationAddress = 'n2HcDKczzjsY4SfJ6tUtuBrkDfqjYVCoDw';
+  double _quantity = 10.0;
+  AssetEnum _asset = AssetEnum.XCP;
   String _sourceAddress = '';
 
   @override
@@ -155,7 +156,19 @@ class _SendDialogState extends State<SendDialog> {
                 )),
               ),
             SendTransactionLoading() => const Text('sending transaction...'),
-            TransactionSuccess() => const Text('transaction success'),
+            TransactionSuccess() => Column(children: [
+                  Text(transactionState.transactionHex),
+                  object_properties.renderObjectProperties(transactionState.info.toJson()),
+                                  
+                CupertinoButton(
+                    child: const Text('Sign'),
+                    onPressed: () {
+                      BlocProvider.of<TransactionBloc>(context).add(SignTransactionEvent(
+                          unsignedTransaction: transactionState.transactionHex, 
+                          network: widget.network));
+                    }),
+                   ]),
+            TransactionSignSuccess() => Text(transactionState.signedTransaction),
             TransactionError() => Text('transaction error: ${transactionState.message}'),
           };
         }));
