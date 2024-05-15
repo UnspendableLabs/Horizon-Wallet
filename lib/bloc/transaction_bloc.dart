@@ -53,7 +53,6 @@ class TransactionSuccess extends TransactionState {
   TransactionSuccess({required this.transactionHex, required this.info});
 }
 
-
 class TransactionSignSuccess extends TransactionState {
   final String signedTransaction;
   TransactionSignSuccess({required this.signedTransaction});
@@ -82,9 +81,9 @@ class SendTransactionEvent extends TransactionEvent {
 class SignTransactionEvent extends TransactionEvent {
   final String unsignedTransaction;
   final NetworkEnum network;
-  SignTransactionEvent({required this.unsignedTransaction, required this.network});
+  SignTransactionEvent(
+      {required this.unsignedTransaction, required this.network});
 }
-
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   TransactionBloc() : super(InitializeTransactionLoading()) {
@@ -96,11 +95,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
     on<SignTransactionEvent>(
         (event, emit) async => _onSignTransactionEvent(event, emit));
-
-
-
   }
-
 }
 
 _onInitializeTransaction(event, emit) async {
@@ -141,7 +136,6 @@ class DartPayment {
 }
 
 _onSignTransactionEvent(event, emit) async {
-
   final bitcoindService = GetIt.I.get<BitcoindService>();
   final keyValueService = GetIt.I.get<KeyValueService>();
   final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
@@ -156,6 +150,9 @@ _onSignTransactionEvent(event, emit) async {
     }
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
 
+    final utxoResponse = await client.getUnspentUTXOs(activeWallet.address, true);
+
+    print(utxoResponse);
 
     final utxos = await counterpartyApi.getUnspentTxOut(
         activeWallet.address, event.network);
@@ -165,69 +162,74 @@ _onSignTransactionEvent(event, emit) async {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(event.unsignedTransaction);
 
-     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
-    
-    
-     dynamic signer = ECPair.fromWIF(activeWallet.privateKey, ecpair.testnet);
-    
-    
-     bool isSegwit = activeWallet.address.startsWith("bc") ||
-         activeWallet.address.startsWith("tb");
-    
-     bitcoinjs.Payment script;
-     if (isSegwit) {
-       script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
-           pubkey: signer.publicKey, network: ecpair.testnet));
-     } else {
-       script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(
-           pubkey: signer.publicKey, network: ecpair.testnet));
-     }
-    
-     for (var i = 0; i < transaction.ins.toDart.length; i++) {
-       bitcoinjs.TxInput input = transaction.ins.toDart[i];
-    
-       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
-    
-       var prev = utxoMap[txHash];
-    
-       if (prev != null) {
-         if (isSegwit) {
-           input.witnessUtxo = bitcoinjs.WitnessUTXO(
-               script: script.output, value: prev.value.toJS);
-           psbt.addInput(input);
-         } else {
-           input.script = script.output;
-         }
-       } else {
-         // TODO: handle errors in UI
-         throw Exception('Invariant: No utxo found for txHash: $txHash');
-       }
-     }
-    
-     for (var i = 0; i < transaction.outs.toDart.length; i++) {
-       bitcoinjs.TxOutput output = transaction.outs.toDart[i];
-    
-       psbt.addOutput(output);
-     }
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
-     psbt.signAllInputs(signer);
-    
-     psbt.finalizeAllInputs();
-    
-     bitcoinjs.Transaction tx = psbt.extractTransaction();
-    
-     String txHex = tx.toHex();
-    
-     bitcoindService.sendrawtransaction(txHex);
+    dynamic signer = ECPair.fromWIF(activeWallet.privateKey, ecpair.testnet);
+
+    bool isSegwit = activeWallet.address.startsWith("bc") ||
+        activeWallet.address.startsWith("tb");
+
+    bitcoinjs.Payment script;
+    if (isSegwit) {
+      script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
+          pubkey: signer.publicKey, network: ecpair.testnet));
+    } else {
+      script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(
+          pubkey: signer.publicKey, network: ecpair.testnet));
+    }
+
+    for (var i = 0; i < transaction.ins.toDart.length; i++) {
+      bitcoinjs.TxInput input = transaction.ins.toDart[i];
+
+      var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+
+
+      var prev = utxoMap[txHash];
+
+
+      if (prev != null) {
+        if (isSegwit) {
+          input.witnessUtxo = bitcoinjs.WitnessUTXO(
+              script: script.output, value: prev.value.toJS);
+          psbt.addInput(input);
+        } else {
+          input.script = script.output;
+        }
+      } else {
+
+
+        debugger(when: true);
+        print(utxoMap);
+
+        print(transaction.ins);
+
+
+        // TODO: handle errors in UI
+        throw Exception('Invariant: No utxo found for txHash: $txHash');
+      }
+    }
+
+    for (var i = 0; i < transaction.outs.toDart.length; i++) {
+      bitcoinjs.TxOutput output = transaction.outs.toDart[i];
+
+      psbt.addOutput(output);
+    }
+
+    psbt.signAllInputs(signer);
+
+    psbt.finalizeAllInputs();
+
+    bitcoinjs.Transaction tx = psbt.extractTransaction();
+
+    String txHex = tx.toHex();
+
+    bitcoindService.sendrawtransaction(txHex);
 
     emit(TransactionSignSuccess(signedTransaction: txHex));
-
-    } catch (error) {
-      rethrow;
-      // emit(TransactionError(message: error.toString()));
-    }
-      
-
+  } catch (error) {
+    rethrow;
+    // emit(TransactionError(message: error.toString()));
+  }
 }
 
 _onSendTransactionEvent(event, emit) async {
@@ -245,8 +247,8 @@ _onSendTransactionEvent(event, emit) async {
 
     final source = activeWallet.address;
     final destination = event.sendTransaction.destinationAddress;
-    final quantity = event.sendTransaction.quantity;
-    // TODO: Make asset dynamic ( probably shouldn't use enum to model asset type since we won't know all possible assets )
+    final quantity = event.sendTransaction
+        .quantity; // TODO: Make asset dynamic ( probably shouldn't use enum to model asset type since we won't know all possible assets )
     // final asset = event.sendTransaction.asset;
     // final memo = event.sendTransaction.memo;
     // final memoIsHex = event.sendTransaction.memoIsHex;
@@ -267,7 +269,6 @@ _onSendTransactionEvent(event, emit) async {
       return emit(TransactionError(message: response.error!));
     }
 
-
     final txInfoResponse =
         await client.getTransactionInfo(response.result!.rawtransaction);
 
@@ -275,11 +276,9 @@ _onSendTransactionEvent(event, emit) async {
       return emit(TransactionError(message: txInfoResponse.error!));
     }
 
-
     emit(TransactionSuccess(
         transactionHex: response.result!.rawtransaction,
         info: txInfoResponse.result!));
-
   } catch (error) {
     rethrow;
     // emit(TransactionError(message: error.toString()));
