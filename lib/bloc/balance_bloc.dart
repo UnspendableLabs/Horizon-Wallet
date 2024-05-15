@@ -48,9 +48,10 @@ _onBalanceLoad(LoadBalanceEvent event, Emitter<BalanceState> emit) async {
 
   try {
     final xcpBalances = await counterpartyApi.fetchBalance(event.address, event.network);
-    final btcBalances = await blockCypherService.fetchBalance(event.address, event.network);
+    // final btcBalances = await blockCypherService.fetchBalance(event.address, event.network);
     debugger(when: true);
-    emit(BalanceSuccess(balances: xcpBalances + btcBalances));
+    // emit(BalanceSuccess(balances: xcpBalances + btcBalances));
+    emit(BalanceSuccess(balances: xcpBalances ));
   } catch (error) {
     emit(BalanceError(message: error.toString()));
   }
