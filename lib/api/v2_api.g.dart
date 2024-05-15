@@ -456,6 +456,24 @@ Map<String, dynamic> _$InfoToJson(Info instance) => <String, dynamic>{
       'unpacked_data': instance.unpackedData.toJson(),
     };
 
+UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
+      vout: (json['vout'] as num).toInt(),
+      height: (json['height'] as num).toInt(),
+      value: (json['value'] as num).toInt(),
+      confirmations: (json['confirmations'] as num).toInt(),
+      amount: (json['amount'] as num).toDouble(),
+      txid: json['txid'] as String,
+    );
+
+Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
+      'vout': instance.vout,
+      'height': instance.height,
+      'value': instance.value,
+      'confirmations': instance.confirmations,
+      'amount': instance.amount,
+      'txid': instance.txid,
+    };
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
@@ -473,6 +491,36 @@ class _V2Api implements V2Api {
   final Dio _dio;
 
   String? baseUrl;
+
+  @override
+  Future<Response<String>> createTransaction(String signedhex) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'signedhex': signedhex};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<String>>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/transactions',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<String>.fromJson(
+      _result.data!,
+      (json) => json as String,
+    );
+    return value;
+  }
 
   @override
   Future<Response<List<Block>>> getBlocks(
@@ -984,6 +1032,50 @@ class _V2Api implements V2Api {
     final value = Response<SendTx>.fromJson(
       _result.data!,
       (json) => SendTx.fromJson(json as Map<String, dynamic>),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<List<UTXO>>> getUnspentUTXOs(
+    String address, [
+    bool? unconfirmed,
+    String? unspentTxHash,
+    bool? verbose,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'unconfirmed': unconfirmed,
+      r'unspent_tx_hash': unspentTxHash,
+      r'verbose': verbose,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<UTXO>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/addresses/${address}/utxos',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<List<UTXO>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
     );
     return value;
   }

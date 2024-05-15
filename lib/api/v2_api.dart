@@ -633,49 +633,44 @@ class Unpack {
   final int messageTypeId;
   final Map<String, dynamic> messageData;
 
-
   const Unpack({
     required this.messageType,
     required this.messageTypeId,
     required this.messageData,
   });
 
-
-  factory Unpack.fromJson(Map<String, dynamic> json) =>
-      _$UnpackFromJson(json);
-
+  factory Unpack.fromJson(Map<String, dynamic> json) => _$UnpackFromJson(json);
 
   Map<String, dynamic> toJson() => _$UnpackToJson(this);
-
 }
 
-        //
-        // "result": {
-        //     "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
-        //     "destination": "",
-        //     "btc_amount": 0,
-        //     "fee": 56565,
-        //     "data": "16010b9142801429a60000000000000001000000554e4e45474f544941424c45205745204d555354204245434f4d4520554e4e45474f544941424c4520574520415245",
-        //     "unpacked_data": {
-        //         "message_type": "issuance",
-        //         "message_type_id": 22,
-        //         "message_data": {
-        //             "asset_id": 75313533584419238,
-        //             "asset": "UNNEGOTIABLE",
-        //             "subasset_longname": null,
-        //             "quantity": 1,
-        //             "divisible": false,
-        //             "lock": false,
-        //             "reset": false,
-        //             "callable": false,
-        //             "call_date": 0,
-        //             "call_price": 0.0,
-        //             "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
-        //             "status": "valid"
-        //         }
-        //     }
-        // }
-@JsonSerializable(explicitToJson:true, fieldRename: FieldRename.snake)
+//
+// "result": {
+//     "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
+//     "destination": "",
+//     "btc_amount": 0,
+//     "fee": 56565,
+//     "data": "16010b9142801429a60000000000000001000000554e4e45474f544941424c45205745204d555354204245434f4d4520554e4e45474f544941424c4520574520415245",
+//     "unpacked_data": {
+//         "message_type": "issuance",
+//         "message_type_id": 22,
+//         "message_data": {
+//             "asset_id": 75313533584419238,
+//             "asset": "UNNEGOTIABLE",
+//             "subasset_longname": null,
+//             "quantity": 1,
+//             "divisible": false,
+//             "lock": false,
+//             "reset": false,
+//             "callable": false,
+//             "call_date": 0,
+//             "call_price": 0.0,
+//             "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
+//             "status": "valid"
+//         }
+//     }
+// }
+@JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
 class Info {
   final String source;
   final String destination;
@@ -683,7 +678,6 @@ class Info {
   final int fee;
   final String data;
   final Unpack unpackedData;
-
 
   const Info({
     required this.source,
@@ -694,17 +688,45 @@ class Info {
     required this.unpackedData,
   });
 
-
-  factory Info.fromJson(Map<String, dynamic> json) =>
-      _$InfoFromJson(json);
-  
+  factory Info.fromJson(Map<String, dynamic> json) => _$InfoFromJson(json);
 
   // TODO: this doesnt actually show all the send data
   Map<String, dynamic> toJson() => _$InfoToJson(this);
 }
 
+  // {
+  //      "vout": 6,
+  //      "height": 833559,
+  //      "value": 34611,
+  //      "confirmations": 7083,
+  //      "amount": 0.00034611,
+  //      "txid": "98bef616ef265dd2f6004683e908d7df97e0c5f322cdf2fb2ebea9a9131cfa79"
+  //  },
 
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class UTXO {
+  final int vout;
+  final int height;
+  final int value;
+  final int confirmations;
+  final double amount;
+  final String txid;
+
+
+  const UTXO({
+    required this.vout,
+    required this.height,
+    required this.value,
+    required this.confirmations,
+    required this.amount,
+    required this.txid,
+    });
+
+  factory UTXO.fromJson(Map<String, dynamic> json) => _$UTXOFromJson(json);
+
+
+}
 
 
 // TODO: inject baseURL ( or make dynamic)
@@ -712,6 +734,11 @@ class Info {
 @RestApi(baseUrl: "http://localhost:14000/v2")
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
+
+  @POST("/bitcoin/transactions")
+  Future<Response<String>> createTransaction(
+    @Query("signedhex") String signedhex,
+  );
 
   // Counterparty API Root
   // Blocks
@@ -811,12 +838,11 @@ abstract class V2Api {
   // Transactions
   //     Info
 
-
   @GET("/transactions/info")
   Future<Response<Info>> getTransactionInfo(
     @Query("rawtransaction") String rawtransaction,
     // TODO: add these back and make optional
-    // @Query("block_index") int blockIndex, 
+    // @Query("block_index") int blockIndex,
     // @Query("verbose") bool verbose,
   );
 
@@ -827,11 +853,9 @@ abstract class V2Api {
   Future<Response<Unpack>> unpackTransaction(
     @Query("datahex") String datahex,
     // TODO: add these back and make optional
-    // @Query("block_index") int blockIndex, 
+    // @Query("block_index") int blockIndex,
     // @Query("verbose") bool verbose,
   );
-
-
 
   //     Get Transaction By Hash
   // Addresses
@@ -934,6 +958,17 @@ abstract class V2Api {
   //     Get Transactions By Address
   //     Get Oldest Transaction By Address
   //     Get Unspent Txouts
+// https://api.counterparty.io/bitcoin/addresses/{address}/utxos{?unconfirmed}{&unspent_tx_hash}{&verbose}
+  @GET("/bitcoin/addresses/{address}/utxos")
+  Future<Response<List<UTXO>>> getUnspentUTXOs(
+    @Path("address") String address,
+    [
+    @Query("unconfirmed") bool? unconfirmed,
+    @Query("unspent_tx_hash") String? unspentTxHash,
+    @Query("verbose") bool? verbose,
+    ]
+  );
+
   //     PubKeyHash To Pubkey
   //  Counterparty API Root
   // Blocks
