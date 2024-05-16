@@ -1,6 +1,5 @@
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/services/bip39.dart' as bip39;
-import 'package:uniparty/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic_word_list.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/seed.dart';
@@ -68,8 +67,8 @@ class SeedOpsService {
   Future<Seed> getSeed(
       String mnemonic, RecoveryWalletEnum recoveryWallet) async {
     // await Future.delayed(const Duration(milliseconds: 5)); // simulate async
- 
- var bip39Service = GetIt.I.get<bip39.Bip39Service>();
+
+    var bip39Service = GetIt.I.get<bip39.Bip39Service>();
     switch (recoveryWallet) {
       case RecoveryWalletEnum.uniparty:
         return bip39Service.mnemonicToSeed(mnemonic);

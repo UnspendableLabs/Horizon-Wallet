@@ -1,5 +1,5 @@
 import 'dart:js_interop';
-import 'package:uniparty/bip39.dart' as bip39js;
+import 'package:uniparty/js/bip39.dart' as bip39js;
 import 'package:uniparty/models/seed.dart';
 
 

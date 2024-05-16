@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
-import 'package:uniparty/bitcoin_js.dart' as bitcoinjs;
+import 'package:uniparty/js/bitcoin.dart' as bitcoinjs;
 
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
@@ -17,8 +17,8 @@ import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/bitcoind.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
-import 'package:uniparty/ecpair_js.dart' as ecpair;
-import 'package:uniparty/tiny_secp256k1_js.dart' as tinysecp256k1js;
+import 'package:uniparty/js/ecpair.dart' as ecpair;
+import 'package:uniparty/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 import "package:uniparty/api/v2_api.dart" as v2_api;
 
