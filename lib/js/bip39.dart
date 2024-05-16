@@ -4,21 +4,21 @@ library;
 import 'dart:js_interop';
 
 @JS()
-external JSUint8Array mnemonicToSeedSync(JSString mnemonic,
-    [JSString? password]);
+external JSUint8Array mnemonicToSeedSync(String mnemonic,
+    [String? password]);
 
 @JS()
-external JSPromise<JSUint8Array> mnemonicToSeed(JSString mnemonic,
-    [JSString? password]);
+external JSPromise<JSUint8Array> mnemonicToSeed(String mnemonic,
+    [String? password]);
 
 @JS()
-external JSString mnemonicToEntropy(
-    JSString mnemonic, [ JSArray<JSString>? wordlist ]);
+external String mnemonicToEntropy(
+    String mnemonic, [ JSArray<JSString>? wordlist ]);
 
 @JS()
 external JSString entropyToMnemonic(
     JSUint8Array entropy, JSArray<JSString>? wordlist);
 
 @JS()
-external JSString generateMnemonic(
-    [JSNumber? strength, JSFunction? rng, JSArray<JSString>? wordlist]);
+external String generateMnemonic(
+    [int? strength, JSFunction? rng, JSArray<JSString>? wordlist]);
