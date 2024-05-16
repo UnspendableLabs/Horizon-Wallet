@@ -6,6 +6,7 @@ import 'package:uniparty/services/blockcypher.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 import 'package:uniparty/services/bip39.dart' as bip39;
+import 'package:uniparty/services/ecpair.dart' as ecpair;
 
 Future<void> setup() async {
 
@@ -16,6 +17,7 @@ Future<void> setup() async {
 
   GetIt.I.registerSingleton<KeyValueService>(SecureKeyValueImpl());
   GetIt.I.registerSingleton<bip39.Bip39Service>(bip39.Bip39JSService());
+  GetIt.I.registerSingleton<ecpair.ECPairService>(ecpair.ECPairJSService());
   GetIt.I.registerLazySingleton<SeedOpsService>(() => SeedOpsService());
   GetIt.I.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
 

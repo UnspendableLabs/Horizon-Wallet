@@ -17,8 +17,8 @@ import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/bitcoind.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 
-import 'package:uniparty/js/ecpair.dart' as ecpair;
-import 'package:uniparty/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:uniparty/services/ecpair.dart' as ecpair;
+
 
 import "package:uniparty/api/v2_api.dart" as v2_api;
 
@@ -28,7 +28,6 @@ import 'package:dio/dio.dart';
 final dio = Dio();
 final client = v2_api.V2Api(dio);
 
-dynamic ECPair = ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
 sealed class TransactionState {
   const TransactionState();
@@ -138,6 +137,7 @@ class DartPayment {
 _onSignTransactionEvent(event, emit) async {
   final bitcoindService = GetIt.I.get<BitcoindService>();
   final keyValueService = GetIt.I.get<KeyValueService>();
+  final ecpairService = GetIt.I.get<ecpair.ECPairService>();
   // final TransactionParserI transactionParser = GetIt.I.get<TransactionParserI>();
 
   try {
@@ -164,7 +164,16 @@ _onSignTransactionEvent(event, emit) async {
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
-    dynamic signer = ECPair.fromWIF(activeWallet.privateKey, ecpair.testnet);
+
+
+    print(activeWallet.privateKey);
+
+
+    dynamic signer = ecpairService.fromWIF(activeWallet.privateKey, ecpairService.testnet);
+
+    print("signer");
+    print(signer);
+    print(ecpairService.testnet);
 
     bool isSegwit = activeWallet.address.startsWith("bc") ||
         activeWallet.address.startsWith("tb");
@@ -172,10 +181,10 @@ _onSignTransactionEvent(event, emit) async {
     bitcoinjs.Payment script;
     if (isSegwit) {
       script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
-          pubkey: signer.publicKey, network: ecpair.testnet));
+          pubkey: signer.publicKey, network: ecpairService.testnet));
     } else {
       script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(
-          pubkey: signer.publicKey, network: ecpair.testnet));
+          pubkey: signer.publicKey, network: ecpairService.testnet));
     }
 
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
@@ -239,6 +248,8 @@ _onSendTransactionEvent(event, emit) async {
       return emit(TransactionError(message: 'No active wallet found'));
     }
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
+
+    print(activeWallet.privateKey);
 
     final source = activeWallet.address;
     final destination = event.sendTransaction.destinationAddress;
