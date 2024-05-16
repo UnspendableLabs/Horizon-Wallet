@@ -138,7 +138,6 @@ class DartPayment {
 _onSignTransactionEvent(event, emit) async {
   final bitcoindService = GetIt.I.get<BitcoindService>();
   final keyValueService = GetIt.I.get<KeyValueService>();
-  final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
   // final TransactionParserI transactionParser = GetIt.I.get<TransactionParserI>();
 
   try {
@@ -150,14 +149,15 @@ _onSignTransactionEvent(event, emit) async {
     }
     WalletNode activeWallet = WalletNode.deserialize(activeWalletJson);
 
-    final utxoResponse = await client.getUnspentUTXOs(activeWallet.address, true);
+    final utxoResponse =
+        await client.getUnspentUTXOs(activeWallet.address, false);
 
-    print(utxoResponse);
+    if (utxoResponse.error != null) {
+      return emit(TransactionError(message: utxoResponse.error!));
+    }
 
-    final utxos = await counterpartyApi.getUnspentTxOut(
-        activeWallet.address, event.network);
 
-    Map<String, InternalUTXO> utxoMap = {for (var e in utxos) e.txid: e};
+    Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result! ) e.txid: e};
 
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(event.unsignedTransaction);
@@ -183,9 +183,7 @@ _onSignTransactionEvent(event, emit) async {
 
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
 
-
       var prev = utxoMap[txHash];
-
 
       if (prev != null) {
         if (isSegwit) {
@@ -196,13 +194,10 @@ _onSignTransactionEvent(event, emit) async {
           input.script = script.output;
         }
       } else {
-
-
         debugger(when: true);
         print(utxoMap);
 
         print(transaction.ins);
-
 
         // TODO: handle errors in UI
         throw Exception('Invariant: No utxo found for txHash: $txHash');
@@ -263,7 +258,9 @@ _onSendTransactionEvent(event, emit) async {
     // V2 not running on testnet
 
     final response =
-        await client.composeSend(source, destination, "XCP", quantity);
+        await client.composeSend(source, destination, "XCP", quantity, true);
+
+
 
     if (response.error != null) {
       return emit(TransactionError(message: response.error!));

@@ -694,15 +694,14 @@ class Info {
   Map<String, dynamic> toJson() => _$InfoToJson(this);
 }
 
-  // {
-  //      "vout": 6,
-  //      "height": 833559,
-  //      "value": 34611,
-  //      "confirmations": 7083,
-  //      "amount": 0.00034611,
-  //      "txid": "98bef616ef265dd2f6004683e908d7df97e0c5f322cdf2fb2ebea9a9131cfa79"
-  //  },
-
+// {
+//      "vout": 6,
+//      "height": 833559,
+//      "value": 34611,
+//      "confirmations": 7083,
+//      "amount": 0.00034611,
+//      "txid": "98bef616ef265dd2f6004683e908d7df97e0c5f322cdf2fb2ebea9a9131cfa79"
+//  },
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class UTXO {
@@ -713,7 +712,6 @@ class UTXO {
   final double amount;
   final String txid;
 
-
   const UTXO({
     required this.vout,
     required this.height,
@@ -721,13 +719,10 @@ class UTXO {
     required this.confirmations,
     required this.amount,
     required this.txid,
-    });
+  });
 
   factory UTXO.fromJson(Map<String, dynamic> json) => _$UTXOFromJson(json);
-
-
 }
-
 
 // TODO: inject baseURL ( or make dynamic)
 // @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
@@ -896,8 +891,9 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("destination") String destination,
     @Query("asset") String asset,
-    @Query("quantity") int quantity,
-  );
+    @Query("quantity") int quantity, [
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+  ]);
 
   // {
   //        "result": {
@@ -961,13 +957,11 @@ abstract class V2Api {
 // https://api.counterparty.io/bitcoin/addresses/{address}/utxos{?unconfirmed}{&unspent_tx_hash}{&verbose}
   @GET("/bitcoin/addresses/{address}/utxos")
   Future<Response<List<UTXO>>> getUnspentUTXOs(
-    @Path("address") String address,
-    [
+    @Path("address") String address, [
     @Query("unconfirmed") bool? unconfirmed,
     @Query("unspent_tx_hash") String? unspentTxHash,
     @Query("verbose") bool? verbose,
-    ]
-  );
+  ]);
 
   //     PubKeyHash To Pubkey
   //  Counterparty API Root
