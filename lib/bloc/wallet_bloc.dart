@@ -116,8 +116,8 @@ Future<StoredWalletData> _createAndStoreSeedhexAndWalletType(
   if (payload == null) {
     throw Exception('payload is null');
   }
-  
   Seed seed = await seedOpsService.getSeed(payload.mnemonic, payload.recoveryWallet);
+
   WalletTypeEnum walletType = seedOpsService.getWalletType(payload.recoveryWallet);
 
   StoredWalletData storedWalletData = StoredWalletData(seedHex: seed.toHex, walletType: walletType);

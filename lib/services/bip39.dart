@@ -11,6 +11,7 @@ abstract class Bip39Service {
   Future<Seed> mnemonicToSeed(String mnemonic);
   Seed mnemonicToSeedSync(String mnemonic);
   String mnemonicToEntropy(String mnemonic);
+  bool validateMnemonic(String mnemonic, [ List<String>? wordlist ]);
 }
 
 class Bip39JSService implements Bip39Service {
@@ -34,6 +35,11 @@ class Bip39JSService implements Bip39Service {
   @override
   String mnemonicToEntropy(String mnemonic) {
     return bip39js.mnemonicToEntropy(mnemonic);
+  }
+
+  @override
+  bool validateMnemonic(String mnemonic, [ List<String>? wordlist ]) {
+    return bip39js.validateMnemonic(mnemonic, wordlist?.map(( word) => word.toJS).toList().toJS);
   }
 
 }

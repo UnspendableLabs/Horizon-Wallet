@@ -16,9 +16,14 @@ external String mnemonicToEntropy(
     String mnemonic, [ JSArray<JSString>? wordlist ]);
 
 @JS()
-external JSString entropyToMnemonic(
+external String entropyToMnemonic(
     JSUint8Array entropy, JSArray<JSString>? wordlist);
 
 @JS()
 external String generateMnemonic(
     [int? strength, JSFunction? rng, JSArray<JSString>? wordlist]);
+
+
+@JS()
+external bool validateMnemonic(
+    String mnemonic, [ JSArray<JSString>? wordlist ]);
