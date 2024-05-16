@@ -5,6 +5,7 @@ import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/models/stored_wallet_data.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/models/seed.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 
@@ -115,10 +116,11 @@ Future<StoredWalletData> _createAndStoreSeedhexAndWalletType(
   if (payload == null) {
     throw Exception('payload is null');
   }
-  String seedHex = await seedOpsService.getSeedHex(payload.mnemonic, payload.recoveryWallet);
+  
+  Seed seed = await seedOpsService.getSeed(payload.mnemonic, payload.recoveryWallet);
   WalletTypeEnum walletType = seedOpsService.getWalletType(payload.recoveryWallet);
 
-  StoredWalletData storedWalletData = StoredWalletData(seedHex: seedHex, walletType: walletType);
+  StoredWalletData storedWalletData = StoredWalletData(seedHex: seed.toHex, walletType: walletType);
 
   // store seedHex, walletType in secure storage
   await keyValueService.set(STORED_WALLET_DATA_KEY, StoredWalletData.serialize(storedWalletData));
