@@ -197,7 +197,7 @@ _onSignTransactionEvent(event, emit) async {
       if (prev != null) {
         if (isSegwit) {
           input.witnessUtxo = bitcoinjs.WitnessUTXO(
-              script: script.output, value: prev.value.toJS);
+              script: script.output, value: prev.value );
           psbt.addInput(input);
         } else {
           input.script = script.output;

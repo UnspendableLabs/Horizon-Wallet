@@ -5,7 +5,7 @@ import 'dart:js_interop';
 
 
 extension type WitnessUTXO._(JSObject o) implements JSObject {
-  external WitnessUTXO({ JSUint8Array script, JSNumber value });
+  external WitnessUTXO({ JSUint8Array script, int value });
 }
 
 
@@ -26,16 +26,16 @@ extension type TxOutput._(JSObject _) implements JSObject {
 }
 
 extension type Transaction._(JSObject _) implements JSObject {
-  external static Transaction fromHex(JSString hex); // TODO just use string
+  external static Transaction fromHex(String hex); 
   external JSArray<TxInput> ins;
   external JSArray<TxOutput> outs;
   external String toHex();
 }
 
 extension type Psbt._(JSObject _) implements JSObject {
-  external Psbt(); // TODO: augment the constructor
+  external Psbt();
 
-  external static Psbt fromHex(JSString hex); // TODO just use string
+  external static Psbt fromHex(String hex); 
 
 
   external Psbt addInput(TxInput input);
@@ -51,7 +51,7 @@ extension type Psbt._(JSObject _) implements JSObject {
 
 extension type Payment._(JSObject _) implements JSObject {
   external Payment(String network, JSUint8Array pubkey);
-  external String network; // TODO: refine type
+  external String network; 
   external JSUint8Array pubkey;
   external JSUint8Array output;
 }
