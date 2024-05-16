@@ -1,14 +1,21 @@
 import 'dart:typed_data';
+import 'dart:developer';
+import 'package:get_it/get_it.dart';
 
 import 'package:convert/convert.dart';
 import 'package:dartsv/dartsv.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bech32_address.dart';
 import 'package:uniparty/bitcoin_wallet_utils/key_derivation.dart';
 import 'package:uniparty/bitcoin_wallet_utils/legacy_address.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/services/bech32.dart';
+import 'package:uniparty/bitcoin_wallet_utils/bech32_address.dart'
+    as bech32_utils;
 
-List<WalletNode> createWallet(NetworkEnum network, String seedHex, WalletTypeEnum walletType) {
+Bech32Service bech32 = GetIt.I.get<Bech32Service>();
+
+List<WalletNode> createWallet(
+    NetworkEnum network, String seedHex, WalletTypeEnum walletType) {
   int numAddresses = _numAddresses(walletType);
   List<WalletNode> walletNodes = [];
 
@@ -17,6 +24,8 @@ List<WalletNode> createWallet(NetworkEnum network, String seedHex, WalletTypeEnu
       String basePath = 'm/44\'/${_getCoinType(network)}\'/0\'/0/';
 
       for (var i = 0; i < numAddresses; i++) {
+        debugger(when: true);
+
         HDPrivateKey seededKey = deriveSeededKey(seedHex, network);
 
         String path = basePath + i.toString();
@@ -31,9 +40,24 @@ List<WalletNode> createWallet(NetworkEnum network, String seedHex, WalletTypeEnu
         String publicKey = svpubKey.toHex();
         String privateKey = xpriv.toWIF();
 
-        String address = deriveBech32Address(Uint8List.fromList(hex.decode(publicKey)), network);
+        String prefix = bech32_utils.bech32PrefixForNetwork(network);
+        Uint8List words = bech32_utils
+            .publicKeyToWords(Uint8List.fromList(hex.decode(publicKey)));
 
-        WalletNode walletNode = WalletNode(address: address, publicKey: publicKey, privateKey: privateKey, index: i);
+        List<int> words2 = bech32.toWords(hex.decode(publicKey));
+
+        print("words");
+        print(words);
+        print("words 2");
+        print(words2);
+
+        String address = bech32.encode(prefix, words);
+
+        WalletNode walletNode = WalletNode(
+            address: address,
+            publicKey: publicKey,
+            privateKey: privateKey,
+            index: i);
 
         walletNodes.add(walletNode);
       }
@@ -58,15 +82,24 @@ List<WalletNode> createWallet(NetworkEnum network, String seedHex, WalletTypeEnu
         // Freewallet derives 10 legacy and 10 bech32 addresses on initialization.
         String legacyAddress = deriveLegacyAddress(svpubKey, network);
 
-        WalletNode walletNodeNormal =
-            WalletNode(address: legacyAddress, publicKey: publicKey, privateKey: privateKey, index: i);
+        WalletNode walletNodeNormal = WalletNode(
+            address: legacyAddress,
+            publicKey: publicKey,
+            privateKey: privateKey,
+            index: i);
 
         walletNodes.add(walletNodeNormal);
 
-        String bech32Address = deriveBech32Address(Uint8List.fromList(hex.decode(publicKey)), network);
+        String prefix = bech32_utils.bech32PrefixForNetwork(network);
+        Uint8List words = bech32_utils
+            .publicKeyToWords(Uint8List.fromList(hex.decode(publicKey)));
+        String address = bech32.encode(prefix, words);
 
-        WalletNode walletNodeBech32 =
-            WalletNode(address: bech32Address, publicKey: publicKey, privateKey: privateKey, index: i);
+        WalletNode walletNodeBech32 = WalletNode(
+            address: address,
+            publicKey: publicKey,
+            privateKey: privateKey,
+            index: i);
 
         walletNodes.add(walletNodeBech32);
       }
@@ -87,4 +120,5 @@ int _getCoinType(NetworkEnum network) {
   }
 }
 
-int _numAddresses(WalletTypeEnum walletType) => walletType == WalletTypeEnum.bip44 ? 1 : 10;
+int _numAddresses(WalletTypeEnum walletType) =>
+    walletType == WalletTypeEnum.bip44 ? 1 : 10;
