@@ -1,29 +1,23 @@
-import 'dart:typed_data';
 import 'dart:developer';
-import 'package:get_it/get_it.dart';
-
 import 'dart:js_interop';
+
 import 'package:convert/convert.dart';
-import 'package:dartsv/dartsv.dart';
-import 'package:uniparty/bitcoin_wallet_utils/key_derivation.dart';
-import 'package:uniparty/bitcoin_wallet_utils/legacy_address.dart';
+import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/constants.dart' as c;
-import 'package:uniparty/models/wallet_node.dart';
+import 'package:uniparty/js/bip32.dart' as bip32js;
+import 'package:uniparty/js/bitcoin.dart' as bitcoinjs;
+import 'package:uniparty/js/common.dart' as common;
 import 'package:uniparty/models/seed.dart';
+import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/bech32.dart';
 import 'package:uniparty/services/bip32.dart' as bip32;
-import 'package:uniparty/js/bip32.dart' as bip32js;
 import 'package:uniparty/services/ecpair.dart' as ecpair;
-import 'package:uniparty/js/common.dart' as common;
-import 'package:uniparty/bitcoin_wallet_utils/bech32_address.dart'
-    as bech32_utils;
 
 Bech32Service bech32 = GetIt.I.get<Bech32Service>();
 bip32.Bip32Service bip32Service = GetIt.I.get<bip32.Bip32Service>();
 ecpair.ECPairService ecpairService = GetIt.I.get<ecpair.ECPairService>();
 
-List<WalletNode> createWallet(
-    c.NetworkEnum network, String seedHex, c.WalletType walletType) {
+List<WalletNode> createWallet(c.NetworkEnum network, String seedHex, c.WalletType walletType) {
   int numAddresses = _numAddresses(walletType);
   List<WalletNode> walletNodes = [];
 
@@ -31,56 +25,45 @@ List<WalletNode> createWallet(
     case c.WalletType.uniparty:
       final Seed seed = Seed.fromHex(seedHex);
 
-
-
-
-      common.Network _network = network == c.NetworkEnum.testnet
-          ? ecpairService.testnet
-          : ecpairService.mainnet;
-
+      common.Network _network = network == c.NetworkEnum.testnet ? ecpairService.testnet : ecpairService.mainnet;
 
       _network.bip32.private = 0x4b2430c; //zpriv
-      _network.bip32.public = 0x4b24746;  //zpub
-
+      _network.bip32.public = 0x4b24746; //zpub
 
       final bip32js.BIP32Interface root = bip32Service.fromSeed(seed.bytes, _network);
 
       print("root");
       print(root.toBase58());
 
-      String path = 'm/84\'/${_getCoinType(network)}\'/0\'/0';
+      String path = 'm/84\'/${_getCoinType(network)}\'/0\'/0/0';
 
-      final bip32js.BIP32Interface extended = root.derivePath(path);
+      // final bip32js.BIP32Interface extended = root.derivePath(path);
 
-      print("extended");
-      print(extended.toBase58());
+      // print("extended");
+      // print(extended.toBase58());
 
+      // final bip32js.BIP32Interface child = extended.derive(0);
 
+      final bip32js.BIP32Interface child = root.derivePath(path);
+      final p2pwkh = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(pubkey: child.publicKey, network: _network));
+      debugger(when: true);
 
-
-      final bip32js.BIP32Interface child = extended.derive(0);
-
-      print("child");
-      print(child.toWIF());
-      print(child.identifier);
-      print(child.fingerprint);
+      // print("child");
+      // print(child.toWIF());
+      // print(child.identifier);
+      // print(child.fingerprint);
 
       // TODO: remove type cast
-      final List<int> words =
-          bech32.toWords(Uint8List.fromList(child.identifier.toDart));
+      // final List<int> words = bech32.toWords(Uint8List.fromList(child.identifier.toDart));
 
-      String prefix = bech32_utils.bech32PrefixForNetwork(network);
+      // String prefix = bech32_utils.bech32PrefixForNetwork(network);
 
-      final String address = bech32.encode(prefix, words);
+      final String address = p2pwkh.address;
 
       debugger(when: true);
 
-      WalletNode walletNode = WalletNode(
-          address: address,
-          publicKey: hex.encode(child.publicKey.toDart),
-          privateKey: child.toWIF(),
-          index: 0);
-
+      WalletNode walletNode =
+          WalletNode(address: address, publicKey: hex.encode(child.publicKey.toDart), privateKey: child.toWIF(), index: 0);
 
       walletNodes.add(walletNode);
 

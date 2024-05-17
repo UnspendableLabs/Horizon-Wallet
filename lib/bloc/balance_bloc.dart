@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/constants.dart';
@@ -49,9 +47,8 @@ _onBalanceLoad(LoadBalanceEvent event, Emitter<BalanceState> emit) async {
   try {
     final xcpBalances = await counterpartyApi.fetchBalance(event.address, event.network);
     // final btcBalances = await blockCypherService.fetchBalance(event.address, event.network);
-    debugger(when: true);
     // emit(BalanceSuccess(balances: xcpBalances + btcBalances));
-    emit(BalanceSuccess(balances: xcpBalances ));
+    emit(BalanceSuccess(balances: xcpBalances));
   } catch (error) {
     emit(BalanceError(message: error.toString()));
   }
