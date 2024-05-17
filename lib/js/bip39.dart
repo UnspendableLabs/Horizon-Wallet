@@ -27,3 +27,5 @@ external String generateMnemonic(
 @JS()
 external bool validateMnemonic(
     String mnemonic, [ JSArray<JSString>? wordlist ]);
+
+

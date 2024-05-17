@@ -6,6 +6,7 @@ import 'package:uniparty/services/blockcypher.dart';
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 import 'package:uniparty/services/bip39.dart' as bip39;
+import 'package:uniparty/services/bip32.dart' as bip32;
 import 'package:uniparty/services/bech32.dart' as bech32;
 import 'package:uniparty/services/ecpair.dart' as ecpair;
 
@@ -13,6 +14,7 @@ import 'package:uniparty/services/ecpair.dart' as ecpair;
 
 
 Future<void> setup() async {
+
 
   GetIt.I.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
   GetIt.I.registerSingleton<BlockCypherService>(BlockCypherImpl(
@@ -25,6 +27,8 @@ Future<void> setup() async {
   GetIt.I.registerSingleton<ecpair.ECPairService>(ecpair.ECPairJSService());
   GetIt.I.registerLazySingleton<SeedOpsService>(() => SeedOpsService());
   GetIt.I.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
+
+  GetIt.I.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
 
 
 }

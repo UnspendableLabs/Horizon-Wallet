@@ -2,7 +2,7 @@ import 'package:uniparty/common/constants.dart';
 
 class CreateWalletPayload {
   String mnemonic;
-  RecoveryWalletEnum recoveryWallet;
+  WalletType recoveryWallet;
 
   CreateWalletPayload({
     required this.mnemonic,

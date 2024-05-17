@@ -85,7 +85,7 @@ class _CreateWalletDialogState extends State<CreateWalletDialog> {
                   Navigator.pushNamed(
                     context,
                     AppRouter.walletPage,
-                    arguments: CreateWalletPayload(mnemonic: widget.mnemonic, recoveryWallet: RecoveryWalletEnum.uniparty),
+                    arguments: CreateWalletPayload(mnemonic: widget.mnemonic, recoveryWallet: WalletType.uniparty),
                   );
                 },
                 child: const Text('Create Wallet'),

@@ -8,6 +8,8 @@ class Seed {
 
   String get toHex => c.hex.encode(_seed);
 
+  Uint8List get bytes => _seed;
+
   // TODO: test 
   factory Seed.fromHex(String hex) {
     return Seed(c.hex.decode(hex) as Uint8List);

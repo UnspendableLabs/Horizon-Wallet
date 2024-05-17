@@ -10,14 +10,14 @@ const invalidNullPhrase = 'seed phrase may not be null';
 
 class SeedOpsService {
   String? validateMnemonic(
-      String? mnemonic, RecoveryWalletEnum recoveryWallet) {
+      String? mnemonic, WalletType recoveryWallet) {
     if (mnemonic == null) {
       throw ArgumentError(invalidNullPhrase);
     }
     try {
       switch (recoveryWallet) {
-        case RecoveryWalletEnum.uniparty:
-        case RecoveryWalletEnum.freewallet:
+        case WalletType.uniparty:
+        case WalletType.freewallet:
           /*
         bip39 mnemonicToEntropy will throw if
         1. a word is xnot in the word list
@@ -27,7 +27,7 @@ class SeedOpsService {
       */
           GetIt.I.get<bip39.Bip39Service>().mnemonicToEntropy(mnemonic);
           break;
-        case RecoveryWalletEnum.counterwallet:
+        case WalletType.counterwallet:
           if (mnemonic.split(" ").length != 12) {
             throw ArgumentError(invalidLengthError);
           }
@@ -52,29 +52,29 @@ class SeedOpsService {
     }
   }
 
-  WalletTypeEnum getWalletType(RecoveryWalletEnum recoveryWallet) {
-    switch (recoveryWallet) {
-      case RecoveryWalletEnum.uniparty:
-        return WalletTypeEnum.bip44;
-      case RecoveryWalletEnum.freewallet:
-      case RecoveryWalletEnum.counterwallet:
-        return WalletTypeEnum.bip32;
-      default:
-        throw UnsupportedError('wallet $recoveryWallet not supported');
-    }
-  }
+  // WalletTypeEnum getWalletType(WalletType recoveryWallet) {
+  //   switch (recoveryWallet) {
+  //     case WalletType.uniparty:
+  //       return WalletTypeEnum.bip44;
+  //     case WalletType.freewallet:
+  //     case WalletType.counterwallet:
+  //       return WalletTypeEnum.bip32;
+  //     default:
+  //       throw UnsupportedError('wallet $recoveryWallet not supported');
+  //   }
+  // }
 
   Future<Seed> getSeed(
-      String mnemonic, RecoveryWalletEnum recoveryWallet) async {
+      String mnemonic, WalletType recoveryWallet) async {
     // await Future.delayed(const Duration(milliseconds: 5)); // simulate async
 
     var bip39Service = GetIt.I.get<bip39.Bip39Service>();
     switch (recoveryWallet) {
-      case RecoveryWalletEnum.uniparty:
+      case WalletType.uniparty:
         return bip39Service.mnemonicToSeed(mnemonic);
-      case RecoveryWalletEnum.freewallet:
+      case WalletType.freewallet:
         return Seed.fromHex(bip39Service.mnemonicToEntropy(mnemonic));
-      case RecoveryWalletEnum.counterwallet:
+      case WalletType.counterwallet:
         throw UnsupportedError('Not Implemented');
       default:
         throw UnsupportedError('wallet $recoveryWallet not supported');
