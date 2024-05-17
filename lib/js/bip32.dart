@@ -13,7 +13,6 @@ extension type Signer._(JSObject _) implements JSObject {
   external bool verifySchnorr(JSUint8Array hash, JSUint8Array signature);
 }
 
-
 extension type BIP32Interface._(JSObject _) implements Signer {
   external JSUint8Array chainCode;
   external c.Network network;
@@ -33,8 +32,16 @@ extension type BIP32Interface._(JSObject _) implements Signer {
   external factory BIP32Interface.derivePath(String path);
 }
 
-
 extension type BIP32Factory._(JSObject _) implements JSObject {
   external factory BIP32Factory(JSObject eccLib);
-  external BIP32Interface fromBase58(String privatekey);
+  external BIP32Interface fromBase58(String privatekey,
+      [c.Network network]
+  );
+  external BIP32Interface fromPrivateKey(
+      JSUint8Array privateKey, JSUint8Array chainCode,
+      [c.Network network]);
+  external BIP32Interface fromPublicKey(
+      JSUint8Array publicKey, JSUint8Array chainCode,
+      [c.Network network]);
+  external BIP32Interface fromSeed(JSUint8Array seed, [c.Network network]);
 }
