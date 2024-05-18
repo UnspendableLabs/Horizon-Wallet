@@ -27,53 +27,35 @@ List<WalletNode> createWallet(
   int numAddresses = _numAddresses(walletType);
   List<WalletNode> walletNodes = [];
 
+  final Seed seed = Seed.fromHex(seedHex);
+
+  final stopwatch = Stopwatch()..start();
+
   switch (walletType) {
     case c.WalletType.uniparty:
-      final Seed seed = Seed.fromHex(seedHex);
-
-
-
 
       common.Network _network = network == c.NetworkEnum.testnet
           ? ecpairService.testnet
           : ecpairService.mainnet;
 
-
       _network.bip32.private = 0x4b2430c; //zpriv
-      _network.bip32.public = 0x4b24746;  //zpub
+      _network.bip32.public = 0x4b24746; //zpub
 
+      final bip32js.BIP32Interface root =
+          bip32Service.fromSeed(seed.bytes, _network);
 
-      final bip32js.BIP32Interface root = bip32Service.fromSeed(seed.bytes, _network);
-
-      print("root");
-      print(root.toBase58());
-
-      String path = 'm/84\'/${_getCoinType(network)}\'/0\'/0';
-
-      final bip32js.BIP32Interface extended = root.derivePath(path);
-
-      print("extended");
-      print(extended.toBase58());
-
-
-
+      final bip32js.BIP32Interface extended =
+          root.derivePath('m/84\'/${_getCoinType(network)}\'/0\'/0');
 
       final bip32js.BIP32Interface child = extended.derive(0);
 
-      print("child");
-      print(child.toWIF());
-      print(child.identifier);
-      print(child.fingerprint);
-
       // TODO: remove type cast
-      final List<int> words =
+      List<int> words =
           bech32.toWords(Uint8List.fromList(child.identifier.toDart));
+      // need to add 0 version byte
+      words.insert(0, 0);
 
-      String prefix = bech32_utils.bech32PrefixForNetwork(network);
-
-      final String address = bech32.encode(prefix, words);
-
-      debugger(when: true);
+      final String address = bech32.encode(_network.bech32, words);
 
       WalletNode walletNode = WalletNode(
           address: address,
@@ -81,54 +63,24 @@ List<WalletNode> createWallet(
           privateKey: child.toWIF(),
           index: 0);
 
-
       walletNodes.add(walletNode);
-
-      // String basePath = 'm/48\'/${_getCoinType(network)}\'/0\'/0/';
-      //
-      // for (var i = 0; i < numAddresses; i++) {
-      //   debugger(when: true);
-      //
-      //   HDPrivateKey seededKey = deriveSeededKey(seedHex, network);
-      //
-      //   String path = basePath + i.toString();
-      //
-      //   HDPrivateKey derivedKey = deriveChildKey(seededKey, path);
-      //
-      //   derivedKey.networkType = getNetworkType(network);
-      //   SVPrivateKey xpriv = derivedKey.privateKey;
-      //   HDPublicKey xPub = derivedKey.hdPublicKey;
-      //   SVPublicKey svpubKey = xPub.publicKey;
-      //
-      //   String publicKey = svpubKey.toHex();
-      //   String privateKey = xpriv.toWIF();
-      //
-      //   String prefix = bech32_utils.bech32PrefixForNetwork(network);
-      //   Uint8List words = bech32_utils
-      //       .publicKeyToWords(Uint8List.fromList(hex.decode(publicKey)));
-      //
-      //   List<int> words2 = bech32.toWords(hex.decode(publicKey));
-      //
-      //   print("words");
-      //   print(words);
-      //   print("words 2");
-      //   print(words2);
-      // String address = bech32.encode(prefix, words);
-      //
-      //   WalletNode walletNode = WalletNode(
-      //       address: address,
-      //       publicKey: publicKey,
-      //       privateKey: privateKey,
-      //       index: i);
-      //
-      //   walletNodes.add(walletNode);
-      // }
       break;
 
     case c.WalletType.counterwallet:
+
       throw UnsupportedError('wallet type $walletType not supported');
     case c.WalletType.freewallet:
+
+      common.Network _network = network == c.NetworkEnum.testnet
+          ? ecpairService.testnet
+          : ecpairService.mainnet;
+
+      _network.bip32.private = 0x4b2430c; //zpriv
+      _network.bip32.public = 0x4b24746; //zpub
+
       throw UnsupportedError('wallet type $walletType not supported');
+
+
       // String basePath = 'm/0\'/0/';
       //
       // for (var i = 0; i < numAddresses; i++) {
