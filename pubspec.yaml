@@ -36,6 +36,7 @@ dependencies:
   pointycastle: ^3.7.4
   flutter_js: ^0.8.0
 
+  floor: ^1.4.2
   flutter_bloc: ^8.1.5
   shared_preferences: ^2.2.3
   get_it: ^7.6.9
@@ -45,8 +46,13 @@ dependencies:
   bitcoin_base: ^4.2.1
   retrofit: '>=4.0.0 <5.0.0'
   dio: ^5.4.3+1
+  uuid: ^4.4.0
+  go_router: ^14.1.2
+  equatable: ^2.0.5
+  
 
 dev_dependencies:
+  floor_generator: ^1.4.2
   retrofit_generator: ^8.1.0
   build_runner: '>=2.3.0 <4.0.0'
   flutter_test:

@@ -10,6 +10,10 @@ import 'package:uniparty/services/bip32.dart' as bip32;
 import 'package:uniparty/services/bech32.dart' as bech32;
 import 'package:uniparty/services/ecpair.dart' as ecpair;
 
+import 'package:uniparty/domain/services/address_service.dart' as addy_service;
+
+import 'package:uniparty/data/services/address_service_impl.dart' as addy_service_impl;
+
 
 
 
@@ -29,6 +33,8 @@ Future<void> setup() async {
   GetIt.I.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
 
   GetIt.I.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
+
+  GetIt.I.registerSingleton<addy_service.AddressService>(addy_service_impl.AddressServiceImpl());
 
 
 }
