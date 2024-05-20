@@ -116,7 +116,7 @@ void main() async {
 
       String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
 
-      List<WalletNode> recoveredNodes = createWallet(NetworkEnum.mainnet, seedEntropy, WalletTypeEnum.bip32);
+      List<WalletNode> recoveredNodes = createWallet(NetworkEnum.mainnet, seedEntropy, WalletType.freewallet);
 
       for (var recoveredNode in recoveredNodes) {
         WalletNode? walletNode = expectedWalletNodes[recoveredNode.address];

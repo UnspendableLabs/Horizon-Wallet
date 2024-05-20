@@ -114,7 +114,7 @@ void main() async {
 
       String seedHex = LegacyMnemonic().mnemonicToSeed(phrase);
 
-      List<WalletNode> recoveredNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip32);
+      List<WalletNode> recoveredNodes = createWallet(NetworkEnum.testnet, seedHex, WalletType.counterwallet);
 
       for (var node in recoveredNodes) {
         WalletNode? walletNode = expectedWalletNodes[node.address];

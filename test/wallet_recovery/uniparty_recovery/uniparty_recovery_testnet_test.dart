@@ -13,7 +13,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletType.uniparty);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -27,7 +27,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletType.uniparty);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -41,7 +41,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletType.uniparty);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -55,7 +55,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletType.uniparty);
 
       WalletNode walletNode = walletNodes[0];
 
@@ -69,7 +69,7 @@ void main() async {
 
       String seedHex = bip39.mnemonicToSeedHex(mnemonic);
 
-      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletTypeEnum.bip44);
+      List<WalletNode> walletNodes = createWallet(NetworkEnum.testnet, seedHex, WalletType.uniparty);
 
       WalletNode walletNode = walletNodes[0];
 

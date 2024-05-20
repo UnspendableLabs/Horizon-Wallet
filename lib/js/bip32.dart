@@ -2,8 +2,9 @@
 library;
 
 import 'dart:js_interop';
-import "package:uniparty/js/common.dart" as c;
+
 import "package:uniparty/js/buffer.dart" as b;
+import "package:uniparty/js/common.dart" as c;
 
 extension type Signer._(JSObject _) implements JSObject {
   external JSUint8Array publicKey;
@@ -36,11 +37,7 @@ extension type BIP32Interface._(JSObject _) implements Signer {
 extension type BIP32Factory._(JSObject _) implements JSObject {
   external factory BIP32Factory(JSObject eccLib);
   external BIP32Interface fromBase58(String privatekey, [c.Network network]);
-  external BIP32Interface fromPrivateKey(
-      JSUint8Array privateKey, JSUint8Array chainCode,
-      [c.Network network]);
-  external BIP32Interface fromPublicKey(
-      JSUint8Array publicKey, JSUint8Array chainCode,
-      [c.Network network]);
+  external BIP32Interface fromPrivateKey(JSUint8Array privateKey, JSUint8Array chainCode, [c.Network network]);
+  external BIP32Interface fromPublicKey(JSUint8Array publicKey, JSUint8Array chainCode, [c.Network network]);
   external BIP32Interface fromSeed(b.Buffer seed, [c.Network network]);
 }
