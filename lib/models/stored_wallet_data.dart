@@ -4,7 +4,7 @@ import 'package:uniparty/common/constants.dart';
 
 class StoredWalletData {
   String seedHex;
-  WalletTypeEnum walletType;
+  WalletType walletType;
 
   StoredWalletData({
     required this.seedHex,
@@ -13,7 +13,7 @@ class StoredWalletData {
 
   factory StoredWalletData.fromJson(Map<String, dynamic> jsonData) => StoredWalletData(
         seedHex: jsonData['seed_hex'],
-        walletType: WalletTypeEnum.values.firstWhere((element) => element.name == jsonData['wallet_type']),
+        walletType: WalletType.values.firstWhere((element) => element.name == jsonData['wallet_type']),
       );
 
   static Map<String, dynamic> toMap(StoredWalletData model) => <String, dynamic>{

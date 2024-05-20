@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/counterparty_api/models/balance.dart';
+import 'package:uniparty/services/blockcypher.dart';
 
 sealed class BalanceState {
   const BalanceState();
@@ -41,10 +42,13 @@ class BalanceBloc extends Bloc<LoadBalanceEvent, BalanceState> {
 _onBalanceLoad(LoadBalanceEvent event, Emitter<BalanceState> emit) async {
   emit(const BalanceLoading());
   final CounterpartyApi counterpartyApi = GetIt.I.get<CounterpartyApi>();
+  final BlockCypherService blockCypherService = GetIt.I.get<BlockCypherService>();
 
   try {
-    final balances = await counterpartyApi.fetchBalance(event.address, event.network);
-    emit(BalanceSuccess(balances: balances));
+    final xcpBalances = await counterpartyApi.fetchBalance(event.address, event.network);
+    // final btcBalances = await blockCypherService.fetchBalance(event.address, event.network);
+    // emit(BalanceSuccess(balances: xcpBalances + btcBalances));
+    emit(BalanceSuccess(balances: xcpBalances));
   } catch (error) {
     emit(BalanceError(message: error.toString()));
   }

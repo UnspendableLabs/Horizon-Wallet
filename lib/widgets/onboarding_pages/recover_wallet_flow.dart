@@ -16,10 +16,10 @@ class RecoverWalletFlow extends StatefulWidget {
   State<RecoverWalletFlow> createState() => _RecoverWalletFlowState();
 }
 
-const List<RecoveryWalletEnum> list = <RecoveryWalletEnum>[
-  RecoveryWalletEnum.counterwallet,
-  RecoveryWalletEnum.freewallet,
-  RecoveryWalletEnum.uniparty
+const List<WalletType> list = <WalletType>[
+WalletType.counterwallet,
+  WalletType.freewallet,
+  WalletType.uniparty
 ];
 
 class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
@@ -67,7 +67,7 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                     }
                                   },
                                   child: const Text('Recover wallet')),
-                              DropdownButton<RecoveryWalletEnum>(
+                              DropdownButton<WalletType>(
                                 value: state.recoveryWallet,
                                 icon: const Icon(Icons.arrow_downward),
                                 elevation: 16,
@@ -76,13 +76,13 @@ class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
                                   height: 2,
                                   color: const Color.fromRGBO(159, 194, 244, 1.0),
                                 ),
-                                onChanged: (RecoveryWalletEnum? value) {
+                                onChanged: (WalletType? value) {
                                   // This is called when the user selects an item.
                                   BlocProvider.of<WalletRecoveryBloc>(context)
                                       .add(WalletRecoveryEvent(recoveryWallet: value!));
                                 },
-                                items: list.map<DropdownMenuItem<RecoveryWalletEnum>>((RecoveryWalletEnum value) {
-                                  return DropdownMenuItem<RecoveryWalletEnum>(
+                                items: list.map<DropdownMenuItem<WalletType>>((WalletType value) {
+                                  return DropdownMenuItem<WalletType>(
                                     value: value,
                                     child: Text(value.name),
                                   );

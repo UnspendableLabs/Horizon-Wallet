@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/app_router.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/create_wallet_payload.dart';
 import 'package:uniparty/widgets/common/back_button.dart';
 import 'package:uniparty/widgets/common/common_dialog_shape.dart';
+import 'package:uniparty/services/bip39.dart' as bip39;
 
 class CreateWalletFlow extends StatelessWidget {
   const CreateWalletFlow({super.key});
@@ -16,7 +16,7 @@ class CreateWalletFlow extends StatelessWidget {
         style: _buttonStyle(),
         child: const Text('Create Wallet'),
         onPressed: () {
-          final mnemonic = GetIt.I.get<Bip39Service>().generateMnemonic();
+          final mnemonic = GetIt.I.get<bip39.Bip39Service>().generateMnemonic();
 
           showDialog<String>(context: context, builder: (BuildContext context) => CreateWalletDialog(mnemonic: mnemonic));
         });
@@ -85,7 +85,7 @@ class _CreateWalletDialogState extends State<CreateWalletDialog> {
                   Navigator.pushNamed(
                     context,
                     AppRouter.walletPage,
-                    arguments: CreateWalletPayload(mnemonic: widget.mnemonic, recoveryWallet: RecoveryWalletEnum.uniparty),
+                    arguments: CreateWalletPayload(mnemonic: widget.mnemonic, recoveryWallet: WalletType.uniparty),
                   );
                 },
                 child: const Text('Create Wallet'),
