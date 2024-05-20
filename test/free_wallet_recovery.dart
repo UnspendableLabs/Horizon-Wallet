@@ -1,42 +1,37 @@
-// @JS()
-// library freewallet_recovery;
-
-// import 'dart:js_interop';
-
-import 'package:get_it/get_it.dart';
+import 'dart:html';
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
+import 'package:get_it/get_it.dart';
 import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
 import 'package:uniparty/common/constants.dart';
 import 'package:uniparty/models/wallet_node.dart';
 import 'package:uniparty/services/bech32.dart' as bech32;
 import 'package:uniparty/services/bip32.dart' as bip32;
-import 'package:uniparty/services/bip39.dart' as bip39;
+import 'package:uniparty/services/bip39.dart' as bip39_;
 import 'package:uniparty/services/ecpair.dart' as ecpair;
-// import 'package:uniparty/services/ecpair.dart' as ecpair;
-// import 'package:uniparty/services/ecpair.dart' as ecpair;
-// import 'package:uniparty/setup.dart';
 
-void main() async {
-  print('MAIN>S>S>');
-  setUp(() {
-    print('SETUP  ');
-    GetIt.I.reset();
-    GetIt.I.registerSingleton<bip39.Bip39Service>(bip39.Bip39JSService());
-    GetIt.I.registerSingleton<bech32.Bech32Service>(bech32.Bech32JSService());
-    print('REGISTERING');
+late GetIt sl;
 
-    GetIt.I.registerSingleton<ecpair.ECPairService>(ecpair.ECPairJSService());
-    GetIt.I.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
-  });
+void main() {
+  var output = querySelector('#output');
+  output?.text = 'Running tests...\n';
+
+  void addResult(String result) {
+    var resultElement = DivElement()..text = result;
+    output?.children.add(resultElement);
+  }
+
   group('FreewalletRecovery mainnet', () {
-    // compatibility with freewallet verified by addresses/priv keys generated in freewallet
     test('bip39 + bip32 recovery', () async {
-      print('TEST BEGINNGING');
-      Bip39Service bip39 = GetIt.I.get<Bip39Service>();
-      String mnemonic = "silver similar slab poet cannon south antique finish large romance climb faculty";
+      sl = GetIt.I;
+      sl.registerSingleton<bip39_.Bip39Service>(bip39_.Bip39JSService());
+      sl.registerSingleton<bech32.Bech32Service>(bech32.Bech32JSService());
+      sl.registerSingleton<ecpair.ECPairService>(ecpair.ECPairJSService());
+      sl.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
 
-      print('before expected');
+      String mnemonic = "silver similar slab poet cannon south antique finish large romance climb faculty";
+      bip39_.Bip39Service bip39 = bip39_.Bip39JSService();
+      String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
+      List<WalletNode> recoveredNodes = createWallet(NetworkEnum.mainnet, seedEntropy, WalletType.freewallet);
 
       Map<String, WalletNode> expectedWalletNodes = {
         "18yGaEy48a3PPcg33e7xj3LSKA8pCTbAMh": WalletNode(
@@ -141,15 +136,6 @@ void main() async {
             index: 9)
       };
 
-      print('before mnemonic');
-
-      String seedEntropy = bip39.mnemonicToEntropy(mnemonic);
-
-      print('CREATE WALLET');
-      List<WalletNode> recoveredNodes = createWallet(NetworkEnum.mainnet, seedEntropy, WalletType.freewallet);
-
-      print('AFTER CREATE WALLET');
-
       for (var recoveredNode in recoveredNodes) {
         WalletNode? walletNode = expectedWalletNodes[recoveredNode.address];
         String? expectedAdress = walletNode?.address;
@@ -159,6 +145,8 @@ void main() async {
         expect(recoveredNode.address, expectedAdress);
         expect(recoveredNode.privateKey, expectedPrivateKey);
         expect(recoveredNode.index, expectedIndex);
+
+        addResult('Test for address ${recoveredNode.address} passed.');
       }
     }, timeout: const Timeout(Duration(minutes: 2)));
   });

@@ -17,12 +17,9 @@ bip32.Bip32Service bip32Service = GetIt.I.get<bip32.Bip32Service>();
 ecpair.ECPairService ecpairService = GetIt.I.get<ecpair.ECPairService>();
 
 List<WalletNode> createWallet(c.NetworkEnum network, String seedHex, c.WalletType walletType) {
-  int numAddresses = _numAddresses(walletType);
   List<WalletNode> walletNodes = [];
 
   final Seed seed = Seed.fromHex(seedHex);
-
-  // final stopwatch = Stopwatch()..start();
 
   switch (walletType) {
     case c.WalletType.uniparty:
@@ -54,11 +51,24 @@ List<WalletNode> createWallet(c.NetworkEnum network, String seedHex, c.WalletTyp
     case c.WalletType.freewallet:
       common.Network _network = network == c.NetworkEnum.testnet ? ecpairService.testnet : ecpairService.mainnet;
 
-      _network.bip32.private = 0x4b2430c; //zpriv
-      _network.bip32.public = 0x4b24746; //zpub
+      final bip32js.BIP32Interface root = bip32Service.fromSeed(seed.bytes, _network);
 
-      throw UnsupportedError('wallet type $walletType not supported');
+      final bip32js.BIP32Interface extended = root.derivePath('m/0\'/${_getCoinType(network)}');
 
+      final bip32js.BIP32Interface child = extended.derive(0);
+
+      // TODO: remove type cast
+      List<int> words = bech32.toWords(Uint8List.fromList(child.identifier.toDart));
+      // need to add 0 version byte
+      words.insert(0, 0);
+
+      final String address = bech32.encode(_network.bech32, words);
+
+      WalletNode walletNode =
+          WalletNode(address: address, publicKey: hex.encode(child.publicKey.toDart), privateKey: child.toWIF(), index: 0);
+      walletNodes.add(walletNode);
+
+      break;
     default:
       throw UnsupportedError('wallet type $walletType not supported');
   }
@@ -74,7 +84,3 @@ int _getCoinType(c.NetworkEnum network) {
       return 0; // mainnet
   }
 }
-
-int _numAddresses(c.WalletType walletType) => 1;
-
-
