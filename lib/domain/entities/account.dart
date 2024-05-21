@@ -1,9 +1,9 @@
-class AccountEntity {
+class Account {
 
   String uuid;
   String? defaultWalletUUID;
 
-  AccountEntity({
+  Account({
     required this.uuid,
     required this.defaultWalletUUID});
 

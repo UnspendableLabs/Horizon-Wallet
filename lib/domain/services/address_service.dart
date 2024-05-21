@@ -1,8 +1,9 @@
-import "package:uniparty/domain/entities/seed_entity.dart";
-
+import 'package:uniparty/domain/entities/address.dart';
 
 // TODO: define mnemonic type
 abstract class AddressService {
-  Future<String> deriveAddressSegwit(String mnemonic, String path);
+  Future<Address> deriveAddressSegwit(String mnemonic, String path);
+  Future<Address> deriveAddressFreewalletBech32(String mnemonic, int index);
+  Future<Address> deriveAddressFreewalletLegacy(String mnemonic, int index);
 }
 
