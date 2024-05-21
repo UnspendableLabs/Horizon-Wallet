@@ -35,7 +35,8 @@ class OnboardingImportPage_ extends StatefulWidget {
 }
 
 class _OnboardingImportPageState extends State<OnboardingImportPage_> {
-  final TextEditingController _seedPhraseController = TextEditingController();
+  final TextEditingController _seedPhraseController =
+      TextEditingController(text: "");
   final TextEditingController _importFormat =
       TextEditingController(text: ImportFormat.segwit.name);
   final Map<Address, bool> _isCheckedMap = {};
@@ -50,12 +51,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
-        buildWhen: (previous, current) {
-      print("previous: $previous");
-      print("curious: $current");
-
-      return previous != current;
-    }, builder: (context, state) {
+        builder: (context, state) {
       return Scaffold(
         appBar: AppBar(title: const Text('Uniparty')),
         body: Container(
@@ -73,8 +69,9 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                   TextField(
                     controller: _seedPhraseController,
                     onChanged: (value) {
-                      context.read<OnboardingImportBloc>().add(DeriveAddress(
-                          mnemonic: value, importFormat: _importFormat.text));
+                      context
+                          .read<OnboardingImportBloc>()
+                          .add(MnemonicChanged(mnemonic: value));
                     },
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -89,9 +86,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                         onSelected: (newValue) {
                           // newValue can't be null
                           context.read<OnboardingImportBloc>().add(
-                              DeriveAddress(
-                                  mnemonic: _seedPhraseController.text,
-                                  importFormat: newValue!));
+                              ImportFormatChanged(importFormat: newValue!));
                         },
 
                         initialSelection: ImportFormat.segwit.name,
@@ -120,9 +115,12 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                     ],
                   ),
                   SizedBox(height: 16),
-                  state is Success
+                  state.getAddressesState is GetAddressesStateError
+                      ? Text(state.getAddressesState.message)
+                      : const Text(""),
+                  state.getAddressesState is GetAddressesStateSuccess
                       ? AddressListView(
-                          addresses: state.addresses,
+                          addresses: state.getAddressesState.addresses,
                           isCheckedMap: _isCheckedMap,
                           onCheckedChanged: (address, checked) {
                             print("address");

@@ -102,7 +102,7 @@ class _$DB extends DB {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `wallet` (`accountUuid` TEXT NOT NULL, `uuid` TEXT NOT NULL, `name` TEXT NOT NULL, `wif` TEXT NOT NULL, PRIMARY KEY (`uuid`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `address` (`address` TEXT NOT NULL, `walletUuid` TEXT NOT NULL, `derivationPath` TEXT NOT NULL, PRIMARY KEY (`address`))');
+            'CREATE TABLE IF NOT EXISTS `address` (`address` TEXT NOT NULL, `derivationPath` TEXT NOT NULL, PRIMARY KEY (`address`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -131,26 +131,26 @@ class _$AccountDao extends AccountDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _accountInsertionAdapter = InsertionAdapter(
+        _accountModelInsertionAdapter = InsertionAdapter(
             database,
             'account',
-            (Account item) => <String, Object?>{
+            (AccountModel item) => <String, Object?>{
                   'uuid': item.uuid,
                   'defaultWalletUUID': item.defaultWalletUUID
                 }),
-        _accountUpdateAdapter = UpdateAdapter(
+        _accountModelUpdateAdapter = UpdateAdapter(
             database,
             'account',
             ['uuid'],
-            (Account item) => <String, Object?>{
+            (AccountModel item) => <String, Object?>{
                   'uuid': item.uuid,
                   'defaultWalletUUID': item.defaultWalletUUID
                 }),
-        _accountDeletionAdapter = DeletionAdapter(
+        _accountModelDeletionAdapter = DeletionAdapter(
             database,
             'account',
             ['uuid'],
-            (Account item) => <String, Object?>{
+            (AccountModel item) => <String, Object?>{
                   'uuid': item.uuid,
                   'defaultWalletUUID': item.defaultWalletUUID
                 });
@@ -161,42 +161,43 @@ class _$AccountDao extends AccountDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Account> _accountInsertionAdapter;
+  final InsertionAdapter<AccountModel> _accountModelInsertionAdapter;
 
-  final UpdateAdapter<Account> _accountUpdateAdapter;
+  final UpdateAdapter<AccountModel> _accountModelUpdateAdapter;
 
-  final DeletionAdapter<Account> _accountDeletionAdapter;
+  final DeletionAdapter<AccountModel> _accountModelDeletionAdapter;
 
   @override
-  Future<List<Account>> findAllAccounts() async {
+  Future<List<AccountModel>> findAllAccounts() async {
     return _queryAdapter.queryList('SELECT * FROM account',
-        mapper: (Map<String, Object?> row) => Account(
+        mapper: (Map<String, Object?> row) => AccountModel(
             uuid: row['uuid'] as String,
             defaultWalletUUID: row['defaultWalletUUID'] as String?));
   }
 
   @override
-  Future<Account?> findAccountByUuid(String uuid) async {
+  Future<AccountModel?> findAccountByUuid(String uuid) async {
     return _queryAdapter.query('SELECT * FROM account WHERE uuid = ?1',
-        mapper: (Map<String, Object?> row) => Account(
+        mapper: (Map<String, Object?> row) => AccountModel(
             uuid: row['uuid'] as String,
             defaultWalletUUID: row['defaultWalletUUID'] as String?),
         arguments: [uuid]);
   }
 
   @override
-  Future<void> insertAccount(Account account) async {
-    await _accountInsertionAdapter.insert(account, OnConflictStrategy.abort);
+  Future<void> insertAccount(AccountModel account) async {
+    await _accountModelInsertionAdapter.insert(
+        account, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> updateAccount(Account account) async {
-    await _accountUpdateAdapter.update(account, OnConflictStrategy.abort);
+  Future<void> updateAccount(AccountModel account) async {
+    await _accountModelUpdateAdapter.update(account, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> deleteAccount(Account account) async {
-    await _accountDeletionAdapter.delete(account);
+  Future<void> deleteAccount(AccountModel account) async {
+    await _accountModelDeletionAdapter.delete(account);
   }
 }
 
@@ -205,30 +206,30 @@ class _$WalletDao extends WalletDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _walletInsertionAdapter = InsertionAdapter(
+        _walletModelInsertionAdapter = InsertionAdapter(
             database,
             'wallet',
-            (Wallet item) => <String, Object?>{
+            (WalletModel item) => <String, Object?>{
                   'accountUuid': item.accountUuid,
                   'uuid': item.uuid,
                   'name': item.name,
                   'wif': item.wif
                 }),
-        _walletUpdateAdapter = UpdateAdapter(
+        _walletModelUpdateAdapter = UpdateAdapter(
             database,
             'wallet',
             ['uuid'],
-            (Wallet item) => <String, Object?>{
+            (WalletModel item) => <String, Object?>{
                   'accountUuid': item.accountUuid,
                   'uuid': item.uuid,
                   'name': item.name,
                   'wif': item.wif
                 }),
-        _walletDeletionAdapter = DeletionAdapter(
+        _walletModelDeletionAdapter = DeletionAdapter(
             database,
             'wallet',
             ['uuid'],
-            (Wallet item) => <String, Object?>{
+            (WalletModel item) => <String, Object?>{
                   'accountUuid': item.accountUuid,
                   'uuid': item.uuid,
                   'name': item.name,
@@ -241,16 +242,16 @@ class _$WalletDao extends WalletDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Wallet> _walletInsertionAdapter;
+  final InsertionAdapter<WalletModel> _walletModelInsertionAdapter;
 
-  final UpdateAdapter<Wallet> _walletUpdateAdapter;
+  final UpdateAdapter<WalletModel> _walletModelUpdateAdapter;
 
-  final DeletionAdapter<Wallet> _walletDeletionAdapter;
+  final DeletionAdapter<WalletModel> _walletModelDeletionAdapter;
 
   @override
-  Future<List<Wallet>> findAllWallets() async {
+  Future<List<WalletModel>> findAllWallets() async {
     return _queryAdapter.queryList('SELECT * FROM wallet',
-        mapper: (Map<String, Object?> row) => Wallet(
+        mapper: (Map<String, Object?> row) => WalletModel(
             uuid: row['uuid'] as String,
             accountUuid: row['accountUuid'] as String,
             name: row['name'] as String,
@@ -258,9 +259,9 @@ class _$WalletDao extends WalletDao {
   }
 
   @override
-  Future<Wallet?> findWalletByUuid(String uuid) async {
+  Future<WalletModel?> findWalletByUuid(String uuid) async {
     return _queryAdapter.query('SELECT * FROM wallet WHERE uuid = ?1',
-        mapper: (Map<String, Object?> row) => Wallet(
+        mapper: (Map<String, Object?> row) => WalletModel(
             uuid: row['uuid'] as String,
             accountUuid: row['accountUuid'] as String,
             name: row['name'] as String,
@@ -269,10 +270,10 @@ class _$WalletDao extends WalletDao {
   }
 
   @override
-  Future<List<Wallet>> findWalletsByAccountUuid(String accountUuid) async {
+  Future<List<WalletModel>> findWalletsByAccountUuid(String accountUuid) async {
     return _queryAdapter.queryList(
         'SELECT * FROM wallet WHERE accountUuid = ?1',
-        mapper: (Map<String, Object?> row) => Wallet(
+        mapper: (Map<String, Object?> row) => WalletModel(
             uuid: row['uuid'] as String,
             accountUuid: row['accountUuid'] as String,
             name: row['name'] as String,
@@ -281,18 +282,18 @@ class _$WalletDao extends WalletDao {
   }
 
   @override
-  Future<void> insertWallet(Wallet wallet) async {
-    await _walletInsertionAdapter.insert(wallet, OnConflictStrategy.abort);
+  Future<void> insertWallet(WalletModel wallet) async {
+    await _walletModelInsertionAdapter.insert(wallet, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> updateWallet(Wallet wallet) async {
-    await _walletUpdateAdapter.update(wallet, OnConflictStrategy.abort);
+  Future<void> updateWallet(WalletModel wallet) async {
+    await _walletModelUpdateAdapter.update(wallet, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> deleteWallet(Wallet wallet) async {
-    await _walletDeletionAdapter.delete(wallet);
+  Future<void> deleteWallet(WalletModel wallet) async {
+    await _walletModelDeletionAdapter.delete(wallet);
   }
 }
 
@@ -301,30 +302,27 @@ class _$AddressDao extends AddressDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _addressInsertionAdapter = InsertionAdapter(
+        _addressModelInsertionAdapter = InsertionAdapter(
             database,
             'address',
-            (Address item) => <String, Object?>{
+            (AddressModel item) => <String, Object?>{
                   'address': item.address,
-                  'walletUuid': item.walletUuid,
                   'derivationPath': item.derivationPath
                 }),
-        _addressUpdateAdapter = UpdateAdapter(
+        _addressModelUpdateAdapter = UpdateAdapter(
             database,
             'address',
             ['address'],
-            (Address item) => <String, Object?>{
+            (AddressModel item) => <String, Object?>{
                   'address': item.address,
-                  'walletUuid': item.walletUuid,
                   'derivationPath': item.derivationPath
                 }),
-        _addressDeletionAdapter = DeletionAdapter(
+        _addressModelDeletionAdapter = DeletionAdapter(
             database,
             'address',
             ['address'],
-            (Address item) => <String, Object?>{
+            (AddressModel item) => <String, Object?>{
                   'address': item.address,
-                  'walletUuid': item.walletUuid,
                   'derivationPath': item.derivationPath
                 });
 
@@ -334,54 +332,42 @@ class _$AddressDao extends AddressDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Address> _addressInsertionAdapter;
+  final InsertionAdapter<AddressModel> _addressModelInsertionAdapter;
 
-  final UpdateAdapter<Address> _addressUpdateAdapter;
+  final UpdateAdapter<AddressModel> _addressModelUpdateAdapter;
 
-  final DeletionAdapter<Address> _addressDeletionAdapter;
+  final DeletionAdapter<AddressModel> _addressModelDeletionAdapter;
 
   @override
-  Future<List<Address>> findAllAddresss() async {
+  Future<List<AddressModel>> findAllAddresss() async {
     return _queryAdapter.queryList('SELECT * FROM address',
-        mapper: (Map<String, Object?> row) => Address(
+        mapper: (Map<String, Object?> row) => AddressModel(
             address: row['address'] as String,
-            walletUuid: row['walletUuid'] as String,
             derivationPath: row['derivationPath'] as String));
   }
 
   @override
-  Future<Address?> findAddressByUuid(String uuid) async {
+  Future<AddressModel?> findAddressByUuid(String uuid) async {
     return _queryAdapter.query('SELECT * FROM address WHERE uuid = ?1',
-        mapper: (Map<String, Object?> row) => Address(
+        mapper: (Map<String, Object?> row) => AddressModel(
             address: row['address'] as String,
-            walletUuid: row['walletUuid'] as String,
             derivationPath: row['derivationPath'] as String),
         arguments: [uuid]);
   }
 
   @override
-  Future<List<Address>> findAddresssByAccountUuid(String accountUuid) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM address WHERE accountUuid = ?1',
-        mapper: (Map<String, Object?> row) => Address(
-            address: row['address'] as String,
-            walletUuid: row['walletUuid'] as String,
-            derivationPath: row['derivationPath'] as String),
-        arguments: [accountUuid]);
+  Future<void> insertAddress(AddressModel address) async {
+    await _addressModelInsertionAdapter.insert(
+        address, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> insertAddress(Address address) async {
-    await _addressInsertionAdapter.insert(address, OnConflictStrategy.abort);
+  Future<void> updateAddress(AddressModel address) async {
+    await _addressModelUpdateAdapter.update(address, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> updateAddress(Address address) async {
-    await _addressUpdateAdapter.update(address, OnConflictStrategy.abort);
-  }
-
-  @override
-  Future<void> deleteAddress(Address address) async {
-    await _addressDeletionAdapter.delete(address);
+  Future<void> deleteAddress(AddressModel address) async {
+    await _addressModelDeletionAdapter.delete(address);
   }
 }

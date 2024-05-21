@@ -5,18 +5,18 @@ import 'package:uniparty/data/models/wallet.dart';
 @dao
 abstract class WalletDao {
   @Query('SELECT * FROM wallet')
-  Future<List<Wallet>> findAllWallets();
+  Future<List<WalletModel>> findAllWallets();
   @Query('SELECT * FROM wallet WHERE uuid = :uuid')
-  Future<Wallet?> findWalletByUuid(String uuid);
+  Future<WalletModel?> findWalletByUuid(String uuid);
   @insert
-  Future<void> insertWallet(Wallet wallet);
+  Future<void> insertWallet(WalletModel wallet);
   @update
-  Future<void> updateWallet(Wallet wallet);
+  Future<void> updateWallet(WalletModel wallet);
   @delete
-  Future<void> deleteWallet(Wallet wallet);
+  Future<void> deleteWallet(WalletModel wallet);
 
   @Query('SELECT * FROM wallet WHERE accountUuid = :accountUuid')
-  Future<List<Wallet>> findWalletsByAccountUuid(String accountUuid);
+  Future<List<WalletModel>> findWalletsByAccountUuid(String accountUuid);
 
 }
 

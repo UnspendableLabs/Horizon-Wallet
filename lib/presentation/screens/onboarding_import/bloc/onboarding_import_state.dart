@@ -1,27 +1,65 @@
 // TODO: research part of / equatable
+
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:uniparty/domain/entities/address.dart';
 
-abstract class OnboardingImportState {}
+part 'onboarding_import_state.freezed.dart';
 
-class NotAsked extends OnboardingImportState {}
+enum ImportFormat {
+  segwit("Segwit", "Segwit (BIP84,P2WPKH,Bech32)"),
+  // legacy("Legacy", "BIP44,P2PKH,Base58"),
+  freewalletBech32("Freewallet-bech32", "Freewallet (Bech32)");
 
-// class Loading extends OnboardingImportState {
-//   final String mnemonic;
-//   final String importFormat;
-//
-//   Loading({required this.mnemonic, required this.importFormat});
-// }
+  const ImportFormat(this.name, this.description);
+  final String name;
+  final String description;
+}
 
-class Loading extends OnboardingImportState {}
 
-class Success extends OnboardingImportState {
+
+@freezed
+class OnboardingImportState  with _$OnboardingImportState { 
+  const factory OnboardingImportState({
+    @Default("") String mnemonic,
+    @Default(ImportFormat.segwit) importFormat,
+    @Default(GetAddressesStateNotAsked) getAddressesState,
+    @Default({}) Map<Address, bool> isCheckedMap,
+    @Default(ImportStateNotAsked) importState,
+  }) = _OnboardingImportState;
+  // String mnmeonic = "";
+  // ImportFormat importFormat = ImportFormat.segwit;
+  // GetAddressesState getAddressesState = GetAddressesStateNotAsked();
+  // Map<Address, bool> isCheckedMap = {};
+  // ImportState importState = ImportStateNotAsked();
+}
+
+abstract class GetAddressesState {}
+
+class GetAddressesStateNotAsked extends GetAddressesState {}
+
+class GetAddressesStateLoading extends GetAddressesState {}
+
+class GetAddressesStateSuccess extends GetAddressesState {
   final List<Address> addresses;
-
-  Success({required this.addresses});
+  GetAddressesStateSuccess({required this.addresses});
 }
 
-class Error extends OnboardingImportState {
+class GetAddressesStateError extends GetAddressesState {
   final String message;
-
-  Error({required this.message});
+  GetAddressesStateError({required this.message});
 }
+
+abstract class ImportState {}
+
+class ImportStateNotAsked  extends ImportState {}
+
+class ImportStateLoading extends ImportState {}
+
+class ImportStateSuccess extends ImportState {}
+
+class ImportStateError extends ImportState {
+  final String message;
+  ImportStateError({required this.message});
+}
+

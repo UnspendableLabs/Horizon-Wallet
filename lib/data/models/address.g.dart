@@ -6,14 +6,13 @@ part of 'address.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Address _$AddressFromJson(Map<String, dynamic> json) => Address(
+AddressModel _$AddressModelFromJson(Map<String, dynamic> json) => AddressModel(
       address: json['address'] as String,
-      walletUuid: json['walletUuid'] as String,
       derivationPath: json['derivationPath'] as String,
     );
 
-Map<String, dynamic> _$AddressToJson(Address instance) => <String, dynamic>{
+Map<String, dynamic> _$AddressModelToJson(AddressModel instance) =>
+    <String, dynamic>{
       'address': instance.address,
-      'walletUuid': instance.walletUuid,
       'derivationPath': instance.derivationPath,
     };

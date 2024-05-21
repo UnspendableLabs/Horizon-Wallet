@@ -6,12 +6,13 @@ part of 'account.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Account _$AccountFromJson(Map<String, dynamic> json) => Account(
+AccountModel _$AccountModelFromJson(Map<String, dynamic> json) => AccountModel(
       uuid: json['uuid'] as String,
       defaultWalletUUID: json['defaultWalletUUID'] as String?,
     );
 
-Map<String, dynamic> _$AccountToJson(Account instance) => <String, dynamic>{
+Map<String, dynamic> _$AccountModelToJson(AccountModel instance) =>
+    <String, dynamic>{
       'uuid': instance.uuid,
       'defaultWalletUUID': instance.defaultWalletUUID,
     };

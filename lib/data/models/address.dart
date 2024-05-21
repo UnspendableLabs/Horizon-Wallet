@@ -1,25 +1,23 @@
 import 'package:floor/floor.dart';
-import 'package:uniparty/domain/entities/address_entity.dart';
+import 'package:uniparty/domain/entities/address.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'address.g.dart';
 
 @JsonSerializable()
 @Entity(tableName: 'address', primaryKeys: ['address'])
-class Address extends AddressEntity {
-  Address(
+class AddressModel extends Address {
+  AddressModel(
       {required super.address,
-      required super.walletUuid,
       required super.derivationPath}): super();
 
-  factory Address.fromJson(Map<String, dynamic> json) => _$AddressFromJson(json);
+  factory AddressModel.fromJson(Map<String, dynamic> json) => _$AddressModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$AddressToJson(this);
+  Map<String, dynamic> toJson() => _$AddressModelToJson(this);
 
-  factory Address.fromEntity(AddressEntity entity) {
-    return Address(
+  factory AddressModel.fromEntity(Address entity) {
+    return AddressModel(
         address: entity.address,
-        walletUuid: entity.walletUuid,
         derivationPath: entity.derivationPath);
   }
 }

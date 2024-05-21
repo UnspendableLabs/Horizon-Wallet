@@ -10,3 +10,5 @@ class Wallet {
       required this.name,
       required this.wif});
 }
+
+

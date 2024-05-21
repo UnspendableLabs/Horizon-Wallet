@@ -7,12 +7,12 @@ part 'account.g.dart';
 @JsonSerializable()
 @Entity(tableName: 'account', primaryKeys: ['uuid'])
 class AccountModel extends Account {
-  Account({required super.uuid, required super.defaultWalletUUID}) : super();
+  AccountModel({required super.uuid, required super.defaultWalletUUID}) : super();
 
-  factory Account.fromJson(Map<String, dynamic> json) =>
-      _$AccountFromJson(json);
+  factory AccountModel.fromJson(Map<String, dynamic> json) =>
+      _$AccountModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$AccountToJson(this);
+  Map<String, dynamic> toJson() => _$AccountModelToJson(this);
 
 
   factory AccountModel.fromEntity(Account entity) {

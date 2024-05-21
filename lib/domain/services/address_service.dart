@@ -7,6 +7,6 @@ abstract class AddressService {
   Future<Address> deriveAddressFreewalletLegacy(String mnemonic, int index);
   Future<List<Address>> deriveAddressSegwitRange(String mnemonic, int start, int end);
   Future<List<Address>> deriveAddressFreewalletBech32Range(String mnemonic, int start, int end);
-  Future<List<Address>> deriveAddressFreewalletLegacyRange(String mnemonic, int strart, int end);
+  Future<List<Address>> deriveAddressFreewalletLegacyRange(String mnemonic, int start, int end);
 }
 

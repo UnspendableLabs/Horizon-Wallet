@@ -6,17 +6,15 @@ import 'package:uniparty/data/models/address.dart';
 @dao
 abstract class AddressDao {
   @Query('SELECT * FROM address')
-  Future<List<Address>> findAllAddresss();
+  Future<List<AddressModel>> findAllAddresss();
   @Query('SELECT * FROM address WHERE uuid = :uuid')
-  Future<Address?> findAddressByUuid(String uuid);
+  Future<AddressModel?> findAddressByUuid(String uuid);
   @insert
-  Future<void> insertAddress(Address address);
+  Future<void> insertAddress(AddressModel address);
   @update
-  Future<void> updateAddress(Address address);
+  Future<void> updateAddress(AddressModel address);
   @delete
-  Future<void> deleteAddress(Address address);
+  Future<void> deleteAddress(AddressModel address);
 
-  @Query('SELECT * FROM address WHERE accountUuid = :accountUuid')
-  Future<List<Address>> findAddresssByAccountUuid(String accountUuid);
 
 }
