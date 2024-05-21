@@ -29,10 +29,13 @@ _handleDeriveAddress(event, emit, AddressService addressService) async {
     case "Segwit":
       try {
         // TODO: obviously we should not be hardcoded to testnet
-        Address address = await addressService.deriveAddressSegwit(
-            event.mnemonic, 'm/84\'/1\'/0\'/0/0');
+        List<Address> addresses = await addressService.deriveAddressSegwitRange(
+            event.mnemonic, 0, 7);
 
-        emit(Success(address: address));
+        print(addresses);
+
+        emit(Success(addresses: addresses));
+
       } catch (e) {
         print(e.toString());
 
@@ -41,11 +44,10 @@ _handleDeriveAddress(event, emit, AddressService addressService) async {
 
     case "Freewallet-bech32":
       try {
-        // TODO: obviously we should not be hardcoded to testnet
-        Address address = await addressService.deriveAddressFreewalletBech32(
-            event.mnemonic, 0);
+        List<Address> addresses = await addressService.deriveAddressFreewalletBech32Range(
+            event.mnemonic, 0, 7);
 
-        emit(Success(address: address));
+        emit(Success(addresses: addresses));
       } catch (e) {
         print(e.toString());
 

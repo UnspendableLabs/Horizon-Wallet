@@ -15,9 +15,9 @@ class NotAsked extends OnboardingImportState {}
 class Loading extends OnboardingImportState {}
 
 class Success extends OnboardingImportState {
-  final Address address;
+  final List<Address> addresses;
 
-  Success({required this.address});
+  Success({required this.addresses});
 }
 
 class Error extends OnboardingImportState {

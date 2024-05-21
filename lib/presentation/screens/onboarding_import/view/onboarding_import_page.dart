@@ -2,6 +2,9 @@ import 'dart:js_interop';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:uniparty/domain/entities/address.dart';
+
 import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
@@ -33,7 +36,9 @@ class OnboardingImportPage_ extends StatefulWidget {
 
 class _OnboardingImportPageState extends State<OnboardingImportPage_> {
   final TextEditingController _seedPhraseController = TextEditingController();
-  final TextEditingController _importFormat = TextEditingController(text: ImportFormat.segwit.name);
+  final TextEditingController _importFormat =
+      TextEditingController(text: ImportFormat.segwit.name);
+  final Map<Address, bool> _isCheckedMap = {};
 
   @override
   dispose() {
@@ -69,8 +74,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                     controller: _seedPhraseController,
                     onChanged: (value) {
                       context.read<OnboardingImportBloc>().add(DeriveAddress(
-                          mnemonic: value,
-                          importFormat: _importFormat.text ));
+                          mnemonic: value, importFormat: _importFormat.text));
                     },
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -115,10 +119,23 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                       ),
                     ],
                   ),
-                  Text(state is NotAsked ? "Initial" : ""),
-                  Text(state is Success ? state.address.address : ""),
-                  Text(state is Loading ? "Loading" : ""),
-                  Text(state is Error ? (state as Error).message : ""),
+                  SizedBox(height: 16),
+                  state is Success
+                      ? AddressListView(
+                          addresses: state.addresses,
+                          isCheckedMap: _isCheckedMap,
+                          onCheckedChanged: (address, checked) {
+                            print("address");
+                            print(address);
+                            print("checked");
+                            print(checked);
+
+                            setState(() {
+                              _isCheckedMap[address] = checked;
+                            });
+                          },
+                        )
+                      : const Text("")
                 ])),
                 Row(children: [
                   ElevatedButton(
@@ -133,5 +150,75 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
             )),
       );
     });
+  }
+}
+
+class AddressListView extends StatelessWidget {
+  final List<Address> addresses;
+  final Map<Address, bool> isCheckedMap;
+  final void Function(Address, bool) onCheckedChanged;
+
+  const AddressListView({
+    Key? key,
+    required this.addresses,
+    required this.isCheckedMap,
+    required this.onCheckedChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: addresses.length,
+        itemBuilder: (context, index) {
+          final address = addresses[index];
+          return AddressListItem(
+            address: address,
+            isChecked: isCheckedMap[address] ?? false,
+            onCheckedChanged: (isChecked) {
+              onCheckedChanged(address, isChecked);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AddressListItem extends StatelessWidget {
+  final Address address;
+  final bool isChecked;
+  final ValueChanged<bool> onCheckedChanged;
+
+  const AddressListItem({
+    Key? key,
+    required this.address,
+    required this.isChecked,
+    required this.onCheckedChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Checkbox(
+        value: isChecked,
+        onChanged: (value) {
+          onCheckedChanged(value!);
+        },
+      ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              address.address,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Text(address.derivationPath),
+    );
   }
 }
