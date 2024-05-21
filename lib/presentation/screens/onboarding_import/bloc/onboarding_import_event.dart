@@ -1,4 +1,7 @@
-abstract class OnboardingImportEvent {} 
+
+import 'package:uniparty/domain/entities/address.dart';
+
+abstract class OnboardingImportEvent {}
 
 class MnemonicChanged extends OnboardingImportEvent {
   final String mnemonic;
@@ -10,9 +13,11 @@ class ImportFormatChanged extends OnboardingImportEvent {
   ImportFormatChanged({required this.importFormat});
 }
 
-
-class DeriveAddress extends OnboardingImportEvent {
-  final String mnemonic;
-  final String importFormat;
-  DeriveAddress({required this.mnemonic, required this.importFormat});
+class AddressMapChanged extends OnboardingImportEvent {
+  final Address address;
+  final bool isChecked;
+  AddressMapChanged({required this.address, required this.isChecked});
 }
+
+class ImportAddresses extends OnboardingImportEvent {}
+

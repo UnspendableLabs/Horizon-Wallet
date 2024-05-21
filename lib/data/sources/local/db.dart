@@ -1,7 +1,6 @@
 import "dart:async";
+import "package:drift/drift.dart";
 
-import 'package:sqflite/sqflite.dart' as sqflite;
-import "package:floor/floor.dart";
 
 import "package:uniparty/data/sources/local/dao/account_dao.dart";
 import "package:uniparty/data/models/account.dart";
@@ -14,9 +13,17 @@ import "package:uniparty/data/models/address.dart";
 
 part "db.g.dart";
 
-@Database(version: 1, entities: [AccountModel, WalletModel, AddressModel])
-abstract class DB extends FloorDatabase {
-  AccountDao get accountDao;
-  WalletDao get walletDao;
-  AddressDao get addressDao;
-}
+
+// @DriftDatabase(tables: [ Account], daos: [ AccountDao ])
+// class  AppDatabase  extends _$AppDatabase {
+//
+// }
+
+
+
+// @Database(version: 1, entities: [AccountModel, WalletModel, AddressModel])
+// abstract class DB extends FloorDatabase {
+//   AccountDao get accountDao;
+//   WalletDao get walletDao;
+//   AddressDao get addressDao;
+// }f

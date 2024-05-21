@@ -24,7 +24,6 @@ class OnboardingImportBloc
               getAddressesState:
                   GetAddressesStateSuccess(addresses: addresses)));
         } catch (e) {
-
           emit(state.copyWith(
               mnemonic: event.mnemonic,
               getAddressesState:
@@ -51,19 +50,52 @@ class OnboardingImportBloc
               getAddressesState:
                   GetAddressesStateSuccess(addresses: addresses)));
         } catch (e) {
-
           emit(state.copyWith(
               importFormat: importFormat,
               getAddressesState:
                   GetAddressesStateError(message: e.toString())));
         }
       } else {
-          emit(state.copyWith(
-              importFormat: importFormat
-              ));
+        emit(state.copyWith(importFormat: importFormat));
+      }
+    });
+    on<AddressMapChanged>((event, emit) {
+      final isCheckedMap = state.isCheckedMap;
+      final nextMap = Map<Address, bool>.from(isCheckedMap);
+      nextMap[event.address] = event.isChecked;
+      emit(state.copyWith(
+          isCheckedMap: nextMap, importState: ImportStateNotAsked()));
+    });
 
-        }
-      });
+    on<ImportAddresses>((event, emit) {
+      // check if there are any address checked
+      bool hasChecked = state.isCheckedMap.values.any((a) => a);
+
+      if (!hasChecked) {
+        emit(state.copyWith(
+            importState:
+                ImportStateError(message: "Must select at least one address")));
+        return;
+      } else {
+
+        List<Address> addresses = state.isCheckedMap.entries
+            .where((entry) => entry.value)
+            .map((entry) => entry.key)
+            .toList();
+
+        // create user account
+     
+        // derive wallet from seed and save wif and public key, etc with user account
+
+        // dervice keys for each address at path with wallet_id
+
+
+
+        print(addresses);
+
+        emit(state.copyWith(importState: ImportStateLoading()));
+      }
+   });
   }
 }
 

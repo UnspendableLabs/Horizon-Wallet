@@ -39,7 +39,6 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
       TextEditingController(text: "");
   final TextEditingController _importFormat =
       TextEditingController(text: ImportFormat.segwit.name);
-  final Map<Address, bool> _isCheckedMap = {};
 
   @override
   dispose() {
@@ -121,27 +120,27 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                   state.getAddressesState is GetAddressesStateSuccess
                       ? AddressListView(
                           addresses: state.getAddressesState.addresses,
-                          isCheckedMap: _isCheckedMap,
+                          isCheckedMap: state.isCheckedMap,
                           onCheckedChanged: (address, checked) {
-                            print("address");
-                            print(address);
-                            print("checked");
-                            print(checked);
-
-                            setState(() {
-                              _isCheckedMap[address] = checked;
-                            });
+                            context.read<OnboardingImportBloc>().add(
+                                AddressMapChanged(
+                                    address: address, isChecked: checked));
                           },
                         )
                       : const Text("")
                 ])),
+                state.importState is ImportStateError
+                    ? Text(state.importState.message)
+                    : const Text(""),
                 Row(children: [
+                  // TODO: figure out how to disable a button
                   ElevatedButton(
                     onPressed: () {
-                      // context.go("/onboarding/create");
-                      // Navigator.pushNamed(context, '/login');
+                      context
+                          .read<OnboardingImportBloc>()
+                          .add(ImportAddresses());
                     },
-                    child: const Text('Import'),
+                    child: const Text('Import Addresses'),
                   ),
                 ])
               ],

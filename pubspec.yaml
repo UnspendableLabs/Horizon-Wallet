@@ -68,6 +68,7 @@ dev_dependencies:
   test: ^1.24.9
   json_serializable: ^6.8.0
   freezed: ^2.5.2
+  drift_dev: ^2.16.0
 
 
 # For information on the generic Dart part of this file, see the
