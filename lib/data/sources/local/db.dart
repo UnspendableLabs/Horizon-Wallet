@@ -1,11 +1,13 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
-import "package:uniparty/data/sources/local/tables/account_table.dart";
-import 'package:uniparty/data/sources/local/tables/wallet_table.dart';
+import "package:uniparty/data/sources/local/tables/accounts_table.dart";
+import 'package:uniparty/data/sources/local/tables/wallets_table.dart';
+import 'package:uniparty/data/sources/local/tables/addresses_table.dart';
+
 
 part "db.g.dart";
 
-@DriftDatabase(tables: [Accounts, Wallets])
+@DriftDatabase(tables: [Accounts, Wallets, Addresses ])
 class DB extends _$DB {
   DB() : super(connectOnWeb());
 
@@ -30,5 +32,5 @@ DatabaseConnection connectOnWeb() {
     }
 
     return result.resolvedExecutor;
-  }));
+ }));
 }

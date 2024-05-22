@@ -19,8 +19,8 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
       const VerificationMeta('defaultWalletUuid');
   @override
   late final GeneratedColumn<String> defaultWalletUuid =
-      GeneratedColumn<String>('default_wallet_uuid', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
+      GeneratedColumn<String>('default_wallet_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [uuid, defaultWalletUuid];
   @override
@@ -44,6 +44,8 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
           _defaultWalletUuidMeta,
           defaultWalletUuid.isAcceptableOrUnknown(
               data['default_wallet_uuid']!, _defaultWalletUuidMeta));
+    } else if (isInserting) {
+      context.missing(_defaultWalletUuidMeta);
     }
     return context;
   }
@@ -57,7 +59,7 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       defaultWalletUuid: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}default_wallet_uuid']),
+          DriftSqlType.string, data['${effectivePrefix}default_wallet_uuid'])!,
     );
   }
 
@@ -69,24 +71,20 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
 
 class Account extends DataClass implements Insertable<Account> {
   final String uuid;
-  final String? defaultWalletUuid;
-  const Account({required this.uuid, this.defaultWalletUuid});
+  final String defaultWalletUuid;
+  const Account({required this.uuid, required this.defaultWalletUuid});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['uuid'] = Variable<String>(uuid);
-    if (!nullToAbsent || defaultWalletUuid != null) {
-      map['default_wallet_uuid'] = Variable<String>(defaultWalletUuid);
-    }
+    map['default_wallet_uuid'] = Variable<String>(defaultWalletUuid);
     return map;
   }
 
   AccountsCompanion toCompanion(bool nullToAbsent) {
     return AccountsCompanion(
       uuid: Value(uuid),
-      defaultWalletUuid: defaultWalletUuid == null && nullToAbsent
-          ? const Value.absent()
-          : Value(defaultWalletUuid),
+      defaultWalletUuid: Value(defaultWalletUuid),
     );
   }
 
@@ -95,8 +93,7 @@ class Account extends DataClass implements Insertable<Account> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Account(
       uuid: serializer.fromJson<String>(json['uuid']),
-      defaultWalletUuid:
-          serializer.fromJson<String?>(json['defaultWalletUuid']),
+      defaultWalletUuid: serializer.fromJson<String>(json['defaultWalletUuid']),
     );
   }
   @override
@@ -104,18 +101,13 @@ class Account extends DataClass implements Insertable<Account> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
-      'defaultWalletUuid': serializer.toJson<String?>(defaultWalletUuid),
+      'defaultWalletUuid': serializer.toJson<String>(defaultWalletUuid),
     };
   }
 
-  Account copyWith(
-          {String? uuid,
-          Value<String?> defaultWalletUuid = const Value.absent()}) =>
-      Account(
+  Account copyWith({String? uuid, String? defaultWalletUuid}) => Account(
         uuid: uuid ?? this.uuid,
-        defaultWalletUuid: defaultWalletUuid.present
-            ? defaultWalletUuid.value
-            : this.defaultWalletUuid,
+        defaultWalletUuid: defaultWalletUuid ?? this.defaultWalletUuid,
       );
   @override
   String toString() {
@@ -138,7 +130,7 @@ class Account extends DataClass implements Insertable<Account> {
 
 class AccountsCompanion extends UpdateCompanion<Account> {
   final Value<String> uuid;
-  final Value<String?> defaultWalletUuid;
+  final Value<String> defaultWalletUuid;
   final Value<int> rowid;
   const AccountsCompanion({
     this.uuid = const Value.absent(),
@@ -147,9 +139,10 @@ class AccountsCompanion extends UpdateCompanion<Account> {
   });
   AccountsCompanion.insert({
     required String uuid,
-    this.defaultWalletUuid = const Value.absent(),
+    required String defaultWalletUuid,
     this.rowid = const Value.absent(),
-  }) : uuid = Value(uuid);
+  })  : uuid = Value(uuid),
+        defaultWalletUuid = Value(defaultWalletUuid);
   static Insertable<Account> custom({
     Expression<String>? uuid,
     Expression<String>? defaultWalletUuid,
@@ -164,7 +157,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
 
   AccountsCompanion copyWith(
       {Value<String>? uuid,
-      Value<String?>? defaultWalletUuid,
+      Value<String>? defaultWalletUuid,
       Value<int>? rowid}) {
     return AccountsCompanion(
       uuid: uuid ?? this.uuid,
@@ -472,13 +465,206 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
   }
 }
 
+class $AddressesTable extends Addresses
+    with TableInfo<$AddressesTable, Address> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AddressesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _addressMeta =
+      const VerificationMeta('address');
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
+  static const VerificationMeta _derivationPathMeta =
+      const VerificationMeta('derivationPath');
+  @override
+  late final GeneratedColumn<String> derivationPath = GeneratedColumn<String>(
+      'derivation_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [address, derivationPath];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'addresses';
+  @override
+  VerificationContext validateIntegrity(Insertable<Address> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('address')) {
+      context.handle(_addressMeta,
+          address.isAcceptableOrUnknown(data['address']!, _addressMeta));
+    } else if (isInserting) {
+      context.missing(_addressMeta);
+    }
+    if (data.containsKey('derivation_path')) {
+      context.handle(
+          _derivationPathMeta,
+          derivationPath.isAcceptableOrUnknown(
+              data['derivation_path']!, _derivationPathMeta));
+    } else if (isInserting) {
+      context.missing(_derivationPathMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {address};
+  @override
+  Address map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Address(
+      address: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
+      derivationPath: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}derivation_path'])!,
+    );
+  }
+
+  @override
+  $AddressesTable createAlias(String alias) {
+    return $AddressesTable(attachedDatabase, alias);
+  }
+}
+
+class Address extends DataClass implements Insertable<Address> {
+  final String address;
+  final String derivationPath;
+  const Address({required this.address, required this.derivationPath});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['address'] = Variable<String>(address);
+    map['derivation_path'] = Variable<String>(derivationPath);
+    return map;
+  }
+
+  AddressesCompanion toCompanion(bool nullToAbsent) {
+    return AddressesCompanion(
+      address: Value(address),
+      derivationPath: Value(derivationPath),
+    );
+  }
+
+  factory Address.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Address(
+      address: serializer.fromJson<String>(json['address']),
+      derivationPath: serializer.fromJson<String>(json['derivationPath']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'address': serializer.toJson<String>(address),
+      'derivationPath': serializer.toJson<String>(derivationPath),
+    };
+  }
+
+  Address copyWith({String? address, String? derivationPath}) => Address(
+        address: address ?? this.address,
+        derivationPath: derivationPath ?? this.derivationPath,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Address(')
+          ..write('address: $address, ')
+          ..write('derivationPath: $derivationPath')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(address, derivationPath);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Address &&
+          other.address == this.address &&
+          other.derivationPath == this.derivationPath);
+}
+
+class AddressesCompanion extends UpdateCompanion<Address> {
+  final Value<String> address;
+  final Value<String> derivationPath;
+  final Value<int> rowid;
+  const AddressesCompanion({
+    this.address = const Value.absent(),
+    this.derivationPath = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AddressesCompanion.insert({
+    required String address,
+    required String derivationPath,
+    this.rowid = const Value.absent(),
+  })  : address = Value(address),
+        derivationPath = Value(derivationPath);
+  static Insertable<Address> custom({
+    Expression<String>? address,
+    Expression<String>? derivationPath,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (address != null) 'address': address,
+      if (derivationPath != null) 'derivation_path': derivationPath,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AddressesCompanion copyWith(
+      {Value<String>? address,
+      Value<String>? derivationPath,
+      Value<int>? rowid}) {
+    return AddressesCompanion(
+      address: address ?? this.address,
+      derivationPath: derivationPath ?? this.derivationPath,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (derivationPath.present) {
+      map['derivation_path'] = Variable<String>(derivationPath.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AddressesCompanion(')
+          ..write('address: $address, ')
+          ..write('derivationPath: $derivationPath, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $WalletsTable wallets = $WalletsTable(this);
+  late final $AddressesTable addresses = $AddressesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [accounts, wallets];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [accounts, wallets, addresses];
 }

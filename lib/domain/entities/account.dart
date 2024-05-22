@@ -1,10 +1,10 @@
 class Account {
 
   String uuid;
-  String? defaultWalletUUID;
+  String defaultWalletUUID;
 
   Account({
     required this.uuid,
-     this.defaultWalletUUID});
+    required this.defaultWalletUUID});
 
 }

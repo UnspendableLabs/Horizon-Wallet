@@ -90,6 +90,9 @@ class OnboardingImportBloc
 
         // create user account
         String accountUuid = uuid.v4();
+
+
+
         entity.Account newAccount = entity.Account(uuid: accountUuid);
         await accountRepository.insert(newAccount);
 

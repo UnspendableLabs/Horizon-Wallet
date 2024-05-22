@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 
-@DataClassName('Wallet')
 class Wallets extends Table {
   TextColumn get uuid => text().customConstraint('UNIQUE NOT NULL')();
   TextColumn get accountUuid => text().customConstraint('UNIQUE NOT NULL')();
