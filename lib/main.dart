@@ -7,9 +7,18 @@ import 'package:uniparty/setup.dart';
 import 'package:uniparty/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:uniparty/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
+import 'package:drift_db_viewer/drift_db_viewer.dart';
 
 final GoRouter router =
     GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
+  GoRoute(
+    path: "/db",
+    pageBuilder: (context, state) => CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: DriftDbViewer(database),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            child),
+  ),
   GoRoute(
     path: "/onboarding",
     pageBuilder: (context, state) => CustomTransitionPage<void>(

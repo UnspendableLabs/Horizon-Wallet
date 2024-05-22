@@ -2,9 +2,9 @@ import 'package:drift/drift.dart';
 
 class Wallets extends Table {
   TextColumn get uuid => text().customConstraint('UNIQUE NOT NULL')();
-  TextColumn get accountUuid => text().customConstraint('UNIQUE NOT NULL')();
-  TextColumn get publicKey => text().withLength(min: 1, max: 100)();
-  TextColumn get wif => text().withLength(min: 1, max: 100)(); // TODO: do not store wif here
+  TextColumn get accountUuid => text()();
+  TextColumn get publicKey => text()();
+  TextColumn get wif => text()(); // TODO: do not store wif here
 
   @override
   Set<Column> get primaryKey => {uuid};

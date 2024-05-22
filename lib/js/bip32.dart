@@ -25,12 +25,12 @@ extension type BIP32Interface._(JSObject _) implements Signer {
   external JSUint8Array identifier;
   external JSUint8Array fingerprint;
   external bool isNeutered();
-  external factory BIP32Interface.neutered();
   external String toBase58();
   external String toWIF();
   external BIP32Interface derive(int index);
   external BIP32Interface deriveHardened(int index);
   external BIP32Interface derivePath(String path);
+  external BIP32Interface neutered();
 }
 
 extension type BIP32Factory._(JSObject _) implements JSObject {

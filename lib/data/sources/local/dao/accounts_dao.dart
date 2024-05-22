@@ -16,11 +16,10 @@ class AccountsDao extends DatabaseAccessor<DB> with _$AccountsDaoMixin {
   Stream<AccountModel?> watchAccountByUuid(String uuid) =>
       (select(accounts)..where((tbl) => tbl.uuid.equals(uuid))).watchSingle();
   Future<int> insertAccount(AccountModel account) {
-    if (account.uuid.isEmpty) {
-      account = account.copyWith(uuid: uuid.v4());
-    }
     return into(accounts).insert(account);
   }
+
+
 
   Future<bool> updateAccount(Insertable<AccountModel> account) => update(accounts).replace(account);
   Future<int> deleteAccount(Insertable<AccountModel> account) => delete(accounts).delete(account);

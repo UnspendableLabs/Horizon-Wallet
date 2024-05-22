@@ -1,4 +1,3 @@
-
 import 'package:drift/drift.dart';
 import 'package:uniparty/common/uuid.dart';
 import 'package:uniparty/data/sources/local/db.dart';
@@ -16,12 +15,21 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
   //
   // Stream<AddressModel?> watchAddressByUuid(String uuid) =>
   //     (select(addresses)..where((tbl) => tbl.uuid.equals(uuid))).watchSingle();
+  // TODO: why does this return an int?
   Future<int> insertAddress(AddressModel address) {
     return into(addresses).insert(address);
   }
 
-  Future<bool> updateAddress(Insertable<AddressModel> address) => update(addresses).replace(address);
-  Future<int> deleteAddress(Insertable<AddressModel> address) => delete(addresses).delete(address);
+  Future<void> insertMultipleAddresses(List<AddressModel> addresses_) async {
+    await batch((batch) {
+      batch.insertAll(addresses, addresses_);
+    });
+  }
+
+  Future<bool> updateAddress(Insertable<AddressModel> address) =>
+      update(addresses).replace(address);
+  Future<int> deleteAddress(Insertable<AddressModel> address) =>
+      delete(addresses).delete(address);
 }
 
 // import 'package:floor/floor.dart';
