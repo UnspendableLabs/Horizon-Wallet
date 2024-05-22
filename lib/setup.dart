@@ -1,25 +1,20 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
+import 'package:uniparty/data/services/address_service_impl.dart' as addy_service_impl;
+import 'package:uniparty/data/sources/local/dao/account_dao.dart';
+import 'package:uniparty/data/sources/local/db.dart';
+import 'package:uniparty/domain/services/address_service.dart' as addy_service;
+import 'package:uniparty/services/bech32.dart' as bech32;
+import 'package:uniparty/services/bip32.dart' as bip32;
+import 'package:uniparty/services/bip39.dart' as bip39;
 import 'package:uniparty/services/bitcoind.dart';
 import 'package:uniparty/services/blockcypher.dart';
+import 'package:uniparty/services/ecpair.dart' as ecpair;
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
-import 'package:uniparty/services/bip39.dart' as bip39;
-import 'package:uniparty/services/bip32.dart' as bip32;
-import 'package:uniparty/services/bech32.dart' as bech32;
-import 'package:uniparty/services/ecpair.dart' as ecpair;
-
-import 'package:uniparty/domain/services/address_service.dart' as addy_service;
-
-import 'package:uniparty/data/services/address_service_impl.dart' as addy_service_impl;
-
-
-
 
 Future<void> setup() async {
-
-
   GetIt.I.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
   GetIt.I.registerSingleton<BlockCypherService>(BlockCypherImpl(
     url: dotenv.env['BLOCKCYPHER_URL']!,
@@ -36,5 +31,8 @@ Future<void> setup() async {
 
   GetIt.I.registerSingleton<addy_service.AddressService>(addy_service_impl.AddressServiceImpl());
 
-
+  final database = DB();
+  GetIt.I.registerSingleton<DB>(database);
+  GetIt.I.registerSingleton<AccountDao>(AccountDao(database));
+  // GetIt.I.registerFactory<AccountDao>(() => AccountDao(GetIt.I.get<DB>()));
 }

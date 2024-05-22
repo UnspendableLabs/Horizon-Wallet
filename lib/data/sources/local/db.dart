@@ -1,29 +1,33 @@
-import "dart:async";
-import "package:drift/drift.dart";
-
-
-import "package:uniparty/data/sources/local/dao/account_dao.dart";
-import "package:uniparty/data/models/account.dart";
-
-import "package:uniparty/data/sources/local/dao/wallet_dao.dart";
-import "package:uniparty/data/models/wallet.dart";
-
-import "package:uniparty/data/sources/local/dao/address_dao.dart";
-import "package:uniparty/data/models/address.dart";
+import 'package:drift/drift.dart';
+import 'package:drift/wasm.dart';
+import "package:uniparty/data/sources/local/tables/account_table.dart";
 
 part "db.g.dart";
 
+@DriftDatabase(tables: [Accounts])
+class DB extends _$DB {
+  DB() : super(connectOnWeb());
 
-// @DriftDatabase(tables: [ Account], daos: [ AccountDao ])
-// class  AppDatabase  extends _$AppDatabase {
-//
-// }
+  @override
+  int get schemaVersion => 1;
+}
 
+DatabaseConnection connectOnWeb() {
+  return DatabaseConnection.delayed(Future(() async {
+    final result = await WasmDatabase.open(
+      databaseName: 'my_app_db', // prefer to only use valid identifiers here
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
+    );
 
+    if (result.missingFeatures.isNotEmpty) {
+      // Depending how central local persistence is to your app, you may want
+      // to show a warning to the user if only unrealiable implemetentations
+      // are available.
+      print('Using ${result.chosenImplementation} due to missing browser '
+          'features: ${result.missingFeatures}');
+    }
 
-// @Database(version: 1, entities: [AccountModel, WalletModel, AddressModel])
-// abstract class DB extends FloorDatabase {
-//   AccountDao get accountDao;
-//   WalletDao get walletDao;
-//   AddressDao get addressDao;
-// }f
+    return result.resolvedExecutor;
+  }));
+}
