@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/common/uuid.dart';
-import 'package:uniparty/data/sources/local/dao/account_dao.dart';
-import 'package:uniparty/data/sources/local/db.dart';
+import 'package:uniparty/domain/entities/account.dart' as entity;
+import 'package:uniparty/domain/repositories/account_repository.dart';
 
 import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
@@ -14,7 +14,7 @@ import 'package:uniparty/common/constants.dart' as c;
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final addressService = GetIt.I<AddressService>();
-    final accountDao = GetIt.I<AccountDao>();
+    final accountRepository = GetIt.I<AccountRepository>();
 
   OnboardingImportBloc() : super(OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
@@ -90,12 +90,11 @@ class OnboardingImportBloc
 
         // create user account
         String accountUuid = uuid.v4();
-        var newAccount = Account(
-          uuid: accountUuid, // Generate a new UUID
-        );
+        entity.Account newAccount = entity.Account(uuid: accountUuid);
+        await accountRepository.insert(newAccount);
 
-        await accountDao.insertAccount(newAccount);
-        Account? account = await accountDao.getAccountByUuid(accountUuid);
+        entity.Account? account = await accountRepository.getAccount(accountUuid);
+
         print('ACCOUNT: $account');
 
         // derive wallet from seed and save wif and public key, etc with user account

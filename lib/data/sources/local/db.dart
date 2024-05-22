@@ -1,10 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import "package:uniparty/data/sources/local/tables/account_table.dart";
+import 'package:uniparty/data/sources/local/tables/wallet_table.dart';
 
 part "db.g.dart";
 
-@DriftDatabase(tables: [Accounts])
+@DriftDatabase(tables: [Accounts, Wallets])
 class DB extends _$DB {
   DB() : super(connectOnWeb());
 
@@ -15,7 +16,7 @@ class DB extends _$DB {
 DatabaseConnection connectOnWeb() {
   return DatabaseConnection.delayed(Future(() async {
     final result = await WasmDatabase.open(
-      databaseName: 'my_app_db', // prefer to only use valid identifiers here
+      databaseName: 'uniparty_db', // prefer to only use valid identifiers here
       sqlite3Uri: Uri.parse('sqlite3.wasm'),
       driftWorkerUri: Uri.parse('drift_worker.dart.js'),
     );

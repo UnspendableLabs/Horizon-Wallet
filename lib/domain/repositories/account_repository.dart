@@ -1,9 +1,7 @@
-
-import "package:uniparty/domain/entities/account.dart";
+import "package:uniparty/domain/entities/account.dart" as entity;
 
 abstract class AccountRepository {
-  // Future<AccountEntity> getAccount();
-  Future<void> insert(Account account);
+  Future<entity.Account?> getAccount(String uuid);
+  Future<void> insert(entity.Account account);
   // Future<void> deleteAccount();
 }
-

@@ -2,8 +2,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
 import 'package:uniparty/data/services/address_service_impl.dart' as addy_service_impl;
-import 'package:uniparty/data/sources/local/dao/account_dao.dart';
 import 'package:uniparty/data/sources/local/db.dart';
+import 'package:uniparty/data/sources/repositories/account_repository_impl.dart';
+import 'package:uniparty/domain/repositories/account_repository.dart';
 import 'package:uniparty/domain/services/address_service.dart' as addy_service;
 import 'package:uniparty/services/bech32.dart' as bech32;
 import 'package:uniparty/services/bip32.dart' as bip32;
@@ -32,7 +33,5 @@ Future<void> setup() async {
   GetIt.I.registerSingleton<addy_service.AddressService>(addy_service_impl.AddressServiceImpl());
 
   final database = DB();
-  GetIt.I.registerSingleton<DB>(database);
-  GetIt.I.registerSingleton<AccountDao>(AccountDao(database));
-  // GetIt.I.registerFactory<AccountDao>(() => AccountDao(GetIt.I.get<DB>()));
+  GetIt.I.registerSingleton<AccountRepository>(AccountRepositoryImpl(database));
 }
