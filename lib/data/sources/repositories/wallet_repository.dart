@@ -11,7 +11,7 @@ class WalletRepositoryImpl implements WalletRepository {
 
   @override
   Future<void> insert(entity.Wallet wallet) async {
-    _walletDao
-        .insertWallet(local.Wallet(uuid: wallet.uuid, accountUuid: wallet.accountUuid, name: wallet.name, wif: wallet.wif));
+    _walletDao.insertWallet(
+        local.Wallet(uuid: wallet.uuid, accountUuid: wallet.accountUuid, publicKey: wallet.publicKey, wif: wallet.wif));
   }
 }

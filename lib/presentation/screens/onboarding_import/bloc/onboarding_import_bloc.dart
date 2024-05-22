@@ -109,41 +109,6 @@ class OnboardingImportBloc
   }
 }
 
-// _handleDeriveAddress(event, emit, AddressService addressService) async {
-//   final importFormat = event.importFormat;
-//
-//   // TODO: swith on actual ENUM
-//   switch (importFormat) {
-//     // TODP
-//     case "Segwit":
-//       try {
-//         // TODO: obviously we should not be hardcoded to testnet
-//         List<Address> addresses =
-//             await addressService.deriveAddressSegwitRange(event.mnemonic, 0, 7);
-//
-//         print(addresses);
-//
-//         emit(Success(addresses: addresses));
-//       } catch (e) {
-//         print(e.toString());
-//
-//         emit(Error(message: e.toString()));
-//       }
-//
-//     case "Freewallet-bech32":
-//       try {
-//         List<Address> addresses = await addressService
-//             .deriveAddressFreewalletBech32Range(event.mnemonic, 0, 7);
-//
-//         emit(Success(addresses: addresses));
-//       } catch (e) {
-//         print(e.toString());
-//
-//         emit(Error(message: e.toString()));
-//       }
-//   }
-// }
-
 _deriveAddress(
     String mnemonic, String importFormat, AddressService addressService) async {
   // TODO: swith on actual ENUM

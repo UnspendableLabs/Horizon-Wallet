@@ -219,10 +219,11 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'UNIQUE NOT NULL');
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _publicKeyMeta =
+      const VerificationMeta('publicKey');
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+  late final GeneratedColumn<String> publicKey = GeneratedColumn<String>(
+      'public_key', aliasedName, false,
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
       type: DriftSqlType.string,
@@ -236,7 +237,7 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
       type: DriftSqlType.string,
       requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [uuid, accountUuid, name, wif];
+  List<GeneratedColumn> get $columns => [uuid, accountUuid, publicKey, wif];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -261,11 +262,11 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
     } else if (isInserting) {
       context.missing(_accountUuidMeta);
     }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    if (data.containsKey('public_key')) {
+      context.handle(_publicKeyMeta,
+          publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta));
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_publicKeyMeta);
     }
     if (data.containsKey('wif')) {
       context.handle(
@@ -286,8 +287,8 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       accountUuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}account_uuid'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      publicKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}public_key'])!,
       wif: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}wif'])!,
     );
@@ -302,19 +303,19 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
 class Wallet extends DataClass implements Insertable<Wallet> {
   final String uuid;
   final String accountUuid;
-  final String name;
+  final String publicKey;
   final String wif;
   const Wallet(
       {required this.uuid,
       required this.accountUuid,
-      required this.name,
+      required this.publicKey,
       required this.wif});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['uuid'] = Variable<String>(uuid);
     map['account_uuid'] = Variable<String>(accountUuid);
-    map['name'] = Variable<String>(name);
+    map['public_key'] = Variable<String>(publicKey);
     map['wif'] = Variable<String>(wif);
     return map;
   }
@@ -323,7 +324,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return WalletsCompanion(
       uuid: Value(uuid),
       accountUuid: Value(accountUuid),
-      name: Value(name),
+      publicKey: Value(publicKey),
       wif: Value(wif),
     );
   }
@@ -334,7 +335,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return Wallet(
       uuid: serializer.fromJson<String>(json['uuid']),
       accountUuid: serializer.fromJson<String>(json['accountUuid']),
-      name: serializer.fromJson<String>(json['name']),
+      publicKey: serializer.fromJson<String>(json['publicKey']),
       wif: serializer.fromJson<String>(json['wif']),
     );
   }
@@ -344,17 +345,20 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
       'accountUuid': serializer.toJson<String>(accountUuid),
-      'name': serializer.toJson<String>(name),
+      'publicKey': serializer.toJson<String>(publicKey),
       'wif': serializer.toJson<String>(wif),
     };
   }
 
   Wallet copyWith(
-          {String? uuid, String? accountUuid, String? name, String? wif}) =>
+          {String? uuid,
+          String? accountUuid,
+          String? publicKey,
+          String? wif}) =>
       Wallet(
         uuid: uuid ?? this.uuid,
         accountUuid: accountUuid ?? this.accountUuid,
-        name: name ?? this.name,
+        publicKey: publicKey ?? this.publicKey,
         wif: wif ?? this.wif,
       );
   @override
@@ -362,58 +366,58 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return (StringBuffer('Wallet(')
           ..write('uuid: $uuid, ')
           ..write('accountUuid: $accountUuid, ')
-          ..write('name: $name, ')
+          ..write('publicKey: $publicKey, ')
           ..write('wif: $wif')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uuid, accountUuid, name, wif);
+  int get hashCode => Object.hash(uuid, accountUuid, publicKey, wif);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Wallet &&
           other.uuid == this.uuid &&
           other.accountUuid == this.accountUuid &&
-          other.name == this.name &&
+          other.publicKey == this.publicKey &&
           other.wif == this.wif);
 }
 
 class WalletsCompanion extends UpdateCompanion<Wallet> {
   final Value<String> uuid;
   final Value<String> accountUuid;
-  final Value<String> name;
+  final Value<String> publicKey;
   final Value<String> wif;
   final Value<int> rowid;
   const WalletsCompanion({
     this.uuid = const Value.absent(),
     this.accountUuid = const Value.absent(),
-    this.name = const Value.absent(),
+    this.publicKey = const Value.absent(),
     this.wif = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WalletsCompanion.insert({
     required String uuid,
     required String accountUuid,
-    required String name,
+    required String publicKey,
     required String wif,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         accountUuid = Value(accountUuid),
-        name = Value(name),
+        publicKey = Value(publicKey),
         wif = Value(wif);
   static Insertable<Wallet> custom({
     Expression<String>? uuid,
     Expression<String>? accountUuid,
-    Expression<String>? name,
+    Expression<String>? publicKey,
     Expression<String>? wif,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
       if (accountUuid != null) 'account_uuid': accountUuid,
-      if (name != null) 'name': name,
+      if (publicKey != null) 'public_key': publicKey,
       if (wif != null) 'wif': wif,
       if (rowid != null) 'rowid': rowid,
     });
@@ -422,13 +426,13 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
   WalletsCompanion copyWith(
       {Value<String>? uuid,
       Value<String>? accountUuid,
-      Value<String>? name,
+      Value<String>? publicKey,
       Value<String>? wif,
       Value<int>? rowid}) {
     return WalletsCompanion(
       uuid: uuid ?? this.uuid,
       accountUuid: accountUuid ?? this.accountUuid,
-      name: name ?? this.name,
+      publicKey: publicKey ?? this.publicKey,
       wif: wif ?? this.wif,
       rowid: rowid ?? this.rowid,
     );
@@ -443,8 +447,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     if (accountUuid.present) {
       map['account_uuid'] = Variable<String>(accountUuid.value);
     }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
+    if (publicKey.present) {
+      map['public_key'] = Variable<String>(publicKey.value);
     }
     if (wif.present) {
       map['wif'] = Variable<String>(wif.value);
@@ -460,7 +464,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     return (StringBuffer('WalletsCompanion(')
           ..write('uuid: $uuid, ')
           ..write('accountUuid: $accountUuid, ')
-          ..write('name: $name, ')
+          ..write('publicKey: $publicKey, ')
           ..write('wif: $wif, ')
           ..write('rowid: $rowid')
           ..write(')'))
