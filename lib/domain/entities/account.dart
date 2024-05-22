@@ -5,6 +5,6 @@ class Account {
 
   Account({
     required this.uuid,
-    required this.defaultWalletUUID});
+     this.defaultWalletUUID});
 
 }

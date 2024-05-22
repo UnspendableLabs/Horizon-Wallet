@@ -1,5 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:uniparty/common/uuid.dart';
+import 'package:uniparty/domain/entities/account.dart' as entity;
+import 'package:uniparty/domain/repositories/account_repository.dart';
 
 import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
@@ -11,6 +14,8 @@ import 'package:uniparty/common/constants.dart' as c;
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final addressService = GetIt.I<AddressService>();
+    final accountRepository = GetIt.I<AccountRepository>();
+
   OnboardingImportBloc() : super(OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
       bool validMnemonic = true;
@@ -67,7 +72,7 @@ class OnboardingImportBloc
           isCheckedMap: nextMap, importState: ImportStateNotAsked()));
     });
 
-    on<ImportAddresses>((event, emit) {
+    on<ImportAddresses>((event, emit) async{
       // check if there are any address checked
       bool hasChecked = state.isCheckedMap.values.any((a) => a);
 
@@ -84,12 +89,17 @@ class OnboardingImportBloc
             .toList();
 
         // create user account
-     
+        String accountUuid = uuid.v4();
+        entity.Account newAccount = entity.Account(uuid: accountUuid);
+        await accountRepository.insert(newAccount);
+
+        entity.Account? account = await accountRepository.getAccount(accountUuid);
+
+        print('ACCOUNT: $account');
+
         // derive wallet from seed and save wif and public key, etc with user account
 
         // dervice keys for each address at path with wallet_id
-
-
 
         print(addresses);
 
@@ -98,41 +108,6 @@ class OnboardingImportBloc
    });
   }
 }
-
-// _handleDeriveAddress(event, emit, AddressService addressService) async {
-//   final importFormat = event.importFormat;
-//
-//   // TODO: swith on actual ENUM
-//   switch (importFormat) {
-//     // TODP
-//     case "Segwit":
-//       try {
-//         // TODO: obviously we should not be hardcoded to testnet
-//         List<Address> addresses =
-//             await addressService.deriveAddressSegwitRange(event.mnemonic, 0, 7);
-//
-//         print(addresses);
-//
-//         emit(Success(addresses: addresses));
-//       } catch (e) {
-//         print(e.toString());
-//
-//         emit(Error(message: e.toString()));
-//       }
-//
-//     case "Freewallet-bech32":
-//       try {
-//         List<Address> addresses = await addressService
-//             .deriveAddressFreewalletBech32Range(event.mnemonic, 0, 7);
-//
-//         emit(Success(addresses: addresses));
-//       } catch (e) {
-//         print(e.toString());
-//
-//         emit(Error(message: e.toString()));
-//       }
-//   }
-// }
 
 _deriveAddress(
     String mnemonic, String importFormat, AddressService addressService) async {
