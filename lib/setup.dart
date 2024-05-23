@@ -25,33 +25,40 @@ import 'package:uniparty/services/seed_ops_service.dart';
 import 'package:uniparty/domain/services/encryption_service.dart';
 import 'package:uniparty/data/services/encryption_service_impl.dart';
 
+import 'package:uniparty/domain/services/mnemonic_service.dart';
+import 'package:uniparty/data/services/mnemonic_service_impl.dart';
+
 final database = DB();
 
 Future<void> setup() async {
-  GetIt.I.registerSingleton<BitcoindService>(
+
+  GetIt injector = GetIt.I;
+
+  injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl());
-  GetIt.I.registerSingleton<BlockCypherService>(BlockCypherImpl(
+  injector.registerSingleton<BlockCypherService>(BlockCypherImpl(
     url: dotenv.env['BLOCKCYPHER_URL']!,
   ));
 
-  GetIt.I.registerSingleton<KeyValueService>(SecureKeyValueImpl());
-  GetIt.I.registerSingleton<bip39.Bip39Service>(bip39.Bip39JSService());
-  GetIt.I.registerSingleton<bech32.Bech32Service>(bech32.Bech32JSService());
-  GetIt.I.registerSingleton<ecpair.ECPairService>(ecpair.ECPairJSService());
-  GetIt.I.registerLazySingleton<SeedOpsService>(() => SeedOpsService());
-  GetIt.I.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
+  injector.registerSingleton<KeyValueService>(SecureKeyValueImpl());
+  injector.registerSingleton<bip39.Bip39Service>(bip39.Bip39JSService());
+  injector.registerSingleton<bech32.Bech32Service>(bech32.Bech32JSService());
+  injector.registerSingleton<ecpair.ECPairService>(ecpair.ECPairJSService());
+  injector.registerLazySingleton<SeedOpsService>(() => SeedOpsService());
+  injector.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
 
-  GetIt.I.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
+  injector.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
 
-  GetIt.I.registerSingleton<addy_service.AddressService>(
+  injector.registerSingleton<addy_service.AddressService>(
       addy_service_impl.AddressServiceImpl());
 
-  GetIt.I.registerSingleton<EncryptionService>(EncryptionServiceImpl());
+  injector.registerSingleton<EncryptionService>(EncryptionServiceImpl());
+  injector.registerSingleton<MnemonicService>(MnemonicServiceImpl(injector()));
 
-  GetIt.I.registerSingleton<WalletService>(WalletServiceImpl(GetIt.I()));
+  injector.registerSingleton<WalletService>(WalletServiceImpl(injector()));
 
-  GetIt.I.registerSingleton<AccountRepository>(AccountRepositoryImpl(database));
-  GetIt.I.registerSingleton<WalletRepository>(WalletRepositoryImpl(database));
-  GetIt.I.registerSingleton<AddressRepository>(AddressRepositoryImpl(database));
+  injector.registerSingleton<AccountRepository>(AccountRepositoryImpl(database));
+  injector.registerSingleton<WalletRepository>(WalletRepositoryImpl(database));
+  injector.registerSingleton<AddressRepository>(AddressRepositoryImpl(database));
 
 }

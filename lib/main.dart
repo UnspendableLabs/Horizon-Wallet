@@ -27,7 +27,7 @@ final GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteB
     path: "/onboarding/create",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: const OnboardingCreateScreen(),
+        child: OnboardingCreateScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
