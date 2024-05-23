@@ -93,7 +93,7 @@ class OnboardingImportBloc
 
 
         emit(state.copyWith(importState: ImportStateLoading()));
-        // TODO: show loading inditactor 
+        // TODO: show loading inditactor
 
         Wallet wallet;
         switch (state.importFormat) {
@@ -117,18 +117,15 @@ class OnboardingImportBloc
           address.walletUuid = wallet.uuid;
         }
 
-    
-        await accountRepository.insert(account);
-        await walletRepository.insert(wallet);
-        await addressRepository.insertMany(addresses);
 
-       // EMIT Success or failure
-       // ? on success, should we redirect inside the bloc?  
-       // create a new page in main 
-       // fetch addresses render in a dropdown
-
-
-
+        try {
+            await accountRepository.insert(account);
+            await walletRepository.insert(wallet);
+            await addressRepository.insertMany(addresses);
+        } catch (e) {
+          emit(state.copyWith(importState: ImportStateError(message: e.toString())));
+        }
+        emit(state.copyWith(importState: ImportStateSuccess()));
       }
     });
   }

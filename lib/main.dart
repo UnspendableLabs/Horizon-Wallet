@@ -1,48 +1,49 @@
+import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:uniparty/app_router.dart';
-import 'package:uniparty/setup.dart';
+import 'package:go_router/go_router.dart';
+import 'package:uniparty/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:uniparty/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:uniparty/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
-import 'package:drift_db_viewer/drift_db_viewer.dart';
+import 'package:uniparty/setup.dart';
 
-final GoRouter router =
-    GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
+final GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
   GoRoute(
     path: "/db",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
         child: DriftDbViewer(database),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            child),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
     path: "/onboarding",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
         child: const OnboardingScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            child),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
     path: "/onboarding/create",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
         child: const OnboardingCreateScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            child),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
     path: "/onboarding/import",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
         child: OnboardingImportPage(), // TODO: be consistent with screen / page
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            child),
-  )
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+  ),
+  GoRoute(
+    path: "/dashboard",
+    pageBuilder: (context, state) => CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: DashboardPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+  ),
 ]);
 
 void main() async {
