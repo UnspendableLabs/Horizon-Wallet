@@ -1,4 +1,5 @@
 import 'package:uniparty/domain/services/wallet_service.dart';
+import 'package:uniparty/domain/services/encryption_service.dart';
 import 'package:uniparty/domain/entities/wallet.dart' as w;
 import 'package:uniparty/domain/entities/seed.dart';
 import 'package:uniparty/js/bip32.dart' as bip32;
@@ -9,9 +10,13 @@ import 'package:uniparty/js/buffer.dart';
 import 'dart:js_interop';
 
 class WalletServiceImpl implements WalletService {
+  EncryptionService encryptionService;
+
+  WalletServiceImpl(this.encryptionService);
+
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
-  Future<w.Wallet> deriveRoot(String mnemonic) async {
+  Future<w.Wallet> deriveRoot(String mnemonic, String password) async {
     // TODO: don't hardcode testnet
     final network = ecpair.testnet;
 
@@ -24,26 +29,27 @@ class WalletServiceImpl implements WalletService {
 
     String wif = root.toWIF();
 
-    String publicKeyBase58 = root.neutered().toBase58();
-    
-    return w.Wallet(wif: wif, publicKey: publicKeyBase58 );
+    String encryptedWif = await encryptionService.encrypt(wif, password);
 
+    String publicKeyBase58 = root.neutered().toBase58();
+
+    return w.Wallet(wif: encryptedWif, publicKey: publicKeyBase58);
   }
 
-  Future<w.Wallet> deriveRootFreewallet(String mnemonic) async {
-
+  Future<w.Wallet> deriveRootFreewallet(
+      String mnemonic, String password) async {
     Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
 
     Buffer buffer = Buffer.from(seed.bytes.toJS);
 
     bip32.BIP32Interface root = _bip32.fromSeed(buffer, ecpair.testnet);
 
-
     String wif = root.toWIF();
+
+    String encryptedWif = await encryptionService.encrypt(wif, password);
 
     String publicKeyBase58 = root.neutered().toBase58();
 
-    return w.Wallet(wif: wif, publicKey: publicKeyBase58 );
-
+    return w.Wallet(wif: encryptedWif, publicKey: publicKeyBase58);
   }
 }

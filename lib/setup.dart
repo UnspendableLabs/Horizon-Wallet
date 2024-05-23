@@ -1,7 +1,8 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uniparty/counterparty_api/counterparty_api.dart';
-import 'package:uniparty/data/services/address_service_impl.dart' as addy_service_impl;
+import 'package:uniparty/data/services/address_service_impl.dart'
+    as addy_service_impl;
 import 'package:uniparty/data/sources/local/db.dart';
 import 'package:uniparty/data/sources/repositories/account_repository_impl.dart';
 import 'package:uniparty/domain/repositories/account_repository.dart';
@@ -21,10 +22,14 @@ import 'package:uniparty/services/ecpair.dart' as ecpair;
 import 'package:uniparty/services/key_value_store_service.dart';
 import 'package:uniparty/services/seed_ops_service.dart';
 
+import 'package:uniparty/domain/services/encryption_service.dart';
+import 'package:uniparty/data/services/encryption_service_impl.dart';
+
 final database = DB();
 
 Future<void> setup() async {
-  GetIt.I.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
+  GetIt.I.registerSingleton<BitcoindService>(
+      BitcoindServiceCounterpartyProxyImpl());
   GetIt.I.registerSingleton<BlockCypherService>(BlockCypherImpl(
     url: dotenv.env['BLOCKCYPHER_URL']!,
   ));
@@ -38,15 +43,15 @@ Future<void> setup() async {
 
   GetIt.I.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
 
-  GetIt.I.registerSingleton<addy_service.AddressService>(addy_service_impl.AddressServiceImpl());
-  GetIt.I.registerSingleton<WalletService>(WalletServiceImpl());
+  GetIt.I.registerSingleton<addy_service.AddressService>(
+      addy_service_impl.AddressServiceImpl());
 
+  GetIt.I.registerSingleton<EncryptionService>(EncryptionServiceImpl());
 
+  GetIt.I.registerSingleton<WalletService>(WalletServiceImpl(GetIt.I()));
 
   GetIt.I.registerSingleton<AccountRepository>(AccountRepositoryImpl(database));
   GetIt.I.registerSingleton<WalletRepository>(WalletRepositoryImpl(database));
   GetIt.I.registerSingleton<AddressRepository>(AddressRepositoryImpl(database));
-
-
 
 }

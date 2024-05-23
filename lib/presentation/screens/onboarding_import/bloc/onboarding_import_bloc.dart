@@ -17,7 +17,6 @@ import 'package:uniparty/common/constants.dart' as c;
 
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
-
   final addressService = GetIt.I<AddressService>();
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
@@ -25,6 +24,18 @@ class OnboardingImportBloc
   final walletService = GetIt.I<WalletService>();
 
   OnboardingImportBloc() : super(OnboardingImportState()) {
+    on<PasswordSubmit>((event, emit) {
+      if (event.password != event.passwordConfirmation) {
+        emit(state.copyWith(passwordError: "Passwords do not match"));
+      } else if (event.password.length != 32) {
+        emit(state.copyWith(
+            passwordError:
+                "Password must be 32 characters.  Don't worry, we'll change this :)"));
+      } else {
+        emit(state.copyWith(password: event.password, passwordError: null));
+      }
+    });
+
     on<MnemonicChanged>((event, emit) async {
       bool validMnemonic = true;
       if (validMnemonic) {
@@ -90,17 +101,17 @@ class OnboardingImportBloc
                 ImportStateError(message: "Must select at least one address")));
         return;
       } else {
-
-
         emit(state.copyWith(importState: ImportStateLoading()));
         // TODO: show loading inditactor
 
         Wallet wallet;
         switch (state.importFormat) {
           case ImportFormat.segwit:
-            wallet = await walletService.deriveRoot(state.mnemonic);
+            wallet =
+                await walletService.deriveRoot(state.mnemonic, state.password!);
           case ImportFormat.freewalletBech32:
-            wallet = await walletService.deriveRootFreewallet(state.mnemonic);
+            wallet = await walletService.deriveRootFreewallet(
+                state.mnemonic, state.password!);
           default:
             throw UnimplementedError();
         }
@@ -117,13 +128,13 @@ class OnboardingImportBloc
           address.walletUuid = wallet.uuid;
         }
 
-
         try {
-            await accountRepository.insert(account);
-            await walletRepository.insert(wallet);
-            await addressRepository.insertMany(addresses);
+          await accountRepository.insert(account);
+          await walletRepository.insert(wallet);
+          await addressRepository.insertMany(addresses);
         } catch (e) {
-          emit(state.copyWith(importState: ImportStateError(message: e.toString())));
+          emit(state.copyWith(
+              importState: ImportStateError(message: e.toString())));
         }
         emit(state.copyWith(importState: ImportStateSuccess()));
       }

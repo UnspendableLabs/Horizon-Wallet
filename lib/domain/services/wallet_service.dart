@@ -1,8 +1,14 @@
 
 import 'package:uniparty/domain/entities/wallet.dart';
+import 'package:uniparty/domain/services/encryption_service.dart';
 
 // TODO: define mnemonic type
 abstract class WalletService {
-  Future<Wallet> deriveRoot(String mnemonic);
-  Future<Wallet> deriveRootFreewallet(String mnemonic);
+
+  EncryptionService encryptionService;
+
+  WalletService(this.encryptionService);
+
+  Future<Wallet> deriveRoot(String mnemonic, String password);
+  Future<Wallet> deriveRootFreewallet(String mnemonic, String password);
 }

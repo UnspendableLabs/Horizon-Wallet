@@ -1,7 +1,12 @@
-
 import 'package:uniparty/domain/entities/address.dart';
 
 abstract class OnboardingImportEvent {}
+
+class PasswordSubmit extends OnboardingImportEvent {
+  final String password;
+  final String passwordConfirmation;
+  PasswordSubmit({required this.password, required this.passwordConfirmation});
+}
 
 class MnemonicChanged extends OnboardingImportEvent {
   final String mnemonic;
@@ -20,4 +25,3 @@ class AddressMapChanged extends OnboardingImportEvent {
 }
 
 class ImportAddresses extends OnboardingImportEvent {}
-

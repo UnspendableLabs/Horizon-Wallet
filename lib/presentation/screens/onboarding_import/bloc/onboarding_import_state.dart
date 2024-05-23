@@ -16,11 +16,11 @@ enum ImportFormat {
   final String description;
 }
 
-
-
 @freezed
-class OnboardingImportState  with _$OnboardingImportState { 
+class OnboardingImportState with _$OnboardingImportState {
   const factory OnboardingImportState({
+    String? password,
+    String? passwordError,
     @Default("") String mnemonic,
     @Default(ImportFormat.segwit) importFormat,
     @Default(GetAddressesStateNotAsked) getAddressesState,
@@ -52,7 +52,7 @@ class GetAddressesStateError extends GetAddressesState {
 
 abstract class ImportState {}
 
-class ImportStateNotAsked  extends ImportState {}
+class ImportStateNotAsked extends ImportState {}
 
 class ImportStateLoading extends ImportState {}
 
@@ -62,4 +62,3 @@ class ImportStateError extends ImportState {
   final String message;
   ImportStateError({required this.message});
 }
-
