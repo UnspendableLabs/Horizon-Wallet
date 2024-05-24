@@ -17,6 +17,8 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$DashboardState {
   dynamic get addressState => throw _privateConstructorUsedError;
+  dynamic get accountState => throw _privateConstructorUsedError;
+  dynamic get walletState => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $DashboardStateCopyWith<DashboardState> get copyWith =>
@@ -29,7 +31,7 @@ abstract class $DashboardStateCopyWith<$Res> {
           DashboardState value, $Res Function(DashboardState) then) =
       _$DashboardStateCopyWithImpl<$Res, DashboardState>;
   @useResult
-  $Res call({dynamic addressState});
+  $Res call({dynamic addressState, dynamic accountState, dynamic walletState});
 }
 
 /// @nodoc
@@ -46,11 +48,21 @@ class _$DashboardStateCopyWithImpl<$Res, $Val extends DashboardState>
   @override
   $Res call({
     Object? addressState = freezed,
+    Object? accountState = freezed,
+    Object? walletState = freezed,
   }) {
     return _then(_value.copyWith(
       addressState: freezed == addressState
           ? _value.addressState
           : addressState // ignore: cast_nullable_to_non_nullable
+              as dynamic,
+      accountState: freezed == accountState
+          ? _value.accountState
+          : accountState // ignore: cast_nullable_to_non_nullable
+              as dynamic,
+      walletState: freezed == walletState
+          ? _value.walletState
+          : walletState // ignore: cast_nullable_to_non_nullable
               as dynamic,
     ) as $Val);
   }
@@ -64,7 +76,7 @@ abstract class _$$DashboardStateImplCopyWith<$Res>
       __$$DashboardStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({dynamic addressState});
+  $Res call({dynamic addressState, dynamic accountState, dynamic walletState});
 }
 
 /// @nodoc
@@ -79,10 +91,15 @@ class __$$DashboardStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? addressState = freezed,
+    Object? accountState = freezed,
+    Object? walletState = freezed,
   }) {
     return _then(_$DashboardStateImpl(
       addressState:
           freezed == addressState ? _value.addressState! : addressState,
+      accountState:
+          freezed == accountState ? _value.accountState! : accountState,
+      walletState: freezed == walletState ? _value.walletState! : walletState,
     ));
   }
 }
@@ -90,15 +107,24 @@ class __$$DashboardStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$DashboardStateImpl implements _DashboardState {
-  const _$DashboardStateImpl({this.addressState = AddressStateInitial});
+  const _$DashboardStateImpl(
+      {this.addressState = AddressStateInitial,
+      this.accountState = AccountStateInitial,
+      this.walletState = WalletStateInitial});
 
   @override
   @JsonKey()
   final dynamic addressState;
+  @override
+  @JsonKey()
+  final dynamic accountState;
+  @override
+  @JsonKey()
+  final dynamic walletState;
 
   @override
   String toString() {
-    return 'DashboardState(addressState: $addressState)';
+    return 'DashboardState(addressState: $addressState, accountState: $accountState, walletState: $walletState)';
   }
 
   @override
@@ -107,12 +133,19 @@ class _$DashboardStateImpl implements _DashboardState {
         (other.runtimeType == runtimeType &&
             other is _$DashboardStateImpl &&
             const DeepCollectionEquality()
-                .equals(other.addressState, addressState));
+                .equals(other.addressState, addressState) &&
+            const DeepCollectionEquality()
+                .equals(other.accountState, accountState) &&
+            const DeepCollectionEquality()
+                .equals(other.walletState, walletState));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(addressState));
+      runtimeType,
+      const DeepCollectionEquality().hash(addressState),
+      const DeepCollectionEquality().hash(accountState),
+      const DeepCollectionEquality().hash(walletState));
 
   @JsonKey(ignore: true)
   @override
@@ -123,11 +156,17 @@ class _$DashboardStateImpl implements _DashboardState {
 }
 
 abstract class _DashboardState implements DashboardState {
-  const factory _DashboardState({final dynamic addressState}) =
-      _$DashboardStateImpl;
+  const factory _DashboardState(
+      {final dynamic addressState,
+      final dynamic accountState,
+      final dynamic walletState}) = _$DashboardStateImpl;
 
   @override
   dynamic get addressState;
+  @override
+  dynamic get accountState;
+  @override
+  dynamic get walletState;
   @override
   @JsonKey(ignore: true)
   _$$DashboardStateImplCopyWith<_$DashboardStateImpl> get copyWith =>

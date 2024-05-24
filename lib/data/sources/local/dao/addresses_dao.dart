@@ -1,8 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:uniparty/common/uuid.dart';
+import 'package:uniparty/data/models/address.dart';
 import 'package:uniparty/data/sources/local/db.dart';
 import 'package:uniparty/data/sources/local/tables/addresses_table.dart';
-import 'package:uniparty/data/models/address.dart';
 
 part 'addresses_dao.g.dart';
 
@@ -11,6 +10,9 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
   AddressesDao(super.db);
 
   Future<List<Address>> getAllAddresses() => select(addresses).get();
+  Future<List<Address>> getAllAddressesByWalletUuid(String walletUuid) =>
+      (select(addresses)..where((tbl) => tbl.walletUuid.equals(walletUuid))).get();
+
   // Future<AddressModel?> getAddressByUuid(String uuid) => (select(addresses)..where((tbl) => tbl.uuid.equals(uuid))).getSingle();
   //
   // Stream<AddressModel?> watchAddressByUuid(String uuid) =>
@@ -26,10 +28,8 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
     });
   }
 
-  Future<bool> updateAddress(Insertable<AddressModel> address) =>
-      update(addresses).replace(address);
-  Future<int> deleteAddress(Insertable<AddressModel> address) =>
-      delete(addresses).delete(address);
+  Future<bool> updateAddress(Insertable<AddressModel> address) => update(addresses).replace(address);
+  Future<int> deleteAddress(Insertable<AddressModel> address) => delete(addresses).delete(address);
 }
 
 // import 'package:floor/floor.dart';

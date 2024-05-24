@@ -1,12 +1,8 @@
-import 'package:drift/drift.dart';
-
 import 'package:uniparty/common/uuid.dart';
-
+import "package:uniparty/data/models/account.dart";
 import "package:uniparty/data/sources/local/dao/accounts_dao.dart";
 import "package:uniparty/data/sources/local/db.dart" as local;
 import "package:uniparty/domain/entities/account.dart" as entity;
-import "package:uniparty/domain/entities/wallet.dart";
-import "package:uniparty/domain/entities/address.dart";
 import "package:uniparty/domain/repositories/account_repository.dart";
 
 class AccountRepositoryImpl implements AccountRepository {
@@ -17,13 +13,12 @@ class AccountRepositoryImpl implements AccountRepository {
 
   @override
   Future<void> insert(entity.Account account) async {
-    await _accountDao
-        .insertAccount(local.Account(uuid: account.uuid ?? uuid.v4()));
+    await _accountDao.insertAccount(AccountModel(uuid: account.uuid ?? uuid.v4()));
   }
 
   @override
   Future<entity.Account?> getAccount(String uuid) async {
-    local.Account? accountLocal = await _accountDao.getAccountByUuid(uuid);
+    AccountModel? accountLocal = await _accountDao.getAccountByUuid(uuid);
     if (accountLocal == null) {
       return null;
     }
@@ -33,6 +28,16 @@ class AccountRepositoryImpl implements AccountRepository {
     );
   }
 
+  @override
+  Future<entity.Account?> getCurrentAccount() async {
+    // TODO: how to mark current account?
+    AccountModel? account = await _accountDao.getCurrentAccount();
+    return entity.Account(
+      uuid: account?.uuid,
+    );
+    // return null;
+  }
+
   // @override
   // Future<void> initializeWithWalletAndAddresses(
   //     Wallet wallet, List<Address> addresses) async {
@@ -40,13 +45,13 @@ class AccountRepositoryImpl implements AccountRepository {
   //     await transaction(() async {
   //
   //
-  //         await _accountDao.insertAccount(local.Account(uuid: uuid.v4()));
+  //         await _accountDao.insertAccount(AccountModel(uuid: uuid.v4()));
   //
   //
   //     });
-  //     
-  //           
-  //     
+  //
+  //
+  //
   //
   //
   //

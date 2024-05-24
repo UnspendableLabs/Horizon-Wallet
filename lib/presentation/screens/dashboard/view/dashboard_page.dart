@@ -22,7 +22,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
   @override
   void initState() {
     super.initState();
-    context.read<DashboardBloc>().add(GetAddresses());
+    context.read<DashboardBloc>().add(SetAccountAndWallet());
   }
 
   @override
@@ -36,9 +36,15 @@ class _DashboardPage_State extends State<_DashboardPage_> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                state.addressState is AddressStateSuccess ? Text("Dashboard") : Text(""),
-                state.addressState is AddressStateLoading ? CircularProgressIndicator() : Text(""),
-                state.addressState is AddressStateError ? Text("Error: ${state.addressState.error}") : Text(""),
+                state.accountState is AccountStateSuccess ? Text("Dashboard") : Text(""),
+                state.accountState is AccountStateLoading ? CircularProgressIndicator() : Text(""),
+                state.accountState is AccountStateError ? Text("Error: ${state.accountState.error}") : Text(""),
+                state.walletState is WalletStateSuccess ? Text("Wallet: ${state.walletState.wallet.uuid}") : Text(""),
+                state.walletState is WalletStateLoading ? CircularProgressIndicator() : Text(""),
+                state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : Text(""),
+                //   state.addressState is AddressStateSuccess ? Text("Dashboard") : Text(""),
+                //   state.addressState is AddressStateLoading ? CircularProgressIndicator() : Text(""),
+                //   state.addressState is AddressStateError ? Text("Error: ${state.addressState.error}") : Text(""),
               ],
             )));
       },
