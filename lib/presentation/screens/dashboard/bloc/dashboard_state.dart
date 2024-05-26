@@ -50,8 +50,9 @@ class WalletStateInitial extends WalletState {}
 class WalletStateLoading extends WalletState {}
 
 class WalletStateSuccess extends WalletState {
-  final Wallet wallet;
-  WalletStateSuccess({required this.wallet});
+  final Wallet currentWallet;
+  final List<Wallet> wallets;
+  WalletStateSuccess({required this.wallets, required this.currentWallet});
 }
 
 class WalletStateError extends WalletState {
