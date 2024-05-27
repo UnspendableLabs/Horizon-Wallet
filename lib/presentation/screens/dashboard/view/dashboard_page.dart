@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
 import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_event.dart';
 import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_state.dart';
-import 'package:uniparty/presentation/screens/dashboard/view/address_display.dart';
+import 'package:uniparty/presentation/screens/dashboard/view/main_address_display.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -60,17 +60,17 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                               .toList())
                       : const Text(""),
                   state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(""),
-                  state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
+                  state.walletState is WalletStateError
+                      ?
+                            Text("Error: ${state.walletState.error}")
+                      : const Text(""),
                 ],
               ),
             ),
-            Column(
-              children: [
-                state.walletState is WalletStateSuccess ? AddressDisplay() : const Text(''),
-                state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(''),
-                state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
-              ], // Main content area
-            ),
+            state.walletState is WalletStateSuccess ? AddressDisplay() : const Text(''),
+            state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(''),
+            state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
+            state.walletState is WalletStateInitial ? const Text("CENTER IT") : const Text(""),
           ],
         ),
       );
