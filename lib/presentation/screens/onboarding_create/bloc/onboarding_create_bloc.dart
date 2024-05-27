@@ -1,21 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-
 import 'package:uniparty/common/uuid.dart';
 import 'package:uniparty/domain/entities/account.dart';
-import 'package:uniparty/domain/entities/wallet.dart';
 import 'package:uniparty/domain/entities/address.dart';
-
-import 'package:uniparty/domain/services/mnemonic_service.dart';
-import 'package:uniparty/domain/services/address_service.dart';
-import 'package:uniparty/domain/services/wallet_service.dart';
-
+import 'package:uniparty/domain/entities/wallet.dart';
 import 'package:uniparty/domain/repositories/account_repository.dart';
 import 'package:uniparty/domain/repositories/address_repository.dart';
 import 'package:uniparty/domain/repositories/wallet_repository.dart';
-
+import 'package:uniparty/domain/services/address_service.dart';
+import 'package:uniparty/domain/services/mnemonic_service.dart';
+import 'package:uniparty/domain/services/wallet_service.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
+import 'package:uniparty/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
@@ -67,10 +64,11 @@ class OnboardingCreateBloc
           Address address = await addressService.deriveAddressSegwit(
               state.mnemonicState.mnemonic, 0);
           address.walletUuid = wallet.uuid;
+          wallet.name = ImportFormat.segwit.description;
+
 
           await accountRepository.insert(account);
           await walletRepository.insert(wallet);
-          // insert not implemented at the moment
           await addressRepository.insertMany([address]);
 
           emit(state.copyWith(createState: CreateStateSuccess()));

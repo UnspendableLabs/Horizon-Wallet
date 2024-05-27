@@ -1,19 +1,21 @@
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uniparty/data/sources/local/db_manager.dart';
 import 'package:uniparty/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:uniparty/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:uniparty/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:uniparty/setup.dart';
 
-final GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
+GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
   GoRoute(
     path: "/db",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: DriftDbViewer(database),
+        child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
@@ -51,11 +53,11 @@ void main() async {
 
   await setup();
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({
+  MyApp({
     super.key,
   });
 
@@ -64,6 +66,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: router,
+      theme: ThemeData(
+        fontFamily: 'monospace',
+        primaryColor: Colors.blueAccent,
+      ),
     );
 
     // const appTitle = 'Uniparty';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:go_router/go_router.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
@@ -9,9 +8,7 @@ import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_
 class OnboardingCreateScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (context) => OnboardingCreateBloc(),
-        child: const OnboardingCreatePage_());
+    return BlocProvider(create: (context) => OnboardingCreateBloc(), child: const OnboardingCreatePage_());
   }
 }
 
@@ -22,10 +19,8 @@ class OnboardingCreatePage_ extends StatefulWidget {
 }
 
 class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
+  final TextEditingController _passwordController = TextEditingController(text: "");
+  final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
 
   @override
   dispose() {
@@ -42,16 +37,14 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
           GoRouter.of(context).go('/dashboard');
         }
       },
-      child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
-          builder: (context, state) {
+      child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(builder: (context, state) {
         return Scaffold(
           appBar: AppBar(title: const Text('Uniparty')),
           body: state.password != null
               ? Mnemonic(state: state)
               : PasswordPrompt(
                   passwordController: _passwordController,
-                  passwordConfirmationController:
-                      _passwordConfirmationController,
+                  passwordConfirmationController: _passwordConfirmationController,
                   state: state,
                 ),
         );
@@ -100,9 +93,7 @@ class PasswordPrompt extends StatelessWidget {
                     labelText: 'Confirm Password',
                   ),
                 ),
-                _state.passwordError != null
-                    ? Text(_state.passwordError!)
-                    : const Text(""),
+                _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
                 SizedBox(height: 16),
                 Row(
                   children: [
@@ -111,8 +102,7 @@ class PasswordPrompt extends StatelessWidget {
                         context.read<OnboardingCreateBloc>().add(
                               PasswordSubmit(
                                 password: _passwordController.text,
-                                passwordConfirmation:
-                                    _passwordConfirmationController.text,
+                                passwordConfirmation: _passwordConfirmationController.text,
                               ),
                             );
                       },
@@ -152,7 +142,7 @@ class Mnemonic extends StatelessWidget {
                         ? SelectableText(
                             _state.mnemonicState.mnemonic,
                             style: TextStyle(
-                              fontFamily: 'monospace',
+                              // fontFamily: 'monospace',
                               fontWeight: FontWeight.bold,
                               fontSize: 32,
                             ),

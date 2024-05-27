@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
 import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_event.dart';
 import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_state.dart';
+import 'package:uniparty/presentation/screens/dashboard/view/address_display.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -27,27 +28,27 @@ class _DashboardPage_State extends State<_DashboardPage_> {
 
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   // TODO: remove. this allows us to set the state on hot reload since initState is not called on hot reload
-    //   context.read<DashboardBloc>().add(SetAccountAndWallet());
-    // });
     return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Uniparty')),
         body: Row(
           children: <Widget>[
             Container(
-              width: 200, // Fixed width for the sidebar
+              decoration: const BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                    color: Colors.grey, // Color of the border
+                    width: 1.0, // Width of the border
+                  ),
+                ),
+              ),
+              width: 300, // Fixed width for the sidebar
               child: ListView(
                 children: <Widget>[
-                  DrawerHeader(
-                    child: Text('Accounts'),
-                    margin: const EdgeInsets.only(bottom: 0),
-                    padding: const EdgeInsets.all(0.0),
-                    // decoration: BoxDecoration(),
+                  const ListTile(
+                    title: Text('Uniparty',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                    contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                   ),
-                  // state.walletState is WalletStateSuccess ? Text('Dashboard') : Text(''),
-
                   state.walletState is WalletStateSuccess
                       ? Column(
                           children: state.walletState.wallets
@@ -57,34 +58,22 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                                   autofocus: wallet.uuid == state.walletState.currentWallet.uuid,
                                   onTap: () {}))
                               .toList())
-                      : Text(""),
-                  state.walletState is WalletStateLoading ? CircularProgressIndicator() : Text(""),
-                  state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : Text(""),
+                      : const Text(""),
+                  state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(""),
+                  state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
                 ],
               ),
             ),
-            Expanded(
-              child: Center(child: Text('DASHBOARD')), // Main content area
+            Column(
+              children: [
+                state.walletState is WalletStateSuccess ? AddressDisplay() : const Text(''),
+                state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(''),
+                state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
+              ], // Main content area
             ),
           ],
         ),
       );
-    }
-
-        //  Center(
-        //     child: Column(
-        //   mainAxisAlignment: MainAxisAlignment.center,
-        //   crossAxisAlignment: CrossAxisAlignment.center,
-        //   children: [
-
-        //     state.walletState is WalletStateSuccess ? Text("Wallet: ${state.walletState.wallet.uuid}") : Text(""),
-        //     state.walletState is WalletStateLoading ? CircularProgressIndicator() : Text(""),
-        //     state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : Text(""),
-        //     //   state.addressState is AddressStateSuccess ? Text("Dashboard") : Text(""),
-        //     //   state.addressState is AddressStateLoading ? CircularProgressIndicator() : Text(""),
-        //     //   state.addressState is AddressStateError ? Text("Error: ${state.addressState.error}") : Text(""),
-        //   ],
-        // ))
-        );
+    });
   }
 }

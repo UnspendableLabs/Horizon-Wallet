@@ -21,8 +21,9 @@ class AddressStateInitial extends AddressState {}
 class AddressStateLoading extends AddressState {}
 
 class AddressStateSuccess extends AddressState {
+  final Address currentAddress;
   final List<Address> addresses;
-  AddressStateSuccess({required this.addresses});
+  AddressStateSuccess({required this.currentAddress, required this.addresses});
 }
 
 class AddressStateError extends AddressState {
