@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uniparty/data/sources/local/db_manager.dart';
-import 'package:uniparty/presentation/screens/dashboard/view/dashboard_page.dart';
-import 'package:uniparty/presentation/screens/onboarding/view/onboarding_page.dart';
-import 'package:uniparty/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
-import 'package:uniparty/setup.dart';
+import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
+import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
+import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
+import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
+import 'package:horizon/setup.dart';
 
 GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
   GoRoute(
@@ -72,7 +72,7 @@ class MyApp extends StatelessWidget {
       ),
     );
 
-    // const appTitle = 'Uniparty';
+    // const appTitle = 'Horizon';
     // fire off the initial dispatch; this will see if the seedHex and walletType are already in secure storage and set the state
     //
     //   return MaterialApp(

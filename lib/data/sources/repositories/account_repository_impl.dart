@@ -1,9 +1,9 @@
-import 'package:uniparty/common/uuid.dart';
-import "package:uniparty/data/models/account.dart";
-import "package:uniparty/data/sources/local/dao/accounts_dao.dart";
-import "package:uniparty/data/sources/local/db.dart" as local;
-import "package:uniparty/domain/entities/account.dart" as entity;
-import "package:uniparty/domain/repositories/account_repository.dart";
+import 'package:horizon/common/uuid.dart';
+import "package:horizon/data/models/account.dart";
+import "package:horizon/data/sources/local/dao/accounts_dao.dart";
+import "package:horizon/data/sources/local/db.dart" as local;
+import "package:horizon/domain/entities/account.dart" as entity;
+import "package:horizon/domain/repositories/account_repository.dart";
 
 class AccountRepositoryImpl implements AccountRepository {
   final local.DB _db;

@@ -1,12 +1,12 @@
-import 'package:uniparty/domain/services/wallet_service.dart';
-import 'package:uniparty/domain/services/encryption_service.dart';
-import 'package:uniparty/domain/entities/wallet.dart' as w;
-import 'package:uniparty/domain/entities/seed.dart';
-import 'package:uniparty/js/bip32.dart' as bip32;
-import 'package:uniparty/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:uniparty/js/bip39.dart' as bip39;
-import 'package:uniparty/js/ecpair.dart' as ecpair; // TODO move to data;
-import 'package:uniparty/js/buffer.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/entities/wallet.dart' as w;
+import 'package:horizon/domain/entities/seed.dart';
+import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/js/bip39.dart' as bip39;
+import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
+import 'package:horizon/js/buffer.dart';
 import 'dart:js_interop';
 
 class WalletServiceImpl implements WalletService {

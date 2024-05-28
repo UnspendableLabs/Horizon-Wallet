@@ -1,6 +1,6 @@
 {
-    "name": "uniparty",
-    "description": "uniparty",
+    "name": "horizon",
+    "description": "horizon",
     "version": "1.0.0",
     "content_security_policy": {
         "extension_pages": "script-src 'self' ; object-src 'self'"

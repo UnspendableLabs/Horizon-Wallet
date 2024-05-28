@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_event.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_state.dart';
-import 'package:uniparty/presentation/screens/dashboard/view/main_address_display.dart';
+import 'package:horizon/presentation/screens/dashboard/view/main_address_display.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
+import 'package:horizon/presentation/screens/dashboard/view/main_address_display.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -45,7 +46,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
               child: ListView(
                 children: <Widget>[
                   const ListTile(
-                    title: Text('Uniparty',
+                    title: Text('Horizon',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                     contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                   ),

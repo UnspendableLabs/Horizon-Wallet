@@ -1,6 +1,7 @@
-import 'package:uniparty/domain/services/mnemonic_service.dart';
-import 'package:uniparty/services/bip39.dart';
 
+
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/services/bip39.dart';
 
 class MnemonicServiceImpl implements MnemonicService {
 

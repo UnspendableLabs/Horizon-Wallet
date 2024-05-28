@@ -1,3 +1,3 @@
-import "package:uniparty/data/sources/local/db.dart";
-typedef WalletModel = Wallet;
+import "package:horizon/data/sources/local/db.dart";
 
+typedef WalletModel = Wallet;

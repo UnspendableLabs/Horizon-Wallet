@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/counterparty_api/counterparty_api.dart';
-import 'package:uniparty/counterparty_api/models/balance.dart';
-import 'package:uniparty/services/blockcypher.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/counterparty_api/counterparty_api.dart';
+import 'package:horizon/counterparty_api/models/balance.dart';
+import 'package:horizon/services/blockcypher.dart';
 
 class BalanceDisplay extends StatefulWidget {
   final String address;

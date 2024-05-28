@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:uniparty/data/models/account.dart';
-import 'package:uniparty/data/sources/local/db.dart';
-import 'package:uniparty/data/sources/local/tables/accounts_table.dart';
+import 'package:horizon/data/models/account.dart';
+import 'package:horizon/data/sources/local/db.dart';
+import 'package:horizon/data/sources/local/tables/accounts_table.dart';
 
 part 'accounts_dao.g.dart';
 
@@ -15,7 +15,7 @@ class AccountsDao extends DatabaseAccessor<DB> with _$AccountsDaoMixin {
 
   // TODO: get the actual current account
   Future<AccountModel?> getCurrentAccount() => select(accounts).getSingle();
-  
+
   Stream<AccountModel?> watchAccountByUuid(String uuid) =>
       (select(accounts)..where((tbl) => tbl.uuid.equals(uuid))).watchSingle();
   Future<int> insertAccount(AccountModel account) {

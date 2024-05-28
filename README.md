@@ -1,4 +1,4 @@
-# uniparty
+# horizon
 
 A bip39 wallet for XCP and bitcoin. Compatible with Freewallet and Counterwallet.
 

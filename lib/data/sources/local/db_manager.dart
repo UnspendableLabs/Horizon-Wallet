@@ -1,4 +1,4 @@
-import 'package:uniparty/data/sources/local/db.dart';
+import 'package:horizon/data/sources/local/db.dart';
 
 class DatabaseManager {
   static final DatabaseManager _instance = DatabaseManager._internal();

@@ -1,4 +1,4 @@
-import 'package:uniparty/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address.dart';
 
 abstract class OnboardingImportEvent {}
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_event.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 
 class AddressDisplay extends StatefulWidget {
   const AddressDisplay({super.key});

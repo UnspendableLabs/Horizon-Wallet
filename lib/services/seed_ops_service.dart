@@ -1,22 +1,21 @@
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/services/bip39.dart' as bip39;
-import 'package:uniparty/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic_word_list.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/seed.dart';
+import 'package:horizon/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic_word_list.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/seed.dart';
+import 'package:horizon/services/bip39.dart' as bip39;
 
 const invalidLengthError = 'seed phrase contains the wrong number of letters';
 const invalidWordsError = 'some words are not in the word list';
 const invalidNullPhrase = 'seed phrase may not be null';
 
 class SeedOpsService {
-  String? validateMnemonic(
-      String? mnemonic, WalletType recoveryWallet) {
+  String? validateMnemonic(String? mnemonic, WalletType recoveryWallet) {
     if (mnemonic == null) {
       throw ArgumentError(invalidNullPhrase);
     }
     try {
       switch (recoveryWallet) {
-        case WalletType.uniparty:
+        case WalletType.horizon:
         case WalletType.freewallet:
           /*
         bip39 mnemonicToEntropy will throw if
@@ -54,7 +53,7 @@ class SeedOpsService {
 
   // WalletTypeEnum getWalletType(WalletType recoveryWallet) {
   //   switch (recoveryWallet) {
-  //     case WalletType.uniparty:
+  //     case WalletType.horizon:
   //       return WalletTypeEnum.bip44;
   //     case WalletType.freewallet:
   //     case WalletType.counterwallet:
@@ -64,13 +63,12 @@ class SeedOpsService {
   //   }
   // }
 
-  Future<Seed> getSeed(
-      String mnemonic, WalletType recoveryWallet) async {
+  Future<Seed> getSeed(String mnemonic, WalletType recoveryWallet) async {
     // await Future.delayed(const Duration(milliseconds: 5)); // simulate async
 
     var bip39Service = GetIt.I.get<bip39.Bip39Service>();
     switch (recoveryWallet) {
-      case WalletType.uniparty:
+      case WalletType.horizon:
         return bip39Service.mnemonicToSeed(mnemonic);
       case WalletType.freewallet:
         return Seed.fromHex(bip39Service.mnemonicToEntropy(mnemonic));

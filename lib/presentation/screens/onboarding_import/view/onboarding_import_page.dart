@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uniparty/domain/entities/address.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   @override
@@ -52,7 +52,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
       },
       child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Uniparty')),
+          appBar: AppBar(title: const Text('Horizon')),
           body: state.password != null
               ? SeedPrompt(seedPhraseController: _seedPhraseController, state: state)
               : PasswordPrompt(
@@ -112,8 +112,16 @@ class PasswordPrompt extends StatelessWidget {
                     ),
                   ),
                 ),
+                SizedBox(height: 16),
+                TextField(
+                  controller: _passwordConfirmationController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Confirm Password',
+                  ),
+                ),
                 _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Row(
                   children: [
                     ElevatedButton(
@@ -209,7 +217,7 @@ class SeedPrompt extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
               _state.getAddressesState is GetAddressesStateSuccess
                   ? AddressListView(
@@ -231,7 +239,7 @@ class SeedPrompt extends StatelessWidget {
                 child: const Text('Import Addresses'),
               ),
             ]),
-            _state.importState is ImportStateLoading ? const CircularProgressIndicator() : const Text("")
+            _state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
           ],
         ));
   }

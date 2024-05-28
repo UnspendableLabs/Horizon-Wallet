@@ -1,8 +1,8 @@
 import 'package:dartsv/dartsv.dart';
+import 'package:horizon/bitcoin_wallet_utils/bip39.dart';
+import 'package:horizon/bitcoin_wallet_utils/key_derivation.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
-import 'package:uniparty/bitcoin_wallet_utils/key_derivation.dart';
-import 'package:uniparty/common/constants.dart';
 
 void main() async {
   group('bip 32 hd key derivation mainnet', () {

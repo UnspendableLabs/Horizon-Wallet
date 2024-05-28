@@ -1,15 +1,14 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/counterparty_api/models/balance.dart';
+import 'package:horizon/counterparty_api/models/counterparty_response_wrapper.dart';
+import 'package:horizon/models/internal_utxo.dart';
+import 'package:horizon/models/send_transaction.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:logger/logger.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/counterparty_api/models/balance.dart';
-import 'package:uniparty/counterparty_api/models/counterparty_response_wrapper.dart';
-import 'package:uniparty/models/internal_utxo.dart';
-import 'package:uniparty/models/send_transaction.dart';
 
 var logger = Logger(
   printer: PrettyPrinter(),

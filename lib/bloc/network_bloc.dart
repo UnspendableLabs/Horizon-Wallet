@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/common/constants.dart';
+import 'package:horizon/common/constants.dart';
 
 class NetworkEvent {
   final NetworkEnum network;

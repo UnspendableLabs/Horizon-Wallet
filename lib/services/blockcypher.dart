@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/counterparty_api/models/balance.dart';
+import 'package:horizon/counterparty_api/models/btc_balance_response.dart';
 import 'package:http/http.dart' as http;
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/counterparty_api/models/balance.dart';
-import 'package:uniparty/counterparty_api/models/btc_balance_response.dart';
 
 // http --follow 'https://api.blockcypher.com/v1/btc/main/addrs/16Fg2yjwrbtC6fZp61EV9mNVKmwCzGasw5/' | jq .final_balance
 // 367135

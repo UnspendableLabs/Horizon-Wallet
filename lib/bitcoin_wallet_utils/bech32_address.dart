@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:uniparty/common/constants.dart';
+import 'package:horizon/common/constants.dart';
 
 Uint8List publicKeyToWords(Uint8List data) {
   List<int> bits5Array = [];

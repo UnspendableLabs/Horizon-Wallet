@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/domain/entities/account.dart';
-import 'package:uniparty/domain/repositories/account_repository.dart';
-import 'package:uniparty/domain/repositories/address_repository.dart';
-import 'package:uniparty/domain/repositories/wallet_repository.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_event.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_state.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   DashboardBloc() : super(DashboardState()) {

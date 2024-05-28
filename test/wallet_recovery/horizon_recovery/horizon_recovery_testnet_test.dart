@@ -1,12 +1,12 @@
+import 'package:horizon/bitcoin_wallet_utils/bip39.dart';
+import 'package:horizon/bitcoin_wallet_utils/create_wallet.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/wallet_node.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
-import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/wallet_node.dart';
 
 void main() async {
   // TODO: verify testnet bech32 addresses
-  group('Uniparty recovery testnet', () {
+  group('Horizon recovery testnet', () {
     final bip39 = Bip39Impl();
     test('bip39 + bip44 test1', () async {
       String mnemonic = 'trend pond enable empower govern example melody bless alone grow stone genre';

@@ -1,5 +1,5 @@
 import 'package:dartsv/dartsv.dart';
-import 'package:uniparty/common/constants.dart';
+import 'package:horizon/common/constants.dart';
 
 HDPrivateKey deriveSeededKey(String seedHex, NetworkEnum network) {
   return HDPrivateKey.fromSeed(seedHex, getNetworkType(network));

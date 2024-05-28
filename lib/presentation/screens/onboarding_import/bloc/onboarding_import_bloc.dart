@@ -1,16 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/common/uuid.dart';
-import 'package:uniparty/domain/entities/account.dart';
-import 'package:uniparty/domain/entities/address.dart';
-import 'package:uniparty/domain/entities/wallet.dart';
-import 'package:uniparty/domain/repositories/account_repository.dart';
-import 'package:uniparty/domain/repositories/address_repository.dart';
-import 'package:uniparty/domain/repositories/wallet_repository.dart';
-import 'package:uniparty/domain/services/address_service.dart';
-import 'package:uniparty/domain/services/wallet_service.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:horizon/common/uuid.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
 class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final addressService = GetIt.I<AddressService>();

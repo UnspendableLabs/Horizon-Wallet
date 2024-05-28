@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/bloc/network_bloc.dart';
-import 'package:uniparty/bloc/transaction_bloc.dart';
-import 'package:uniparty/bloc/wallet_bloc.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/create_wallet_payload.dart';
-import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/widgets/wallet_pages/active_wallet_node.dart';
-import 'package:uniparty/widgets/wallet_pages/multi_address_dialog.dart';
-import 'package:uniparty/widgets/wallet_pages/send_dialog.dart';
+import 'package:horizon/bloc/network_bloc.dart';
+import 'package:horizon/bloc/transaction_bloc.dart';
+import 'package:horizon/bloc/wallet_bloc.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/create_wallet_payload.dart';
+import 'package:horizon/models/wallet_node.dart';
+import 'package:horizon/widgets/wallet_pages/active_wallet_node.dart';
+import 'package:horizon/widgets/wallet_pages/multi_address_dialog.dart';
+import 'package:horizon/widgets/wallet_pages/send_dialog.dart';
 
 class Wallet extends StatefulWidget {
   final CreateWalletPayload? payload;
@@ -41,7 +41,7 @@ class _WalletState extends State<Wallet> {
           return Scaffold(
               appBar: AppBar(
                   title: const Text(
-                    'UNIPARTY',
+                    'Horizon',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 40,

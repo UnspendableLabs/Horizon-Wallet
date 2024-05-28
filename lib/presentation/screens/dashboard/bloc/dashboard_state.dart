@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uniparty/domain/entities/account.dart';
-import 'package:uniparty/domain/entities/address.dart';
-import 'package:uniparty/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/wallet.dart';
 
 part 'dashboard_state.freezed.dart';
 

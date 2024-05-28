@@ -1,17 +1,14 @@
 import 'dart:convert' as c;
 
-import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
-import "package:uniparty/api/v2_api.dart" as v2_api;
+import "package:horizon/api/v2_api.dart" as v2_api;
+import 'package:http/http.dart' as http;
 
 // curl --user myusername --data-binary '{"jsonrpc": "1.0", "id": "curltest", "method": "sendrawtransaction", "params": ["signedhex"]}' -H 'content-type: text/plain;' http://127.0.0.1:8332/
 
 abstract class BitcoindService {
   Future<void> sendrawtransaction(String signedHex);
 }
-
-
-
 
 class BitcoindServiceHttpImpl implements BitcoindService {
   final String _rpcUser;
@@ -50,7 +47,6 @@ class BitcoindServiceHttpImpl implements BitcoindService {
   }
 }
 
-
 class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
   final client = v2_api.V2Api(Dio());
 
@@ -58,6 +54,6 @@ class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
 
   @override
   Future<v2_api.Response<String>> sendrawtransaction(String signedHex) async {
-      return client.createTransaction(signedHex);
+    return client.createTransaction(signedHex);
   }
 }

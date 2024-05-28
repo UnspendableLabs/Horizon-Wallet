@@ -1,3 +1,3 @@
-import "package:uniparty/data/sources/local/db.dart";
-typedef AddressModel = Address;
+import "package:horizon/data/sources/local/db.dart";
 
+typedef AddressModel = Address;

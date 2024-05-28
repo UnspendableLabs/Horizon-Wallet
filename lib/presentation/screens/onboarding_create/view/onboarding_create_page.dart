@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
-import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
-import 'package:uniparty/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
+import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
+import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
+import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 
 class OnboardingCreateScreen extends StatelessWidget {
   @override
@@ -39,7 +39,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
       },
       child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Uniparty')),
+          appBar: AppBar(title: const Text('Horizon')),
           body: state.password != null
               ? Mnemonic(state: state)
               : PasswordPrompt(
