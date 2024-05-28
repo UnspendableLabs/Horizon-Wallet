@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/bloc/balance_bloc.dart';
-import 'package:uniparty/bloc/network_bloc.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/wallet_node.dart';
+import 'package:horizon/bloc/balance_bloc.dart';
+import 'package:horizon/bloc/network_bloc.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/wallet_node.dart';
 
 class ActiveWalletNode extends StatefulWidget {
   final WalletNode activeWallet;

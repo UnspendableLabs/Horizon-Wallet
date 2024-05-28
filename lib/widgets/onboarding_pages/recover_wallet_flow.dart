@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/app_router.dart';
-import 'package:uniparty/bloc/wallet_recovery_bloc.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/create_wallet_payload.dart';
-import 'package:uniparty/services/seed_ops_service.dart';
-import 'package:uniparty/widgets/common/back_button.dart';
-import 'package:uniparty/widgets/common/common_dialog_shape.dart';
+import 'package:horizon/app_router.dart';
+import 'package:horizon/bloc/wallet_recovery_bloc.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/create_wallet_payload.dart';
+import 'package:horizon/services/seed_ops_service.dart';
+import 'package:horizon/widgets/common/back_button.dart';
+import 'package:horizon/widgets/common/common_dialog_shape.dart';
 
 class RecoverWalletFlow extends StatefulWidget {
   const RecoverWalletFlow({super.key});
@@ -16,11 +16,7 @@ class RecoverWalletFlow extends StatefulWidget {
   State<RecoverWalletFlow> createState() => _RecoverWalletFlowState();
 }
 
-const List<WalletType> list = <WalletType>[
-WalletType.counterwallet,
-  WalletType.freewallet,
-  WalletType.uniparty
-];
+const List<WalletType> list = <WalletType>[WalletType.counterwallet, WalletType.freewallet, WalletType.horizon];
 
 class _RecoverWalletFlowState extends State<RecoverWalletFlow> {
   final _textFieldController = TextEditingController();

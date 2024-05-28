@@ -1,8 +1,8 @@
+import 'package:horizon/bitcoin_wallet_utils/bip39.dart';
+import 'package:horizon/bitcoin_wallet_utils/create_wallet.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/wallet_node.dart';
 import 'package:test/test.dart';
-import 'package:uniparty/bitcoin_wallet_utils/bip39.dart';
-import 'package:uniparty/bitcoin_wallet_utils/create_wallet.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/wallet_node.dart';
 
 void main() async {
   // A Bech32 address encoded (p2wpkh): HRP + Separator + Data values verified from https://secretscan.org/Bech32

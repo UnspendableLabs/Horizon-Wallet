@@ -3,14 +3,14 @@ import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/common/constants.dart' as c;
-import 'package:uniparty/js/bip32.dart' as bip32js;
-import 'package:uniparty/js/common.dart' as common;
-import 'package:uniparty/models/seed.dart';
-import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/services/bech32.dart';
-import 'package:uniparty/services/bip32.dart' as bip32;
-import 'package:uniparty/services/ecpair.dart' as ecpair;
+import 'package:horizon/common/constants.dart' as c;
+import 'package:horizon/js/bip32.dart' as bip32js;
+import 'package:horizon/js/common.dart' as common;
+import 'package:horizon/models/seed.dart';
+import 'package:horizon/models/wallet_node.dart';
+import 'package:horizon/services/bech32.dart';
+import 'package:horizon/services/bip32.dart' as bip32;
+import 'package:horizon/services/ecpair.dart' as ecpair;
 
 Bech32Service bech32 = GetIt.I.get<Bech32Service>();
 bip32.Bip32Service bip32Service = GetIt.I.get<bip32.Bip32Service>();
@@ -23,7 +23,7 @@ List<WalletNode> createWallet(c.NetworkEnum network, String seedHex, c.WalletTyp
   final Seed seed = Seed.fromHex(seedHex);
 
   switch (walletType) {
-    case c.WalletType.uniparty:
+    case c.WalletType.horizon:
       common.Network _network = network == c.NetworkEnum.testnet ? ecpairService.testnet : ecpairService.mainnet;
 
       _network.bip32.private = 0x4b2430c; //zpriv

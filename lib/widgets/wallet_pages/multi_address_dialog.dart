@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/app_router.dart';
-import 'package:uniparty/bloc/wallet_bloc.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/wallet_node.dart';
-import 'package:uniparty/services/key_value_store_service.dart';
-import 'package:uniparty/widgets/common/common_dialog_shape.dart';
-import 'package:uniparty/widgets/wallet_pages/single_address_display.dart';
+import 'package:horizon/app_router.dart';
+import 'package:horizon/bloc/wallet_bloc.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/wallet_node.dart';
+import 'package:horizon/services/key_value_store_service.dart';
+import 'package:horizon/widgets/common/common_dialog_shape.dart';
+import 'package:horizon/widgets/wallet_pages/single_address_display.dart';
 
 class MultiAddressDialog extends StatefulWidget {
   final List<WalletNode> walletNodes;

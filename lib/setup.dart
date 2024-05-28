@@ -1,21 +1,16 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/counterparty_api/counterparty_api.dart';
-import 'package:uniparty/services/bitcoind.dart';
-import 'package:uniparty/services/blockcypher.dart';
-import 'package:uniparty/services/key_value_store_service.dart';
-import 'package:uniparty/services/seed_ops_service.dart';
-import 'package:uniparty/services/bip39.dart' as bip39;
-import 'package:uniparty/services/bip32.dart' as bip32;
-import 'package:uniparty/services/bech32.dart' as bech32;
-import 'package:uniparty/services/ecpair.dart' as ecpair;
-
-
-
+import 'package:horizon/counterparty_api/counterparty_api.dart';
+import 'package:horizon/services/bech32.dart' as bech32;
+import 'package:horizon/services/bip32.dart' as bip32;
+import 'package:horizon/services/bip39.dart' as bip39;
+import 'package:horizon/services/bitcoind.dart';
+import 'package:horizon/services/blockcypher.dart';
+import 'package:horizon/services/ecpair.dart' as ecpair;
+import 'package:horizon/services/key_value_store_service.dart';
+import 'package:horizon/services/seed_ops_service.dart';
 
 Future<void> setup() async {
-
-
   GetIt.I.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
   GetIt.I.registerSingleton<BlockCypherService>(BlockCypherImpl(
     url: dotenv.env['BLOCKCYPHER_URL']!,
@@ -29,6 +24,4 @@ Future<void> setup() async {
   GetIt.I.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
 
   GetIt.I.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
-
-
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uniparty/widgets/onboarding_pages/onboarding_stateful_widget.dart';
+import 'package:horizon/widgets/onboarding_pages/onboarding_stateful_widget.dart';
 
 class OnboardingPageWrapper extends StatelessWidget {
   const OnboardingPageWrapper({super.key});

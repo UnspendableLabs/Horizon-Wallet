@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:uniparty/app_router.dart';
-import 'package:uniparty/setup.dart';
+import 'package:horizon/app_router.dart';
+import 'package:horizon/setup.dart';
 
 void main() async {
   await dotenv.load();
