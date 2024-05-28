@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:retrofit/retrofit.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:retrofit/retrofit.dart';
 
 part 'v2_api.g.dart';
 
@@ -14,8 +13,7 @@ class Response<T> {
 
   Response({required this.result, required this.error});
 
-  factory Response.fromJson(
-          Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
+  factory Response.fromJson(Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
       _$ResponseFromJson(json, fromJsonT);
 }
 
@@ -72,8 +70,22 @@ class Transaction {
       required this.data,
       required this.supported});
 
-  factory Transaction.fromJson(Map<String, dynamic> json) =>
-      _$TransactionFromJson(json);
+  factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class Balance {
+  final String address;
+  final double quantity;
+  final String asset;
+
+  const Balance({
+    required this.address,
+    required this.quantity,
+    required this.asset,
+  });
+
+  factory Balance.fromJson(Map<String, dynamic> json) => _$BalanceFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -101,8 +113,7 @@ class EventCount {
     required this.eventCount,
   });
 
-  factory EventCount.fromJson(Map<String, dynamic> json) =>
-      _$EventCountFromJson(json);
+  factory EventCount.fromJson(Map<String, dynamic> json) => _$EventCountFromJson(json);
 }
 
 // {
@@ -137,8 +148,7 @@ class AssetInfo {
     required this.locked,
     this.issuer, // TODO: validate shape
   });
-  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
-      _$AssetInfoFromJson(json);
+  factory AssetInfo.fromJson(Map<String, dynamic> json) => _$AssetInfoFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -224,8 +234,7 @@ class Expiration {
     required this.type,
     required this.objectId,
   });
-  factory Expiration.fromJson(Map<String, dynamic> json) =>
-      _$ExpirationFromJson(json);
+  factory Expiration.fromJson(Map<String, dynamic> json) => _$ExpirationFromJson(json);
 }
 
 // {
@@ -301,8 +310,7 @@ class Destruction {
     required this.quantityNormalized,
   });
 
-  factory Destruction.fromJson(Map<String, dynamic> json) =>
-      _$DestructionFromJson(json);
+  factory Destruction.fromJson(Map<String, dynamic> json) => _$DestructionFromJson(json);
 }
 
 // issuance
@@ -501,8 +509,7 @@ class Dispenser {
     required this.escrowQuantityNormalized,
   });
 
-  factory Dispenser.fromJson(Map<String, dynamic> json) =>
-      _$DispenserFromJson(json);
+  factory Dispenser.fromJson(Map<String, dynamic> json) => _$DispenserFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -533,8 +540,7 @@ class Dispense {
     required this.assetInfo,
   });
 
-  factory Dispense.fromJson(Map<String, dynamic> json) =>
-      _$DispenseFromJson(json);
+  factory Dispense.fromJson(Map<String, dynamic> json) => _$DispenseFromJson(json);
 }
 
 // Sweep
@@ -608,8 +614,7 @@ class SendTxParams {
     required this.memoIsHex,
     required this.useEnhancedSend,
   });
-  factory SendTxParams.fromJson(Map<String, dynamic> json) =>
-      _$SendTxParamsFromJson(json);
+  factory SendTxParams.fromJson(Map<String, dynamic> json) => _$SendTxParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -733,6 +738,12 @@ abstract class V2Api {
   @POST("/bitcoin/transactions")
   Future<Response<String>> createTransaction(
     @Query("signedhex") String signedhex,
+  );
+  //     Get Balances by address
+  @GET("/addresses/{address}/balances")
+  Future<Response<List<Balance>>> getBalancesByAddress(
+    @Path("address") String address,
+    @Query("verbose") bool verbose,
   );
 
   // Counterparty API Root

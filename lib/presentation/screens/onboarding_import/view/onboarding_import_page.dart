@@ -112,14 +112,6 @@ class PasswordPrompt extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
-                TextField(
-                  controller: _passwordConfirmationController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Confirm Password',
-                  ),
-                ),
                 _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
                 SizedBox(height: 16),
                 Row(

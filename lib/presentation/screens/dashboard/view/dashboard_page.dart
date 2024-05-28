@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/view/main_address_display.dart';
+import 'package:horizon/presentation/screens/dashboard/view/addresses_display.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
-import 'package:horizon/presentation/screens/dashboard/view/main_address_display.dart';
+import 'package:horizon/presentation/screens/dashboard/view/addresses_display.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -68,7 +68,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                 ],
               ),
             ),
-            state.walletState is WalletStateSuccess ? AddressDisplay() : const Text(''),
+            state.walletState is WalletStateSuccess ? const AddressDisplay() : const Text(''),
             state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(''),
             state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
             state.walletState is WalletStateInitial ? const Text("CENTER IT") : const Text(""),

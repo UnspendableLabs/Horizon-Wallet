@@ -14,7 +14,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     final walletRepository = GetIt.I<WalletRepository>();
     on<SetAccountAndWallet>((event, emit) async {
       Account? account = await accountRepository.getCurrentAccount();
-      print('ACCOUNT: $account');
       final wallets = await walletRepository.getWalletsByAccountUuid(account!.uuid!);
       emit(state.copyWith(
           accountState: AccountStateSuccess(currentAccount: account),
@@ -29,6 +28,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       final addresses = await addressRepository.getAllByWalletUuid(wallet!.uuid!);
       // Get addresses
       emit(state.copyWith(addressState: AddressStateSuccess(currentAddress: addresses[0], addresses: addresses)));
+    });
+
+    on<ChangeAddress>((event, emit) {
+      emit(state.copyWith(
+          addressState: AddressStateSuccess(currentAddress: event.address, addresses: state.addressState.addresses)));
     });
   }
 }
