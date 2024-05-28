@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uniparty/widgets/wallet_pages/balance_text.dart';
+import 'package:horizon/widgets/wallet_pages/balance_text.dart';
 
 class BalanceTotal extends StatelessWidget {
   const BalanceTotal({super.key});

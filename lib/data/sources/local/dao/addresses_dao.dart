@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:uniparty/data/models/address.dart';
-import 'package:uniparty/data/sources/local/db.dart';
-import 'package:uniparty/data/sources/local/tables/addresses_table.dart';
+import 'package:horizon/data/models/address.dart';
+import 'package:horizon/data/sources/local/db.dart';
+import 'package:horizon/data/sources/local/tables/addresses_table.dart';
 
 part 'addresses_dao.g.dart';
 
@@ -33,7 +33,7 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
 }
 
 // import 'package:floor/floor.dart';
-// import 'package:uniparty/data/models/address.dart';
+// import 'package:horizon/data/models/address.dart';
 
 // @dao
 // abstract class AddressDao {

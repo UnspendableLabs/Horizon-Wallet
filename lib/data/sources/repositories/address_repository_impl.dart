@@ -1,8 +1,8 @@
-import "package:uniparty/data/models/address.dart";
-import "package:uniparty/data/sources/local/dao/addresses_dao.dart";
-import "package:uniparty/data/sources/local/db.dart" as local;
-import "package:uniparty/domain/entities/address.dart" as entity;
-import "package:uniparty/domain/repositories/address_repository.dart";
+import "package:horizon/data/models/address.dart";
+import "package:horizon/data/sources/local/dao/addresses_dao.dart";
+import "package:horizon/data/sources/local/db.dart" as local;
+import "package:horizon/domain/entities/address.dart" as entity;
+import "package:horizon/domain/repositories/address_repository.dart";
 
 class AddressRepositoryImpl implements AddressRepository {
   final local.DB _db;

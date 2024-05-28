@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uniparty/domain/entities/address.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
-import 'package:uniparty/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (context) => OnboardingImportBloc(),
-        child: const OnboardingImportPage_());
+    return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
   }
 }
 
@@ -32,14 +30,10 @@ class OnboardingImportPage_ extends StatefulWidget {
 }
 
 class _OnboardingImportPageState extends State<OnboardingImportPage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
-  final TextEditingController _seedPhraseController =
-      TextEditingController(text: "");
-  final TextEditingController _importFormat =
-      TextEditingController(text: ImportFormat.segwit.name);
+  final TextEditingController _passwordController = TextEditingController(text: "");
+  final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
+  final TextEditingController _seedPhraseController = TextEditingController(text: "");
+  final TextEditingController _importFormat = TextEditingController(text: ImportFormat.segwit.name);
 
   @override
   dispose() {
@@ -56,17 +50,14 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
           GoRouter.of(context).go('/dashboard');
         }
       },
-      child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
-          builder: (context, state) {
+      child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Uniparty')),
+          appBar: AppBar(title: const Text('Horizon')),
           body: state.password != null
-              ? SeedPrompt(
-                  seedPhraseController: _seedPhraseController, state: state)
+              ? SeedPrompt(seedPhraseController: _seedPhraseController, state: state)
               : PasswordPrompt(
                   passwordController: _passwordController,
-                  passwordConfirmationController:
-                      _passwordConfirmationController,
+                  passwordConfirmationController: _passwordConfirmationController,
                   state: state,
                 ),
         );
@@ -81,7 +72,6 @@ class PasswordPrompt extends StatelessWidget {
     required TextEditingController passwordController,
     required TextEditingController passwordConfirmationController,
     required OnboardingImportState state,
-      
   })  : _passwordController = passwordController,
         _passwordConfirmationController = passwordConfirmationController,
         _state = state;
@@ -115,9 +105,7 @@ class PasswordPrompt extends StatelessWidget {
                     labelText: 'Confirm Password',
                   ),
                 ),
-                _state.passwordError != null
-                    ? Text(_state.passwordError!)
-                    : const Text(""),
+                _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
                 SizedBox(height: 16),
                 Row(
                   children: [
@@ -126,8 +114,7 @@ class PasswordPrompt extends StatelessWidget {
                         context.read<OnboardingImportBloc>().add(
                               PasswordSubmit(
                                 password: _passwordController.text,
-                                passwordConfirmation:
-                                    _passwordConfirmationController.text,
+                                passwordConfirmation: _passwordConfirmationController.text,
                               ),
                             );
                       },
@@ -173,9 +160,7 @@ class SeedPrompt extends StatelessWidget {
               TextField(
                 controller: _seedPhraseController,
                 onChanged: (value) {
-                  context
-                      .read<OnboardingImportBloc>()
-                      .add(MnemonicChanged(mnemonic: value));
+                  context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: value));
                 },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -189,9 +174,7 @@ class SeedPrompt extends StatelessWidget {
                     label: Text("Import format"),
                     onSelected: (newValue) {
                       // newValue can't be null
-                      context
-                          .read<OnboardingImportBloc>()
-                          .add(ImportFormatChanged(importFormat: newValue!));
+                      context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
                     },
 
                     initialSelection: ImportFormat.segwit.name,
@@ -220,24 +203,18 @@ class SeedPrompt extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 16),
-              _state.getAddressesState is GetAddressesStateError
-                  ? Text(_state.getAddressesState.message)
-                  : const Text(""),
+              _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
               _state.getAddressesState is GetAddressesStateSuccess
                   ? AddressListView(
                       addresses: _state.getAddressesState.addresses,
                       isCheckedMap: _state.isCheckedMap,
                       onCheckedChanged: (address, checked) {
-                        context.read<OnboardingImportBloc>().add(
-                            AddressMapChanged(
-                                address: address, isChecked: checked));
+                        context.read<OnboardingImportBloc>().add(AddressMapChanged(address: address, isChecked: checked));
                       },
                     )
                   : const Text("")
             ])),
-            _state.importState is ImportStateError
-                ? Text(_state.importState.message)
-                : const Text(""),
+            _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
             Row(children: [
               // TODO: figure out how to disable a button
               ElevatedButton(
@@ -247,9 +224,7 @@ class SeedPrompt extends StatelessWidget {
                 child: const Text('Import Addresses'),
               ),
             ]),
-            _state.importState is ImportStateLoading
-                ? CircularProgressIndicator()
-                : const Text("")
+            _state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
           ],
         ));
   }

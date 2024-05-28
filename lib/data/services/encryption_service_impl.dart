@@ -1,5 +1,5 @@
-import "package:uniparty/domain/services/encryption_service.dart";
 import 'package:encrypt/encrypt.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 
 // Used for password based encryption of WIFs
 // TODO: validate againt whatever metamask is doing

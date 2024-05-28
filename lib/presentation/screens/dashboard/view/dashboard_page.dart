@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_event.dart';
-import 'package:uniparty/presentation/screens/dashboard/bloc/dashboard_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -30,7 +30,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         return Scaffold(
-            appBar: AppBar(title: const Text('Uniparty')),
+            appBar: AppBar(title: const Text('Horizon')),
             body: Center(
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

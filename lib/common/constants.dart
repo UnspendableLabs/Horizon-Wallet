@@ -1,7 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-enum WalletType { counterwallet, freewallet, uniparty }
-
+enum WalletType { counterwallet, freewallet, horizon }
 
 enum WalletTypeEnum { bip44, bip32 }
 

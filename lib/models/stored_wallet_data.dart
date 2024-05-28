@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:uniparty/common/constants.dart';
+import 'package:horizon/common/constants.dart';
 
 class StoredWalletData {
   String seedHex;

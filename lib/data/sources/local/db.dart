@@ -1,13 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
-import "package:uniparty/data/sources/local/tables/accounts_table.dart";
-import 'package:uniparty/data/sources/local/tables/wallets_table.dart';
-import 'package:uniparty/data/sources/local/tables/addresses_table.dart';
-
+import "package:horizon/data/sources/local/tables/accounts_table.dart";
+import 'package:horizon/data/sources/local/tables/addresses_table.dart';
+import 'package:horizon/data/sources/local/tables/wallets_table.dart';
 
 part "db.g.dart";
 
-@DriftDatabase(tables: [Accounts, Wallets, Addresses ])
+@DriftDatabase(tables: [Accounts, Wallets, Addresses])
 class DB extends _$DB {
   DB() : super(connectOnWeb());
 
@@ -18,7 +17,7 @@ class DB extends _$DB {
 DatabaseConnection connectOnWeb() {
   return DatabaseConnection.delayed(Future(() async {
     final result = await WasmDatabase.open(
-      databaseName: 'uniparty_db', // prefer to only use valid identifiers here
+      databaseName: 'horizon_db', // prefer to only use valid identifiers here
       sqlite3Uri: Uri.parse('sqlite3.wasm'),
       driftWorkerUri: Uri.parse('drift_worker.dart.js'),
     );
@@ -32,5 +31,5 @@ DatabaseConnection connectOnWeb() {
     }
 
     return result.resolvedExecutor;
- }));
+  }));
 }

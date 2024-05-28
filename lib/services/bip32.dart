@@ -1,10 +1,10 @@
+import 'dart:js_interop';
 import 'dart:typed_data';
 
-import 'package:uniparty/js/bip32.dart' as bip32;
-import 'package:uniparty/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:uniparty/js/common.dart' as common;
-import 'package:uniparty/js/buffer.dart';
-import 'dart:js_interop';
+import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/buffer.dart';
+import 'package:horizon/js/common.dart' as common;
+import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 abstract class Bip32Service<T, N> {
   T fromBase58(String inString, N network);
@@ -13,8 +13,7 @@ abstract class Bip32Service<T, N> {
   // T fromPublicKey(List<int> publicKey, List<int> chainCode, N network);
 }
 
-class Bip32JSService
-    implements Bip32Service<bip32.BIP32Interface, common.Network> {
+class Bip32JSService implements Bip32Service<bip32.BIP32Interface, common.Network> {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
   @override

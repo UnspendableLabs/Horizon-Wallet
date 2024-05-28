@@ -1,4 +1,4 @@
-import "package:uniparty/domain/entities/account.dart" as entity;
+import "package:horizon/domain/entities/account.dart" as entity;
 
 abstract class AccountRepository {
   Future<entity.Account?> getAccount(String uuid);

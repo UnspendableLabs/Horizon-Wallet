@@ -1,8 +1,6 @@
-import 'package:uniparty/js/ecpair.dart' as ecpairjs;
-import 'package:uniparty/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:uniparty/js/common.dart' as common;
-
-
+import 'package:horizon/js/common.dart' as common;
+import 'package:horizon/js/ecpair.dart' as ecpairjs;
+import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 abstract class ECPairService<T, N> {
   T fromWIF(String wif, N network);
@@ -10,9 +8,7 @@ abstract class ECPairService<T, N> {
   N get mainnet;
 }
 
-
 class ECPairJSService implements ECPairService<ecpairjs.ECPair, common.Network> {
-
   ecpairjs.ECPairFactory ecpair = ecpairjs.ECPairFactory(tinysecp256k1js.ecc);
 
   @override
@@ -25,15 +21,4 @@ class ECPairJSService implements ECPairService<ecpairjs.ECPair, common.Network> 
 
   @override
   get mainnet => ecpairjs.bitcoin;
-
-
 }
-
-
-
-
-
-
-
-
-

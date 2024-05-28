@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:uniparty/data/sources/local/db.dart';
-import 'package:uniparty/data/sources/local/tables/wallets_table.dart';
-import 'package:uniparty/data/models/wallet.dart';
+import 'package:horizon/data/models/wallet.dart';
+import 'package:horizon/data/sources/local/db.dart';
+import 'package:horizon/data/sources/local/tables/wallets_table.dart';
 
 part 'wallets_dao.g.dart';
 

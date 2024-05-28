@@ -1,9 +1,9 @@
-import 'package:uniparty/common/uuid.dart';
-import "package:uniparty/data/models/wallet.dart";
-import "package:uniparty/data/sources/local/dao/wallets_dao.dart";
-import "package:uniparty/data/sources/local/db.dart" as local;
-import "package:uniparty/domain/entities/wallet.dart" as entity;
-import "package:uniparty/domain/repositories/wallet_repository.dart";
+import 'package:horizon/common/uuid.dart';
+import "package:horizon/data/models/wallet.dart";
+import "package:horizon/data/sources/local/dao/wallets_dao.dart";
+import "package:horizon/data/sources/local/db.dart" as local;
+import "package:horizon/domain/entities/wallet.dart" as entity;
+import "package:horizon/domain/repositories/wallet_repository.dart";
 
 class WalletRepositoryImpl implements WalletRepository {
   final local.DB _db;

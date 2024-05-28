@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:uniparty/models/buffer_reader.dart';
 import 'package:hex/hex.dart';
+import 'package:horizon/models/buffer_reader.dart';
 
 class Transaction {
   int version;
@@ -17,8 +17,7 @@ class Transaction {
   }
 
   factory Transaction.fromHex(String txHex) {
-
-    final buffer = Uint8List.fromList( HEX.decode(txHex));
+    final buffer = Uint8List.fromList(HEX.decode(txHex));
     final reader = BufferReader(buffer);
     final tx = Transaction();
     tx.version = reader.readInt32();
@@ -67,12 +66,7 @@ class TxInput {
   int sequence;
   List<Uint8List> witness;
 
-  TxInput(
-      {required this.hash,
-      required this.index,
-      required this.script,
-      required this.sequence,
-      this.witness = const []});
+  TxInput({required this.hash, required this.index, required this.script, required this.sequence, this.witness = const []});
 }
 
 class TxOutput {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:uniparty/app_router.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/create_wallet_payload.dart';
-import 'package:uniparty/widgets/common/back_button.dart';
-import 'package:uniparty/widgets/common/common_dialog_shape.dart';
-import 'package:uniparty/services/bip39.dart' as bip39;
+import 'package:horizon/app_router.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/create_wallet_payload.dart';
+import 'package:horizon/services/bip39.dart' as bip39;
+import 'package:horizon/widgets/common/back_button.dart';
+import 'package:horizon/widgets/common/common_dialog_shape.dart';
 
 class CreateWalletFlow extends StatelessWidget {
   const CreateWalletFlow({super.key});
@@ -85,7 +85,7 @@ class _CreateWalletDialogState extends State<CreateWalletDialog> {
                   Navigator.pushNamed(
                     context,
                     AppRouter.walletPage,
-                    arguments: CreateWalletPayload(mnemonic: widget.mnemonic, recoveryWallet: WalletType.uniparty),
+                    arguments: CreateWalletPayload(mnemonic: widget.mnemonic, recoveryWallet: WalletType.horizon),
                   );
                 },
                 child: const Text('Create Wallet'),
@@ -96,5 +96,3 @@ class _CreateWalletDialogState extends State<CreateWalletDialog> {
     // });
   }
 }
-
-

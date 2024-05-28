@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uniparty/bloc/transaction_bloc.dart';
-import 'package:uniparty/common/constants.dart';
-import 'package:uniparty/models/send_transaction.dart';
-import 'package:uniparty/widgets/common/common_dialog_shape.dart';
-import 'package:uniparty/widgets/common/object_properties.dart' as object_properties;
+import 'package:horizon/bloc/transaction_bloc.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/models/send_transaction.dart';
+import 'package:horizon/widgets/common/common_dialog_shape.dart';
+import 'package:horizon/widgets/common/object_properties.dart' as object_properties;
 
 class SendDialog extends StatefulWidget {
   final NetworkEnum network;
@@ -157,17 +157,15 @@ class _SendDialogState extends State<SendDialog> {
               ),
             SendTransactionLoading() => const Text('sending transaction...'),
             TransactionSuccess() => Column(children: [
-                  Text(transactionState.transactionHex),
-                  object_properties.renderObjectProperties(transactionState.info.toJson()),
-                                  
+                Text(transactionState.transactionHex),
+                object_properties.renderObjectProperties(transactionState.info.toJson()),
                 CupertinoButton(
                     child: const Text('Sign'),
                     onPressed: () {
                       BlocProvider.of<TransactionBloc>(context).add(SignTransactionEvent(
-                          unsignedTransaction: transactionState.transactionHex, 
-                          network: widget.network));
+                          unsignedTransaction: transactionState.transactionHex, network: widget.network));
                     }),
-                   ]),
+              ]),
             TransactionSignSuccess() => Text(transactionState.signedTransaction),
             TransactionError() => Text('transaction error: ${transactionState.message}'),
           };

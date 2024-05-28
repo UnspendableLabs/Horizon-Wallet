@@ -1,17 +1,14 @@
 import 'dart:js_interop';
-import 'package:uniparty/js/bip39.dart' as bip39js;
-import 'package:uniparty/models/seed.dart';
 
-
-
-
+import 'package:horizon/js/bip39.dart' as bip39js;
+import 'package:horizon/models/seed.dart';
 
 abstract class Bip39Service {
   String generateMnemonic();
   Future<Seed> mnemonicToSeed(String mnemonic);
   Seed mnemonicToSeedSync(String mnemonic);
   String mnemonicToEntropy(String mnemonic);
-  bool validateMnemonic(String mnemonic, [ List<String>? wordlist ]);
+  bool validateMnemonic(String mnemonic, [List<String>? wordlist]);
 }
 
 class Bip39JSService implements Bip39Service {
@@ -38,8 +35,7 @@ class Bip39JSService implements Bip39Service {
   }
 
   @override
-  bool validateMnemonic(String mnemonic, [ List<String>? wordlist ]) {
-    return bip39js.validateMnemonic(mnemonic, wordlist?.map(( word) => word.toJS).toList().toJS);
+  bool validateMnemonic(String mnemonic, [List<String>? wordlist]) {
+    return bip39js.validateMnemonic(mnemonic, wordlist?.map((word) => word.toJS).toList().toJS);
   }
-
 }

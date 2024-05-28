@@ -1,10 +1,8 @@
-
-import 'package:uniparty/domain/entities/wallet.dart';
-import 'package:uniparty/domain/services/encryption_service.dart';
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 
 // TODO: define mnemonic type
 abstract class WalletService {
-
   EncryptionService encryptionService;
 
   WalletService(this.encryptionService);

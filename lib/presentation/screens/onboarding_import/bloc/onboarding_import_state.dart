@@ -1,8 +1,7 @@
 // TODO: research part of / equatable
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-
-import 'package:uniparty/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address.dart';
 
 part 'onboarding_import_state.freezed.dart';
 

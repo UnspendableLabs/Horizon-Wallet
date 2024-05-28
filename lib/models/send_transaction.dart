@@ -1,4 +1,4 @@
-import 'package:uniparty/common/constants.dart';
+import 'package:horizon/common/constants.dart';
 
 class SendTransaction {
   final String sourceAddress;
@@ -15,6 +15,4 @@ class SendTransaction {
       required this.asset,
       this.memo,
       this.memoIsHex});
-
-
 }
