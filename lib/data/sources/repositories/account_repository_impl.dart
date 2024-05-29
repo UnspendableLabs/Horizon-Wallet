@@ -38,6 +38,16 @@ class AccountRepositoryImpl implements AccountRepository {
     // return null;
   }
 
+  @override
+  Future<void> deleteAccount(entity.Account account) async {
+    await _accountDao.deleteAccount(AccountModel(uuid: account.uuid!));
+  }
+
+  @override
+  Future<void> deleteAllAccounts() async {
+    await _accountDao.deleteAllAccounts();
+  }
+
   // @override
   // Future<void> initializeWithWalletAndAddresses(
   //     Wallet wallet, List<Address> addresses) async {

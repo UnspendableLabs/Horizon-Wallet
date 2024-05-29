@@ -37,11 +37,7 @@ class _BalanceDisplayState extends State<BalanceDisplay> {
           List<Balance> balances = snapshot.data as List<Balance>;
           return Container(
             width: screenWidth - 300,
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(width: 1.5, color: Colors.grey),
-              ),
-            ),
+
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween, // This spreads out the children across the main axis

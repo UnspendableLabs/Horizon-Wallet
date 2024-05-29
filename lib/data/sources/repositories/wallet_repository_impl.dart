@@ -49,4 +49,19 @@ class WalletRepositoryImpl implements WalletRepository {
             name: wallet.name))
         .toList();
   }
+
+  @override
+  Future<void> deleteWallet(entity.Wallet wallet) async {
+    await _walletDao.deleteWallet(WalletModel(
+        uuid: wallet.uuid!,
+        accountUuid: wallet.accountUuid!,
+        publicKey: wallet.publicKey!,
+        wif: wallet.wif!,
+        name: wallet.name!));
+  }
+
+  @override
+  Future<void> deleteAllWallets() async {
+    await _walletDao.deleteAllWallets();
+  }
 }

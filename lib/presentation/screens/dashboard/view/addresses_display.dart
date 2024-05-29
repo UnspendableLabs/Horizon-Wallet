@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
@@ -23,26 +23,33 @@ class _AddressDisplayState extends State<AddressDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
-      double screenWidth = MediaQuery.of(context).size.width;
+    double screenWidth = MediaQuery.of(context).size.width;
 
+    return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
       return state.addressState is AddressStateSuccess
-          ? Expanded(
+          ? Flexible(
               child: Align(
                 alignment: Alignment.topCenter,
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(0, 40, 0, 80),
+                  padding: const EdgeInsets.fromLTRB(0, 80, 0, 80),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(state.addressState.currentAddress.address,
-                              style: const TextStyle(fontSize: 20), textAlign: TextAlign.center),
+                          Flexible(
+                            child: Text(
+                              state.addressState.currentAddress.address,
+                              style: TextStyle(fontSize: screenWidth * 0.025), // Responsive font size
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           IconButton(
                             icon: const Icon(Icons.copy),
+                            style: ButtonStyle(iconSize: WidgetStateProperty.resolveWith((_) => screenWidth * 0.025)),
                             onPressed: () {
-                              Clipboard.setData(ClipboardData(text: state.addressState.currentAddress.address));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Address copied to clipboard!'),
@@ -53,19 +60,21 @@ class _AddressDisplayState extends State<AddressDisplay> {
                         ],
                       ),
                       Container(
-                          padding: const EdgeInsets.fromLTRB(50, 100, 50, 0),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(width: 1.5, color: Colors.grey),
+                            ),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(10, 40, 10, 0),
                           child: BalanceDisplay(address: state.addressState.currentAddress.address)),
                       state.addressState.addresses.length > 1
-                          ? Container(
-                              padding: const EdgeInsets.only(top: 100.0),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: FilledButton(
-                                  child: Text('Change Address'),
-                                  onPressed: () {
-                                    _showAddressDialog(context, state.addressState.addresses);
-                                  },
-                                ),
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 40.0),
+                              child: ElevatedButton(
+                                child: Text('Change Address'),
+                                onPressed: () {
+                                  _showAddressDialog(context, state.addressState.addresses);
+                                },
                               ),
                             )
                           : const Text(""),
@@ -82,36 +91,50 @@ class _AddressDisplayState extends State<AddressDisplay> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Select an Address"),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: addresses.map((address) {
-                return Container(
-                  decoration: BoxDecoration(border: Border(top: BorderSide(width: 1.5, color: Colors.grey))),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        title: Text(address.address),
-                        onTap: () {
-                          context.read<DashboardBloc>().add(ChangeAddress(address: address));
-                        },
-                      ),
-                      BalanceDisplay(address: address.address),
-                    ],
+        return BlocProvider(
+          create: (context) => DashboardBloc(),
+          child: BlocBuilder<DashboardBloc, DashboardState>(
+            builder: (context, state) {
+              return AlertDialog(
+                title: const Text("Select an Address"),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: addresses.map((address) {
+                      return Container(
+                        padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                        child: Container(
+                          decoration: const BoxDecoration(
+                              border: Border(
+                            bottom: BorderSide(width: 1.5, color: Colors.grey),
+                          )),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                title: Text(address.address),
+                                onTap: () {
+                                  context.read<DashboardBloc>().add(ChangeAddress(address: address));
+                                  GoRouter.of(context).push('/dashboard');
+                                },
+                              ),
+                              BalanceDisplay(address: address.address),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Close'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
           ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );

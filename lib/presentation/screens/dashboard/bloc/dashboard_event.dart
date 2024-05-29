@@ -10,3 +10,5 @@ class ChangeAddress extends DashboardEvent {
   final Address address;
   ChangeAddress({required this.address});
 }
+
+class DeleteWallet extends DashboardEvent {}

@@ -18,6 +18,10 @@ class WalletsDao extends DatabaseAccessor<DB> with _$WalletsDaoMixin {
   Future<void> updateWallet(Insertable<WalletModel> wallet) => update(wallets).replace(wallet);
   Future<void> deleteWallet(Insertable<WalletModel> wallet) => delete(wallets).delete(wallet);
 
+  Future<int> deleteAllWallets() {
+    return delete(wallets).go();
+  }
+
   Future<List<WalletModel>> findWalletsByAccountUuid(String accountUuid) =>
       (select(wallets)..where((tbl) => tbl.accountUuid.equals(accountUuid))).get();
 }

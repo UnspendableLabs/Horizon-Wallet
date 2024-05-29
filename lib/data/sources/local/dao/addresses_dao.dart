@@ -30,6 +30,13 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
 
   Future<bool> updateAddress(Insertable<AddressModel> address) => update(addresses).replace(address);
   Future<int> deleteAddress(Insertable<AddressModel> address) => delete(addresses).delete(address);
+  Future<void> deleteAddresses(String walletUuid) async {
+    await (delete(addresses)..where((tbl) => tbl.walletUuid.equals(walletUuid))).go();
+  }
+
+  Future<int> deleteAllAddresses() {
+    return delete(addresses).go();
+  }
 }
 
 // import 'package:floor/floor.dart';
