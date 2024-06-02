@@ -33,10 +33,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     });
 
     on<ChangeAddress>((event, emit) async {
+      print('State changing?!');
       emit(state.copyWith(
           accountState: AccountStateLoading(), walletState: WalletStateLoading(), addressState: AddressStateLoading()));
       Account? account = await accountRepository.getCurrentAccount();
       final wallets = await walletRepository.getWalletsByAccountUuid(account!.uuid!);
+      print('account: $account');
 
       Wallet? wallet = await walletRepository.getWalletByUuid(event.address.walletUuid!);
       List<Address> addresses = await addressRepository.getAllByWalletUuid(event.address.walletUuid!);

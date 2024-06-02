@@ -122,7 +122,8 @@ class _AddressDisplayState extends State<AddressDisplay> {
                                 title: Text(address.address),
                                 onTap: () {
                                   context.read<DashboardBloc>().add(ChangeAddress(address: address));
-                                  GoRouter.of(context).push('/dashboard');
+                                  // GoRouter.of(context).push('/dashboard');
+                                  Navigator.of(context).pop();
                                 },
                               ),
                               BalanceDisplay(address: address.address),

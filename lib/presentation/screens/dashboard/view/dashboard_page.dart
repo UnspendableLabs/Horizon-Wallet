@@ -30,6 +30,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
+      print('Dashboard state: $state');
       final width = MediaQuery.of(context).size.width;
       return Scaffold(
         body: Column(
