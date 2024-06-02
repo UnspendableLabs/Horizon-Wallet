@@ -71,13 +71,22 @@ class _AddressDisplayState extends State<AddressDisplay> {
                           ? Padding(
                               padding: const EdgeInsets.only(top: 40.0),
                               child: ElevatedButton(
-                                child: Text('Change Address'),
+                                child: Text('Switch Address'),
                                 onPressed: () {
                                   _showAddressDialog(context, state.addressState.addresses);
                                 },
                               ),
                             )
                           : const Text(""),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 40.0),
+                        child: ElevatedButton(
+                            onPressed: () {
+                              GoRouter.of(context).push('/compose/send',
+                                  extra: {'initialAddress': state.addressState.currentAddress.address});
+                            },
+                            child: Text('Compose Send')),
+                      )
                     ],
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
@@ -45,6 +46,18 @@ GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
         key: state.pageKey,
         child: DashboardPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+  ),
+  GoRoute(
+    path: "/compose/send",
+    pageBuilder: (context, state) {
+      // Retrieve the initial address from the extra parameter
+      final initialAddress = (state.extra as Map<String, dynamic>)['initialAddress'];
+      return CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: ComposeSendPage(initialAddress: initialAddress),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+      );
+    },
   ),
 ]);
 
