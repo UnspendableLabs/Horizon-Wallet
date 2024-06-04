@@ -1051,7 +1051,7 @@ class _V2Api implements V2Api {
     String address,
     String destination,
     String asset,
-    int quantity, [
+    double quantity, [
     bool? allowUnconfirmedInputs,
   ]) async {
     final _extra = <String, dynamic>{};

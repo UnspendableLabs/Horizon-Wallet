@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -48,13 +49,14 @@ class _AddressDisplayState extends State<AddressDisplay> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.copy),
-                            style: ButtonStyle(iconSize: WidgetStateProperty.resolveWith((_) => screenWidth * 0.025)),
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Address copied to clipboard!'),
-                                ),
-                              );
+                              Clipboard.setData(ClipboardData(text: state.addressState.currentAddress.address)).then((_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Address copied to clipboard!'),
+                                  ),
+                                );
+                              });
                             },
                           ),
                         ],
@@ -82,8 +84,8 @@ class _AddressDisplayState extends State<AddressDisplay> {
                         padding: const EdgeInsets.only(top: 40.0),
                         child: ElevatedButton(
                             onPressed: () {
-                              GoRouter.of(context).push('/compose/send',
-                                  extra: {'initialAddress': state.addressState.currentAddress.address});
+                              GoRouter.of(context)
+                                  .push('/compose/send', extra: {'initialAddress': state.addressState.currentAddress});
                             },
                             child: Text('Compose Send')),
                       )
