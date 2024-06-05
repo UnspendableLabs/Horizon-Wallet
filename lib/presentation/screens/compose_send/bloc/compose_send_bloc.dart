@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -20,9 +22,7 @@ _onSignTransactionEvent(SignTransactionEvent event, emit) async {
   final bitcoindService = GetIt.I.get<BitcoindService>();
   final transactionService = GetIt.I.get<TransactionService>();
   final walletRepository = GetIt.I<WalletRepository>();
-
-  final dio = Dio();
-  final client = v2_api.V2Api(dio);
+  final client = GetIt.I.get<v2_api.V2Api>();
 
   try {
     final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
@@ -58,23 +58,50 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
     // final memo = event.memo;
     // final memoIsHex = event.memoIsHex;
 
-    final dio = Dio();
-    final client = v2_api.V2Api(dio);
-    final response = await client.composeSend(source, destination, asset, quantity, true);
+    final client = GetIt.I.get<v2_api.V2Api>();
 
+    final response = await client.composeSend(source.address, destination, asset, quantity, true);
+    debugger(when: true);
     if (response.error != null) {
       return emit(ComposeSendError(message: response.error!));
     }
 
     final txInfoResponse = await client.getTransactionInfo(response.result!.rawtransaction);
-
+    debugger(when: true);
     if (txInfoResponse.error != null) {
       return emit(ComposeSendError(message: txInfoResponse.error!));
     }
 
+    final transactionService = GetIt.I.get<TransactionService>();
+    final walletRepository = GetIt.I<WalletRepository>();
+
+    final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
+
+    if (utxoResponse.error != null) {
+      return emit(ComposeSendError(message: utxoResponse.error!));
+    }
+
+    Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result!) e.txid: e};
+
+    final wallet = await walletRepository.getWalletByUuid(event.sourceAddress.walletUuid!);
+    debugger(when: true);
+
+    String txHex = await transactionService.signTransaction(
+        response.result!.rawtransaction, wallet!.wif, event.sourceAddress.address, utxoMap);
+
+    final bitcoindService = GetIt.I.get<BitcoindService>();
+    bitcoindService.sendrawtransaction(txHex);
+
     emit(ComposeSendSuccess(
-        transactionHex: response.result!.rawtransaction, info: txInfoResponse.result!, sourceAddress: source));
+        transactionHex: response.result!.rawtransaction, info: txInfoResponse.result!, sourceAddress: source.address));
   } catch (error) {
-    rethrow;
+    debugger(when: true);
+    print('ERROR: $error ');
+    if (error is DioException) {
+      debugger(when: true);
+      emit(ComposeSendError(message: "${error.response!.data.keys.first} ${error.response!.data.values.first}"));
+    } else {
+      emit(ComposeSendError(message: error.toString()));
+    }
   }
 }

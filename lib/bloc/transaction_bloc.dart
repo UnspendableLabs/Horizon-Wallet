@@ -1,11 +1,11 @@
 import 'dart:developer';
 import 'dart:js_interop';
 
-import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import "package:horizon/api/v2_api.dart" as v2_api;
+import 'package:horizon/api/v2_api.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 // import 'package:horizon/models/transaction.dart';
@@ -14,10 +14,6 @@ import 'package:horizon/models/wallet_node.dart';
 import 'package:horizon/services/bitcoind.dart';
 import 'package:horizon/services/ecpair.dart' as ecpair;
 import 'package:horizon/services/key_value_store_service.dart';
-
-// TODO: move this to service def
-final dio = Dio();
-final client = v2_api.V2Api(dio);
 
 sealed class TransactionState {
   const TransactionState();
@@ -119,6 +115,7 @@ _onSignTransactionEvent(event, emit) async {
   final bitcoindService = GetIt.I.get<BitcoindService>();
   final keyValueService = GetIt.I.get<KeyValueService>();
   final ecpairService = GetIt.I.get<ecpair.ECPairService>();
+  final client = GetIt.I.get<V2Api>();
   // final TransactionParserI transactionParser = GetIt.I.get<TransactionParserI>();
 
   try {
@@ -209,6 +206,8 @@ _onSignTransactionEvent(event, emit) async {
 _onSendTransactionEvent(event, emit) async {
   emit(SendTransactionLoading());
   final keyValueService = GetIt.I.get<KeyValueService>();
+  final client = GetIt.I.get<V2Api>();
+
   // final TransactionParserI transactionParser = GetIt.I.get<TransactionParserI>();
 
   try {

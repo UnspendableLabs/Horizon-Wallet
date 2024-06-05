@@ -3,7 +3,7 @@ import 'package:horizon/domain/entities/address.dart';
 abstract class ComposeSendEvent {}
 
 class SendTransactionEvent extends ComposeSendEvent {
-  final String sourceAddress;
+  final Address sourceAddress;
   final String destinationAddress;
   final double quantity;
   final String asset;

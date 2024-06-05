@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/api/v2_api.dart';
 import 'package:horizon/counterparty_api/counterparty_api.dart';
 import 'package:horizon/data/services/address_service_impl.dart' as addy_service_impl;
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
@@ -8,7 +10,6 @@ import 'package:horizon/data/services/encryption_service_impl.dart';
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
-import 'package:horizon/data/sources/local/db.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
@@ -27,22 +28,19 @@ import 'package:horizon/services/bech32.dart' as bech32;
 import 'package:horizon/services/bip32.dart' as bip32;
 import 'package:horizon/services/bip39.dart' as bip39;
 import 'package:horizon/services/blockcypher.dart';
-import 'package:horizon/services/key_value_store_service.dart';
 import 'package:horizon/services/seed_ops_service.dart';
 
-final database = DB();
-
-Future<void> setup() async {
+void setup() {
   GetIt injector = GetIt.I;
 
-  injector.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
   injector.registerSingleton<BlockCypherService>(BlockCypherImpl(
     url: dotenv.env['BLOCKCYPHER_URL']!,
   ));
-
-  injector.registerSingleton<KeyValueService>(SecureKeyValueImpl());
+  injector.registerLazySingleton<Dio>(() => Dio());
+  injector.registerLazySingleton<V2Api>(() => V2Api(GetIt.I.get<Dio>()));
   injector.registerSingleton<bip39.Bip39Service>(bip39.Bip39JSService());
   injector.registerSingleton<bech32.Bech32Service>(bech32.Bech32JSService());
+  injector.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
   injector.registerSingleton<ECPairService>(ECPairServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl(GetIt.I.get<ECPairService>()));
   injector.registerLazySingleton<SeedOpsService>(() => SeedOpsService());

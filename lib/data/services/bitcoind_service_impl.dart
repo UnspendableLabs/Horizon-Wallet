@@ -1,6 +1,6 @@
 import 'dart:convert' as c;
 
-import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
 import "package:horizon/api/v2_api.dart" as v2_api;
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:http/http.dart' as http;
@@ -43,7 +43,7 @@ class BitcoindServiceHttpImpl implements BitcoindService {
 }
 
 class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
-  final client = v2_api.V2Api(Dio());
+  final client = GetIt.I.get<v2_api.V2Api>();
 
   BitcoindServiceCounterpartyProxyImpl();
 

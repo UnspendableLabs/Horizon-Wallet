@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import "package:horizon/api/v2_api.dart" as v2_api;
 import 'package:horizon/api/v2_api.dart';
 
@@ -16,9 +17,7 @@ class _BalanceDisplayState extends State<BalanceDisplay> {
   _BalanceDisplayState();
 
   Future<List<Balance>> _fetchBalances() async {
-    final dio = Dio();
-    final client = v2_api.V2Api(dio);
-    // debugger(when: true);
+    final client = GetIt.I.get<v2_api.V2Api>();
 
     final xcpBalances = await client.getBalancesByAddress(widget.address, true);
     // debugger(when: true);

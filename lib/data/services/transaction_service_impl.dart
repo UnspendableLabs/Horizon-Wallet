@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:js_interop';
 
 import 'package:hex/hex.dart';
@@ -34,6 +35,7 @@ class TransactionServiceImpl implements TransactionService {
       script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: ecpairService.testnet));
     }
 
+    debugger(when: true);
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 
