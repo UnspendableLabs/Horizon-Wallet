@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -7,6 +6,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
+import 'package:horizon/services/blockcypher.dart';
 
 class ComposeSendPage extends StatelessWidget {
   final Address initialAddress;
@@ -39,9 +39,14 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   Future<List<String>> _fetchAssets() async {
     final client = GetIt.I.get<v2_api.V2Api>();
+    final blockCypher = GetIt.I.get<BlockCypherService>();
+
     final xcpBalances = await client.getBalancesByAddress(widget.initialAddress.address, true);
+    // final btcBalances = await blockCypher.fetchBalance(widget.initialAddress.address, NetworkEnum.mainnet);
+    // final balances = xcpBalances.result! + btcBalances;
     final assets = xcpBalances.result!.map((e) => e.asset).toList();
-    return assets;
+    // return assets;
+    return ['XCP', 'BTC'];
   }
 
   @override
@@ -64,7 +69,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text('From Address: ${widget.initialAddress.address}'),
+                    SelectableText('From Address: ${widget.initialAddress.address}'),
                     TextFormField(
                       controller: destinationAddressController,
                       decoration: InputDecoration(labelText: 'Destination Address'),
@@ -117,12 +122,12 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                        context.read<ComposeSendBloc>().add(SendTransactionEvent(
-                            sourceAddress: widget.initialAddress,
-                            destinationAddress: destinationAddressController.text,
-                            asset: asset!,
-                            quantity: double.parse(quantityController.text),
-                            network: 'testnet'));
+                          context.read<ComposeSendBloc>().add(SendTransactionEvent(
+                              sourceAddress: widget.initialAddress,
+                              destinationAddress: destinationAddressController.text,
+                              asset: asset!,
+                              quantity: double.parse(quantityController.text),
+                              network: 'testnet'));
                         }
                       },
                       child: Text('Submit'),

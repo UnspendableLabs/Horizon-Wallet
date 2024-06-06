@@ -152,88 +152,90 @@ class SeedPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        margin: const EdgeInsets.fromLTRB(
-          16,
-          16,
-          16,
-          32,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-                child: Column(children: [
-              TextField(
-                controller: _seedPhraseController,
-                onChanged: (value) {
-                  context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: value));
-                },
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Seed phrase',
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  DropdownMenu<String>(
-                    label: const Text("Import format"),
-                    onSelected: (newValue) {
-                      // newValue can't be null
-                      context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
-                    },
-
-                    initialSelection: ImportFormat.segwit.name,
-
-                    // value: _selectedValue, // Currently selected value
-                    // onChanged: (newValue) {
-                    // setState(() {
-                    //   _selectedValue = newValue; // Update the selected value
-                    // });
-                    // },
-                    dropdownMenuEntries: [
-                      DropdownMenuEntry<String>(
-                        value: ImportFormat.segwit.name,
-                        label: ImportFormat.segwit.description,
-                      ),
-                      // DropdownMenuEntry<String>(
-                      //   value: ImportFormat.legacy.name,
-                      //   label: ImportFormat.legacy.description,
-                      // ),
-                      DropdownMenuEntry<String>(
-                        value: ImportFormat.freewalletBech32.name,
-                        label: ImportFormat.freewalletBech32.description,
-                      ),
-                    ],
+    return Flexible(
+      child: Container(
+          margin: const EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            32,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                  child: Column(children: [
+                TextField(
+                  controller: _seedPhraseController,
+                  onChanged: (value) {
+                    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: value));
+                  },
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Seed phrase',
                   ),
-                ],
-              ),
-              SizedBox(height: 16),
-              _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
-              _state.getAddressesState is GetAddressesStateSuccess
-                  ? AddressListView(
-                      addresses: _state.getAddressesState.addresses,
-                      isCheckedMap: _state.isCheckedMap,
-                      onCheckedChanged: (address, checked) {
-                        context.read<OnboardingImportBloc>().add(AddressMapChanged(address: address, isChecked: checked));
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    DropdownMenu<String>(
+                      label: const Text("Import format"),
+                      onSelected: (newValue) {
+                        // newValue can't be null
+                        context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
                       },
-                    )
-                  : const Text("")
-            ])),
-            _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
-            Row(children: [
-              // TODO: figure out how to disable a button
-              ElevatedButton(
-                onPressed: () {
-                  context.read<OnboardingImportBloc>().add(ImportAddresses());
-                },
-                child: const Text('Import Addresses'),
-              ),
-            ]),
-            _state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
-          ],
-        ));
+
+                      initialSelection: ImportFormat.segwit.name,
+
+                      // value: _selectedValue, // Currently selected value
+                      // onChanged: (newValue) {
+                      // setState(() {
+                      //   _selectedValue = newValue; // Update the selected value
+                      // });
+                      // },
+                      dropdownMenuEntries: [
+                        DropdownMenuEntry<String>(
+                          value: ImportFormat.segwit.name,
+                          label: ImportFormat.segwit.description,
+                        ),
+                        // DropdownMenuEntry<String>(
+                        //   value: ImportFormat.legacy.name,
+                        //   label: ImportFormat.legacy.description,
+                        // ),
+                        DropdownMenuEntry<String>(
+                          value: ImportFormat.freewalletBech32.name,
+                          label: ImportFormat.freewalletBech32.description,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
+                _state.getAddressesState is GetAddressesStateSuccess
+                    ? AddressListView(
+                        addresses: _state.getAddressesState.addresses,
+                        isCheckedMap: _state.isCheckedMap,
+                        onCheckedChanged: (address, checked) {
+                          context.read<OnboardingImportBloc>().add(AddressMapChanged(address: address, isChecked: checked));
+                        },
+                      )
+                    : const Text("")
+              ])),
+              _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
+              Row(children: [
+                // TODO: figure out how to disable a button
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<OnboardingImportBloc>().add(ImportAddresses());
+                  },
+                  child: const Text('Import Addresses'),
+                ),
+              ]),
+              _state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
+            ],
+          )),
+    );
   }
 }
 
@@ -251,21 +253,23 @@ class AddressListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: addresses.length,
-        itemBuilder: (context, index) {
-          final address = addresses[index];
-          return AddressListItem(
-            address: address,
-            isChecked: isCheckedMap[address] ?? false,
-            onCheckedChanged: (isChecked) {
-              onCheckedChanged(address, isChecked);
-            },
-          );
-        },
+    return Expanded(
+      child: SingleChildScrollView(
+        child: ListView.builder(
+          shrinkWrap: true,
+          // physics: const NeverScrollableScrollPhysics(),
+          itemCount: addresses.length,
+          itemBuilder: (context, index) {
+            final address = addresses[index];
+            return AddressListItem(
+              address: address,
+              isChecked: isCheckedMap[address] ?? false,
+              onCheckedChanged: (isChecked) {
+                onCheckedChanged(address, isChecked);
+              },
+            );
+          },
+        ),
       ),
     );
   }

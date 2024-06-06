@@ -40,11 +40,10 @@ class _AddressDisplayState extends State<AddressDisplay> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Flexible(
-                        child: Text(
+                        child: SelectableText(
                           state.addressState.currentAddress.address,
                           style: TextStyle(fontSize: screenWidth * 0.025), // Responsive font size
                           textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       IconButton(
