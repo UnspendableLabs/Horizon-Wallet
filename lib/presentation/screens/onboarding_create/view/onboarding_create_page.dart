@@ -142,7 +142,7 @@ class Mnemonic extends StatelessWidget {
                         ? SelectableText(
                             _state.mnemonicState.mnemonic,
                             style: TextStyle(
-                              fontFamily: 'monospace',
+                              // fontFamily: 'monospace',
                               fontWeight: FontWeight.bold,
                               fontSize: 32,
                             ),

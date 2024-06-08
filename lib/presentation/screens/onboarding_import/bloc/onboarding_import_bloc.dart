@@ -96,6 +96,8 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         Account account = Account(uuid: uuid.v4());
         wallet.uuid = uuid.v4();
         wallet.accountUuid = account.uuid;
+        wallet.name = state.importFormat.description;
+
         for (Address address in addresses) {
           address.walletUuid = wallet.uuid;
         }

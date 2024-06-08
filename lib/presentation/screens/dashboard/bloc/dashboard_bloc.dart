@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -14,22 +15,34 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     final walletRepository = GetIt.I<WalletRepository>();
     on<SetAccountAndWallet>((event, emit) async {
       Account? account = await accountRepository.getCurrentAccount();
-
-      emit(state.copyWith(accountState: AccountStateSuccess(currentAccount: account!)));
-
-      final wallet = await walletRepository.getWalletByUuid(account.uuid!);
+      final wallets = await walletRepository.getWalletsByAccountUuid(account!.uuid!);
       emit(state.copyWith(
-          accountState: AccountStateSuccess(currentAccount: account), walletState: WalletStateSuccess(wallet: wallet!)));
+          accountState: AccountStateSuccess(currentAccount: account),
+          walletState: WalletStateSuccess(currentWallet: wallets[0], wallets: wallets)));
     });
 
     on<GetAddresses>((event, emit) async {
       emit(state.copyWith(addressState: AddressStateLoading()));
 
-      final wallet = state.walletState.wallet;
+      final wallet = state.walletState.currentWallet;
 
       final addresses = await addressRepository.getAllByWalletUuid(wallet!.uuid!);
       // Get addresses
-      emit(state.copyWith(addressState: AddressStateSuccess(addresses: addresses)));
+      emit(state.copyWith(addressState: AddressStateSuccess(currentAddress: addresses[0], addresses: addresses)));
+    });
+
+    on<ChangeAddress>((ChangeAddress event, emit) async {
+      print('State changing?!');
+      emit(state.copyWith(addressState: AddressStateLoading()));
+
+      List<Address> addresses = await addressRepository.getAllByWalletUuid(event.address.walletUuid!);
+      emit(state.copyWith(addressState: AddressStateSuccess(currentAddress: event.address, addresses: addresses)));
+    });
+
+    on<DeleteWallet>((event, emit) async {
+      await addressRepository.deleteAllAddresses();
+      await walletRepository.deleteAllWallets();
+      await accountRepository.deleteAllAccounts();
     });
   }
 }

@@ -1,7 +1,7 @@
-import 'package:horizon/bitcoin_wallet_utils/create_wallet.dart';
-import 'package:horizon/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic.dart';
+import 'package:horizon/deprecated/bitcoin_wallet_utils/create_wallet.dart';
+import 'package:horizon/deprecated/bitcoin_wallet_utils/legacy_seed/legacy_mnemonic.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/models/wallet_node.dart';
+import 'package:horizon/deprecated/models/wallet_node.dart';
 import 'package:test/test.dart';
 
 void main() async {

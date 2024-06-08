@@ -1,26 +1,30 @@
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/setup.dart';
 
-final GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
+GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
   GoRoute(
     path: "/db",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: DriftDbViewer(database),
+        child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
     path: "/onboarding",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: const OnboardingScreen(),
+        child: OnboardingScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
@@ -44,18 +48,32 @@ final GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteB
         child: DashboardPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
+  GoRoute(
+    path: "/compose/send",
+    pageBuilder: (context, state) {
+      // Retrieve the initial address from the extra parameter
+      Address initialAddress = (state.extra as Map<String, dynamic>)['initialAddress'];
+      return CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: ComposeSendPage(initialAddress: initialAddress),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+      );
+    },
+  ),
 ]);
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await dotenv.load();
 
-  await setup();
+  setup();
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({
+  MyApp({
     super.key,
   });
 
@@ -64,6 +82,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: router,
+      theme: ThemeData(
+        fontFamily: 'monospace',
+        primaryColor: Colors.blueAccent,
+      ),
     );
 
     // const appTitle = 'Horizon';

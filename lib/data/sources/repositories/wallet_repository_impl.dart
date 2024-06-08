@@ -15,6 +15,7 @@ class WalletRepositoryImpl implements WalletRepository {
   Future<void> insert(entity.Wallet wallet) async {
     WalletModel wallet_ = WalletModel(
       uuid: wallet.uuid ?? uuid.v4(),
+      name: wallet.name ?? '',
       accountUuid: wallet.accountUuid!,
       publicKey: wallet.publicKey,
       wif: wallet.wif,
@@ -27,7 +28,40 @@ class WalletRepositoryImpl implements WalletRepository {
   Future<entity.Wallet?> getWalletByUuid(String uuid) async {
     WalletModel? wallet = await _walletDao.getWalletByUuid(uuid);
     return wallet != null
-        ? entity.Wallet(uuid: wallet.uuid, accountUuid: wallet.accountUuid, publicKey: wallet.publicKey, wif: wallet.wif)
+        ? entity.Wallet(
+            uuid: wallet.uuid,
+            accountUuid: wallet.accountUuid,
+            publicKey: wallet.publicKey,
+            wif: wallet.wif,
+            name: wallet.name)
         : null;
+  }
+
+  @override
+  Future<List<entity.Wallet>> getWalletsByAccountUuid(String accountUuid) async {
+    List<WalletModel> wallets = await _walletDao.getWalletsByAccountUuid(accountUuid);
+    return wallets
+        .map((wallet) => entity.Wallet(
+            uuid: wallet.uuid,
+            accountUuid: wallet.accountUuid,
+            publicKey: wallet.publicKey,
+            wif: wallet.wif,
+            name: wallet.name))
+        .toList();
+  }
+
+  @override
+  Future<void> deleteWallet(entity.Wallet wallet) async {
+    await _walletDao.deleteWallet(WalletModel(
+        uuid: wallet.uuid!,
+        accountUuid: wallet.accountUuid!,
+        publicKey: wallet.publicKey!,
+        wif: wallet.wif!,
+        name: wallet.name!));
+  }
+
+  @override
+  Future<void> deleteAllWallets() async {
+    await _walletDao.deleteAllWallets();
   }
 }

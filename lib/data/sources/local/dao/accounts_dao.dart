@@ -24,4 +24,8 @@ class AccountsDao extends DatabaseAccessor<DB> with _$AccountsDaoMixin {
 
   Future<bool> updateAccount(Insertable<AccountModel> account) => update(accounts).replace(account);
   Future<int> deleteAccount(Insertable<AccountModel> account) => delete(accounts).delete(account);
+  // Method to delete all accounts
+  Future<int> deleteAllAccounts() {
+    return delete(accounts).go();
+  }
 }

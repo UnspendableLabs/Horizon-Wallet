@@ -21,8 +21,9 @@ class AddressStateInitial extends AddressState {}
 class AddressStateLoading extends AddressState {}
 
 class AddressStateSuccess extends AddressState {
+  final Address currentAddress;
   final List<Address> addresses;
-  AddressStateSuccess({required this.addresses});
+  AddressStateSuccess({required this.currentAddress, required this.addresses});
 }
 
 class AddressStateError extends AddressState {
@@ -50,8 +51,9 @@ class WalletStateInitial extends WalletState {}
 class WalletStateLoading extends WalletState {}
 
 class WalletStateSuccess extends WalletState {
-  final Wallet wallet;
-  WalletStateSuccess({required this.wallet});
+  final Wallet currentWallet;
+  final List<Wallet> wallets;
+  WalletStateSuccess({required this.wallets, required this.currentWallet});
 }
 
 class WalletStateError extends WalletState {

@@ -12,6 +12,7 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
+import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 
 class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
   final mnmonicService = GetIt.I<MnemonicService>();
@@ -57,10 +58,11 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
 
           Address address = await addressService.deriveAddressSegwit(state.mnemonicState.mnemonic, 0);
           address.walletUuid = wallet.uuid;
+          wallet.name = ImportFormat.segwit.description;
+
 
           await accountRepository.insert(account);
           await walletRepository.insert(wallet);
-          // insert not implemented at the moment
           await addressRepository.insertMany([address]);
 
           emit(state.copyWith(createState: CreateStateSuccess()));

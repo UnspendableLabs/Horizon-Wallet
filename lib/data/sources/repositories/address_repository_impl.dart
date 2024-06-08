@@ -37,4 +37,14 @@ class AddressRepositoryImpl implements AddressRepository {
         .map((a) => entity.Address(walletUuid: a.walletUuid, address: a.address, derivationPath: a.derivationPath))
         .toList();
   }
+
+  @override
+  Future<void> deleteAddresses(String walletUuid) async {
+    await _addressDao.deleteAddresses(walletUuid);
+  }
+
+  @override
+  Future<void> deleteAllAddresses() async {
+    await _addressDao.deleteAllAddresses();
+  }
 }
