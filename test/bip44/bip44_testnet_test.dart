@@ -1,6 +1,6 @@
 import 'package:dartsv/dartsv.dart';
-import 'package:horizon/bitcoin_wallet_utils/bip39.dart';
-import 'package:horizon/bitcoin_wallet_utils/key_derivation.dart';
+import 'package:horizon/deprecated/bitcoin_wallet_utils/bip39.dart';
+import 'package:horizon/deprecated/bitcoin_wallet_utils/key_derivation.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:test/test.dart';
 

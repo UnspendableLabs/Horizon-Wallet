@@ -1,4 +1,4 @@
-import 'package:horizon/models/transaction.dart';
+import 'package:horizon/deprecated/models/transaction.dart';
 import 'package:test/test.dart';
 
 // class BitcoinjsTransaction {

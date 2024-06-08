@@ -6,7 +6,6 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
-import 'package:horizon/services/blockcypher.dart';
 
 class ComposeSendPage extends StatelessWidget {
   final Address initialAddress;
@@ -39,7 +38,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   Future<List<String>> _fetchAssets() async {
     final client = GetIt.I.get<v2_api.V2Api>();
-    final blockCypher = GetIt.I.get<BlockCypherService>();
 
     final xcpBalances = await client.getBalancesByAddress(widget.initialAddress.address, true);
     // final btcBalances = await blockCypher.fetchBalance(widget.initialAddress.address, NetworkEnum.mainnet);

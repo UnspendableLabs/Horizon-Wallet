@@ -8,7 +8,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
-import 'package:horizon/services/bitcoind.dart';
+import 'package:horizon/domain/services/bitcoind.dart';
 
 class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
   ComposeSendBloc() : super(ComposeSendInitial()) {

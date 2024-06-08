@@ -34,6 +34,11 @@ class AddressServiceImpl extends AddressService {
     bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
 
     bip32.BIP32Interface child = root.derivePath(basePath + index.toString());
+    /**
+     *
+      WalletNode walletNode =
+          WalletNode(address: address, publicKey: hex.encode(child.publicKey.toDart), privateKey: child.toWIF(), index: 0);
+     */
 
     String address = _bech32FromBip32(child);
 

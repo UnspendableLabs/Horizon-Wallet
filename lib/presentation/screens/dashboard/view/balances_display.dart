@@ -17,7 +17,6 @@ class _BalanceDisplayState extends State<BalanceDisplay> {
 
   Future<List<Balance>> _fetchBalances() async {
     final client = GetIt.I.get<v2_api.V2Api>();
-    // final blockCypher = GetIt.I.get<BlockCypherService>();
 
     final xcpBalances = await client.getBalancesByAddress(widget.address, true);
     return xcpBalances.result!;
