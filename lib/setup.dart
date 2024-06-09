@@ -29,21 +29,12 @@ import 'package:horizon/domain/services/wallet_service.dart';
 void setup() {
   GetIt injector = GetIt.I;
 
-  // injector.registerSingleton<BlockCypherService>(BlockCypherImpl(
-  //   url: dotenv.env['BLOCKCYPHER_URL']!,
-  // ));
-  // injector.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
   injector.registerLazySingleton<Dio>(() => buildDioClient());
   injector.registerLazySingleton<V2Api>(() => V2Api(GetIt.I.get<Dio>()));
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
-  // injector.registerSingleton<bech32.Bech32Service>(bech32.Bech32JSService());
   injector.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
   injector.registerSingleton<ECPairService>(ECPairServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl(GetIt.I.get<ECPairService>()));
-  // injector.registerLazySingleton<SeedOpsService>(() => SeedOpsService());
-  // injector.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
-
-  // injector.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
 
   injector.registerSingleton<AddressService>(AddressServiceImpl());
 

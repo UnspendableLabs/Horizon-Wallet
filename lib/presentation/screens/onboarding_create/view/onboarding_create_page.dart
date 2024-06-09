@@ -134,7 +134,7 @@ class Mnemonic extends StatelessWidget {
         margin: EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: Column(
           children: [
-            (_state.mnemonicState is GenerateMnemonicStateLoading
+          (_state.mnemonicState is GenerateMnemonicStateLoading
                 ? CircularProgressIndicator()
                 : _state.mnemonicState is GenerateMnemonicStateError
                     ? Text("Error: ${_state.mnemonicState.message}")
@@ -142,7 +142,6 @@ class Mnemonic extends StatelessWidget {
                         ? SelectableText(
                             _state.mnemonicState.mnemonic,
                             style: TextStyle(
-                              // fontFamily: 'monospace',
                               fontWeight: FontWeight.bold,
                               fontSize: 32,
                             ),

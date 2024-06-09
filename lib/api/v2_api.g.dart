@@ -497,7 +497,7 @@ class _V2Api implements V2Api {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://localhost:14000/v2';
+    baseUrl ??= 'https://api.counterparty.io:14000/v2';
   }
 
   final Dio _dio;
@@ -1053,6 +1053,7 @@ class _V2Api implements V2Api {
     String asset,
     double quantity, [
     bool? allowUnconfirmedInputs,
+    int? fee,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -1060,6 +1061,7 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'fee': fee,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

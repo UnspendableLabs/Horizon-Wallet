@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:horizon/common/constants.dart';
@@ -53,8 +54,9 @@ class CounterpartyApi {
     try {
       final response = await http.get(Uri.parse('${url}v2/addresses/$address/balances'), headers: <String, String>{
         'Content-Type': 'application/json',
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE, HEAD",
+        // "Access-Control-Allow-Origin": "*",
+        // "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE, HEAD",
+        // "Origin": "http://localhost:9200",
       });
       if (response.statusCode == 200) {
         print('BALANCE RESPONSE: ${response.body}');
@@ -62,10 +64,12 @@ class CounterpartyApi {
 
         final List<Balance> balances = [];
         for (var item in res.result) {
+          debugger(when: true);
           balances.add(Balance.fromJson(item));
         }
         return balances;
       } else {
+        debugger(when: true);
         throw Exception('Failed to load balance');
       }
     } catch (error) {

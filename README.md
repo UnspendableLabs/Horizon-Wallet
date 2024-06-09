@@ -1,3 +1,18 @@
+here’s an extra step
+
+so first: run
+flutter pub get
+
+then run:
+
+flutter pub run build_runner build
+
+then do:
+
+flutter run -d Chrome
+
+
+
 # horizon
 
 A bip39 wallet for XCP and bitcoin. Compatible with Freewallet and Counterwallet.

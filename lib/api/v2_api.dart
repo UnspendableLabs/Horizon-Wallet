@@ -731,7 +731,7 @@ class UTXO {
 
 // TODO: inject baseURL ( or make dynamic)
 // @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
-@RestApi(baseUrl: "http://localhost:14000/v2")
+@RestApi(baseUrl: "https://api.counterparty.io:14000/v2")
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 
@@ -904,6 +904,7 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity") double quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("fee") int? fee,
   ]);
 
   // {

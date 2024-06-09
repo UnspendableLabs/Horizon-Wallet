@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       routerConfig: router,
       theme: ThemeData(
-        fontFamily: 'monospace',
+        fontFamily: 'Roboto',
         primaryColor: Colors.blueAccent,
       ),
     );
