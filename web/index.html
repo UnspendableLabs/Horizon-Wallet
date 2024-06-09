@@ -32,7 +32,6 @@
   <title>horizon</title>
   <link rel="manifest" href="manifest.json">
 
-
   <script src="./assets/buffer.js" type="application/javascript"></script>
   <script src="./assets/tiny_secp256k1.js" type="application/javascript"></script>
   <script src="./assets/ecpair.js" type="application/javascript"></script>
@@ -41,7 +40,7 @@
   <script src="./assets/bech32.js" type="application/javascript"></script>
   <script src="./assets/bitcoinjs.js" type="application/javascript"></script>
     // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = null;
+    var serviceWorkerVersion = {{flutter_service_worker_version}};
   </script>
   <!-- This script adds the flutter initialization JS code -->
 </head>

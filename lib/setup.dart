@@ -1,27 +1,51 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/counterparty_api/counterparty_api.dart';
-import 'package:horizon/services/bech32.dart' as bech32;
-import 'package:horizon/services/bip32.dart' as bip32;
-import 'package:horizon/services/bip39.dart' as bip39;
-import 'package:horizon/services/bitcoind.dart';
-import 'package:horizon/services/blockcypher.dart';
-import 'package:horizon/services/ecpair.dart' as ecpair;
-import 'package:horizon/services/key_value_store_service.dart';
-import 'package:horizon/services/seed_ops_service.dart';
+import 'package:horizon/api/dio_client.dart';
+import 'package:horizon/api/v2_api.dart';
+import 'package:horizon/data/services/address_service_impl.dart';
+import 'package:horizon/data/services/bip39_service_impl.dart';
+import 'package:horizon/data/services/bitcoind_service_impl.dart';
+import 'package:horizon/data/services/ecpair_service_impl.dart';
+import 'package:horizon/data/services/encryption_service_impl.dart';
+import 'package:horizon/data/services/mnemonic_service_impl.dart';
+import 'package:horizon/data/services/transaction_service_impl.dart';
+import 'package:horizon/data/services/wallet_service_impl.dart';
+import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/bip39.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/services/ecpair_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 
-Future<void> setup() async {
-  GetIt.I.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
-  GetIt.I.registerSingleton<BlockCypherService>(BlockCypherImpl(
-    url: dotenv.env['BLOCKCYPHER_URL']!,
-  ));
+void setup() {
+  GetIt injector = GetIt.I;
 
-  GetIt.I.registerSingleton<KeyValueService>(SecureKeyValueImpl());
-  GetIt.I.registerSingleton<bip39.Bip39Service>(bip39.Bip39JSService());
-  GetIt.I.registerSingleton<bech32.Bech32Service>(bech32.Bech32JSService());
-  GetIt.I.registerSingleton<ecpair.ECPairService>(ecpair.ECPairJSService());
-  GetIt.I.registerLazySingleton<SeedOpsService>(() => SeedOpsService());
-  GetIt.I.registerLazySingleton<CounterpartyApi>(() => CounterpartyApi());
+  injector.registerLazySingleton<Dio>(() => buildDioClient());
+  injector.registerLazySingleton<V2Api>(() => V2Api(GetIt.I.get<Dio>()));
+  injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
+  injector.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl());
+  injector.registerSingleton<ECPairService>(ECPairServiceImpl());
+  injector.registerSingleton<TransactionService>(TransactionServiceImpl(GetIt.I.get<ECPairService>()));
 
-  GetIt.I.registerSingleton<bip32.Bip32Service>(bip32.Bip32JSService());
+  injector.registerSingleton<AddressService>(AddressServiceImpl());
+
+  injector.registerSingleton<EncryptionService>(EncryptionServiceImpl());
+  injector.registerSingleton<MnemonicService>(MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
+
+  injector.registerSingleton<WalletService>(WalletServiceImpl(GetIt.I.get<EncryptionService>()));
+
+  injector.registerSingleton<DatabaseManager>(DatabaseManager());
+
+  injector.registerSingleton<AccountRepository>(AccountRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<WalletRepository>(WalletRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<AddressRepository>(AddressRepositoryImpl(injector.get<DatabaseManager>().database));
 }

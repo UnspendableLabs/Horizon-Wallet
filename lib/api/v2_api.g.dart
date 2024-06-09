@@ -87,6 +87,18 @@ Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
       'supported': instance.supported,
     };
 
+Balance _$BalanceFromJson(Map<String, dynamic> json) => Balance(
+      address: json['address'] as String,
+      quantity: (json['quantity'] as num).toDouble(),
+      asset: json['asset'] as String,
+    );
+
+Map<String, dynamic> _$BalanceToJson(Balance instance) => <String, dynamic>{
+      'address': instance.address,
+      'quantity': instance.quantity,
+      'asset': instance.asset,
+    };
+
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
@@ -485,7 +497,7 @@ class _V2Api implements V2Api {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://localhost:14000/v2';
+    baseUrl ??= 'https://api.counterparty.io:14000/v2';
   }
 
   final Dio _dio;
@@ -518,6 +530,43 @@ class _V2Api implements V2Api {
     final value = Response<String>.fromJson(
       _result.data!,
       (json) => json as String,
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<List<Balance>>> getBalancesByAddress(
+    String address,
+    bool verbose,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'verbose': verbose};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Balance>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/balances',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<List<Balance>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Balance>((i) => Balance.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
     );
     return value;
   }
@@ -1002,8 +1051,9 @@ class _V2Api implements V2Api {
     String address,
     String destination,
     String asset,
-    int quantity, [
+    double quantity, [
     bool? allowUnconfirmedInputs,
+    int? fee,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -1011,6 +1061,7 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'fee': fee,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
