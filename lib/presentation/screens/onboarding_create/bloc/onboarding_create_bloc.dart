@@ -17,7 +17,7 @@ import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_i
 class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
   final mnmonicService = GetIt.I<MnemonicService>();
   final addressService = GetIt.I<AddressService>();
-  final walletService = GetIt.I<WalletService>();
+  final accountService = GetIt.I<AccountService>();
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
@@ -50,19 +50,19 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
         try {
           // there is some duplicate work here ( but it's all fast )
 
-          Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
+          Account account = await accountService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
 
-          Account account = Account(uuid: uuid.v4());
-          wallet.uuid = uuid.v4();
-          wallet.accountUuid = account.uuid;
+          Wallet wallet = Wallet(uuid: uuid.v4());
+
+          account.uuid = uuid.v4();
+          account.walletUuid = wallet.uuid;
+          account.name = ImportFormat.segwit.description;
 
           Address address = await addressService.deriveAddressSegwit(state.mnemonicState.mnemonic, 0);
-          address.walletUuid = wallet.uuid;
-          wallet.name = ImportFormat.segwit.description;
+          address.accountUuid = account.uuid;
 
-
-          await accountRepository.insert(account);
           await walletRepository.insert(wallet);
+          await accountRepository.insert(account);
           await addressRepository.insertMany([address]);
 
           emit(state.copyWith(createState: CreateStateSuccess()));

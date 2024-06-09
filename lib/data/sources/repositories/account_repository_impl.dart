@@ -13,57 +13,55 @@ class AccountRepositoryImpl implements AccountRepository {
 
   @override
   Future<void> insert(entity.Account account) async {
-    await _accountDao.insertAccount(AccountModel(uuid: account.uuid ?? uuid.v4()));
+    AccountModel account_ = AccountModel(
+      uuid: account.uuid ?? uuid.v4(),
+      name: account.name ?? '',
+      walletUuid: account.walletUuid!,
+      rootPublicKey: account.rootPublicKey,
+      rootPrivateKey: account.rootPrivateKey,
+    );
+
+    await _accountDao.insertAccount(account_);
   }
 
   @override
-  Future<entity.Account?> getAccount(String uuid) async {
-    AccountModel? accountLocal = await _accountDao.getAccountByUuid(uuid);
-    if (accountLocal == null) {
-      return null;
-    }
-    print('accountLocal: $accountLocal');
-    return entity.Account(
-      uuid: accountLocal.uuid,
-    );
+  Future<entity.Account?> getAccountByUuid(String uuid) async {
+    AccountModel? account = await _accountDao.getAccountByUuid(uuid);
+    return account != null
+        ? entity.Account(
+            uuid: account.uuid,
+            walletUuid: account.walletUuid,
+            rootPublicKey: account.rootPublicKey,
+            rootPrivateKey: account.rootPrivateKey,
+            name: account.name)
+        : null;
   }
 
   @override
-  Future<entity.Account?> getCurrentAccount() async {
-    // TODO: how to mark current account?
-    AccountModel? account = await _accountDao.getCurrentAccount();
-    return entity.Account(
-      uuid: account?.uuid,
-    );
-    // return null;
+  Future<List<entity.Account>> getAccountsByWalletUuid(String walletUuid) async {
+    List<AccountModel> accounts = await _accountDao.getAccountsByWalletUuid(walletUuid);
+    return accounts
+        .map((account) => entity.Account(
+            uuid: account.uuid,
+            walletUuid: account.walletUuid,
+            rootPublicKey: account.rootPublicKey,
+            rootPrivateKey: account.rootPrivateKey,
+            name: account.name))
+        .toList();
   }
 
   @override
   Future<void> deleteAccount(entity.Account account) async {
-    await _accountDao.deleteAccount(AccountModel(uuid: account.uuid!));
+    await _accountDao.deleteAccount(AccountModel(
+        uuid: account.uuid!,
+        walletUuid: account.walletUuid!,
+        rootPublicKey: account.rootPublicKey!,
+        rootPrivateKey: account.rootPrivateKey!,
+        name: account.name!));
   }
 
   @override
   Future<void> deleteAllAccounts() async {
     await _accountDao.deleteAllAccounts();
   }
-
-  // @override
-  // Future<void> initializeWithWalletAndAddresses(
-  //     Wallet wallet, List<Address> addresses) async {
-  //
-  //     await transaction(() async {
-  //
-  //
-  //         await _accountDao.insertAccount(AccountModel(uuid: uuid.v4()));
-  //
-  //
-  //     });
-  //
-  //
-  //
-  //
-  //
-  //
-  //   }
 }

@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import "package:horizon/api/v2_api.dart" as v2_api;
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/bitcoind.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
@@ -21,7 +20,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 _onSignTransactionEvent(SignTransactionEvent event, emit) async {
   final bitcoindService = GetIt.I.get<BitcoindService>();
   final transactionService = GetIt.I.get<TransactionService>();
-  final walletRepository = GetIt.I<WalletRepository>();
   final client = GetIt.I.get<v2_api.V2Api>();
 
   try {
@@ -33,10 +31,8 @@ _onSignTransactionEvent(SignTransactionEvent event, emit) async {
 
     Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result!) e.txid: e};
 
-    final wallet = await walletRepository.getWalletByUuid(event.sourceAddress.walletUuid!);
-
     String txHex = await transactionService.signTransaction(
-        event.unsignedTransactionHex, wallet!.wif, event.sourceAddress.address, utxoMap);
+        event.unsignedTransactionHex, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
 
     bitcoindService.sendrawtransaction(txHex);
 
@@ -73,7 +69,6 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
     }
 
     final transactionService = GetIt.I.get<TransactionService>();
-    final walletRepository = GetIt.I<WalletRepository>();
 
     final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
 
@@ -83,11 +78,10 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
 
     Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result!) e.txid: e};
 
-    final wallet = await walletRepository.getWalletByUuid(event.sourceAddress.walletUuid!);
     debugger(when: true);
 
     String txHex = await transactionService.signTransaction(
-        response.result!.rawtransaction, wallet!.wif, event.sourceAddress.address, utxoMap);
+        response.result!.rawtransaction, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
 
     debugger(when: true);
     final bitcoindService = GetIt.I.get<BitcoindService>();

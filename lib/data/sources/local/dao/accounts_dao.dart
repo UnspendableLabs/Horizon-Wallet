@@ -11,21 +11,17 @@ class AccountsDao extends DatabaseAccessor<DB> with _$AccountsDaoMixin {
 
   Future<List<AccountModel>> getAllAccounts() => select(accounts).get();
   Future<AccountModel?> getAccountByUuid(String uuid) =>
-      (select(accounts)..where((tbl) => tbl.uuid.equals(uuid))).getSingle();
+      (select(accounts)..where((tbl) => tbl.uuid.equals(uuid))).getSingleOrNull();
+  Future<List<AccountModel>> getAccountsByWalletUuid(String walletUuid) =>
+      (select(accounts)..where((tbl) => tbl.walletUuid.equals(walletUuid))).get();
+  Future<void> insertAccount(Insertable<AccountModel> account) => into(accounts).insert(account);
+  Future<void> updateAccount(Insertable<AccountModel> account) => update(accounts).replace(account);
+  Future<void> deleteAccount(Insertable<AccountModel> account) => delete(accounts).delete(account);
 
-  // TODO: get the actual current account
-  Future<AccountModel?> getCurrentAccount() => select(accounts).getSingle();
-
-  Stream<AccountModel?> watchAccountByUuid(String uuid) =>
-      (select(accounts)..where((tbl) => tbl.uuid.equals(uuid))).watchSingle();
-  Future<int> insertAccount(AccountModel account) {
-    return into(accounts).insert(account);
-  }
-
-  Future<bool> updateAccount(Insertable<AccountModel> account) => update(accounts).replace(account);
-  Future<int> deleteAccount(Insertable<AccountModel> account) => delete(accounts).delete(account);
-  // Method to delete all accounts
   Future<int> deleteAllAccounts() {
     return delete(accounts).go();
   }
+
+  Future<List<AccountModel>> findAccountsByWalletUuid(String walletUuid) =>
+      (select(accounts)..where((tbl) => tbl.walletUuid.equals(walletUuid))).get();
 }

@@ -1,12 +1,12 @@
-import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 
 // TODO: define mnemonic type
-abstract class WalletService {
+abstract class AccountService {
   EncryptionService encryptionService;
 
-  WalletService(this.encryptionService);
+  AccountService(this.encryptionService);
 
-  Future<Wallet> deriveRoot(String mnemonic, String password);
-  Future<Wallet> deriveRootFreewallet(String mnemonic, String password);
+  Future<Account> deriveRoot(String mnemonic, String password);
+  Future<Account> deriveRootFreewallet(String mnemonic, String password);
 }

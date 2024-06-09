@@ -10,8 +10,8 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
   AddressesDao(super.db);
 
   Future<List<Address>> getAllAddresses() => select(addresses).get();
-  Future<List<Address>> getAllAddressesByWalletUuid(String walletUuid) =>
-      (select(addresses)..where((tbl) => tbl.walletUuid.equals(walletUuid))).get();
+  Future<List<Address>> getAllAddressesByAccountUuid(String accountUuid) =>
+      (select(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid))).get();
 
   // Future<AddressModel?> getAddressByUuid(String uuid) => (select(addresses)..where((tbl) => tbl.uuid.equals(uuid))).getSingle();
   //
@@ -30,30 +30,11 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
 
   Future<bool> updateAddress(Insertable<AddressModel> address) => update(addresses).replace(address);
   Future<int> deleteAddress(Insertable<AddressModel> address) => delete(addresses).delete(address);
-  Future<void> deleteAddresses(String walletUuid) async {
-    await (delete(addresses)..where((tbl) => tbl.walletUuid.equals(walletUuid))).go();
+  Future<void> deleteAddresses(String accountUuid) async {
+    await (delete(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid))).go();
   }
 
   Future<int> deleteAllAddresses() {
     return delete(addresses).go();
   }
 }
-
-// import 'package:floor/floor.dart';
-// import 'package:horizon/data/models/address.dart';
-
-// @dao
-// abstract class AddressDao {
-//   @Query('SELECT * FROM address')
-//   Future<List<AddressModel>> findAllAddresss();
-//   @Query('SELECT * FROM address WHERE uuid = :uuid')
-//   Future<AddressModel?> findAddressByUuid(String uuid);
-//   @insert
-//   Future<void> insertAddress(AddressModel address);
-//   @update
-//   Future<void> updateAddress(AddressModel address);
-//   @delete
-//   Future<void> deleteAddress(AddressModel address);
-
-
-// }

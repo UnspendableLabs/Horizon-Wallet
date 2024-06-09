@@ -13,55 +13,57 @@ class WalletRepositoryImpl implements WalletRepository {
 
   @override
   Future<void> insert(entity.Wallet wallet) async {
-    WalletModel wallet_ = WalletModel(
-      uuid: wallet.uuid ?? uuid.v4(),
-      name: wallet.name ?? '',
-      accountUuid: wallet.accountUuid!,
-      publicKey: wallet.publicKey,
-      wif: wallet.wif,
+    await _walletDao.insertWallet(WalletModel(uuid: wallet.uuid ?? uuid.v4()));
+  }
+
+  @override
+  Future<entity.Wallet?> getWallet(String uuid) async {
+    WalletModel? walletLocal = await _walletDao.getWalletByUuid(uuid);
+    if (walletLocal == null) {
+      return null;
+    }
+    print('walletLocal: $walletLocal');
+    return entity.Wallet(
+      uuid: walletLocal.uuid,
     );
-
-    await _walletDao.insertWallet(wallet_);
   }
 
   @override
-  Future<entity.Wallet?> getWalletByUuid(String uuid) async {
-    WalletModel? wallet = await _walletDao.getWalletByUuid(uuid);
-    return wallet != null
-        ? entity.Wallet(
-            uuid: wallet.uuid,
-            accountUuid: wallet.accountUuid,
-            publicKey: wallet.publicKey,
-            wif: wallet.wif,
-            name: wallet.name)
-        : null;
-  }
-
-  @override
-  Future<List<entity.Wallet>> getWalletsByAccountUuid(String accountUuid) async {
-    List<WalletModel> wallets = await _walletDao.getWalletsByAccountUuid(accountUuid);
-    return wallets
-        .map((wallet) => entity.Wallet(
-            uuid: wallet.uuid,
-            accountUuid: wallet.accountUuid,
-            publicKey: wallet.publicKey,
-            wif: wallet.wif,
-            name: wallet.name))
-        .toList();
+  Future<entity.Wallet?> getCurrentWallet() async {
+    // TODO: how to mark current wallet?
+    WalletModel? wallet = await _walletDao.getCurrentWallet();
+    return entity.Wallet(
+      uuid: wallet?.uuid,
+    );
+    // return null;
   }
 
   @override
   Future<void> deleteWallet(entity.Wallet wallet) async {
-    await _walletDao.deleteWallet(WalletModel(
-        uuid: wallet.uuid!,
-        accountUuid: wallet.accountUuid!,
-        publicKey: wallet.publicKey!,
-        wif: wallet.wif!,
-        name: wallet.name!));
+    await _walletDao.deleteWallet(WalletModel(uuid: wallet.uuid!));
   }
 
   @override
   Future<void> deleteAllWallets() async {
     await _walletDao.deleteAllWallets();
   }
+
+  // @override
+  // Future<void> initializeWithWalletAndAddresses(
+  //     Wallet wallet, List<Address> addresses) async {
+  //
+  //     await transaction(() async {
+  //
+  //
+  //         await _walletDao.insertWallet(WalletModel(uuid: uuid.v4()));
+  //
+  //
+  //     });
+  //
+  //
+  //
+  //
+  //
+  //
+  //   }
 }

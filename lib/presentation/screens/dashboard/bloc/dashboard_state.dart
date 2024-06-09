@@ -39,7 +39,8 @@ class AccountStateLoading extends AccountState {}
 
 class AccountStateSuccess extends AccountState {
   final Account currentAccount;
-  AccountStateSuccess({required this.currentAccount});
+  final List<Account> accounts;
+  AccountStateSuccess({required this.currentAccount, required this.accounts});
 }
 
 class AccountStateError extends AccountState {}
@@ -52,8 +53,7 @@ class WalletStateLoading extends WalletState {}
 
 class WalletStateSuccess extends WalletState {
   final Wallet currentWallet;
-  final List<Wallet> wallets;
-  WalletStateSuccess({required this.wallets, required this.currentWallet});
+  WalletStateSuccess({required this.currentWallet});
 }
 
 class WalletStateError extends WalletState {

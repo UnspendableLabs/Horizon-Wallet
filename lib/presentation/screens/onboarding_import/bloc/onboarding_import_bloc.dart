@@ -17,7 +17,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
-  final walletService = GetIt.I<WalletService>();
+  final accountService = GetIt.I<AccountService>();
 
   OnboardingImportBloc() : super(OnboardingImportState()) {
     on<PasswordSubmit>((event, emit) {
@@ -80,12 +80,12 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         emit(state.copyWith(importState: ImportStateLoading()));
         // TODO: show loading inditactor
 
-        Wallet wallet;
+        Account account;
         switch (state.importFormat) {
           case ImportFormat.segwit:
-            wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
+            account = await accountService.deriveRoot(state.mnemonic, state.password!);
           case ImportFormat.freewalletBech32:
-            wallet = await walletService.deriveRootFreewallet(state.mnemonic, state.password!);
+            account = await accountService.deriveRootFreewallet(state.mnemonic, state.password!);
           default:
             throw UnimplementedError();
         }
@@ -93,18 +93,18 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         List<Address> addresses =
             state.isCheckedMap.entries.where((entry) => entry.value).map((entry) => entry.key).toList();
 
-        Account account = Account(uuid: uuid.v4());
-        wallet.uuid = uuid.v4();
-        wallet.accountUuid = account.uuid;
-        wallet.name = state.importFormat.description;
+        Wallet wallet = Wallet(uuid: uuid.v4());
+        account.uuid = uuid.v4();
+        account.walletUuid = wallet.uuid;
+        account.name = state.importFormat.description;
 
         for (Address address in addresses) {
-          address.walletUuid = wallet.uuid;
+          address.accountUuid = account.uuid;
         }
 
         try {
-          await accountRepository.insert(account);
           await walletRepository.insert(wallet);
+          await accountRepository.insert(account);
           await addressRepository.insertMany(addresses);
         } catch (e) {
           emit(state.copyWith(importState: ImportStateError(message: e.toString())));

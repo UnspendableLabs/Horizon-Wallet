@@ -19,7 +19,12 @@ class AddressRepositoryImpl implements AddressRepository {
   Future<void> insertMany(List<entity.Address> addresses) async {
     // TODO: this is a little gross
     List<AddressModel> addresses_ = addresses
-        .map((a) => AddressModel(walletUuid: a.walletUuid!, address: a.address, derivationPath: a.derivationPath))
+        .map((a) => AddressModel(
+            accountUuid: a.accountUuid!,
+            address: a.address,
+            derivationPath: a.derivationPath,
+            publicKey: a.publicKey,
+            privateKeyWif: a.privateKeyWif))
         .toList();
 
     _addressDao.insertMultipleAddresses(addresses_);
@@ -31,16 +36,21 @@ class AddressRepositoryImpl implements AddressRepository {
   }
 
   @override
-  Future<List<entity.Address>> getAllByWalletUuid(String walletUuid) async {
-    List<AddressModel> addresses = await _addressDao.getAllAddressesByWalletUuid(walletUuid);
+  Future<List<entity.Address>> getAllByAccountUuid(String accountUuid) async {
+    List<AddressModel> addresses = await _addressDao.getAllAddressesByAccountUuid(accountUuid);
     return addresses
-        .map((a) => entity.Address(walletUuid: a.walletUuid, address: a.address, derivationPath: a.derivationPath))
+        .map((a) => entity.Address(
+            accountUuid: a.accountUuid,
+            address: a.address,
+            derivationPath: a.derivationPath,
+            publicKey: a.publicKey,
+            privateKeyWif: a.privateKeyWif))
         .toList();
   }
 
   @override
-  Future<void> deleteAddresses(String walletUuid) async {
-    await _addressDao.deleteAddresses(walletUuid);
+  Future<void> deleteAddresses(String accountUuid) async {
+    await _addressDao.deleteAddresses(accountUuid);
   }
 
   @override

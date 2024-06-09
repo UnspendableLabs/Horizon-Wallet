@@ -1,12 +1,9 @@
 import "package:horizon/domain/entities/account.dart" as entity;
 
 abstract class AccountRepository {
-  Future<entity.Account?> getAccount(String uuid);
+  Future<entity.Account?> getAccountByUuid(String uuid);
+  Future<List<entity.Account>> getAccountsByWalletUuid(String walletUuid);
   Future<void> insert(entity.Account account);
-  Future<entity.Account?> getCurrentAccount();
   Future<void> deleteAccount(entity.Account account);
   Future<void> deleteAllAccounts();
-
-  // Future<void> initializeWithWalletAndAddresses(
-  //     {Wallet wallet, List<Address> addresses});
 }
