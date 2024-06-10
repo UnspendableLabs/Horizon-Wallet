@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -14,6 +15,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     final walletRepository = GetIt.I<WalletRepository>();
     final accountRepository = GetIt.I<AccountRepository>();
     final addressRepository = GetIt.I<AddressRepository>();
+    final dbManager = GetIt.I<DatabaseManager>();
 
     on<SetAccountAndWallet>((event, emit) async {
       Wallet? wallet = await walletRepository.getCurrentWallet();
@@ -44,6 +46,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       await addressRepository.deleteAllAddresses();
       await walletRepository.deleteAllWallets();
       await accountRepository.deleteAllAccounts();
+      await dbManager.database.deleteDatabase();
     });
   }
 }

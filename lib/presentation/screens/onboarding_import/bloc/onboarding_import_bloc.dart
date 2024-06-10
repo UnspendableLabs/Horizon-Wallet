@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/uuid.dart';
@@ -79,17 +81,17 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
       } else {
         emit(state.copyWith(importState: ImportStateLoading()));
         // TODO: show loading inditactor
-
         Account account;
         switch (state.importFormat) {
           case ImportFormat.segwit:
             account = await accountService.deriveRoot(state.mnemonic, state.password!);
+            break;
           case ImportFormat.freewalletBech32:
             account = await accountService.deriveRootFreewallet(state.mnemonic, state.password!);
+            break;
           default:
             throw UnimplementedError();
         }
-
         List<Address> addresses =
             state.isCheckedMap.entries.where((entry) => entry.value).map((entry) => entry.key).toList();
 
@@ -108,6 +110,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
           await addressRepository.insertMany(addresses);
         } catch (e) {
           emit(state.copyWith(importState: ImportStateError(message: e.toString())));
+          return;
         }
         emit(state.copyWith(importState: ImportStateSuccess()));
       }

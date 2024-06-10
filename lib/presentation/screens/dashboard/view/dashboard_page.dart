@@ -55,24 +55,26 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                           contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                         ),
-                        state.walletState is WalletStateSuccess
+                        state.accountState is AccountStateSuccess
                             ? Column(
-                                children: state.walletState.wallets
-                                    .map<Widget>((wallet) => ListTile(
-                                        title: Text(wallet.name!),
-                                        selected: wallet.uuid == state.walletState.currentWallet.uuid,
-                                        autofocus: wallet.uuid == state.walletState.currentWallet.uuid,
+                                children: state.accountState.accounts
+                                    .map<Widget>((account) => ListTile(
+                                        title: Text(account.name!),
+                                        selected: account.uuid == state.accountState.currentAccount.uuid,
+                                        autofocus: account.uuid == state.accountState.currentAccount.uuid,
                                         onTap: () {}))
                                     .toList())
                             : const Text(""),
-                        state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(""),
-                        state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
+                        state.accountState is AccountStateLoading ? const CircularProgressIndicator() : const Text(""),
+                        state.accountState is AccountStateError
+                            ? Text("Error: ${state.accountState.error}")
+                            : const Text(""),
                       ],
                     ),
                   ),
-                  state.walletState is WalletStateSuccess ? const AddressDisplay() : const Text(''),
-                  state.walletState is WalletStateLoading ? const CircularProgressIndicator() : const Text(''),
-                  state.walletState is WalletStateError ? Text("Error: ${state.walletState.error}") : const Text(""),
+                  state.accountState is AccountStateSuccess ? const AddressDisplay() : const Text(''),
+                  state.accountState is AccountStateLoading ? const CircularProgressIndicator() : const Text(''),
+                  state.accountState is AccountStateError ? Text("Error: ${state.accountState.error}") : const Text(""),
                 ],
               ),
             ),
