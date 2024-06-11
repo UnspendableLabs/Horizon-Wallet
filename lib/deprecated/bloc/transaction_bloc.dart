@@ -7,11 +7,11 @@ import 'package:hex/hex.dart';
 import "package:horizon/api/v2_api.dart" as v2_api;
 import 'package:horizon/api/v2_api.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 // import 'package:horizon/models/transaction.dart';
 import 'package:horizon/deprecated/models/send_transaction.dart';
 import 'package:horizon/deprecated/models/wallet_node.dart';
-import 'package:horizon/domain/services/bitcoind.dart';
 import 'package:horizon/deprecated/services/ecpair.dart' as ecpair;
 import 'package:horizon/deprecated/services/key_value_store_service.dart';
 

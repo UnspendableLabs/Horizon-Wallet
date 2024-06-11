@@ -95,7 +95,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return CircularProgressIndicator();
                         } else if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
+                          return SelectableText('Error: ${snapshot.error}');
                         } else {
                           return DropdownButtonFormField<String>(
                             value: asset,
@@ -139,7 +139,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
             return const CircularProgressIndicator();
           }
           if (state is ComposeSendError) {
-            return Text(state.message);
+            return SelectableText(state.message);
           }
           if (state is ComposeSendSuccess) {
             return Text(state.transactionHex);
