@@ -9,6 +9,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboard_state.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_event.dart';
+import 'package:logger/logger.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   final mnmonicService = GetIt.I<MnemonicService>();
@@ -18,14 +19,21 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   final walletRepository = GetIt.I<WalletRepository>();
 
   OnboardingBloc() : super(OnboardingInitialState()) {
+    final Logger logger = Logger();
+
     on<OnboardingInitial>((event, emit) async {
+      logger.d('OnboardingInitial event started');
+
       Wallet? wallet = await walletRepository.getCurrentWallet();
       if (wallet != null) {
         List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid!);
         if (accounts.isNotEmpty) {
-          emit(OnboardingSuccessState());
+          logger.d('Accounts exist; send to dashboard');
+          return emit(OnboardingSuccessState());
         }
       }
+
+      logger.d('No wallet or accounts found; send to create wallet');
     });
   }
 }

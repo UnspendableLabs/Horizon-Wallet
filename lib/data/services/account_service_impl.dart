@@ -1,4 +1,4 @@
-import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/domain/services/account_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/entities/account.dart' as a;
 import 'package:horizon/domain/entities/seed.dart';

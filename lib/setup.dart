@@ -24,7 +24,7 @@ import 'package:horizon/domain/services/ecpair_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/domain/services/account_service.dart';
 
 void setup() {
   GetIt injector = GetIt.I;

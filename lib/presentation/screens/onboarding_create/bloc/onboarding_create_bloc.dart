@@ -7,14 +7,16 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/account_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
+import 'package:logger/logger.dart';
 
 class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
+  final Logger logger = Logger();
   final mnmonicService = GetIt.I<MnemonicService>();
   final addressService = GetIt.I<AddressService>();
   final accountService = GetIt.I<AccountService>();
@@ -24,9 +26,12 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
 
   OnboardingCreateBloc() : super(OnboardingCreateState()) {
     on<PasswordSubmit>((event, emit) {
+      logger.d('Processing PasswordSubmit event');
       if (event.password != event.passwordConfirmation) {
+        logger.w('Passwords do not match');
         emit(state.copyWith(passwordError: "Passwords do not match"));
       } else if (event.password.length != 32) {
+        logger.w('Password must be 32 characters');
         emit(state.copyWith(passwordError: "Password must be 32 characters.  Don't worry, we'll change this :)"));
       } else {
         try {
@@ -35,7 +40,9 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
               password: event.password,
               passwordError: null,
               mnemonicState: GenerateMnemonicStateSuccess(mnemonic: mnemonic)));
+          logger.d('Mnemonic generated successfully');
         } catch (e) {
+          logger.e({'message': 'Failed to generate mnemonic', 'error': e});
           emit(state.copyWith(
               password: event.password,
               passwordError: null,
@@ -45,15 +52,12 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
     });
 
     on<CreateWallet>((event, emit) async {
+      logger.d('Processing CreateWallet event');
       if (state.mnemonicState is GenerateMnemonicStateSuccess) {
         emit(state.copyWith(createState: CreateStateLoading()));
         try {
-          // there is some duplicate work here ( but it's all fast )
-
           Account account = await accountService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
-
           Wallet wallet = Wallet(uuid: uuid.v4());
-
           account.uuid = uuid.v4();
           account.walletUuid = wallet.uuid;
           account.name = ImportFormat.segwit.description;
@@ -66,9 +70,14 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
           await addressRepository.insertMany([address]);
 
           emit(state.copyWith(createState: CreateStateSuccess()));
+          logger.d('Wallet created successfully');
         } catch (e) {
+          logger.e({'message': 'Failed to create wallet', 'error': e});
           emit(state.copyWith(createState: CreateStateError(message: e.toString())));
         }
+      } else {
+        logger.w('Attempted to create wallet without successful mnemonic generation');
+        emit(state.copyWith(createState: CreateStateError(message: "Mnemonic generation not successful")));
       }
     });
 

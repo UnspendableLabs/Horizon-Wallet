@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import "package:horizon/api/v2_api.dart" as v2_api;
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
@@ -53,7 +54,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => GoRouter.of(context).pop(),
         ),
         title: Text('Compose Send'),
       ),
