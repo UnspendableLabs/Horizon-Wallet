@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import "package:horizon/api/v2_api.dart" as v2_api;
+import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
@@ -11,37 +13,43 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
   ComposeSendBloc() : super(ComposeSendInitial()) {
     on<SendTransactionEvent>((event, emit) async => _onSendTransactionEvent(event, emit));
 
-    on<SignTransactionEvent>((event, emit) async => _onSignTransactionEvent(event, emit));
+    // on<SignTransactionEvent>((event, emit) async => _onSignTransactionEvent(event, emit));
   }
 }
 
-_onSignTransactionEvent(SignTransactionEvent event, emit) async {
-  final bitcoindService = GetIt.I.get<BitcoindService>();
-  final transactionService = GetIt.I.get<TransactionService>();
-  final client = GetIt.I.get<v2_api.V2Api>();
+// // NOT USED
+// _onSignTransactionEvent(SignTransactionEvent event, emit) async {
+//   final bitcoindService = GetIt.I.get<BitcoindService>();
+//   final transactionService = GetIt.I.get<TransactionService>();
+//   final client = GetIt.I.get<v2_api.V2Api>();
 
-  try {
-    final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
+//   try {
+//     final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
 
-    if (utxoResponse.error != null) {
-      return emit(ComposeSendError(message: utxoResponse.error!));
-    }
+//     if (utxoResponse.error != null) {
+//       return emit(ComposeSendError(message: utxoResponse.error!));
+//     }
 
-    Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result!) e.txid: e};
+//     Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result!) e.txid: e};
 
-    String txHex = await transactionService.signTransaction(
-        event.unsignedTransactionHex, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
+//     String txHex = await transactionService.signTransaction(
+//         event.unsignedTransactionHex, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
 
-    await bitcoindService.sendrawtransaction(txHex);
+//     await bitcoindService.sendrawtransaction(txHex);
 
-    emit(ComposeSendSignSuccess(signedTransaction: txHex));
-  } catch (error) {
-    rethrow;
-    // emit(TransactionError(message: error.toString()));
-  }
-}
+//     emit(ComposeSendSignSuccess(signedTransaction: txHex));
+//   } catch (error) {
+//     rethrow;
+//     // emit(TransactionError(message: error.toString()));
+//   }
+// }
 
 _onSendTransactionEvent(SendTransactionEvent event, emit) async {
+  final composeRepository = GetIt.I.get<ComposeRepository>();
+  final utxoRepository = GetIt.I.get<UtxoRepository>();
+  final transactionService = GetIt.I.get<TransactionService>();
+  final bitcoindService = GetIt.I.get<BitcoindService>();
+
   emit(ComposeSendLoading());
 
   try {
@@ -52,13 +60,7 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
     // final memo = event.memo;
     // final memoIsHex = event.memoIsHex;
 
-    final client = GetIt.I.get<v2_api.V2Api>();
-
-    final response = await client.composeSend(source.address, destination, asset, quantity, true, 167);
-
-    if (response.error != null) {
-      return emit(ComposeSendError(message: response.error!));
-    }
+    final rawTx = await composeRepository.composeSend(source.address, destination, asset, quantity, true, 167);
 
     // final txInfoResponse = await client.getTransactionInfo(response.result!.rawtransaction);
 
@@ -68,24 +70,19 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
     //   return emit(ComposeSendError(message: txInfoResponse.error!));
     // }
 
-    final transactionService = GetIt.I.get<TransactionService>();
+    final utxoResponse = await utxoRepository.getUnspentForAddress(event.sourceAddress.address);
 
-    final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
-
-    if (utxoResponse.error != null) {
-      return emit(ComposeSendError(message: utxoResponse.error!));
-    }
-
-    Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result!) e.txid: e};
+    Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
     String txHex = await transactionService.signTransaction(
-        response.result!.rawtransaction, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
+        rawTx.hex, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
 
-    final bitcoindService = GetIt.I.get<BitcoindService>();
     await bitcoindService.sendrawtransaction(txHex);
 
     emit(ComposeSendSuccess(transactionHex: txHex, sourceAddress: source.address));
-  } catch (error) {
+  } catch (error, stackTrace) {
+    print(error.toString());
+    print(stackTrace.toString());
     if (error is DioException) {
       emit(ComposeSendError(message: "${error.response!.data.keys.first} ${error.response!.data.values.first}"));
     } else {
