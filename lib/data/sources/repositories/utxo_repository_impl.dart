@@ -16,7 +16,6 @@ class UtxoRepositoryImpl implements UtxoRepository {
 
     final List<Utxo> utxos = [];
     for (var a in response.result ?? []) {
-      print('utxo: ${a.vout}, ${a.txid}, ${a.amount}, ${a.confirmations}, ${a.height}, ${a.value}');
       utxos.add(Utxo(
           vout: a.vout, height: a.height, value: a.value, confirmations: a.confirmations, amount: a.amount, txid: a.txid));
     }

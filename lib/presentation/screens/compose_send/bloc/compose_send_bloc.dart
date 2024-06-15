@@ -12,37 +12,8 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_stat
 class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
   ComposeSendBloc() : super(ComposeSendInitial()) {
     on<SendTransactionEvent>((event, emit) async => _onSendTransactionEvent(event, emit));
-
-    // on<SignTransactionEvent>((event, emit) async => _onSignTransactionEvent(event, emit));
   }
 }
-
-// // NOT USED
-// _onSignTransactionEvent(SignTransactionEvent event, emit) async {
-//   final bitcoindService = GetIt.I.get<BitcoindService>();
-//   final transactionService = GetIt.I.get<TransactionService>();
-//   final client = GetIt.I.get<v2_api.V2Api>();
-
-//   try {
-//     final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
-
-//     if (utxoResponse.error != null) {
-//       return emit(ComposeSendError(message: utxoResponse.error!));
-//     }
-
-//     Map<String, v2_api.UTXO> utxoMap = {for (var e in utxoResponse.result!) e.txid: e};
-
-//     String txHex = await transactionService.signTransaction(
-//         event.unsignedTransactionHex, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
-
-//     await bitcoindService.sendrawtransaction(txHex);
-
-//     emit(ComposeSendSignSuccess(signedTransaction: txHex));
-//   } catch (error) {
-//     rethrow;
-//     // emit(TransactionError(message: error.toString()));
-//   }
-// }
 
 _onSendTransactionEvent(SendTransactionEvent event, emit) async {
   final composeRepository = GetIt.I.get<ComposeRepository>();
@@ -61,14 +32,6 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
     // final memoIsHex = event.memoIsHex;
 
     final rawTx = await composeRepository.composeSend(source.address, destination, asset, quantity, true, 167);
-
-    // final txInfoResponse = await client.getTransactionInfo(response.result!.rawtransaction);
-
-    // debugger(when: true);
-
-    // if (txInfoResponse.error != null) {
-    //   return emit(ComposeSendError(message: txInfoResponse.error!));
-    // }
 
     final utxoResponse = await utxoRepository.getUnspentForAddress(event.sourceAddress.address);
 

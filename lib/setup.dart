@@ -13,11 +13,13 @@ import 'package:horizon/data/sources/network/api/dio_client.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -38,7 +40,7 @@ void setup() {
 
   injector.registerSingleton<ComposeRepository>(ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
-
+  injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<ECPairService>(ECPairServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl(GetIt.I.get<ECPairService>()));

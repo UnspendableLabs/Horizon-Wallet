@@ -1,4 +1,3 @@
-//    final utxoResponse = await client.getUnspentUTXOs(event.sourceAddress.address, false);
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class UtxoRepository {
