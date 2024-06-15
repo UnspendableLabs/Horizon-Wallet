@@ -1,4 +1,4 @@
-import "package:horizon/api/v2_api.dart" as v2_api;
+import "package:horizon/data/sources/network/api/v2_api.dart" as v2_api;
 
 abstract class ComposeSendState {}
 
@@ -8,10 +8,10 @@ class ComposeSendLoading extends ComposeSendState {}
 
 class ComposeSendSuccess extends ComposeSendState {
   final String transactionHex;
-  final v2_api.Info info;
+  // final v2_api.Info info;
   final String sourceAddress;
 
-  ComposeSendSuccess({required this.transactionHex, required this.info, required this.sourceAddress});
+  ComposeSendSuccess({required this.transactionHex,  required this.sourceAddress});
 }
 
 class ComposeSendError extends ComposeSendState {

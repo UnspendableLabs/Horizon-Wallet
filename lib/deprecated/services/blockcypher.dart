@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:horizon/api/v2_api.dart';
+import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/deprecated/counterparty_api/models/btc_balance_response.dart';
 import 'package:http/http.dart' as http;

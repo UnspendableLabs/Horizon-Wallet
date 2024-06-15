@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import "package:horizon/api/v2_api.dart" as v2_api;
+import 'package:go_router/go_router.dart';
+import "package:horizon/data/sources/network/api/v2_api.dart" as v2_api;
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
@@ -53,7 +54,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => GoRouter.of(context).pop(),
         ),
         title: Text('Compose Send'),
       ),
@@ -95,7 +96,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return CircularProgressIndicator();
                         } else if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
+                          return SelectableText('Error: ${snapshot.error}');
                         } else {
                           return DropdownButtonFormField<String>(
                             value: asset,
@@ -139,7 +140,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
             return const CircularProgressIndicator();
           }
           if (state is ComposeSendError) {
-            return Text(state.message);
+            return SelectableText(state.message);
           }
           if (state is ComposeSendSuccess) {
             return Text(state.transactionHex);

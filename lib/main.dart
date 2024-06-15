@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,6 +13,7 @@ import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dar
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/setup.dart';
+import 'package:logger/logger.dart';
 
 GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
   GoRoute(
@@ -62,14 +65,25 @@ GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
   ),
 ]);
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  final logger = Logger();
+  // Catch synchronous errors in Flutter framework
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+  };
 
-  await dotenv.load();
+  // Catch uncaught asynchronous errors
+  runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await dotenv.load();
 
-  setup();
+    setup();
 
-  runApp(MyApp());
+    runApp(MyApp());
+  }, (Object error, StackTrace stackTrace) {
+    logger.e({'error': error.toString(), 'stackTrace': stackTrace.toString()});
+    // Log the error to a service or handle it accordingly
+  });
 }
 
 class MyApp extends StatelessWidget {

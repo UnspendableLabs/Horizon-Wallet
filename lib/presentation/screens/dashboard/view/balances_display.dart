@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import "package:horizon/api/v2_api.dart" as v2_api;
-import 'package:horizon/api/v2_api.dart';
+import "package:horizon/data/sources/network/api/v2_api.dart" as v2_api;
+import 'package:horizon/data/sources/network/api/v2_api.dart';
 
 class BalanceDisplay extends StatefulWidget {
   final String address;

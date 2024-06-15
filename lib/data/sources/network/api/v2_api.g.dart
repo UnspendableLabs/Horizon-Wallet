@@ -497,7 +497,7 @@ class _V2Api implements V2Api {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://api.counterparty.io:14000/v2';
+    baseUrl ??= 'http://localhost:14000/v2';
   }
 
   final Dio _dio;

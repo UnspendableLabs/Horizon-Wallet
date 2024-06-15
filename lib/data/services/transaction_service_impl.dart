@@ -1,8 +1,7 @@
-import 'dart:developer';
 import 'dart:js_interop';
 
 import 'package:hex/hex.dart';
-import "package:horizon/api/v2_api.dart" as v2_api;
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/services/ecpair_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
@@ -13,7 +12,7 @@ class TransactionServiceImpl implements TransactionService {
   TransactionServiceImpl(this.ecpairService);
   @override
   Future<String> signTransaction(
-      String unsignedTransaction, String privateKey, String sourceAddress, Map<String, v2_api.UTXO> utxoMap) async {
+      String unsignedTransaction, String privateKey, String sourceAddress, Map<String, Utxo> utxoMap) async {
     bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
@@ -35,7 +34,6 @@ class TransactionServiceImpl implements TransactionService {
       script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: ecpairService.testnet));
     }
 
-    debugger(when: true);
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 

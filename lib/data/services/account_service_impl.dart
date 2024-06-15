@@ -1,6 +1,6 @@
-import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/domain/services/account_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/entities/wallet.dart' as w;
+import 'package:horizon/domain/entities/account.dart' as a;
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
@@ -9,14 +9,14 @@ import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
 import 'package:horizon/js/buffer.dart';
 import 'dart:js_interop';
 
-class WalletServiceImpl implements WalletService {
+class AccountServiceImpl implements AccountService {
   EncryptionService encryptionService;
 
-  WalletServiceImpl(this.encryptionService);
+  AccountServiceImpl(this.encryptionService);
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
-  Future<w.Wallet> deriveRoot(String mnemonic, String password) async {
+  Future<a.Account> deriveRoot(String mnemonic, String password) async {
     // TODO: don't hardcode testnet
     final network = ecpair.testnet;
 
@@ -33,10 +33,10 @@ class WalletServiceImpl implements WalletService {
 
     String publicKeyBase58 = root.neutered().toBase58();
 
-    return w.Wallet(wif: encryptedWif, publicKey: publicKeyBase58);
+    return a.Account(rootPrivateKey: encryptedWif, rootPublicKey: publicKeyBase58);
   }
 
-  Future<w.Wallet> deriveRootFreewallet(
+  Future<a.Account> deriveRootFreewallet(
       String mnemonic, String password) async {
     Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
 
@@ -50,6 +50,6 @@ class WalletServiceImpl implements WalletService {
 
     String publicKeyBase58 = root.neutered().toBase58();
 
-    return w.Wallet(wif: encryptedWif, publicKey: publicKeyBase58);
+    return a.Account(rootPrivateKey: encryptedWif, rootPublicKey: publicKeyBase58);
   }
 }
