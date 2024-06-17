@@ -82,7 +82,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         await accountRepository.deleteAllAccounts();
 
         // The following line destroys the database entirely
-        // await dbManager.database.deleteDatabase();
+        await dbManager.database.deleteDatabase();
 
         logger.d('DeleteWallet event processed successfully');
       } catch (e, stackTrace) {

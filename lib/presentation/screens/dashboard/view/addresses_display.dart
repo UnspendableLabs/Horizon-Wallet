@@ -7,6 +7,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart'
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:horizon/presentation/screens/dashboard/view/history_table.dart';
 
 class AddressDisplay extends StatefulWidget {
   const AddressDisplay({super.key});
@@ -68,27 +69,34 @@ class _AddressDisplayState extends State<AddressDisplay> {
                       ),
                       padding: const EdgeInsets.fromLTRB(10, 40, 10, 0),
                       child: BalanceDisplay(address: state.addressState.currentAddress.address)),
-                  state.addressState.addresses.length > 1
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 40.0),
-                          child: ElevatedButton(
-                            child: Text('Switch Address'),
-                            onPressed: () {
-                              _showAddressDialog(
-                                  context, state.addressState.addresses, BlocProvider.of<DashboardBloc>(context));
-                            },
-                          ),
-                        )
-                      : const Text(""),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40.0),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          GoRouter.of(context)
-                              .push('/compose/send', extra: {'initialAddress': state.addressState.currentAddress});
-                        },
-                        child: Text('Compose Send')),
-                  )
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    state.addressState.addresses.length > 1
+                        ? Padding(
+                            padding: const EdgeInsets.only(top: 40.0, right: 10),
+                            child: ElevatedButton(
+                              child: Text('Switch Address'),
+                              onPressed: () {
+                                _showAddressDialog(
+                                    context, state.addressState.addresses, BlocProvider.of<DashboardBloc>(context));
+                              },
+                            ),
+                          )
+                        : const Text(""),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40.0, left: 10),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            GoRouter.of(context)
+                                .push('/compose/send', extra: {'initialAddress': state.addressState.currentAddress});
+                          },
+                          child: Text('Compose Send')),
+                    )
+                  ]),
+                  Expanded(
+                      child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: HistoryTable(address: state.addressState.currentAddress.address),
+                  )),
                 ],
               ),
             ),

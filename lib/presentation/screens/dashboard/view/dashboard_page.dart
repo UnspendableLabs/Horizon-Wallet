@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -52,7 +53,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                       children: <Widget>[
                         const ListTile(
                           title: Text('Horizon',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                           contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                         ),
                         state.accountState is AccountStateSuccess
@@ -72,22 +73,36 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                       ],
                     ),
                   ),
-                  state.accountState is AccountStateSuccess ? const AddressDisplay() : const Text(''),
+                  state.accountState is AccountStateSuccess
+                      ? Expanded(
+                          child: Column(
+                            children: [const AddressDisplay()],
+                          ),
+                        )
+                      : const Text(''),
                   state.accountState is AccountStateLoading ? const CircularProgressIndicator() : const Text(''),
                   state.accountState is AccountStateError ? Text("Error: ${state.accountState.error}") : const Text(""),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  context.read<DashboardBloc>().add(DeleteWallet());
-                  GoRouter.of(context).go('/onboarding');
-                },
-                child: const Text("Delete DB"),
-              ),
-            ),
+            kDebugMode
+                ? Align(
+                    alignment: Alignment.bottomRight,
+                    child: Container(
+                      padding: EdgeInsets.all(8.0), // Adjust padding as needed
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<DashboardBloc>().add(DeleteWallet());
+                          GoRouter.of(context).go('/onboarding');
+                        },
+                        child: Text("Delete DB", style: TextStyle(fontSize: 12)), // Smaller text size
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller button padding
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
           ],
         ),
       );

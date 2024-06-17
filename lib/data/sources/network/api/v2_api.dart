@@ -907,6 +907,13 @@ abstract class V2Api {
     @Query("fee") int? fee,
   ]);
 
+  @GET("/addresses/{address}/sends")
+  Future<Response<List<Send>>> getSends(
+    @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
+  ]);
+
   // {
   //        "result": {
   //            "rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff020000000000000000306a2e0d1e454cefefcbe167ffa672ce93608ec55d2594e5d1946a774e4e944f50dfb46943bffd3b68866791f7f496f8c270060406000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
