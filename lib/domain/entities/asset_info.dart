@@ -2,8 +2,8 @@ class AssetInfo {
   final String assetLongname;
   final String description;
   final String? issuer;
-  final int divisible;
-  final int locked;
+  final bool divisible;
+  final bool locked;
   const AssetInfo({
     required this.assetLongname,
     required this.description,
