@@ -43,22 +43,22 @@ class Block {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Transaction {
+  final String txHash;
   final int txIndex;
-  final String txlistHash;
+  final String? txlistHash;
   final int blockIndex;
-  final String blockHash;
-  final DateTime blockTime;
+  final String? blockHash;
+  final int blockTime;
   final String source;
-  final String destination;
+  final String? destination;
   final double btcAmount;
   final int fee;
   final String data;
-  final int supported;
-
-  // final supported int; // TODO double check if this shoult be int or bool""
+  final bool supported;
 
   const Transaction(
-      {required this.txIndex,
+      {required this.txHash,
+      required this.txIndex,
       required this.txlistHash,
       required this.blockIndex,
       required this.blockHash,
@@ -139,8 +139,8 @@ class AssetInfo {
   final String assetLongname;
   final String description;
   final String? issuer;
-  final int divisible;
-  final int locked;
+  final bool divisible;
+  final bool locked;
   const AssetInfo({
     required this.assetLongname,
     required this.description,
@@ -379,6 +379,8 @@ class Issuance {
     this.assetLongname,
     required this.reset,
   });
+
+  factory Issuance.fromJson(Map<String, dynamic> json) => _$IssuanceFromJson(json);
 }
 
 // Send
@@ -763,7 +765,7 @@ abstract class V2Api {
   );
   //     Get Transactions By Block
   @GET("/blocks/{block_index}/transactions")
-  Future<Response<List<Transaction>>> getTransactionsByBlock(
+  Future<Response<List<Transaction>>> getTransactionsByAddressByBlock(
     @Path("block_index") int blockIndex,
     @Query("verbose") bool verbose,
   );
@@ -905,6 +907,27 @@ abstract class V2Api {
     @Query("quantity") double quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("fee") int? fee,
+  ]);
+
+  @GET("/addresses/{address}/sends")
+  Future<Response<List<Send>>> getSendsByAddress(
+    @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/{address}/issuances")
+  Future<Response<List<Issuance>>> getIssuancesByAddress(
+    @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/{address}/transactions")
+  Future<Response<List<Transaction>>> getTransactionsByAddress(
+    @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
   ]);
 
   // {

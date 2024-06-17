@@ -59,26 +59,28 @@ Map<String, dynamic> _$BlockToJson(Block instance) => <String, dynamic>{
     };
 
 Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
+      txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      txlistHash: json['txlist_hash'] as String,
+      txlistHash: json['txlist_hash'] as String?,
       blockIndex: (json['block_index'] as num).toInt(),
-      blockHash: json['block_hash'] as String,
-      blockTime: DateTime.parse(json['block_time'] as String),
+      blockHash: json['block_hash'] as String?,
+      blockTime: (json['block_time'] as num).toInt(),
       source: json['source'] as String,
-      destination: json['destination'] as String,
+      destination: json['destination'] as String?,
       btcAmount: (json['btc_amount'] as num).toDouble(),
       fee: (json['fee'] as num).toInt(),
       data: json['data'] as String,
-      supported: (json['supported'] as num).toInt(),
+      supported: json['supported'] as bool,
     );
 
 Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
     <String, dynamic>{
+      'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
       'txlist_hash': instance.txlistHash,
       'block_index': instance.blockIndex,
       'block_hash': instance.blockHash,
-      'block_time': instance.blockTime.toIso8601String(),
+      'block_time': instance.blockTime,
       'source': instance.source,
       'destination': instance.destination,
       'btc_amount': instance.btcAmount,
@@ -125,8 +127,8 @@ Map<String, dynamic> _$EventCountToJson(EventCount instance) =>
 AssetInfo _$AssetInfoFromJson(Map<String, dynamic> json) => AssetInfo(
       assetLongname: json['asset_longname'] as String,
       description: json['description'] as String,
-      divisible: (json['divisible'] as num).toInt(),
-      locked: (json['locked'] as num).toInt(),
+      divisible: json['divisible'] as bool,
+      locked: json['locked'] as bool,
       issuer: json['issuer'] as String?,
     );
 
@@ -647,7 +649,7 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<List<Transaction>>> getTransactionsByBlock(
+  Future<Response<List<Transaction>>> getTransactionsByAddressByBlock(
     int blockIndex,
     bool verbose,
   ) async {
@@ -1086,6 +1088,134 @@ class _V2Api implements V2Api {
     final value = Response<SendTx>.fromJson(
       _result.data!,
       (json) => SendTx.fromJson(json as Map<String, dynamic>),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<List<Send>>> getSendsByAddress(
+    String address, [
+    bool? verbose,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'verbose': verbose,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Send>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/sends',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<List<Send>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Send>((i) => Send.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<List<Issuance>>> getIssuancesByAddress(
+    String address, [
+    bool? verbose,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'verbose': verbose,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Issuance>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/issuances',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<List<Issuance>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Issuance>(
+                  (i) => Issuance.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<List<Transaction>>> getTransactionsByAddress(
+    String address, [
+    bool? verbose,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'verbose': verbose,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Transaction>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/transactions',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<List<Transaction>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Transaction>(
+                  (i) => Transaction.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
     );
     return value;
   }
