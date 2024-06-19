@@ -16,7 +16,8 @@ class AccountServiceImpl extends AccountService {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
   @override
-  Future<AccountServiceReturn> deriveAccount(String mnemonic, String purpose, int coinType, int accountIndex) async {
+  Future<AccountServiceReturn> deriveAccountAndAddress(
+      String mnemonic, String purpose, int coinType, int accountIndex) async {
     JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
 
     final network = ecpair.bitcoin;

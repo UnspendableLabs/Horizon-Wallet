@@ -197,10 +197,10 @@ class $PurposesTable extends Purposes with TableInfo<$PurposesTable, Purpose> {
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'UNIQUE NOT NULL');
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _bipMeta = const VerificationMeta('bip');
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+  late final GeneratedColumn<String> bip = GeneratedColumn<String>(
+      'bip', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _walletUuidMeta =
       const VerificationMeta('walletUuid');
@@ -209,7 +209,7 @@ class $PurposesTable extends Purposes with TableInfo<$PurposesTable, Purpose> {
       'wallet_uuid', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [uuid, name, walletUuid];
+  List<GeneratedColumn> get $columns => [uuid, bip, walletUuid];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -226,11 +226,11 @@ class $PurposesTable extends Purposes with TableInfo<$PurposesTable, Purpose> {
     } else if (isInserting) {
       context.missing(_uuidMeta);
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('bip')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+          _bipMeta, bip.isAcceptableOrUnknown(data['bip']!, _bipMeta));
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_bipMeta);
     }
     if (data.containsKey('wallet_uuid')) {
       context.handle(
@@ -251,8 +251,8 @@ class $PurposesTable extends Purposes with TableInfo<$PurposesTable, Purpose> {
     return Purpose(
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      bip: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}bip'])!,
       walletUuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}wallet_uuid'])!,
     );
@@ -266,15 +266,15 @@ class $PurposesTable extends Purposes with TableInfo<$PurposesTable, Purpose> {
 
 class Purpose extends DataClass implements Insertable<Purpose> {
   final String uuid;
-  final String name;
+  final String bip;
   final String walletUuid;
   const Purpose(
-      {required this.uuid, required this.name, required this.walletUuid});
+      {required this.uuid, required this.bip, required this.walletUuid});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['uuid'] = Variable<String>(uuid);
-    map['name'] = Variable<String>(name);
+    map['bip'] = Variable<String>(bip);
     map['wallet_uuid'] = Variable<String>(walletUuid);
     return map;
   }
@@ -282,7 +282,7 @@ class Purpose extends DataClass implements Insertable<Purpose> {
   PurposesCompanion toCompanion(bool nullToAbsent) {
     return PurposesCompanion(
       uuid: Value(uuid),
-      name: Value(name),
+      bip: Value(bip),
       walletUuid: Value(walletUuid),
     );
   }
@@ -292,7 +292,7 @@ class Purpose extends DataClass implements Insertable<Purpose> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Purpose(
       uuid: serializer.fromJson<String>(json['uuid']),
-      name: serializer.fromJson<String>(json['name']),
+      bip: serializer.fromJson<String>(json['bip']),
       walletUuid: serializer.fromJson<String>(json['walletUuid']),
     );
   }
@@ -301,65 +301,65 @@ class Purpose extends DataClass implements Insertable<Purpose> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
-      'name': serializer.toJson<String>(name),
+      'bip': serializer.toJson<String>(bip),
       'walletUuid': serializer.toJson<String>(walletUuid),
     };
   }
 
-  Purpose copyWith({String? uuid, String? name, String? walletUuid}) => Purpose(
+  Purpose copyWith({String? uuid, String? bip, String? walletUuid}) => Purpose(
         uuid: uuid ?? this.uuid,
-        name: name ?? this.name,
+        bip: bip ?? this.bip,
         walletUuid: walletUuid ?? this.walletUuid,
       );
   @override
   String toString() {
     return (StringBuffer('Purpose(')
           ..write('uuid: $uuid, ')
-          ..write('name: $name, ')
+          ..write('bip: $bip, ')
           ..write('walletUuid: $walletUuid')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uuid, name, walletUuid);
+  int get hashCode => Object.hash(uuid, bip, walletUuid);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Purpose &&
           other.uuid == this.uuid &&
-          other.name == this.name &&
+          other.bip == this.bip &&
           other.walletUuid == this.walletUuid);
 }
 
 class PurposesCompanion extends UpdateCompanion<Purpose> {
   final Value<String> uuid;
-  final Value<String> name;
+  final Value<String> bip;
   final Value<String> walletUuid;
   final Value<int> rowid;
   const PurposesCompanion({
     this.uuid = const Value.absent(),
-    this.name = const Value.absent(),
+    this.bip = const Value.absent(),
     this.walletUuid = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PurposesCompanion.insert({
     required String uuid,
-    required String name,
+    required String bip,
     required String walletUuid,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
-        name = Value(name),
+        bip = Value(bip),
         walletUuid = Value(walletUuid);
   static Insertable<Purpose> custom({
     Expression<String>? uuid,
-    Expression<String>? name,
+    Expression<String>? bip,
     Expression<String>? walletUuid,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
-      if (name != null) 'name': name,
+      if (bip != null) 'bip': bip,
       if (walletUuid != null) 'wallet_uuid': walletUuid,
       if (rowid != null) 'rowid': rowid,
     });
@@ -367,12 +367,12 @@ class PurposesCompanion extends UpdateCompanion<Purpose> {
 
   PurposesCompanion copyWith(
       {Value<String>? uuid,
-      Value<String>? name,
+      Value<String>? bip,
       Value<String>? walletUuid,
       Value<int>? rowid}) {
     return PurposesCompanion(
       uuid: uuid ?? this.uuid,
-      name: name ?? this.name,
+      bip: bip ?? this.bip,
       walletUuid: walletUuid ?? this.walletUuid,
       rowid: rowid ?? this.rowid,
     );
@@ -384,8 +384,8 @@ class PurposesCompanion extends UpdateCompanion<Purpose> {
     if (uuid.present) {
       map['uuid'] = Variable<String>(uuid.value);
     }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
+    if (bip.present) {
+      map['bip'] = Variable<String>(bip.value);
     }
     if (walletUuid.present) {
       map['wallet_uuid'] = Variable<String>(walletUuid.value);
@@ -400,7 +400,7 @@ class PurposesCompanion extends UpdateCompanion<Purpose> {
   String toString() {
     return (StringBuffer('PurposesCompanion(')
           ..write('uuid: $uuid, ')
-          ..write('name: $name, ')
+          ..write('bip: $bip, ')
           ..write('walletUuid: $walletUuid, ')
           ..write('rowid: $rowid')
           ..write(')'))

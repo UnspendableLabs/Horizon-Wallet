@@ -10,8 +10,9 @@ class CoinsDao extends DatabaseAccessor<DB> with _$CoinsDaoMixin {
   CoinsDao(super.db);
 
   Future<CoinModel?> getCoinByUuid(String uuid) => (select(coins)..where((tbl) => tbl.uuid.equals(uuid))).getSingleOrNull();
-  Future<List<CoinModel>> getCoinByWalletUuidAndPurposeUuid(String walletUuid, String purposeUuid) =>
-      (select(coins)..where((tbl) => tbl.walletUuid.equals(walletUuid) & tbl.purposeUuid.equals(purposeUuid))).get();
+  Future<CoinModel?> getCoinByWalletUuidAndPurposeUuid(String walletUuid, String purposeUuid) =>
+      (select(coins)..where((tbl) => tbl.walletUuid.equals(walletUuid) & tbl.purposeUuid.equals(purposeUuid)))
+          .getSingleOrNull();
   Future<void> insertCoin(Insertable<CoinModel> coin) => into(coins).insert(coin);
   Future<void> deleteCoin(Insertable<CoinModel> coin) => delete(coins).delete(coin);
 }
