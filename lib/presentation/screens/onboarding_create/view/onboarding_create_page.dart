@@ -134,7 +134,7 @@ class Mnemonic extends StatelessWidget {
         margin: EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: Column(
           children: [
-          (_state.mnemonicState is GenerateMnemonicStateLoading
+            (_state.mnemonicState is GenerateMnemonicStateLoading
                 ? CircularProgressIndicator()
                 : _state.mnemonicState is GenerateMnemonicStateError
                     ? Text("Error: ${_state.mnemonicState.message}")
@@ -152,6 +152,7 @@ class Mnemonic extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
+                    print('CREATE WALLET CLICKED');
                     context.read<OnboardingCreateBloc>().add(CreateWallet());
                   },
                   child: const Text('Create Wallet'),

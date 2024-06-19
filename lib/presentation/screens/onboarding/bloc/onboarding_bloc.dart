@@ -22,18 +22,18 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     final Logger logger = Logger();
 
     on<OnboardingInitial>((event, emit) async {
-      logger.d('OnboardingInitial event started');
+      // logger.d('OnboardingInitial event started');
 
-      Wallet? wallet = await walletRepository.getCurrentWallet();
-      if (wallet != null) {
-        List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid!);
-        if (accounts.isNotEmpty) {
-          logger.d('Accounts exist; send to dashboard');
-          return emit(OnboardingSuccessState());
-        }
-      }
+      // Wallet? wallet = await walletRepository.getCurrentWallet();
+      // if (wallet != null) {
+      //   List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid!);
+      //   if (accounts.isNotEmpty) {
+      //     logger.d('Accounts exist; send to dashboard');
+      //     return emit(OnboardingSuccessState());
+      //   }
+      // }
 
-      logger.d('No wallet or accounts found; send to create wallet');
+      // logger.d('No wallet or accounts found; send to create wallet');
     });
   }
 }

@@ -8,8 +8,8 @@ class Addresses extends Table {
   @JsonKey('address')
   TextColumn get address => text().customConstraint('UNIQUE NOT NULL')();
 
-  @JsonKey('derivationPath')
-  TextColumn get derivationPath => text()();
+  @JsonKey('addressIndex')
+  IntColumn get addressIndex => integer()();
 
   @JsonKey('publicKey')
   TextColumn get publicKey => text()();

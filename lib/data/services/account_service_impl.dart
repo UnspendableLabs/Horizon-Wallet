@@ -1,55 +1,49 @@
-import 'package:horizon/domain/services/account_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/entities/account.dart' as a;
-import 'package:horizon/domain/entities/seed.dart';
-import 'package:horizon/js/bip32.dart' as bip32;
-import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:horizon/js/bip39.dart' as bip39;
-import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
-import 'package:horizon/js/buffer.dart';
 import 'dart:js_interop';
 
-class AccountServiceImpl implements AccountService {
-  EncryptionService encryptionService;
+import 'package:convert/convert.dart';
+import 'package:horizon/common/uuid.dart';
+import 'package:horizon/domain/entities/account_service_return.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/services/account_service.dart';
+import 'package:horizon/js/bech32.dart' as bech32;
+import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/bip39.dart' as bip39;
+import 'package:horizon/js/buffer.dart';
+import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
+import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
-  AccountServiceImpl(this.encryptionService);
-
+class AccountServiceImpl extends AccountService {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
-  Future<a.Account> deriveRoot(String mnemonic, String password) async {
-    // TODO: don't hardcode testnet
-    final network = ecpair.testnet;
-
-    network.bip32.private = 0x4b2430c; //zpriv
-    network.bip32.public = 0x4b24746; //zpub
-
+  @override
+  Future<AccountServiceReturn> deriveAccount(String mnemonic, String purpose, int coinType, int accountIndex) async {
     JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
 
+    final network = ecpair.bitcoin;
+
     bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
+    final String basePath = 'm/$purpose\'/$coinType\'/$accountIndex\'';
+    bip32.BIP32Interface accountNode = root.derivePath(basePath);
 
-    String wif = root.toWIF();
+    final xpub = accountNode.neutered().toBase58(); // TODO! change prefix
 
-    String encryptedWif = await encryptionService.encrypt(wif, password);
+    int change = 0;
+    int index = 0;
+    bip32.BIP32Interface child = accountNode.derive(change).derive(index);
 
-    String publicKeyBase58 = root.neutered().toBase58();
+    List<int> identifier = child.identifier.toDart;
+    List<int> words =
+        bech32.toWords(identifier.map((el) => el.toJS).toList().toJS).toDart.map((el) => el.toDartInt).toList();
+    words.insert(0, 0);
+    String address = bech32.encode(ecpair.bitcoin.bech32, words.map((el) => el.toJS).toList().toJS);
 
-    return a.Account(rootPrivateKey: encryptedWif, rootPublicKey: publicKeyBase58);
-  }
+    final addressEntity = Address(
+        address: address,
+        publicKey: hex.encode(child.publicKey.toDart),
+        privateKeyWif: child.toWIF(),
+        accountUuid: uuid.v4(),
+        addressIndex: index);
 
-  Future<a.Account> deriveRootFreewallet(
-      String mnemonic, String password) async {
-    Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
-
-    Buffer buffer = Buffer.from(seed.bytes.toJS);
-
-    bip32.BIP32Interface root = _bip32.fromSeed(buffer, ecpair.testnet);
-
-    String wif = root.toWIF();
-
-    String encryptedWif = await encryptionService.encrypt(wif, password);
-
-    String publicKeyBase58 = root.neutered().toBase58();
-
-    return a.Account(rootPrivateKey: encryptedWif, rootPublicKey: publicKeyBase58);
+    return AccountServiceReturn(xPub: xpub, address: addressEntity);
   }
 }

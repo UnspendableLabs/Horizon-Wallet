@@ -17,8 +17,10 @@ class AccountRepositoryImpl implements AccountRepository {
       uuid: account.uuid ?? uuid.v4(),
       name: account.name ?? '',
       walletUuid: account.walletUuid!,
-      rootPublicKey: account.rootPublicKey,
-      rootPrivateKey: account.rootPrivateKey,
+      purposeUuid: account.purposeUuid!,
+      accountIndex: account.accountIndex!,
+      coinUuid: account.coinUuid!,
+      xPub: account.xPub!,
     );
 
     await _accountDao.insertAccount(account_);
@@ -31,22 +33,41 @@ class AccountRepositoryImpl implements AccountRepository {
         ? entity.Account(
             uuid: account.uuid,
             walletUuid: account.walletUuid,
-            rootPublicKey: account.rootPublicKey,
-            rootPrivateKey: account.rootPrivateKey,
-            name: account.name)
+            purposeUuid: account.purposeUuid,
+            accountIndex: account.accountIndex,
+            name: account.name,
+            coinUuid: account.coinUuid,
+            xPub: account.xPub)
         : null;
   }
 
   @override
-  Future<List<entity.Account>> getAccountsByWalletUuid(String walletUuid) async {
-    List<AccountModel> accounts = await _accountDao.getAccountsByWalletUuid(walletUuid);
+  Future<List<entity.Account>> getAccountsForWalletPurposeAndCoin(String walletUuid, String purposeUuid, String coinUuid) async {
+    List<AccountModel> accounts = await _accountDao.getAccountsForWalletPurposeAndCoin(walletUuid, purposeUuid, coinUuid);
     return accounts
         .map((account) => entity.Account(
             uuid: account.uuid,
             walletUuid: account.walletUuid,
-            rootPublicKey: account.rootPublicKey,
-            rootPrivateKey: account.rootPrivateKey,
-            name: account.name))
+            purposeUuid: account.purposeUuid,
+            accountIndex: account.accountIndex,
+            name: account.name,
+            coinUuid: account.coinUuid,
+            xPub: account.xPub))
+        .toList();
+  }
+
+  @override
+  Future<List<entity.Account>> getAccountsByPurposeUuid(String purposeUuid) async {
+    List<AccountModel> accounts = await _accountDao.getAccountsByPurposeUuid(purposeUuid);
+    return accounts
+        .map((account) => entity.Account(
+            uuid: account.uuid,
+            walletUuid: account.walletUuid,
+            purposeUuid: account.purposeUuid,
+            accountIndex: account.accountIndex,
+            name: account.name,
+            coinUuid: account.coinUuid,
+            xPub: account.xPub))
         .toList();
   }
 
@@ -55,9 +76,11 @@ class AccountRepositoryImpl implements AccountRepository {
     await _accountDao.deleteAccount(AccountModel(
         uuid: account.uuid!,
         walletUuid: account.walletUuid!,
-        rootPublicKey: account.rootPublicKey!,
-        rootPrivateKey: account.rootPrivateKey!,
-        name: account.name!));
+        purposeUuid: account.purposeUuid!,
+        accountIndex: account.accountIndex!,
+        name: account.name!,
+        coinUuid: account.coinUuid!,
+        xPub: account.xPub!));
   }
 
   @override

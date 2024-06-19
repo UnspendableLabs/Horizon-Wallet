@@ -1,8 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_service_return.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/coin.dart';
+import 'package:horizon/domain/entities/purpose.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -10,16 +15,16 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/account_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
-import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:logger/logger.dart';
 
 class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
   final Logger logger = Logger();
   final mnmonicService = GetIt.I<MnemonicService>();
   final addressService = GetIt.I<AddressService>();
-  final accountService = GetIt.I<AccountService>();
+  final accountService = GetIt.I<WalletService>();
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
@@ -52,25 +57,49 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
     });
 
     on<CreateWallet>((event, emit) async {
+      final accountService = GetIt.I<AccountService>();
       logger.d('Processing CreateWallet event');
       if (state.mnemonicState is GenerateMnemonicStateSuccess) {
         emit(state.copyWith(createState: CreateStateLoading()));
         try {
-          Account account = await accountService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
-          Wallet wallet = Wallet(uuid: uuid.v4());
-          account.uuid = uuid.v4();
-          account.walletUuid = wallet.uuid;
-          account.name = ImportFormat.segwit.description;
+          Wallet wallet = Wallet(uuid: uuid.v4(), name: 'Wallet 1');
 
-          Address address = await addressService.deriveAddressSegwit(state.mnemonicState.mnemonic, 0);
-          address.accountUuid = account.uuid;
+          Purpose purpose = Purpose(uuid: uuid.v4(), purpose: '84', walletUuid: wallet.uuid);
 
-          await walletRepository.insert(wallet);
-          await accountRepository.insert(account);
-          await addressRepository.insertMany([address]);
+          // TODO: coin type 1 is testnet
+          Coin coin = Coin(uuid: uuid.v4(), type: 0, walletUuid: wallet.uuid, purposeUuid: purpose.uuid);
 
-          emit(state.copyWith(createState: CreateStateSuccess()));
-          logger.d('Wallet created successfully');
+          Account account = Account(
+              uuid: uuid.v4(),
+              name: 'Root',
+              walletUuid: wallet.uuid,
+              purposeUuid: purpose.uuid,
+              coinUuid: coin.uuid,
+              accountIndex: 0,
+              xPub: '');
+
+          AccountServiceReturn accountServiceReturn = await accountService.deriveAccount(
+              state.mnemonicState.mnemonic, purpose.purpose, coin.type, account.accountIndex);
+
+          account.xPub = accountServiceReturn.xPub;
+          Address address = accountServiceReturn.address;
+          debugger(when: true);
+
+          // Account account = await accountService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
+          // Wallet wallet = Wallet(uuid: uuid.v4());
+          // account.uuid = uuid.v4();
+          // account.walletUuid = wallet.uuid;
+          // account.name = ImportFormat.segwit.description;
+
+          // Address address = await addressService.deriveAddressSegwit(state.mnemonicState.mnemonic, 0);
+          // address.accountUuid = account.uuid;
+
+          // await walletRepository.insert(wallet);
+          // await accountRepository.insert(account);
+          // await addressRepository.insertMany([address]);
+
+          // emit(state.copyWith(createState: CreateStateSuccess()));
+          // logger.d('Wallet created successfully');
         } catch (e) {
           logger.e({'message': 'Failed to create wallet', 'error': e});
           emit(state.copyWith(createState: CreateStateError(message: e.toString())));

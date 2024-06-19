@@ -308,7 +308,7 @@ class AddressListItem extends StatelessWidget {
           ),
         ],
       ),
-      subtitle: Text(address.derivationPath),
+      // subtitle: Text(address.derivationPath),
     );
   }
 }

@@ -24,13 +24,13 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       logger.d('Processing SetAccountAndWallet event');
 
       try {
-        Wallet? wallet = await walletRepository.getCurrentWallet();
-        List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
-        emit(state.copyWith(
-            walletState: WalletStateSuccess(currentWallet: wallet),
-            accountState: AccountStateSuccess(currentAccount: accounts[0], accounts: accounts)));
+        // Wallet? wallet = await walletRepository.getCurrentWallet();
+        // List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
+        // emit(state.copyWith(
+        //     walletState: WalletStateSuccess(currentWallet: wallet),
+        //     accountState: AccountStateSuccess(currentAccount: accounts[0], accounts: accounts)));
 
-        logger.d('SetAccountAndWallet event processed successfully. current Account: ${accounts[0].name}');
+        // logger.d('SetAccountAndWallet event processed successfully. current Account: ${accounts[0].name}');
       } catch (e, stackTrace) {
         logger.e({'message': 'Failed to process SetAccountAndWallet event', 'error': e, 'stackTrace': stackTrace});
 

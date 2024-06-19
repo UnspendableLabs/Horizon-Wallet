@@ -22,7 +22,7 @@ class AddressRepositoryImpl implements AddressRepository {
         .map((a) => AddressModel(
             accountUuid: a.accountUuid!,
             address: a.address,
-            derivationPath: a.derivationPath,
+            addressIndex: a.addressIndex,
             publicKey: a.publicKey,
             privateKeyWif: a.privateKeyWif))
         .toList();
@@ -42,7 +42,7 @@ class AddressRepositoryImpl implements AddressRepository {
         .map((a) => entity.Address(
             accountUuid: a.accountUuid,
             address: a.address,
-            derivationPath: a.derivationPath,
+            addressIndex: a.addressIndex,
             publicKey: a.publicKey,
             privateKeyWif: a.privateKeyWif))
         .toList();

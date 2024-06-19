@@ -1,15 +1,16 @@
-import 'dart:ui';
+import 'dart:js' as js;
 
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import 'package:horizon/data/sources/local/tables/accounts_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
+import 'package:horizon/data/sources/local/tables/coins_table.dart';
+import 'package:horizon/data/sources/local/tables/purposes_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
-import 'dart:js' as js;
 
 part "db.g.dart";
 
-@DriftDatabase(tables: [Wallets, Accounts, Addresses])
+@DriftDatabase(tables: [Wallets, Purposes, Coins, Accounts, Addresses])
 class DB extends _$DB {
   DB() : super(connectOnWeb());
 
@@ -28,7 +29,8 @@ class DB extends _$DB {
     await close(); // Ensure the database is closed before deleting
 
     // JavaScript code to delete IndexedDB
-    js.context.callMethod('eval', ["""
+    js.context.callMethod('eval', [
+      """
       var DBDeleteRequest = window.indexedDB.deleteDatabase('horizon_db');
 
       DBDeleteRequest.onerror = function(event) {
@@ -38,7 +40,8 @@ class DB extends _$DB {
       DBDeleteRequest.onsuccess = function(event) {
         console.log('Database deleted successfully');
       };
-    """]);
+    """
+    ]);
 
     print('Database deletion initiated');
   }
@@ -46,8 +49,6 @@ class DB extends _$DB {
 
 DatabaseConnection connectOnWeb() {
   return DatabaseConnection.delayed(Future(() async {
-
-
     final result = await WasmDatabase.open(
       databaseName: 'horizon_db', // prefer to only use valid identifiers here
       sqlite3Uri: Uri.parse('sqlite3.wasm'),

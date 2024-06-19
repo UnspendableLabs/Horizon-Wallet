@@ -13,10 +13,6 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
   Future<List<Address>> getAllAddressesByAccountUuid(String accountUuid) =>
       (select(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid))).get();
 
-  // Future<AddressModel?> getAddressByUuid(String uuid) => (select(addresses)..where((tbl) => tbl.uuid.equals(uuid))).getSingle();
-  //
-  // Stream<AddressModel?> watchAddressByUuid(String uuid) =>
-  //     (select(addresses)..where((tbl) => tbl.uuid.equals(uuid))).watchSingle();
   // TODO: why does this return an int?
   Future<int> insertAddress(AddressModel address) {
     return into(addresses).insert(address);

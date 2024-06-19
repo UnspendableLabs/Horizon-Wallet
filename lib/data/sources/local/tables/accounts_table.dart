@@ -10,11 +10,17 @@ class Accounts extends Table {
   @JsonKey('walletUuid')
   TextColumn get walletUuid => text()();
 
-  @JsonKey('rootPublicKey')
-  TextColumn get rootPublicKey => text()();
+  @JsonKey('purposeUuid')
+  TextColumn get purposeUuid => text()();
 
-  @JsonKey('rootPrivateKey')
-  TextColumn get rootPrivateKey => text()(); // TODO: do not store privKey here
+  @JsonKey('coinUuid')
+  TextColumn get coinUuid => text()();
+
+  @JsonKey('accountIndex')
+  IntColumn get accountIndex => integer()();
+
+  @JsonKey('xPub')
+  TextColumn get xPub => text()();
 
   @override
   Set<Column> get primaryKey => {uuid};

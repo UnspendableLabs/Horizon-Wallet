@@ -12,8 +12,15 @@ class AccountsDao extends DatabaseAccessor<DB> with _$AccountsDaoMixin {
   Future<List<AccountModel>> getAllAccounts() => select(accounts).get();
   Future<AccountModel?> getAccountByUuid(String uuid) =>
       (select(accounts)..where((tbl) => tbl.uuid.equals(uuid))).getSingleOrNull();
-  Future<List<AccountModel>> getAccountsByWalletUuid(String walletUuid) =>
-      (select(accounts)..where((tbl) => tbl.walletUuid.equals(walletUuid))).get();
+  Future<List<AccountModel>> getAccountsForWalletPurposeAndCoin(String walletUuid, String purposeUuid, String coinUuid) =>
+    (select(accounts)
+      ..where((tbl) =>
+          tbl.walletUuid.equals(walletUuid) &
+          tbl.purposeUuid.equals(purposeUuid) &
+          tbl.coinUuid.equals(coinUuid))
+    ).get();
+  Future<List<AccountModel>> getAccountsByPurposeUuid(String purposeUuid) =>
+      (select(accounts)..where((tbl) => tbl.purposeUuid.equals(purposeUuid))).get();
   Future<void> insertAccount(Insertable<AccountModel> account) => into(accounts).insert(account);
   Future<void> updateAccount(Insertable<AccountModel> account) => update(accounts).replace(account);
   Future<void> deleteAccount(Insertable<AccountModel> account) => delete(accounts).delete(account);

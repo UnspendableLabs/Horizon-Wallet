@@ -13,7 +13,10 @@ class WalletRepositoryImpl implements WalletRepository {
 
   @override
   Future<void> insert(entity.Wallet wallet) async {
-    await _walletDao.insertWallet(WalletModel(uuid: wallet.uuid ?? uuid.v4()));
+    await _walletDao.insertWallet(WalletModel(
+      uuid: wallet.uuid ?? uuid.v4(),
+      name: wallet.name,
+    ));
   }
 
   @override
@@ -25,6 +28,7 @@ class WalletRepositoryImpl implements WalletRepository {
     print('walletLocal: $walletLocal');
     return entity.Wallet(
       uuid: walletLocal.uuid,
+      name: walletLocal.name,
     );
   }
 
@@ -33,37 +37,19 @@ class WalletRepositoryImpl implements WalletRepository {
     // TODO: how to mark current wallet?
     WalletModel? wallet = await _walletDao.getCurrentWallet();
     return entity.Wallet(
-      uuid: wallet?.uuid,
+      uuid: wallet!.uuid,
+      name: wallet!.name,
     );
     // return null;
   }
 
   @override
   Future<void> deleteWallet(entity.Wallet wallet) async {
-    await _walletDao.deleteWallet(WalletModel(uuid: wallet.uuid!));
+    await _walletDao.deleteWallet(WalletModel(uuid: wallet.uuid!, name: wallet.name));
   }
 
   @override
   Future<void> deleteAllWallets() async {
     await _walletDao.deleteAllWallets();
   }
-
-  // @override
-  // Future<void> initializeWithWalletAndAddresses(
-  //     Wallet wallet, List<Address> addresses) async {
-  //
-  //     await transaction(() async {
-  //
-  //
-  //         await _walletDao.insertWallet(WalletModel(uuid: uuid.v4()));
-  //
-  //
-  //     });
-  //
-  //
-  //
-  //
-  //
-  //
-  //   }
 }

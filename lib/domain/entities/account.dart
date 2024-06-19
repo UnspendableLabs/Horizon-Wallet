@@ -1,9 +1,17 @@
 class Account {
-  String? walletUuid;
-  String? uuid;
-  String? name;
-  String rootPublicKey;
-  String rootPrivateKey; // TODO: obviously don't store PrivKey here
-
-  Account({this.walletUuid, this.uuid, this.name, required this.rootPublicKey, required this.rootPrivateKey});
+  final String uuid;
+  final String name;
+  final String walletUuid;
+  final String purposeUuid;
+  final String coinUuid;
+  final int accountIndex;
+  String xPub;
+  Account(
+      {required this.uuid,
+      required this.name,
+      required this.walletUuid,
+      required this.purposeUuid,
+      required this.coinUuid,
+      required this.accountIndex,
+      required this.xPub});
 }
