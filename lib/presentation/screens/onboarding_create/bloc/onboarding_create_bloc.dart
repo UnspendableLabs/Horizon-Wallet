@@ -1,15 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/uuid.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/account_service_return.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/hd_wallet_entity.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/account_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/hd_wallet_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
@@ -19,8 +14,7 @@ import 'package:logger/logger.dart';
 class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
   final Logger logger = Logger();
   final mnmonicService = GetIt.I<MnemonicService>();
-  final addressService = GetIt.I<AddressService>();
-  final accountService = GetIt.I<AccountService>();
+  final accountService = GetIt.I<HDWalletService>();
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
@@ -58,30 +52,20 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       if (state.mnemonicState is GenerateMnemonicStateSuccess) {
         emit(state.copyWith(createState: CreateStateLoading()));
         try {
-          Wallet wallet = Wallet(uuid: uuid.v4(), name: 'Wallet 1', wif: '');
+          HDWalletEntity hdWalletEntity = await accountService.deriveHDWallet(
+              mnemonic: state.mnemonicState.mnemonic,
+              password: state.password!,
+              purpose: '84',
+              coinType: 0,
+              accountIndex: 0);
 
-          String purpose = '84';
-          int coinType = 0;
-          int accountIndex = 0;
+          await walletRepository.insert(hdWalletEntity.wallet);
+          await accountRepository.insert(hdWalletEntity.account);
+          await addressRepository.insert(hdWalletEntity.address);
 
-          Account account = Account(
-              uuid: uuid.v4(),
-              name: 'm/$purpose\'/$coinType\'/$accountIndex\'',
-              walletUuid: wallet.uuid,
-              purpose: purpose,
-              coinType: coinType,
-              accountIndex: accountIndex,
-              xPub: '');
-
-          AccountServiceReturn accountServiceReturn =
-              await accountService.deriveAccountAndAddress(state.mnemonicState.mnemonic, account);
-
-          account.xPub = accountServiceReturn.xPub;
-          Address address = accountServiceReturn.address;
-
-          await walletRepository.insert(wallet);
-          await accountRepository.insert(account);
-          await addressRepository.insert(address);
+          await walletRepository.insert(hdWalletEntity.wallet);
+          await accountRepository.insert(hdWalletEntity.account);
+          await addressRepository.insert(hdWalletEntity.address);
 
           emit(state.copyWith(createState: CreateStateSuccess()));
         } catch (e) {
