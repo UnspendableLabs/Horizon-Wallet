@@ -7,8 +7,8 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/hd_wallet_entity.dart';
 import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/services/hd_wallet_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/hd_wallet_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
 import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/bip39.dart' as bip39;
@@ -132,5 +132,53 @@ class HDWalletServiceImpl extends HDWalletService {
         addressIndex: addressIndex);
 
     return HDWalletEntity(wallet: walletEntity, account: accountEntity, address: addressEntity);
+  }
+
+
+ // TODO: initial idea not final
+  @override
+  Future<AccountAddressEntity> addNewAccountAndAddress({
+    required String encryptedRootWif,
+    required String walletUuid,
+    required String password,
+    required String purpose,
+    required int coinType,
+    required int accountIndex,
+  }) async {
+    // STEP 1: decrypt the root WIF
+    final decryptedRootWif = await encryptionService.decrypt(encryptedRootWif, password);
+    final network = ecpair.bitcoin;
+    final root = _bip32.fromWIF(decryptedRootWif, network);
+
+    // STEP 2: derive account node
+    final String basePath = 'm/${purpose}\'/${coinType}\'/${accountIndex}';
+    bip32.BIP32Interface accountNode = root.derivePath(basePath);
+    final xpub = accountNode.neutered().toBase58(); // TODO! change prefix
+    Account accountEntity = Account(
+      uuid: uuid.v4(),
+      name: 'm/$purpose\'/$coinType\'/$accountIndex\'',
+      walletUuid: walletUuid,
+      purpose: purpose,
+      coinType: coinType,
+      accountIndex: accountIndex,
+      xPub: xpub,
+    );
+
+    // STEP 3: derive address
+    int change = 0;
+    int addressIndex = 0;
+    bip32.BIP32Interface child = accountNode.derive(change).derive(addressIndex);
+    List<int> identifier = child.identifier.toDart;
+    List<int> words =
+        bech32.toWords(identifier.map((el) => el.toJS).toList().toJS).toDart.map((el) => el.toDartInt).toList();
+    words.insert(0, 0);
+    String address = bech32.encode(ecpair.bitcoin.bech32, words.map((el) => el.toJS).toList().toJS);
+    Address addressEntity = Address(
+        address: address,
+        publicKey: hex.encode(child.publicKey.toDart),
+        privateKeyWif: child.toWIF(),
+        accountUuid: accountEntity.uuid,
+        addressIndex: addressIndex);
+    return AccountAddressEntity(account: accountEntity, address: addressEntity);
   }
 }

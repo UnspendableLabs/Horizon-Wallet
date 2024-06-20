@@ -9,3 +9,11 @@ class HDWalletEntity {
 
   HDWalletEntity({required this.wallet, required this.account, required this.address});
 }
+
+// TODO not final
+class AccountAddressEntity {
+  final Account account;
+  final Address address;
+
+  AccountAddressEntity({required this.account, required this.address});
+}

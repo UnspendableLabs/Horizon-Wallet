@@ -1,43 +1,38 @@
-here’s an extra step
-
-so first: run
-flutter pub get
-
-then run:
-
-flutter pub run build_runner build
-
-then do:
-
-flutter run -d Chrome
-
-
-
 # horizon
 
-A bip39 wallet for XCP and bitcoin. Compatible with Freewallet and Counterwallet.
+A bip39 wallet for XCP and bitcoin. Supports importing from Freewallet and Counterwallet.
+
+## Prerequisites
+- Flutter SDK https://docs.flutter.dev/get-started/install
+- Dart SDK https://dart.dev/get-dart
+- Chrome or Chromium browser
 
 ## Getting Started
 
-To run locally:
+To run locally on the web:
 
 1. Install dependencies:
 `flutter pub get`
 
 2. Add a .env file to the root of the application which includes:
 ```
-TESTNET_URL=https://api.counterparty.io:14000
-MAINNET_URL=https://api.counterparty.io:4000
+TESTNET_URL=https://api.counterparty.io:14000/v2
+MAINNET_URL=https://api.counterparty.io:4000/v2
 ```
 
-3. Run the application
+3. Much of the web app relies on code generation. To generate the necessary code, run:
+`flutter pub run build_runner build`
+
+4. Run the app
 
     - To run the application as a web app:
-    `flutter build web --web-renderer html --csp`
+            `flutter run -d Chrome`
+
 
     - To run the application as a chrome extension:
         a. build the application
-        `flutter run -d Chrome`
+            `flutter build web --web-renderer html --csp`
+
 
         b. open your Chrome browser and navigate to chrome://extensions
 

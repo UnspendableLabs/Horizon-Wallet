@@ -15,4 +15,12 @@ abstract class HDWalletService {
     required int coinType,
     required int accountIndex,
   });
+  Future<AccountAddressEntity> addNewAccountAndAddress({
+    required String encryptedRootWif,
+    required String walletUuid,
+    required String password,
+    required String purpose,
+    required int coinType,
+    required int accountIndex,
+  });
 }

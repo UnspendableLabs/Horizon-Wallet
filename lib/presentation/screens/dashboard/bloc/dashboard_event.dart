@@ -11,4 +11,10 @@ class ChangeAddress extends DashboardEvent {
   ChangeAddress({required this.address});
 }
 
+class AddAccount extends DashboardEvent {
+  final String purpose;
+  final int coinType;
+  AddAccount({required this.purpose, required this.coinType});
+}
+
 class DeleteWallet extends DashboardEvent {}
