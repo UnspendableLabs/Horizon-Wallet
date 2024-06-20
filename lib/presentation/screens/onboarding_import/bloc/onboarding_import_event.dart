@@ -24,4 +24,4 @@ class AddressMapChanged extends OnboardingImportEvent {
   AddressMapChanged({required this.address, required this.isChecked});
 }
 
-class ImportAddresses extends OnboardingImportEvent {}
+class ImportWallet extends OnboardingImportEvent {}

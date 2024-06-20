@@ -213,23 +213,23 @@ class SeedPrompt extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 16),
-                _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
-                _state.getAddressesState is GetAddressesStateSuccess
-                    ? AddressListView(
-                        addresses: _state.getAddressesState.addresses,
-                        isCheckedMap: _state.isCheckedMap,
-                        onCheckedChanged: (address, checked) {
-                          context.read<OnboardingImportBloc>().add(AddressMapChanged(address: address, isChecked: checked));
-                        },
-                      )
-                    : const Text("")
+                // _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
+                // _state.getAddressesState is GetAddressesStateSuccess
+                //     ? AddressListView(
+                //         addresses: _state.getAddressesState.addresses,
+                //         isCheckedMap: _state.isCheckedMap,
+                //         onCheckedChanged: (address, checked) {
+                //           context.read<OnboardingImportBloc>().add(AddressMapChanged(address: address, isChecked: checked));
+                //         },
+                //       )
+                //     : const Text("")
               ])),
               _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
               Row(children: [
                 // TODO: figure out how to disable a button
                 ElevatedButton(
                   onPressed: () {
-                    context.read<OnboardingImportBloc>().add(ImportAddresses());
+                    context.read<OnboardingImportBloc>().add(ImportWallet());
                   },
                   child: const Text('Import Addresses'),
                 ),

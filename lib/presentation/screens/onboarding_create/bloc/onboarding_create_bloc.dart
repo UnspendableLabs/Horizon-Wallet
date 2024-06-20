@@ -60,14 +60,16 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
         try {
           Wallet wallet = Wallet(uuid: uuid.v4(), name: 'Wallet 1', wif: '');
 
+          String purpose = '84';
+          int coinType = 0;
           int accountIndex = 0;
 
           Account account = Account(
               uuid: uuid.v4(),
-              name: 'm/84\'/0\'/0\'',
+              name: 'm/$purpose\'/$coinType\'/$accountIndex\'',
               walletUuid: wallet.uuid,
-              purpose: '84',
-              coinType: 0,
+              purpose: purpose,
+              coinType: coinType,
               accountIndex: accountIndex,
               xPub: '');
 

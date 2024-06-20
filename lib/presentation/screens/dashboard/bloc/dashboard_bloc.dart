@@ -24,9 +24,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       logger.d('Processing SetAccountAndWallet event');
 
       try {
-        print('GETTING CURR WALLET');
         Wallet? wallet = await walletRepository.getCurrentWallet();
-        print('GETTING CURR ACCOUNTS');
         List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
         emit(state.copyWith(
             walletState: WalletStateSuccess(currentWallet: wallet),

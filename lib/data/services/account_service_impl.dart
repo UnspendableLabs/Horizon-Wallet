@@ -1,6 +1,8 @@
 import 'dart:js_interop';
 
 import 'package:convert/convert.dart';
+import 'package:horizon/common/uuid.dart';
+import 'package:horizon/data/models/seed.dart';
 import 'package:horizon/domain/entities/account.dart' as entity;
 import 'package:horizon/domain/entities/account_service_return.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -19,7 +21,7 @@ class AccountServiceImpl extends AccountService {
   Future<AccountServiceReturn> deriveAccountAndAddress(String mnemonic, entity.Account account) async {
     JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
 
-    final network = ecpair.bitcoin;
+    final network = ecpair.bitcoin; // TODO
 
     bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
     final String basePath = 'm/${account.purpose}\'/${account.coinType}\'/${account.accountIndex}';
@@ -45,5 +47,57 @@ class AccountServiceImpl extends AccountService {
         addressIndex: index);
 
     return AccountServiceReturn(xPub: xpub, address: addressEntity);
+  }
+
+  // Doesn't need to be async since mnemonicToEntropy is sync
+  @override
+  Future<AccountServiceReturn> deriveAccountAndAddressFreewalletBech32(String mnemonic, entity.Account account) async {
+    // Here we are treating entropy as a see (what freewallet does)
+    Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
+
+    final network = ecpair.bitcoin; // TODO
+
+    bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
+
+    /**
+     * freewallet bip32 basePath takes the form of m/account'/change/address_index
+     * ex: m/0'/0/0
+     */
+
+    final accountIndex = account.accountIndex;
+
+    // Derive the account key
+    // BIP32 path: m/0'
+    bip32.BIP32Interface accountNode = root.deriveHardened(accountIndex);
+
+    String xpub = accountNode.neutered().toBase58();
+
+    // BIP32 path: m/0'/0
+    const change = 0; // 0 for external chain, 1 for internal/change chain
+
+    // Derive the change key
+    bip32.BIP32Interface changeNode = accountNode.derive(change);
+
+    // BIP32 path: m/0'/0/0
+    const addressIndex = 0; // Address index
+
+    // Derive the address key
+    bip32.BIP32Interface addressNode = changeNode.derive(addressIndex);
+
+    List<int> identifier = addressNode.identifier.toDart;
+    List<int> words =
+        bech32.toWords(identifier.map((el) => el.toJS).toList().toJS).toDart.map((el) => el.toDartInt).toList();
+    words.insert(0, 0);
+    String address = bech32.encode(ecpair.testnet.bech32, words.map((el) => el.toJS).toList().toJS);
+
+    return AccountServiceReturn(
+        xPub: xpub,
+        address: Address(
+            address: address,
+            // derivationPath: 'm/0\'/0/' + index.toString(),
+            publicKey: hex.encode(addressNode.publicKey.toDart),
+            privateKeyWif: addressNode.toWIF(),
+            accountUuid: uuid.v4(),
+            addressIndex: addressIndex));
   }
 }
