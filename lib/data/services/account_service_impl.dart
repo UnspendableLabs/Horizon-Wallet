@@ -1,7 +1,7 @@
 import 'dart:js_interop';
 
 import 'package:convert/convert.dart';
-import 'package:horizon/common/uuid.dart';
+import 'package:horizon/domain/entities/account.dart' as entity;
 import 'package:horizon/domain/entities/account_service_return.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/services/account_service.dart';
@@ -16,14 +16,13 @@ class AccountServiceImpl extends AccountService {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
   @override
-  Future<AccountServiceReturn> deriveAccountAndAddress(
-      String mnemonic, String purpose, int coinType, int accountIndex) async {
+  Future<AccountServiceReturn> deriveAccountAndAddress(String mnemonic, entity.Account account) async {
     JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
 
     final network = ecpair.bitcoin;
 
     bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
-    final String basePath = 'm/$purpose\'/$coinType\'/$accountIndex\'';
+    final String basePath = 'm/${account.purpose}\'/${account.coinType}\'/${account.accountIndex}';
     bip32.BIP32Interface accountNode = root.derivePath(basePath);
 
     final xpub = accountNode.neutered().toBase58(); // TODO! change prefix
@@ -42,7 +41,7 @@ class AccountServiceImpl extends AccountService {
         address: address,
         publicKey: hex.encode(child.publicKey.toDart),
         privateKeyWif: child.toWIF(),
-        accountUuid: uuid.v4(),
+        accountUuid: account.uuid,
         addressIndex: index);
 
     return AccountServiceReturn(xPub: xpub, address: addressEntity);

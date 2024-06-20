@@ -16,18 +16,14 @@ import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/coin_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/purpose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/coin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/purpose_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/account_service.dart';
@@ -64,6 +60,4 @@ void setup() {
   injector.registerSingleton<AccountRepository>(AccountRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<WalletRepository>(WalletRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<AddressRepository>(AddressRepositoryImpl(injector.get<DatabaseManager>().database));
-  injector.registerSingleton<CoinRepository>(CoinRepositoryImpl(GetIt.I.get<DatabaseManager>().database));
-  injector.registerSingleton<PurposeRepository>(PurposeRepositoryImpl(GetIt.I.get<DatabaseManager>().database));
 }

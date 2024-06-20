@@ -4,13 +4,11 @@ import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import 'package:horizon/data/sources/local/tables/accounts_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
-import 'package:horizon/data/sources/local/tables/coins_table.dart';
-import 'package:horizon/data/sources/local/tables/purposes_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
 
 part "db.g.dart";
 
-@DriftDatabase(tables: [Wallets, Purposes, Coins, Accounts, Addresses])
+@DriftDatabase(tables: [Wallets, Accounts, Addresses])
 class DB extends _$DB {
   DB() : super(connectOnWeb());
 

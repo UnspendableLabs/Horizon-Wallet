@@ -36,7 +36,7 @@ class WalletServiceImpl implements WalletService {
 
     String publicKeyBase58 = root.neutered().toBase58();
 
-    return w.Wallet(uuid: uuid.v4(), name: 'Root');
+    return w.Wallet(uuid: uuid.v4(), name: 'Root', wif: encryptedWif);
   }
 
   Future<w.Wallet> deriveRootFreewallet(String mnemonic, String password) async {
@@ -52,6 +52,6 @@ class WalletServiceImpl implements WalletService {
 
     String publicKeyBase58 = root.neutered().toBase58();
 
-    return w.Wallet(uuid: uuid.v4(), name: 'Root');
+    return w.Wallet(uuid: uuid.v4(), name: 'Root', wif: encryptedWif);
   }
 }

@@ -16,6 +16,7 @@ class WalletRepositoryImpl implements WalletRepository {
     await _walletDao.insertWallet(WalletModel(
       uuid: wallet.uuid ?? uuid.v4(),
       name: wallet.name,
+      wif: wallet.wif,
     ));
   }
 
@@ -29,6 +30,7 @@ class WalletRepositoryImpl implements WalletRepository {
     return entity.Wallet(
       uuid: walletLocal.uuid,
       name: walletLocal.name,
+      wif: walletLocal.wif,
     );
   }
 
@@ -39,13 +41,14 @@ class WalletRepositoryImpl implements WalletRepository {
     return entity.Wallet(
       uuid: wallet!.uuid,
       name: wallet!.name,
+      wif: wallet!.wif,
     );
     // return null;
   }
 
   @override
   Future<void> deleteWallet(entity.Wallet wallet) async {
-    await _walletDao.deleteWallet(WalletModel(uuid: wallet.uuid!, name: wallet.name));
+    await _walletDao.deleteWallet(WalletModel(uuid: wallet.uuid!, name: wallet.name, wif: wallet.wif));
   }
 
   @override

@@ -10,11 +10,11 @@ class Accounts extends Table {
   @JsonKey('walletUuid')
   TextColumn get walletUuid => text()();
 
-  @JsonKey('purposeUuid')
-  TextColumn get purposeUuid => text()();
+  @JsonKey('purpose')
+  TextColumn get purpose => text()();
 
-  @JsonKey('coinUuid')
-  TextColumn get coinUuid => text()();
+  @JsonKey('coinType')
+  IntColumn get coinType => integer()();
 
   @JsonKey('accountIndex')
   IntColumn get accountIndex => integer()();

@@ -12,7 +12,12 @@ class AddressRepositoryImpl implements AddressRepository {
 
   @override
   Future<void> insert(entity.Address address) async {
-    throw UnimplementedError();
+    await _addressDao.insertAddress(AddressModel(
+        accountUuid: address.accountUuid,
+        address: address.address,
+        addressIndex: address.addressIndex,
+        publicKey: address.publicKey,
+        privateKeyWif: address.privateKeyWif));
   }
 
   @override

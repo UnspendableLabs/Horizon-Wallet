@@ -20,8 +20,13 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _wifMeta = const VerificationMeta('wif');
   @override
-  List<GeneratedColumn> get $columns => [uuid, name];
+  late final GeneratedColumn<String> wif = GeneratedColumn<String>(
+      'wif', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [uuid, name, wif];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -44,6 +49,12 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('wif')) {
+      context.handle(
+          _wifMeta, wif.isAcceptableOrUnknown(data['wif']!, _wifMeta));
+    } else if (isInserting) {
+      context.missing(_wifMeta);
+    }
     return context;
   }
 
@@ -57,6 +68,8 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      wif: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}wif'])!,
     );
   }
 
@@ -69,12 +82,14 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
 class Wallet extends DataClass implements Insertable<Wallet> {
   final String uuid;
   final String name;
-  const Wallet({required this.uuid, required this.name});
+  final String wif;
+  const Wallet({required this.uuid, required this.name, required this.wif});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['uuid'] = Variable<String>(uuid);
     map['name'] = Variable<String>(name);
+    map['wif'] = Variable<String>(wif);
     return map;
   }
 
@@ -82,6 +97,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return WalletsCompanion(
       uuid: Value(uuid),
       name: Value(name),
+      wif: Value(wif),
     );
   }
 
@@ -91,6 +107,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return Wallet(
       uuid: serializer.fromJson<String>(json['uuid']),
       name: serializer.fromJson<String>(json['name']),
+      wif: serializer.fromJson<String>(json['wif']),
     );
   }
   @override
@@ -99,62 +116,78 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
       'name': serializer.toJson<String>(name),
+      'wif': serializer.toJson<String>(wif),
     };
   }
 
-  Wallet copyWith({String? uuid, String? name}) => Wallet(
+  Wallet copyWith({String? uuid, String? name, String? wif}) => Wallet(
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
+        wif: wif ?? this.wif,
       );
   @override
   String toString() {
     return (StringBuffer('Wallet(')
           ..write('uuid: $uuid, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('wif: $wif')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uuid, name);
+  int get hashCode => Object.hash(uuid, name, wif);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Wallet && other.uuid == this.uuid && other.name == this.name);
+      (other is Wallet &&
+          other.uuid == this.uuid &&
+          other.name == this.name &&
+          other.wif == this.wif);
 }
 
 class WalletsCompanion extends UpdateCompanion<Wallet> {
   final Value<String> uuid;
   final Value<String> name;
+  final Value<String> wif;
   final Value<int> rowid;
   const WalletsCompanion({
     this.uuid = const Value.absent(),
     this.name = const Value.absent(),
+    this.wif = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WalletsCompanion.insert({
     required String uuid,
     required String name,
+    required String wif,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
-        name = Value(name);
+        name = Value(name),
+        wif = Value(wif);
   static Insertable<Wallet> custom({
     Expression<String>? uuid,
     Expression<String>? name,
+    Expression<String>? wif,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
       if (name != null) 'name': name,
+      if (wif != null) 'wif': wif,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   WalletsCompanion copyWith(
-      {Value<String>? uuid, Value<String>? name, Value<int>? rowid}) {
+      {Value<String>? uuid,
+      Value<String>? name,
+      Value<String>? wif,
+      Value<int>? rowid}) {
     return WalletsCompanion(
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
+      wif: wif ?? this.wif,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -168,6 +201,9 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (wif.present) {
+      map['wif'] = Variable<String>(wif.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -179,491 +215,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     return (StringBuffer('WalletsCompanion(')
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $PurposesTable extends Purposes with TableInfo<$PurposesTable, Purpose> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $PurposesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
-  @override
-  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
-      'uuid', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: 'UNIQUE NOT NULL');
-  static const VerificationMeta _bipMeta = const VerificationMeta('bip');
-  @override
-  late final GeneratedColumn<String> bip = GeneratedColumn<String>(
-      'bip', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _walletUuidMeta =
-      const VerificationMeta('walletUuid');
-  @override
-  late final GeneratedColumn<String> walletUuid = GeneratedColumn<String>(
-      'wallet_uuid', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [uuid, bip, walletUuid];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'purposes';
-  @override
-  VerificationContext validateIntegrity(Insertable<Purpose> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('uuid')) {
-      context.handle(
-          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
-    } else if (isInserting) {
-      context.missing(_uuidMeta);
-    }
-    if (data.containsKey('bip')) {
-      context.handle(
-          _bipMeta, bip.isAcceptableOrUnknown(data['bip']!, _bipMeta));
-    } else if (isInserting) {
-      context.missing(_bipMeta);
-    }
-    if (data.containsKey('wallet_uuid')) {
-      context.handle(
-          _walletUuidMeta,
-          walletUuid.isAcceptableOrUnknown(
-              data['wallet_uuid']!, _walletUuidMeta));
-    } else if (isInserting) {
-      context.missing(_walletUuidMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {uuid};
-  @override
-  Purpose map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Purpose(
-      uuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
-      bip: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}bip'])!,
-      walletUuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}wallet_uuid'])!,
-    );
-  }
-
-  @override
-  $PurposesTable createAlias(String alias) {
-    return $PurposesTable(attachedDatabase, alias);
-  }
-}
-
-class Purpose extends DataClass implements Insertable<Purpose> {
-  final String uuid;
-  final String bip;
-  final String walletUuid;
-  const Purpose(
-      {required this.uuid, required this.bip, required this.walletUuid});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uuid'] = Variable<String>(uuid);
-    map['bip'] = Variable<String>(bip);
-    map['wallet_uuid'] = Variable<String>(walletUuid);
-    return map;
-  }
-
-  PurposesCompanion toCompanion(bool nullToAbsent) {
-    return PurposesCompanion(
-      uuid: Value(uuid),
-      bip: Value(bip),
-      walletUuid: Value(walletUuid),
-    );
-  }
-
-  factory Purpose.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Purpose(
-      uuid: serializer.fromJson<String>(json['uuid']),
-      bip: serializer.fromJson<String>(json['bip']),
-      walletUuid: serializer.fromJson<String>(json['walletUuid']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'uuid': serializer.toJson<String>(uuid),
-      'bip': serializer.toJson<String>(bip),
-      'walletUuid': serializer.toJson<String>(walletUuid),
-    };
-  }
-
-  Purpose copyWith({String? uuid, String? bip, String? walletUuid}) => Purpose(
-        uuid: uuid ?? this.uuid,
-        bip: bip ?? this.bip,
-        walletUuid: walletUuid ?? this.walletUuid,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('Purpose(')
-          ..write('uuid: $uuid, ')
-          ..write('bip: $bip, ')
-          ..write('walletUuid: $walletUuid')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(uuid, bip, walletUuid);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Purpose &&
-          other.uuid == this.uuid &&
-          other.bip == this.bip &&
-          other.walletUuid == this.walletUuid);
-}
-
-class PurposesCompanion extends UpdateCompanion<Purpose> {
-  final Value<String> uuid;
-  final Value<String> bip;
-  final Value<String> walletUuid;
-  final Value<int> rowid;
-  const PurposesCompanion({
-    this.uuid = const Value.absent(),
-    this.bip = const Value.absent(),
-    this.walletUuid = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  PurposesCompanion.insert({
-    required String uuid,
-    required String bip,
-    required String walletUuid,
-    this.rowid = const Value.absent(),
-  })  : uuid = Value(uuid),
-        bip = Value(bip),
-        walletUuid = Value(walletUuid);
-  static Insertable<Purpose> custom({
-    Expression<String>? uuid,
-    Expression<String>? bip,
-    Expression<String>? walletUuid,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (uuid != null) 'uuid': uuid,
-      if (bip != null) 'bip': bip,
-      if (walletUuid != null) 'wallet_uuid': walletUuid,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  PurposesCompanion copyWith(
-      {Value<String>? uuid,
-      Value<String>? bip,
-      Value<String>? walletUuid,
-      Value<int>? rowid}) {
-    return PurposesCompanion(
-      uuid: uuid ?? this.uuid,
-      bip: bip ?? this.bip,
-      walletUuid: walletUuid ?? this.walletUuid,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (uuid.present) {
-      map['uuid'] = Variable<String>(uuid.value);
-    }
-    if (bip.present) {
-      map['bip'] = Variable<String>(bip.value);
-    }
-    if (walletUuid.present) {
-      map['wallet_uuid'] = Variable<String>(walletUuid.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('PurposesCompanion(')
-          ..write('uuid: $uuid, ')
-          ..write('bip: $bip, ')
-          ..write('walletUuid: $walletUuid, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $CoinsTable extends Coins with TableInfo<$CoinsTable, Coin> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $CoinsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
-  @override
-  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
-      'uuid', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _typeMeta = const VerificationMeta('type');
-  @override
-  late final GeneratedColumn<int> type = GeneratedColumn<int>(
-      'type', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _purposeUuidMeta =
-      const VerificationMeta('purposeUuid');
-  @override
-  late final GeneratedColumn<String> purposeUuid = GeneratedColumn<String>(
-      'purpose_uuid', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _walletUuidMeta =
-      const VerificationMeta('walletUuid');
-  @override
-  late final GeneratedColumn<String> walletUuid = GeneratedColumn<String>(
-      'wallet_uuid', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [uuid, type, purposeUuid, walletUuid];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'coins';
-  @override
-  VerificationContext validateIntegrity(Insertable<Coin> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('uuid')) {
-      context.handle(
-          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
-    } else if (isInserting) {
-      context.missing(_uuidMeta);
-    }
-    if (data.containsKey('type')) {
-      context.handle(
-          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
-    } else if (isInserting) {
-      context.missing(_typeMeta);
-    }
-    if (data.containsKey('purpose_uuid')) {
-      context.handle(
-          _purposeUuidMeta,
-          purposeUuid.isAcceptableOrUnknown(
-              data['purpose_uuid']!, _purposeUuidMeta));
-    } else if (isInserting) {
-      context.missing(_purposeUuidMeta);
-    }
-    if (data.containsKey('wallet_uuid')) {
-      context.handle(
-          _walletUuidMeta,
-          walletUuid.isAcceptableOrUnknown(
-              data['wallet_uuid']!, _walletUuidMeta));
-    } else if (isInserting) {
-      context.missing(_walletUuidMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => const {};
-  @override
-  Coin map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Coin(
-      uuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
-      type: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}type'])!,
-      purposeUuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}purpose_uuid'])!,
-      walletUuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}wallet_uuid'])!,
-    );
-  }
-
-  @override
-  $CoinsTable createAlias(String alias) {
-    return $CoinsTable(attachedDatabase, alias);
-  }
-}
-
-class Coin extends DataClass implements Insertable<Coin> {
-  final String uuid;
-  final int type;
-  final String purposeUuid;
-  final String walletUuid;
-  const Coin(
-      {required this.uuid,
-      required this.type,
-      required this.purposeUuid,
-      required this.walletUuid});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uuid'] = Variable<String>(uuid);
-    map['type'] = Variable<int>(type);
-    map['purpose_uuid'] = Variable<String>(purposeUuid);
-    map['wallet_uuid'] = Variable<String>(walletUuid);
-    return map;
-  }
-
-  CoinsCompanion toCompanion(bool nullToAbsent) {
-    return CoinsCompanion(
-      uuid: Value(uuid),
-      type: Value(type),
-      purposeUuid: Value(purposeUuid),
-      walletUuid: Value(walletUuid),
-    );
-  }
-
-  factory Coin.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Coin(
-      uuid: serializer.fromJson<String>(json['uuid']),
-      type: serializer.fromJson<int>(json['type']),
-      purposeUuid: serializer.fromJson<String>(json['purposeUuid']),
-      walletUuid: serializer.fromJson<String>(json['walletUuid']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'uuid': serializer.toJson<String>(uuid),
-      'type': serializer.toJson<int>(type),
-      'purposeUuid': serializer.toJson<String>(purposeUuid),
-      'walletUuid': serializer.toJson<String>(walletUuid),
-    };
-  }
-
-  Coin copyWith(
-          {String? uuid, int? type, String? purposeUuid, String? walletUuid}) =>
-      Coin(
-        uuid: uuid ?? this.uuid,
-        type: type ?? this.type,
-        purposeUuid: purposeUuid ?? this.purposeUuid,
-        walletUuid: walletUuid ?? this.walletUuid,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('Coin(')
-          ..write('uuid: $uuid, ')
-          ..write('type: $type, ')
-          ..write('purposeUuid: $purposeUuid, ')
-          ..write('walletUuid: $walletUuid')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(uuid, type, purposeUuid, walletUuid);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Coin &&
-          other.uuid == this.uuid &&
-          other.type == this.type &&
-          other.purposeUuid == this.purposeUuid &&
-          other.walletUuid == this.walletUuid);
-}
-
-class CoinsCompanion extends UpdateCompanion<Coin> {
-  final Value<String> uuid;
-  final Value<int> type;
-  final Value<String> purposeUuid;
-  final Value<String> walletUuid;
-  final Value<int> rowid;
-  const CoinsCompanion({
-    this.uuid = const Value.absent(),
-    this.type = const Value.absent(),
-    this.purposeUuid = const Value.absent(),
-    this.walletUuid = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  CoinsCompanion.insert({
-    required String uuid,
-    required int type,
-    required String purposeUuid,
-    required String walletUuid,
-    this.rowid = const Value.absent(),
-  })  : uuid = Value(uuid),
-        type = Value(type),
-        purposeUuid = Value(purposeUuid),
-        walletUuid = Value(walletUuid);
-  static Insertable<Coin> custom({
-    Expression<String>? uuid,
-    Expression<int>? type,
-    Expression<String>? purposeUuid,
-    Expression<String>? walletUuid,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (uuid != null) 'uuid': uuid,
-      if (type != null) 'type': type,
-      if (purposeUuid != null) 'purpose_uuid': purposeUuid,
-      if (walletUuid != null) 'wallet_uuid': walletUuid,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  CoinsCompanion copyWith(
-      {Value<String>? uuid,
-      Value<int>? type,
-      Value<String>? purposeUuid,
-      Value<String>? walletUuid,
-      Value<int>? rowid}) {
-    return CoinsCompanion(
-      uuid: uuid ?? this.uuid,
-      type: type ?? this.type,
-      purposeUuid: purposeUuid ?? this.purposeUuid,
-      walletUuid: walletUuid ?? this.walletUuid,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (uuid.present) {
-      map['uuid'] = Variable<String>(uuid.value);
-    }
-    if (type.present) {
-      map['type'] = Variable<int>(type.value);
-    }
-    if (purposeUuid.present) {
-      map['purpose_uuid'] = Variable<String>(purposeUuid.value);
-    }
-    if (walletUuid.present) {
-      map['wallet_uuid'] = Variable<String>(walletUuid.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CoinsCompanion(')
-          ..write('uuid: $uuid, ')
-          ..write('type: $type, ')
-          ..write('purposeUuid: $purposeUuid, ')
-          ..write('walletUuid: $walletUuid, ')
+          ..write('wif: $wif, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -693,18 +245,18 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
   late final GeneratedColumn<String> walletUuid = GeneratedColumn<String>(
       'wallet_uuid', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _purposeUuidMeta =
-      const VerificationMeta('purposeUuid');
+  static const VerificationMeta _purposeMeta =
+      const VerificationMeta('purpose');
   @override
-  late final GeneratedColumn<String> purposeUuid = GeneratedColumn<String>(
-      'purpose_uuid', aliasedName, false,
+  late final GeneratedColumn<String> purpose = GeneratedColumn<String>(
+      'purpose', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _coinUuidMeta =
-      const VerificationMeta('coinUuid');
+  static const VerificationMeta _coinTypeMeta =
+      const VerificationMeta('coinType');
   @override
-  late final GeneratedColumn<String> coinUuid = GeneratedColumn<String>(
-      'coin_uuid', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<int> coinType = GeneratedColumn<int>(
+      'coin_type', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
   static const VerificationMeta _accountIndexMeta =
       const VerificationMeta('accountIndex');
   @override
@@ -718,7 +270,7 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [uuid, name, walletUuid, purposeUuid, coinUuid, accountIndex, xPub];
+      [uuid, name, walletUuid, purpose, coinType, accountIndex, xPub];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -749,19 +301,17 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
     } else if (isInserting) {
       context.missing(_walletUuidMeta);
     }
-    if (data.containsKey('purpose_uuid')) {
-      context.handle(
-          _purposeUuidMeta,
-          purposeUuid.isAcceptableOrUnknown(
-              data['purpose_uuid']!, _purposeUuidMeta));
+    if (data.containsKey('purpose')) {
+      context.handle(_purposeMeta,
+          purpose.isAcceptableOrUnknown(data['purpose']!, _purposeMeta));
     } else if (isInserting) {
-      context.missing(_purposeUuidMeta);
+      context.missing(_purposeMeta);
     }
-    if (data.containsKey('coin_uuid')) {
-      context.handle(_coinUuidMeta,
-          coinUuid.isAcceptableOrUnknown(data['coin_uuid']!, _coinUuidMeta));
+    if (data.containsKey('coin_type')) {
+      context.handle(_coinTypeMeta,
+          coinType.isAcceptableOrUnknown(data['coin_type']!, _coinTypeMeta));
     } else if (isInserting) {
-      context.missing(_coinUuidMeta);
+      context.missing(_coinTypeMeta);
     }
     if (data.containsKey('account_index')) {
       context.handle(
@@ -792,10 +342,10 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       walletUuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}wallet_uuid'])!,
-      purposeUuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}purpose_uuid'])!,
-      coinUuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}coin_uuid'])!,
+      purpose: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}purpose'])!,
+      coinType: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}coin_type'])!,
       accountIndex: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}account_index'])!,
       xPub: attachedDatabase.typeMapping
@@ -813,16 +363,16 @@ class Account extends DataClass implements Insertable<Account> {
   final String uuid;
   final String name;
   final String walletUuid;
-  final String purposeUuid;
-  final String coinUuid;
+  final String purpose;
+  final int coinType;
   final int accountIndex;
   final String xPub;
   const Account(
       {required this.uuid,
       required this.name,
       required this.walletUuid,
-      required this.purposeUuid,
-      required this.coinUuid,
+      required this.purpose,
+      required this.coinType,
       required this.accountIndex,
       required this.xPub});
   @override
@@ -831,8 +381,8 @@ class Account extends DataClass implements Insertable<Account> {
     map['uuid'] = Variable<String>(uuid);
     map['name'] = Variable<String>(name);
     map['wallet_uuid'] = Variable<String>(walletUuid);
-    map['purpose_uuid'] = Variable<String>(purposeUuid);
-    map['coin_uuid'] = Variable<String>(coinUuid);
+    map['purpose'] = Variable<String>(purpose);
+    map['coin_type'] = Variable<int>(coinType);
     map['account_index'] = Variable<int>(accountIndex);
     map['x_pub'] = Variable<String>(xPub);
     return map;
@@ -843,8 +393,8 @@ class Account extends DataClass implements Insertable<Account> {
       uuid: Value(uuid),
       name: Value(name),
       walletUuid: Value(walletUuid),
-      purposeUuid: Value(purposeUuid),
-      coinUuid: Value(coinUuid),
+      purpose: Value(purpose),
+      coinType: Value(coinType),
       accountIndex: Value(accountIndex),
       xPub: Value(xPub),
     );
@@ -857,8 +407,8 @@ class Account extends DataClass implements Insertable<Account> {
       uuid: serializer.fromJson<String>(json['uuid']),
       name: serializer.fromJson<String>(json['name']),
       walletUuid: serializer.fromJson<String>(json['walletUuid']),
-      purposeUuid: serializer.fromJson<String>(json['purposeUuid']),
-      coinUuid: serializer.fromJson<String>(json['coinUuid']),
+      purpose: serializer.fromJson<String>(json['purpose']),
+      coinType: serializer.fromJson<int>(json['coinType']),
       accountIndex: serializer.fromJson<int>(json['accountIndex']),
       xPub: serializer.fromJson<String>(json['xPub']),
     );
@@ -870,8 +420,8 @@ class Account extends DataClass implements Insertable<Account> {
       'uuid': serializer.toJson<String>(uuid),
       'name': serializer.toJson<String>(name),
       'walletUuid': serializer.toJson<String>(walletUuid),
-      'purposeUuid': serializer.toJson<String>(purposeUuid),
-      'coinUuid': serializer.toJson<String>(coinUuid),
+      'purpose': serializer.toJson<String>(purpose),
+      'coinType': serializer.toJson<int>(coinType),
       'accountIndex': serializer.toJson<int>(accountIndex),
       'xPub': serializer.toJson<String>(xPub),
     };
@@ -881,16 +431,16 @@ class Account extends DataClass implements Insertable<Account> {
           {String? uuid,
           String? name,
           String? walletUuid,
-          String? purposeUuid,
-          String? coinUuid,
+          String? purpose,
+          int? coinType,
           int? accountIndex,
           String? xPub}) =>
       Account(
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
         walletUuid: walletUuid ?? this.walletUuid,
-        purposeUuid: purposeUuid ?? this.purposeUuid,
-        coinUuid: coinUuid ?? this.coinUuid,
+        purpose: purpose ?? this.purpose,
+        coinType: coinType ?? this.coinType,
         accountIndex: accountIndex ?? this.accountIndex,
         xPub: xPub ?? this.xPub,
       );
@@ -900,8 +450,8 @@ class Account extends DataClass implements Insertable<Account> {
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
           ..write('walletUuid: $walletUuid, ')
-          ..write('purposeUuid: $purposeUuid, ')
-          ..write('coinUuid: $coinUuid, ')
+          ..write('purpose: $purpose, ')
+          ..write('coinType: $coinType, ')
           ..write('accountIndex: $accountIndex, ')
           ..write('xPub: $xPub')
           ..write(')'))
@@ -910,7 +460,7 @@ class Account extends DataClass implements Insertable<Account> {
 
   @override
   int get hashCode => Object.hash(
-      uuid, name, walletUuid, purposeUuid, coinUuid, accountIndex, xPub);
+      uuid, name, walletUuid, purpose, coinType, accountIndex, xPub);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -918,8 +468,8 @@ class Account extends DataClass implements Insertable<Account> {
           other.uuid == this.uuid &&
           other.name == this.name &&
           other.walletUuid == this.walletUuid &&
-          other.purposeUuid == this.purposeUuid &&
-          other.coinUuid == this.coinUuid &&
+          other.purpose == this.purpose &&
+          other.coinType == this.coinType &&
           other.accountIndex == this.accountIndex &&
           other.xPub == this.xPub);
 }
@@ -928,8 +478,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
   final Value<String> uuid;
   final Value<String> name;
   final Value<String> walletUuid;
-  final Value<String> purposeUuid;
-  final Value<String> coinUuid;
+  final Value<String> purpose;
+  final Value<int> coinType;
   final Value<int> accountIndex;
   final Value<String> xPub;
   final Value<int> rowid;
@@ -937,8 +487,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     this.uuid = const Value.absent(),
     this.name = const Value.absent(),
     this.walletUuid = const Value.absent(),
-    this.purposeUuid = const Value.absent(),
-    this.coinUuid = const Value.absent(),
+    this.purpose = const Value.absent(),
+    this.coinType = const Value.absent(),
     this.accountIndex = const Value.absent(),
     this.xPub = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -947,24 +497,24 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     required String uuid,
     required String name,
     required String walletUuid,
-    required String purposeUuid,
-    required String coinUuid,
+    required String purpose,
+    required int coinType,
     required int accountIndex,
     required String xPub,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         name = Value(name),
         walletUuid = Value(walletUuid),
-        purposeUuid = Value(purposeUuid),
-        coinUuid = Value(coinUuid),
+        purpose = Value(purpose),
+        coinType = Value(coinType),
         accountIndex = Value(accountIndex),
         xPub = Value(xPub);
   static Insertable<Account> custom({
     Expression<String>? uuid,
     Expression<String>? name,
     Expression<String>? walletUuid,
-    Expression<String>? purposeUuid,
-    Expression<String>? coinUuid,
+    Expression<String>? purpose,
+    Expression<int>? coinType,
     Expression<int>? accountIndex,
     Expression<String>? xPub,
     Expression<int>? rowid,
@@ -973,8 +523,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       if (uuid != null) 'uuid': uuid,
       if (name != null) 'name': name,
       if (walletUuid != null) 'wallet_uuid': walletUuid,
-      if (purposeUuid != null) 'purpose_uuid': purposeUuid,
-      if (coinUuid != null) 'coin_uuid': coinUuid,
+      if (purpose != null) 'purpose': purpose,
+      if (coinType != null) 'coin_type': coinType,
       if (accountIndex != null) 'account_index': accountIndex,
       if (xPub != null) 'x_pub': xPub,
       if (rowid != null) 'rowid': rowid,
@@ -985,8 +535,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       {Value<String>? uuid,
       Value<String>? name,
       Value<String>? walletUuid,
-      Value<String>? purposeUuid,
-      Value<String>? coinUuid,
+      Value<String>? purpose,
+      Value<int>? coinType,
       Value<int>? accountIndex,
       Value<String>? xPub,
       Value<int>? rowid}) {
@@ -994,8 +544,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
       walletUuid: walletUuid ?? this.walletUuid,
-      purposeUuid: purposeUuid ?? this.purposeUuid,
-      coinUuid: coinUuid ?? this.coinUuid,
+      purpose: purpose ?? this.purpose,
+      coinType: coinType ?? this.coinType,
       accountIndex: accountIndex ?? this.accountIndex,
       xPub: xPub ?? this.xPub,
       rowid: rowid ?? this.rowid,
@@ -1014,11 +564,11 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     if (walletUuid.present) {
       map['wallet_uuid'] = Variable<String>(walletUuid.value);
     }
-    if (purposeUuid.present) {
-      map['purpose_uuid'] = Variable<String>(purposeUuid.value);
+    if (purpose.present) {
+      map['purpose'] = Variable<String>(purpose.value);
     }
-    if (coinUuid.present) {
-      map['coin_uuid'] = Variable<String>(coinUuid.value);
+    if (coinType.present) {
+      map['coin_type'] = Variable<int>(coinType.value);
     }
     if (accountIndex.present) {
       map['account_index'] = Variable<int>(accountIndex.value);
@@ -1038,8 +588,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
           ..write('walletUuid: $walletUuid, ')
-          ..write('purposeUuid: $purposeUuid, ')
-          ..write('coinUuid: $coinUuid, ')
+          ..write('purpose: $purpose, ')
+          ..write('coinType: $coinType, ')
           ..write('accountIndex: $accountIndex, ')
           ..write('xPub: $xPub, ')
           ..write('rowid: $rowid')
@@ -1361,8 +911,6 @@ class AddressesCompanion extends UpdateCompanion<Address> {
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
-  late final $PurposesTable purposes = $PurposesTable(this);
-  late final $CoinsTable coins = $CoinsTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $AddressesTable addresses = $AddressesTable(this);
   @override
@@ -1370,5 +918,5 @@ abstract class _$DB extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [wallets, purposes, coins, accounts, addresses];
+      [wallets, accounts, addresses];
 }
