@@ -8,7 +8,6 @@ import 'package:horizon/data/services/ecpair_service_impl.dart';
 import 'package:horizon/data/services/encryption_service_impl.dart';
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
-import 'package:horizon/data/services/wallet_service_impl.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/data/sources/network/api/dio_client.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
@@ -34,7 +33,6 @@ import 'package:horizon/domain/services/ecpair_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 
 void setup() {
   GetIt injector = GetIt.I;
@@ -54,7 +52,6 @@ void setup() {
   injector.registerSingleton<EncryptionService>(EncryptionServiceImpl());
   injector.registerSingleton<AccountService>(AccountServiceImpl());
   injector.registerSingleton<MnemonicService>(MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
-  injector.registerSingleton<WalletService>(WalletServiceImpl(GetIt.I.get<EncryptionService>()));
   injector.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
   injector.registerSingleton<AccountRepository>(AccountRepositoryImpl(injector.get<DatabaseManager>().database));

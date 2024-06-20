@@ -34,19 +34,24 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     });
 
     on<MnemonicChanged>((event, emit) async {
-      bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
+      // bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
+      print('MNEMONIC IN EVENT: ${event.mnemonic}');
+      bool validMnemonic = true;
       if (validMnemonic) {
         try {
           // List<Address> addresses = await _deriveAddress(event.mnemonic, state.importFormat.name, addressService);
 
           // emit(state.copyWith(mnemonic: event.mnemonic, getAddressesState: GetAddressesStateSuccess(addresses: addresses)));
+          emit(state.copyWith(mnemonic: event.mnemonic));
         } catch (e) {
           // emit(state.copyWith(mnemonic: event.mnemonic, getAddressesState: GetAddressesStateError(message: e.toString())));
+          emit(state.copyWith(mnemonic: event.mnemonic));
         }
       } else {
         emit(state.copyWith(mnemonic: event.mnemonic));
       }
     });
+
     on<ImportFormatChanged>((event, emit) async {
       // bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
       bool validMnemonic = true;
@@ -78,6 +83,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     });
 
     on<ImportWallet>((event, emit) async {
+      print('MNEMONIC IN STATE: ${state.mnemonic}');
       // bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
       bool validMnemonic = true;
       print("validMnemonic: $validMnemonic");

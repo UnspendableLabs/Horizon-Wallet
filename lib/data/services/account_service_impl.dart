@@ -1,7 +1,6 @@
 import 'dart:js_interop';
 
 import 'package:convert/convert.dart';
-import 'package:horizon/common/uuid.dart';
 import 'package:horizon/data/models/seed.dart';
 import 'package:horizon/domain/entities/account.dart' as entity;
 import 'package:horizon/domain/entities/account_service_return.dart';
@@ -53,11 +52,14 @@ class AccountServiceImpl extends AccountService {
   @override
   Future<AccountServiceReturn> deriveAccountAndAddressFreewalletBech32(String mnemonic, entity.Account account) async {
     // Here we are treating entropy as a see (what freewallet does)
+
     Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
+
+    Buffer buffer = Buffer.from(seed.bytes.toJS);
 
     final network = ecpair.bitcoin; // TODO
 
-    bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
+    bip32.BIP32Interface root = _bip32.fromSeed(buffer, network);
 
     /**
      * freewallet bip32 basePath takes the form of m/account'/change/address_index
@@ -70,7 +72,7 @@ class AccountServiceImpl extends AccountService {
     // BIP32 path: m/0'
     bip32.BIP32Interface accountNode = root.deriveHardened(accountIndex);
 
-    String xpub = accountNode.neutered().toBase58();
+    String xpub = accountNode.neutered().toBase58(); // TODO: change prefix
 
     // BIP32 path: m/0'/0
     const change = 0; // 0 for external chain, 1 for internal/change chain
@@ -88,7 +90,7 @@ class AccountServiceImpl extends AccountService {
     List<int> words =
         bech32.toWords(identifier.map((el) => el.toJS).toList().toJS).toDart.map((el) => el.toDartInt).toList();
     words.insert(0, 0);
-    String address = bech32.encode(ecpair.testnet.bech32, words.map((el) => el.toJS).toList().toJS);
+    String address = bech32.encode(ecpair.bitcoin.bech32, words.map((el) => el.toJS).toList().toJS);
 
     return AccountServiceReturn(
         xPub: xpub,
@@ -97,7 +99,7 @@ class AccountServiceImpl extends AccountService {
             // derivationPath: 'm/0\'/0/' + index.toString(),
             publicKey: hex.encode(addressNode.publicKey.toDart),
             privateKeyWif: addressNode.toWIF(),
-            accountUuid: uuid.v4(),
+            accountUuid: account.uuid,
             addressIndex: addressIndex));
   }
 }

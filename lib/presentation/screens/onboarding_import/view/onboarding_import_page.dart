@@ -53,14 +53,18 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
       child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
         return Scaffold(
           appBar: AppBar(title: const Text('Horizon')),
-          body: Flexible(
-            child: state.password != null
-                ? SeedPrompt(seedPhraseController: _seedPhraseController, state: state)
-                : PasswordPrompt(
-                    passwordController: _passwordController,
-                    passwordConfirmationController: _passwordConfirmationController,
-                    state: state,
-                  ),
+          body: Column(
+            children: [
+              Flexible(
+                child: state.password != null
+                    ? SeedPrompt(seedPhraseController: _seedPhraseController, state: state)
+                    : PasswordPrompt(
+                        passwordController: _passwordController,
+                        passwordConfirmationController: _passwordConfirmationController,
+                        state: state,
+                      ),
+              ),
+            ],
           ),
         );
       }),
