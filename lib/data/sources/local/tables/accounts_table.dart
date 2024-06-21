@@ -11,16 +11,13 @@ class Accounts extends Table {
   TextColumn get walletUuid => text()();
 
   @JsonKey('purpose')
-  TextColumn get purpose => text()();
+  TextColumn get purpose => text()(); // add constraints
 
   @JsonKey('coinType')
-  IntColumn get coinType => integer()();
+  TextColumn get coinType => text()(); // add constraints
 
   @JsonKey('accountIndex')
-  IntColumn get accountIndex => integer()();
-
-  @JsonKey('xPub')
-  TextColumn get xPub => text()();
+  TextColumn get accountIndex => text()(); // add constraints
 
   @override
   Set<Column> get primaryKey => {uuid};

@@ -16,9 +16,9 @@ To run locally on the web:
 
 2. Add a .env file to the root of the application which includes:
 ```
-TESTNET_URL=https://api.counterparty.io:14000/v2
-MAINNET_URL=https://api.counterparty.io:4000/v2
+TEST=false
 ```
+to run in testnet mode, set TEST=true
 
 3. Much of the web app relies on code generation. To generate the necessary code, run:
 `flutter pub run build_runner build`

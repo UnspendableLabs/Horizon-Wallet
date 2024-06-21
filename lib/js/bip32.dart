@@ -37,8 +37,8 @@ extension type BIP32Interface._(JSObject _) implements Signer {
 extension type BIP32Factory._(JSObject _) implements JSObject {
   external factory BIP32Factory(JSObject eccLib);
   external BIP32Interface fromBase58(String privatekey, [c.Network network]);
-  external BIP32Interface fromPrivateKey(JSUint8Array privateKey, JSUint8Array chainCode, [c.Network network]);
+  external BIP32Interface fromPrivateKey(b.Buffer privateKey, b.Buffer chainCode, [c.Network network]);
   external BIP32Interface fromPublicKey(JSUint8Array publicKey, JSUint8Array chainCode, [c.Network network]);
   external BIP32Interface fromSeed(b.Buffer seed, [c.Network network]);
-  external BIP32Interface fromWIF(String wifString, [c.Network network]);
+  // external BIP32Interface fromWIF(String wifString, [c.Network network]);
 }

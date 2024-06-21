@@ -20,13 +20,21 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _wifMeta = const VerificationMeta('wif');
+  static const VerificationMeta _encryptedPrivKeyMeta =
+      const VerificationMeta('encryptedPrivKey');
   @override
-  late final GeneratedColumn<String> wif = GeneratedColumn<String>(
-      'wif', aliasedName, false,
+  late final GeneratedColumn<String> encryptedPrivKey = GeneratedColumn<String>(
+      'encrypted_priv_key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _chainCodeHexMeta =
+      const VerificationMeta('chainCodeHex');
+  @override
+  late final GeneratedColumn<String> chainCodeHex = GeneratedColumn<String>(
+      'chain_code_hex', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [uuid, name, wif];
+  List<GeneratedColumn> get $columns =>
+      [uuid, name, encryptedPrivKey, chainCodeHex];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -49,11 +57,21 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('wif')) {
+    if (data.containsKey('encrypted_priv_key')) {
       context.handle(
-          _wifMeta, wif.isAcceptableOrUnknown(data['wif']!, _wifMeta));
+          _encryptedPrivKeyMeta,
+          encryptedPrivKey.isAcceptableOrUnknown(
+              data['encrypted_priv_key']!, _encryptedPrivKeyMeta));
     } else if (isInserting) {
-      context.missing(_wifMeta);
+      context.missing(_encryptedPrivKeyMeta);
+    }
+    if (data.containsKey('chain_code_hex')) {
+      context.handle(
+          _chainCodeHexMeta,
+          chainCodeHex.isAcceptableOrUnknown(
+              data['chain_code_hex']!, _chainCodeHexMeta));
+    } else if (isInserting) {
+      context.missing(_chainCodeHexMeta);
     }
     return context;
   }
@@ -68,8 +86,10 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      wif: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}wif'])!,
+      encryptedPrivKey: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}encrypted_priv_key'])!,
+      chainCodeHex: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}chain_code_hex'])!,
     );
   }
 
@@ -82,14 +102,20 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
 class Wallet extends DataClass implements Insertable<Wallet> {
   final String uuid;
   final String name;
-  final String wif;
-  const Wallet({required this.uuid, required this.name, required this.wif});
+  final String encryptedPrivKey;
+  final String chainCodeHex;
+  const Wallet(
+      {required this.uuid,
+      required this.name,
+      required this.encryptedPrivKey,
+      required this.chainCodeHex});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['uuid'] = Variable<String>(uuid);
     map['name'] = Variable<String>(name);
-    map['wif'] = Variable<String>(wif);
+    map['encrypted_priv_key'] = Variable<String>(encryptedPrivKey);
+    map['chain_code_hex'] = Variable<String>(chainCodeHex);
     return map;
   }
 
@@ -97,7 +123,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return WalletsCompanion(
       uuid: Value(uuid),
       name: Value(name),
-      wif: Value(wif),
+      encryptedPrivKey: Value(encryptedPrivKey),
+      chainCodeHex: Value(chainCodeHex),
     );
   }
 
@@ -107,7 +134,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return Wallet(
       uuid: serializer.fromJson<String>(json['uuid']),
       name: serializer.fromJson<String>(json['name']),
-      wif: serializer.fromJson<String>(json['wif']),
+      encryptedPrivKey: serializer.fromJson<String>(json['encryptedPrivKey']),
+      chainCodeHex: serializer.fromJson<String>(json['chainCodeHex']),
     );
   }
   @override
@@ -116,65 +144,80 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
       'name': serializer.toJson<String>(name),
-      'wif': serializer.toJson<String>(wif),
+      'encryptedPrivKey': serializer.toJson<String>(encryptedPrivKey),
+      'chainCodeHex': serializer.toJson<String>(chainCodeHex),
     };
   }
 
-  Wallet copyWith({String? uuid, String? name, String? wif}) => Wallet(
+  Wallet copyWith(
+          {String? uuid,
+          String? name,
+          String? encryptedPrivKey,
+          String? chainCodeHex}) =>
+      Wallet(
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
-        wif: wif ?? this.wif,
+        encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
+        chainCodeHex: chainCodeHex ?? this.chainCodeHex,
       );
   @override
   String toString() {
     return (StringBuffer('Wallet(')
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
-          ..write('wif: $wif')
+          ..write('encryptedPrivKey: $encryptedPrivKey, ')
+          ..write('chainCodeHex: $chainCodeHex')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uuid, name, wif);
+  int get hashCode => Object.hash(uuid, name, encryptedPrivKey, chainCodeHex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Wallet &&
           other.uuid == this.uuid &&
           other.name == this.name &&
-          other.wif == this.wif);
+          other.encryptedPrivKey == this.encryptedPrivKey &&
+          other.chainCodeHex == this.chainCodeHex);
 }
 
 class WalletsCompanion extends UpdateCompanion<Wallet> {
   final Value<String> uuid;
   final Value<String> name;
-  final Value<String> wif;
+  final Value<String> encryptedPrivKey;
+  final Value<String> chainCodeHex;
   final Value<int> rowid;
   const WalletsCompanion({
     this.uuid = const Value.absent(),
     this.name = const Value.absent(),
-    this.wif = const Value.absent(),
+    this.encryptedPrivKey = const Value.absent(),
+    this.chainCodeHex = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WalletsCompanion.insert({
     required String uuid,
     required String name,
-    required String wif,
+    required String encryptedPrivKey,
+    required String chainCodeHex,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         name = Value(name),
-        wif = Value(wif);
+        encryptedPrivKey = Value(encryptedPrivKey),
+        chainCodeHex = Value(chainCodeHex);
   static Insertable<Wallet> custom({
     Expression<String>? uuid,
     Expression<String>? name,
-    Expression<String>? wif,
+    Expression<String>? encryptedPrivKey,
+    Expression<String>? chainCodeHex,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
       if (name != null) 'name': name,
-      if (wif != null) 'wif': wif,
+      if (encryptedPrivKey != null) 'encrypted_priv_key': encryptedPrivKey,
+      if (chainCodeHex != null) 'chain_code_hex': chainCodeHex,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -182,12 +225,14 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
   WalletsCompanion copyWith(
       {Value<String>? uuid,
       Value<String>? name,
-      Value<String>? wif,
+      Value<String>? encryptedPrivKey,
+      Value<String>? chainCodeHex,
       Value<int>? rowid}) {
     return WalletsCompanion(
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
-      wif: wif ?? this.wif,
+      encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
+      chainCodeHex: chainCodeHex ?? this.chainCodeHex,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -201,8 +246,11 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (wif.present) {
-      map['wif'] = Variable<String>(wif.value);
+    if (encryptedPrivKey.present) {
+      map['encrypted_priv_key'] = Variable<String>(encryptedPrivKey.value);
+    }
+    if (chainCodeHex.present) {
+      map['chain_code_hex'] = Variable<String>(chainCodeHex.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -215,7 +263,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     return (StringBuffer('WalletsCompanion(')
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
-          ..write('wif: $wif, ')
+          ..write('encryptedPrivKey: $encryptedPrivKey, ')
+          ..write('chainCodeHex: $chainCodeHex, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -254,23 +303,18 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
   static const VerificationMeta _coinTypeMeta =
       const VerificationMeta('coinType');
   @override
-  late final GeneratedColumn<int> coinType = GeneratedColumn<int>(
+  late final GeneratedColumn<String> coinType = GeneratedColumn<String>(
       'coin_type', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _accountIndexMeta =
       const VerificationMeta('accountIndex');
   @override
-  late final GeneratedColumn<int> accountIndex = GeneratedColumn<int>(
+  late final GeneratedColumn<String> accountIndex = GeneratedColumn<String>(
       'account_index', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _xPubMeta = const VerificationMeta('xPub');
-  @override
-  late final GeneratedColumn<String> xPub = GeneratedColumn<String>(
-      'x_pub', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [uuid, name, walletUuid, purpose, coinType, accountIndex, xPub];
+      [uuid, name, walletUuid, purpose, coinType, accountIndex];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -321,12 +365,6 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
     } else if (isInserting) {
       context.missing(_accountIndexMeta);
     }
-    if (data.containsKey('x_pub')) {
-      context.handle(
-          _xPubMeta, xPub.isAcceptableOrUnknown(data['x_pub']!, _xPubMeta));
-    } else if (isInserting) {
-      context.missing(_xPubMeta);
-    }
     return context;
   }
 
@@ -345,11 +383,9 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
       purpose: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}purpose'])!,
       coinType: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}coin_type'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}coin_type'])!,
       accountIndex: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}account_index'])!,
-      xPub: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}x_pub'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}account_index'])!,
     );
   }
 
@@ -364,17 +400,15 @@ class Account extends DataClass implements Insertable<Account> {
   final String name;
   final String walletUuid;
   final String purpose;
-  final int coinType;
-  final int accountIndex;
-  final String xPub;
+  final String coinType;
+  final String accountIndex;
   const Account(
       {required this.uuid,
       required this.name,
       required this.walletUuid,
       required this.purpose,
       required this.coinType,
-      required this.accountIndex,
-      required this.xPub});
+      required this.accountIndex});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -382,9 +416,8 @@ class Account extends DataClass implements Insertable<Account> {
     map['name'] = Variable<String>(name);
     map['wallet_uuid'] = Variable<String>(walletUuid);
     map['purpose'] = Variable<String>(purpose);
-    map['coin_type'] = Variable<int>(coinType);
-    map['account_index'] = Variable<int>(accountIndex);
-    map['x_pub'] = Variable<String>(xPub);
+    map['coin_type'] = Variable<String>(coinType);
+    map['account_index'] = Variable<String>(accountIndex);
     return map;
   }
 
@@ -396,7 +429,6 @@ class Account extends DataClass implements Insertable<Account> {
       purpose: Value(purpose),
       coinType: Value(coinType),
       accountIndex: Value(accountIndex),
-      xPub: Value(xPub),
     );
   }
 
@@ -408,9 +440,8 @@ class Account extends DataClass implements Insertable<Account> {
       name: serializer.fromJson<String>(json['name']),
       walletUuid: serializer.fromJson<String>(json['walletUuid']),
       purpose: serializer.fromJson<String>(json['purpose']),
-      coinType: serializer.fromJson<int>(json['coinType']),
-      accountIndex: serializer.fromJson<int>(json['accountIndex']),
-      xPub: serializer.fromJson<String>(json['xPub']),
+      coinType: serializer.fromJson<String>(json['coinType']),
+      accountIndex: serializer.fromJson<String>(json['accountIndex']),
     );
   }
   @override
@@ -421,9 +452,8 @@ class Account extends DataClass implements Insertable<Account> {
       'name': serializer.toJson<String>(name),
       'walletUuid': serializer.toJson<String>(walletUuid),
       'purpose': serializer.toJson<String>(purpose),
-      'coinType': serializer.toJson<int>(coinType),
-      'accountIndex': serializer.toJson<int>(accountIndex),
-      'xPub': serializer.toJson<String>(xPub),
+      'coinType': serializer.toJson<String>(coinType),
+      'accountIndex': serializer.toJson<String>(accountIndex),
     };
   }
 
@@ -432,9 +462,8 @@ class Account extends DataClass implements Insertable<Account> {
           String? name,
           String? walletUuid,
           String? purpose,
-          int? coinType,
-          int? accountIndex,
-          String? xPub}) =>
+          String? coinType,
+          String? accountIndex}) =>
       Account(
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
@@ -442,7 +471,6 @@ class Account extends DataClass implements Insertable<Account> {
         purpose: purpose ?? this.purpose,
         coinType: coinType ?? this.coinType,
         accountIndex: accountIndex ?? this.accountIndex,
-        xPub: xPub ?? this.xPub,
       );
   @override
   String toString() {
@@ -452,15 +480,14 @@ class Account extends DataClass implements Insertable<Account> {
           ..write('walletUuid: $walletUuid, ')
           ..write('purpose: $purpose, ')
           ..write('coinType: $coinType, ')
-          ..write('accountIndex: $accountIndex, ')
-          ..write('xPub: $xPub')
+          ..write('accountIndex: $accountIndex')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      uuid, name, walletUuid, purpose, coinType, accountIndex, xPub);
+  int get hashCode =>
+      Object.hash(uuid, name, walletUuid, purpose, coinType, accountIndex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -470,8 +497,7 @@ class Account extends DataClass implements Insertable<Account> {
           other.walletUuid == this.walletUuid &&
           other.purpose == this.purpose &&
           other.coinType == this.coinType &&
-          other.accountIndex == this.accountIndex &&
-          other.xPub == this.xPub);
+          other.accountIndex == this.accountIndex);
 }
 
 class AccountsCompanion extends UpdateCompanion<Account> {
@@ -479,9 +505,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
   final Value<String> name;
   final Value<String> walletUuid;
   final Value<String> purpose;
-  final Value<int> coinType;
-  final Value<int> accountIndex;
-  final Value<String> xPub;
+  final Value<String> coinType;
+  final Value<String> accountIndex;
   final Value<int> rowid;
   const AccountsCompanion({
     this.uuid = const Value.absent(),
@@ -490,7 +515,6 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     this.purpose = const Value.absent(),
     this.coinType = const Value.absent(),
     this.accountIndex = const Value.absent(),
-    this.xPub = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AccountsCompanion.insert({
@@ -498,25 +522,22 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     required String name,
     required String walletUuid,
     required String purpose,
-    required int coinType,
-    required int accountIndex,
-    required String xPub,
+    required String coinType,
+    required String accountIndex,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         name = Value(name),
         walletUuid = Value(walletUuid),
         purpose = Value(purpose),
         coinType = Value(coinType),
-        accountIndex = Value(accountIndex),
-        xPub = Value(xPub);
+        accountIndex = Value(accountIndex);
   static Insertable<Account> custom({
     Expression<String>? uuid,
     Expression<String>? name,
     Expression<String>? walletUuid,
     Expression<String>? purpose,
-    Expression<int>? coinType,
-    Expression<int>? accountIndex,
-    Expression<String>? xPub,
+    Expression<String>? coinType,
+    Expression<String>? accountIndex,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -526,7 +547,6 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       if (purpose != null) 'purpose': purpose,
       if (coinType != null) 'coin_type': coinType,
       if (accountIndex != null) 'account_index': accountIndex,
-      if (xPub != null) 'x_pub': xPub,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -536,9 +556,8 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       Value<String>? name,
       Value<String>? walletUuid,
       Value<String>? purpose,
-      Value<int>? coinType,
-      Value<int>? accountIndex,
-      Value<String>? xPub,
+      Value<String>? coinType,
+      Value<String>? accountIndex,
       Value<int>? rowid}) {
     return AccountsCompanion(
       uuid: uuid ?? this.uuid,
@@ -547,7 +566,6 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       purpose: purpose ?? this.purpose,
       coinType: coinType ?? this.coinType,
       accountIndex: accountIndex ?? this.accountIndex,
-      xPub: xPub ?? this.xPub,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -568,13 +586,10 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       map['purpose'] = Variable<String>(purpose.value);
     }
     if (coinType.present) {
-      map['coin_type'] = Variable<int>(coinType.value);
+      map['coin_type'] = Variable<String>(coinType.value);
     }
     if (accountIndex.present) {
-      map['account_index'] = Variable<int>(accountIndex.value);
-    }
-    if (xPub.present) {
-      map['x_pub'] = Variable<String>(xPub.value);
+      map['account_index'] = Variable<String>(accountIndex.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -591,7 +606,6 @@ class AccountsCompanion extends UpdateCompanion<Account> {
           ..write('purpose: $purpose, ')
           ..write('coinType: $coinType, ')
           ..write('accountIndex: $accountIndex, ')
-          ..write('xPub: $xPub, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -618,27 +632,13 @@ class $AddressesTable extends Addresses
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'UNIQUE NOT NULL');
-  static const VerificationMeta _addressIndexMeta =
-      const VerificationMeta('addressIndex');
+  static const VerificationMeta _indexMeta = const VerificationMeta('index');
   @override
-  late final GeneratedColumn<int> addressIndex = GeneratedColumn<int>(
-      'address_index', aliasedName, false,
+  late final GeneratedColumn<int> index = GeneratedColumn<int>(
+      'index', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _publicKeyMeta =
-      const VerificationMeta('publicKey');
   @override
-  late final GeneratedColumn<String> publicKey = GeneratedColumn<String>(
-      'public_key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _privateKeyWifMeta =
-      const VerificationMeta('privateKeyWif');
-  @override
-  late final GeneratedColumn<String> privateKeyWif = GeneratedColumn<String>(
-      'private_key_wif', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns =>
-      [accountUuid, address, addressIndex, publicKey, privateKeyWif];
+  List<GeneratedColumn> get $columns => [accountUuid, address, index];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -663,33 +663,17 @@ class $AddressesTable extends Addresses
     } else if (isInserting) {
       context.missing(_addressMeta);
     }
-    if (data.containsKey('address_index')) {
+    if (data.containsKey('index')) {
       context.handle(
-          _addressIndexMeta,
-          addressIndex.isAcceptableOrUnknown(
-              data['address_index']!, _addressIndexMeta));
+          _indexMeta, index.isAcceptableOrUnknown(data['index']!, _indexMeta));
     } else if (isInserting) {
-      context.missing(_addressIndexMeta);
-    }
-    if (data.containsKey('public_key')) {
-      context.handle(_publicKeyMeta,
-          publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta));
-    } else if (isInserting) {
-      context.missing(_publicKeyMeta);
-    }
-    if (data.containsKey('private_key_wif')) {
-      context.handle(
-          _privateKeyWifMeta,
-          privateKeyWif.isAcceptableOrUnknown(
-              data['private_key_wif']!, _privateKeyWifMeta));
-    } else if (isInserting) {
-      context.missing(_privateKeyWifMeta);
+      context.missing(_indexMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {address};
+  Set<GeneratedColumn> get $primaryKey => {accountUuid, index};
   @override
   Address map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -698,12 +682,8 @@ class $AddressesTable extends Addresses
           .read(DriftSqlType.string, data['${effectivePrefix}account_uuid'])!,
       address: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
-      addressIndex: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}address_index'])!,
-      publicKey: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}public_key'])!,
-      privateKeyWif: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}private_key_wif'])!,
+      index: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}index'])!,
     );
   }
 
@@ -716,23 +696,15 @@ class $AddressesTable extends Addresses
 class Address extends DataClass implements Insertable<Address> {
   final String accountUuid;
   final String address;
-  final int addressIndex;
-  final String publicKey;
-  final String privateKeyWif;
+  final int index;
   const Address(
-      {required this.accountUuid,
-      required this.address,
-      required this.addressIndex,
-      required this.publicKey,
-      required this.privateKeyWif});
+      {required this.accountUuid, required this.address, required this.index});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['account_uuid'] = Variable<String>(accountUuid);
     map['address'] = Variable<String>(address);
-    map['address_index'] = Variable<int>(addressIndex);
-    map['public_key'] = Variable<String>(publicKey);
-    map['private_key_wif'] = Variable<String>(privateKeyWif);
+    map['index'] = Variable<int>(index);
     return map;
   }
 
@@ -740,9 +712,7 @@ class Address extends DataClass implements Insertable<Address> {
     return AddressesCompanion(
       accountUuid: Value(accountUuid),
       address: Value(address),
-      addressIndex: Value(addressIndex),
-      publicKey: Value(publicKey),
-      privateKeyWif: Value(privateKeyWif),
+      index: Value(index),
     );
   }
 
@@ -752,9 +722,7 @@ class Address extends DataClass implements Insertable<Address> {
     return Address(
       accountUuid: serializer.fromJson<String>(json['accountUuid']),
       address: serializer.fromJson<String>(json['address']),
-      addressIndex: serializer.fromJson<int>(json['addressIndex']),
-      publicKey: serializer.fromJson<String>(json['publicKey']),
-      privateKeyWif: serializer.fromJson<String>(json['privateKeyWif']),
+      index: serializer.fromJson<int>(json['index']),
     );
   }
   @override
@@ -763,92 +731,66 @@ class Address extends DataClass implements Insertable<Address> {
     return <String, dynamic>{
       'accountUuid': serializer.toJson<String>(accountUuid),
       'address': serializer.toJson<String>(address),
-      'addressIndex': serializer.toJson<int>(addressIndex),
-      'publicKey': serializer.toJson<String>(publicKey),
-      'privateKeyWif': serializer.toJson<String>(privateKeyWif),
+      'index': serializer.toJson<int>(index),
     };
   }
 
-  Address copyWith(
-          {String? accountUuid,
-          String? address,
-          int? addressIndex,
-          String? publicKey,
-          String? privateKeyWif}) =>
+  Address copyWith({String? accountUuid, String? address, int? index}) =>
       Address(
         accountUuid: accountUuid ?? this.accountUuid,
         address: address ?? this.address,
-        addressIndex: addressIndex ?? this.addressIndex,
-        publicKey: publicKey ?? this.publicKey,
-        privateKeyWif: privateKeyWif ?? this.privateKeyWif,
+        index: index ?? this.index,
       );
   @override
   String toString() {
     return (StringBuffer('Address(')
           ..write('accountUuid: $accountUuid, ')
           ..write('address: $address, ')
-          ..write('addressIndex: $addressIndex, ')
-          ..write('publicKey: $publicKey, ')
-          ..write('privateKeyWif: $privateKeyWif')
+          ..write('index: $index')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(accountUuid, address, addressIndex, publicKey, privateKeyWif);
+  int get hashCode => Object.hash(accountUuid, address, index);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Address &&
           other.accountUuid == this.accountUuid &&
           other.address == this.address &&
-          other.addressIndex == this.addressIndex &&
-          other.publicKey == this.publicKey &&
-          other.privateKeyWif == this.privateKeyWif);
+          other.index == this.index);
 }
 
 class AddressesCompanion extends UpdateCompanion<Address> {
   final Value<String> accountUuid;
   final Value<String> address;
-  final Value<int> addressIndex;
-  final Value<String> publicKey;
-  final Value<String> privateKeyWif;
+  final Value<int> index;
   final Value<int> rowid;
   const AddressesCompanion({
     this.accountUuid = const Value.absent(),
     this.address = const Value.absent(),
-    this.addressIndex = const Value.absent(),
-    this.publicKey = const Value.absent(),
-    this.privateKeyWif = const Value.absent(),
+    this.index = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AddressesCompanion.insert({
     required String accountUuid,
     required String address,
-    required int addressIndex,
-    required String publicKey,
-    required String privateKeyWif,
+    required int index,
     this.rowid = const Value.absent(),
   })  : accountUuid = Value(accountUuid),
         address = Value(address),
-        addressIndex = Value(addressIndex),
-        publicKey = Value(publicKey),
-        privateKeyWif = Value(privateKeyWif);
+        index = Value(index);
   static Insertable<Address> custom({
     Expression<String>? accountUuid,
     Expression<String>? address,
-    Expression<int>? addressIndex,
-    Expression<String>? publicKey,
-    Expression<String>? privateKeyWif,
+    Expression<int>? index,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (accountUuid != null) 'account_uuid': accountUuid,
       if (address != null) 'address': address,
-      if (addressIndex != null) 'address_index': addressIndex,
-      if (publicKey != null) 'public_key': publicKey,
-      if (privateKeyWif != null) 'private_key_wif': privateKeyWif,
+      if (index != null) 'index': index,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -856,16 +798,12 @@ class AddressesCompanion extends UpdateCompanion<Address> {
   AddressesCompanion copyWith(
       {Value<String>? accountUuid,
       Value<String>? address,
-      Value<int>? addressIndex,
-      Value<String>? publicKey,
-      Value<String>? privateKeyWif,
+      Value<int>? index,
       Value<int>? rowid}) {
     return AddressesCompanion(
       accountUuid: accountUuid ?? this.accountUuid,
       address: address ?? this.address,
-      addressIndex: addressIndex ?? this.addressIndex,
-      publicKey: publicKey ?? this.publicKey,
-      privateKeyWif: privateKeyWif ?? this.privateKeyWif,
+      index: index ?? this.index,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -879,14 +817,8 @@ class AddressesCompanion extends UpdateCompanion<Address> {
     if (address.present) {
       map['address'] = Variable<String>(address.value);
     }
-    if (addressIndex.present) {
-      map['address_index'] = Variable<int>(addressIndex.value);
-    }
-    if (publicKey.present) {
-      map['public_key'] = Variable<String>(publicKey.value);
-    }
-    if (privateKeyWif.present) {
-      map['private_key_wif'] = Variable<String>(privateKeyWif.value);
+    if (index.present) {
+      map['index'] = Variable<int>(index.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -899,9 +831,7 @@ class AddressesCompanion extends UpdateCompanion<Address> {
     return (StringBuffer('AddressesCompanion(')
           ..write('accountUuid: $accountUuid, ')
           ..write('address: $address, ')
-          ..write('addressIndex: $addressIndex, ')
-          ..write('publicKey: $publicKey, ')
-          ..write('privateKeyWif: $privateKeyWif, ')
+          ..write('index: $index, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

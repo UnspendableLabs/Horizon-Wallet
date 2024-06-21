@@ -3,12 +3,10 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/hd_wallet_entity.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/hd_wallet_service.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 import 'package:logger/logger.dart';
@@ -20,7 +18,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     final walletRepository = GetIt.I<WalletRepository>();
     final accountRepository = GetIt.I<AccountRepository>();
     final addressRepository = GetIt.I<AddressRepository>();
-    final hdWalletService = GetIt.I<HDWalletService>();
     final dbManager = GetIt.I<DatabaseManager>();
 
     on<SetAccountAndWallet>((event, emit) async {
@@ -73,36 +70,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         logger.e({'message': 'Failed to process ChangeAddress event', 'error': e, 'stackTrace': stackTrace});
 
         emit(state.copyWith(addressState: AddressStateError(message: 'Failed to process ChangeAddress event')));
-      }
-    });
-
-    // just an initial idea for adding a new account -- not ready
-    on<AddAccount>((event, emit) async {
-      logger.d('Processing AddAccount event');
-
-      emit(state.copyWith(accountState: AccountStateLoading()));
-      try {
-        Wallet wallet = state.walletState.currentWallet;
-        List<Account> allAccounts = await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
-        List<Account> filteredAccounts = allAccounts.where((account) {
-          return account.purpose == event.purpose && account.coinType == event.coinType;
-        }).toList();
-        int accountIndex = filteredAccounts.length;
-
-        AccountAddressEntity entity = await hdWalletService.addNewAccountAndAddress(
-            encryptedRootWif: wallet.wif,
-            walletUuid: wallet.uuid,
-            password: '', // TODO: how to get password here?
-            purpose: event.purpose,
-            coinType: event.coinType,
-            accountIndex: accountIndex);
-
-        await accountRepository.insert(entity.account);
-        await addressRepository.insert(entity.address);
-
-        emit(state.copyWith(accountState: AccountStateSuccess(currentAccount: entity.account, accounts: allAccounts)));
-      } catch (e, stackTrace) {
-        logger.e({'message': 'Failed to process AddAccount event', 'error': e, 'stackTrace': stackTrace});
       }
     });
 

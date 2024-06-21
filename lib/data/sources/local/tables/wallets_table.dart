@@ -7,8 +7,11 @@ class Wallets extends Table {
   @JsonKey('name')
   TextColumn get name => text()();
 
-  @JsonKey('wif')
-  TextColumn get wif => text()();
+  @JsonKey('encryptedPrivKey')
+  TextColumn get encryptedPrivKey => text()();
+
+  @JsonKey('chainCodeHex')
+  TextColumn get chainCodeHex => text()();
 
   @override
   Set<Column> get primaryKey => {uuid};

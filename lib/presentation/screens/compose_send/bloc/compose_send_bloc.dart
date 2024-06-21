@@ -37,12 +37,12 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
 
     Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
-    String txHex = await transactionService.signTransaction(
-        rawTx.hex, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
+    // String txHex = await transactionService.signTransaction(
+    //     rawTx.hex, event.sourceAddress.privateKeyWif, event.sourceAddress.address, utxoMap);
 
-    await bitcoindService.sendrawtransaction(txHex);
+    // await bitcoindService.sendrawtransaction(txHex);
 
-    emit(ComposeSendSuccess(transactionHex: txHex, sourceAddress: source.address));
+    // emit(ComposeSendSuccess(transactionHex: txHex, sourceAddress: source.address));
   } catch (error, stackTrace) {
     print(error.toString());
     print(stackTrace.toString());

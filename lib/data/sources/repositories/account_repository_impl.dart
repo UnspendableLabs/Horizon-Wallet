@@ -20,7 +20,6 @@ class AccountRepositoryImpl implements AccountRepository {
       purpose: account.purpose!,
       accountIndex: account.accountIndex!,
       coinType: account.coinType!,
-      xPub: account.xPub!,
     );
 
     await _accountDao.insertAccount(account_);
@@ -37,7 +36,7 @@ class AccountRepositoryImpl implements AccountRepository {
             accountIndex: account.accountIndex,
             name: account.name,
             coinType: account.coinType,
-            xPub: account.xPub)
+          )
         : null;
   }
 
@@ -46,26 +45,26 @@ class AccountRepositoryImpl implements AccountRepository {
     List<AccountModel> accounts = await _accountDao.getAccountsByWalletUuid(walletUuid);
     return accounts
         .map((account) => entity.Account(
-            uuid: account.uuid,
-            walletUuid: account.walletUuid,
-            purpose: account.purpose,
-            accountIndex: account.accountIndex,
-            name: account.name,
-            coinType: account.coinType,
-            xPub: account.xPub))
+              uuid: account.uuid,
+              walletUuid: account.walletUuid,
+              purpose: account.purpose,
+              accountIndex: account.accountIndex,
+              name: account.name,
+              coinType: account.coinType,
+            ))
         .toList();
   }
 
   @override
   Future<void> deleteAccount(entity.Account account) async {
     await _accountDao.deleteAccount(AccountModel(
-        uuid: account.uuid!,
-        walletUuid: account.walletUuid!,
-        purpose: account.purpose!,
-        accountIndex: account.accountIndex!,
-        name: account.name!,
-        coinType: account.coinType!,
-        xPub: account.xPub!));
+      uuid: account.uuid!,
+      walletUuid: account.walletUuid!,
+      purpose: account.purpose!,
+      accountIndex: account.accountIndex!,
+      name: account.name!,
+      coinType: account.coinType!,
+    ));
   }
 
   @override
