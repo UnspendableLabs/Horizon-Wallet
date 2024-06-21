@@ -6,7 +6,4 @@ abstract class WalletRepository {
   Future<entity.Wallet?> getCurrentWallet();
   Future<void> deleteWallet(entity.Wallet wallet);
   Future<void> deleteAllWallets();
-
-  // Future<void> initializeWithWalletAndAddresses(
-  //     {Wallet wallet, List<Address> addresses});
 }

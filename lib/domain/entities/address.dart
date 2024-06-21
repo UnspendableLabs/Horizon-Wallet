@@ -1,14 +1,10 @@
 class Address {
-  String? accountUuid;
-  String address;
-  String derivationPath;
-  String publicKey;
-  String privateKeyWif;
-
-  Address(
-      {this.accountUuid,
-      required this.address,
-      required this.derivationPath,
-      required this.publicKey,
-      required this.privateKeyWif});
+  final String accountUuid;
+  final String address;
+  final int index;
+  const Address({
+    required this.accountUuid,
+    required this.address,
+    required this.index,
+  });
 }

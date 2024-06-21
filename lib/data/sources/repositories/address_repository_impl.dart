@@ -12,7 +12,8 @@ class AddressRepositoryImpl implements AddressRepository {
 
   @override
   Future<void> insert(entity.Address address) async {
-    throw UnimplementedError();
+    await _addressDao
+        .insertAddress(AddressModel(accountUuid: address.accountUuid, address: address.address, index: address.index));
   }
 
   @override
@@ -20,11 +21,10 @@ class AddressRepositoryImpl implements AddressRepository {
     // TODO: this is a little gross
     List<AddressModel> addresses_ = addresses
         .map((a) => AddressModel(
-            accountUuid: a.accountUuid!,
-            address: a.address,
-            derivationPath: a.derivationPath,
-            publicKey: a.publicKey,
-            privateKeyWif: a.privateKeyWif))
+              accountUuid: a.accountUuid!,
+              address: a.address,
+              index: a.index,
+            ))
         .toList();
 
     _addressDao.insertMultipleAddresses(addresses_);
@@ -38,14 +38,7 @@ class AddressRepositoryImpl implements AddressRepository {
   @override
   Future<List<entity.Address>> getAllByAccountUuid(String accountUuid) async {
     List<AddressModel> addresses = await _addressDao.getAllAddressesByAccountUuid(accountUuid);
-    return addresses
-        .map((a) => entity.Address(
-            accountUuid: a.accountUuid,
-            address: a.address,
-            derivationPath: a.derivationPath,
-            publicKey: a.publicKey,
-            privateKeyWif: a.privateKeyWif))
-        .toList();
+    return addresses.map((a) => entity.Address(accountUuid: a.accountUuid, address: a.address, index: a.index)).toList();
   }
 
   @override

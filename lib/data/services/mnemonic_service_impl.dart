@@ -12,5 +12,9 @@ class MnemonicServiceImpl implements MnemonicService {
   String generateMnemonic() {
     return bip39Service.generateMnemonic();
   }
+  @override
+  bool validateMnemonic(String mnemonic) {
+    return bip39Service.validateMnemonic(mnemonic);
+  }
 
 }

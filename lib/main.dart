@@ -77,7 +77,7 @@ void main() {
     WidgetsFlutterBinding.ensureInitialized();
     await dotenv.load();
 
-    setup();
+    await setup();
 
     runApp(MyApp());
   }, (Object error, StackTrace stackTrace) {

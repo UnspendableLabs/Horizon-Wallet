@@ -17,8 +17,9 @@ class AccountRepositoryImpl implements AccountRepository {
       uuid: account.uuid ?? uuid.v4(),
       name: account.name ?? '',
       walletUuid: account.walletUuid!,
-      rootPublicKey: account.rootPublicKey,
-      rootPrivateKey: account.rootPrivateKey,
+      purpose: account.purpose!,
+      accountIndex: account.accountIndex!,
+      coinType: account.coinType!,
     );
 
     await _accountDao.insertAccount(account_);
@@ -31,9 +32,11 @@ class AccountRepositoryImpl implements AccountRepository {
         ? entity.Account(
             uuid: account.uuid,
             walletUuid: account.walletUuid,
-            rootPublicKey: account.rootPublicKey,
-            rootPrivateKey: account.rootPrivateKey,
-            name: account.name)
+            purpose: account.purpose,
+            accountIndex: account.accountIndex,
+            name: account.name,
+            coinType: account.coinType,
+          )
         : null;
   }
 
@@ -42,22 +45,26 @@ class AccountRepositoryImpl implements AccountRepository {
     List<AccountModel> accounts = await _accountDao.getAccountsByWalletUuid(walletUuid);
     return accounts
         .map((account) => entity.Account(
-            uuid: account.uuid,
-            walletUuid: account.walletUuid,
-            rootPublicKey: account.rootPublicKey,
-            rootPrivateKey: account.rootPrivateKey,
-            name: account.name))
+              uuid: account.uuid,
+              walletUuid: account.walletUuid,
+              purpose: account.purpose,
+              accountIndex: account.accountIndex,
+              name: account.name,
+              coinType: account.coinType,
+            ))
         .toList();
   }
 
   @override
   Future<void> deleteAccount(entity.Account account) async {
     await _accountDao.deleteAccount(AccountModel(
-        uuid: account.uuid!,
-        walletUuid: account.walletUuid!,
-        rootPublicKey: account.rootPublicKey!,
-        rootPrivateKey: account.rootPrivateKey!,
-        name: account.name!));
+      uuid: account.uuid!,
+      walletUuid: account.walletUuid!,
+      purpose: account.purpose!,
+      accountIndex: account.accountIndex!,
+      name: account.name!,
+      coinType: account.coinType!,
+    ));
   }
 
   @override

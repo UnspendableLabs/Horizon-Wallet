@@ -3,6 +3,7 @@ library;
 
 import 'dart:js_interop';
 
+import 'package:horizon/js/buffer.dart';
 import "package:horizon/js/common.dart" as c;
 
 extension type ECPair._(JSObject _) implements JSObject {
@@ -16,7 +17,7 @@ extension type ECPair._(JSObject _) implements JSObject {
 extension type ECPairFactory._(JSObject _) implements JSObject {
   external factory ECPairFactory(JSObject eccLib);
 
-  // external JSObject fromPrivateKey(JSUint8List privateKey, [JSObject options]);
+  external ECPair fromPrivateKey(Buffer privateKey, [JSObject options]);
 
   external ECPair fromWIF(String wif, c.Network network);
 }

@@ -1,134 +1,168 @@
 import 'dart:js_interop';
+import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
 import 'package:horizon/js/bip32.dart' as bip32;
-import 'package:horizon/js/bip39.dart' as bip39;
 import 'package:horizon/js/buffer.dart';
-import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
+import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 // TODO: implement some sort of cache
 
 class AddressServiceImpl extends AddressService {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
-
   @override
-  Future<Address> deriveAddressSegwit(String mnemonic, int index) async {
-    final String basePath = 'm/84\'/1\'/0\'/0/';
+  Future<Address> deriveAddressSegwit(
+      {required String privKey,
+      required String chainCodeHex,
+      required String accountUuid,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int index}) async {
+    // final String basePath = 'm/84\'/1\'/0\'/0/';
+    String path = 'm/$purpose/$coin/$account/$change/$index';
+    final network = _getNetwork();
 
-    JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
+    print('BIP32: $_bip32');
 
-    final network = ecpair.testnet;
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
+    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
-    network.bip32.private = 0x4b2430c; //zpriv
-    network.bip32.public = 0x4b24746; //zpub
+    final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
-    // TODO: refine type
-    bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
-
-    bip32.BIP32Interface child = root.derivePath(basePath + index.toString());
-    /**
-     *
-      WalletNode walletNode =
-          WalletNode(address: address, publicKey: hex.encode(child.publicKey.toDart), privateKey: child.toWIF(), index: 0);
-     */
+    bip32.BIP32Interface child = root.derivePath(path);
 
     String address = _bech32FromBip32(child);
 
     return Address(
-        address: address,
-        derivationPath: basePath + index.toString(),
-        publicKey: hex.encode(child.publicKey.toDart),
-        privateKeyWif: child.toWIF());
+      address: address,
+      accountUuid: accountUuid,
+      index: index,
+    );
   }
 
-  @override
-  Future<List<Address>> deriveAddressSegwitRange(String mnemonic, int start, int end) async {
-    if (start > end) {
-      throw ArgumentError('Invalid range');
-    }
+//   @override
+//   Future<List<Address>> deriveAddressSegwitRange(String mnemonic, int start, int end) async {
+//     if (start > end) {
+//       throw ArgumentError('Invalid range');
+//     }
 
-    List<Address> addresses = [];
+//     List<Address> addresses = [];
 
-    for (int i = start; i <= end; i++) {
-      Address address = await deriveAddressSegwit(mnemonic, i);
-      addresses.add(address);
-    }
+//     for (int i = start; i <= end; i++) {
+//       Address address = await deriveAddressSegwit(mnemonic, i);
+//       addresses.add(address);
+//     }
 
-    return addresses;
-  }
+//     return addresses;
+//   }
 
   // Doesn't need to be async since mnemonicToEntropy is sync
   @override
-  Future<Address> deriveAddressFreewalletBech32(String mnemonic, int index) async {
-    bip32.BIP32Interface child = _deriveFreeWalletChildBip32Interface(mnemonic, index);
+  Future<Address> deriveAddressFreewalletBech32(
+      {required dynamic root,
+      required String accountUuid,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int index}) async {
+    /**
+     * freewallet bip32 basePath takes the form of m/account'/change/address_index
+     * ex: m/0'/0/0
+     * 'm/0\'/0/' + index;
+     */
+
+    String path = 'm/$account/$change/$index';
+    bip32.BIP32Interface child = (root as bip32.BIP32Interface).derivePath(path);
 
     String address = _bech32FromBip32(child);
 
     return Address(
-        address: address,
-        derivationPath: 'm/0\'/0/' + index.toString(),
-        publicKey: hex.encode(child.publicKey.toDart),
-        privateKeyWif: child.toWIF());
+      address: address,
+      accountUuid: accountUuid,
+      index: index,
+    );
   }
 
   @override
-  Future<List<Address>> deriveAddressFreewalletBech32Range(String mnemonic, int start, int end) async {
+  Future<List<Address>> deriveAddressFreewalletBech32Range(
+      {required String privKey,
+      required String chainCodeHex,
+      required String accountUuid,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int start,
+      required int end}) async {
     if (start > end) {
       throw ArgumentError('Invalid range');
     }
+    final network = _getNetwork();
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
+    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+
+    final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
     List<Address> addresses = [];
 
     for (int i = start; i <= end; i++) {
-      Address address = await deriveAddressFreewalletBech32(mnemonic, i);
+      Address address = await deriveAddressFreewalletBech32(
+          root: root, accountUuid: accountUuid, purpose: purpose, coin: coin, account: account, change: change, index: i);
       addresses.add(address);
     }
 
     return addresses;
   }
 
-  @override
-  Future<Address> deriveAddressFreewalletLegacy(String mnemonic, int index) async {
-    throw UnimplementedError();
+  Future<String> deriveAddressPrivateKey(
+      {required String rootPrivKey,
+      required String chainCodeHex,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int index}) async {
+    String path = 'm/$purpose/$coin/$account/$change/$index';
+    final network = _getNetwork();
+
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(rootPrivKey)).toJS);
+    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+
+    final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
+
+    bip32.BIP32Interface child = root.derivePath(path);
+
+    return hex.encode(child.privateKey!.toDart);
   }
 
-  @override
-  Future<List<Address>> deriveAddressFreewalletLegacyRange(String mnemonic, int start, int end) async {
-    if (start > end) {
-      throw ArgumentError('Invalid range');
-    }
+//   @override
+//   Future<Address> deriveAddressFreewalletLegacy(String mnemonic, int index) async {
+//     throw UnimplementedError();
+//   }
 
-    List<Address> addresses = [];
+//   @override
+//   Future<List<Address>> deriveAddressFreewalletLegacyRange(String mnemonic, int start, int end) async {
+//     if (start > end) {
+//       throw ArgumentError('Invalid range');
+//     }
 
-    for (int i = start; i <= end; i++) {
-      Address address = await deriveAddressFreewalletLegacy(mnemonic, i);
-      addresses.add(address);
-    }
+//     List<Address> addresses = [];
 
-    return addresses;
-  }
+//     for (int i = start; i <= end; i++) {
+//       Address address = await deriveAddressFreewalletLegacy(mnemonic, i);
+//       addresses.add(address);
+//     }
 
-  bip32.BIP32Interface _deriveFreeWalletChildBip32Interface(String mnemonic, int index) {
-    String basePath = 'm/0\'/1/';
-    // Here we are treating entropy as a see ( what freewallet does)
-    Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
-
-    Buffer buffer = Buffer.from(seed.bytes.toJS);
-
-    // network.bip32.private = 0x4b2430c; //zpriv
-    // network.bip32.public = 0x4b24746; //zpub
-
-    bip32.BIP32Interface root = _bip32.fromSeed(buffer, ecpair.testnet);
-
-    bip32.BIP32Interface child = root.derivePath(basePath + index.toString());
-
-    return child;
-  }
+//     return addresses;
+//   }
 
   String _bech32FromBip32(bip32.BIP32Interface child) {
     List<int> identifier = child.identifier.toDart;
@@ -136,5 +170,10 @@ class AddressServiceImpl extends AddressService {
         bech32.toWords(identifier.map((el) => el.toJS).toList().toJS).toDart.map((el) => el.toDartInt).toList();
     words.insert(0, 0);
     return bech32.encode(ecpair.testnet.bech32, words.map((el) => el.toJS).toList().toJS);
+  }
+
+  _getNetwork() {
+    bool isTestnet = dotenv.get('TEST') == 'true';
+    return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
 }

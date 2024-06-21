@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -10,16 +9,20 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/account_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
 class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportState> {
-  final addressService = GetIt.I<AddressService>();
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
-  final accountService = GetIt.I<AccountService>();
+  final walletService = GetIt.I<WalletService>();
+  final addressService = GetIt.I<AddressService>();
+  final mnemonicService = GetIt.I<MnemonicService>();
+  final encryptionService = GetIt.I<EncryptionService>();
 
   OnboardingImportBloc() : super(OnboardingImportState()) {
     on<PasswordSubmit>((event, emit) {
@@ -33,101 +36,99 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     });
 
     on<MnemonicChanged>((event, emit) async {
-      bool validMnemonic = true;
-      if (validMnemonic) {
-        try {
-          List<Address> addresses = await _deriveAddress(event.mnemonic, state.importFormat.name, addressService);
-
-          emit(state.copyWith(mnemonic: event.mnemonic, getAddressesState: GetAddressesStateSuccess(addresses: addresses)));
-        } catch (e) {
-          emit(state.copyWith(mnemonic: event.mnemonic, getAddressesState: GetAddressesStateError(message: e.toString())));
-        }
-      } else {
-        emit(state.copyWith(mnemonic: event.mnemonic));
-      }
+      emit(state.copyWith(mnemonic: event.mnemonic));
     });
+
     on<ImportFormatChanged>((event, emit) async {
-      bool validMnemonic = true;
-
       ImportFormat importFormat = event.importFormat == "Segwit" ? ImportFormat.segwit : ImportFormat.freewalletBech32;
-
-      if (validMnemonic) {
-        try {
-          List<Address> addresses = await _deriveAddress(state.mnemonic, importFormat.name, addressService);
-
-          emit(
-              state.copyWith(importFormat: importFormat, getAddressesState: GetAddressesStateSuccess(addresses: addresses)));
-        } catch (e) {
-          emit(state.copyWith(importFormat: importFormat, getAddressesState: GetAddressesStateError(message: e.toString())));
-        }
-      } else {
-        emit(state.copyWith(importFormat: importFormat));
-      }
-    });
-    on<AddressMapChanged>((event, emit) {
-      final isCheckedMap = state.isCheckedMap;
-      final nextMap = Map<Address, bool>.from(isCheckedMap);
-      nextMap[event.address] = event.isChecked;
-      emit(state.copyWith(isCheckedMap: nextMap, importState: ImportStateNotAsked()));
+      emit(state.copyWith(importFormat: importFormat));
     });
 
-    on<ImportAddresses>((event, emit) async {
-      // check if there are any address checked
-      bool hasChecked = state.isCheckedMap.values.any((a) => a);
-
-      if (!hasChecked) {
-        emit(state.copyWith(importState: ImportStateError(message: "Must select at least one address")));
+    on<ImportWallet>((event, emit) async {
+      bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
+      if (!validMnemonic) {
+        emit(state.copyWith(importState: ImportStateError(message: "Invalid mnemonic")));
         return;
-      } else {
-        emit(state.copyWith(importState: ImportStateLoading()));
-        // TODO: show loading inditactor
-        Account account;
+      }
+
+      emit(state.copyWith(importState: ImportStateLoading()));
+      try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
-            account = await accountService.deriveRoot(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
+
+            final decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            //m/84'/1'/0'/0
+            Account account = Account(
+              name: 'Account 0',
+              walletUuid: wallet.uuid,
+              purpose: '84\'',
+              coinType: '${_getCoinType()}\'',
+              accountIndex: '0\'',
+              uuid: uuid.v4(),
+            );
+
+            Address address = await addressService.deriveAddressSegwit(
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                purpose: account.purpose,
+                coin: account.coinType,
+                account: account.accountIndex,
+                change: '0',
+                index: 0);
+
+            await walletRepository.insert(wallet);
+            await accountRepository.insert(account);
+            await addressRepository.insert(address);
+
             break;
           case ImportFormat.freewalletBech32:
-            account = await accountService.deriveRootFreewallet(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
+
+            final decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+
+            Account account = Account(
+                name: 'Account 0',
+                walletUuid: wallet.uuid,
+                purpose: '32', // unused in Freewallet path
+                coinType: _getCoinType(),
+                accountIndex: '0\'',
+                uuid: uuid.v4());
+
+            List<Address> addresses = await addressService.deriveAddressFreewalletBech32Range(
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                purpose: account.purpose,
+                coin: account.coinType,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 7);
+
+            await walletRepository.insert(wallet);
+            await accountRepository.insert(account);
+            await addressRepository.insertMany(addresses);
+
             break;
           default:
             throw UnimplementedError();
         }
-        List<Address> addresses =
-            state.isCheckedMap.entries.where((entry) => entry.value).map((entry) => entry.key).toList();
 
-        Wallet wallet = Wallet(uuid: uuid.v4());
-        account.uuid = uuid.v4();
-        account.walletUuid = wallet.uuid;
-        account.name = state.importFormat.description;
-
-        for (Address address in addresses) {
-          address.accountUuid = account.uuid;
-        }
-
-        try {
-          await walletRepository.insert(wallet);
-          await accountRepository.insert(account);
-          await addressRepository.insertMany(addresses);
-        } catch (e) {
-          emit(state.copyWith(importState: ImportStateError(message: e.toString())));
-          return;
-        }
         emit(state.copyWith(importState: ImportStateSuccess()));
+        return;
+      } catch (e, stackTrace) {
+        emit(state.copyWith(importState: ImportStateError(message: e.toString())));
+        print(e.toString());
+        print(stackTrace);
+        return;
       }
     });
   }
-}
 
-_deriveAddress(String mnemonic, String importFormat, AddressService addressService) async {
-  // TODO: swith on actual ENUM
-  switch (importFormat) {
-    // TODP
-    case "Segwit":
-      // TODO: obviously we should not be hardcoded to testnet
-      List<Address> addresses = await addressService.deriveAddressSegwitRange(mnemonic, 0, 7);
-      return addresses;
-    case "Freewallet-bech32":
-      List<Address> addresses = await addressService.deriveAddressFreewalletBech32Range(mnemonic, 0, 7);
-      return addresses;
+  String _getCoinType() {
+    bool isTestnet = dotenv.get('TEST') == 'true';
+    return isTestnet ? '1' : '0';
   }
 }

@@ -8,6 +8,7 @@ class SendTransactionEvent extends ComposeSendEvent {
   final double quantity;
   final String asset;
   final String network;
+  final String password;
   final String? memo;
   final bool? memoIsHex;
   SendTransactionEvent(
@@ -15,6 +16,7 @@ class SendTransactionEvent extends ComposeSendEvent {
       required this.destinationAddress,
       required this.quantity,
       required this.asset,
+      required this.password,
       this.memo,
       this.memoIsHex,
       required this.network});
