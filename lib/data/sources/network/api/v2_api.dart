@@ -383,6 +383,66 @@ class Issuance {
   factory Issuance.fromJson(Map<String, dynamic> json) => _$IssuanceFromJson(json);
 }
 
+/**
+ * {
+"result": {
+"rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff0322020000000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac0000000000000000236a210d1e454cefefcbe173ffa672cf3a36751b5d2594e5d1946a774ff272960578057c17ec0306000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
+"params": {
+"source": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
+"asset": "XCPTEST",
+"quantity": 1000,
+"transfer_destination": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
+"divisible": true,
+"lock": false,
+"reset": false,
+"description": null
+},
+"name": "issuance"
+}
+}
+ */
+
+@JsonSerializable()
+class ComposeIssuance {
+  final String rawtransaction;
+  final ComposeIssuanceParams params;
+  final String name;
+
+  const ComposeIssuance({
+    required this.rawtransaction,
+    required this.params,
+    required this.name,
+  });
+
+  factory ComposeIssuance.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceFromJson(json);
+}
+
+@JsonSerializable()
+class ComposeIssuanceParams {
+  final String source;
+  final String asset;
+  final int quantity;
+  final bool divisible;
+  final bool lock;
+  final String? description;
+  final String? transferDestination;
+
+  ComposeIssuanceParams({
+    required this.source,
+    required this.asset,
+    required this.quantity,
+    required this.divisible,
+    required this.lock,
+    this.description,
+    this.transferDestination,
+  });
+
+  // Factory constructor for creating a new ComposeIssuance instance from a map
+  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceParamsFromJson(json);
+
+  // Method for converting a ComposeIssuance instance to a map
+}
+
 // Send
 // {
 //                 "tx_index": 2726604,
@@ -919,6 +979,24 @@ abstract class V2Api {
   @GET("/addresses/{address}/issuances")
   Future<Response<List<Issuance>>> getIssuancesByAddress(
     @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
+  ]);
+
+  /**
+   * ttps://api.counterparty.io:4000/v2/addresses/{address}/compose/issuance{?asset}{&quantity}{&transfer_destination}{&divisible}{&lock}{&reset}{&description}{&encoding}{&fee_per_kb}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&confirmation_target}{&verbose}
+   */
+
+  @GET("/addresses/{address}/compose/issuances")
+  Future<Response<ComposeIssuance>> composeIssuance(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity") double quantity, [
+    @Query("transferDestination") String? transferDestination,
+    @Query("divisible") bool? divisible,
+    @Query("lock") bool? lock,
+    @Query("reset") bool? reset,
+    @Query("description") String? description,
     @Query("verbose") bool? verbose,
     @Query("limit") int? limit,
   ]);
