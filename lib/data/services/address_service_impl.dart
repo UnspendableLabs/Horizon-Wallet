@@ -122,6 +122,27 @@ class AddressServiceImpl extends AddressService {
     return addresses;
   }
 
+  Future<String> deriveAddressPrivateKey(
+      {required String rootPrivKey,
+      required String chainCodeHex,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int index}) async {
+    String path = 'm/$purpose/$coin/$account/$change/$index';
+    final network = _getNetwork();
+
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(rootPrivKey)).toJS);
+    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+
+    final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
+
+    bip32.BIP32Interface child = root.derivePath(path);
+
+    return hex.encode(child.privateKey!.toDart);
+  }
+
 //   @override
 //   Future<Address> deriveAddressFreewalletLegacy(String mnemonic, int index) async {
 //     throw UnimplementedError();

@@ -32,4 +32,12 @@ abstract class AddressService {
       required int start,
       required int end});
   // Future<List<Address>> deriveAddressFreewalletLegacyRange(String mnemonic, int start, int end);
+  Future<String> deriveAddressPrivateKey(
+      {required String rootPrivKey,
+      required String chainCodeHex,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int index});
 }

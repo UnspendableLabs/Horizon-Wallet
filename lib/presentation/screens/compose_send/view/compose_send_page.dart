@@ -123,6 +123,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         if (_formKey.currentState!.validate()) {
                           context.read<ComposeSendBloc>().add(SendTransactionEvent(
                               sourceAddress: widget.initialAddress,
+                              password: '', // TODO!
                               destinationAddress: destinationAddressController.text,
                               asset: asset!,
                               quantity: double.parse(quantityController.text),

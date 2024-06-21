@@ -1,15 +1,19 @@
 import 'dart:js_interop';
+import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hex/hex.dart';
 import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/services/ecpair_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
+import 'package:horizon/js/buffer.dart';
+import 'package:horizon/js/ecpair.dart' as ecpair;
+import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 class TransactionServiceImpl implements TransactionService {
-  ECPairService ecpairService;
+  ecpair.ECPairFactory ecpairFactory = ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
-  TransactionServiceImpl(this.ecpairService);
   @override
   Future<String> signTransaction(
       String unsignedTransaction, String privateKey, String sourceAddress, Map<String, Utxo> utxoMap) async {
@@ -18,20 +22,22 @@ class TransactionServiceImpl implements TransactionService {
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
     print(privateKey);
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
 
-    dynamic signer = ecpairService.fromWIF(privateKey, ecpairService.testnet);
+    final network = _getNetwork();
+
+    dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
     print("signer");
     print(signer);
-    print(ecpairService.testnet);
 
     bool isSegwit = sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
 
     bitcoinjs.Payment script;
     if (isSegwit) {
-      script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: ecpairService.testnet));
+      script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
     } else {
-      script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: ecpairService.testnet));
+      script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
     }
 
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
@@ -72,5 +78,10 @@ class TransactionServiceImpl implements TransactionService {
 
     String txHex = tx.toHex();
     return txHex;
+  }
+
+  _getNetwork() {
+    bool isTestnet = dotenv.get('TEST') == 'true';
+    return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
 }
