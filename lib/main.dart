@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
@@ -59,6 +60,18 @@ GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
       return CustomTransitionPage<void>(
         key: state.pageKey,
         child: ComposeSendPage(initialAddress: initialAddress),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+      );
+    },
+  ),
+  GoRoute(
+    path: "/compose/issuance",
+    pageBuilder: (context, state) {
+      // Retrieve the initial address from the extra parameter
+      Address initialAddress = (state.extra as Map<String, dynamic>)['initialAddress'];
+      return CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: ComposeIssuancePage(initialAddress: initialAddress),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
       );
     },

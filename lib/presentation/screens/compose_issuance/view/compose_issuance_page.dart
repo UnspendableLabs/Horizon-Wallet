@@ -57,16 +57,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                   children: <Widget>[
                     SelectableText('From Address: ${widget.initialAddress.address}'),
                     TextFormField(
-                      controller: destinationAddressController,
-                      decoration: InputDecoration(labelText: 'Destination Address'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a destination address';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
                       controller: quantityController,
                       decoration: InputDecoration(labelText: 'Quantity'),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -117,7 +107,13 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
             return SelectableText(state.message);
           }
           if (state is ComposeIssuanceSuccess) {
-            return Text("Success");
+            return Column(
+              children: [
+                const Text('Issuance Created'),
+                SelectableText('Name: ${state.composeIssuance.name}'),
+                SelectableText('Raw Transaction: ${state.composeIssuance.rawtransaction}'),
+              ],
+            );
           }
           return Text("");
         },

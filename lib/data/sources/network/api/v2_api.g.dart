@@ -1217,7 +1217,7 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<List<Issuance>>> composeIssuance(
+  Future<Response<ComposeIssuance>> composeIssuance(
     String address,
     String asset,
     double quantity, [
@@ -1245,14 +1245,14 @@ class _V2Api implements V2Api {
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Issuance>>>(Options(
+        _setStreamType<Response<ComposeIssuance>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
             .compose(
               _dio.options,
-              '/addresses/${address}/compose/issuances',
+              '/addresses/${address}/compose/issuance',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -1261,14 +1261,9 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Issuance>>.fromJson(
+    final value = Response<ComposeIssuance>.fromJson(
       _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Issuance>(
-                  (i) => Issuance.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
+      (json) => ComposeIssuance.fromJson(json as Map<String, dynamic>),
     );
     return value;
   }

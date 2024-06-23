@@ -987,7 +987,7 @@ abstract class V2Api {
    * ttps://api.counterparty.io:4000/v2/addresses/{address}/compose/issuance{?asset}{&quantity}{&transfer_destination}{&divisible}{&lock}{&reset}{&description}{&encoding}{&fee_per_kb}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&confirmation_target}{&verbose}
    */
 
-  @GET("/addresses/{address}/compose/issuances")
+  @GET("/addresses/{address}/compose/issuance")
   Future<Response<ComposeIssuance>> composeIssuance(
     @Path("address") String address,
     @Query("asset") String asset,
