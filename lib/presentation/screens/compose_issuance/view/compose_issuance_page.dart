@@ -85,12 +85,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               sourceAddress: widget.initialAddress,
                               name: nameController.text,
                               quantity: double.parse(quantityController.text)));
-                          // context.read<ComposeIssuanceBloc>().add(IssuanceTransactionEvent(
-                          //     sourceAddress: widget.initialAddress,
-                          //     destinationAddress: destinationAddressController.text,
-                          //     asset: asset!,
-                          //     quantity: double.parse(quantityController.text),
-                          //     network: 'testnet'));
                         }
                       },
                       child: Text('Submit'),

@@ -313,29 +313,6 @@ class Destruction {
   factory Destruction.fromJson(Map<String, dynamic> json) => _$DestructionFromJson(json);
 }
 
-// issuance
-// {
-//               "tx_index": 2726605,
-//               "tx_hash": "876a6cfbd4aa22ba4fa85c2e1953a1c66649468a43a961ad16ea4d5329e3e4c5",
-//               "msg_index": 0,
-//               "block_index": 840464,
-//               "asset": "UNNEGOTIABLE",
-//               "quantity": 1,
-//               "divisible": 0,
-//               "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
-//               "issuer": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
-//               "transfer": 0,
-//               "callable": 0,
-//               "call_date": 0,
-//               "call_price": 0.0,
-//               "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
-//               "fee_paid": 50000000,
-//               "locked": 0,
-//               "status": "valid",
-//               "asset_longname": null,
-//               "reset": 0
-//           }
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Issuance {
   final int txIndex;
@@ -383,25 +360,6 @@ class Issuance {
   factory Issuance.fromJson(Map<String, dynamic> json) => _$IssuanceFromJson(json);
 }
 
-/**
- * {
-"result": {
-"rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff0322020000000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac0000000000000000236a210d1e454cefefcbe173ffa672cf3a36751b5d2594e5d1946a774ff272960578057c17ec0306000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
-"params": {
-"source": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
-"asset": "XCPTEST",
-"quantity": 1000,
-"transfer_destination": "1CounterpartyXXXXXXXXXXXXXXXUWLpVr",
-"divisible": true,
-"lock": false,
-"reset": false,
-"description": null
-},
-"name": "issuance"
-}
-}
- */
-
 @JsonSerializable()
 class ComposeIssuance {
   final String rawtransaction;
@@ -437,10 +395,7 @@ class ComposeIssuanceParams {
     this.transferDestination,
   });
 
-  // Factory constructor for creating a new ComposeIssuance instance from a map
   factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceParamsFromJson(json);
-
-  // Method for converting a ComposeIssuance instance to a map
 }
 
 // Send
@@ -982,10 +937,6 @@ abstract class V2Api {
     @Query("verbose") bool? verbose,
     @Query("limit") int? limit,
   ]);
-
-  /**
-   * ttps://api.counterparty.io:4000/v2/addresses/{address}/compose/issuance{?asset}{&quantity}{&transfer_destination}{&divisible}{&lock}{&reset}{&description}{&encoding}{&fee_per_kb}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&confirmation_target}{&verbose}
-   */
 
   @GET("/addresses/{address}/compose/issuance")
   Future<Response<ComposeIssuance>> composeIssuance(
