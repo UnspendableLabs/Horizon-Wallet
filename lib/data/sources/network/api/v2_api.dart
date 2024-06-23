@@ -313,29 +313,6 @@ class Destruction {
   factory Destruction.fromJson(Map<String, dynamic> json) => _$DestructionFromJson(json);
 }
 
-// issuance
-// {
-//               "tx_index": 2726605,
-//               "tx_hash": "876a6cfbd4aa22ba4fa85c2e1953a1c66649468a43a961ad16ea4d5329e3e4c5",
-//               "msg_index": 0,
-//               "block_index": 840464,
-//               "asset": "UNNEGOTIABLE",
-//               "quantity": 1,
-//               "divisible": 0,
-//               "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
-//               "issuer": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
-//               "transfer": 0,
-//               "callable": 0,
-//               "call_date": 0,
-//               "call_price": 0.0,
-//               "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
-//               "fee_paid": 50000000,
-//               "locked": 0,
-//               "status": "valid",
-//               "asset_longname": null,
-//               "reset": 0
-//           }
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Issuance {
   final int txIndex;
@@ -381,6 +358,44 @@ class Issuance {
   });
 
   factory Issuance.fromJson(Map<String, dynamic> json) => _$IssuanceFromJson(json);
+}
+
+@JsonSerializable()
+class ComposeIssuance {
+  final String rawtransaction;
+  final ComposeIssuanceParams params;
+  final String name;
+
+  const ComposeIssuance({
+    required this.rawtransaction,
+    required this.params,
+    required this.name,
+  });
+
+  factory ComposeIssuance.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceFromJson(json);
+}
+
+@JsonSerializable()
+class ComposeIssuanceParams {
+  final String source;
+  final String asset;
+  final int quantity;
+  final bool divisible;
+  final bool lock;
+  final String? description;
+  final String? transferDestination;
+
+  ComposeIssuanceParams({
+    required this.source,
+    required this.asset,
+    required this.quantity,
+    required this.divisible,
+    required this.lock,
+    this.description,
+    this.transferDestination,
+  });
+
+  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceParamsFromJson(json);
 }
 
 // Send
@@ -919,6 +934,20 @@ abstract class V2Api {
   @GET("/addresses/{address}/issuances")
   Future<Response<List<Issuance>>> getIssuancesByAddress(
     @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/{address}/compose/issuance")
+  Future<Response<ComposeIssuance>> composeIssuance(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity") double quantity, [
+    @Query("transferDestination") String? transferDestination,
+    @Query("divisible") bool? divisible,
+    @Query("lock") bool? lock,
+    @Query("reset") bool? reset,
+    @Query("description") String? description,
     @Query("verbose") bool? verbose,
     @Query("limit") int? limit,
   ]);

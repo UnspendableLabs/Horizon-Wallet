@@ -8,7 +8,6 @@ class ComposeSendLoading extends ComposeSendState {}
 
 class ComposeSendSuccess extends ComposeSendState {
   final String transactionHex;
-  // final v2_api.Info info;
   final String sourceAddress;
 
   ComposeSendSuccess({required this.transactionHex,  required this.sourceAddress});

@@ -288,6 +288,45 @@ Map<String, dynamic> _$IssuanceToJson(Issuance instance) => <String, dynamic>{
       'reset': instance.reset,
     };
 
+ComposeIssuance _$ComposeIssuanceFromJson(Map<String, dynamic> json) =>
+    ComposeIssuance(
+      rawtransaction: json['rawtransaction'] as String,
+      params: ComposeIssuanceParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+      name: json['name'] as String,
+    );
+
+Map<String, dynamic> _$ComposeIssuanceToJson(ComposeIssuance instance) =>
+    <String, dynamic>{
+      'rawtransaction': instance.rawtransaction,
+      'params': instance.params,
+      'name': instance.name,
+    };
+
+ComposeIssuanceParams _$ComposeIssuanceParamsFromJson(
+        Map<String, dynamic> json) =>
+    ComposeIssuanceParams(
+      source: json['source'] as String,
+      asset: json['asset'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      divisible: json['divisible'] as bool,
+      lock: json['lock'] as bool,
+      description: json['description'] as String?,
+      transferDestination: json['transferDestination'] as String?,
+    );
+
+Map<String, dynamic> _$ComposeIssuanceParamsToJson(
+        ComposeIssuanceParams instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'asset': instance.asset,
+      'quantity': instance.quantity,
+      'divisible': instance.divisible,
+      'lock': instance.lock,
+      'description': instance.description,
+      'transferDestination': instance.transferDestination,
+    };
+
 Send _$SendFromJson(Map<String, dynamic> json) => Send(
       txIndex: (json['tx_index'] as num).toInt(),
       txHash: json['tx_hash'] as String,
@@ -1173,6 +1212,58 @@ class _V2Api implements V2Api {
                   (i) => Issuance.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
+    );
+    return value;
+  }
+
+  @override
+  Future<Response<ComposeIssuance>> composeIssuance(
+    String address,
+    String asset,
+    double quantity, [
+    String? transferDestination,
+    bool? divisible,
+    bool? lock,
+    bool? reset,
+    String? description,
+    bool? verbose,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'asset': asset,
+      r'quantity': quantity,
+      r'transferDestination': transferDestination,
+      r'divisible': divisible,
+      r'lock': lock,
+      r'reset': reset,
+      r'description': description,
+      r'verbose': verbose,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeIssuance>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/issuance',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = Response<ComposeIssuance>.fromJson(
+      _result.data!,
+      (json) => ComposeIssuance.fromJson(json as Map<String, dynamic>),
     );
     return value;
   }

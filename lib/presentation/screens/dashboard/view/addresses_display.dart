@@ -90,7 +90,16 @@ class _AddressDisplayState extends State<AddressDisplay> {
                                 .push('/compose/send', extra: {'initialAddress': state.addressState.currentAddress});
                           },
                           child: Text('Compose Send')),
-                    )
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40.0, left: 10),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            GoRouter.of(context)
+                                .push('/compose/issuance', extra: {'initialAddress': state.addressState.currentAddress});
+                          },
+                          child: Text('Compose Issuance')),
+                    ),
                   ]),
                   Expanded(
                       child: Padding(
