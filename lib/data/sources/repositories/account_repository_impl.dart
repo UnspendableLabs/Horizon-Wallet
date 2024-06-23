@@ -1,4 +1,3 @@
-import 'package:horizon/common/uuid.dart';
 import "package:horizon/data/models/account.dart";
 import "package:horizon/data/sources/local/dao/accounts_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
@@ -6,6 +5,7 @@ import "package:horizon/domain/entities/account.dart" as entity;
 import "package:horizon/domain/repositories/account_repository.dart";
 
 class AccountRepositoryImpl implements AccountRepository {
+  // ignore: unused_field
   final local.DB _db;
   final AccountsDao _accountDao;
 
@@ -14,12 +14,12 @@ class AccountRepositoryImpl implements AccountRepository {
   @override
   Future<void> insert(entity.Account account) async {
     AccountModel account_ = AccountModel(
-      uuid: account.uuid ?? uuid.v4(),
-      name: account.name ?? '',
-      walletUuid: account.walletUuid!,
-      purpose: account.purpose!,
-      accountIndex: account.accountIndex!,
-      coinType: account.coinType!,
+      uuid: account.uuid,
+      name: account.name,
+      walletUuid: account.walletUuid,
+      purpose: account.purpose,
+      accountIndex: account.accountIndex,
+      coinType: account.coinType,
     );
 
     await _accountDao.insertAccount(account_);
@@ -58,12 +58,12 @@ class AccountRepositoryImpl implements AccountRepository {
   @override
   Future<void> deleteAccount(entity.Account account) async {
     await _accountDao.deleteAccount(AccountModel(
-      uuid: account.uuid!,
-      walletUuid: account.walletUuid!,
-      purpose: account.purpose!,
-      accountIndex: account.accountIndex!,
-      name: account.name!,
-      coinType: account.coinType!,
+      uuid: account.uuid,
+      walletUuid: account.walletUuid,
+      purpose: account.purpose,
+      accountIndex: account.accountIndex,
+      name: account.name,
+      coinType: account.coinType,
     ));
   }
 

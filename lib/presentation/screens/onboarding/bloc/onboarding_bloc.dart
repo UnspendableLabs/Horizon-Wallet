@@ -24,7 +24,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
       Wallet? wallet = await walletRepository.getCurrentWallet();
       if (wallet != null) {
-        List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid!);
+        List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid);
         if (accounts.isNotEmpty) {
           logger.d('Accounts exist; send to dashboard');
           return emit(OnboardingSuccessState());

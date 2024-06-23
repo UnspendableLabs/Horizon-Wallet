@@ -5,11 +5,14 @@ import 'package:drift/wasm.dart';
 import 'package:horizon/data/sources/local/tables/accounts_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
+import 'package:logger/logger.dart';
 
 part "db.g.dart";
 
 @DriftDatabase(tables: [Wallets, Accounts, Addresses])
 class DB extends _$DB {
+  final Logger logger = Logger();
+
   DB() : super(connectOnWeb());
 
   @override
@@ -41,11 +44,12 @@ class DB extends _$DB {
     """
     ]);
 
-    print('Database deletion initiated');
+    logger.d('Database deletion initiated');
   }
 }
 
 DatabaseConnection connectOnWeb() {
+  final logger = Logger();
   return DatabaseConnection.delayed(Future(() async {
     final result = await WasmDatabase.open(
       databaseName: 'horizon_db', // prefer to only use valid identifiers here
@@ -57,7 +61,7 @@ DatabaseConnection connectOnWeb() {
       // Depending how central local persistence is to your app, you may want
       // to show a warning to the user if only unrealiable implemetentations
       // are available.
-      print('Using ${result.chosenImplementation} due to missing browser '
+      logger.w('Using ${result.chosenImplementation} due to missing browser '
           'features: ${result.missingFeatures}');
     }
 

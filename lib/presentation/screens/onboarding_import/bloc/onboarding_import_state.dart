@@ -1,5 +1,3 @@
-// TODO: research part of / equatable
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 
@@ -59,5 +57,6 @@ class ImportStateSuccess extends ImportState {}
 
 class ImportStateError extends ImportState {
   final String message;
-  ImportStateError({required this.message});
+  final String? stackTrace;
+  ImportStateError({required this.message, this.stackTrace});
 }

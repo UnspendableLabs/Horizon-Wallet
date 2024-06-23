@@ -5,6 +5,7 @@ import "package:horizon/domain/entities/address.dart" as entity;
 import "package:horizon/domain/repositories/address_repository.dart";
 
 class AddressRepositoryImpl implements AddressRepository {
+  // ignore: unused_field
   final local.DB _db;
   final AddressesDao _addressDao;
 
@@ -18,10 +19,9 @@ class AddressRepositoryImpl implements AddressRepository {
 
   @override
   Future<void> insertMany(List<entity.Address> addresses) async {
-    // TODO: this is a little gross
     List<AddressModel> addresses_ = addresses
         .map((a) => AddressModel(
-              accountUuid: a.accountUuid!,
+              accountUuid: a.accountUuid,
               address: a.address,
               index: a.index,
             ))

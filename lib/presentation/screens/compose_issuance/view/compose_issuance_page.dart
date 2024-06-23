@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,27 +10,27 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 class ComposeIssuancePage extends StatelessWidget {
   final Address initialAddress;
 
-  ComposeIssuancePage({Key? key, required this.initialAddress}) : super(key: key);
+  const ComposeIssuancePage({super.key, required this.initialAddress});
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => ComposeIssuanceBloc(),
-        child: _ComposeIssuancePage_(
+        child: _ComposeIssuancePage(
           initialAddress: initialAddress,
         ));
   }
 }
 
-class _ComposeIssuancePage_ extends StatefulWidget {
+class _ComposeIssuancePage extends StatefulWidget {
   final Address initialAddress;
 
-  _ComposeIssuancePage_({Key? key, required this.initialAddress}) : super(key: key);
+  const _ComposeIssuancePage({required this.initialAddress});
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
 }
 
-class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
+class _ComposeIssuancePageState extends State<_ComposeIssuancePage> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
@@ -40,10 +41,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => GoRouter.of(context).pop(),
         ),
-        title: Text('Compose Issuance'),
+        title: const Text('Compose Issuance'),
       ),
       body: BlocBuilder<ComposeIssuanceBloc, ComposeIssuanceState>(
         builder: (context, state) {
@@ -58,7 +59,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                     SelectableText('From Address: ${widget.initialAddress.address}'),
                     TextFormField(
                       controller: quantityController,
-                      decoration: InputDecoration(labelText: 'Quantity'),
+                      decoration: const InputDecoration(labelText: 'Quantity'),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -69,7 +70,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                     ),
                     TextFormField(
                       controller: nameController,
-                      decoration: InputDecoration(labelText: 'Name'),
+                      decoration: const InputDecoration(labelText: 'Name'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a name for the issuance';
@@ -77,7 +78,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         return null;
                       },
                     ),
-                    Spacer(),
+                    const Spacer(),
                     ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
@@ -87,7 +88,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               quantity: double.parse(quantityController.text)));
                         }
                       },
-                      child: Text('Submit'),
+                      child: const Text('Submit'),
                     ),
                   ],
                 ),
@@ -109,7 +110,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               ],
             );
           }
-          return Text("");
+          return const Text("");
         },
       ),
     );

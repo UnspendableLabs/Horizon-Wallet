@@ -1,4 +1,6 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/foundation.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -12,16 +14,16 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => DashboardBloc(), child: _DashboardPage_());
+    return BlocProvider(create: (context) => DashboardBloc(), child: _DashboardPage());
   }
 }
 
-class _DashboardPage_ extends StatefulWidget {
+class _DashboardPage extends StatefulWidget {
   @override
-  _DashboardPage_State createState() => _DashboardPage_State();
+  State<_DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPage_State extends State<_DashboardPage_> {
+class _DashboardPageState extends State<_DashboardPage> {
   @override
   void initState() {
     super.initState();
@@ -73,9 +75,9 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                     ),
                   ),
                   state.accountState is AccountStateSuccess
-                      ? Expanded(
+                      ? const Expanded(
                           child: Column(
-                            children: [const AddressDisplay()],
+                            children: [AddressDisplay()],
                           ),
                         )
                       : const Text(''),
@@ -88,16 +90,16 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                 ? Align(
                     alignment: Alignment.bottomRight,
                     child: Container(
-                      padding: EdgeInsets.all(8.0), // Adjust padding as needed
+                      padding: const EdgeInsets.all(8.0), // Adjust padding as needed
                       child: ElevatedButton(
                         onPressed: () {
                           context.read<DashboardBloc>().add(DeleteWallet());
                           GoRouter.of(context).go('/onboarding');
                         },
-                        child: Text("Delete DB", style: TextStyle(fontSize: 12)), // Smaller text size
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller button padding
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller button padding
                         ),
+                        child: const Text("Delete DB", style: TextStyle(fontSize: 12)), // Smaller text size
                       ),
                     ),
                   )

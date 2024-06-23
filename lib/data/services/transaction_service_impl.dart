@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hex/hex.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
@@ -21,15 +20,11 @@ class TransactionServiceImpl implements TransactionService {
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
-    print(privateKey);
     Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
 
     final network = _getNetwork();
 
     dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
-
-    print("signer");
-    print(signer);
 
     bool isSegwit = sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
 
@@ -43,7 +38,7 @@ class TransactionServiceImpl implements TransactionService {
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 
-      var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+      var txHash = hex.encode(input.hash.toDart.reversed.toList());
 
       var prev = utxoMap[txHash];
 
@@ -55,10 +50,6 @@ class TransactionServiceImpl implements TransactionService {
           input.script = script.output;
         }
       } else {
-        print(utxoMap);
-
-        print(transaction.ins);
-
         // TODO: handle errors in UI
         throw Exception('Invariant: No utxo found for txHash: $txHash');
       }

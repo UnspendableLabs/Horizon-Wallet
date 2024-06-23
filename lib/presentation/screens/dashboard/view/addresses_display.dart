@@ -1,4 +1,6 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +15,7 @@ class AddressDisplay extends StatefulWidget {
   const AddressDisplay({super.key});
 
   @override
-  _AddressDisplayState createState() => _AddressDisplayState();
+  State<AddressDisplay> createState() => _AddressDisplayState();
 }
 
 class _AddressDisplayState extends State<AddressDisplay> {
@@ -74,7 +76,7 @@ class _AddressDisplayState extends State<AddressDisplay> {
                         ? Padding(
                             padding: const EdgeInsets.only(top: 40.0, right: 10),
                             child: ElevatedButton(
-                              child: Text('Switch Address'),
+                              child: const Text('Switch Address'),
                               onPressed: () {
                                 _showAddressDialog(
                                     context, state.addressState.addresses, BlocProvider.of<DashboardBloc>(context));
@@ -89,7 +91,7 @@ class _AddressDisplayState extends State<AddressDisplay> {
                             GoRouter.of(context)
                                 .push('/compose/send', extra: {'initialAddress': state.addressState.currentAddress});
                           },
-                          child: Text('Compose Send')),
+                          child: const Text('Compose Send')),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 40.0, left: 10),
@@ -98,7 +100,7 @@ class _AddressDisplayState extends State<AddressDisplay> {
                             GoRouter.of(context)
                                 .push('/compose/issuance', extra: {'initialAddress': state.addressState.currentAddress});
                           },
-                          child: Text('Compose Issuance')),
+                          child: const Text('Compose Issuance')),
                     ),
                   ]),
                   Expanded(
@@ -129,7 +131,7 @@ class _AddressDisplayState extends State<AddressDisplay> {
             child: ListBody(
               children: addresses.map((address) {
                 return Container(
-                  padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                   child: Container(
                     decoration: const BoxDecoration(
                         border: Border(

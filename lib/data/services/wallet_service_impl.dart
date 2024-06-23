@@ -14,12 +14,14 @@ import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 class WalletServiceImpl implements WalletService {
+  @override
   EncryptionService encryptionService;
 
   WalletServiceImpl(this.encryptionService);
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
+  @override
   Future<entity.Wallet> deriveRoot(String mnemonic, String password) async {
     final network = _getNetwork();
 
@@ -38,6 +40,7 @@ class WalletServiceImpl implements WalletService {
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
+  @override
   Future<entity.Wallet> deriveRootFreewallet(String mnemonic, String password) async {
     Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
 

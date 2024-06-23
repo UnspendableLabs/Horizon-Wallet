@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,9 +8,11 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
 class OnboardingImportPage extends StatelessWidget {
+  const OnboardingImportPage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
+    return BlocProvider(create: (context) => OnboardingImportBloc(), child: _OnboardingImportPage());
   }
 }
 
@@ -23,13 +26,12 @@ enum ImportFormat {
   final String description;
 }
 
-class OnboardingImportPage_ extends StatefulWidget {
-  const OnboardingImportPage_({super.key});
+class _OnboardingImportPage extends StatefulWidget {
   @override
-  _OnboardingImportPageState createState() => _OnboardingImportPageState();
+  State<_OnboardingImportPage> createState() => _OnboardingImportPageState();
 }
 
-class _OnboardingImportPageState extends State<OnboardingImportPage_> {
+class _OnboardingImportPageState extends State<_OnboardingImportPage> {
   final TextEditingController _passwordController = TextEditingController(text: "");
   final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
   final TextEditingController _seedPhraseController = TextEditingController(text: "");
@@ -119,7 +121,7 @@ class PasswordPrompt extends StatelessWidget {
                   ),
                 ),
                 _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     ElevatedButton(
@@ -135,7 +137,6 @@ class PasswordPrompt extends StatelessWidget {
                     ),
                   ],
                 ),
-                // state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
               ],
             ),
           ),
@@ -216,7 +217,7 @@ class SeedPrompt extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 // _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
                 // _state.getAddressesState is GetAddressesStateSuccess
                 //     ? AddressListView(
@@ -238,7 +239,7 @@ class SeedPrompt extends StatelessWidget {
                   child: const Text('Import Addresses'),
                 ),
               ]),
-              _state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
+              _state.importState is ImportStateLoading ? const CircularProgressIndicator() : const Text("")
             ],
           )),
     );
@@ -251,11 +252,11 @@ class AddressListView extends StatelessWidget {
   final void Function(Address, bool) onCheckedChanged;
 
   const AddressListView({
-    Key? key,
+    super.key,
     required this.addresses,
     required this.isCheckedMap,
     required this.onCheckedChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -287,11 +288,11 @@ class AddressListItem extends StatelessWidget {
   final ValueChanged<bool> onCheckedChanged;
 
   const AddressListItem({
-    Key? key,
+    super.key,
     required this.address,
     required this.isChecked,
     required this.onCheckedChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

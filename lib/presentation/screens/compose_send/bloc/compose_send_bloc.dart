@@ -61,17 +61,14 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
         index: source.index);
 
     String txHex = await transactionService.signTransaction(rawTx.hex, addressPrivKey, event.sourceAddress.address, utxoMap);
-    print('TXHEX!: $txHex');
     await bitcoindService.sendrawtransaction(txHex);
 
     emit(ComposeSendSuccess(transactionHex: txHex, sourceAddress: source.address));
   } catch (error, stackTrace) {
-    print(error.toString());
-    print(stackTrace.toString());
     if (error is DioException) {
       emit(ComposeSendError(message: "${error.response!.data.keys.first} ${error.response!.data.values.first}"));
     } else {
-      emit(ComposeSendError(message: error.toString()));
+      emit(ComposeSendError(message: error.toString(), stackTrace: stackTrace.toString()));
     }
   }
 }

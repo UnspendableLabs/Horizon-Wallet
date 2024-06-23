@@ -26,7 +26,7 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
   final walletService = GetIt.I<WalletService>();
   final addressService = GetIt.I<AddressService>();
 
-  OnboardingCreateBloc() : super(OnboardingCreateState()) {
+  OnboardingCreateBloc() : super(const OnboardingCreateState()) {
     on<PasswordSubmit>((event, emit) {
       logger.d('Processing PasswordSubmit event');
       if (event.password != event.passwordConfirmation) {

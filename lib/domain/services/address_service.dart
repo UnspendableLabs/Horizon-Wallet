@@ -1,6 +1,5 @@
 import 'package:horizon/domain/entities/address.dart';
 
-// TODO: define mnemonic type
 abstract class AddressService {
   Future<Address> deriveAddressSegwit(
       {required String privKey,

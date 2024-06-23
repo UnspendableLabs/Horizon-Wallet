@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift_db_viewer/drift_db_viewer.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
@@ -28,28 +29,28 @@ GoRouter router = GoRouter(initialLocation: "/onboarding", routes: <RouteBase>[
     path: "/onboarding",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: OnboardingScreen(),
+        child: const OnboardingScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
     path: "/onboarding/create",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: OnboardingCreateScreen(),
+        child: const OnboardingCreateScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
     path: "/onboarding/import",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: OnboardingImportPage(), // TODO: be consistent with screen / page
+        child: const OnboardingImportPage(), // TODO: be consistent with screen / page
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
     path: "/dashboard",
     pageBuilder: (context, state) => CustomTransitionPage<void>(
         key: state.pageKey,
-        child: DashboardPage(),
+        child: const DashboardPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
   ),
   GoRoute(
@@ -92,7 +93,7 @@ void main() {
 
     await setup();
 
-    runApp(MyApp());
+    runApp(const MyApp());
   }, (Object error, StackTrace stackTrace) {
     logger.e({'error': error.toString(), 'stackTrace': stackTrace.toString()});
     // Log the error to a service or handle it accordingly
@@ -100,7 +101,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({
+  const MyApp({
     super.key,
   });
 

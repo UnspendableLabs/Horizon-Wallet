@@ -29,8 +29,6 @@ class AddressServiceImpl extends AddressService {
     String path = 'm/$purpose/$coin/$account/$change/$index';
     final network = _getNetwork();
 
-    print('BIP32: $_bip32');
-
     Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
     Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
@@ -122,6 +120,7 @@ class AddressServiceImpl extends AddressService {
     return addresses;
   }
 
+  @override
   Future<String> deriveAddressPrivateKey(
       {required String rootPrivKey,
       required String chainCodeHex,

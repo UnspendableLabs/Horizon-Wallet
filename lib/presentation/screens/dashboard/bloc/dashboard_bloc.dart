@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -14,18 +13,17 @@ import 'package:logger/logger.dart';
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final Logger logger = Logger();
 
-  DashboardBloc() : super(DashboardState()) {
+  DashboardBloc() : super(const DashboardState()) {
     final walletRepository = GetIt.I<WalletRepository>();
     final accountRepository = GetIt.I<AccountRepository>();
     final addressRepository = GetIt.I<AddressRepository>();
-    final dbManager = GetIt.I<DatabaseManager>();
 
     on<SetAccountAndWallet>((event, emit) async {
       logger.d('Processing SetAccountAndWallet event');
 
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
-        List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
+        List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
         emit(state.copyWith(
             walletState: WalletStateSuccess(currentWallet: wallet),
             accountState: AccountStateSuccess(currentAccount: accounts[0], accounts: accounts)));
@@ -62,7 +60,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       emit(state.copyWith(addressState: AddressStateLoading()));
       try {
-        List<Address> addresses = await addressRepository.getAllByAccountUuid(event.address.accountUuid!);
+        List<Address> addresses = await addressRepository.getAllByAccountUuid(event.address.accountUuid);
         emit(state.copyWith(addressState: AddressStateSuccess(currentAddress: event.address, addresses: addresses)));
 
         logger.d('ChangeAddress event processed successfully. Current address: ${event.address.address}');
@@ -81,7 +79,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         await walletRepository.deleteAllWallets();
         await accountRepository.deleteAllAccounts();
 
-        // Uncomment the next line to delete the database entirely
+        // Uncomment the next 2 lines to delete the database entirely
+        // final dbManager = GetIt.I<DatabaseManager>();
         // await dbManager.database.deleteDatabase();
 
         logger.d('DeleteWallet event processed successfully');

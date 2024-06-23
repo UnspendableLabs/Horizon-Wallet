@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,19 +7,20 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 
 class OnboardingCreateScreen extends StatelessWidget {
+  const OnboardingCreateScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OnboardingCreateBloc(), child: const OnboardingCreatePage_());
+    return BlocProvider(create: (context) => OnboardingCreateBloc(), child: _OnboardingCreatePage());
   }
 }
 
-class OnboardingCreatePage_ extends StatefulWidget {
-  const OnboardingCreatePage_({super.key});
+class _OnboardingCreatePage extends StatefulWidget {
   @override
-  _OnboardingCreatePageState createState() => _OnboardingCreatePageState();
+  State<_OnboardingCreatePage> createState() => _OnboardingCreatePageState();
 }
 
-class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
+class _OnboardingCreatePageState extends State<_OnboardingCreatePage> {
   final TextEditingController _passwordController = TextEditingController(text: "");
   final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
 
@@ -71,7 +73,7 @@ class PasswordPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 16, 16, 32),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -80,21 +82,21 @@ class PasswordPrompt extends StatelessWidget {
               children: [
                 TextField(
                   controller: _passwordController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Password',
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextField(
                   controller: _passwordConfirmationController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Confirm Password',
                   ),
                 ),
                 _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     ElevatedButton(
@@ -110,7 +112,6 @@ class PasswordPrompt extends StatelessWidget {
                     ),
                   ],
                 ),
-                // state.createState is CreateStateLoading ? CircularProgressIndicator() : const Text("")
               ],
             ),
           ),
@@ -131,28 +132,27 @@ class Mnemonic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.fromLTRB(16, 16, 16, 32),
+        margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: Column(
           children: [
             (_state.mnemonicState is GenerateMnemonicStateLoading
-                ? CircularProgressIndicator()
+                ? const CircularProgressIndicator()
                 : _state.mnemonicState is GenerateMnemonicStateError
                     ? Text("Error: ${_state.mnemonicState.message}")
                     : _state.mnemonicState is GenerateMnemonicStateSuccess
                         ? SelectableText(
                             _state.mnemonicState.mnemonic,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 32,
                             ),
                           )
-                        : Text("")),
-            SizedBox(height: 16),
+                        : const Text("")),
+            const SizedBox(height: 16),
             Row(
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    print('CREATE WALLET CLICKED');
                     context.read<OnboardingCreateBloc>().add(CreateWallet());
                   },
                   child: const Text('Create Wallet'),

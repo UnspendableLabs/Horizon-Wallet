@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import "package:horizon/data/sources/network/api/v2_api.dart" as v2_api;
@@ -31,14 +32,14 @@ class _BalanceDisplayState extends State<BalanceDisplay> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Balance> balances = snapshot.data as List<Balance>;
-          return Container(
+          return SizedBox(
             width: screenWidth - 300,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween, // This spreads out the children across the main axis
 
               children: balances.isEmpty
-                  ? [Text('no balance')]
+                  ? [const Text('no balance')]
                   : balances
                       .map<Widget>(
                           (balance) => Text('${balance.asset}: ${(balance.quantity / 100000000).toStringAsFixed(8)}'))

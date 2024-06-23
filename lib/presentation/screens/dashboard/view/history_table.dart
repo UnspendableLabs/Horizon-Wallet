@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/issuance.dart' as issuance_entity;
@@ -9,11 +10,10 @@ class HistoryTable extends StatefulWidget {
   final String address;
   const HistoryTable({super.key, required this.address});
   @override
-  _HistoryTableState createState() => _HistoryTableState();
+  State<HistoryTable> createState() => _HistoryTableState();
 }
 
 class _HistoryTableState extends State<HistoryTable> with SingleTickerProviderStateMixin {
-  List<Map<String, dynamic>> _data = [];
   List<send_entity.Send> _sends = [];
   List<issuance_entity.Issuance> _issuances = [];
   List<transaction_entity.Transaction> _transactions = [];
@@ -72,11 +72,11 @@ class _HistoryTableState extends State<HistoryTable> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('History'),
+        title: const Text('History'),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          tabs: [
+          tabs: const [
             Tab(text: 'Sends'),
             Tab(text: 'Issuances'),
             Tab(text: 'Transactions'),
@@ -168,9 +168,9 @@ class _HistoryTableState extends State<HistoryTable> with SingleTickerProviderSt
             rows: _transactions
                 .map(
                   (item) => DataRow(cells: [
-                    DataCell(Container(
+                    DataCell(SizedBox(
                       width: 100,
-                      child: Text(item.txHash ?? "", overflow: TextOverflow.ellipsis, softWrap: false, maxLines: 1),
+                      child: Text(item.txHash, overflow: TextOverflow.ellipsis, softWrap: false, maxLines: 1),
                     )),
                     DataCell(Text(item.source)),
                     DataCell(Text(item.destination ?? "")),

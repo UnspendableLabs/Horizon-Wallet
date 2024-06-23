@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,20 +7,20 @@ import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dar
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_event.dart';
 
 class OnboardingScreen extends StatelessWidget {
+  const OnboardingScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OnboardingBloc(), child: const _OnboardingScreen_());
+    return BlocProvider(create: (context) => OnboardingBloc(), child: _OnboardingScreen());
   }
 }
 
-class _OnboardingScreen_ extends StatefulWidget {
-  const _OnboardingScreen_({super.key});
-
+class _OnboardingScreen extends StatefulWidget {
   @override
-  _OnboardingScreenState createState() => _OnboardingScreenState();
+  State<_OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<_OnboardingScreen_> {
+class _OnboardingScreenState extends State<_OnboardingScreen> {
   @override
   void initState() {
     context.read<OnboardingBloc>().add(OnboardingInitial());

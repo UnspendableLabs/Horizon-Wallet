@@ -24,7 +24,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
   final mnemonicService = GetIt.I<MnemonicService>();
   final encryptionService = GetIt.I<EncryptionService>();
 
-  OnboardingImportBloc() : super(OnboardingImportState()) {
+  OnboardingImportBloc() : super(const OnboardingImportState()) {
     on<PasswordSubmit>((event, emit) {
       if (event.password != event.passwordConfirmation) {
         emit(state.copyWith(passwordError: "Passwords do not match"));
@@ -47,7 +47,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     on<ImportWallet>((event, emit) async {
       bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
       if (!validMnemonic) {
-        emit(state.copyWith(importState: ImportStateError(message: "Invalid mnemonic")));
+        emit(state.copyWith(importState: ImportStateError(message: "Invalid mnemonic", stackTrace: "")));
         return;
       }
 
@@ -119,9 +119,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         emit(state.copyWith(importState: ImportStateSuccess()));
         return;
       } catch (e, stackTrace) {
-        emit(state.copyWith(importState: ImportStateError(message: e.toString())));
-        print(e.toString());
-        print(stackTrace);
+        emit(state.copyWith(importState: ImportStateError(message: e.toString(), stackTrace: stackTrace.toString())));
         return;
       }
     });

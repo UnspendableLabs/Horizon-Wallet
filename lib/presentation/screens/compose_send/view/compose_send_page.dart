@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -11,38 +12,41 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_stat
 class ComposeSendPage extends StatelessWidget {
   final Address initialAddress;
 
-  ComposeSendPage({Key? key, required this.initialAddress}) : super(key: key);
+  const ComposeSendPage({super.key, required this.initialAddress});
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => ComposeSendBloc(),
-        child: _ComposeSendPage_(
+        child: _ComposeSendPage(
           initialAddress: initialAddress,
         ));
   }
 }
 
-class _ComposeSendPage_ extends StatefulWidget {
+class _ComposeSendPage extends StatefulWidget {
   final Address initialAddress;
 
-  _ComposeSendPage_({Key? key, required this.initialAddress}) : super(key: key);
+  const _ComposeSendPage({
+    required this.initialAddress,
+  });
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
 }
 
-class _ComposeSendPageState extends State<_ComposeSendPage_> {
+class _ComposeSendPageState extends State<_ComposeSendPage> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
-  String? asset = null;
+  String? asset;
 
   Future<List<String>> _fetchAssets() async {
     final client = GetIt.I.get<v2_api.V2Api>();
 
     final xcpBalances = await client.getBalancesByAddress(widget.initialAddress.address, true);
-    // final btcBalances = await blockCypher.fetchBalance(widget.initialAddress.address, NetworkEnum.mainnet);
+    // final btcBalances = await blockCypher.fetchBalance(widget.initialAddress.address);
     // final balances = xcpBalances.result! + btcBalances;
+    // ignore: unused_local_variable
     final assets = xcpBalances.result!.map((e) => e.asset).toList();
     // return assets;
     return ['XCP', 'BTC'];
@@ -53,10 +57,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => GoRouter.of(context).pop(),
         ),
-        title: Text('Compose Send'),
+        title: const Text('Compose Send'),
       ),
       body: BlocBuilder<ComposeSendBloc, ComposeSendState>(
         builder: (context, state) {
@@ -71,7 +75,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     SelectableText('From Address: ${widget.initialAddress.address}'),
                     TextFormField(
                       controller: destinationAddressController,
-                      decoration: InputDecoration(labelText: 'Destination Address'),
+                      decoration: const InputDecoration(labelText: 'Destination Address'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a destination address';
@@ -81,7 +85,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     ),
                     TextFormField(
                       controller: quantityController,
-                      decoration: InputDecoration(labelText: 'Quantity'),
+                      decoration: const InputDecoration(labelText: 'Quantity'),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -94,13 +98,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       future: _fetchAssets(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return CircularProgressIndicator();
+                          return const CircularProgressIndicator();
                         } else if (snapshot.hasError) {
                           return SelectableText('Error: ${snapshot.error}');
                         } else {
                           return DropdownButtonFormField<String>(
                             value: asset,
-                            hint: Text('Select Asset'),
+                            hint: const Text('Select Asset'),
                             onChanged: (value) {
                               setState(() {
                                 asset = value!;
@@ -117,7 +121,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         }
                       },
                     ),
-                    Spacer(),
+                    const Spacer(),
                     ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
@@ -130,7 +134,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                               network: 'testnet'));
                         }
                       },
-                      child: Text('Submit'),
+                      child: const Text('Submit'),
                     ),
                   ],
                 ),
@@ -149,7 +153,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           if (state is ComposeSendSignSuccess) {
             return Text(state.signedTransaction);
           }
-          return Text("");
+          return const Text("");
         },
       ),
     );
