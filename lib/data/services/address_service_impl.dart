@@ -139,7 +139,7 @@ class AddressServiceImpl extends AddressService {
 
     bip32.BIP32Interface child = root.derivePath(path);
 
-    return hex.encode(child.privateKey!.toDart);
+    return child.toWIF();
   }
 
 //   @override

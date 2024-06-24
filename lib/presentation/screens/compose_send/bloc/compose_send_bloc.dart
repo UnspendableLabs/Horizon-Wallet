@@ -41,7 +41,7 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
     final password = event.password;
     // final memo = event.memo;
     // final memoIsHex = event.memoIsHex;
-
+    
     final rawTx = await composeRepository.composeSend(source.address, destination, asset, quantity, true, 167);
 
     final utxoResponse = await utxoRepository.getUnspentForAddress(event.sourceAddress.address);
@@ -66,7 +66,9 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
     emit(ComposeSendSuccess(transactionHex: txHex, sourceAddress: source.address));
   } catch (error, stackTrace) {
     if (error is DioException) {
-      emit(ComposeSendError(message: "${error.response!.data.keys.first} ${error.response!.data.values.first}"));
+      emit(ComposeSendError(
+          message: "${error.response!.data.keys.first} ${error.response!.data.values.first}",
+          stackTrace: stackTrace.toString()));
     } else {
       emit(ComposeSendError(message: error.toString(), stackTrace: stackTrace.toString()));
     }
