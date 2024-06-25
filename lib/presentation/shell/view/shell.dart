@@ -52,6 +52,7 @@ class AccountDropdownButtonState extends State<AccountDropdownButton> {
             initialSelection: state.accounts.first,
             controller: accountController,
             requestFocusOnTap: true,
+            enableSearch: false,
             onSelected: (account) {
               setState(() {
                 selectedAccount = account;
@@ -120,7 +121,7 @@ class Shell extends StatelessWidget {
           Expanded(
               child: Scaffold(
             appBar: AppBar(
-              title: const AccountDropdownButton(),
+              leading: const AccountDropdownButton(),
             ),
             body: navigationShell,
           ))
