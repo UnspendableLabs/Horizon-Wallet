@@ -8,8 +8,9 @@ part 'shell_state.freezed.dart';
 @freezed
 class ShellState with _$ShellState {
   const factory ShellState({
-    required bool initialized,
-    required Wallet wallet,
+    required bool redirect,
+    required Wallet? wallet,
     required List<Account> accounts,
+    required int currentAccountIndex,
   }) = _ShellState;
 }

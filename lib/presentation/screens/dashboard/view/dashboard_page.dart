@@ -54,48 +54,48 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                   //         label: Text('Second'),
                   //       ),
                   //     ]),
-                  Container(
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        right: BorderSide(
-                          color: Colors.grey, // Color of the border
-                          width: 1.0, // Width of the border
-                        ),
-                      ),
-                    ),
-                    width: width / 4,
-                    child: ListView(
-                      children: <Widget>[
-                        const ListTile(
-                          title: Text('Horizon',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center),
-                          contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                        ),
-                        state.accountState is AccountStateSuccess
-                            ? Column(
-                                children: state.accountState.accounts
-                                    .map<Widget>((account) => ListTile(
-                                        title: Text(account.name!),
-                                        selected: account.uuid ==
-                                            state.accountState.currentAccount
-                                                .uuid,
-                                        autofocus: account.uuid ==
-                                            state.accountState.currentAccount
-                                                .uuid,
-                                        onTap: () {}))
-                                    .toList())
-                            : const Text(""),
-                        state.accountState is AccountStateLoading
-                            ? const CircularProgressIndicator()
-                            : const Text(""),
-                        state.accountState is AccountStateError
-                            ? Text("Error: ${state.accountState.error}")
-                            : const Text(""),
-                      ],
-                    ),
-                  ),
+                  // Container(
+                  //   decoration: const BoxDecoration(
+                  //     border: Border(
+                  //       right: BorderSide(
+                  //         color: Colors.grey, // Color of the border
+                  //         width: 1.0, // Width of the border
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   width: width / 4,
+                    // child: ListView(
+                    //   children: <Widget>[
+                    //     const ListTile(
+                    //       title: Text('Horizon',
+                    //           style: TextStyle(
+                    //               fontSize: 16, fontWeight: FontWeight.bold),
+                    //           textAlign: TextAlign.center),
+                    //       contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                    //     ),
+                    //     state.accountState is AccountStateSuccess
+                    //         ? Column(
+                    //             children: state.accountState.accounts
+                    //                 .map<Widget>((account) => ListTile(
+                    //                     title: Text(account.name!),
+                    //                     selected: account.uuid ==
+                    //                         state.accountState.currentAccount
+                    //                             .uuid,
+                    //                     autofocus: account.uuid ==
+                    //                         state.accountState.currentAccount
+                    //                             .uuid,
+                    //                     onTap: () {}))
+                    //                 .toList())
+                    //         : const Text(""),
+                    //     state.accountState is AccountStateLoading
+                    //         ? const CircularProgressIndicator()
+                    //         : const Text(""),
+                    //     state.accountState is AccountStateError
+                    //         ? Text("Error: ${state.accountState.error}")
+                    //         : const Text(""),
+                    //   ],
+                    // ),
+                  // ),
                   state.accountState is AccountStateSuccess
                       ? Expanded(
                           child: Column(

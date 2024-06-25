@@ -2,6 +2,70 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/shell/bloc/shell_state.dart';
+
+import 'package:horizon/domain/entities/account.dart';
+
+class AccountListView extends StatelessWidget {
+  const AccountListView({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.read<ShellStateCubit>();
+
+    return shell.state.maybeWhen(
+        success: (state) => ListView.builder(
+              scrollDirection: Axis.vertical,
+              itemCount: state.accounts.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Center(child: Text(state.accounts[index].name)),
+                  onTap: () => print(index),
+                );
+              },
+            ),
+        orElse: () => Text(""));
+
+    return const Text('Account List View');
+  }
+}
+
+class AccountDropdownButton extends StatefulWidget {
+  const AccountDropdownButton({super.key});
+  @override
+  State<AccountDropdownButton> createState() => AccountDropdownButtonState();
+}
+
+class AccountDropdownButtonState extends State<AccountDropdownButton> {
+  final TextEditingController accountController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.read<ShellStateCubit>();
+
+    Account? selectedAccount;
+
+    return shell.state.maybeWhen(
+        success: (state) => DropdownMenu(
+            initialSelection: state.accounts.first,
+            controller: accountController,
+            requestFocusOnTap: true,
+            onSelected: (account) {
+              setState(() {
+                selectedAccount = account;
+              });
+            },
+            dropdownMenuEntries: state.accounts.map((account) {
+              return DropdownMenuEntry(
+                value: account,
+                label: account.name,
+              );
+            }).toList()),
+        orElse: () => Text(""));
+  }
+}
 
 class Shell extends StatelessWidget {
   const Shell(this.navigationShell, {super.key});
@@ -36,11 +100,30 @@ class Shell extends StatelessWidget {
               ),
             ],
           ),
-          VerticalDivider(thickness: 1, width: 1),
+
+          const VerticalDivider(thickness: 1, width: 1),
+          // SizedBox(
+          //     width: 300,
+          //     child: Column(children: <Widget>[
+          //       const Expanded(child: AccountListView()),
+          //       Padding(
+          //         padding: const EdgeInsets.all(12),
+          //         child: FilledButton(
+          //           child: const Text('Add Account'),
+          //           onPressed: () => print('Add Account'),
+          //         ),
+          //       )
+          //     ])),
+          // const VerticalDivider(thickness: 1, width: 1),
           // This is the main content.
+
           Expanded(
-            child: navigationShell,
-          )
+              child: Scaffold(
+            appBar: AppBar(
+              title: const AccountDropdownButton(),
+            ),
+            body: navigationShell,
+          ))
         ],
       )),
     );

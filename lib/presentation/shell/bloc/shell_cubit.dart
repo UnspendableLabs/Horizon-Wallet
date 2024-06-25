@@ -9,7 +9,7 @@ import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
 import './shell_state.dart' as shell_state;
 
-class ShellStateCubit extends RemoteDataCubit<shell_state.ShellState> {
+class ShellStateCubit extends RemoteDataCubit< shell_state.ShellState> {
   WalletRepository walletRepository;
   AccountRepository accountRepository;
 
@@ -25,17 +25,14 @@ class ShellStateCubit extends RemoteDataCubit<shell_state.ShellState> {
       List<Account> accounts =
           await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
 
-      if (accounts.isEmpty) {
-        throw Exception('invariant');
-      }
-
       emit(RemoteDataState.success(shell_state.ShellState(
-        initialized: false,
-        wallet: wallet,
-        accounts: accounts,
-      )));
+          redirect: true,
+          wallet: wallet,
+          accounts: accounts,
+          currentAccountIndex: 0)));
     } catch (error) {
-      emit(const RemoteDataState.error("Error initializing shell"));
+      emit(const RemoteDataState.success(shell_state.ShellState(
+          redirect: true, wallet: null, accounts: [], currentAccountIndex: 0)));
     }
   }
 
@@ -44,9 +41,9 @@ class ShellStateCubit extends RemoteDataCubit<shell_state.ShellState> {
         initial: () => state,
         loading: () => state,
         error: (_) => state,
-        success: (state__) =>
-            RemoteDataState.success(state__.copyWith(initialized: true)));
+        success: (stateInner) =>
+            RemoteDataState.success(stateInner.copyWith(redirect: false)));
 
-    emit(state_);
+    emit(state_ as RemoteDataState<shell_state.ShellState>);
   }
 }

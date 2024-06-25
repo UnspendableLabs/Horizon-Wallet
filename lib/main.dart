@@ -49,8 +49,6 @@ class LoadingScreen extends StatelessWidget {
 }
 
 class AppRouter {
-  bool _init = false;
-
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: "/dashboard",
@@ -170,19 +168,25 @@ class AppRouter {
       redirect: (context, state) async {
         final shell = context.read<ShellStateCubit>();
 
+        print("shell.state: ${shell.state}");
+
         return shell.state.maybeWhen(
-            error: (_) => "/onboarding",
             success: (data) {
               Future.delayed(const Duration(milliseconds: 500), () {
                 shell.initialized();
               });
 
-              if (data.initialized) {
-                return null;
-              } else {
+              // if accounts, show dashboard
+              if (data.redirect && data.accounts.isNotEmpty) {
                 return "/dashboard";
+              // if no accounts, show onboarding
+              } else if (data.redirect && data.accounts.isEmpty) {
+                return "/onboarding";
+              } else {
+                return null;
               }
             },
+            // if the shell state is not yet loaded, show a loading screen
             orElse: () => "/");
       });
 }
@@ -221,7 +225,8 @@ class MyApp extends StatelessWidget {
             walletRepository: GetIt.I<WalletRepository>(),
             accountRepository: GetIt.I<AccountRepository>())
           ..initialize(),
-        child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
+        child:
+            BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
           listener: (context, state) {
             AppRouter.router.refresh();
           },

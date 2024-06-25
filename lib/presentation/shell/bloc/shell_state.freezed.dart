@@ -16,9 +16,10 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$ShellState {
-  bool get initialized => throw _privateConstructorUsedError;
-  Wallet get wallet => throw _privateConstructorUsedError;
+  bool get redirect => throw _privateConstructorUsedError;
+  Wallet? get wallet => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
+  int get currentAccountIndex => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ShellStateCopyWith<ShellState> get copyWith =>
@@ -31,7 +32,11 @@ abstract class $ShellStateCopyWith<$Res> {
           ShellState value, $Res Function(ShellState) then) =
       _$ShellStateCopyWithImpl<$Res, ShellState>;
   @useResult
-  $Res call({bool initialized, Wallet wallet, List<Account> accounts});
+  $Res call(
+      {bool redirect,
+      Wallet? wallet,
+      List<Account> accounts,
+      int currentAccountIndex});
 }
 
 /// @nodoc
@@ -47,23 +52,28 @@ class _$ShellStateCopyWithImpl<$Res, $Val extends ShellState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? initialized = null,
-    Object? wallet = null,
+    Object? redirect = null,
+    Object? wallet = freezed,
     Object? accounts = null,
+    Object? currentAccountIndex = null,
   }) {
     return _then(_value.copyWith(
-      initialized: null == initialized
-          ? _value.initialized
-          : initialized // ignore: cast_nullable_to_non_nullable
+      redirect: null == redirect
+          ? _value.redirect
+          : redirect // ignore: cast_nullable_to_non_nullable
               as bool,
-      wallet: null == wallet
+      wallet: freezed == wallet
           ? _value.wallet
           : wallet // ignore: cast_nullable_to_non_nullable
-              as Wallet,
+              as Wallet?,
       accounts: null == accounts
           ? _value.accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
+      currentAccountIndex: null == currentAccountIndex
+          ? _value.currentAccountIndex
+          : currentAccountIndex // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -76,7 +86,11 @@ abstract class _$$ShellStateImplCopyWith<$Res>
       __$$ShellStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({bool initialized, Wallet wallet, List<Account> accounts});
+  $Res call(
+      {bool redirect,
+      Wallet? wallet,
+      List<Account> accounts,
+      int currentAccountIndex});
 }
 
 /// @nodoc
@@ -90,23 +104,28 @@ class __$$ShellStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? initialized = null,
-    Object? wallet = null,
+    Object? redirect = null,
+    Object? wallet = freezed,
     Object? accounts = null,
+    Object? currentAccountIndex = null,
   }) {
     return _then(_$ShellStateImpl(
-      initialized: null == initialized
-          ? _value.initialized
-          : initialized // ignore: cast_nullable_to_non_nullable
+      redirect: null == redirect
+          ? _value.redirect
+          : redirect // ignore: cast_nullable_to_non_nullable
               as bool,
-      wallet: null == wallet
+      wallet: freezed == wallet
           ? _value.wallet
           : wallet // ignore: cast_nullable_to_non_nullable
-              as Wallet,
+              as Wallet?,
       accounts: null == accounts
           ? _value._accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
+      currentAccountIndex: null == currentAccountIndex
+          ? _value.currentAccountIndex
+          : currentAccountIndex // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -115,15 +134,16 @@ class __$$ShellStateImplCopyWithImpl<$Res>
 
 class _$ShellStateImpl implements _ShellState {
   const _$ShellStateImpl(
-      {required this.initialized,
+      {required this.redirect,
       required this.wallet,
-      required final List<Account> accounts})
+      required final List<Account> accounts,
+      required this.currentAccountIndex})
       : _accounts = accounts;
 
   @override
-  final bool initialized;
+  final bool redirect;
   @override
-  final Wallet wallet;
+  final Wallet? wallet;
   final List<Account> _accounts;
   @override
   List<Account> get accounts {
@@ -133,8 +153,11 @@ class _$ShellStateImpl implements _ShellState {
   }
 
   @override
+  final int currentAccountIndex;
+
+  @override
   String toString() {
-    return 'ShellState(initialized: $initialized, wallet: $wallet, accounts: $accounts)';
+    return 'ShellState(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountIndex: $currentAccountIndex)';
   }
 
   @override
@@ -142,15 +165,17 @@ class _$ShellStateImpl implements _ShellState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ShellStateImpl &&
-            (identical(other.initialized, initialized) ||
-                other.initialized == initialized) &&
+            (identical(other.redirect, redirect) ||
+                other.redirect == redirect) &&
             (identical(other.wallet, wallet) || other.wallet == wallet) &&
-            const DeepCollectionEquality().equals(other._accounts, _accounts));
+            const DeepCollectionEquality().equals(other._accounts, _accounts) &&
+            (identical(other.currentAccountIndex, currentAccountIndex) ||
+                other.currentAccountIndex == currentAccountIndex));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, initialized, wallet,
-      const DeepCollectionEquality().hash(_accounts));
+  int get hashCode => Object.hash(runtimeType, redirect, wallet,
+      const DeepCollectionEquality().hash(_accounts), currentAccountIndex);
 
   @JsonKey(ignore: true)
   @override
@@ -161,16 +186,19 @@ class _$ShellStateImpl implements _ShellState {
 
 abstract class _ShellState implements ShellState {
   const factory _ShellState(
-      {required final bool initialized,
-      required final Wallet wallet,
-      required final List<Account> accounts}) = _$ShellStateImpl;
+      {required final bool redirect,
+      required final Wallet? wallet,
+      required final List<Account> accounts,
+      required final int currentAccountIndex}) = _$ShellStateImpl;
 
   @override
-  bool get initialized;
+  bool get redirect;
   @override
-  Wallet get wallet;
+  Wallet? get wallet;
   @override
   List<Account> get accounts;
+  @override
+  int get currentAccountIndex;
   @override
   @JsonKey(ignore: true)
   _$$ShellStateImplCopyWith<_$ShellStateImpl> get copyWith =>
