@@ -1,23 +1,15 @@
-part of "shell_bloc.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-enum Status {
-  initial,
-  loading,
-  success,
-  error,
-}
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/account.dart';
 
+part 'shell_state.freezed.dart';
 
 @freezed
 class ShellState with _$ShellState {
   const factory ShellState({
-    @Default(Status.initial) Status status,
-  }) = Initial;
+    required bool initialized,
+    required Wallet wallet,
+    required List<Account> accounts,
+  }) = _ShellState;
 }
-
-
-
-
-
-
-

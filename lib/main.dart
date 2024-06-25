@@ -18,8 +18,11 @@ import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_i
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
 
+import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+
 import 'package:horizon/presentation/shell/view/shell.dart';
-import 'package:horizon/presentation/shell/bloc/shell_bloc.dart';
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -38,17 +41,19 @@ class LoadingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
               CircularProgressIndicator(),
-              Text('loading repository...'),
+              Text('loading...'),
             ],
           ),
         ),
       );
 }
 
-abstract class AppRouter {
+class AppRouter {
+  bool _init = false;
+
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
-      initialLocation: "/",
+      initialLocation: "/dashboard",
       routes: <RouteBase>[
         GoRoute(
             path: "/",
@@ -163,17 +168,22 @@ abstract class AppRouter {
             ])
       ],
       redirect: (context, state) async {
-        final status = context.read<ShellBloc>().state.status;
+        final shell = context.read<ShellStateCubit>();
 
-        if (status == Status.success) {
-          return "/dashboard";
-        }
+        return shell.state.maybeWhen(
+            error: (_) => "/onboarding",
+            success: (data) {
+              Future.delayed(const Duration(milliseconds: 500), () {
+                shell.initialized();
+              });
 
-        if( status == Status.error ) {
-          return "/onboarding";
-        }
-
-        return null;
+              if (data.initialized) {
+                return null;
+              } else {
+                return "/dashboard";
+              }
+            },
+            orElse: () => "/");
       });
 }
 
@@ -207,11 +217,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => ShellBloc(
+        create: (context) => ShellStateCubit(
             walletRepository: GetIt.I<WalletRepository>(),
             accountRepository: GetIt.I<AccountRepository>())
-          ..add(const ShellEvent.init()),
-        child: BlocListener<ShellBloc, ShellState>(
+          ..initialize(),
+        child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
           listener: (context, state) {
             AppRouter.router.refresh();
           },
