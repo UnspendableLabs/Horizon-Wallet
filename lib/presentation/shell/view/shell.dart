@@ -50,13 +50,11 @@ class AccountDropdownButtonState extends State<AccountDropdownButton> {
     return shell.state.maybeWhen(
         success: (state) => DropdownMenu(
             initialSelection: state.accounts.first,
+            enableSearch: false,
             controller: accountController,
             requestFocusOnTap: true,
-            enableSearch: false,
             onSelected: (account) {
-              setState(() {
-                selectedAccount = account;
-              });
+              setState(() => selectedAccount = account);
             },
             dropdownMenuEntries: state.accounts.map((account) {
               return DropdownMenuEntry(
@@ -121,7 +119,7 @@ class Shell extends StatelessWidget {
           Expanded(
               child: Scaffold(
             appBar: AppBar(
-              leading: const AccountDropdownButton(),
+              title: const AccountDropdownButton(),
             ),
             body: navigationShell,
           ))
