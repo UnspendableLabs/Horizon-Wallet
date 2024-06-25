@@ -12,7 +12,8 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => DashboardBloc(), child: _DashboardPage_());
+    return BlocProvider(
+        create: (context) => DashboardBloc(), child: _DashboardPage_());
   }
 }
 
@@ -30,7 +31,8 @@ class _DashboardPage_State extends State<_DashboardPage_> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
+    return BlocBuilder<DashboardBloc, DashboardState>(
+        builder: (context, state) {
       final width = MediaQuery.of(context).size.width;
       return Scaffold(
         body: Column(
@@ -38,6 +40,20 @@ class _DashboardPage_State extends State<_DashboardPage_> {
             Expanded(
               child: Row(
                 children: <Widget>[
+                  // NavigationRail(
+                  //     selectedIndex: 0,
+                  //     destinations: const <NavigationRailDestination>[
+                  //       NavigationRailDestination(
+                  //         icon: Icon(Icons.home),
+                  //         selectedIcon: Icon(Icons.home),
+                  //         label: Text('Home'),
+                  //       ),
+                  //       NavigationRailDestination(
+                  //         icon: Badge(child: Icon(Icons.bookmark_border)),
+                  //         selectedIcon: Badge(child: Icon(Icons.book)),
+                  //         label: Text('Second'),
+                  //       ),
+                  //     ]),
                   Container(
                     decoration: const BoxDecoration(
                       border: Border(
@@ -52,7 +68,9 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                       children: <Widget>[
                         const ListTile(
                           title: Text('Horizon',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center),
                           contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 20),
                         ),
                         state.accountState is AccountStateSuccess
@@ -60,12 +78,18 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                                 children: state.accountState.accounts
                                     .map<Widget>((account) => ListTile(
                                         title: Text(account.name!),
-                                        selected: account.uuid == state.accountState.currentAccount.uuid,
-                                        autofocus: account.uuid == state.accountState.currentAccount.uuid,
+                                        selected: account.uuid ==
+                                            state.accountState.currentAccount
+                                                .uuid,
+                                        autofocus: account.uuid ==
+                                            state.accountState.currentAccount
+                                                .uuid,
                                         onTap: () {}))
                                     .toList())
                             : const Text(""),
-                        state.accountState is AccountStateLoading ? const CircularProgressIndicator() : const Text(""),
+                        state.accountState is AccountStateLoading
+                            ? const CircularProgressIndicator()
+                            : const Text(""),
                         state.accountState is AccountStateError
                             ? Text("Error: ${state.accountState.error}")
                             : const Text(""),
@@ -79,8 +103,12 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                           ),
                         )
                       : const Text(''),
-                  state.accountState is AccountStateLoading ? const CircularProgressIndicator() : const Text(''),
-                  state.accountState is AccountStateError ? Text("Error: ${state.accountState.error}") : const Text(""),
+                  state.accountState is AccountStateLoading
+                      ? const CircularProgressIndicator()
+                      : const Text(''),
+                  state.accountState is AccountStateError
+                      ? Text("Error: ${state.accountState.error}")
+                      : const Text(""),
                 ],
               ),
             ),
@@ -94,9 +122,13 @@ class _DashboardPage_State extends State<_DashboardPage_> {
                           context.read<DashboardBloc>().add(DeleteWallet());
                           GoRouter.of(context).go('/onboarding');
                         },
-                        child: Text("Delete DB", style: TextStyle(fontSize: 12)), // Smaller text size
+                        child: Text("Delete DB",
+                            style:
+                                TextStyle(fontSize: 12)), // Smaller text size
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller button padding
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8), // Smaller button padding
                         ),
                       ),
                     ),
