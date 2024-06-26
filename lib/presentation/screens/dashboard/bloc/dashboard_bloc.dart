@@ -45,8 +45,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       emit(state.copyWith(addressState: AddressStateLoading()));
       try {
-        final account = state.accountState.currentAccount;
-        final addresses = await addressRepository.getAllByAccountUuid(account!.uuid!);
+        final accountId = event.accountUuid;
+        final addresses = await addressRepository.getAllByAccountUuid(accountId);
         emit(state.copyWith(addressState: AddressStateSuccess(currentAddress: addresses[0], addresses: addresses)));
 
         logger.d('GetAddresses event processed successfully. Current address: ${addresses[0].address}');

@@ -1,9 +1,7 @@
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
-
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/remote_data_bloc/remote_data_cubit.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
@@ -29,10 +27,10 @@ class ShellStateCubit extends RemoteDataCubit< shell_state.ShellState> {
           redirect: true,
           wallet: wallet,
           accounts: accounts,
-          currentAccountIndex: 0)));
+          currentAccountUuid: accounts[0].uuid)));
     } catch (error) {
       emit(const RemoteDataState.success(shell_state.ShellState(
-          redirect: true, wallet: null, accounts: [], currentAccountIndex: 0)));
+          redirect: true, wallet: null, accounts: [], currentAccountUuid: '')));
     }
   }
 
@@ -43,6 +41,17 @@ class ShellStateCubit extends RemoteDataCubit< shell_state.ShellState> {
         error: (_) => state,
         success: (stateInner) =>
             RemoteDataState.success(stateInner.copyWith(redirect: false)));
+
+    emit(state_ as RemoteDataState<shell_state.ShellState>);
+  }
+
+  void onAccountChanged(Account account) {
+    final state_ = state.when(
+        initial: () => state,
+        loading: () => state,
+        error: (_) => state,
+        success: (stateInner) =>
+            RemoteDataState.success(stateInner.copyWith(currentAccountUuid: account.uuid)));
 
     emit(state_ as RemoteDataState<shell_state.ShellState>);
   }

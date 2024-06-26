@@ -11,6 +11,6 @@ class ShellState with _$ShellState {
     required bool redirect,
     required Wallet? wallet,
     required List<Account> accounts,
-    required int currentAccountIndex,
+    required String currentAccountUuid,
   }) = _ShellState;
 }

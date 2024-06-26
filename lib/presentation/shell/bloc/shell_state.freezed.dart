@@ -19,7 +19,7 @@ mixin _$ShellState {
   bool get redirect => throw _privateConstructorUsedError;
   Wallet? get wallet => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
-  int get currentAccountIndex => throw _privateConstructorUsedError;
+  String get currentAccountUuid => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ShellStateCopyWith<ShellState> get copyWith =>
@@ -36,7 +36,7 @@ abstract class $ShellStateCopyWith<$Res> {
       {bool redirect,
       Wallet? wallet,
       List<Account> accounts,
-      int currentAccountIndex});
+      String currentAccountUuid});
 }
 
 /// @nodoc
@@ -55,7 +55,7 @@ class _$ShellStateCopyWithImpl<$Res, $Val extends ShellState>
     Object? redirect = null,
     Object? wallet = freezed,
     Object? accounts = null,
-    Object? currentAccountIndex = null,
+    Object? currentAccountUuid = null,
   }) {
     return _then(_value.copyWith(
       redirect: null == redirect
@@ -70,10 +70,10 @@ class _$ShellStateCopyWithImpl<$Res, $Val extends ShellState>
           ? _value.accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
-      currentAccountIndex: null == currentAccountIndex
-          ? _value.currentAccountIndex
-          : currentAccountIndex // ignore: cast_nullable_to_non_nullable
-              as int,
+      currentAccountUuid: null == currentAccountUuid
+          ? _value.currentAccountUuid
+          : currentAccountUuid // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -90,7 +90,7 @@ abstract class _$$ShellStateImplCopyWith<$Res>
       {bool redirect,
       Wallet? wallet,
       List<Account> accounts,
-      int currentAccountIndex});
+      String currentAccountUuid});
 }
 
 /// @nodoc
@@ -107,7 +107,7 @@ class __$$ShellStateImplCopyWithImpl<$Res>
     Object? redirect = null,
     Object? wallet = freezed,
     Object? accounts = null,
-    Object? currentAccountIndex = null,
+    Object? currentAccountUuid = null,
   }) {
     return _then(_$ShellStateImpl(
       redirect: null == redirect
@@ -122,10 +122,10 @@ class __$$ShellStateImplCopyWithImpl<$Res>
           ? _value._accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
-      currentAccountIndex: null == currentAccountIndex
-          ? _value.currentAccountIndex
-          : currentAccountIndex // ignore: cast_nullable_to_non_nullable
-              as int,
+      currentAccountUuid: null == currentAccountUuid
+          ? _value.currentAccountUuid
+          : currentAccountUuid // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -137,7 +137,7 @@ class _$ShellStateImpl implements _ShellState {
       {required this.redirect,
       required this.wallet,
       required final List<Account> accounts,
-      required this.currentAccountIndex})
+      required this.currentAccountUuid})
       : _accounts = accounts;
 
   @override
@@ -153,11 +153,11 @@ class _$ShellStateImpl implements _ShellState {
   }
 
   @override
-  final int currentAccountIndex;
+  final String currentAccountUuid;
 
   @override
   String toString() {
-    return 'ShellState(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountIndex: $currentAccountIndex)';
+    return 'ShellState(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid)';
   }
 
   @override
@@ -169,13 +169,13 @@ class _$ShellStateImpl implements _ShellState {
                 other.redirect == redirect) &&
             (identical(other.wallet, wallet) || other.wallet == wallet) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
-            (identical(other.currentAccountIndex, currentAccountIndex) ||
-                other.currentAccountIndex == currentAccountIndex));
+            (identical(other.currentAccountUuid, currentAccountUuid) ||
+                other.currentAccountUuid == currentAccountUuid));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, redirect, wallet,
-      const DeepCollectionEquality().hash(_accounts), currentAccountIndex);
+      const DeepCollectionEquality().hash(_accounts), currentAccountUuid);
 
   @JsonKey(ignore: true)
   @override
@@ -189,7 +189,7 @@ abstract class _ShellState implements ShellState {
       {required final bool redirect,
       required final Wallet? wallet,
       required final List<Account> accounts,
-      required final int currentAccountIndex}) = _$ShellStateImpl;
+      required final String currentAccountUuid}) = _$ShellStateImpl;
 
   @override
   bool get redirect;
@@ -198,7 +198,7 @@ abstract class _ShellState implements ShellState {
   @override
   List<Account> get accounts;
   @override
-  int get currentAccountIndex;
+  String get currentAccountUuid;
   @override
   @JsonKey(ignore: true)
   _$$ShellStateImplCopyWith<_$ShellStateImpl> get copyWith =>

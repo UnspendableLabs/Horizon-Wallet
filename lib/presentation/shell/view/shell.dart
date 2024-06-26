@@ -1,13 +1,10 @@
 // https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
-
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class AccountListView extends StatelessWidget {
   const AccountListView({super.key});
@@ -43,18 +40,21 @@ class AccountDropdownButtonState extends State<AccountDropdownButton> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.read<ShellStateCubit>();
+    final shell = context.watch<ShellStateCubit>();
 
     Account? selectedAccount;
 
     return shell.state.maybeWhen(
         success: (state) => DropdownMenu(
-            initialSelection: state.accounts.first,
+            initialSelection: state.accounts.where((account) {
+              return account.uuid == state.currentAccountUuid;
+            }).first,
             enableSearch: false,
             controller: accountController,
             requestFocusOnTap: true,
             onSelected: (account) {
               setState(() => selectedAccount = account);
+              context.read<ShellStateCubit>().onAccountChanged(account!);
             },
             dropdownMenuEntries: state.accounts.map((account) {
               return DropdownMenuEntry(
