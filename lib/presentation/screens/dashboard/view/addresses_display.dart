@@ -8,6 +8,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/dashboard/view/history_table.dart';
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class AddressDisplay extends StatefulWidget {
   const AddressDisplay({super.key});
@@ -17,14 +18,20 @@ class AddressDisplay extends StatefulWidget {
 }
 
 class _AddressDisplayState extends State<AddressDisplay> {
+
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<DashboardBloc>(context).add(GetAddresses());
+    final accountId = context.read<ShellStateCubit>().state.maybeWhen(
+      success: (state) => state.currentAccountUuid,
+      orElse: () => '',
+    );
+    BlocProvider.of<DashboardBloc>(context).add(GetAddresses(accountUuid: accountId));
   }
 
   @override
   Widget build(BuildContext context) {
+    // final shell = context.
     double screenWidth = MediaQuery.of(context).size.width;
 
     return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
@@ -82,24 +89,24 @@ class _AddressDisplayState extends State<AddressDisplay> {
                             ),
                           )
                         : const Text(""),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 40.0, left: 10),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            GoRouter.of(context)
-                                .push('/compose/send', extra: {'initialAddress': state.addressState.currentAddress});
-                          },
-                          child: Text('Compose Send')),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 40.0, left: 10),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            GoRouter.of(context)
-                                .push('/compose/issuance', extra: {'initialAddress': state.addressState.currentAddress});
-                          },
-                          child: Text('Compose Issuance')),
-                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(top: 40.0, left: 10),
+                    //   child: ElevatedButton(
+                    //       onPressed: () {
+                    //         GoRouter.of(context)
+                    //             .push('/compose/send', extra: {'initialAddress': state.addressState.currentAddress});
+                    //       },
+                    //       child: Text('Compose Send')),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(top: 40.0, left: 10),
+                    //   child: ElevatedButton(
+                    //       onPressed: () {
+                    //         GoRouter.of(context)
+                    //             .push('/compose/issuance', extra: {'initialAddress': state.addressState.currentAddress});
+                    //       },
+                    //       child: Text('Compose Issuance')),
+                    // ),
                   ]),
                   Expanded(
                       child: Padding(

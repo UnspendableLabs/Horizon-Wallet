@@ -4,7 +4,10 @@ abstract class DashboardEvent {}
 
 class SetAccountAndWallet extends DashboardEvent {}
 
-class GetAddresses extends DashboardEvent {}
+class GetAddresses extends DashboardEvent {
+  final String accountUuid;
+  GetAddresses({required this.accountUuid});
+}
 
 class ChangeAddress extends DashboardEvent {
   final Address address;
