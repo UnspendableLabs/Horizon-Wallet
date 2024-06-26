@@ -15,6 +15,7 @@ import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart'
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
+
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
 
@@ -26,6 +27,8 @@ import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+
+import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -94,7 +97,8 @@ class AppRouter {
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationShell) {
-              return Shell(navigationShell);
+
+              return  Shell(navigationShell);
             },
             branches: [
               StatefulShellBranch(
@@ -102,13 +106,8 @@ class AppRouter {
                 routes: [
                   GoRoute(
                     path: "/dashboard",
-                    pageBuilder: (context, state) => CustomTransitionPage<void>(
-                        key: state.pageKey,
-                        child: DashboardPage(),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) =>
-                                child),
-                  ),
+                    builder: (context, state) => const DashboardPage(),
+                  )
                 ],
               ),
               StatefulShellBranch(routes: [
@@ -163,6 +162,14 @@ class AppRouter {
                   },
                 ),
               ]),
+              // StatefulShellBranch(
+              //   routes: [
+              //     GoRoute(
+              //       path: "/settings",
+              //       builder: (context, state) => const SettingsPage(),
+              //     )
+              //   ],
+              // ),
             ])
       ],
       redirect: (context, state) async {
@@ -179,7 +186,7 @@ class AppRouter {
               // if accounts, show dashboard
               if (data.redirect && data.accounts.isNotEmpty) {
                 return "/dashboard";
-              // if no accounts, show onboarding
+                // if no accounts, show onboarding
               } else if (data.redirect && data.accounts.isEmpty) {
                 return "/onboarding";
               } else {
@@ -220,17 +227,26 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (context) => ShellStateCubit(
-            walletRepository: GetIt.I<WalletRepository>(),
-            accountRepository: GetIt.I<AccountRepository>())
-          ..initialize(),
-        child:
-            BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider<ShellStateCubit>(
+            create: ( context ) => ShellStateCubit(
+                walletRepository: GetIt.I<WalletRepository>(),
+                accountRepository: GetIt.I<AccountRepository>())
+              ..initialize(),
+
+          ),
+          BlocProvider<AccountFormBloc>(
+            create: ( context ) => AccountFormBloc()
+
+          )
+        ],
+        child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
           listener: (context, state) {
             AppRouter.router.refresh();
           },
           child: MaterialApp.router(
+            theme: ThemeData.light(useMaterial3: true),
             routeInformationParser: AppRouter.router.routeInformationParser,
             routerDelegate: AppRouter.router.routerDelegate,
             routeInformationProvider: AppRouter.router.routeInformationProvider,

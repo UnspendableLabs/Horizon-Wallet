@@ -1,10 +1,19 @@
 // https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+
+import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
+import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
+
+const double _bottomPaddingForButton = 150.0;
+const double _buttonHeight = 56.0;
+const double _pagePadding = 16.0;
 
 class AccountListView extends StatelessWidget {
   const AccountListView({super.key});
@@ -45,23 +54,25 @@ class AccountDropdownButtonState extends State<AccountDropdownButton> {
     Account? selectedAccount;
 
     return shell.state.maybeWhen(
-        success: (state) => DropdownMenu(
-            initialSelection: state.accounts.where((account) {
-              return account.uuid == state.currentAccountUuid;
-            }).first,
-            enableSearch: false,
-            controller: accountController,
-            requestFocusOnTap: true,
-            onSelected: (account) {
-              setState(() => selectedAccount = account);
-              context.read<ShellStateCubit>().onAccountChanged(account!);
-            },
-            dropdownMenuEntries: state.accounts.map((account) {
-              return DropdownMenuEntry(
-                value: account,
-                label: account.name,
-              );
-            }).toList()),
+        success: (state) {
+          return DropdownMenu(
+              initialSelection: state.accounts.where((account) {
+                return account.uuid == state.currentAccountUuid;
+              }).first,
+              enableSearch: false,
+              controller: accountController,
+              requestFocusOnTap: true,
+              onSelected: (account) {
+                setState(() => selectedAccount = account);
+                context.read<ShellStateCubit>().onAccountChanged(account!);
+              },
+              dropdownMenuEntries: state.accounts.map((account) {
+                return DropdownMenuEntry(
+                  value: account,
+                  label: account.name,
+                );
+              }).toList());
+        },
         orElse: () => Text(""));
   }
 }
@@ -73,6 +84,33 @@ class Shell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
+
+
+    SliverWoltModalSheetPage page1(
+      BuildContext modalSheetContext,
+      TextTheme textTheme,
+    ) {
+      return WoltModalSheetPage(
+        isTopBarLayerAlwaysVisible: true,
+        topBarTitle: Text('Add an account', style: textTheme.titleSmall),
+        trailingNavBarWidget: IconButton(
+          padding: const EdgeInsets.all(_pagePadding),
+          icon: const Icon(Icons.close),
+          onPressed: Navigator.of(modalSheetContext).pop,
+        ),
+        child: const Padding(
+            padding: EdgeInsets.fromLTRB(
+              _pagePadding,
+              _pagePadding,
+              _pagePadding,
+              _bottomPaddingForButton,
+            ),
+            child: AddAccountForm()),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
           child: Row(
@@ -99,27 +137,32 @@ class Shell extends StatelessWidget {
               ),
             ],
           ),
-
           const VerticalDivider(thickness: 1, width: 1),
-          // SizedBox(
-          //     width: 300,
-          //     child: Column(children: <Widget>[
-          //       const Expanded(child: AccountListView()),
-          //       Padding(
-          //         padding: const EdgeInsets.all(12),
-          //         child: FilledButton(
-          //           child: const Text('Add Account'),
-          //           onPressed: () => print('Add Account'),
-          //         ),
-          //       )
-          //     ])),
-          // const VerticalDivider(thickness: 1, width: 1),
-          // This is the main content.
-
           Expanded(
               child: Scaffold(
             appBar: AppBar(
-              title: const AccountDropdownButton(),
+              title: Row(children: [
+                const AccountDropdownButton(),
+                IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      WoltModalSheet.show<void>(
+                        context: context,
+                        pageListBuilder: (modalSheetContext) {
+                          final textTheme = Theme.of(context).textTheme;
+                          return [page1(modalSheetContext, textTheme)];
+                        },
+                        modalTypeBuilder: (context) {
+                          final size = MediaQuery.sizeOf(context).width;
+                          if (size < 768.0) {
+                            return WoltModalType.bottomSheet;
+                          } else {
+                            return WoltModalType.dialog;
+                          }
+                        },
+                      );
+                    })
+              ]),
             ),
             body: navigationShell,
           ))
@@ -139,3 +182,4 @@ class Shell extends StatelessWidget {
     );
   }
 }
+

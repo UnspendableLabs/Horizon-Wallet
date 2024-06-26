@@ -77,53 +77,14 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
                 account: account0.accountIndex,
                 change: '0',
                 index: 0);
-            
-            Account account1 = Account(
-              name: 'Account #1',
-              walletUuid: wallet.uuid,
-              purpose: '84\'',
-              coinType: '${_getCoinType()}\'',
-              accountIndex: '1\'',
-              uuid: uuid.v4(),
-            );
-            
-            Address address1= await addressService.deriveAddressSegwit(
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: account1.uuid,
-                purpose: account1.purpose,
-                coin: account1.coinType,
-                account: account1.accountIndex,
-                change: '0',
-                index: 0);
-            
-            Account account2 = Account(
-              name: 'Account #2',
-              walletUuid: wallet.uuid,
-              purpose: '84\'',
-              coinType: '${_getCoinType()}\'',
-              accountIndex: '2\'',
-              uuid: uuid.v4(),
-            );
-            
-            Address address2= await addressService.deriveAddressSegwit(
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: account2.uuid,
-                purpose: account2.purpose,
-                coin: account2.coinType,
-                account: account2.accountIndex,
-                change: '0',
-                index: 0);
-
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account0);
-            await accountRepository.insert(account1);
-            await accountRepository.insert(account2);
+            // await accountRepository.insert(account1);
+            // await accountRepository.insert(account2);
             await addressRepository.insert(address0);
-            await addressRepository.insert(address1);
-            await addressRepository.insert(address2);
+            // await addressRepository.insert(address1);
+            // await addressRepository.insert(address2);
 
             break;
           case ImportFormat.freewalletBech32:

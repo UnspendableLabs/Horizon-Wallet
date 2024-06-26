@@ -55,4 +55,25 @@ class ShellStateCubit extends RemoteDataCubit< shell_state.ShellState> {
 
     emit(state_ as RemoteDataState<shell_state.ShellState>);
   }
+
+
+  void refresh() async {
+    try {
+      Wallet? wallet = await walletRepository.getCurrentWallet();
+
+      List<Account> accounts =
+          await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
+
+      emit(RemoteDataState.success(shell_state.ShellState(
+          redirect: true,
+          wallet: wallet,
+          accounts: accounts,
+          currentAccountUuid: accounts.last.uuid)));
+    } catch (error) {
+      emit(const RemoteDataState.success(shell_state.ShellState(
+          redirect: true, wallet: null, accounts: [], currentAccountUuid: '')));
+    }
+  }
+
+
 }
