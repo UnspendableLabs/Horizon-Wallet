@@ -57,6 +57,9 @@ dependencies:
   drift_db_viewer: ^2.1.0
   encrypt: ^5.0.3
   wolt_modal_sheet: ^0.6.1
+  flutter_settings_screens: ^0.3.4
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 
 dev_dependencies:

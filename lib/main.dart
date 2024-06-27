@@ -29,6 +29,9 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/addresses/view/addresses_page.dart';
+import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -97,8 +100,7 @@ class AppRouter {
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationShell) {
-
-              return  Shell(navigationShell);
+              return Shell(navigationShell);
             },
             branches: [
               StatefulShellBranch(
@@ -121,31 +123,7 @@ class AppRouter {
                           address: "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
                           index: 0);
                       return ComposeSendPage(initialAddress: initialAddress);
-                    }
-
-                    // builder: (context, state) =>  {
-                    //   Address initialAddress = const Address(
-                    //       accountUuid: "76218sef-48fe-4f58-984c-b8fb5226e78a",
-                    //       address: "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
-                    //       index: 0
-                    //       );
-                    //
-                    //   return  ComposeSendPage(initialAddress: initialAddress);
-                    //
-                    // }
-                    // pageBuilder: (context, state) {
-                    // Retrieve the initial address from the extra parameter
-                    // Address initialAddress =
-                    //     (state.extra as Map<String, dynamic>)['initialAddress'];
-
-                    // return CustomTransitionPage<void>(
-                    //   child: Text("foo"),
-                    //   transitionsBuilder:
-                    //       (context, animation, secondaryAnimation, child) =>
-                    //           child,
-                    // );
-                    // },
-                    )
+                    })
               ]),
               StatefulShellBranch(routes: [
                 GoRoute(
@@ -162,6 +140,22 @@ class AppRouter {
                   },
                 ),
               ]),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: "/addresses",
+                    builder: (context, state) => AddressesPage(),
+                  )
+                ],
+              ),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: "/settings",
+                    builder: (context, state) => SettingsPage(),
+                  )
+                ],
+              ),
               // StatefulShellBranch(
               //   routes: [
               //     GoRoute(
@@ -212,11 +206,21 @@ void main() {
 
     await setup();
 
+    await initSettings();
+
     runApp(MyApp());
   }, (Object error, StackTrace stackTrace) {
     logger.e({'error': error.toString(), 'stackTrace': stackTrace.toString()});
     // Log the error to a service or handle it accordingly
   });
+}
+
+Future<ValueNotifier<Color>> initSettings() async {
+  await Settings.init(
+    cacheProvider: GetIt.I<CacheProvider>(),
+  );
+  final _accentColor = ValueNotifier(Colors.blueAccent);
+  return _accentColor;
 }
 
 class MyApp extends StatelessWidget {
@@ -230,16 +234,12 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
         providers: [
           BlocProvider<ShellStateCubit>(
-            create: ( context ) => ShellStateCubit(
+            create: (context) => ShellStateCubit(
                 walletRepository: GetIt.I<WalletRepository>(),
                 accountRepository: GetIt.I<AccountRepository>())
               ..initialize(),
-
           ),
-          BlocProvider<AccountFormBloc>(
-            create: ( context ) => AccountFormBloc()
-
-          )
+          BlocProvider<AccountFormBloc>(create: (context) => AccountFormBloc())
         ],
         child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
           listener: (context, state) {

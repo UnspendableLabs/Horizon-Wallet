@@ -31,8 +31,10 @@ class AddressServiceImpl extends AddressService {
 
     print('BIP32: $_bip32');
 
-    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
-    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
+    Buffer chainCodeJs =
+        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
@@ -47,21 +49,39 @@ class AddressServiceImpl extends AddressService {
     );
   }
 
-//   @override
-//   Future<List<Address>> deriveAddressSegwitRange(String mnemonic, int start, int end) async {
-//     if (start > end) {
-//       throw ArgumentError('Invalid range');
-//     }
+  @override
+  Future<List<Address>> deriveAddressSegwitRange(
+      {required String privKey,
+      required String chainCodeHex,
+      required String accountUuid,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int start,
+      required int end}) async {
+    if (start > end) {
+      throw ArgumentError('Invalid range');
+    }
 
-//     List<Address> addresses = [];
+    // Create a list of futures, each representing an address derivation
+    List<Future<Address>> futures = List.generate(
+      end - start + 1,
+      (i) => deriveAddressSegwit(
+        privKey: privKey,
+        chainCodeHex: chainCodeHex,
+        accountUuid: accountUuid,
+        purpose: purpose,
+        coin: coin,
+        account: account,
+        change: change,
+        index: start + i,
+      ),
+    );
 
-//     for (int i = start; i <= end; i++) {
-//       Address address = await deriveAddressSegwit(mnemonic, i);
-//       addresses.add(address);
-//     }
-
-//     return addresses;
-//   }
+    // Wait for all futures to complete and return the results
+    return await Future.wait(futures);
+  }
 
   // Doesn't need to be async since mnemonicToEntropy is sync
   @override
@@ -80,7 +100,8 @@ class AddressServiceImpl extends AddressService {
      */
 
     String path = 'm/$account/$change/$index';
-    bip32.BIP32Interface child = (root as bip32.BIP32Interface).derivePath(path);
+    bip32.BIP32Interface child =
+        (root as bip32.BIP32Interface).derivePath(path);
 
     String address = _bech32FromBip32(child);
 
@@ -106,8 +127,10 @@ class AddressServiceImpl extends AddressService {
       throw ArgumentError('Invalid range');
     }
     final network = _getNetwork();
-    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
-    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
+    Buffer chainCodeJs =
+        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
@@ -115,7 +138,13 @@ class AddressServiceImpl extends AddressService {
 
     for (int i = start; i <= end; i++) {
       Address address = await deriveAddressFreewalletBech32(
-          root: root, accountUuid: accountUuid, purpose: purpose, coin: coin, account: account, change: change, index: i);
+          root: root,
+          accountUuid: accountUuid,
+          purpose: purpose,
+          coin: coin,
+          account: account,
+          change: change,
+          index: i);
       addresses.add(address);
     }
 
@@ -133,8 +162,10 @@ class AddressServiceImpl extends AddressService {
     String path = 'm/$purpose/$coin/$account/$change/$index';
     final network = _getNetwork();
 
-    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(rootPrivKey)).toJS);
-    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(rootPrivKey)).toJS);
+    Buffer chainCodeJs =
+        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
@@ -166,10 +197,14 @@ class AddressServiceImpl extends AddressService {
 
   String _bech32FromBip32(bip32.BIP32Interface child) {
     List<int> identifier = child.identifier.toDart;
-    List<int> words =
-        bech32.toWords(identifier.map((el) => el.toJS).toList().toJS).toDart.map((el) => el.toDartInt).toList();
+    List<int> words = bech32
+        .toWords(identifier.map((el) => el.toJS).toList().toJS)
+        .toDart
+        .map((el) => el.toDartInt)
+        .toList();
     words.insert(0, 0);
-    return bech32.encode(ecpair.testnet.bech32, words.map((el) => el.toJS).toList().toJS);
+    return bech32.encode(
+        ecpair.testnet.bech32, words.map((el) => el.toJS).toList().toJS);
   }
 
   _getNetwork() {

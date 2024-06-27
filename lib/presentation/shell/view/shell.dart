@@ -84,10 +84,6 @@ class Shell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-
-
-
     SliverWoltModalSheetPage page1(
       BuildContext modalSheetContext,
       TextTheme textTheme,
@@ -134,6 +130,16 @@ class Shell extends StatelessWidget {
                 icon: Icon(Icons.toll),
                 selectedIcon: Icon(Icons.toll),
                 label: Text('Issuance'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.list),
+                selectedIcon: Icon(Icons.list),
+                label: Text('Addresses'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.settings),
+                selectedIcon: Icon(Icons.settings),
+                label: Text('Settings'),
               ),
             ],
           ),
@@ -182,4 +188,3 @@ class Shell extends StatelessWidget {
     );
   }
 }
-
