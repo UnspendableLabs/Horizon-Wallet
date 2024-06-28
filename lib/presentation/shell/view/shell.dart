@@ -33,8 +33,6 @@ class AccountListView extends StatelessWidget {
               },
             ),
         orElse: () => Text(""));
-
-    return const Text('Account List View');
   }
 }
 
@@ -112,7 +110,27 @@ class Shell extends StatelessWidget {
           child: Row(
         children: <Widget>[
           NavigationRail(
-            onDestinationSelected: _onDestinationSelected,
+          onDestinationSelected: _onDestinationSelected,
+            
+            // onDestinationSelected: (index) {
+            //   switch (index) {
+            //     case 0:
+            //       GoRouter.of(context).replace("/dashboard");
+            //       break;
+            //     case 1:
+            //       GoRouter.of(context).replace("/compose/send");
+            //       break;
+            //     case 2:
+            //       GoRouter.of(context).replace("/compose/issuance");
+            //       break;
+            //     case 3:
+            //       GoRouter.of(context).replace("/addresses");
+            //       break;
+            //     case 4:
+            //       GoRouter.of(context).replace("/settings");
+            //       break;
+            //   }
+            // },
             selectedIndex: navigationShell.currentIndex,
             labelType: NavigationRailLabelType.all,
             destinations: const <NavigationRailDestination>[

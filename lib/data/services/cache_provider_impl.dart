@@ -52,16 +52,19 @@ class HiveCache extends CacheProvider {
 
   @override
   Future<void> setDouble(String key, double? value) async {
+    print("setbouble $key $value");
     await _preferences?.put(key, value);
   }
 
   @override
   Future<void> setInt(String key, int? value) async {
+    print("setint $key $value");
     await _preferences?.put(key, value);
   }
 
   @override
   Future<void> setString(String key, String? value) async {
+    print("setstring $key $value");
     await _preferences?.put(key, value);
   }
 

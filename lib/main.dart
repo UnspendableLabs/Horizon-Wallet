@@ -27,9 +27,16 @@ import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/account_settings_repository.dart';
+
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/view/addresses_page.dart';
+import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
+import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
+import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
@@ -143,17 +150,40 @@ class AppRouter {
               StatefulShellBranch(
                 routes: [
                   GoRoute(
-                    path: "/addresses",
-                    builder: (context, state) => AddressesPage(),
-                  )
+                      path: "/addresses",
+                      builder: (context, state) {
+                        final shell = context.watch<ShellStateCubit>();
+                        final accountSettingsRepository =
+                            GetIt.I<AccountSettingsRepository>();
+
+                        return shell.state.maybeWhen(
+                          success: (state) {
+                            return AddressesPage(
+                              key: Key(state.currentAccountUuid),
+                              accountUuid: state.currentAccountUuid,
+                            );
+                          },
+                          orElse: () => SizedBox.shrink(),
+                        );
+                      })
                 ],
               ),
               StatefulShellBranch(
                 routes: [
                   GoRoute(
-                    path: "/settings",
-                    builder: (context, state) => SettingsPage(),
-                  )
+                      path: "/settings",
+                      builder: (context, state) {
+                        final shell = context.watch<ShellStateCubit>();
+                        // final accountSettingsRepository =
+                        //     GetIt.I<AccountSettingsRepository>();
+
+                        return shell.state.maybeWhen(
+                          success: (state) {
+                            return SettingsPage();
+                          },
+                          orElse: () => SizedBox.shrink(),
+                        );
+                      })
                 ],
               ),
               // StatefulShellBranch(
@@ -168,8 +198,6 @@ class AppRouter {
       ],
       redirect: (context, state) async {
         final shell = context.read<ShellStateCubit>();
-
-        print("shell.state: ${shell.state}");
 
         return shell.state.maybeWhen(
             success: (data) {
@@ -239,7 +267,14 @@ class MyApp extends StatelessWidget {
                 accountRepository: GetIt.I<AccountRepository>())
               ..initialize(),
           ),
-          BlocProvider<AccountFormBloc>(create: (context) => AccountFormBloc())
+          BlocProvider<AccountFormBloc>(create: (context) => AccountFormBloc()),
+          BlocProvider(
+              create: (context) => AddressesBloc(
+                    walletRepository: GetIt.I<WalletRepository>(),
+                    accountRepository: GetIt.I<AccountRepository>(),
+                    addressService: GetIt.I<AddressService>(),
+                    encryptionService: GetIt.I<EncryptionService>(),
+                  ))
         ],
         child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
           listener: (context, state) {
