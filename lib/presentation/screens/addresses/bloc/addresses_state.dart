@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
 import 'package:horizon/domain/entities/address.dart';
 

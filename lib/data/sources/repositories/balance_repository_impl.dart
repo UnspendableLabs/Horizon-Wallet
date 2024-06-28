@@ -12,12 +12,35 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   @override
   Future<List<entity.Balance>> getBalance(String address) async {
-    final response = await api.getBalancesByAddress(address, true); // verbose by default
+    final response =
+        await api.getBalancesByAddress(address, true); // verbose by default
 
     final List<entity.Balance> balances = [];
     for (var a in response.result ?? []) {
-      balances.add(entity.Balance(address: address, quantity: a.quantity, asset: a.asset));
+      balances.add(entity.Balance(
+          address: address, quantity: a.quantity, asset: a.asset));
     }
+    return balances;
+  }
+
+  @override
+  Future<List<entity.Balance>> getBalances(List<String> addresses) async {
+    final List<entity.Balance> balances = [];
+    for (var address in addresses) {
+      try {
+        final response =
+            await api.getBalancesByAddress(address, true); // verbose by default
+        for (var a in response.result ?? []) {
+          balances.add(entity.Balance(
+              address: address, quantity: a.quantity, asset: a.asset));
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+
+    print(balances);
+
     return balances;
   }
 }
