@@ -53,6 +53,8 @@ abstract class ImportState {}
 
 class ImportStateNotAsked extends ImportState {}
 
+class ImportStateMnemonicCollected extends ImportState {}
+
 class ImportStateLoading extends ImportState {}
 
 class ImportStateSuccess extends ImportState {}

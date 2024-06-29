@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
@@ -31,7 +32,29 @@ class _DashboardPage_State extends State<_DashboardPage_> {
     final shell = context.watch<ShellStateCubit>();
     return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
       final width = MediaQuery.of(context).size.width;
-      return shell.state.maybeWhen(success: (state) => Text(state.currentAccountUuid), orElse: () => Text(""));
+      return shell.state.maybeWhen(
+          success: (state) => Column(
+                children: [
+                  Text(state.currentAccountUuid),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Container(
+                      padding: EdgeInsets.all(8.0), // Adjust padding as needed
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<DashboardBloc>().add(DeleteWallet());
+                          GoRouter.of(context).go('/onboarding');
+                        },
+                        child: Text("Delete DB", style: TextStyle(fontSize: 12)), // Smaller text size
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller button padding
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+          orElse: () => Text(""));
     });
 
     // return Scaffold(

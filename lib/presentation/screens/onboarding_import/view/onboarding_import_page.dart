@@ -51,13 +51,18 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
         }
       },
       child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
+        print('state: ${state.importState}');
+        print(state.importState == ImportStateNotAsked);
         return Scaffold(
           appBar: AppBar(title: const Text('Horizon')),
           body: Column(
             children: [
               Flexible(
-                child: state.password != null
-                    ? SeedPrompt(seedPhraseController: _seedPhraseController, state: state)
+                child: state.importState == ImportStateNotAsked
+                    ? Padding(
+                        padding: EdgeInsets.all(MediaQuery.of(context).size.width > 600 ? 16.0 : 8.0),
+                        child: SeedInputFields(),
+                      )
                     : PasswordPrompt(
                         passwordController: _passwordController,
                         passwordConfirmationController: _passwordConfirmationController,
@@ -142,6 +147,74 @@ class PasswordPrompt extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class SeedInputFields extends StatefulWidget {
+  const SeedInputFields({super.key});
+  @override
+  State<SeedInputFields> createState() => _SeedInputFieldsState();
+}
+
+class _SeedInputFieldsState extends State<SeedInputFields> {
+  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
+  List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
+
+  @override
+  void dispose() {
+    controllers.forEach((controller) => controller.dispose());
+    focusNodes.forEach((node) => node.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: List.generate(3, (columnIndex) {
+        // 3 columns
+        return Expanded(
+          child: Column(
+            children: List.generate(4, (rowIndex) {
+              // 4 rows per column
+              int index = columnIndex * 4 + rowIndex;
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Text("${index + 1}. ", style: TextStyle(fontWeight: FontWeight.bold)), // Label for each input
+                    Expanded(
+                      child: TextField(
+                        controller: controllers[index],
+                        focusNode: focusNodes[index],
+                        onChanged: (value) => handleInput(value, index),
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        );
+      }),
+    );
+  }
+
+  void handleInput(String value, int index) {
+    var words = value.split(RegExp(r'\s+'));
+    if (words.length > 1 && index < 11) {
+      for (int i = 0; i < words.length && (index + i) < 12; i++) {
+        controllers[index + i].text = words[i];
+        if ((index + i + 1) < 12) {
+          FocusScope.of(context).requestFocus(focusNodes[index + i + 1]);
+        }
+      }
+    }
+    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
+    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: mnemonic));
   }
 }
 

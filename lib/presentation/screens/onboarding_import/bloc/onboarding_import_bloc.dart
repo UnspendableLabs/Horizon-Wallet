@@ -36,6 +36,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     });
 
     on<MnemonicChanged>((event, emit) async {
+      print('mnemonic changed: ${event.mnemonic}');
       emit(state.copyWith(mnemonic: event.mnemonic));
     });
 
@@ -67,7 +68,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
               accountIndex: '0\'',
               uuid: uuid.v4(),
             );
-            
+
             Address address0 = await addressService.deriveAddressSegwit(
                 privKey: decryptedPrivKey,
                 chainCodeHex: wallet.chainCodeHex,
