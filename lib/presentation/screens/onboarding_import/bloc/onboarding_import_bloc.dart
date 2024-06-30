@@ -36,13 +36,18 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     });
 
     on<MnemonicChanged>((event, emit) async {
-      print('mnemonic changed: ${event.mnemonic}');
       emit(state.copyWith(mnemonic: event.mnemonic));
     });
 
     on<ImportFormatChanged>((event, emit) async {
       ImportFormat importFormat = event.importFormat == "Segwit" ? ImportFormat.segwit : ImportFormat.freewalletBech32;
       emit(state.copyWith(importFormat: importFormat));
+    });
+
+    on<MnemonicSubmit>((event, emit) async {
+      ImportFormat importFormat = event.importFormat == "Segwit" ? ImportFormat.segwit : ImportFormat.freewalletBech32;
+      emit(
+          state.copyWith(importState: ImportStateMnemonicCollected(), importFormat: importFormat, mnemonic: event.mnemonic));
     });
 
     on<ImportWallet>((event, emit) async {

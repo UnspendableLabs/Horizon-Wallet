@@ -159,6 +159,8 @@ class SeedInputFields extends StatefulWidget {
 class _SeedInputFieldsState extends State<SeedInputFields> {
   List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
+  String? selectedFormat = ImportFormat.segwit.name;
+  bool usePassphrase = false;
 
   @override
   void dispose() {
@@ -169,37 +171,147 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(3, (columnIndex) {
-        // 3 columns
-        return Expanded(
-          child: Column(
-            children: List.generate(4, (rowIndex) {
-              // 4 rows per column
-              int index = columnIndex * 4 + rowIndex;
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Text("${index + 1}. ", style: TextStyle(fontWeight: FontWeight.bold)), // Label for each input
-                    Expanded(
-                      child: TextField(
-                        controller: controllers[index],
-                        focusNode: focusNodes[index],
-                        onChanged: (value) => handleInput(value, index),
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(3, (columnIndex) {
+                      return Expanded(
+                        child: Column(
+                          children: List.generate(4, (rowIndex) {
+                            int index = columnIndex * 4 + rowIndex;
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Text("${index + 1}. ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: controllers[index],
+                                      focusNode: focusNodes[index],
+                                      onChanged: (value) => handleInput(value, index),
+                                      decoration: InputDecoration(
+                                        labelText: 'Word ${index + 1}',
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      );
+                    }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(4.0),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: selectedFormat,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedFormat = newValue;
+                              });
+                              context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
+                            },
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: ImportFormat.segwit.name,
+                                child: Text(ImportFormat.segwit.description),
+                              ),
+                              DropdownMenuItem<String>(
+                                value: ImportFormat.freewalletBech32.name,
+                                child: Text(ImportFormat.freewalletBech32.description),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              );
-            }),
+                  ),
+                  ListTile(
+                    leading: Checkbox(
+                      value: usePassphrase,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          usePassphrase = value!;
+                        });
+                      },
+                    ),
+                    title: const Row(
+                      children: [
+                        Text('Passphrase'),
+                        SizedBox(width: 4),
+                        Tooltip(
+                          message: "Password to encrypt your wallet in local storage",
+                          child: Icon(Icons.help_outline, size: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        );
-      }),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => GoRouter.of(context).go('/onboarding'),
+                    child: Text('Cancel'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey, // Background color
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (usePassphrase) {
+                        context.read<OnboardingImportBloc>().add(MnemonicSubmit(
+                              mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
+                              importFormat: selectedFormat!,
+                            ));
+                      } else {
+                        context.read<OnboardingImportBloc>().add(ImportWallet());
+                      }
+                    },
+                    child: const Text('Continue'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor, // Background color
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -213,6 +325,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         }
       }
     }
+    updateMnemonic();
+  }
+
+  void updateMnemonic() {
     String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
     context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: mnemonic));
   }
@@ -290,16 +406,7 @@ class SeedPrompt extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 16),
-                // _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
-                // _state.getAddressesState is GetAddressesStateSuccess
-                //     ? AddressListView(
-                //         addresses: _state.getAddressesState.addresses,
-                //         isCheckedMap: _state.isCheckedMap,
-                //         onCheckedChanged: (address, checked) {
-                //           context.read<OnboardingImportBloc>().add(AddressMapChanged(address: address, isChecked: checked));
-                //         },
-                //       )
-                //     : const Text("")
+                // _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text("")
               ])),
               _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
               Row(children: [

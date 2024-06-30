@@ -18,6 +18,12 @@ class ImportFormatChanged extends OnboardingImportEvent {
   ImportFormatChanged({required this.importFormat});
 }
 
+class MnemonicSubmit extends OnboardingImportEvent {
+  final String importFormat;
+  final String mnemonic;
+  MnemonicSubmit({required this.importFormat, required this.mnemonic});
+}
+
 class AddressMapChanged extends OnboardingImportEvent {
   final Address address;
   final bool isChecked;
