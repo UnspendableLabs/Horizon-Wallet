@@ -60,6 +60,8 @@ dependencies:
   flutter_settings_screens: ^0.3.4
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  bloc_concurrency: ^0.2.5
+  rxdart: ^0.28.0
 
 
 dev_dependencies:
