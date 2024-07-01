@@ -2,10 +2,14 @@ import 'package:horizon/domain/entities/address.dart';
 
 abstract class OnboardingImportEvent {}
 
-class PasswordSubmit extends OnboardingImportEvent {
+class PasswordChanged extends OnboardingImportEvent {
   final String password;
+  PasswordChanged({required this.password});
+}
+
+class PasswordConfirmationChanged extends OnboardingImportEvent {
   final String passwordConfirmation;
-  PasswordSubmit({required this.password, required this.passwordConfirmation});
+  PasswordConfirmationChanged({required this.passwordConfirmation});
 }
 
 class MnemonicChanged extends OnboardingImportEvent {

@@ -20,7 +20,7 @@ class WalletServiceImpl implements WalletService {
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
-  Future<entity.Wallet> deriveRoot(String mnemonic, String password) async {
+  Future<entity.Wallet> deriveRoot(String mnemonic, String? password) async {
     final network = _getNetwork();
 
     JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
@@ -28,17 +28,19 @@ class WalletServiceImpl implements WalletService {
     bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
 
     String privKey = hex.encode(root.privateKey!.toDart);
+    String storedKey;
 
-    String encryptedPrivKey = await encryptionService.encrypt(privKey, password);
+    if (password != null) {
+      storedKey = await encryptionService.encrypt(privKey, password);
+    } else {
+      storedKey = privKey;
+    }
 
     return entity.Wallet(
-        uuid: uuid.v4(),
-        name: 'Wallet 1',
-        encryptedPrivKey: encryptedPrivKey,
-        chainCodeHex: hex.encode(root.chainCode.toDart));
+        uuid: uuid.v4(), name: 'Wallet 1', encryptedPrivKey: storedKey, chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
-  Future<entity.Wallet> deriveRootFreewallet(String mnemonic, String password) async {
+  Future<entity.Wallet> deriveRootFreewallet(String mnemonic, String? password) async {
     Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
 
     Buffer buffer = Buffer.from(seed.bytes.toJS);
@@ -48,14 +50,15 @@ class WalletServiceImpl implements WalletService {
     bip32.BIP32Interface root = _bip32.fromSeed(buffer, network);
 
     String privKey = hex.encode(root.privateKey!.toDart);
+    String storedKey;
 
-    String encryptedPrivKey = await encryptionService.encrypt(privKey, password);
-
+    if (password != null) {
+      storedKey = await encryptionService.encrypt(privKey, password);
+    } else {
+      storedKey = privKey;
+    }
     return entity.Wallet(
-        uuid: uuid.v4(),
-        name: 'Wallet 1',
-        encryptedPrivKey: encryptedPrivKey,
-        chainCodeHex: hex.encode(root.chainCode.toDart));
+        uuid: uuid.v4(), name: 'Wallet 1', encryptedPrivKey: storedKey, chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
   _getNetwork() {

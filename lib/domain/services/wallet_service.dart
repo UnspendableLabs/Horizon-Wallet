@@ -7,6 +7,6 @@ abstract class WalletService {
 
   WalletService(this.encryptionService);
 
-  Future<Wallet> deriveRoot(String mnemonic, String password);
-  Future<Wallet> deriveRootFreewallet(String mnemonic, String password);
+  Future<Wallet> deriveRoot(String mnemonic, String? password);
+  Future<Wallet> deriveRootFreewallet(String mnemonic, String? password);
 }

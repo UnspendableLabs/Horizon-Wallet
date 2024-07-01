@@ -100,7 +100,7 @@ class PasswordPrompt extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {
                         context.read<OnboardingCreateBloc>().add(
-                              PasswordSubmit(
+                              PasswordChanged(
                                 password: _passwordController.text,
                                 passwordConfirmation: _passwordConfirmationController.text,
                               ),

@@ -27,8 +27,8 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
   final addressService = GetIt.I<AddressService>();
 
   OnboardingCreateBloc() : super(OnboardingCreateState()) {
-    on<PasswordSubmit>((event, emit) {
-      logger.d('Processing PasswordSubmit event');
+    on<PasswordChanged>((event, emit) {
+      logger.d('Processing PasswordChanged event');
       if (event.password != event.passwordConfirmation) {
         logger.w('Passwords do not match');
         emit(state.copyWith(passwordError: "Passwords do not match"));

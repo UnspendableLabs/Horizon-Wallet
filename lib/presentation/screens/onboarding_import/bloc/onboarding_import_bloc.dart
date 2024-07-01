@@ -25,13 +25,17 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
   final encryptionService = GetIt.I<EncryptionService>();
 
   OnboardingImportBloc() : super(OnboardingImportState()) {
-    on<PasswordSubmit>((event, emit) {
-      if (event.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else if (event.password.length != 32) {
+    on<PasswordChanged>((event, emit) {
+      if (event.password.length != 32) {
         emit(state.copyWith(passwordError: "Password must be 32 characters.  Don't worry, we'll change this :)"));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
+      }
+    });
+
+    on<PasswordConfirmationChanged>((event, emit) {
+      if (state.password != event.passwordConfirmation) {
+        emit(state.copyWith(passwordError: "Passwords do not match"));
       }
     });
 
@@ -45,25 +49,31 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     });
 
     on<MnemonicSubmit>((event, emit) async {
+      bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
+      if (!validMnemonic) {
+        emit(state.copyWith(importState: ImportStateError(message: "Invalid mnemonic")));
+        return;
+      }
       ImportFormat importFormat = event.importFormat == "Segwit" ? ImportFormat.segwit : ImportFormat.freewalletBech32;
       emit(
           state.copyWith(importState: ImportStateMnemonicCollected(), importFormat: importFormat, mnemonic: event.mnemonic));
     });
 
     on<ImportWallet>((event, emit) async {
-      bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
-      if (!validMnemonic) {
-        emit(state.copyWith(importState: ImportStateError(message: "Invalid mnemonic")));
-        return;
-      }
-
       emit(state.copyWith(importState: ImportStateLoading()));
       try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
-            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password);
 
-            final decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String privKey;
+            if (state.password != null) {
+              privKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            } else {
+              privKey = wallet.encryptedPrivKey;
+            }
+
+            //m/84'/1'/0'/0
             //m/84'/1'/0'/0
             Account account0 = Account(
               name: 'Account #0',
@@ -75,7 +85,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
             );
 
             Address address0 = await addressService.deriveAddressSegwit(
-                privKey: decryptedPrivKey,
+                privKey: privKey,
                 chainCodeHex: wallet.chainCodeHex,
                 accountUuid: account0.uuid,
                 purpose: account0.purpose,
@@ -94,9 +104,14 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
 
             break;
           case ImportFormat.freewalletBech32:
-            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password);
 
-            final decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String privKey;
+            if (state.password != null) {
+              privKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            } else {
+              privKey = wallet.encryptedPrivKey;
+            }
 
             Account account = Account(
                 name: 'Account 0',
@@ -107,7 +122,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
                 uuid: uuid.v4());
 
             List<Address> addresses = await addressService.deriveAddressFreewalletBech32Range(
-                privKey: decryptedPrivKey,
+                privKey: privKey,
                 chainCodeHex: wallet.chainCodeHex,
                 accountUuid: account.uuid,
                 purpose: account.purpose,

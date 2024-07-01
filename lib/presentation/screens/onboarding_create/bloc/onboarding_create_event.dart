@@ -1,9 +1,9 @@
 abstract class OnboardingCreateEvent {}
 
-class PasswordSubmit extends OnboardingCreateEvent {
+class PasswordChanged extends OnboardingCreateEvent {
   final String password;
   final String passwordConfirmation;
-  PasswordSubmit({required this.password, required this.passwordConfirmation});
+  PasswordChanged({required this.password, required this.passwordConfirmation});
 }
 
 class GenerateMnemonic extends OnboardingCreateEvent {}

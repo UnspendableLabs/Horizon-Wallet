@@ -106,6 +106,9 @@ class PasswordPrompt extends StatelessWidget {
                         const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                     child: TextField(
                       controller: _passwordController,
+                      onChanged: (value) {
+                        context.read<OnboardingImportBloc>().add(PasswordChanged(password: value));
+                      },
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Password',
@@ -117,6 +120,9 @@ class PasswordPrompt extends StatelessWidget {
                       const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                   child: TextField(
                     controller: _passwordConfirmationController,
+                    onChanged: (value) {
+                      context.read<OnboardingImportBloc>().add(PasswordConfirmationChanged(passwordConfirmation: value));
+                    },
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Confirm Password',
@@ -127,16 +133,20 @@ class PasswordPrompt extends StatelessWidget {
                 SizedBox(height: 16),
                 Row(
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<OnboardingImportBloc>().add(
-                              PasswordSubmit(
-                                password: _passwordController.text,
-                                passwordConfirmation: _passwordConfirmationController.text,
-                              ),
-                            );
-                      },
-                      child: const Text('Next'),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<OnboardingImportBloc>().add(ImportWallet());
+                        },
+                        child: const Text('Submit'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor, // Background color
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
