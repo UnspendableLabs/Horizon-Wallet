@@ -17,6 +17,7 @@ class WalletRepositoryImpl implements WalletRepository {
         uuid: wallet.uuid ?? uuid.v4(),
         name: wallet.name,
         encryptedPrivKey: wallet.encryptedPrivKey,
+        publicKey: wallet.publicKey,
         chainCodeHex: wallet.chainCodeHex));
   }
 
@@ -26,11 +27,11 @@ class WalletRepositoryImpl implements WalletRepository {
     if (walletLocal == null) {
       return null;
     }
-    print('walletLocal: $walletLocal');
     return entity.Wallet(
         uuid: walletLocal.uuid,
         name: walletLocal.name,
         encryptedPrivKey: walletLocal.encryptedPrivKey,
+        publicKey: walletLocal.publicKey,
         chainCodeHex: walletLocal.chainCodeHex);
   }
 
@@ -39,19 +40,22 @@ class WalletRepositoryImpl implements WalletRepository {
     // TODO: how to mark current wallet?
     WalletModel? wallet = await _walletDao.getCurrentWallet();
     return entity.Wallet(
+      
         uuid: wallet!.uuid,
-        name: wallet!.name,
-        encryptedPrivKey: wallet!.encryptedPrivKey,
-        chainCodeHex: wallet!.chainCodeHex);
+        name: wallet.name,
+        encryptedPrivKey: wallet.encryptedPrivKey,
+        publicKey: wallet.publicKey,
+        chainCodeHex: wallet.chainCodeHex);
     // return null;
   }
 
   @override
   Future<void> deleteWallet(entity.Wallet wallet) async {
     await _walletDao.deleteWallet(WalletModel(
-        uuid: wallet.uuid!,
+        uuid: wallet.uuid,
         name: wallet.name,
         encryptedPrivKey: wallet.encryptedPrivKey,
+        publicKey: wallet.publicKey,
         chainCodeHex: wallet.chainCodeHex));
   }
 

@@ -9,6 +9,9 @@ class Wallets extends Table {
 
   @JsonKey('encryptedPrivKey')
   TextColumn get encryptedPrivKey => text()();
+  
+  @JsonKey('publicKey')
+  TextColumn get publicKey => text()();
 
   @JsonKey('chainCodeHex')
   TextColumn get chainCodeHex => text()();

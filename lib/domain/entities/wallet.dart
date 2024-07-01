@@ -3,5 +3,11 @@ class Wallet {
   final String name;
   final String encryptedPrivKey;
   final String chainCodeHex;
-  const Wallet({required this.uuid, required this.name, required this.encryptedPrivKey, required this.chainCodeHex});
+  final String publicKey;
+  const Wallet(
+      {required this.uuid,
+      required this.name,
+      required this.encryptedPrivKey,
+      required this.chainCodeHex,
+      required this.publicKey});
 }

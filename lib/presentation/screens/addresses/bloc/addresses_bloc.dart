@@ -25,7 +25,7 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
 
   final Map<(Account, int), Address> _cache = {};
 
-  final Map<Account, List<Address> > _data = {};
+  final Map<Account, List<Address>> _data = {};
 
   AddressesBloc({
     required this.walletRepository,

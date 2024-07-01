@@ -26,6 +26,12 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
   late final GeneratedColumn<String> encryptedPrivKey = GeneratedColumn<String>(
       'encrypted_priv_key', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _publicKeyMeta =
+      const VerificationMeta('publicKey');
+  @override
+  late final GeneratedColumn<String> publicKey = GeneratedColumn<String>(
+      'public_key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _chainCodeHexMeta =
       const VerificationMeta('chainCodeHex');
   @override
@@ -34,7 +40,7 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [uuid, name, encryptedPrivKey, chainCodeHex];
+      [uuid, name, encryptedPrivKey, publicKey, chainCodeHex];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -65,6 +71,12 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
     } else if (isInserting) {
       context.missing(_encryptedPrivKeyMeta);
     }
+    if (data.containsKey('public_key')) {
+      context.handle(_publicKeyMeta,
+          publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta));
+    } else if (isInserting) {
+      context.missing(_publicKeyMeta);
+    }
     if (data.containsKey('chain_code_hex')) {
       context.handle(
           _chainCodeHexMeta,
@@ -88,6 +100,8 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       encryptedPrivKey: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}encrypted_priv_key'])!,
+      publicKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}public_key'])!,
       chainCodeHex: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}chain_code_hex'])!,
     );
@@ -103,11 +117,13 @@ class Wallet extends DataClass implements Insertable<Wallet> {
   final String uuid;
   final String name;
   final String encryptedPrivKey;
+  final String publicKey;
   final String chainCodeHex;
   const Wallet(
       {required this.uuid,
       required this.name,
       required this.encryptedPrivKey,
+      required this.publicKey,
       required this.chainCodeHex});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -115,6 +131,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     map['uuid'] = Variable<String>(uuid);
     map['name'] = Variable<String>(name);
     map['encrypted_priv_key'] = Variable<String>(encryptedPrivKey);
+    map['public_key'] = Variable<String>(publicKey);
     map['chain_code_hex'] = Variable<String>(chainCodeHex);
     return map;
   }
@@ -124,6 +141,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       uuid: Value(uuid),
       name: Value(name),
       encryptedPrivKey: Value(encryptedPrivKey),
+      publicKey: Value(publicKey),
       chainCodeHex: Value(chainCodeHex),
     );
   }
@@ -135,6 +153,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       uuid: serializer.fromJson<String>(json['uuid']),
       name: serializer.fromJson<String>(json['name']),
       encryptedPrivKey: serializer.fromJson<String>(json['encryptedPrivKey']),
+      publicKey: serializer.fromJson<String>(json['publicKey']),
       chainCodeHex: serializer.fromJson<String>(json['chainCodeHex']),
     );
   }
@@ -145,6 +164,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       'uuid': serializer.toJson<String>(uuid),
       'name': serializer.toJson<String>(name),
       'encryptedPrivKey': serializer.toJson<String>(encryptedPrivKey),
+      'publicKey': serializer.toJson<String>(publicKey),
       'chainCodeHex': serializer.toJson<String>(chainCodeHex),
     };
   }
@@ -153,11 +173,13 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           {String? uuid,
           String? name,
           String? encryptedPrivKey,
+          String? publicKey,
           String? chainCodeHex}) =>
       Wallet(
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
         encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
+        publicKey: publicKey ?? this.publicKey,
         chainCodeHex: chainCodeHex ?? this.chainCodeHex,
       );
   @override
@@ -166,13 +188,15 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
           ..write('encryptedPrivKey: $encryptedPrivKey, ')
+          ..write('publicKey: $publicKey, ')
           ..write('chainCodeHex: $chainCodeHex')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uuid, name, encryptedPrivKey, chainCodeHex);
+  int get hashCode =>
+      Object.hash(uuid, name, encryptedPrivKey, publicKey, chainCodeHex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -180,6 +204,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           other.uuid == this.uuid &&
           other.name == this.name &&
           other.encryptedPrivKey == this.encryptedPrivKey &&
+          other.publicKey == this.publicKey &&
           other.chainCodeHex == this.chainCodeHex);
 }
 
@@ -187,12 +212,14 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
   final Value<String> uuid;
   final Value<String> name;
   final Value<String> encryptedPrivKey;
+  final Value<String> publicKey;
   final Value<String> chainCodeHex;
   final Value<int> rowid;
   const WalletsCompanion({
     this.uuid = const Value.absent(),
     this.name = const Value.absent(),
     this.encryptedPrivKey = const Value.absent(),
+    this.publicKey = const Value.absent(),
     this.chainCodeHex = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -200,16 +227,19 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     required String uuid,
     required String name,
     required String encryptedPrivKey,
+    required String publicKey,
     required String chainCodeHex,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         name = Value(name),
         encryptedPrivKey = Value(encryptedPrivKey),
+        publicKey = Value(publicKey),
         chainCodeHex = Value(chainCodeHex);
   static Insertable<Wallet> custom({
     Expression<String>? uuid,
     Expression<String>? name,
     Expression<String>? encryptedPrivKey,
+    Expression<String>? publicKey,
     Expression<String>? chainCodeHex,
     Expression<int>? rowid,
   }) {
@@ -217,6 +247,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
       if (uuid != null) 'uuid': uuid,
       if (name != null) 'name': name,
       if (encryptedPrivKey != null) 'encrypted_priv_key': encryptedPrivKey,
+      if (publicKey != null) 'public_key': publicKey,
       if (chainCodeHex != null) 'chain_code_hex': chainCodeHex,
       if (rowid != null) 'rowid': rowid,
     });
@@ -226,12 +257,14 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
       {Value<String>? uuid,
       Value<String>? name,
       Value<String>? encryptedPrivKey,
+      Value<String>? publicKey,
       Value<String>? chainCodeHex,
       Value<int>? rowid}) {
     return WalletsCompanion(
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
       encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
+      publicKey: publicKey ?? this.publicKey,
       chainCodeHex: chainCodeHex ?? this.chainCodeHex,
       rowid: rowid ?? this.rowid,
     );
@@ -249,6 +282,9 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     if (encryptedPrivKey.present) {
       map['encrypted_priv_key'] = Variable<String>(encryptedPrivKey.value);
     }
+    if (publicKey.present) {
+      map['public_key'] = Variable<String>(publicKey.value);
+    }
     if (chainCodeHex.present) {
       map['chain_code_hex'] = Variable<String>(chainCodeHex.value);
     }
@@ -264,6 +300,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
           ..write('encryptedPrivKey: $encryptedPrivKey, ')
+          ..write('publicKey: $publicKey, ')
           ..write('chainCodeHex: $chainCodeHex, ')
           ..write('rowid: $rowid')
           ..write(')'))

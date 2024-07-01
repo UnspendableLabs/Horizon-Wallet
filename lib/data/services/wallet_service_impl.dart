@@ -35,6 +35,7 @@ class WalletServiceImpl implements WalletService {
         uuid: uuid.v4(),
         name: 'Wallet 1',
         encryptedPrivKey: encryptedPrivKey,
+        publicKey: root.neutered().toBase58(),
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
@@ -56,6 +57,7 @@ class WalletServiceImpl implements WalletService {
         uuid: uuid.v4(),
         name: 'Wallet 1',
         encryptedPrivKey: encryptedPrivKey,
+        publicKey: root.neutered().toBase58(),
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
