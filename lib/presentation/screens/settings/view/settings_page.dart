@@ -33,17 +33,17 @@ class SettingsPage extends StatelessWidget {
             title: '${account.name} Settings',
             children: [
               SettingsGroup(title: "Address Settings", children: [
-                SwitchSettingsTile(
-                  settingKey: '${account.uuid}:change',
-                  title: 'Use change addresses',
-                  subtitle: 'For each receive address, generate a change address',
-                  enabledLabel: 'Enabled',
-                  disabledLabel: 'Disabled',
-                  leading: const Icon(Icons.change_circle),
-                  onChange: (value) {
-                    debugPrint('${account.uuid}-use-change: $value');
-                  },
-                ),
+                // SwitchSettingsTile(
+                //   settingKey: '${account.uuid}:change',
+                //   title: 'Use change addresses',
+                //   subtitle: 'For each receive address, generate a change address',
+                //   enabledLabel: 'Enabled',
+                //   disabledLabel: 'Disabled',
+                //   leading: const Icon(Icons.change_circle),
+                //   onChange: (value) {
+                //     debugPrint('${account.uuid}-use-change: $value');
+                //   },
+                // ),
                 SliderSettingsTile(
                   title: 'Gap Limit',
                   leading: const Icon(Icons.numbers),
