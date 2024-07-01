@@ -149,11 +149,11 @@ class Shell extends StatelessWidget {
                 selectedIcon: Icon(Icons.toll),
                 label: Text('Issuance'),
               ),
-              NavigationRailDestination(
-                icon: Icon(Icons.list),
-                selectedIcon: Icon(Icons.list),
-                label: Text('Addresses'),
-              ),
+              // NavigationRailDestination(
+              //   icon: Icon(Icons.list),
+              //   selectedIcon: Icon(Icons.list),
+              //   label: Text('Addresses'),
+              // ),
               NavigationRailDestination(
                 icon: Icon(Icons.settings),
                 selectedIcon: Icon(Icons.settings),

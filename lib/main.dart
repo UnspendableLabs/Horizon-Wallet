@@ -147,27 +147,27 @@ class AppRouter {
                   },
                 ),
               ]),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                      path: "/addresses",
-                      builder: (context, state) {
-                        final shell = context.watch<ShellStateCubit>();
-                        final accountSettingsRepository =
-                            GetIt.I<AccountSettingsRepository>();
-
-                        return shell.state.maybeWhen(
-                          success: (state) {
-                            return AddressesPage(
-                              key: Key(state.currentAccountUuid),
-                              accountUuid: state.currentAccountUuid,
-                            );
-                          },
-                          orElse: () => SizedBox.shrink(),
-                        );
-                      })
-                ],
-              ),
+              // StatefulShellBranch(
+              //   routes: [
+              //     GoRoute(
+              //         path: "/addresses",
+              //         builder: (context, state) {
+              //           final shell = context.watch<ShellStateCubit>();
+              //           final accountSettingsRepository =
+              //               GetIt.I<AccountSettingsRepository>();
+              //
+              //           return shell.state.maybeWhen(
+              //             success: (state) {
+              //               return AddressesPage(
+              //                 key: Key(state.currentAccountUuid),
+              //                 accountUuid: state.currentAccountUuid,
+              //               );
+              //             },
+              //             orElse: () => SizedBox.shrink(),
+              //           );
+              //         })
+              //   ],
+              // ),
               StatefulShellBranch(
                 routes: [
                   GoRoute(
