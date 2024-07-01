@@ -11,6 +11,13 @@ class AccountSettingsRepositoryImpl implements AccountSettingsRepository {
 
   @override
   getGapLimit(String accountUuid) {
-    return _cacheProvider.getInt("$accountUuid:gap-limit") ?? _defaultGapLimit;
+    dynamic gapLimit = _cacheProvider.getInt("$accountUuid:gap-limit");
+
+    if (gapLimit == null ) {
+      return _defaultGapLimit;
+    }
+
+    return gapLimit.toInt();
+
   }
 }

@@ -40,6 +40,10 @@ import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart
 import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
+import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
+import "package:horizon/presentation/screens/settings/bloc/password_prompt_state.dart";
+import "package:horizon/presentation/screens/settings/bloc/password_prompt_event.dart";
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -261,6 +265,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
         providers: [
+          BlocProvider<PasswordPromptBloc>(
+              create: (context) => PasswordPromptBloc()),
           BlocProvider<ShellStateCubit>(
             create: (context) => ShellStateCubit(
                 walletRepository: GetIt.I<WalletRepository>(),
@@ -275,6 +281,7 @@ class MyApp extends StatelessWidget {
                     addressService: GetIt.I<AddressService>(),
                     encryptionService: GetIt.I<EncryptionService>(),
                   ))
+         
         ],
         child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
           listener: (context, state) {

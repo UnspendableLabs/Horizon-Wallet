@@ -94,7 +94,8 @@ class _Balances_State extends State<Balances> {
     return BlocBuilder<BalancesBloc, BalancesState>(
         bloc: BalancesBloc(
           balanceRepository: GetIt.I.get<BalanceRepository>(),
-        )..add(Fetch(addresses: widget.addresses)),
+          ),
+        // )..add(Fetch(addresses: widget.addresses)),
         builder: (context, state) {
           return state.when(
             initial: () => const Text("initial"),
