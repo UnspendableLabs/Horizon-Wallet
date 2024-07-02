@@ -43,7 +43,6 @@ class OnboardingImportBloc
       }
     });
 
-
     on<PasswordError>((event, emit) {
       emit(state.copyWith(passwordError: event.error));
     });
@@ -66,9 +65,13 @@ class OnboardingImportBloc
             importState: ImportStateError(message: "Invalid mnemonic")));
         return;
       }
-      ImportFormat importFormat = event.importFormat == "Segwit" ? ImportFormat.segwit : ImportFormat.freewalletBech32;
-      emit(
-          state.copyWith(importState: ImportStateMnemonicCollected(), importFormat: importFormat, mnemonic: event.mnemonic));
+      ImportFormat importFormat = event.importFormat == "Segwit"
+          ? ImportFormat.segwit
+          : ImportFormat.freewalletBech32;
+      emit(state.copyWith(
+          importState: ImportStateMnemonicCollected(),
+          importFormat: importFormat,
+          mnemonic: event.mnemonic));
     });
 
     on<ImportWallet>((event, emit) async {
@@ -79,7 +82,8 @@ class OnboardingImportBloc
             Wallet wallet =
                 await walletService.deriveRoot(state.mnemonic, state.password!);
 
-            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
 
             //m/84'/1'/0'/0
             Account account0 = Account(
@@ -109,9 +113,11 @@ class OnboardingImportBloc
             await addressRepository.insertMany(addresses);
             break;
           case ImportFormat.freewalletBech32:
-            Wallet wallet = await walletService.deriveRootFreewallet(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRootFreewallet(
+                state.mnemonic, state.password!);
 
-            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
 
             Account account = Account(
                 name: 'Account 0',
@@ -143,12 +149,15 @@ class OnboardingImportBloc
             throw UnimplementedError();
         }
 
+        // TODO: timing hack
+        await Future.delayed(Duration(seconds: 1));
 
 
         emit(state.copyWith(importState: ImportStateSuccess()));
         return;
       } catch (e, stackTrace) {
-        emit(state.copyWith(importState: ImportStateError(message: e.toString())));
+        emit(state.copyWith(
+            importState: ImportStateError(message: e.toString())));
         return;
       }
     });

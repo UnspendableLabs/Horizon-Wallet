@@ -131,11 +131,11 @@ class AppRouter {
                     builder: (context, state) {
                       // Address initialAddress =
                       //     (state.extra as Map<String, dynamic>)['initialAddress'];
-                      Address initialAddress = const Address(
-                          accountUuid: "76218sef-48fe-4f58-984c-b8fb5226e78a",
-                          address: "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
-                          index: 0);
-                      return ComposeSendPage(initialAddress: initialAddress);
+                      // Address initialAddress = const Address(
+                      //     accountUuid: "76218sef-48fe-4f58-984c-b8fb5226e78a",
+                      //     address: "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
+                      //     index: 0);
+                      return ComposeSendPage();
                     })
               ]),
               StatefulShellBranch(routes: [
@@ -182,12 +182,9 @@ class AppRouter {
             ])
       ],
       redirect: (context, state) async {
-
-  
-
         final shell = context.read<ShellStateCubit>();
 
-        final path =  shell.state.maybeWhen(
+        final path = shell.state.maybeWhen(
             success: (data) {
               print("shell.state ${shell.state}");
               Future.delayed(const Duration(milliseconds: 500), () {
@@ -207,9 +204,7 @@ class AppRouter {
             // if the shell state is not yet loaded, show a loading screen
             orElse: () => "/");
 
-
         return path;
-
       });
 }
 
@@ -256,10 +251,10 @@ class MyApp extends StatelessWidget {
         providers: [
           BlocProvider<PasswordPromptBloc>(
               create: (context) => PasswordPromptBloc(
-                walletService: GetIt.I<WalletService>(),
-                walletRepository: GetIt.I<WalletRepository>(),
-                encryptionService: GetIt.I<EncryptionService>(),
-              )),
+                    walletService: GetIt.I<WalletService>(),
+                    walletRepository: GetIt.I<WalletRepository>(),
+                    encryptionService: GetIt.I<EncryptionService>(),
+                  )),
           BlocProvider<ShellStateCubit>(
             create: (context) => ShellStateCubit(
                 walletRepository: GetIt.I<WalletRepository>(),
@@ -275,7 +270,6 @@ class MyApp extends StatelessWidget {
           //           addressRepository: GetIt.I<AddressRepository>(),
           //           encryptionService: GetIt.I<EncryptionService>(),
           //         ))
-         
         ],
         child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
           listener: (context, state) {

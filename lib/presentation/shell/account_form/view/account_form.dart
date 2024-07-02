@@ -144,6 +144,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 return null;
               },
             ),
+            const SizedBox(height: 16.0), // Spacing between inputs
             TextFormField(
               controller: passwordController,
               decoration: const InputDecoration(

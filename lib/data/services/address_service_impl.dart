@@ -174,26 +174,6 @@ class AddressServiceImpl extends AddressService {
     return hex.encode(child.privateKey!.toDart);
   }
 
-//   @override
-//   Future<Address> deriveAddressFreewalletLegacy(String mnemonic, int index) async {
-//     throw UnimplementedError();
-//   }
-
-//   @override
-//   Future<List<Address>> deriveAddressFreewalletLegacyRange(String mnemonic, int start, int end) async {
-//     if (start > end) {
-//       throw ArgumentError('Invalid range');
-//     }
-
-//     List<Address> addresses = [];
-
-//     for (int i = start; i <= end; i++) {
-//       Address address = await deriveAddressFreewalletLegacy(mnemonic, i);
-//       addresses.add(address);
-//     }
-
-//     return addresses;
-//   }
 
   String _bech32FromBip32(bip32.BIP32Interface child) {
     List<int> identifier = child.identifier.toDart;

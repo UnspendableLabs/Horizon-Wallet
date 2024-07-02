@@ -98,7 +98,7 @@ class _Balances_State extends State<Balances> {
         // )..add(Fetch(addresses: widget.addresses)),
         builder: (context, state) {
           return state.when(
-            initial: () => const Text("initial"),
+            initial: () => const Text("Balances UI.  Blocked on weird API bug"),
             loading: () => const CircularProgressIndicator(),
             error: (error) => Text("Error: $error"),
             success: (balances) => ListView.builder(

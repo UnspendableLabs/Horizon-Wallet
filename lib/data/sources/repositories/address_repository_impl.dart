@@ -40,6 +40,7 @@ class AddressRepositoryImpl implements AddressRepository {
     List<AddressModel> addresses = await _addressDao.getAllAddressesByAccountUuid(accountUuid);
     return addresses.map((a) => entity.Address(accountUuid: a.accountUuid, address: a.address, index: a.index)).toList();
   }
+  
 
   @override
   Future<void> deleteAddresses(String accountUuid) async {
