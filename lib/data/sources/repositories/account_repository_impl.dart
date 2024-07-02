@@ -1,4 +1,4 @@
-import 'package:horizon/common/uuid.dart';
+import "package:horizon/common/constants.dart";
 import "package:horizon/data/models/account.dart";
 import "package:horizon/data/sources/local/dao/accounts_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
@@ -14,12 +14,13 @@ class AccountRepositoryImpl implements AccountRepository {
   @override
   Future<void> insert(entity.Account account) async {
     AccountModel account_ = AccountModel(
-      uuid: account.uuid ?? uuid.v4(),
-      name: account.name ?? '',
-      walletUuid: account.walletUuid!,
-      purpose: account.purpose!,
-      accountIndex: account.accountIndex!,
-      coinType: account.coinType!,
+      uuid: account.uuid,
+      name: account.name,
+      walletUuid: account.walletUuid,
+      purpose: account.purpose,
+      accountIndex: account.accountIndex,
+      coinType: account.coinType,
+      importFormat: account.importFormat.name,
     );
 
     await _accountDao.insertAccount(account_);
@@ -36,6 +37,7 @@ class AccountRepositoryImpl implements AccountRepository {
             accountIndex: account.accountIndex,
             name: account.name,
             coinType: account.coinType,
+            importFormat: ImportFormat.values.firstWhere((e) => e.name == account.importFormat),
           )
         : null;
   }
@@ -51,6 +53,7 @@ class AccountRepositoryImpl implements AccountRepository {
               accountIndex: account.accountIndex,
               name: account.name,
               coinType: account.coinType,
+              importFormat: ImportFormat.values.firstWhere((e) => e.name == account.importFormat),
             ))
         .toList();
   }
@@ -58,12 +61,13 @@ class AccountRepositoryImpl implements AccountRepository {
   @override
   Future<void> deleteAccount(entity.Account account) async {
     await _accountDao.deleteAccount(AccountModel(
-      uuid: account.uuid!,
-      walletUuid: account.walletUuid!,
-      purpose: account.purpose!,
-      accountIndex: account.accountIndex!,
-      name: account.name!,
-      coinType: account.coinType!,
+      uuid: account.uuid,
+      walletUuid: account.walletUuid,
+      purpose: account.purpose,
+      accountIndex: account.accountIndex,
+      name: account.name,
+      coinType: account.coinType,
+      importFormat: account.importFormat.name,
     ));
   }
 

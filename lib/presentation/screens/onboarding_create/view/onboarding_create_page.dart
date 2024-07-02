@@ -6,6 +6,8 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 
 class OnboardingCreateScreen extends StatelessWidget {
+  const OnboardingCreateScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(create: (context) => OnboardingCreateBloc(), child: const OnboardingCreatePage_());
@@ -37,27 +39,23 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
           GoRouter.of(context).go('/dashboard');
         }
       },
-      child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(builder: (context, state) {
-        print('CREATE STATE: ${state.createState}');
-        return Scaffold(
-          appBar: AppBar(title: const Text('Horizon')),
-          body: switch (state.createState) {
-            CreateStateNotAsked => Mnemonic(),
-            CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
-                mnemonicErrorState: state.mnemonicError,
-              ),
-            CreateStateMnemonicConfirmed => PasswordPrompt(
-                passwordController: _passwordController,
-                passwordConfirmationController: _passwordConfirmationController,
-                state: state,
-              ),
-            // TODO: Handle this case.
-            Object() => Text(''),
-            // TODO: Handle this case.
-            null => throw UnimplementedError(),
-          },
-        );
-      }),
+      child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+          builder: (context, state) => Scaffold(
+                appBar: AppBar(title: const Text('Horizon')),
+                body: switch (state.createState) {
+                  CreateStateNotAsked => const Mnemonic(),
+                  CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
+                      mnemonicErrorState: state.mnemonicError,
+                    ),
+                  CreateStateMnemonicConfirmed => PasswordPrompt(
+                      passwordController: _passwordController,
+                      passwordConfirmationController: _passwordConfirmationController,
+                      state: state,
+                    ),
+                  Object() => const Text(''),
+                  null => throw UnimplementedError(),
+                },
+              )),
     );
   }
 }
@@ -118,8 +116,7 @@ class PasswordPrompt extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => context.read<OnboardingCreateBloc>().add(CreateWallet()),
-                          child: Text('Skip'),
+                          onPressed: () => GoRouter.of(context).go('/onboarding'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey, // Background color
                             foregroundColor: Colors.white,
@@ -127,15 +124,15 @@ class PasswordPrompt extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
+                          child: const Text('Cancel'),
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
                             context.read<OnboardingCreateBloc>().add(CreateWallet());
                           },
-                          child: const Text('Create Wallet'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor, // Background color
                             foregroundColor: Colors.white,
@@ -143,6 +140,7 @@ class PasswordPrompt extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
+                          child: const Text('Create Wallet'),
                         ),
                       ),
                     ],
@@ -161,7 +159,7 @@ class Mnemonic extends StatefulWidget {
   const Mnemonic({super.key});
 
   @override
-  _MnemonicState createState() => _MnemonicState();
+  State<Mnemonic> createState() => _MnemonicState();
 }
 
 class _MnemonicState extends State<Mnemonic> {
@@ -181,7 +179,7 @@ class _MnemonicState extends State<Mnemonic> {
           child: Column(
             children: [
               if (state.mnemonicState is GenerateMnemonicStateLoading)
-                CircularProgressIndicator()
+                const CircularProgressIndicator()
               else if (state.mnemonicState is GenerateMnemonicStateGenerated)
                 SelectableText(
                   state.mnemonicState.mnemonic,
@@ -205,7 +203,6 @@ class _MnemonicState extends State<Mnemonic> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => GoRouter.of(context).go('/onboarding'),
-                        child: Text('Cancel'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey, // Background color
                           foregroundColor: Colors.white,
@@ -213,15 +210,15 @@ class _MnemonicState extends State<Mnemonic> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
+                        child: const Text('Cancel'),
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
                           context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
                         },
-                        child: const Text('Continue'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(context).primaryColor, // Background color
                           foregroundColor: Colors.white,
@@ -229,6 +226,7 @@ class _MnemonicState extends State<Mnemonic> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
+                        child: const Text('Continue'),
                       ),
                     ),
                   ],
@@ -244,7 +242,7 @@ class _MnemonicState extends State<Mnemonic> {
 
 class ConfirmSeedInputFields extends StatefulWidget {
   final String? mnemonicErrorState;
-  ConfirmSeedInputFields({required String? this.mnemonicErrorState, super.key});
+  const ConfirmSeedInputFields({required this.mnemonicErrorState, super.key});
   @override
   State<ConfirmSeedInputFields> createState() => _ConfirmSeedInputFieldsState();
 }
@@ -252,7 +250,6 @@ class ConfirmSeedInputFields extends StatefulWidget {
 class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
-  bool usePassphrase = false;
 
   @override
   void dispose() {
@@ -270,6 +267,13 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  const Text(
+                    'Please confirm your seed phrase',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: List.generate(3, (columnIndex) {
@@ -302,26 +306,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     }),
                   ),
                   widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
-                  ListTile(
-                    leading: Checkbox(
-                      value: usePassphrase,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          usePassphrase = value!;
-                        });
-                      },
-                    ),
-                    title: const Row(
-                      children: [
-                        Text('Passphrase'),
-                        SizedBox(width: 4),
-                        Tooltip(
-                          message: "Password to encrypt your wallet in local storage",
-                          child: Icon(Icons.help_outline, size: 20),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -332,8 +316,8 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => GoRouter.of(context).go('/onboarding'),
-                    child: Text('Cancel'),
+                    onPressed: () => context.read<OnboardingCreateBloc>().add(GoBackToMnemonic()),
+                    child: const Text('Back'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey, // Background color
                       foregroundColor: Colors.white,
@@ -343,22 +327,11 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      if (usePassphrase) {
-                        context.read<OnboardingCreateBloc>().add(ConfirmMnemonic());
-                      } else {
-                        context.read<OnboardingCreateBloc>().add(CreateWallet());
-                      }
-                      //   context.read<OnboardingImportBloc>().add(MnemonicSubmit(
-                      //         mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
-                      //         importFormat: selectedFormat!,
-                      //       ));
-                      // } else {
-                      //   context.read<OnboardingImportBloc>().add(ImportWallet());
-                      // }
+                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic());
                     },
                     child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(

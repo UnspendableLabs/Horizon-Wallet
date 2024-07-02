@@ -312,9 +312,15 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
   late final GeneratedColumn<String> accountIndex = GeneratedColumn<String>(
       'account_index', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _importFormatMeta =
+      const VerificationMeta('importFormat');
+  @override
+  late final GeneratedColumn<String> importFormat = GeneratedColumn<String>(
+      'import_format', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [uuid, name, walletUuid, purpose, coinType, accountIndex];
+      [uuid, name, walletUuid, purpose, coinType, accountIndex, importFormat];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -365,6 +371,14 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
     } else if (isInserting) {
       context.missing(_accountIndexMeta);
     }
+    if (data.containsKey('import_format')) {
+      context.handle(
+          _importFormatMeta,
+          importFormat.isAcceptableOrUnknown(
+              data['import_format']!, _importFormatMeta));
+    } else if (isInserting) {
+      context.missing(_importFormatMeta);
+    }
     return context;
   }
 
@@ -386,6 +400,8 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
           .read(DriftSqlType.string, data['${effectivePrefix}coin_type'])!,
       accountIndex: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}account_index'])!,
+      importFormat: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}import_format'])!,
     );
   }
 
@@ -402,13 +418,15 @@ class Account extends DataClass implements Insertable<Account> {
   final String purpose;
   final String coinType;
   final String accountIndex;
+  final String importFormat;
   const Account(
       {required this.uuid,
       required this.name,
       required this.walletUuid,
       required this.purpose,
       required this.coinType,
-      required this.accountIndex});
+      required this.accountIndex,
+      required this.importFormat});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -418,6 +436,7 @@ class Account extends DataClass implements Insertable<Account> {
     map['purpose'] = Variable<String>(purpose);
     map['coin_type'] = Variable<String>(coinType);
     map['account_index'] = Variable<String>(accountIndex);
+    map['import_format'] = Variable<String>(importFormat);
     return map;
   }
 
@@ -429,6 +448,7 @@ class Account extends DataClass implements Insertable<Account> {
       purpose: Value(purpose),
       coinType: Value(coinType),
       accountIndex: Value(accountIndex),
+      importFormat: Value(importFormat),
     );
   }
 
@@ -442,6 +462,7 @@ class Account extends DataClass implements Insertable<Account> {
       purpose: serializer.fromJson<String>(json['purpose']),
       coinType: serializer.fromJson<String>(json['coinType']),
       accountIndex: serializer.fromJson<String>(json['accountIndex']),
+      importFormat: serializer.fromJson<String>(json['importFormat']),
     );
   }
   @override
@@ -454,6 +475,7 @@ class Account extends DataClass implements Insertable<Account> {
       'purpose': serializer.toJson<String>(purpose),
       'coinType': serializer.toJson<String>(coinType),
       'accountIndex': serializer.toJson<String>(accountIndex),
+      'importFormat': serializer.toJson<String>(importFormat),
     };
   }
 
@@ -463,7 +485,8 @@ class Account extends DataClass implements Insertable<Account> {
           String? walletUuid,
           String? purpose,
           String? coinType,
-          String? accountIndex}) =>
+          String? accountIndex,
+          String? importFormat}) =>
       Account(
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
@@ -471,6 +494,7 @@ class Account extends DataClass implements Insertable<Account> {
         purpose: purpose ?? this.purpose,
         coinType: coinType ?? this.coinType,
         accountIndex: accountIndex ?? this.accountIndex,
+        importFormat: importFormat ?? this.importFormat,
       );
   @override
   String toString() {
@@ -480,14 +504,15 @@ class Account extends DataClass implements Insertable<Account> {
           ..write('walletUuid: $walletUuid, ')
           ..write('purpose: $purpose, ')
           ..write('coinType: $coinType, ')
-          ..write('accountIndex: $accountIndex')
+          ..write('accountIndex: $accountIndex, ')
+          ..write('importFormat: $importFormat')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(uuid, name, walletUuid, purpose, coinType, accountIndex);
+  int get hashCode => Object.hash(
+      uuid, name, walletUuid, purpose, coinType, accountIndex, importFormat);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -497,7 +522,8 @@ class Account extends DataClass implements Insertable<Account> {
           other.walletUuid == this.walletUuid &&
           other.purpose == this.purpose &&
           other.coinType == this.coinType &&
-          other.accountIndex == this.accountIndex);
+          other.accountIndex == this.accountIndex &&
+          other.importFormat == this.importFormat);
 }
 
 class AccountsCompanion extends UpdateCompanion<Account> {
@@ -507,6 +533,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
   final Value<String> purpose;
   final Value<String> coinType;
   final Value<String> accountIndex;
+  final Value<String> importFormat;
   final Value<int> rowid;
   const AccountsCompanion({
     this.uuid = const Value.absent(),
@@ -515,6 +542,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     this.purpose = const Value.absent(),
     this.coinType = const Value.absent(),
     this.accountIndex = const Value.absent(),
+    this.importFormat = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AccountsCompanion.insert({
@@ -524,13 +552,15 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     required String purpose,
     required String coinType,
     required String accountIndex,
+    required String importFormat,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         name = Value(name),
         walletUuid = Value(walletUuid),
         purpose = Value(purpose),
         coinType = Value(coinType),
-        accountIndex = Value(accountIndex);
+        accountIndex = Value(accountIndex),
+        importFormat = Value(importFormat);
   static Insertable<Account> custom({
     Expression<String>? uuid,
     Expression<String>? name,
@@ -538,6 +568,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     Expression<String>? purpose,
     Expression<String>? coinType,
     Expression<String>? accountIndex,
+    Expression<String>? importFormat,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -547,6 +578,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       if (purpose != null) 'purpose': purpose,
       if (coinType != null) 'coin_type': coinType,
       if (accountIndex != null) 'account_index': accountIndex,
+      if (importFormat != null) 'import_format': importFormat,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -558,6 +590,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       Value<String>? purpose,
       Value<String>? coinType,
       Value<String>? accountIndex,
+      Value<String>? importFormat,
       Value<int>? rowid}) {
     return AccountsCompanion(
       uuid: uuid ?? this.uuid,
@@ -566,6 +599,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
       purpose: purpose ?? this.purpose,
       coinType: coinType ?? this.coinType,
       accountIndex: accountIndex ?? this.accountIndex,
+      importFormat: importFormat ?? this.importFormat,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -591,6 +625,9 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     if (accountIndex.present) {
       map['account_index'] = Variable<String>(accountIndex.value);
     }
+    if (importFormat.present) {
+      map['import_format'] = Variable<String>(importFormat.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -606,6 +643,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
           ..write('purpose: $purpose, ')
           ..write('coinType: $coinType, ')
           ..write('accountIndex: $accountIndex, ')
+          ..write('importFormat: $importFormat, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

@@ -12,6 +12,8 @@ class PasswordConfirmationChanged extends OnboardingCreateEvent {
   PasswordConfirmationChanged({required this.passwordConfirmation});
 }
 
+class GoBackToMnemonic extends OnboardingCreateEvent {}
+
 class GenerateMnemonic extends OnboardingCreateEvent {}
 
 class UnconfirmMnemonic extends OnboardingCreateEvent {}

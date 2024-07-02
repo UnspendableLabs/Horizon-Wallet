@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 import 'package:horizon/domain/entities/account.dart';
@@ -19,6 +20,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
           purpose: event.purpose,
           coinType: event.coinType,
           accountIndex: event.accountIndex,
+          importFormat: ImportFormat.segwit, // TODO
         );
 
         await accountRepository.insert(account);

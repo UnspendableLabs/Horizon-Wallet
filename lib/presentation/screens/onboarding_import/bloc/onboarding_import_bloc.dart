@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -66,14 +67,9 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
       try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
-            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password);
+            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
 
-            String privKey;
-            if (state.password != null) {
-              privKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
-            } else {
-              privKey = wallet.encryptedPrivKey;
-            }
+            String encryptedPrivateKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
             //m/84'/1'/0'/0
             //m/84'/1'/0'/0
@@ -84,10 +80,11 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
               coinType: '${_getCoinType()}\'',
               accountIndex: '0\'',
               uuid: uuid.v4(),
+              importFormat: ImportFormat.segwit,
             );
 
             Address address0 = await addressService.deriveAddressSegwit(
-                privKey: privKey,
+                privKey: encryptedPrivateKey,
                 chainCodeHex: wallet.chainCodeHex,
                 accountUuid: account0.uuid,
                 purpose: account0.purpose,
@@ -106,14 +103,9 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
 
             break;
           case ImportFormat.freewalletBech32:
-            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password);
+            Wallet wallet = await walletService.deriveRootFreewallet(state.mnemonic, state.password!);
 
-            String privKey;
-            if (state.password != null) {
-              privKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
-            } else {
-              privKey = wallet.encryptedPrivKey;
-            }
+            String encryptedPrivateKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
             Account account = Account(
                 name: 'Account 0',
@@ -121,10 +113,11 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
                 purpose: '32', // unused in Freewallet path
                 coinType: _getCoinType(),
                 accountIndex: '0\'',
-                uuid: uuid.v4());
+                uuid: uuid.v4(),
+                importFormat: ImportFormat.freewalletBech32);
 
             List<Address> addresses = await addressService.deriveAddressFreewalletBech32Range(
-                privKey: privKey,
+                privKey: encryptedPrivateKey,
                 chainCodeHex: wallet.chainCodeHex,
                 accountUuid: account.uuid,
                 purpose: account.purpose,
@@ -147,8 +140,6 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         return;
       } catch (e, stackTrace) {
         emit(state.copyWith(importState: ImportStateError(message: e.toString())));
-        print(e.toString());
-        print(stackTrace);
         return;
       }
     });

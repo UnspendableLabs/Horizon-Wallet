@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
@@ -11,16 +12,6 @@ class OnboardingImportPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
   }
-}
-
-enum ImportFormat {
-  segwit("Segwit", "Segwit (BIP84,P2WPKH,Bech32)"),
-  // legacy("Legacy", "BIP44,P2PKH,Base58"),
-  freewalletBech32("Freewallet-bech32", "Freewallet (Bech32)");
-
-  const ImportFormat(this.name, this.description);
-  final String name;
-  final String description;
 }
 
 class OnboardingImportPage_ extends StatefulWidget {
@@ -130,25 +121,42 @@ class PasswordPrompt extends StatelessWidget {
                   ),
                 ),
                 _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.read<OnboardingImportBloc>().add(ImportWallet());
-                        },
-                        child: const Text('Submit'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor, // Background color
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => GoRouter.of(context).go('/onboarding'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey, // Background color
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
                           ),
+                          child: const Text('Cancel'),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.read<OnboardingImportBloc>().add(ImportWallet());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor, // Background color
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          child: const Text('Submit'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 // state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
               ],
@@ -170,7 +178,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   String? selectedFormat = ImportFormat.segwit.name;
-  bool usePassphrase = false;
 
   @override
   void dispose() {
@@ -253,26 +260,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                       ),
                     ),
                   ),
-                  ListTile(
-                    leading: Checkbox(
-                      value: usePassphrase,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          usePassphrase = value!;
-                        });
-                      },
-                    ),
-                    title: const Row(
-                      children: [
-                        Text('Passphrase'),
-                        SizedBox(width: 4),
-                        Tooltip(
-                          message: "Password to encrypt your wallet in local storage",
-                          child: Icon(Icons.help_outline, size: 20),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -284,7 +271,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => GoRouter.of(context).go('/onboarding'),
-                    child: Text('Cancel'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey, // Background color
                       foregroundColor: Colors.white,
@@ -292,20 +278,17 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
+                    child: Text('Cancel'),
                   ),
                 ),
                 SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      if (usePassphrase) {
-                        context.read<OnboardingImportBloc>().add(MnemonicSubmit(
-                              mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
-                              importFormat: selectedFormat!,
-                            ));
-                      } else {
-                        context.read<OnboardingImportBloc>().add(ImportWallet());
-                      }
+                      context.read<OnboardingImportBloc>().add(MnemonicSubmit(
+                            mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
+                            importFormat: selectedFormat!,
+                          ));
                     },
                     child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(

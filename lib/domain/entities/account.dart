@@ -1,3 +1,6 @@
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+
 class Account {
   final String uuid;
   final String name;
@@ -5,6 +8,7 @@ class Account {
   final String purpose;
   final String coinType;
   final String accountIndex;
+  final ImportFormat importFormat;
   Account({
     required this.uuid,
     required this.name,
@@ -12,5 +16,6 @@ class Account {
     required this.purpose,
     required this.coinType,
     required this.accountIndex,
+    required this.importFormat,
   });
 }

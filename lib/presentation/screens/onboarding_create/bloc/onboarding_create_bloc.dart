@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -51,28 +52,23 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));
       try {
-        Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password);
+        Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
         print('WALLET: $wallet');
 
-        String privKey;
-        if (state.password != null) {
-          privKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
-        } else {
-          privKey = wallet.encryptedPrivKey;
-        }
+        String encryptedPrivateKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
         Account account = Account(
-          name: 'Account 0',
-          walletUuid: wallet.uuid,
-          purpose: '84\'',
-          coinType: _getCoinType(),
-          accountIndex: '0',
-          uuid: uuid.v4(),
-        );
+            name: 'Account 0',
+            walletUuid: wallet.uuid,
+            purpose: '84\'',
+            coinType: _getCoinType(),
+            accountIndex: '0',
+            uuid: uuid.v4(),
+            importFormat: ImportFormat.segwit);
 
         print(account);
         Address address = await addressService.deriveAddressSegwit(
-            privKey: privKey,
+            privKey: encryptedPrivateKey,
             chainCodeHex: wallet.chainCodeHex,
             accountUuid: account.uuid,
             purpose: account.purpose,
@@ -93,7 +89,6 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       }
     });
 
-    // This is actually unused for now
     on<GenerateMnemonic>((event, emit) {
       emit(state.copyWith(mnemonicState: GenerateMnemonicStateLoading()));
 
@@ -122,6 +117,10 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
 
     on<ConfirmMnemonic>((event, emit) {
       emit(state.copyWith(createState: CreateStateMnemonicConfirmed));
+    });
+
+    on<GoBackToMnemonic>((event, emit) {
+      emit(state.copyWith(createState: CreateStateNotAsked));
     });
   }
 
