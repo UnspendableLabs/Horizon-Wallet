@@ -36,6 +36,8 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
     on<PasswordConfirmationChanged>((event, emit) {
       if (state.password != event.passwordConfirmation) {
         emit(state.copyWith(passwordError: "Passwords do not match"));
+      } else {
+        emit(state.copyWith(passwordError: null));
       }
     });
 

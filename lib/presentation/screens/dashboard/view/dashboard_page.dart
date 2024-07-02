@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
+import 'package:horizon/presentation/screens/dashboard/view/addresses_display.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -35,7 +36,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
       return shell.state.maybeWhen(
           success: (state) => Column(
                 children: [
-                  Text(state.currentAccountUuid),
+                  AddressDisplay(),
                   Align(
                     alignment: Alignment.bottomRight,
                     child: Container(
@@ -136,22 +137,7 @@ class _DashboardPage_State extends State<_DashboardPage_> {
     //   ),
     // ),
     //   kDebugMode
-    //       ? Align(
-    //           alignment: Alignment.bottomRight,
-    //           child: Container(
-    //             padding: EdgeInsets.all(8.0), // Adjust padding as needed
-    //             child: ElevatedButton(
-    //               onPressed: () {
-    //                 context.read<DashboardBloc>().add(DeleteWallet());
-    //                 GoRouter.of(context).go('/onboarding');
-    //               },
-    //               child: Text("Delete DB", style: TextStyle(fontSize: 12)), // Smaller text size
-    //               style: ElevatedButton.styleFrom(
-    //                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller button padding
-    //               ),
-    //             ),
-    //           ),
-    //         )
+
     //       : const SizedBox(),
     // ],
     // )

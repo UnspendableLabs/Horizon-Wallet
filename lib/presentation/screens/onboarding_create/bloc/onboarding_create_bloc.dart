@@ -27,71 +27,69 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
   final addressService = GetIt.I<AddressService>();
 
   OnboardingCreateBloc() : super(OnboardingCreateState()) {
+    on<MnemonicSubmit>((event, emit) {
+      logger.d('Processing MnemonicSubmit event');
+      emit(state.copyWith(
+          createState: CreateStateLoading(), mnemonicState: GenerateMnemonicStateSuccess(mnemonic: event.mnemonic)));
+    });
+
     on<PasswordChanged>((event, emit) {
-      logger.d('Processing PasswordChanged event');
-      if (event.password != event.passwordConfirmation) {
-        logger.w('Passwords do not match');
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else if (event.password.length != 32) {
-        logger.w('Password must be 32 characters');
+      if (event.password.length != 32) {
         emit(state.copyWith(passwordError: "Password must be 32 characters.  Don't worry, we'll change this :)"));
       } else {
-        try {
-          String mnemonic = mnmonicService.generateMnemonic();
-          emit(state.copyWith(
-              password: event.password,
-              passwordError: null,
-              mnemonicState: GenerateMnemonicStateSuccess(mnemonic: mnemonic)));
-          logger.d('Mnemonic generated successfully');
-        } catch (e) {
-          logger.e({'message': 'Failed to generate mnemonic', 'error': e});
-          emit(state.copyWith(
-              password: event.password,
-              passwordError: null,
-              mnemonicState: GenerateMnemonicStateError(message: e.toString())));
-        }
+        emit(state.copyWith(password: event.password, passwordError: null));
+      }
+    });
+
+    on<PasswordConfirmationChanged>((event, emit) {
+      if (state.password != event.passwordConfirmation) {
+        emit(state.copyWith(passwordError: "Passwords do not match"));
       }
     });
 
     on<CreateWallet>((event, emit) async {
       logger.d('Processing CreateWallet event');
-      if (state.mnemonicState is GenerateMnemonicStateSuccess) {
-        emit(state.copyWith(createState: CreateStateLoading()));
-        try {
-          Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
+      emit(state.copyWith(createState: CreateStateLoading()));
+      try {
+        Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password);
+        print('WALLET: $wallet');
 
-          final decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
-
-          Account account = Account(
-            name: 'Account 0',
-            walletUuid: wallet.uuid,
-            purpose: '84\'',
-            coinType: _getCoinType(),
-            accountIndex: '0',
-            uuid: uuid.v4(),
-          );
-          Address address = await addressService.deriveAddressSegwit(
-              privKey: decryptedPrivKey,
-              chainCodeHex: wallet.chainCodeHex,
-              accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
-              account: account.accountIndex,
-              change: '0',
-              index: 0);
-
-          await walletRepository.insert(wallet);
-          await accountRepository.insert(account);
-          await addressRepository.insert(address);
-
-          emit(state.copyWith(createState: CreateStateSuccess()));
-        } catch (e) {
-          logger.e({'message': 'Failed to create wallet', 'error': e});
-          emit(state.copyWith(createState: CreateStateError(message: e.toString())));
+        String privKey;
+        if (state.password != null) {
+          privKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+        } else {
+          privKey = wallet.encryptedPrivKey;
         }
-      } else {
-        logger.w('Attempted to create wallet without successful mnemonic generation');
-        emit(state.copyWith(createState: CreateStateError(message: "Mnemonic generation not successful")));
+
+        Account account = Account(
+          name: 'Account 0',
+          walletUuid: wallet.uuid,
+          purpose: '84\'',
+          coinType: _getCoinType(),
+          accountIndex: '0',
+          uuid: uuid.v4(),
+        );
+
+        print(account);
+        Address address = await addressService.deriveAddressSegwit(
+            privKey: privKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: account.uuid,
+            purpose: account.purpose,
+            coin: account.coinType,
+            account: account.accountIndex,
+            change: '0',
+            index: 0);
+
+        print(address);
+        await walletRepository.insert(wallet);
+        await accountRepository.insert(account);
+        await addressRepository.insert(address);
+
+        emit(state.copyWith(createState: CreateStateSuccess()));
+      } catch (e) {
+        logger.e({'message': 'Failed to create wallet', 'error': e});
+        emit(state.copyWith(createState: CreateStateError(message: e.toString())));
       }
     });
 
@@ -102,10 +100,28 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       try {
         String mnemonic = mnmonicService.generateMnemonic();
 
-        emit(state.copyWith(mnemonicState: GenerateMnemonicStateSuccess(mnemonic: mnemonic)));
+        emit(state.copyWith(mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic)));
       } catch (e) {
         emit(state.copyWith(mnemonicState: GenerateMnemonicStateError(message: e.toString())));
       }
+    });
+
+    on<UnconfirmMnemonic>((event, emit) {
+      emit(state.copyWith(
+          mnemonicState: GenerateMnemonicStateUnconfirmed(mnemonic: state.mnemonicState.mnemonic),
+          createState: CreateStateMnemonicUnconfirmed));
+    });
+
+    on<ConfirmMnemonicChanged>((event, emit) {
+      if (state.mnemonicState.mnemonic != event.mnemonic) {
+        emit(state.copyWith(mnemonicError: 'Mnemonic does not match'));
+      } else {
+        emit(state.copyWith(mnemonicError: null));
+      }
+    });
+
+    on<ConfirmMnemonic>((event, emit) {
+      emit(state.copyWith(createState: CreateStateMnemonicConfirmed));
     });
   }
 
