@@ -6,6 +6,8 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 
 class OnboardingCreateScreen extends StatelessWidget {
+  const OnboardingCreateScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(create: (context) => OnboardingCreateBloc(), child: const OnboardingCreatePage_());
@@ -37,18 +39,23 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
           GoRouter.of(context).go('/dashboard');
         }
       },
-      child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Horizon')),
-          body: state.password != null
-              ? Mnemonic(state: state)
-              : PasswordPrompt(
-                  passwordController: _passwordController,
-                  passwordConfirmationController: _passwordConfirmationController,
-                  state: state,
-                ),
-        );
-      }),
+      child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+          builder: (context, state) => Scaffold(
+                appBar: AppBar(title: const Text('Horizon')),
+                body: switch (state.createState) {
+                  CreateStateNotAsked => const Mnemonic(),
+                  CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
+                      mnemonicErrorState: state.mnemonicError,
+                    ),
+                  CreateStateMnemonicConfirmed => PasswordPrompt(
+                      passwordController: _passwordController,
+                      passwordConfirmationController: _passwordConfirmationController,
+                      state: state,
+                    ),
+                  Object() => const Text(''),
+                  null => throw UnimplementedError(),
+                },
+              )),
     );
   }
 }
@@ -71,46 +78,85 @@ class PasswordPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 16, 16, 32),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Row(children: [
+            Text('Password', style: TextStyle(fontSize: 16)),
+            Tooltip(
+              message: 'Password to encrypt your wallet',
+              child: Icon(Icons.info, size: 16),
+            ),
+          ]),
           Expanded(
             child: Column(
               children: [
                 TextField(
+                  onChanged: (value) {
+                    context.read<OnboardingCreateBloc>().add(PasswordChanged(password: value));
+                  },
                   controller: _passwordController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Password',
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextField(
                   controller: _passwordConfirmationController,
-                  decoration: InputDecoration(
+                  onChanged: (value) {
+                    context
+                        .read<OnboardingCreateBloc>()
+                        .add(PasswordConfirmationChanged(passwordConfirmation: _passwordConfirmationController.text));
+                  },
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Confirm Password',
                   ),
                 ),
                 _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<OnboardingCreateBloc>().add(
-                              PasswordSubmit(
-                                password: _passwordController.text,
-                                passwordConfirmation: _passwordConfirmationController.text,
-                              ),
-                            );
-                      },
-                      child: const Text('Next'),
-                    ),
-                  ],
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => GoRouter.of(context).go('/onboarding'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else {
+                              context.read<OnboardingCreateBloc>().add(CreateWallet());
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          child: const Text('Create Wallet'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                // state.createState is CreateStateLoading ? CircularProgressIndicator() : const Text("")
               ],
             ),
           ),
@@ -120,46 +166,216 @@ class PasswordPrompt extends StatelessWidget {
   }
 }
 
-class Mnemonic extends StatelessWidget {
-  const Mnemonic({
-    super.key,
-    required OnboardingCreateState state,
-  }) : _state = state;
+class Mnemonic extends StatefulWidget {
+  const Mnemonic({super.key});
 
-  final OnboardingCreateState _state;
+  @override
+  State<Mnemonic> createState() => _MnemonicState();
+}
+
+class _MnemonicState extends State<Mnemonic> {
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<OnboardingCreateBloc>(context).add(GenerateMnemonic());
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        margin: EdgeInsets.fromLTRB(16, 16, 16, 32),
-        child: Column(
-          children: [
-            (_state.mnemonicState is GenerateMnemonicStateLoading
-                ? CircularProgressIndicator()
-                : _state.mnemonicState is GenerateMnemonicStateError
-                    ? Text("Error: ${_state.mnemonicState.message}")
-                    : _state.mnemonicState is GenerateMnemonicStateSuccess
-                        ? SelectableText(
-                            _state.mnemonicState.mnemonic,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 32,
-                            ),
-                          )
-                        : Text("")),
-            SizedBox(height: 16),
-            Row(
+    return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+      builder: (context, state) {
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          child: Column(
+            children: [
+              if (state.mnemonicState is GenerateMnemonicStateLoading)
+                const CircularProgressIndicator()
+              else if (state.mnemonicState is GenerateMnemonicStateGenerated)
+                SelectableText(
+                  state.mnemonicState.mnemonic,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                  ),
+                ),
+              const Text(
+                'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
+                style: TextStyle(
+                  fontWeight: FontWeight.w300,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => GoRouter.of(context).go('/onboarding'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: const Text('Continue'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ConfirmSeedInputFields extends StatefulWidget {
+  final String? mnemonicErrorState;
+  const ConfirmSeedInputFields({required this.mnemonicErrorState, super.key});
+  @override
+  State<ConfirmSeedInputFields> createState() => _ConfirmSeedInputFieldsState();
+}
+
+class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
+  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
+  List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
+
+  @override
+  void dispose() {
+    controllers.forEach((controller) => controller.dispose());
+    focusNodes.forEach((node) => node.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const Text(
+                    'Please confirm your seed phrase',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(3, (columnIndex) {
+                      return Expanded(
+                        child: Column(
+                          children: List.generate(4, (rowIndex) {
+                            int index = columnIndex * 4 + rowIndex;
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Text("${index + 1}. ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: controllers[index],
+                                      focusNode: focusNodes[index],
+                                      onChanged: (value) => handleInput(value, index),
+                                      decoration: InputDecoration(
+                                        labelText: 'Word ${index + 1}',
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      );
+                    }),
+                  ),
+                  widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    print('CREATE WALLET CLICKED');
-                    context.read<OnboardingCreateBloc>().add(CreateWallet());
-                  },
-                  child: const Text('Create Wallet'),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => context.read<OnboardingCreateBloc>().add(GoBackToMnemonic()),
+                    child: const Text('Back'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic());
+                    },
+                    child: const Text('Continue'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-          ],
-        ));
+          ),
+        ],
+      ),
+    );
+  }
+
+  void handleInput(String value, int index) {
+    var words = value.split(RegExp(r'\s+'));
+    if (words.length > 1 && index < 11) {
+      for (int i = 0; i < words.length && (index + i) < 12; i++) {
+        controllers[index + i].text = words[i];
+        if ((index + i + 1) < 12) {
+          FocusScope.of(context).requestFocus(focusNodes[index + i + 1]);
+        }
+      }
+    }
+    updateMnemonic();
+  }
+
+  void updateMnemonic() {
+    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
+    context.read<OnboardingCreateBloc>().add(ConfirmMnemonicChanged(mnemonic: mnemonic));
   }
 }

@@ -38,6 +38,7 @@ class WalletServiceImpl implements WalletService {
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
+@override
   Future<entity.Wallet> deriveRootFreewallet(String mnemonic, String password) async {
     Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
 

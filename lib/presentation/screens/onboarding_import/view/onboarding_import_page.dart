@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
@@ -11,16 +12,6 @@ class OnboardingImportPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
   }
-}
-
-enum ImportFormat {
-  segwit("Segwit", "Segwit (BIP84,P2WPKH,Bech32)"),
-  // legacy("Legacy", "BIP44,P2PKH,Base58"),
-  freewalletBech32("Freewallet-bech32", "Freewallet (Bech32)");
-
-  const ImportFormat(this.name, this.description);
-  final String name;
-  final String description;
 }
 
 class OnboardingImportPage_ extends StatefulWidget {
@@ -56,8 +47,11 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
           body: Column(
             children: [
               Flexible(
-                child: state.password != null
-                    ? SeedPrompt(seedPhraseController: _seedPhraseController, state: state)
+                child: state.importState == ImportStateNotAsked
+                    ? Padding(
+                        padding: EdgeInsets.all(MediaQuery.of(context).size.width > 600 ? 16.0 : 8.0),
+                        child: const SeedInputFields(),
+                      )
                     : PasswordPrompt(
                         passwordController: _passwordController,
                         passwordConfirmationController: _passwordConfirmationController,
@@ -93,6 +87,13 @@ class PasswordPrompt extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Row(children: [
+            Text('Password', style: TextStyle(fontSize: 16)),
+            Tooltip(
+              message: 'Password to encrypt your wallet',
+              child: Icon(Icons.info, size: 16),
+            ),
+          ]),
           Expanded(
             child: Column(
               children: [
@@ -101,6 +102,9 @@ class PasswordPrompt extends StatelessWidget {
                         const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                     child: TextField(
                       controller: _passwordController,
+                      onChanged: (value) {
+                        context.read<OnboardingImportBloc>().add(PasswordChanged(password: value));
+                      },
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Password',
@@ -112,6 +116,9 @@ class PasswordPrompt extends StatelessWidget {
                       const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                   child: TextField(
                     controller: _passwordConfirmationController,
+                    onChanged: (value) {
+                      context.read<OnboardingImportBloc>().add(PasswordConfirmationChanged(passwordConfirmation: value));
+                    },
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Confirm Password',
@@ -119,29 +126,212 @@ class PasswordPrompt extends StatelessWidget {
                   ),
                 ),
                 _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<OnboardingImportBloc>().add(
-                              PasswordSubmit(
-                                password: _passwordController.text,
-                                passwordConfirmation: _passwordConfirmationController.text,
-                              ),
-                            );
-                      },
-                      child: const Text('Next'),
-                    ),
-                  ],
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => GoRouter.of(context).go('/onboarding'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else {
+                              context.read<OnboardingImportBloc>().add(ImportWallet());
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          child: const Text('Submit'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                // state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
               ],
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+class SeedInputFields extends StatefulWidget {
+  const SeedInputFields({super.key});
+  @override
+  State<SeedInputFields> createState() => _SeedInputFieldsState();
+}
+
+class _SeedInputFieldsState extends State<SeedInputFields> {
+  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
+  List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
+  String? selectedFormat = ImportFormat.segwit.name;
+
+  @override
+  void dispose() {
+    controllers.forEach((controller) => controller.dispose());
+    focusNodes.forEach((node) => node.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(3, (columnIndex) {
+                      return Expanded(
+                        child: Column(
+                          children: List.generate(4, (rowIndex) {
+                            int index = columnIndex * 4 + rowIndex;
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Text("${index + 1}. ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: controllers[index],
+                                      focusNode: focusNodes[index],
+                                      onChanged: (value) => handleInput(value, index),
+                                      decoration: InputDecoration(
+                                        labelText: 'Word ${index + 1}',
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      );
+                    }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(4.0),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: selectedFormat,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedFormat = newValue;
+                              });
+                              context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
+                            },
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: ImportFormat.segwit.name,
+                                child: Text(ImportFormat.segwit.description),
+                              ),
+                              DropdownMenuItem<String>(
+                                value: ImportFormat.freewalletBech32.name,
+                                child: Text(ImportFormat.freewalletBech32.description),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => GoRouter.of(context).go('/onboarding'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    child: Text('Cancel'),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.read<OnboardingImportBloc>().add(MnemonicSubmit(
+                            mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
+                            importFormat: selectedFormat!,
+                          ));
+                    },
+                    child: const Text('Continue'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void handleInput(String value, int index) {
+    var words = value.split(RegExp(r'\s+'));
+    if (words.length > 1 && index < 11) {
+      for (int i = 0; i < words.length && (index + i) < 12; i++) {
+        controllers[index + i].text = words[i];
+        if ((index + i + 1) < 12) {
+          FocusScope.of(context).requestFocus(focusNodes[index + i + 1]);
+        }
+      }
+    }
+    updateMnemonic();
+  }
+
+  void updateMnemonic() {
+    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
+    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: mnemonic));
   }
 }
 
@@ -187,18 +377,9 @@ class SeedPrompt extends StatelessWidget {
                     DropdownMenu<String>(
                       label: const Text("Import format"),
                       onSelected: (newValue) {
-                        // newValue can't be null
                         context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
                       },
-
                       initialSelection: ImportFormat.segwit.name,
-
-                      // value: _selectedValue, // Currently selected value
-                      // onChanged: (newValue) {
-                      // setState(() {
-                      //   _selectedValue = newValue; // Update the selected value
-                      // });
-                      // },
                       dropdownMenuEntries: [
                         DropdownMenuEntry<String>(
                           value: ImportFormat.segwit.name,
@@ -217,16 +398,6 @@ class SeedPrompt extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 16),
-                // _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text(""),
-                // _state.getAddressesState is GetAddressesStateSuccess
-                //     ? AddressListView(
-                //         addresses: _state.getAddressesState.addresses,
-                //         isCheckedMap: _state.isCheckedMap,
-                //         onCheckedChanged: (address, checked) {
-                //           context.read<OnboardingImportBloc>().add(AddressMapChanged(address: address, isChecked: checked));
-                //         },
-                //       )
-                //     : const Text("")
               ])),
               _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
               Row(children: [

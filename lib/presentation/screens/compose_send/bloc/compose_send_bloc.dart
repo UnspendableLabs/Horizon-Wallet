@@ -66,8 +66,6 @@ _onSendTransactionEvent(SendTransactionEvent event, emit) async {
 
     emit(ComposeSendSuccess(transactionHex: txHex, sourceAddress: source.address));
   } catch (error, stackTrace) {
-    print(error.toString());
-    print(stackTrace.toString());
     if (error is DioException) {
       emit(ComposeSendError(message: "${error.response!.data.keys.first} ${error.response!.data.values.first}"));
     } else {

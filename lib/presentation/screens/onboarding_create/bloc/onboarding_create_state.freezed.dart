@@ -18,6 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$OnboardingCreateState {
   String? get password => throw _privateConstructorUsedError;
   String? get passwordError => throw _privateConstructorUsedError;
+  String? get mnemonicError => throw _privateConstructorUsedError;
   dynamic get mnemonicState => throw _privateConstructorUsedError;
   dynamic get createState => throw _privateConstructorUsedError;
 
@@ -35,6 +36,7 @@ abstract class $OnboardingCreateStateCopyWith<$Res> {
   $Res call(
       {String? password,
       String? passwordError,
+      String? mnemonicError,
       dynamic mnemonicState,
       dynamic createState});
 }
@@ -55,6 +57,7 @@ class _$OnboardingCreateStateCopyWithImpl<$Res,
   $Res call({
     Object? password = freezed,
     Object? passwordError = freezed,
+    Object? mnemonicError = freezed,
     Object? mnemonicState = freezed,
     Object? createState = freezed,
   }) {
@@ -66,6 +69,10 @@ class _$OnboardingCreateStateCopyWithImpl<$Res,
       passwordError: freezed == passwordError
           ? _value.passwordError
           : passwordError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      mnemonicError: freezed == mnemonicError
+          ? _value.mnemonicError
+          : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
       mnemonicState: freezed == mnemonicState
           ? _value.mnemonicState
@@ -91,6 +98,7 @@ abstract class _$$OnboardingCreateStateImplCopyWith<$Res>
   $Res call(
       {String? password,
       String? passwordError,
+      String? mnemonicError,
       dynamic mnemonicState,
       dynamic createState});
 }
@@ -109,6 +117,7 @@ class __$$OnboardingCreateStateImplCopyWithImpl<$Res>
   $Res call({
     Object? password = freezed,
     Object? passwordError = freezed,
+    Object? mnemonicError = freezed,
     Object? mnemonicState = freezed,
     Object? createState = freezed,
   }) {
@@ -120,6 +129,10 @@ class __$$OnboardingCreateStateImplCopyWithImpl<$Res>
       passwordError: freezed == passwordError
           ? _value.passwordError
           : passwordError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      mnemonicError: freezed == mnemonicError
+          ? _value.mnemonicError
+          : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
       mnemonicState:
           freezed == mnemonicState ? _value.mnemonicState! : mnemonicState,
@@ -134,6 +147,7 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
   const _$OnboardingCreateStateImpl(
       {this.password,
       this.passwordError,
+      this.mnemonicError,
       this.mnemonicState = GenerateMnemonicStateNotAsked,
       this.createState = CreateStateNotAsked});
 
@@ -141,6 +155,8 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
   final String? password;
   @override
   final String? passwordError;
+  @override
+  final String? mnemonicError;
   @override
   @JsonKey()
   final dynamic mnemonicState;
@@ -150,7 +166,7 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
 
   @override
   String toString() {
-    return 'OnboardingCreateState(password: $password, passwordError: $passwordError, mnemonicState: $mnemonicState, createState: $createState)';
+    return 'OnboardingCreateState(password: $password, passwordError: $passwordError, mnemonicError: $mnemonicError, mnemonicState: $mnemonicState, createState: $createState)';
   }
 
   @override
@@ -162,6 +178,8 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
                 other.password == password) &&
             (identical(other.passwordError, passwordError) ||
                 other.passwordError == passwordError) &&
+            (identical(other.mnemonicError, mnemonicError) ||
+                other.mnemonicError == mnemonicError) &&
             const DeepCollectionEquality()
                 .equals(other.mnemonicState, mnemonicState) &&
             const DeepCollectionEquality()
@@ -173,6 +191,7 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
       runtimeType,
       password,
       passwordError,
+      mnemonicError,
       const DeepCollectionEquality().hash(mnemonicState),
       const DeepCollectionEquality().hash(createState));
 
@@ -188,6 +207,7 @@ abstract class _OnboardingCreateState implements OnboardingCreateState {
   const factory _OnboardingCreateState(
       {final String? password,
       final String? passwordError,
+      final String? mnemonicError,
       final dynamic mnemonicState,
       final dynamic createState}) = _$OnboardingCreateStateImpl;
 
@@ -195,6 +215,8 @@ abstract class _OnboardingCreateState implements OnboardingCreateState {
   String? get password;
   @override
   String? get passwordError;
+  @override
+  String? get mnemonicError;
   @override
   dynamic get mnemonicState;
   @override

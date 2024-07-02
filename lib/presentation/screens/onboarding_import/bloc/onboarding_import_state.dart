@@ -1,19 +1,13 @@
 // TODO: research part of / equatable
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 
 part 'onboarding_import_state.freezed.dart';
 
-enum ImportFormat {
-  segwit("Segwit", "Segwit (BIP84,P2WPKH,Bech32)"),
-  // legacy("Legacy", "BIP44,P2PKH,Base58"),
-  freewalletBech32("Freewallet-bech32", "Freewallet (Bech32)");
 
-  const ImportFormat(this.name, this.description);
-  final String name;
-  final String description;
-}
 
 @freezed
 class OnboardingImportState with _$OnboardingImportState {
@@ -52,6 +46,8 @@ class GetAddressesStateError extends GetAddressesState {
 abstract class ImportState {}
 
 class ImportStateNotAsked extends ImportState {}
+
+class ImportStateMnemonicCollected extends ImportState {}
 
 class ImportStateLoading extends ImportState {}
 

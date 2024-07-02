@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -25,14 +26,25 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
   final encryptionService = GetIt.I<EncryptionService>();
 
   OnboardingImportBloc() : super(OnboardingImportState()) {
-    on<PasswordSubmit>((event, emit) {
-      if (event.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else if (event.password.length != 32) {
-        emit(state.copyWith(passwordError: "Password must be 32 characters.  Don't worry, we'll change this :)"));
+    on<PasswordChanged>((event, emit) {
+      if (event.password.length != 32) {
+        emit(state.copyWith(passwordError: "Password must be 32 characters."));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
+    });
+
+    on<PasswordConfirmationChanged>((event, emit) {
+      if (state.password != event.passwordConfirmation) {
+        emit(state.copyWith(passwordError: "Passwords do not match"));
+      } else {
+        emit(state.copyWith(passwordError: null));
+      }
+    });
+
+
+    on<PasswordError>((event, emit) {
+      emit(state.copyWith(passwordError: event.error));
     });
 
     on<MnemonicChanged>((event, emit) async {
@@ -44,20 +56,26 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
       emit(state.copyWith(importFormat: importFormat));
     });
 
-    on<ImportWallet>((event, emit) async {
+    on<MnemonicSubmit>((event, emit) async {
       bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
       if (!validMnemonic) {
         emit(state.copyWith(importState: ImportStateError(message: "Invalid mnemonic")));
         return;
       }
+      ImportFormat importFormat = event.importFormat == "Segwit" ? ImportFormat.segwit : ImportFormat.freewalletBech32;
+      emit(
+          state.copyWith(importState: ImportStateMnemonicCollected(), importFormat: importFormat, mnemonic: event.mnemonic));
+    });
 
+    on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
       try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
             Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
 
-            final decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+
             //m/84'/1'/0'/0
             Account account0 = Account(
               name: 'Account #0',
@@ -66,8 +84,9 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
               coinType: '${_getCoinType()}\'',
               accountIndex: '0\'',
               uuid: uuid.v4(),
+              importFormat: ImportFormat.segwit,
             );
-            
+
             Address address0 = await addressService.deriveAddressSegwit(
                 privKey: decryptedPrivKey,
                 chainCodeHex: wallet.chainCodeHex,
@@ -88,9 +107,9 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
 
             break;
           case ImportFormat.freewalletBech32:
-            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRootFreewallet(state.mnemonic, state.password!);
 
-            final decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
             Account account = Account(
                 name: 'Account 0',
@@ -98,7 +117,8 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
                 purpose: '32', // unused in Freewallet path
                 coinType: _getCoinType(),
                 accountIndex: '0\'',
-                uuid: uuid.v4());
+                uuid: uuid.v4(),
+                importFormat: ImportFormat.freewalletBech32);
 
             List<Address> addresses = await addressService.deriveAddressFreewalletBech32Range(
                 privKey: decryptedPrivKey,
@@ -124,8 +144,6 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         return;
       } catch (e, stackTrace) {
         emit(state.copyWith(importState: ImportStateError(message: e.toString())));
-        print(e.toString());
-        print(stackTrace);
         return;
       }
     });
