@@ -29,10 +29,10 @@ class WalletServiceImpl implements WalletService {
 
     String privKey = hex.encode(root.privateKey!.toDart);
 
-    String storedKey = await encryptionService.encrypt(privKey, password);
+    String encryptedPrivKey = await encryptionService.encrypt(privKey, password);
 
     return entity.Wallet(
-        uuid: uuid.v4(), name: 'Wallet 1', encryptedPrivKey: storedKey, chainCodeHex: hex.encode(root.chainCode.toDart));
+        uuid: uuid.v4(), name: 'Wallet 1', encryptedPrivKey: encryptedPrivKey, chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
   Future<entity.Wallet> deriveRootFreewallet(String mnemonic, String password) async {
@@ -46,10 +46,10 @@ class WalletServiceImpl implements WalletService {
 
     String privKey = hex.encode(root.privateKey!.toDart);
 
-    String storedKey = await encryptionService.encrypt(privKey, password);
+    String encryptedPrivKey = await encryptionService.encrypt(privKey, password);
 
     return entity.Wallet(
-        uuid: uuid.v4(), name: 'Wallet 1', encryptedPrivKey: storedKey, chainCodeHex: hex.encode(root.chainCode.toDart));
+        uuid: uuid.v4(), name: 'Wallet 1', encryptedPrivKey: encryptedPrivKey, chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
   _getNetwork() {

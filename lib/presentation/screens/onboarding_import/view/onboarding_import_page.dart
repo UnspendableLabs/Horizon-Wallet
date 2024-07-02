@@ -135,7 +135,7 @@ class PasswordPrompt extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => GoRouter.of(context).go('/onboarding'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey, // Background color
+                            backgroundColor: Colors.grey,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
@@ -155,7 +155,7 @@ class PasswordPrompt extends StatelessWidget {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor, // Background color
+                            backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
@@ -167,7 +167,6 @@ class PasswordPrompt extends StatelessWidget {
                     ],
                   ),
                 ),
-                // state.importState is ImportStateLoading ? CircularProgressIndicator() : const Text("")
               ],
             ),
           ),
@@ -281,7 +280,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                   child: ElevatedButton(
                     onPressed: () => GoRouter.of(context).go('/onboarding'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey, // Background color
+                      backgroundColor: Colors.grey,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
@@ -301,7 +300,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     },
                     child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor, // Background color
+                      backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
@@ -378,13 +377,9 @@ class SeedPrompt extends StatelessWidget {
                     DropdownMenu<String>(
                       label: const Text("Import format"),
                       onSelected: (newValue) {
-                        // newValue can't be null
                         context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
                       },
-
                       initialSelection: ImportFormat.segwit.name,
-
-
                       dropdownMenuEntries: [
                         DropdownMenuEntry<String>(
                           value: ImportFormat.segwit.name,
@@ -403,7 +398,6 @@ class SeedPrompt extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 16),
-                // _state.getAddressesState is GetAddressesStateError ? Text(_state.getAddressesState.message) : const Text("")
               ])),
               _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
               Row(children: [

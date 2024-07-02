@@ -74,7 +74,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
           case ImportFormat.segwit:
             Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
 
-            String encryptedPrivateKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
             //m/84'/1'/0'/0
             //m/84'/1'/0'/0
@@ -89,7 +89,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
             );
 
             Address address0 = await addressService.deriveAddressSegwit(
-                privKey: encryptedPrivateKey,
+                privKey: decryptedPrivKey,
                 chainCodeHex: wallet.chainCodeHex,
                 accountUuid: account0.uuid,
                 purpose: account0.purpose,
@@ -110,7 +110,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
           case ImportFormat.freewalletBech32:
             Wallet wallet = await walletService.deriveRootFreewallet(state.mnemonic, state.password!);
 
-            String encryptedPrivateKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
             Account account = Account(
                 name: 'Account 0',
@@ -122,7 +122,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
                 importFormat: ImportFormat.freewalletBech32);
 
             List<Address> addresses = await addressService.deriveAddressFreewalletBech32Range(
-                privKey: encryptedPrivateKey,
+                privKey: decryptedPrivKey,
                 chainCodeHex: wallet.chainCodeHex,
                 accountUuid: account.uuid,
                 purpose: account.purpose,

@@ -1,5 +1,3 @@
-import 'package:horizon/common/constants.dart';
-
 abstract class AccountFormEvent {}
 
 class Submit extends AccountFormEvent {

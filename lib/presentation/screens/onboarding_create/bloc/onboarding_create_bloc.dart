@@ -58,7 +58,7 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       try {
         Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
 
-        String encryptedPrivateKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+        String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
         Account account = Account(
             name: 'Account 0',
@@ -70,7 +70,7 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
             importFormat: ImportFormat.segwit);
 
         Address address = await addressService.deriveAddressSegwit(
-            privKey: encryptedPrivateKey,
+            privKey: decryptedPrivKey,
             chainCodeHex: wallet.chainCodeHex,
             accountUuid: account.uuid,
             purpose: account.purpose,
