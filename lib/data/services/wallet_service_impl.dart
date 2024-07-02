@@ -1,6 +1,8 @@
 import 'dart:js_interop';
+import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/seed.dart';
@@ -20,6 +22,7 @@ class WalletServiceImpl implements WalletService {
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
+  @override
   Future<entity.Wallet> deriveRoot(String mnemonic, String password) async {
     final network = _getNetwork();
 
@@ -29,7 +32,8 @@ class WalletServiceImpl implements WalletService {
 
     String privKey = hex.encode(root.privateKey!.toDart);
 
-    String encryptedPrivKey = await encryptionService.encrypt(privKey, password);
+    String encryptedPrivKey =
+        await encryptionService.encrypt(privKey, password);
 
     return entity.Wallet(
         uuid: uuid.v4(),
@@ -51,12 +55,48 @@ class WalletServiceImpl implements WalletService {
 
     String privKey = hex.encode(root.privateKey!.toDart);
 
-    String encryptedPrivKey = await encryptionService.encrypt(privKey, password);
+    String encryptedPrivKey =
+        await encryptionService.encrypt(privKey, password);
 
     return entity.Wallet(
         uuid: uuid.v4(),
         name: 'Wallet 1',
         encryptedPrivKey: encryptedPrivKey,
+        publicKey: root.neutered().toBase58(),
+        chainCodeHex: hex.encode(root.chainCode.toDart));
+  }
+
+  // TODO: this is only used for now to validate password
+  // so we can use dummy fields for uuid, name,
+  // encryptedPK.  we just want to make sure that
+  // the generated public key matched current wallet.
+  @override
+  Future<entity.Wallet> fromPrivateKey(
+      String privateKey, String chainCodeHex) async {
+    Uint8List privateKeyBytes = hex.decode(privateKey) as Uint8List;
+    Buffer privateKeyBuffer = Buffer.from(privateKeyBytes.toJS);
+
+    Uint8List chainCodeHexBytes = hex.decode(chainCodeHex) as Uint8List;
+    Buffer chainCodeHexBuffer = Buffer.from(chainCodeHexBytes.toJS);
+
+    bip32.BIP32Interface root =
+        _bip32.fromPrivateKey(privateKeyBuffer, chainCodeHexBuffer, _getNetwork());
+
+    // String privKey = hex.encode(root.privateKey!.toDart);
+    //
+    // print("original privateKey $privateKey");
+    //
+    // print("compare $privateKey");
+    //
+    // print("compre2 ${root.neutered().toBase58()}");
+
+
+
+
+    return entity.Wallet(
+        uuid: '',
+        name: '',
+        encryptedPrivKey: "",
         publicKey: root.neutered().toBase58(),
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }

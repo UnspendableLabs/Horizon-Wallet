@@ -9,6 +9,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
@@ -31,6 +32,7 @@ import 'package:horizon/domain/repositories/account_settings_repository.dart';
 
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/view/addresses_page.dart';
@@ -151,27 +153,6 @@ class AppRouter {
                   },
                 ),
               ]),
-              // StatefulShellBranch(
-              //   routes: [
-              //     GoRoute(
-              //         path: "/addresses",
-              //         builder: (context, state) {
-              //           final shell = context.watch<ShellStateCubit>();
-              //           final accountSettingsRepository =
-              //               GetIt.I<AccountSettingsRepository>();
-              //
-              //           return shell.state.maybeWhen(
-              //             success: (state) {
-              //               return AddressesPage(
-              //                 key: Key(state.currentAccountUuid),
-              //                 accountUuid: state.currentAccountUuid,
-              //               );
-              //             },
-              //             orElse: () => SizedBox.shrink(),
-              //           );
-              //         })
-              //   ],
-              // ),
               StatefulShellBranch(
                 routes: [
                   GoRoute(
@@ -201,10 +182,14 @@ class AppRouter {
             ])
       ],
       redirect: (context, state) async {
+
+  
+
         final shell = context.read<ShellStateCubit>();
 
-        return shell.state.maybeWhen(
+        final path =  shell.state.maybeWhen(
             success: (data) {
+              print("shell.state ${shell.state}");
               Future.delayed(const Duration(milliseconds: 500), () {
                 shell.initialized();
               });
@@ -221,6 +206,10 @@ class AppRouter {
             },
             // if the shell state is not yet loaded, show a loading screen
             orElse: () => "/");
+
+
+        return path;
+
       });
 }
 
@@ -266,7 +255,11 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
         providers: [
           BlocProvider<PasswordPromptBloc>(
-              create: (context) => PasswordPromptBloc()),
+              create: (context) => PasswordPromptBloc(
+                walletService: GetIt.I<WalletService>(),
+                walletRepository: GetIt.I<WalletRepository>(),
+                encryptionService: GetIt.I<EncryptionService>(),
+              )),
           BlocProvider<ShellStateCubit>(
             create: (context) => ShellStateCubit(
                 walletRepository: GetIt.I<WalletRepository>(),
@@ -274,13 +267,14 @@ class MyApp extends StatelessWidget {
               ..initialize(),
           ),
           BlocProvider<AccountFormBloc>(create: (context) => AccountFormBloc()),
-          BlocProvider(
-              create: (context) => AddressesBloc(
-                    walletRepository: GetIt.I<WalletRepository>(),
-                    accountRepository: GetIt.I<AccountRepository>(),
-                    addressService: GetIt.I<AddressService>(),
-                    encryptionService: GetIt.I<EncryptionService>(),
-                  ))
+          // BlocProvider(
+          //     create: (context) => AddressesBloc(
+          //           walletRepository: GetIt.I<WalletRepository>(),
+          //           accountRepository: GetIt.I<AccountRepository>(),
+          //           addressService: GetIt.I<AddressService>(),
+          //           addressRepository: GetIt.I<AddressRepository>(),
+          //           encryptionService: GetIt.I<EncryptionService>(),
+          //         ))
          
         ],
         child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(

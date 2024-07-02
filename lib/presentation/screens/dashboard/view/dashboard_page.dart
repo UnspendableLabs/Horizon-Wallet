@@ -50,10 +50,10 @@ class _DashboardPage_State extends State<_DashboardPage> {
   void initState() {
     super.initState();
 
-    context.read<AddressesBloc>().add(Generate(
-          accountUuid: widget.accountUuid,
-          gapLimit: accountSettingsRepository.getGapLimit(widget.accountUuid),
-        ));
+    // context.read<AddressesBloc>().add(Generate(
+    //       accountUuid: widget.accountUuid,
+    //       gapLimit: accountSettingsRepository.getGapLimit(widget.accountUuid),
+    //     ));
   }
 
   @override

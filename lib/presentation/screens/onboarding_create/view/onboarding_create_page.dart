@@ -5,12 +5,16 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 
+import 'dart:html' as html;
+
 class OnboardingCreateScreen extends StatelessWidget {
   const OnboardingCreateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OnboardingCreateBloc(), child: const OnboardingCreatePage_());
+    return BlocProvider(
+        create: (context) => OnboardingCreateBloc(),
+        child: const OnboardingCreatePage_());
   }
 }
 
@@ -21,8 +25,10 @@ class OnboardingCreatePage_ extends StatefulWidget {
 }
 
 class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
-  final TextEditingController _passwordController = TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
+  final TextEditingController _passwordController =
+      TextEditingController(text: "");
+  final TextEditingController _passwordConfirmationController =
+      TextEditingController(text: "");
 
   @override
   dispose() {
@@ -36,11 +42,15 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
     return BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
       listener: (context, state) {
         if (state.createState is CreateStateSuccess) {
-          GoRouter.of(context).go('/dashboard');
+          // TODO: this is a total hack to fix a routing bug
+          // at the end of the import flow
+          html.window.location.reload();
+          // GoRouter.of(context).go('/dashboard');
         }
       },
       child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
-          builder: (context, state) => Scaffold(
+          builder: (context, state) {
+        return Scaffold(
                 appBar: AppBar(title: const Text('Horizon')),
                 body: switch (state.createState) {
                   CreateStateNotAsked => const Mnemonic(),
@@ -54,8 +64,8 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                     ),
                   Object() => const Text(''),
                   null => throw UnimplementedError(),
-                },
-              )),
+        });
+      }),
     );
   }
 }

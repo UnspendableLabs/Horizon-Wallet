@@ -11,6 +11,7 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:horizon/domain/repositories/materialized_address_repository.dart';
@@ -25,6 +26,7 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
   AccountRepository accountRepository;
   AddressService addressService;
   EncryptionService encryptionService;
+  AddressRepository addressRepository;
 
   final Map<(Account, int), Address> _cache = {};
 
@@ -35,10 +37,29 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
     required this.accountRepository,
     required this.addressService,
     required this.encryptionService,
+    required this.addressRepository,
   }) : super(const AddressesState.initial()) {
-    on<Generate>(
+    on<GetAll>((event, emit) async {
+
+      print("GetAll event: ${event.accountUuid}");
+
+      emit(const AddressesState.loading());
+
+      try {
+        List<Address> addresses =
+            await addressRepository.getAllByAccountUuid(event.accountUuid);
+
+        emit(AddressesState.success(addresses));
+      } catch (e) {
+        emit(const AddressesState.error("Failed to load addresses"));
+      }
+    });
+
+    on<Update>(
       (event, emit) async {
         emit(const AddressesState.loading());
+
+        print("Updat event: ${event.accountUuid}");
 
         try {
           Account? account =
@@ -57,7 +78,7 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
           }
 
           String decryptedPrivKey = await encryptionService.decrypt(
-              wallet.encryptedPrivKey, "UXGmJfeqoLXKGKk9tdk26hQvwIRpI6vm");
+              wallet.encryptedPrivKey, event.password);
 
           for (int i = 0; i < event.gapLimit; i++) {
             if (_cache.containsKey((account, i))) {
@@ -82,6 +103,10 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
 
           _data[account] = addresses;
 
+          addressRepository.deleteAddresses(account.uuid);
+
+          addressRepository.insertMany(addresses);
+
           emit(AddressesState.success(addresses));
         } catch (e) {
           emit(AddressesState.error(e.toString()));
@@ -89,10 +114,8 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
       },
       transformer: debounce(const Duration(milliseconds: 200)),
     );
-
   }
 }
-
 
 EventTransformer<Event> debounce<Event>(Duration duration) {
   return (Stream<Event> events, Stream<Event> Function(Event) mapper) => events
@@ -100,7 +123,9 @@ EventTransformer<Event> debounce<Event>(Duration duration) {
         StreamTransformer<Event, Event>.fromHandlers(
           handleData: (Event event, EventSink<Event> sink) => sink.add(event),
           handleDone: (EventSink<Event> sink) => sink.close(),
-          handleError: (Object error, StackTrace stackTrace, EventSink<Event> sink) => sink.addError(error, stackTrace),
+          handleError:
+              (Object error, StackTrace stackTrace, EventSink<Event> sink) =>
+                  sink.addError(error, stackTrace),
         ),
       )
       .debounceTime(duration)

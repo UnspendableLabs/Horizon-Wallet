@@ -10,6 +10,16 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
+import 'package:get_it/get_it.dart';
+
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
+import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
+import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 
 const double _bottomPaddingForButton = 150.0;
 const double _buttonHeight = 56.0;
@@ -82,6 +92,8 @@ class Shell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shell = context.watch<ShellStateCubit>();
+
     SliverWoltModalSheetPage page1(
       BuildContext modalSheetContext,
       TextTheme textTheme,
@@ -107,30 +119,9 @@ class Shell extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-          child: Row(
-        children: <Widget>[
+        child: Row(children: <Widget>[
           NavigationRail(
-          onDestinationSelected: _onDestinationSelected,
-            
-            // onDestinationSelected: (index) {
-            //   switch (index) {
-            //     case 0:
-            //       GoRouter.of(context).replace("/dashboard");
-            //       break;
-            //     case 1:
-            //       GoRouter.of(context).replace("/compose/send");
-            //       break;
-            //     case 2:
-            //       GoRouter.of(context).replace("/compose/issuance");
-            //       break;
-            //     case 3:
-            //       GoRouter.of(context).replace("/addresses");
-            //       break;
-            //     case 4:
-            //       GoRouter.of(context).replace("/settings");
-            //       break;
-            //   }
-            // },
+            onDestinationSelected: _onDestinationSelected,
             selectedIndex: navigationShell.currentIndex,
             labelType: NavigationRailLabelType.all,
             destinations: const <NavigationRailDestination>[
@@ -149,11 +140,6 @@ class Shell extends StatelessWidget {
                 selectedIcon: Icon(Icons.toll),
                 label: Text('Issuance'),
               ),
-              // NavigationRailDestination(
-              //   icon: Icon(Icons.list),
-              //   selectedIcon: Icon(Icons.list),
-              //   label: Text('Addresses'),
-              // ),
               NavigationRailDestination(
                 icon: Icon(Icons.settings),
                 selectedIcon: Icon(Icons.settings),
@@ -164,34 +150,56 @@ class Shell extends StatelessWidget {
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
               child: Scaffold(
-            appBar: AppBar(
-              title: Row(children: [
-                const AccountDropdownButton(),
-                IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      WoltModalSheet.show<void>(
-                        context: context,
-                        pageListBuilder: (modalSheetContext) {
-                          final textTheme = Theme.of(context).textTheme;
-                          return [page1(modalSheetContext, textTheme)];
-                        },
-                        modalTypeBuilder: (context) {
-                          final size = MediaQuery.sizeOf(context).width;
-                          if (size < 768.0) {
-                            return WoltModalType.bottomSheet;
-                          } else {
-                            return WoltModalType.dialog;
-                          }
-                        },
-                      );
-                    })
-              ]),
-            ),
-            body: navigationShell,
-          ))
-        ],
-      )),
+                  appBar: AppBar(
+                    title: Row(children: [
+                      const AccountDropdownButton(),
+                      IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            WoltModalSheet.show<void>(
+                              context: context,
+                              pageListBuilder: (modalSheetContext) {
+                                final textTheme = Theme.of(context).textTheme;
+                                return [page1(modalSheetContext, textTheme)];
+                              },
+                              onModalDismissedWithBarrierTap: () {
+                                print("dismissed with barrier tap");
+                              },
+                              modalTypeBuilder: (context) {
+                                final size = MediaQuery.sizeOf(context).width;
+                                if (size < 768.0) {
+                                  return WoltModalType.bottomSheet;
+                                } else {
+                                  return WoltModalType.dialog;
+                                }
+                              },
+                            );
+                          })
+                    ]),
+                  ),
+                  // don't render any route children until
+
+                  body: shell.state.when(
+                    initial: () => const Text("loading..."),
+                    loading: () => const Text("loading..."),
+                    error: (e) => const Text("error"),
+                    success: (shell) {
+                      return BlocProvider<AddressesBloc>(
+                          key: Key(shell.currentAccountUuid),
+                          child: navigationShell,
+                          create: (_) => AddressesBloc(
+                                
+                                walletRepository: GetIt.I<WalletRepository>(),
+                                accountRepository: GetIt.I<AccountRepository>(),
+                                addressService: GetIt.I<AddressService>(),
+                                addressRepository: GetIt.I<AddressRepository>(),
+                                encryptionService: GetIt.I<EncryptionService>(),
+                              )..add(GetAll(
+                                  accountUuid: shell.currentAccountUuid)));
+                    },
+                  )))
+        ]),
+      ),
     );
   }
 

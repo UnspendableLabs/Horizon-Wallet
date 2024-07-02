@@ -50,4 +50,22 @@ abstract class AddressService {
       required String account,
       required String change,
       required int index});
+
+  // Future<Address> deriveAddressSegwitPublicKey(
+  //     {required String publicKey,
+  //     required String purpose,
+  //     required String coin,
+  //     required String account,
+  //     required String change,
+  //     required int index});
+  //
+  // Future<List<Address>> deriveAddressSegwitPublicKeyRange({
+  //   required String publicKey,
+  //   required String purpose,
+  //   required String coin,
+  //   required String account,
+  //   required String change,
+  //   required int start,
+  //   required int end,
+  // });
 }

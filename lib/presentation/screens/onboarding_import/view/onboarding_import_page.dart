@@ -7,6 +7,8 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
+import 'dart:html' as html;
+
 class OnboardingImportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -36,9 +38,13 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<OnboardingImportBloc, OnboardingImportState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state.importState is ImportStateSuccess) {
-          GoRouter.of(context).go('/dashboard');
+
+          // TODO: this is a total hack to fix a routing bug
+          // at the end of the import flow
+          html.window.location.reload();
+          // GoRouter.of(context).go('/dashboard');
         }
       },
       child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
