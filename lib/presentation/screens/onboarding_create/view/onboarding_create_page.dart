@@ -125,7 +125,7 @@ class PasswordPrompt extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => GoRouter.of(context).go('/onboarding'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey, // Background color
+                            backgroundColor: Colors.grey,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
@@ -145,7 +145,7 @@ class PasswordPrompt extends StatelessWidget {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor, // Background color
+                            backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
@@ -177,7 +177,6 @@ class _MnemonicState extends State<Mnemonic> {
   @override
   void initState() {
     super.initState();
-    // Dispatching the GenerateMnemonic event to the Bloc
     BlocProvider.of<OnboardingCreateBloc>(context).add(GenerateMnemonic());
   }
 
@@ -215,7 +214,7 @@ class _MnemonicState extends State<Mnemonic> {
                       child: ElevatedButton(
                         onPressed: () => GoRouter.of(context).go('/onboarding'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey, // Background color
+                          backgroundColor: Colors.grey,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
@@ -231,7 +230,7 @@ class _MnemonicState extends State<Mnemonic> {
                           context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor, // Background color
+                          backgroundColor: Theme.of(context).primaryColor,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
@@ -330,7 +329,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     onPressed: () => context.read<OnboardingCreateBloc>().add(GoBackToMnemonic()),
                     child: const Text('Back'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey, // Background color
+                      backgroundColor: Colors.grey,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
@@ -346,7 +345,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     },
                     child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor, // Background color
+                      backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),

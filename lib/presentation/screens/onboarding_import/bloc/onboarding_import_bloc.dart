@@ -77,7 +77,6 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
             String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
             //m/84'/1'/0'/0
-            //m/84'/1'/0'/0
             Account account0 = Account(
               name: 'Account #0',
               walletUuid: wallet.uuid,

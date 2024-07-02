@@ -113,7 +113,22 @@ class _DashboardPage_State extends State<_DashboardPage_> {
     //   ),
     // ),
     //   kDebugMode
-
+    //       ? Align(
+    //           alignment: Alignment.bottomRight,
+    //           child: Container(
+    //             padding: EdgeInsets.all(8.0), // Adjust padding as needed
+    //             child: ElevatedButton(
+    //               onPressed: () {
+    //                 context.read<DashboardBloc>().add(DeleteWallet());
+    //                 GoRouter.of(context).go('/onboarding');
+    //               },
+    //               child: Text("Delete DB", style: TextStyle(fontSize: 12)), // Smaller text size
+    //               style: ElevatedButton.styleFrom(
+    //                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller button padding
+    //               ),
+    //             ),
+    //           ),
+    //         )
     //       : const SizedBox(),
     // ],
     // )
