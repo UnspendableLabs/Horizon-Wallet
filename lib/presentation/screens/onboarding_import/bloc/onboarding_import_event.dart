@@ -12,6 +12,11 @@ class PasswordConfirmationChanged extends OnboardingImportEvent {
   PasswordConfirmationChanged({required this.passwordConfirmation});
 }
 
+class PasswordError extends OnboardingImportEvent {
+  final String error;
+  PasswordError({required this.error});
+}
+
 class MnemonicChanged extends OnboardingImportEvent {
   final String mnemonic;
   MnemonicChanged({required this.mnemonic});

@@ -82,6 +82,13 @@ class PasswordPrompt extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Row(children: [
+            Text('Password', style: TextStyle(fontSize: 16)),
+            Tooltip(
+              message: 'Password to encrypt your wallet',
+              child: Icon(Icons.info, size: 16),
+            ),
+          ]),
           Expanded(
             child: Column(
               children: [
@@ -131,7 +138,11 @@ class PasswordPrompt extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            context.read<OnboardingCreateBloc>().add(CreateWallet());
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else {
+                              context.read<OnboardingCreateBloc>().add(CreateWallet());
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor, // Background color

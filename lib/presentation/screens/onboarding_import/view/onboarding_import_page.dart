@@ -42,8 +42,6 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
         }
       },
       child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
-        print('state: ${state.importState}');
-        print(state.importState == ImportStateNotAsked);
         return Scaffold(
           appBar: AppBar(title: const Text('Horizon')),
           body: Column(
@@ -52,7 +50,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                 child: state.importState == ImportStateNotAsked
                     ? Padding(
                         padding: EdgeInsets.all(MediaQuery.of(context).size.width > 600 ? 16.0 : 8.0),
-                        child: SeedInputFields(),
+                        child: const SeedInputFields(),
                       )
                     : PasswordPrompt(
                         passwordController: _passwordController,
@@ -89,6 +87,13 @@ class PasswordPrompt extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Row(children: [
+            Text('Password', style: TextStyle(fontSize: 16)),
+            Tooltip(
+              message: 'Password to encrypt your wallet',
+              child: Icon(Icons.info, size: 16),
+            ),
+          ]),
           Expanded(
             child: Column(
               children: [
@@ -143,7 +148,11 @@ class PasswordPrompt extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            context.read<OnboardingImportBloc>().add(ImportWallet());
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else {
+                              context.read<OnboardingImportBloc>().add(ImportWallet());
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor, // Background color
@@ -375,12 +384,7 @@ class SeedPrompt extends StatelessWidget {
 
                       initialSelection: ImportFormat.segwit.name,
 
-                      // value: _selectedValue, // Currently selected value
-                      // onChanged: (newValue) {
-                      // setState(() {
-                      //   _selectedValue = newValue; // Update the selected value
-                      // });
-                      // },
+
                       dropdownMenuEntries: [
                         DropdownMenuEntry<String>(
                           value: ImportFormat.segwit.name,

@@ -28,7 +28,7 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
   OnboardingImportBloc() : super(OnboardingImportState()) {
     on<PasswordChanged>((event, emit) {
       if (event.password.length != 32) {
-        emit(state.copyWith(passwordError: "Password must be 32 characters.  Don't worry, we'll change this :)"));
+        emit(state.copyWith(passwordError: "Password must be 32 characters."));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
@@ -40,6 +40,11 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
       } else {
         emit(state.copyWith(passwordError: null));
       }
+    });
+
+
+    on<PasswordError>((event, emit) {
+      emit(state.copyWith(passwordError: event.error));
     });
 
     on<MnemonicChanged>((event, emit) async {

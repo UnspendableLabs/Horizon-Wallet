@@ -48,12 +48,15 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       }
     });
 
+    on<PasswordError>((event, emit) {
+      emit(state.copyWith(passwordError: event.error));
+    });
+
     on<CreateWallet>((event, emit) async {
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));
       try {
         Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
-        print('WALLET: $wallet');
 
         String encryptedPrivateKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
 
@@ -66,7 +69,6 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
             uuid: uuid.v4(),
             importFormat: ImportFormat.segwit);
 
-        print(account);
         Address address = await addressService.deriveAddressSegwit(
             privKey: encryptedPrivateKey,
             chainCodeHex: wallet.chainCodeHex,
@@ -77,7 +79,6 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
             change: '0',
             index: 0);
 
-        print(address);
         await walletRepository.insert(wallet);
         await accountRepository.insert(account);
         await addressRepository.insert(address);

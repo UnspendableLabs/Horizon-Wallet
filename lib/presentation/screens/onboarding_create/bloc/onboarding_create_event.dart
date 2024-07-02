@@ -18,6 +18,11 @@ class GenerateMnemonic extends OnboardingCreateEvent {}
 
 class UnconfirmMnemonic extends OnboardingCreateEvent {}
 
+class PasswordError extends OnboardingCreateEvent {
+  final String error;
+  PasswordError({required this.error});
+}
+
 class ConfirmMnemonicChanged extends OnboardingCreateEvent {
   final String mnemonic;
   ConfirmMnemonicChanged({required this.mnemonic});
