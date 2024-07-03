@@ -10,6 +10,7 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
   AddressesDao(super.db);
 
   Future<List<Address>> getAllAddresses() => select(addresses).get();
+  Future<Address?> getAddress(String address) => (select(addresses)..where((tbl) => tbl.address.equals(address))).getSingle();
   Future<List<Address>> getAllAddressesByAccountUuid(String accountUuid) =>
       (select(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid))).get();
 

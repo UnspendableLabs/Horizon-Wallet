@@ -2,24 +2,33 @@ import 'package:horizon/domain/entities/address.dart';
 
 abstract class ComposeSendEvent {}
 
+class FetchFormData extends ComposeSendEvent {
+  String accountUuid;
+  FetchFormData({required this.accountUuid});
+}
+
+class FetchBalances extends ComposeSendEvent {
+  String address;
+  FetchBalances({required this.address});
+}
+
 class SendTransactionEvent extends ComposeSendEvent {
-  final Address sourceAddress;
+  final String sourceAddress;
   final String destinationAddress;
   final double quantity;
   final String asset;
-  final String network;
   final String password;
   final String? memo;
   final bool? memoIsHex;
-  SendTransactionEvent(
-      {required this.sourceAddress,
-      required this.destinationAddress,
-      required this.quantity,
-      required this.asset,
-      required this.password,
-      this.memo,
-      this.memoIsHex,
-      required this.network});
+  SendTransactionEvent({
+    required this.sourceAddress,
+    required this.destinationAddress,
+    required this.quantity,
+    required this.asset,
+    required this.password,
+    this.memo,
+    this.memoIsHex,
+  });
 }
 
 class SignTransactionEvent extends ComposeSendEvent {

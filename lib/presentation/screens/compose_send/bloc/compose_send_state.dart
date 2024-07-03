@@ -1,26 +1,38 @@
-import "package:horizon/data/sources/network/api/v2_api.dart" as v2_api;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/balance.dart';
 
-abstract class ComposeSendState {}
+part 'compose_send_state.freezed.dart';
 
-class ComposeSendInitial extends ComposeSendState {}
-
-class ComposeSendLoading extends ComposeSendState {}
-
-class ComposeSendSuccess extends ComposeSendState {
-  final String transactionHex;
-  final String sourceAddress;
-
-  ComposeSendSuccess({required this.transactionHex,  required this.sourceAddress});
+@freezed
+class ComposeSendState with _$ComposeSendState {
+  const factory ComposeSendState({
+    @Default(AddressesState.initial()) addressesState,
+    @Default(BalancesState.initial()) balancesState,
+    @Default(SubmitState.initial()) submitState,
+  }) = _ComposeSendState;
 }
 
-class ComposeSendError extends ComposeSendState {
-  final String message;
-
-  ComposeSendError({required this.message});
+@freezed
+class BalancesState with _$BalancesState {
+  const factory BalancesState.initial() = _BalanceInital;
+  const factory BalancesState.loading() = _BalanceLoading;
+  const factory BalancesState.success(List<Balance> balances) = _BalanceSuccess;
+  const factory BalancesState.error(String error) = _BalanceError;
 }
 
-class ComposeSendSignSuccess extends ComposeSendState {
-  final String signedTransaction;
+@freezed
+class AddressesState with _$AddressesState {
+  const factory AddressesState.initial() = _AddressInitial;
+  const factory AddressesState.loading() = _AddressLoading;
+  const factory AddressesState.success(List<Address> addresses) = _AddressSuccess;
+  const factory AddressesState.error(String error) = _AddressError;
+}
 
-  ComposeSendSignSuccess({required this.signedTransaction});
+@freezed
+class SubmitState with _$SubmitState {
+  const factory SubmitState.initial() = _SubmitInitial;
+  const factory SubmitState.loading() = _SubmitLoading;
+  const factory SubmitState.success(String transactionHex, String sourceAddress) = _SubmitSuccess;
+  const factory SubmitState.error(String error) = _SubmitError;
 }

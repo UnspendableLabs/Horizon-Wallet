@@ -31,8 +31,9 @@ class AddressRepositoryImpl implements AddressRepository {
   }
 
   @override
-  Future<entity.Address?> getAddress(String uuid) async {
-    throw UnimplementedError();
+  Future<entity.Address?> getAddress(String address) async {
+    AddressModel? addressModel = await _addressDao.getAddress(address);
+    return addressModel != null ? entity.Address(accountUuid: addressModel.accountUuid, address: addressModel.address, index: addressModel.index) : null;
   }
 
   @override
@@ -40,7 +41,7 @@ class AddressRepositoryImpl implements AddressRepository {
     List<AddressModel> addresses = await _addressDao.getAllAddressesByAccountUuid(accountUuid);
     return addresses.map((a) => entity.Address(accountUuid: a.accountUuid, address: a.address, index: a.index)).toList();
   }
-  
+
 
   @override
   Future<void> deleteAddresses(String accountUuid) async {
