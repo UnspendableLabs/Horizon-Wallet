@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
-
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_event.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_state.dart';
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 const double _bottomPaddingForButton = 150.0;
@@ -79,8 +74,8 @@ class _PasswordPromptState extends State<PasswordPrompt> {
             const SizedBox(height: 16.0), // Spacing between inputs
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize: Size(120, 48), // Ensures button doesn't resize
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                minimumSize: const Size(120, 48), // Ensures button doesn't resize
               ),
               onPressed: () {
                 // Validate will return true if the form is valid, or false if
@@ -104,10 +99,10 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                 }
               },
               child: state.maybeWhen(
-                validate: () => SizedBox(
+                validate: () => const SizedBox(
                     width: 20,
                     height: 20,
-                    child: const CircularProgressIndicator()),
+                    child: CircularProgressIndicator()),
                 orElse: () => const Text('Submit'),
               ),
             ),
@@ -265,7 +260,7 @@ class SettingsPage extends StatelessWidget {
                     itemCount: addresses.length,
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
-                        title: Text(addresses[index].address),
+                        title: SelectableText(addresses[index].address),
                         subtitle: Text(addresses[index].index.toString()),
                       );
                     },
