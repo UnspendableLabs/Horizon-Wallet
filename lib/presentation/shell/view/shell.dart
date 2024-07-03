@@ -87,9 +87,9 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
       return Row(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
             child: Container(
-              width: 250,
+              width: 175,
               decoration: BoxDecoration(
                 color: backgroundColor,
                 borderRadius: BorderRadius.circular(30.0),
@@ -97,7 +97,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
               child: shell.state.maybeWhen(
                 success: (state) {
                   return Column(
-                    mainAxisAlignment: MainAxisAlignment.start, // Adjusted alignment
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       ListView.builder(
                         shrinkWrap: true, // Ensures the ListView takes only the necessary space
@@ -112,8 +112,8 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.account_balance_wallet_rounded), // Added icon
-                                      const SizedBox(width: 8.0), // Space between icon and text
+                                      const Icon(Icons.account_balance_wallet_rounded),
+                                      const SizedBox(width: 8.0),
                                       Text(account.name),
                                     ],
                                   ),
@@ -129,7 +129,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                   child: Divider(
-                                    color: Colors.grey.shade300, // Faint underline color
+                                    color: Colors.grey.shade300,
                                     thickness: 1.0,
                                   ),
                                 ),
@@ -142,7 +142,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero, // No rounded corners
+                              borderRadius: BorderRadius.zero,
                             ),
                             elevation: 0, // No shadow
                           ),
@@ -171,10 +171,11 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                       ),
                       const Spacer(), // Pushes the text to the bottom
                       const Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
                         child: Text(
-                          "POWERED BY UNSPENDABLE LABS",
-                          style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
+                          "POWERED BY\nUNSPENDABLE LABS",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],

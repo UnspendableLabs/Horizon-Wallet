@@ -209,60 +209,68 @@ class MyApp extends StatelessWidget {
 
   // Define light and dark themes
   final ThemeData lightTheme = ThemeData(
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: const Color.fromRGBO(246, 247, 250, 1),
-      primaryColor: const Color.fromRGBO(68, 69, 99, 1),
-      buttonTheme: const ButtonThemeData(
-        buttonColor: Color.fromRGBO(227, 237, 254, 1),
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: const Color.fromRGBO(246, 247, 250, 1),
+    primaryColor: const Color.fromRGBO(68, 69, 99, 1),
+    buttonTheme: const ButtonThemeData(
+      buttonColor: Color.fromRGBO(227, 237, 254, 1),
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Color.fromRGBO(68, 69, 99, 1)),
+      bodyMedium: TextStyle(color: Color.fromRGBO(106, 106, 134, 1)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(227, 237, 254, 1),
+        foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
       ),
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Color.fromRGBO(68, 69, 99, 1)),
-        bodyMedium: TextStyle(color: Color.fromRGBO(106, 106, 134, 1)),
+    ),
+    listTileTheme: const ListTileThemeData(
+        iconColor: Color.fromRGBO(106, 106, 134, 1),
+        textColor: Color.fromRGBO(106, 106, 134, 1),
+        selectedColor: Color.fromRGBO(68, 121, 252, 1)),
+    appBarTheme: const AppBarTheme(
+      color: Color.fromRGBO(246, 247, 250, 1),
+      titleTextStyle: TextStyle(
+        color: Color.fromRGBO(68, 69, 99, 1),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromRGBO(227, 237, 254, 1),
-          foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
-        ),
-      ),
-      listTileTheme: const ListTileThemeData(
-          iconColor: Color.fromRGBO(106, 106, 134, 1),
-          textColor: Color.fromRGBO(106, 106, 134, 1),
-          selectedColor: Color.fromRGBO(68, 121, 252, 1)),
-      appBarTheme: AppBarTheme(
-        color: const Color.fromRGBO(246, 247, 250, 1),
-        titleTextStyle: TextStyle(
-          color: const Color.fromRGBO(68, 69, 99, 1),
-        ),
-      ));
+    ),
+    dialogTheme: const DialogTheme(
+      backgroundColor: Color.fromRGBO(246, 247, 250, 1),
+    ),
+  );
 
   final ThemeData darkTheme = ThemeData(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color.fromRGBO(35, 35, 58, 1),
-      primaryColor: Colors.white,
-      buttonTheme: const ButtonThemeData(
-        buttonColor: Color.fromRGBO(25, 25, 39, 1),
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: const Color.fromRGBO(35, 35, 58, 1),
+    primaryColor: Colors.white,
+    buttonTheme: const ButtonThemeData(
+      buttonColor: Color.fromRGBO(25, 25, 39, 1),
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Color.fromRGBO(141, 141, 153, 1)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
+        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
       ),
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.white),
-        bodyMedium: TextStyle(color: Color.fromRGBO(141, 141, 153, 1)),
+    ),
+    listTileTheme: const ListTileThemeData(
+        iconColor: Color.fromRGBO(183, 183, 188, 1),
+        textColor: Color.fromRGBO(183, 183, 188, 1),
+        selectedColor: Color.fromRGBO(146, 209, 254, 1)),
+    appBarTheme: const AppBarTheme(
+      color: Color.fromRGBO(35, 35, 58, 1),
+      titleTextStyle: TextStyle(
+        color: Colors.white,
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
-          foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
-        ),
-      ),
-      listTileTheme: const ListTileThemeData(
-          iconColor: Color.fromRGBO(183, 183, 188, 1),
-          textColor: Color.fromRGBO(183, 183, 188, 1),
-          selectedColor: Color.fromRGBO(146, 209, 254, 1)),
-      appBarTheme: AppBarTheme(
-        color: Color.fromRGBO(35, 35, 58, 1),
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-        ),
-      ));
+    ),
+    dialogTheme: const DialogTheme(
+      backgroundColor: Color.fromRGBO(35, 35, 58, 1),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +300,7 @@ class MyApp extends StatelessWidget {
         child: MaterialApp.router(
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode.light, // Automatically switch between light and dark themes
+          themeMode: ThemeMode.dark, // Automatically switch between light and dark themes
           routeInformationParser: AppRouter.router.routeInformationParser,
           routerDelegate: AppRouter.router.routerDelegate,
           routeInformationProvider: AppRouter.router.routeInformationProvider,

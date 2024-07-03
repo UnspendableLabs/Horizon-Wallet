@@ -88,6 +88,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         DropdownMenu<String>(
+                            expandedInsets: const EdgeInsets.all(0),
                             initialSelection: fromAddress ?? addresses[0].address,
                             controller: fromAddressController,
                             requestFocusOnTap: true,
@@ -123,23 +124,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           },
                         ),
                         const SizedBox(height: 16.0), // Spacing between inputs
-                        TextFormField(
-                          controller: quantityController,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Quantity',
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a quantity';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 16.0), // Spacing between inputs
                         Builder(builder: (context) {
                           return Row(
                             children: [
@@ -162,7 +146,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                       }
                                     : null,
                               ),
-                              const Text('Named Asset'),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4.0),
+                                child: Text('Named Asset'),
+                              ),
                               !isNamedAssetEnabled
                                   ? Tooltip(
                                       message:
@@ -173,7 +160,22 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             ],
                           );
                         }),
-
+                        const SizedBox(height: 16.0), // Spacing between inputs
+                        TextFormField(
+                          controller: quantityController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Quantity',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a quantity';
+                            }
+                            return null;
+                          },
+                        ),
                         const SizedBox(height: 16.0), // Spacing between inputs
                         TextFormField(
                           controller: passwordController,
@@ -192,18 +194,26 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           },
                         ),
                         const Spacer(),
-                        ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              context.read<ComposeIssuanceBloc>().add(CreateIssuanceEvent(
-                                    sourceAddress: fromAddressController.text,
-                                    password: passwordController.text,
-                                    name: nameController.text,
-                                    quantity: double.parse(quantityController.text),
-                                  ));
-                            }
-                          },
-                          child: const Text('Submit'),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                context.read<ComposeIssuanceBloc>().add(CreateIssuanceEvent(
+                                      sourceAddress: fromAddressController.text,
+                                      password: passwordController.text,
+                                      name: nameController.text,
+                                      quantity: double.parse(quantityController.text),
+                                    ));
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text('Submit'),
+                          ),
                         ),
                       ],
                     ),
