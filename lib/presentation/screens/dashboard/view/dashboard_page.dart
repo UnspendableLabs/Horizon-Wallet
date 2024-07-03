@@ -1,20 +1,16 @@
-import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
-
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
-
-import 'package:horizon/domain/entities/address.dart';
-
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -28,9 +24,7 @@ class DashboardPage extends StatelessWidget {
         initial: () => const Text("initial"),
         loading: () => const CircularProgressIndicator(),
         error: (error) => Text("Error: $error"),
-        success: (data) => _DashboardPage(
-            key: Key(data.currentAccountUuid),
-            accountUuid: data.currentAccountUuid));
+        success: (data) => _DashboardPage(key: Key(data.currentAccountUuid), accountUuid: data.currentAccountUuid));
   }
 }
 
@@ -58,15 +52,30 @@ class _DashboardPage_State extends State<_DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AddressesBloc, AddressesState>(
-        builder: (context, state) {
+    return BlocBuilder<AddressesBloc, AddressesState>(builder: (context, state) {
       return state.when(
         initial: () => const Text("initial"),
         loading: () => const CircularProgressIndicator(),
         error: (error) => Text("Error: $error"),
-        success: (addresses) => Balances(
-          key: Key(widget.accountUuid),
-          addresses: addresses,
+        success: (addresses) => Column(
+          children: [
+            Balances(
+              key: Key(widget.accountUuid),
+              addresses: addresses,
+            ),
+            BlocProvider(
+              create: (context) => DashboardBloc(),
+              child: BlocBuilder<DashboardBloc, DashboardState>(
+                builder: (context, state) {
+                  return FilledButton(
+                      onPressed: () {
+                        context.read<DashboardBloc>().add(DeleteWallet());
+                      },
+                      child: Text("Delete DB"));
+                },
+              ),
+            )
+          ],
         ),
       );
     });
@@ -94,7 +103,7 @@ class _Balances_State extends State<Balances> {
     return BlocBuilder<BalancesBloc, BalancesState>(
         bloc: BalancesBloc(
           balanceRepository: GetIt.I.get<BalanceRepository>(),
-          ),
+        ),
         // )..add(Fetch(addresses: widget.addresses)),
         builder: (context, state) {
           return state.when(
@@ -107,8 +116,7 @@ class _Balances_State extends State<Balances> {
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                     leading: Text(balances[index].asset),
-                    title: Center(
-                        child: Text(balances[index].quantity.toString())),
+                    title: Center(child: Text(balances[index].quantity.toString())),
                     onTap: () => print(index),
                   );
                 }),
