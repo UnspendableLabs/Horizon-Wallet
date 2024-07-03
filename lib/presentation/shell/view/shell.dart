@@ -92,32 +92,60 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
               width: 250,
               decoration: BoxDecoration(
                 color: backgroundColor,
-                borderRadius: BorderRadius.circular(12.0),
+                borderRadius: BorderRadius.circular(30.0),
               ),
               child: shell.state.maybeWhen(
                 success: (state) {
                   return Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start, // Adjusted alignment
                     children: [
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: state.accounts.length,
-                          itemBuilder: (context, index) {
-                            final account = state.accounts[index];
-                            return ListTile(
-                              title: Text(account.name),
-                              selected: account.uuid == state.currentAccountUuid,
-                              onTap: () {
-                                setState(() => selectedAccount = account);
-                                context.read<ShellStateCubit>().onAccountChanged(account);
-                              },
-                            );
-                          },
-                        ),
+                      ListView.builder(
+                        shrinkWrap: true, // Ensures the ListView takes only the necessary space
+                        itemCount: state.accounts.length,
+                        itemBuilder: (context, index) {
+                          final account = state.accounts[index];
+                          return Column(
+                            children: [
+                              ListTile(
+                                title: Padding(
+                                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.account_balance_wallet_rounded), // Added icon
+                                      const SizedBox(width: 8.0), // Space between icon and text
+                                      Text(account.name),
+                                    ],
+                                  ),
+                                ),
+                                hoverColor: Colors.transparent, // No hover effect
+                                selected: account.uuid == state.currentAccountUuid,
+                                onTap: () {
+                                  setState(() => selectedAccount = account);
+                                  context.read<ShellStateCubit>().onAccountChanged(account);
+                                },
+                              ),
+                              if (index != state.accounts.length - 1) // Avoid underline for the last element
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: Divider(
+                                    color: Colors.grey.shade300, // Faint underline color
+                                    thickness: 1.0,
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero, // No rounded corners
+                            ),
+                            elevation: 0, // No shadow
+                          ),
                           onPressed: () {
                             WoltModalSheet.show<void>(
                               context: context,
@@ -139,6 +167,14 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                             );
                           },
                           child: const Text("Add Account"),
+                        ),
+                      ),
+                      const Spacer(), // Pushes the text to the bottom
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "POWERED BY UNSPENDABLE LABS",
+                          style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
