@@ -96,7 +96,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               setState(() {
                                 fromAddress = a!;
                               });
-                              // fromAddressController.text = a!;
                               context.read<ComposeIssuanceBloc>().add(FetchBalances(address: a!));
                             },
                             dropdownMenuEntries: addresses.map<DropdownMenuEntry<String>>((address) {
