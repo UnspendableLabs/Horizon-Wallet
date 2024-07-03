@@ -1,19 +1,38 @@
-import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/balance.dart';
 
-abstract class ComposeIssuanceState {}
+part 'compose_issuance_state.freezed.dart';
 
-class ComposeIssuanceInitial extends ComposeIssuanceState {}
-
-class ComposeIssuanceLoading extends ComposeIssuanceState {}
-
-class ComposeIssuanceSuccess extends ComposeIssuanceState {
-  final ComposeIssuance composeIssuance;
-
-  ComposeIssuanceSuccess({required this.composeIssuance});
+@freezed
+class ComposeIssuanceState with _$ComposeIssuanceState {
+  const factory ComposeIssuanceState({
+    @Default(AddressesState.initial()) addressesState,
+    @Default(SubmitState.initial()) submitState,
+    @Default(BalancesState.initial()) balancesState,
+  }) = _ComposeIssuanceState;
 }
 
-class ComposeIssuanceError extends ComposeIssuanceState {
-  final String message;
+@freezed
+class AddressesState with _$AddressesState {
+  const factory AddressesState.initial() = _AddressInitial;
+  const factory AddressesState.loading() = _AddressLoading;
+  const factory AddressesState.success(List<Address> addresses) = _AddressSuccess;
+  const factory AddressesState.error(String error) = _AddressError;
+}
 
-  ComposeIssuanceError({required this.message});
+@freezed
+class BalancesState with _$BalancesState {
+  const factory BalancesState.initial() = _BalanceInital;
+  const factory BalancesState.loading() = _BalanceLoading;
+  const factory BalancesState.success(List<Balance> balances) = _BalanceSuccess;
+  const factory BalancesState.error(String error) = _BalanceError;
+}
+
+@freezed
+class SubmitState with _$SubmitState {
+  const factory SubmitState.initial() = _SubmitInitial;
+  const factory SubmitState.loading() = _SubmitLoading;
+  const factory SubmitState.success(String transactionHex) = _SubmitSuccess;
+  const factory SubmitState.error(String error) = _SubmitError;
 }

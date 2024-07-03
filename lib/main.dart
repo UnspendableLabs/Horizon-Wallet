@@ -1,50 +1,32 @@
 import 'dart:async';
-import 'dart:js_interop';
 
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
-
-import 'package:horizon/setup.dart';
-import 'package:logger/logger.dart';
-
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
-
-import 'package:horizon/presentation/shell/view/shell.dart';
+import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
+import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
+import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
-
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/account_settings_repository.dart';
-
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
-
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/screens/addresses/view/addresses_page.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
-import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-
-import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
-import "package:horizon/presentation/screens/settings/bloc/password_prompt_state.dart";
-import "package:horizon/presentation/screens/settings/bloc/password_prompt_event.dart";
+import 'package:horizon/presentation/shell/view/shell.dart';
+import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:horizon/setup.dart';
+import 'package:logger/logger.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -54,11 +36,11 @@ class LoadingScreen extends StatelessWidget {
   final String? from;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => const Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               CircularProgressIndicator(),
               Text('loading...'),
             ],
@@ -82,37 +64,31 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: OnboardingScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: OnboardingCreateScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              child: const OnboardingCreateScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              child: OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder:
-                (BuildContext context, GoRouterState state, navigationShell) {
+            builder: (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -129,12 +105,6 @@ class AppRouter {
                 GoRoute(
                     path: "/compose/send",
                     builder: (context, state) {
-                      // Address initialAddress =
-                      //     (state.extra as Map<String, dynamic>)['initialAddress'];
-                      // Address initialAddress = const Address(
-                      //     accountUuid: "76218sef-48fe-4f58-984c-b8fb5226e78a",
-                      //     address: "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
-                      //     index: 0);
                       return ComposeSendPage();
                     })
               ]),
@@ -142,14 +112,7 @@ class AppRouter {
                 GoRoute(
                   path: "/compose/issuance",
                   builder: (context, state) {
-                    // Retrieve the initial address from the extra parameter
-                    // Address initialAddress =
-                    //     (state.extra as Map<String, dynamic>)['initialAddress'];
-                    Address initialAddress = const Address(
-                        accountUuid: "76218sef-48fe-4f58-984c-b8fb5226e78a",
-                        address: "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
-                        index: 0);
-                    return ComposeIssuancePage(initialAddress: initialAddress);
+                    return ComposeIssuancePage();
                   },
                 ),
               ]),
@@ -166,7 +129,7 @@ class AppRouter {
                           success: (state) {
                             return SettingsPage();
                           },
-                          orElse: () => SizedBox.shrink(),
+                          orElse: () => const SizedBox.shrink(),
                         );
                       })
                 ],
@@ -257,8 +220,7 @@ class MyApp extends StatelessWidget {
                   )),
           BlocProvider<ShellStateCubit>(
             create: (context) => ShellStateCubit(
-                walletRepository: GetIt.I<WalletRepository>(),
-                accountRepository: GetIt.I<AccountRepository>())
+                walletRepository: GetIt.I<WalletRepository>(), accountRepository: GetIt.I<AccountRepository>())
               ..initialize(),
           ),
           BlocProvider<AccountFormBloc>(create: (context) => AccountFormBloc()),
