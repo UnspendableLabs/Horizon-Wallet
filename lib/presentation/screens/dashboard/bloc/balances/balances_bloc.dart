@@ -1,9 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import "./balances_state.dart";
-import "./balances_event.dart";
+import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final BalanceRepository balanceRepository;
@@ -11,11 +10,11 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   BalancesBloc({
     required this.balanceRepository,
   }) : super(const BalancesState.initial()) {
-    on<Fetch>((event, emit) async {
+    on<FetchBalances>((event, emit) async {
       emit(const BalancesState.loading());
 
-      List<Balance> balances = await balanceRepository.getBalances(
-          event.addresses.map((address) => address.address).toList());
+      List<Balance> balances =
+          await balanceRepository.getBalances(event.addresses.map((address) => address.address).toList());
 
       emit(BalancesState.success(balances));
 

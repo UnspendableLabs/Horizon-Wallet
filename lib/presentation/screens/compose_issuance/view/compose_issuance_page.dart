@@ -56,7 +56,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => GoRouter.of(context).pop(),
         ),
-        title: const Text('Compose Issuance'),
+        title: const Text('Compose Issuance', style: TextStyle(fontSize: 20.0)),
       ),
       body: BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(listener: (context, state) {
         state.submitState.when(

@@ -123,6 +123,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                 onTap: () {
                                   setState(() => selectedAccount = account);
                                   context.read<ShellStateCubit>().onAccountChanged(account);
+                                  GoRouter.of(context).go('/dashboard');
                                 },
                               ),
                               if (index != state.accounts.length - 1) // Avoid underline for the last element
@@ -188,58 +189,8 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
         ],
       );
     } else {
-      // Dropdown menu for narrower screens
-      return shell.state.maybeWhen(
-          success: (state) {
-            return Column(
-              children: [
-                Row(
-                  children: [
-                    DropdownMenu(
-                        initialSelection: state.accounts.where((account) {
-                          return account.uuid == state.currentAccountUuid;
-                        }).first,
-                        enableSearch: false,
-                        controller: accountController,
-                        requestFocusOnTap: true,
-                        onSelected: (account) {
-                          setState(() => selectedAccount = account);
-                          context.read<ShellStateCubit>().onAccountChanged(account!);
-                        },
-                        dropdownMenuEntries: state.accounts.map((account) {
-                          return DropdownMenuEntry(
-                            value: account,
-                            label: account.name,
-                          );
-                        }).toList()),
-                    IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          WoltModalSheet.show<void>(
-                            context: context,
-                            pageListBuilder: (modalSheetContext) {
-                              final textTheme = Theme.of(context).textTheme;
-                              return [page1(modalSheetContext, textTheme)];
-                            },
-                            onModalDismissedWithBarrierTap: () {
-                              print("dismissed with barrier tap");
-                            },
-                            modalTypeBuilder: (context) {
-                              final size = MediaQuery.of(context).size.width;
-                              if (size < 768.0) {
-                                return WoltModalType.bottomSheet;
-                              } else {
-                                return WoltModalType.dialog;
-                              }
-                            },
-                          );
-                        })
-                  ],
-                ),
-              ],
-            );
-          },
-          orElse: () => const Text(""));
+      // Return blank text for narrower screens
+      return const Text("");
     }
   }
 }
@@ -251,7 +202,62 @@ class Shell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final shell = context.read<ShellStateCubit>();
+
+    void _showAccountList(BuildContext context) {
+      final textTheme = Theme.of(context).textTheme;
+
+      WoltModalSheet.show<void>(
+        context: context,
+        pageListBuilder: (modalSheetContext) {
+          return [
+            shell.state.maybeWhen(
+              success: (state) => WoltModalSheetPage(
+                isTopBarLayerAlwaysVisible: true,
+                topBarTitle: Text('Select an account', style: textTheme.titleSmall),
+                trailingNavBarWidget: IconButton(
+                  padding: const EdgeInsets.all(_pagePadding),
+                  icon: const Icon(Icons.close),
+                  onPressed: Navigator.of(modalSheetContext).pop,
+                ),
+                child: SizedBox(
+                  height: 400, // Set a fixed height for the ListView
+                  child: ListView.builder(
+                    itemCount: state.accounts.length,
+                    itemBuilder: (context, index) {
+                      final account = state.accounts[index];
+                      final isSelected = account.uuid == state.currentAccountUuid;
+                      return ListTile(
+                        title: Text(account.name),
+                        selected: isSelected,
+                        onTap: () {
+                          context.read<ShellStateCubit>().onAccountChanged(account);
+                          Navigator.of(modalSheetContext).pop();
+                          GoRouter.of(context).go('/dashboard');
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+              orElse: () => SliverWoltModalSheetPage(),
+            ),
+          ];
+        },
+        onModalDismissedWithBarrierTap: () {
+          print("dismissed with barrier tap");
+        },
+        modalTypeBuilder: (context) {
+          final size = MediaQuery.of(context).size.width;
+          if (size < 768.0) {
+            return WoltModalType.bottomSheet;
+          } else {
+            return WoltModalType.dialog;
+          }
+        },
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -267,41 +273,24 @@ class Shell extends StatelessWidget {
             }
           },
         ),
+        leading: screenWidth < 768.0
+            ? IconButton(
+                icon: const Icon(Icons.account_balance_wallet_rounded),
+                onPressed: () => _showAccountList(context),
+              )
+            : null,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              context.go('/settings');
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Row(children: <Widget>[
-          /**
-           *           NavigationRail(
-            onDestinationSelected: _onDestinationSelected,
-            selectedIndex: navigationShell.currentIndex,
-            labelType: NavigationRailLabelType.all,
-            destinations: const <NavigationRailDestination>[
-              NavigationRailDestination(
-                icon: Icon(Icons.home),
-                selectedIcon: Icon(Icons.home),
-                label: Text('Home'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.send),
-                selectedIcon: Icon(Icons.send),
-                label: Text('Send'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.toll),
-                selectedIcon: Icon(Icons.toll),
-                label: Text('Issuance'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.settings),
-                selectedIcon: Icon(Icons.settings),
-                label: Text('Settings'),
-              ),
-            ],
-          ),
-
-           */
           const ResponsiveAccountSidebar(),
-          // const VerticalDivider(thickness: 1, width: 1),
           Expanded(
               child: Scaffold(
                   body: shell.state.when(
@@ -329,10 +318,6 @@ class Shell extends StatelessWidget {
   void _onDestinationSelected(index) {
     navigationShell.goBranch(
       index,
-      // A common pattern when using bottom navigation bars is to support
-      // navigating to the initial location when tapping the item that is
-      // already active. This example demonstrates how to support this behavior,
-      // using the initialLocation parameter of goBranch.
       initialLocation: index == navigationShell.currentIndex,
     );
   }

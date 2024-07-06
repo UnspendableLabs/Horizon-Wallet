@@ -300,7 +300,7 @@ class MyApp extends StatelessWidget {
         child: MaterialApp.router(
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode.dark, // Automatically switch between light and dark themes
+          themeMode: ThemeMode.light, // Automatically switch between light and dark themes
           routeInformationParser: AppRouter.router.routeInformationParser,
           routerDelegate: AppRouter.router.routerDelegate,
           routeInformationProvider: AppRouter.router.routeInformationProvider,

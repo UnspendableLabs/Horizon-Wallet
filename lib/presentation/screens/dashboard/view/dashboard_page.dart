@@ -9,10 +9,8 @@ import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -76,22 +74,28 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 AddressActions(
                   isDarkTheme: isDarkTheme,
                 ),
-                Balances(
-                  key: Key(widget.accountUuid),
-                  addresses: addresses,
-                ),
                 BlocProvider(
-                  create: (context) => DashboardBloc(),
-                  child: BlocBuilder<DashboardBloc, DashboardState>(
-                    builder: (context, state) {
-                      return FilledButton(
-                          onPressed: () {
-                            context.read<DashboardBloc>().add(DeleteWallet());
-                          },
-                          child: const Text("Delete DB"));
-                    },
+                  create: (context) => BalancesBloc(
+                    balanceRepository: GetIt.I.get<BalanceRepository>(),
                   ),
-                )
+                  child: Balances(
+                    key: Key(widget.accountUuid),
+                    addresses: addresses,
+                    isDarkTheme: isDarkTheme,
+                  ),
+                ),
+                // BlocProvider(
+                //   create: (context) => DashboardBloc(),
+                //   child: BlocBuilder<DashboardBloc, DashboardState>(
+                //     builder: (context, state) {
+                //       return FilledButton(
+                //           onPressed: () {
+                //             context.read<DashboardBloc>().add(DeleteWallet());
+                //           },
+                //           child: const Text("Delete DB"));
+                //     },
+                //   ),
+                // )
               ],
             ),
           ),
@@ -119,6 +123,7 @@ class AddressActions extends StatelessWidget {
                 height: 75,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    elevation: 0,
                     backgroundColor: backgroundColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
@@ -164,6 +169,7 @@ class AddressActions extends StatelessWidget {
                 height: 75,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    elevation: 0,
                     backgroundColor: backgroundColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
@@ -209,9 +215,10 @@ class AddressActions extends StatelessWidget {
 }
 
 class Balances extends StatefulWidget {
+  final bool isDarkTheme;
   final List<Address> addresses;
 
-  const Balances({super.key, required this.addresses});
+  const Balances({super.key, required this.addresses, required this.isDarkTheme});
 
   @override
   _Balances_State createState() => _Balances_State();
@@ -222,31 +229,39 @@ class _Balances_State extends State<Balances> {
   @override
   void initState() {
     super.initState();
+    context.read<BalancesBloc>().add(FetchBalances(addresses: widget.addresses));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BalancesBloc, BalancesState>(
-        bloc: BalancesBloc(
-          balanceRepository: GetIt.I.get<BalanceRepository>(),
-        ),
-        // )..add(Fetch(addresses: widget.addresses)),
-        builder: (context, state) {
-          return state.when(
-            initial: () => const Text("Balances UI.  Blocked on weird API bug"),
-            loading: () => const CircularProgressIndicator(),
-            error: (error) => Text("Error: $error"),
-            success: (balances) => ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: balances.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    leading: Text(balances[index].asset),
-                    title: Center(child: Text(balances[index].quantity.toString())),
-                    onTap: () => print(index),
-                  );
-                }),
-          );
-        });
+    return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
+      return state.when(
+          initial: () => const Text("BALANCE DISPLAY"),
+          loading: () => const CircularProgressIndicator(),
+          error: (error) => Text("Error: $error"),
+          success: (balances) {
+            print('BALANCES: $balances');
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Container(
+                height: 300,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30.0),
+                  color: widget.isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : Color.fromRGBO(246, 247, 250, 1),
+                ),
+                child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    itemCount: balances.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ListTile(
+                        leading: Text(balances[index].asset),
+                        title: Center(child: Text(balances[index].quantity.toString())),
+                        onTap: () => print(index),
+                      );
+                    }),
+              ),
+            );
+          });
+    });
   }
 }
