@@ -1,9 +1,7 @@
-import 'package:horizon/domain/entities/address.dart';
-
 abstract class BalancesEvent {}
 
 class FetchBalances extends BalancesEvent {
-  List<Address> addresses;
+  final String accountUuid;
 
-  FetchBalances({required this.addresses});
+  FetchBalances({required this.accountUuid});
 }

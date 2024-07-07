@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
@@ -74,15 +73,8 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 AddressActions(
                   isDarkTheme: isDarkTheme,
                 ),
-                BlocProvider(
-                  create: (context) => BalancesBloc(
-                    balanceRepository: GetIt.I.get<BalanceRepository>(),
-                  ),
-                  child: Balances(
-                    key: Key(widget.accountUuid),
-                    addresses: addresses,
-                    isDarkTheme: isDarkTheme,
-                  ),
+                BalancesDisplay(
+                  isDarkTheme: isDarkTheme,
                 ),
                 // BlocProvider(
                 //   create: (context) => DashboardBloc(),
@@ -214,54 +206,138 @@ class AddressActions extends StatelessWidget {
   }
 }
 
-class Balances extends StatefulWidget {
+class BalancesDisplay extends StatelessWidget {
   final bool isDarkTheme;
-  final List<Address> addresses;
-
-  const Balances({super.key, required this.addresses, required this.isDarkTheme});
-
-  @override
-  _Balances_State createState() => _Balances_State();
-}
-
-class _Balances_State extends State<Balances> {
-  final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
-  @override
-  void initState() {
-    super.initState();
-    context.read<BalancesBloc>().add(FetchBalances(addresses: widget.addresses));
-  }
+  BalancesDisplay({
+    Key? key,
+    required this.isDarkTheme,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final shell = context.watch<ShellStateCubit>();
+    return shell.state.maybeWhen(
+      success: (state) => BlocProvider(
+        key: Key(state.currentAccountUuid),
+        create: (context) => BalancesBloc()..add(FetchBalances(accountUuid: state.currentAccountUuid)),
+        child: Balances(isDarkTheme: isDarkTheme),
+      ),
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+}
+
+class Balances extends StatelessWidget {
+  final bool isDarkTheme;
+  const Balances({super.key, required this.isDarkTheme});
+
+  @override
+  Widget build(BuildContext context) {
+    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
+
     return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
       return state.when(
-          initial: () => const Text("BALANCE DISPLAY"),
-          loading: () => const CircularProgressIndicator(),
-          error: (error) => Text("Error: $error"),
-          success: (balances) {
-            print('BALANCES: $balances');
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Container(
-                height: 300,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30.0),
-                  color: widget.isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : Color.fromRGBO(246, 247, 250, 1),
-                ),
-                child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: balances.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                        leading: Text(balances[index].asset),
-                        title: Center(child: Text(balances[index].quantity.toString())),
-                        onTap: () => print(index),
-                      );
-                    }),
+        initial: () => const Text(""),
+        loading: () => const CircularProgressIndicator(),
+        error: (error) => Text("Error: $error"),
+        success: (addressInfo, currentAddressBalances) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Container(
+              height: 300,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(30.0),
               ),
-            );
-          });
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SelectableText(
+                          currentAddressBalances.address.address,
+                          style: TextStyle(fontSize: 25), // Responsive font size
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.copy),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: currentAddressBalances.address.address)).then((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Address copied to clipboard!'),
+                                ),
+                              );
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    Expanded(
+                      child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: currentAddressBalances.balances.length,
+                        itemBuilder: (context, index) {
+                          final balance = currentAddressBalances.balances[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.black, // Underline color
+                                    width: 1.0, // Underline width
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        balance.asset,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16, // Responsive font size
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16.0),
+                                      Text(
+                                        balance.quantity.toString(),
+                                        style: TextStyle(
+                                          fontSize: 16, // Responsive font size
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      "\$ dollar value placeholder",
+                                      style: TextStyle(
+                                        fontSize: 16, // Responsive font size
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
     });
   }
 }
