@@ -1,3 +1,4 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -5,32 +6,36 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/remote_data_bloc/remote_data_cubit.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
-import './shell_state.dart' as shell_state;
+import './shell_state.dart';
 
-class ShellStateCubit extends RemoteDataCubit< shell_state.ShellState> {
+class ShellStateCubit extends Cubit<ShellState> {
   WalletRepository walletRepository;
   AccountRepository accountRepository;
 
   ShellStateCubit(
       {required this.walletRepository, required this.accountRepository})
-      : super(const RemoteDataState.initial());
+      : super(const ShellState.initial());
 
   void initialize() async {
-    emit(const RemoteDataState.loading());
+    emit(const ShellState.loading());
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
-      List<Account> accounts =
-          await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
+      if (wallet == null) {
+        emit(const ShellState.onboarding(Onboarding.initial()));
+        return;
+      }
 
-      emit(RemoteDataState.success(shell_state.ShellState(
+      List<Account> accounts =
+          await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+
+      emit(ShellState.success(ShellStateSuccess(
           redirect: true,
           wallet: wallet,
           accounts: accounts,
           currentAccountUuid: accounts[0].uuid)));
     } catch (error) {
-      emit(const RemoteDataState.success(shell_state.ShellState(
-          redirect: true, wallet: null, accounts: [], currentAccountUuid: '')));
+      emit(ShellState.error(error.toString()));
     }
   }
 
@@ -39,10 +44,25 @@ class ShellStateCubit extends RemoteDataCubit< shell_state.ShellState> {
         initial: () => state,
         loading: () => state,
         error: (_) => state,
+        onboarding: (_) => state,
         success: (stateInner) =>
-            RemoteDataState.success(stateInner.copyWith(redirect: false)));
+            ShellState.success(stateInner.copyWith(redirect: false)));
 
-    emit(state_ as RemoteDataState<shell_state.ShellState>);
+
+    emit(state_);
+
+  }
+
+  void onOnboarding() {
+    emit(const ShellState.onboarding(Onboarding.initial()));
+  }
+
+  void onOnboardingCreate() {
+    emit(const ShellState.onboarding(Onboarding.create()));
+  }
+
+  void onOnboardingImport() {
+    emit(const ShellState.onboarding(Onboarding.import()));
   }
 
   void onAccountChanged(Account account) {
@@ -50,30 +70,32 @@ class ShellStateCubit extends RemoteDataCubit< shell_state.ShellState> {
         initial: () => state,
         loading: () => state,
         error: (_) => state,
-        success: (stateInner) =>
-            RemoteDataState.success(stateInner.copyWith(currentAccountUuid: account.uuid)));
+        onboarding: (_) => state,
+        success: (stateInner) => ShellState.success(
+            stateInner.copyWith(currentAccountUuid: account.uuid)));
 
-    emit(state_ as RemoteDataState<shell_state.ShellState>);
+    emit(state_);
   }
-
 
   void refresh() async {
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
-      List<Account> accounts =
-          await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
+      if (wallet == null) {
+        emit(const ShellState.onboarding(Onboarding.initial()));
+        return;
+      }
 
-      emit(RemoteDataState.success(shell_state.ShellState(
+      List<Account> accounts =
+          await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+
+      emit(ShellState.success(ShellStateSuccess(
           redirect: true,
           wallet: wallet,
           accounts: accounts,
           currentAccountUuid: accounts.last.uuid)));
     } catch (error) {
-      emit(const RemoteDataState.success(shell_state.ShellState(
-          redirect: true, wallet: null, accounts: [], currentAccountUuid: '')));
+      emit(ShellState.error(error.toString()));
     }
   }
-
-
 }

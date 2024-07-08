@@ -17,10 +17,15 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final shell = context.watch<ShellStateCubit>().state;
+
+
+    // we should only ever get to this page if shell is success
 
     return shell.when(
         initial: () => const Text("initial"),
+        onboarding: (_) => const Text("onboarding"),
         loading: () => const CircularProgressIndicator(),
         error: (error) => Text("Error: $error"),
         success: (data) => _DashboardPage(key: Key(data.currentAccountUuid), accountUuid: data.currentAccountUuid));
