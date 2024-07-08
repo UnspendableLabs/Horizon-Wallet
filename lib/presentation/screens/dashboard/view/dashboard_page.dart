@@ -132,7 +132,7 @@ class AddressActions extends StatelessWidget {
                             child: Container(
                               width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
                               child: Padding(
-                                padding: EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(16.0),
                                 child: ComposeIssuancePage(),
                               ),
                             ),
@@ -178,7 +178,7 @@ class AddressActions extends StatelessWidget {
                             child: Container(
                               width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
                               child: Padding(
-                                padding: EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(16.0),
                                 child: ComposeSendPage(),
                               ),
                             ),
@@ -255,11 +255,11 @@ class Balances extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         SelectableText(
                           currentAddressBalances.address.address,
-                          style: TextStyle(fontSize: 25), // Responsive font size
+                          style: const TextStyle(fontSize: 25), // Responsive font size
                         ),
                         IconButton(
                           icon: const Icon(Icons.copy),
@@ -271,6 +271,74 @@ class Balances extends StatelessWidget {
                                 ),
                               );
                             });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.list),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                  child: Container(
+                                    width: MediaQuery.of(context).size.width * 0.75,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: ListView.builder(
+                                        itemCount: addressInfo.length,
+                                        itemBuilder: (context, index) {
+                                          final info = addressInfo[index];
+                                          return TextButton(
+                                            onPressed: () => {},
+                                            style: TextButton.styleFrom(
+                                              padding: EdgeInsets.zero,
+                                              minimumSize: Size(50, 30),
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  info.address.address,
+                                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                                ),
+                                                if (info.balances.isEmpty)
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                                    child: Container(
+                                                      child: const Text(
+                                                        "No balance",
+                                                        style: TextStyle(fontSize: 16),
+                                                      ),
+                                                    ),
+                                                  )
+                                                else
+                                                  ...info.balances.map((balance) => Padding(
+                                                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            Text('${balance.asset} ${balance.quantity.toString()}',
+                                                                style: const TextStyle(fontSize: 16)),
+                                                            const Text("\$ dollar value placeholder",
+                                                                style: TextStyle(fontSize: 16)),
+                                                          ],
+                                                        ),
+                                                      )),
+                                                const Divider(),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
                           },
                         ),
                       ],
@@ -300,7 +368,7 @@ class Balances extends StatelessWidget {
                                     children: [
                                       Text(
                                         balance.asset,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16, // Responsive font size
                                         ),
@@ -308,14 +376,14 @@ class Balances extends StatelessWidget {
                                       const SizedBox(width: 16.0),
                                       Text(
                                         balance.quantity.toString(),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 16, // Responsive font size
                                         ),
                                       ),
                                     ],
                                   ),
                                   const Spacer(),
-                                  Align(
+                                  const Align(
                                     alignment: Alignment.centerRight,
                                     child: Text(
                                       "\$ dollar value placeholder",
