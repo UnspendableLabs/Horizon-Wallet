@@ -148,20 +148,22 @@ class AppRouter {
         final shell = context.read<ShellStateCubit>();
 
         final path = shell.state.maybeWhen(
+            onboarding: (onboarding) {
+              return onboarding.when(
+                initial: () => "/onboarding",
+                create: () => "/onboarding/create",
+                import: () => "/onboarding/import",
+              );
+            },
             success: (data) {
-              print("shell.state ${shell.state}");
+
+
               Future.delayed(const Duration(milliseconds: 500), () {
                 shell.initialized();
               });
 
-              // if accounts, show dashboard
-              if (data.redirect && data.accounts.isNotEmpty) {
+              if (data.redirect) {
                 return "/dashboard";
-                // if no accounts, show onboarding
-              } else if (data.redirect && data.accounts.isEmpty) {
-                return "/onboarding";
-              } else {
-                return null;
               }
             },
             // if the shell state is not yet loaded, show a loading screen
@@ -293,14 +295,15 @@ class MyApp extends StatelessWidget {
           create: (context) => AccountFormBloc(),
         ),
       ],
-      child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
+      child: BlocListener<ShellStateCubit, ShellState>(
         listener: (context, state) {
           AppRouter.router.refresh();
         },
         child: MaterialApp.router(
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode.light, // Automatically switch between light and dark themes
+          themeMode: ThemeMode
+              .light, // Automatically switch between light and dark themes
           routeInformationParser: AppRouter.router.routeInformationParser,
           routerDelegate: AppRouter.router.routerDelegate,
           routeInformationProvider: AppRouter.router.routeInformationProvider,

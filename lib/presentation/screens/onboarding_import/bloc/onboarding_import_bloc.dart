@@ -134,12 +134,10 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
             throw UnimplementedError();
         }
 
-        // TODO: timing hack
-        await Future.delayed(Duration(seconds: 1));
 
         emit(state.copyWith(importState: ImportStateSuccess()));
         return;
-      } catch (e, stackTrace) {
+      } catch (e) {
         emit(state.copyWith(importState: ImportStateError(message: e.toString())));
         return;
       }

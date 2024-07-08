@@ -6,13 +6,14 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
-
-import 'dart:html' as html;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
+    return BlocProvider(
+        create: (context) => OnboardingImportBloc(),
+        child: const OnboardingImportPage_());
   }
 }
 
@@ -40,14 +41,13 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
     return BlocListener<OnboardingImportBloc, OnboardingImportState>(
       listener: (context, state) async {
         if (state.importState is ImportStateSuccess) {
-
-          // TODO: this is a total hack to fix a routing bug
-          // at the end of the import flow
-          html.window.location.reload();
-          // GoRouter.of(context).go('/dashboard');
+          final shell = context.read<ShellStateCubit>();
+          // reload shell to trigger redirect 
+          shell.initialize();
         }
       },
-      child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
+      child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
+          builder: (context, state) {
         return Scaffold(
           appBar: AppBar(title: const Text('Horizon')),
           body: Column(
@@ -139,7 +139,11 @@ class PasswordPrompt extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => GoRouter.of(context).go('/onboarding'),
+                          onPressed: () {
+                            final shell = context.read<ShellStateCubit>();
+
+                            shell.onOnboarding();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey,
                             foregroundColor: Colors.white,
@@ -284,7 +288,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => GoRouter.of(context).go('/onboarding'),
+                    onPressed: () {
+                      final shell = context.read<ShellStateCubit>();
+                      shell.onOnboarding();
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
                       foregroundColor: Colors.white,

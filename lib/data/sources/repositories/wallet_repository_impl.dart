@@ -37,16 +37,18 @@ class WalletRepositoryImpl implements WalletRepository {
 
   @override
   Future<entity.Wallet?> getCurrentWallet() async {
-    // TODO: how to mark current wallet?
     WalletModel? wallet = await _walletDao.getCurrentWallet();
+    
+    if (wallet == null) {
+      return null;
+    }
+
     return entity.Wallet(
-      
-        uuid: wallet!.uuid,
+        uuid: wallet.uuid,
         name: wallet.name,
         encryptedPrivKey: wallet.encryptedPrivKey,
         publicKey: wallet.publicKey,
         chainCodeHex: wallet.chainCodeHex);
-    // return null;
   }
 
   @override

@@ -43,7 +43,8 @@ class AccountListView extends StatelessWidget {
 class ResponsiveAccountSidebar extends StatefulWidget {
   const ResponsiveAccountSidebar({super.key});
   @override
-  State<ResponsiveAccountSidebar> createState() => _ResponsiveAccountSidebarState();
+  State<ResponsiveAccountSidebar> createState() =>
+      _ResponsiveAccountSidebarState();
 }
 
 class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
@@ -294,7 +295,9 @@ class Shell extends StatelessWidget {
           Expanded(
               child: Scaffold(
                   body: shell.state.when(
-            initial: () => const Text("loading..."),
+            initial: () =>
+                const Text("loading..."), // TODO: all of this is smell.  should only handle success branch
+            onboarding: (_) => const Text("onboarding"),
             loading: () => const Text("loading..."),
             error: (e) => const Text("error"),
             success: (shell) {

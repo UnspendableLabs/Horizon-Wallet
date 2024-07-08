@@ -7,10 +7,26 @@ part 'shell_state.freezed.dart';
 
 @freezed
 class ShellState with _$ShellState {
-  const factory ShellState({
+  const factory ShellState.initial() = _Initial;
+  const factory ShellState.loading() = _Loading;
+  const factory ShellState.error(String error) = _Error;
+  const factory ShellState.onboarding(Onboarding onboarding) = _Onboarding;
+  const factory ShellState.success(ShellStateSuccess succcess) = _Success;
+}
+
+@freezed
+class ShellStateSuccess with _$ShellStateSuccess {
+  const factory ShellStateSuccess({
     required bool redirect,
-    required Wallet? wallet,
+    required Wallet wallet,
     required List<Account> accounts,
     required String currentAccountUuid,
-  }) = _ShellState;
+  }) = _ShellStateSuccess;
+}
+
+@freezed
+class Onboarding with _$Onboarding {
+  const factory Onboarding.initial() = _OnboardingInitial;
+  const factory Onboarding.create() = _Create;
+  const factory Onboarding.import() = _Import;
 }

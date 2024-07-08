@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
-
-import 'dart:html' as html;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingCreateScreen extends StatelessWidget {
   const OnboardingCreateScreen({super.key});
@@ -42,29 +41,29 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
     return BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
       listener: (context, state) {
         if (state.createState is CreateStateSuccess) {
-          // TODO: this is a total hack to fix a routing bug
-          // at the end of the import flow
-          html.window.location.reload();
-          // GoRouter.of(context).go('/dashboard');
+          final shell = context.read<ShellStateCubit>();
+          // reload shell to trigger redirect 
+          shell.initialize();
         }
       },
       child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
           builder: (context, state) {
         return Scaffold(
-                appBar: AppBar(title: const Text('Horizon')),
-                body: switch (state.createState) {
-                  CreateStateNotAsked => const Mnemonic(),
-                  CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
-                      mnemonicErrorState: state.mnemonicError,
-                    ),
-                  CreateStateMnemonicConfirmed => PasswordPrompt(
-                      passwordController: _passwordController,
-                      passwordConfirmationController: _passwordConfirmationController,
-                      state: state,
-                    ),
-                  Object() => const Text(''),
-                  null => throw UnimplementedError(),
-        });
+            appBar: AppBar(title: const Text('Horizon')),
+            body: switch (state.createState) {
+              CreateStateNotAsked => const Mnemonic(),
+              CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
+                  mnemonicErrorState: state.mnemonicError,
+                ),
+              CreateStateMnemonicConfirmed => PasswordPrompt(
+                  passwordController: _passwordController,
+                  passwordConfirmationController:
+                      _passwordConfirmationController,
+                  state: state,
+                ),
+              Object() => const Text(''),
+              null => throw UnimplementedError(),
+            });
       }),
     );
   }
@@ -133,7 +132,10 @@ class PasswordPrompt extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => GoRouter.of(context).go('/onboarding'),
+                          onPressed: () {
+                            final shell = context.read<ShellStateCubit>();
+                            shell.onOnboarding();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey,
                             foregroundColor: Colors.white,
@@ -222,7 +224,10 @@ class _MnemonicState extends State<Mnemonic> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => GoRouter.of(context).go('/onboarding'),
+                        onPressed: () {
+                          final shell = context.read<ShellStateCubit>();
+                          shell.onOnboarding();
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey,
                           foregroundColor: Colors.white,
