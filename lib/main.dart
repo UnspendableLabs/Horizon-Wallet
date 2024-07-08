@@ -207,42 +207,105 @@ class MyApp extends StatelessWidget {
     super.key,
   });
 
-  // This widget is the root of your application.
+  // Define light and dark themes
+  final ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: const Color.fromRGBO(246, 247, 250, 1),
+    primaryColor: const Color.fromRGBO(68, 69, 99, 1),
+    buttonTheme: const ButtonThemeData(
+      buttonColor: Color.fromRGBO(227, 237, 254, 1),
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Color.fromRGBO(68, 69, 99, 1)),
+      bodyMedium: TextStyle(color: Color.fromRGBO(106, 106, 134, 1)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(227, 237, 254, 1),
+        foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
+      ),
+    ),
+    listTileTheme: const ListTileThemeData(
+        iconColor: Color.fromRGBO(106, 106, 134, 1),
+        textColor: Color.fromRGBO(106, 106, 134, 1),
+        selectedColor: Color.fromRGBO(68, 121, 252, 1)),
+    appBarTheme: const AppBarTheme(
+      color: Color.fromRGBO(246, 247, 250, 1),
+      titleTextStyle: TextStyle(
+        color: Color.fromRGBO(68, 69, 99, 1),
+      ),
+    ),
+    dialogTheme: const DialogTheme(
+      backgroundColor: Color.fromRGBO(246, 247, 250, 1),
+    ),
+  );
+
+  final ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: const Color.fromRGBO(35, 35, 58, 1),
+    primaryColor: Colors.white,
+    buttonTheme: const ButtonThemeData(
+      buttonColor: Color.fromRGBO(25, 25, 39, 1),
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Color.fromRGBO(141, 141, 153, 1)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
+        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+      ),
+    ),
+    listTileTheme: const ListTileThemeData(
+        iconColor: Color.fromRGBO(183, 183, 188, 1),
+        textColor: Color.fromRGBO(183, 183, 188, 1),
+        selectedColor: Color.fromRGBO(146, 209, 254, 1)),
+    appBarTheme: const AppBarTheme(
+      color: Color.fromRGBO(35, 35, 58, 1),
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+      ),
+    ),
+    dialogTheme: const DialogTheme(
+      backgroundColor: Color.fromRGBO(35, 35, 58, 1),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-        providers: [
-          BlocProvider<PasswordPromptBloc>(
-              create: (context) => PasswordPromptBloc(
-                    walletService: GetIt.I<WalletService>(),
-                    walletRepository: GetIt.I<WalletRepository>(),
-                    encryptionService: GetIt.I<EncryptionService>(),
-                  )),
-          BlocProvider<ShellStateCubit>(
-            create: (context) => ShellStateCubit(
-                walletRepository: GetIt.I<WalletRepository>(), accountRepository: GetIt.I<AccountRepository>())
-              ..initialize(),
+      providers: [
+        BlocProvider<PasswordPromptBloc>(
+          create: (context) => PasswordPromptBloc(
+            walletService: GetIt.I<WalletService>(),
+            walletRepository: GetIt.I<WalletRepository>(),
+            encryptionService: GetIt.I<EncryptionService>(),
           ),
-          BlocProvider<AccountFormBloc>(create: (context) => AccountFormBloc()),
-          // BlocProvider(
-          //     create: (context) => AddressesBloc(
-          //           walletRepository: GetIt.I<WalletRepository>(),
-          //           accountRepository: GetIt.I<AccountRepository>(),
-          //           addressService: GetIt.I<AddressService>(),
-          //           addressRepository: GetIt.I<AddressRepository>(),
-          //           encryptionService: GetIt.I<EncryptionService>(),
-          //         ))
-        ],
-        child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
-          listener: (context, state) {
-            AppRouter.router.refresh();
-          },
-          child: MaterialApp.router(
-            theme: ThemeData.light(useMaterial3: true),
-            routeInformationParser: AppRouter.router.routeInformationParser,
-            routerDelegate: AppRouter.router.routerDelegate,
-            routeInformationProvider: AppRouter.router.routeInformationProvider,
-          ),
-        ));
+        ),
+        BlocProvider<ShellStateCubit>(
+          create: (context) => ShellStateCubit(
+            walletRepository: GetIt.I<WalletRepository>(),
+            accountRepository: GetIt.I<AccountRepository>(),
+          )..initialize(),
+        ),
+        BlocProvider<AccountFormBloc>(
+          create: (context) => AccountFormBloc(),
+        ),
+      ],
+      child: BlocListener<ShellStateCubit, RemoteDataState<ShellState>>(
+        listener: (context, state) {
+          AppRouter.router.refresh();
+        },
+        child: MaterialApp.router(
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.light, // Automatically switch between light and dark themes
+          routeInformationParser: AppRouter.router.routeInformationParser,
+          routerDelegate: AppRouter.router.routerDelegate,
+          routeInformationProvider: AppRouter.router.routeInformationProvider,
+        ),
+      ),
+    );
   }
 }

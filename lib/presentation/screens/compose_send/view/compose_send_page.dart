@@ -56,7 +56,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => GoRouter.of(context).pop(),
         ),
-        title: const Text('Compose Send'),
+        title: const Text('Compose Send', style: TextStyle(fontSize: 20.0)),
       ),
       body: BlocConsumer<ComposeSendBloc, ComposeSendState>(listener: (context, state) {
         state.submitState.when(
@@ -85,6 +85,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         DropdownMenu<String>(
+                            expandedInsets: const EdgeInsets.all(0),
                             initialSelection: fromAddress ?? addresses[0].address,
                             controller: fromAddressController,
                             requestFocusOnTap: true,
@@ -118,60 +119,68 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           },
                         ),
                         const SizedBox(height: 16.0), // Spacing between inputs
-                        TextFormField(
-                          controller: quantityController,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Quantity',
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a quantity';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        Builder(builder: (context) {
-                          if (balances.isEmpty) {
-                            return DropdownMenu(
-                                inputDecorationTheme: const InputDecorationTheme(
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: quantityController,
+                                decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
+                                  labelText: 'Quantity',
                                   floatingLabelBehavior: FloatingLabelBehavior.always,
                                 ),
-                                initialSelection: "None",
-                                enabled: false,
-                                label: const Text('Asset'),
-                                dropdownMenuEntries:
-                                    [const DropdownMenuEntry<String>(value: "None", label: "None")].toList());
-                          }
-
-                          return DropdownMenu<String>(
-                              controller: assetController,
-                              inputDecorationTheme: const InputDecorationTheme(
-                                border: OutlineInputBorder(),
-                                floatingLabelBehavior: FloatingLabelBehavior.always,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a quantity';
+                                  }
+                                  return null;
+                                },
                               ),
-                              initialSelection: balances[0].asset,
-                              requestFocusOnTap: true,
-                              label: const Text('Asset'),
-                              onSelected: (String? value) {
-                                setState(() {
-                                  asset = value;
-                                });
-                              },
-                              dropdownMenuEntries: balances.map<DropdownMenuEntry<String>>((balance) {
-                                return DropdownMenuEntry<String>(
-                                  value: balance.asset,
-                                  label: balance.asset,
-                                  trailingIcon: Text(balance.quantity.toString()),
-                                );
-                              }).toList());
-                        }),
+                            ),
+                            const SizedBox(width: 16.0), // Spacing between inputs
+                            Expanded(
+                              child: Builder(builder: (context) {
+                                if (balances.isEmpty) {
+                                  return DropdownMenu(
+                                      expandedInsets: const EdgeInsets.all(0),
+                                      inputDecorationTheme: const InputDecorationTheme(
+                                        border: OutlineInputBorder(),
+                                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      ),
+                                      initialSelection: "None",
+                                      enabled: false,
+                                      label: const Text('Asset'),
+                                      dropdownMenuEntries:
+                                          [const DropdownMenuEntry<String>(value: "None", label: "None")].toList());
+                                }
 
+                                return DropdownMenu<String>(
+                                    expandedInsets: const EdgeInsets.all(0),
+                                    controller: assetController,
+                                    inputDecorationTheme: const InputDecorationTheme(
+                                      border: OutlineInputBorder(),
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                    ),
+                                    initialSelection: balances[0].asset,
+                                    requestFocusOnTap: true,
+                                    label: const Text('Asset'),
+                                    onSelected: (String? value) {
+                                      setState(() {
+                                        asset = value;
+                                      });
+                                    },
+                                    dropdownMenuEntries: balances.map<DropdownMenuEntry<String>>((balance) {
+                                      return DropdownMenuEntry<String>(
+                                        value: balance.asset,
+                                        label: balance.asset,
+                                        trailingIcon: Text(balance.quantity.toString()),
+                                      );
+                                    }).toList());
+                              }),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 16.0), // Spacing between inputs
                         TextFormField(
                           controller: passwordController,
@@ -190,19 +199,27 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           },
                         ),
                         const Spacer(),
-                        ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              context.read<ComposeSendBloc>().add(SendTransactionEvent(
-                                    sourceAddress: fromAddressController.text,
-                                    password: passwordController.text,
-                                    destinationAddress: destinationAddressController.text,
-                                    asset: assetController.text,
-                                    quantity: double.parse(quantityController.text),
-                                  ));
-                            }
-                          },
-                          child: const Text('Submit'),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                context.read<ComposeSendBloc>().add(SendTransactionEvent(
+                                      sourceAddress: fromAddressController.text,
+                                      password: passwordController.text,
+                                      destinationAddress: destinationAddressController.text,
+                                      asset: assetController.text,
+                                      quantity: double.parse(quantityController.text),
+                                    ));
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text('Submit'),
+                          ),
                         ),
                       ],
                     ),
