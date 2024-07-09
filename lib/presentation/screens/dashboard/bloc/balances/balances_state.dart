@@ -5,6 +5,10 @@ import 'package:horizon/domain/entities/transaction.dart';
 
 part "balances_state.freezed.dart";
 
+
+
+
+
 @freezed
 class BalancesState with _$BalancesState {
   const factory BalancesState.initial() = _Initial;
@@ -15,9 +19,12 @@ class BalancesState with _$BalancesState {
 
 @freezed
 class Result with _$Result {
-  const factory Result.ok(List<Balance> balances) = _Ok;
+  const factory Result.ok(List<Balance> balances, Map<String, double> aggregated) = _Ok;
   const factory Result.error(String error) = _Error;
 }
+
+
+
 
 // class AddressInfo {
 //   final Address address;

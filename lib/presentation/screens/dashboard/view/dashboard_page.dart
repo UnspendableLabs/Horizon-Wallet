@@ -21,15 +21,11 @@ String balancesStateToString(BalancesState state) {
   );
 }
 
+
 String resultToString(Result result) {
   return result.when(
-    ok: (balances) {
-      var assetTotals = <String, double>{};
-      for (var balance in balances) {
-        assetTotals[balance.asset] = (assetTotals[balance.asset] ?? 0) + balance.quantity;
-      }
-      
-      var assetSummaries = assetTotals.entries.map((entry) => 
+    ok: (balances, aggregated) {
+      var assetSummaries = aggregated.entries.map((entry) => 
         '${entry.key}: ${entry.value.toStringAsFixed(2)}'
       ).join(', ');
       
@@ -38,6 +34,7 @@ String resultToString(Result result) {
     error: (error) => 'Error: $error',
   );
 }
+
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});

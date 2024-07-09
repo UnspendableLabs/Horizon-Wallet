@@ -10,6 +10,26 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'dart:async';
 
+Map<String, double> aggregateBalancesByAsset(List<Balance> balances) {
+  var aggregatedBalances = <String, double>{};
+
+  for (var balance in balances) {
+    aggregatedBalances[balance.asset] =
+        (aggregatedBalances[balance.asset] ?? 0) + balance.quantity;
+  }
+
+  return aggregatedBalances;
+}
+
+Map<String, double> aggregateAndSortBalancesByAsset(List<Balance> balances) {
+  var aggregated = aggregateBalancesByAsset(balances);
+
+  var sortedEntries = aggregated.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value)); // Sort by quantity descending
+
+  return Map.fromEntries(sortedEntries);
+}
+
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final BalanceRepository balanceRepository = GetIt.I.get<BalanceRepository>();
   final AccountRepository accountRepository = GetIt.I.get<AccountRepository>();
@@ -60,7 +80,9 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final List<Balance> balances = await balanceRepository
           .getBalances(addresses.map((a) => a.address).toList());
 
-      emit(BalancesState.complete(Result.ok(balances)));
+      final Map<String, double> aggregated = aggregateAndSortBalancesByAsset(balances);
+
+      emit(BalancesState.complete(Result.ok(balances, aggregated)));
     } catch (e) {
       emit(BalancesState.complete(Result.error(e.toString())));
     }
