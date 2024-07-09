@@ -12,15 +12,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   @override
   Future<List<entity.Balance>> getBalance(String address) async {
-    final response =
-        await api.getBalancesByAddress(address, true); // verbose by default
-
-    final List<entity.Balance> balances = [];
-    for (var a in response.result ?? []) {
-      balances.add(entity.Balance(
-          address: address, quantity: a.quantity, asset: a.asset));
-    }
-    return balances;
+    return _fetchBalances(address);
   }
 
   @override
@@ -28,18 +20,30 @@ class BalanceRepositoryImpl implements BalanceRepository {
     final List<entity.Balance> balances = [];
     for (var address in addresses) {
       try {
-        final response =
-            await api.getBalancesByAddress(address, true); // verbose by default
-        for (var a in response.result ?? []) {
-          balances.add(entity.Balance(
-              address: address, quantity: a.quantity, asset: a.asset));
-        }
+        balances.addAll(await _fetchBalances(address));
       } catch (e) {
         continue;
       }
     }
 
     print(balances);
+
+    return balances;
+  }
+
+  Future<List<entity.Balance>> _fetchBalances(String address) async {
+    final List<entity.Balance> balances = [];
+    int? cursor;
+
+    do {
+      final response = await api.getBalancesByAddress(address, true, cursor);
+
+      for (var a in response.result ?? []) {
+        balances.add(entity.Balance(address: address, quantity: a.quantity, asset: a.asset));
+      }
+      print('Cursor: $cursor');
+      cursor = response.nextCursor;
+    } while (cursor != null);
 
     return balances;
   }

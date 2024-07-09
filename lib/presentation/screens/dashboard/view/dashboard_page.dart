@@ -256,41 +256,41 @@ class _BalancesState extends State<Balances> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
-      final dummyBalances = [
-        Balance(address: 'address1', quantity: 100.0, asset: 'Asset1'),
-        Balance(address: 'address2', quantity: 200.0, asset: 'Asset2'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset4'),
-        Balance(address: 'address3', quantity: 500.0, asset: 'Asset5'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset6'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset7'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset8'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset9'),
-        Balance(address: 'address3', quantity: 300.0, asset: 'Asset10'),
-      ];
+      // final dummyBalances = [
+      //   Balance(address: 'address1', quantity: 100.0, asset: 'Asset1'),
+      //   Balance(address: 'address2', quantity: 200.0, asset: 'Asset2'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset4'),
+      //   Balance(address: 'address3', quantity: 500.0, asset: 'Asset5'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset6'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset7'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset8'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset9'),
+      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset10'),
+      // ];
 
-      final dummyAggregated = {
-        'Asset1': 100.0,
-        'Asset2': 200.0,
-        'Asset3': 300.0,
-        'Asset4': 300.0,
-        'Asset5': 500.0,
-        'Asset6': 300.0,
-        'Asset7': 300.0,
-        'Asset8': 300.0,
-        'Asset9': 300.0,
-        'Asset10': 300.0,
-      };
+      // final dummyAggregated = {
+      //   'Asset1': 100.0,
+      //   'Asset2': 200.0,
+      //   'Asset3': 300.0,
+      //   'Asset4': 300.0,
+      //   'Asset5': 500.0,
+      //   'Asset6': 300.0,
+      //   'Asset7': 300.0,
+      //   'Asset8': 300.0,
+      //   'Asset9': 300.0,
+      //   'Asset10': 300.0,
+      // };
 
-      final dummyResult = Result.ok(dummyBalances, dummyAggregated);
+      // final dummyResult = Result.ok(dummyBalances, dummyAggregated);
 
       double height = MediaQuery.of(context).size.height * 0.75;
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: (result) => _resultToBalanceList(dummyResult, height, widget.isDarkTheme),
-        reloading: (result) => _resultToBalanceList(dummyResult, height, widget.isDarkTheme),
+        complete: (result) => _resultToBalanceList(result, height, widget.isDarkTheme),
+        reloading: (result) => _resultToBalanceList(result, height, widget.isDarkTheme),
       );
     });
   }
