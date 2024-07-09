@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
@@ -12,6 +11,8 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+import '../../../../domain/entities/balance.dart';
+
 String balancesStateToString(BalancesState state) {
   return state.when(
     initial: () => 'Initial',
@@ -21,20 +22,16 @@ String balancesStateToString(BalancesState state) {
   );
 }
 
-
 String resultToString(Result result) {
   return result.when(
     ok: (balances, aggregated) {
-      var assetSummaries = aggregated.entries.map((entry) => 
-        '${entry.key}: ${entry.value.toStringAsFixed(2)}'
-      ).join(', ');
-      
+      var assetSummaries = aggregated.entries.map((entry) => '${entry.key}: ${entry.value.toStringAsFixed(2)}').join(', ');
+
       return 'OK (${balances.length} balances, $assetSummaries)';
     },
     error: (error) => 'Error: $error',
   );
 }
-
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -50,9 +47,7 @@ class DashboardPage extends StatelessWidget {
         onboarding: (_) => const Text("onboarding"),
         loading: () => const CircularProgressIndicator(),
         error: (error) => Text("Error: $error"),
-        success: (data) => _DashboardPage(
-            key: Key(data.currentAccountUuid),
-            accountUuid: data.currentAccountUuid));
+        success: (data) => _DashboardPage(key: Key(data.currentAccountUuid), accountUuid: data.currentAccountUuid));
   }
 }
 
@@ -83,11 +78,9 @@ class _DashboardPage_State extends State<_DashboardPage> {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     // Define background colors based on theme
-    Color backgroundColor =
-        isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
+    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
-    return BlocBuilder<AddressesBloc, AddressesState>(
-        builder: (context, state) {
+    return BlocBuilder<AddressesBloc, AddressesState>(builder: (context, state) {
       return state.when(
         initial: () => const Text("initial"),
         loading: () => const CircularProgressIndicator(),
@@ -107,18 +100,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 BalancesDisplay(
                   isDarkTheme: isDarkTheme,
                 ),
-                // BlocProvider(
-                //   create: (context) => DashboardBloc(),
-                //   child: BlocBuilder<DashboardBloc, DashboardState>(
-                //     builder: (context, state) {
-                //       return FilledButton(
-                //           onPressed: () {
-                //             context.read<DashboardBloc>().add(DeleteWallet());
-                //           },
-                //           child: const Text("Delete DB"));
-                //     },
-                //   ),
-                // )
               ],
             ),
           ),
@@ -134,9 +115,7 @@ class AddressActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = isDarkTheme
-        ? const Color.fromRGBO(35, 35, 58, 1)
-        : const Color.fromRGBO(246, 247, 250, 1);
+    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(
@@ -160,12 +139,10 @@ class AddressActions extends StatelessWidget {
                         builder: (context) {
                           return Dialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  30.0), // Updated border radius
+                              borderRadius: BorderRadius.circular(30.0), // Updated border radius
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width *
-                                  0.75, // 75% of the page width
+                              width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: ComposeIssuancePage(),
@@ -208,12 +185,10 @@ class AddressActions extends StatelessWidget {
                         builder: (context) {
                           return Dialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  30.0), // Updated border radius
+                              borderRadius: BorderRadius.circular(30.0), // Updated border radius
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width *
-                                  0.75, // 75% of the page width
+                              width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: ComposeSendPage(),
@@ -256,232 +231,180 @@ class BalancesDisplay extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => BalancesBloc(accountUuid: state.currentAccountUuid)
-          ..add(Start(pollingInterval: const Duration(seconds: 60))),
+        create: (context) =>
+            BalancesBloc(accountUuid: state.currentAccountUuid)..add(Start(pollingInterval: const Duration(seconds: 60))),
         child: Balances(isDarkTheme: isDarkTheme),
       ),
       orElse: () => const SizedBox.shrink(),
     );
   }
-
 }
 
-class Balances extends StatelessWidget {
+class Balances extends StatefulWidget {
   final bool isDarkTheme;
   const Balances({super.key, required this.isDarkTheme});
 
+  @override
+  State<Balances> createState() => _BalancesState();
+}
 
+class _BalancesState extends State<Balances> {
+  bool _isExpanded = false;
 
   // TODO: handle dispose, send Stop to balances bloc
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = isDarkTheme
-        ? const Color.fromRGBO(35, 35, 58, 1)
-        : const Color.fromRGBO(246, 247, 250, 1);
-
     return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
+      final dummyBalances = [
+        Balance(address: 'address1', quantity: 100.0, asset: 'Asset1'),
+        Balance(address: 'address2', quantity: 200.0, asset: 'Asset2'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset4'),
+        Balance(address: 'address3', quantity: 500.0, asset: 'Asset5'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset6'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset7'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset8'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset9'),
+        Balance(address: 'address3', quantity: 300.0, asset: 'Asset10'),
+      ];
+
+      final dummyAggregated = {
+        'Asset1': 100.0,
+        'Asset2': 200.0,
+        'Asset3': 300.0,
+        'Asset4': 300.0,
+        'Asset5': 500.0,
+        'Asset6': 300.0,
+        'Asset7': 300.0,
+        'Asset8': 300.0,
+        'Asset9': 300.0,
+        'Asset10': 300.0,
+      };
+
+      final dummyResult = Result.ok(dummyBalances, dummyAggregated);
+
+      double height = MediaQuery.of(context).size.height * 0.75;
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: ( result  ) =>  Text(resultToString(result)),
-        reloading: ( result ) =>  Text(resultToString(result)),
-
-        // success: (addressInfo, currentAddressBalances) {
-        //   return Padding(
-        //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        //     child: Container(
-        //       height: 300,
-        //       decoration: BoxDecoration(
-        //         color: backgroundColor,
-        //         borderRadius: BorderRadius.circular(30.0),
-        //       ),
-        //       child: Padding(
-        //         padding: const EdgeInsets.all(16.0),
-        //         child: Column(
-        //           crossAxisAlignment: CrossAxisAlignment.start,
-        //           children: [
-        //             Row(
-        //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //               children: [
-        //                 SelectableText(
-        //                   currentAddressBalances.address.address,
-        //                   style: const TextStyle(
-        //                       fontSize: 25), // Responsive font size
-        //                 ),
-        //                 IconButton(
-        //                   icon: const Icon(Icons.copy),
-        //                   onPressed: () {
-        //                     Clipboard.setData(ClipboardData(
-        //                             text:
-        //                                 currentAddressBalances.address.address))
-        //                         .then((_) {
-        //                       ScaffoldMessenger.of(context).showSnackBar(
-        //                         const SnackBar(
-        //                           content: Text('Address copied to clipboard!'),
-        //                         ),
-        //                       );
-        //                     });
-        //                   },
-        //                 ),
-        //                 IconButton(
-        //                   icon: const Icon(Icons.list),
-        //                   onPressed: () {
-        //                     showDialog(
-        //                       context: context,
-        //                       builder: (context) {
-        //                         return Dialog(
-        //                           shape: RoundedRectangleBorder(
-        //                             borderRadius: BorderRadius.circular(30.0),
-        //                           ),
-        //                           child: Container(
-        //                             width: MediaQuery.of(context).size.width *
-        //                                 0.75,
-        //                             child: Padding(
-        //                               padding: const EdgeInsets.all(16.0),
-        //                               child: ListView.builder(
-        //                                 itemCount: addressInfo.length,
-        //                                 itemBuilder: (context, index) {
-        //                                   final info = addressInfo[index];
-        //                                   return TextButton(
-        //                                     onPressed: () => {},
-        //                                     style: TextButton.styleFrom(
-        //                                       padding: EdgeInsets.zero,
-        //                                       minimumSize: Size(50, 30),
-        //                                       tapTargetSize:
-        //                                           MaterialTapTargetSize
-        //                                               .shrinkWrap,
-        //                                     ),
-        //                                     child: Column(
-        //                                       crossAxisAlignment:
-        //                                           CrossAxisAlignment.start,
-        //                                       children: [
-        //                                         Text(
-        //                                           info.address.address,
-        //                                           style: const TextStyle(
-        //                                               fontSize: 20,
-        //                                               fontWeight:
-        //                                                   FontWeight.bold),
-        //                                         ),
-        //                                         if (info.balances.isEmpty)
-        //                                           Padding(
-        //                                             padding: const EdgeInsets
-        //                                                 .symmetric(
-        //                                                 vertical: 8.0),
-        //                                             child: Container(
-        //                                               child: const Text(
-        //                                                 "No balance",
-        //                                                 style: TextStyle(
-        //                                                     fontSize: 16),
-        //                                               ),
-        //                                             ),
-        //                                           )
-        //                                         else
-        //                                           ...info.balances
-        //                                               .map((balance) => Padding(
-        //                                                     padding:
-        //                                                         const EdgeInsets
-        //                                                             .symmetric(
-        //                                                             vertical:
-        //                                                                 8.0),
-        //                                                     child: Row(
-        //                                                       mainAxisAlignment:
-        //                                                           MainAxisAlignment
-        //                                                               .spaceBetween,
-        //                                                       children: [
-        //                                                         Text(
-        //                                                             '${balance.asset} ${balance.quantity.toString()}',
-        //                                                             style: const TextStyle(
-        //                                                                 fontSize:
-        //                                                                     16)),
-        //                                                         const Text(
-        //                                                             "\$ dollar value placeholder",
-        //                                                             style: TextStyle(
-        //                                                                 fontSize:
-        //                                                                     16)),
-        //                                                       ],
-        //                                                     ),
-        //                                                   )),
-        //                                         const Divider(),
-        //                                       ],
-        //                                     ),
-        //                                   );
-        //                                 },
-        //                               ),
-        //                             ),
-        //                           ),
-        //                         );
-        //                       },
-        //                     );
-        //                   },
-        //                 ),
-        //               ],
-        //             ),
-        //             const SizedBox(height: 16.0),
-        //             Expanded(
-        //               child: ListView.builder(
-        //                 scrollDirection: Axis.vertical,
-        //                 itemCount: currentAddressBalances.balances.length,
-        //                 itemBuilder: (context, index) {
-        //                   final balance =
-        //                       currentAddressBalances.balances[index];
-        //                   return Padding(
-        //                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-        //                     child: Container(
-        //                       decoration: const BoxDecoration(
-        //                         border: Border(
-        //                           bottom: BorderSide(
-        //                             color: Colors.black, // Underline color
-        //                             width: 1.0, // Underline width
-        //                           ),
-        //                         ),
-        //                       ),
-        //                       child: Row(
-        //                         mainAxisAlignment:
-        //                             MainAxisAlignment.spaceBetween,
-        //                         children: [
-        //                           Row(
-        //                             children: [
-        //                               Text(
-        //                                 balance.asset,
-        //                                 style: const TextStyle(
-        //                                   fontWeight: FontWeight.bold,
-        //                                   fontSize: 16, // Responsive font size
-        //                                 ),
-        //                               ),
-        //                               const SizedBox(width: 16.0),
-        //                               Text(
-        //                                 balance.quantity.toString(),
-        //                                 style: const TextStyle(
-        //                                   fontSize: 16, // Responsive font size
-        //                                 ),
-        //                               ),
-        //                             ],
-        //                           ),
-        //                           const Spacer(),
-        //                           const Align(
-        //                             alignment: Alignment.centerRight,
-        //                             child: Text(
-        //                               "\$ dollar value placeholder",
-        //                               style: TextStyle(
-        //                                 fontSize: 16, // Responsive font size
-        //                               ),
-        //                             ),
-        //                           ),
-        //                         ],
-        //                       ),
-        //                     ),
-        //                   );
-        //                 },
-        //               ),
-        //             ),
-        //           ],
-        //         ),
-        //       ),
-        //     ),
-        //   );
-        // },
+        complete: (result) => _resultToBalanceList(dummyResult, height, widget.isDarkTheme),
+        reloading: (result) => _resultToBalanceList(dummyResult, height, widget.isDarkTheme),
       );
     });
+  }
+
+  Widget _resultToBalanceList(Result result, double height, bool isDarkTheme) {
+    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Account Balances',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Expanded(child: _balanceList(result)),
+            if (_isExpanded)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isExpanded = false;
+                        });
+                      },
+                      child: const Text("Collapse"),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _balanceList(Result result) {
+    return result.when(
+      ok: (balances, aggregated) {
+        final balanceWidgets = aggregated.entries.map((entry) {
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${entry.key}: ${entry.value.toStringAsFixed(2)}'),
+                    const Text("\$ dollar placeholder"),
+                  ],
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Divider(),
+              ),
+            ],
+          );
+        }).toList();
+
+        if (balanceWidgets.length > 6 && !_isExpanded) {
+          return Column(
+            children: [
+              ...balanceWidgets.take(6),
+              FractionallySizedBox(
+                widthFactor: 0.5,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isExpanded = true;
+                    });
+                  },
+                  child: const Text("View All"),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return ListView(
+            children: balanceWidgets,
+          );
+        }
+      },
+      error: (error) => Text('Error: $error'),
+    );
   }
 }
