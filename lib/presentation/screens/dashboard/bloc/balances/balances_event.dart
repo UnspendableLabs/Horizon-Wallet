@@ -1,7 +1,15 @@
+import "./balances_state.dart";
+
 abstract class BalancesEvent {}
 
-class FetchBalances extends BalancesEvent {
+class Fetch extends BalancesEvent {
   final String accountUuid;
-
-  FetchBalances({required this.accountUuid});
+  Fetch({required this.accountUuid});
 }
+
+class Start extends BalancesEvent {
+  final Duration pollingInterval;
+  Start({required this.pollingInterval});
+}
+
+class Stop extends BalancesEvent {}

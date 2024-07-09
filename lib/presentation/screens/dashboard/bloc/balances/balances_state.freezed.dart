@@ -20,30 +20,24 @@ mixin _$BalancesState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
-        success,
-    required TResult Function(String error) error,
+    required TResult Function(Result result) complete,
+    required TResult Function(Result result) reloading,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult? Function(String error)? error,
+    TResult? Function(Result result)? complete,
+    TResult? Function(Result result)? reloading,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult Function(String error)? error,
+    TResult Function(Result result)? complete,
+    TResult Function(Result result)? reloading,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -51,24 +45,24 @@ mixin _$BalancesState {
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
-    required TResult Function(_Success value) success,
-    required TResult Function(_Error value) error,
+    required TResult Function(_Complete value) complete,
+    required TResult Function(_Reloading value) reloading,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
-    TResult? Function(_Success value)? success,
-    TResult? Function(_Error value)? error,
+    TResult? Function(_Complete value)? complete,
+    TResult? Function(_Reloading value)? reloading,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
     TResult Function(_Loading value)? loading,
-    TResult Function(_Success value)? success,
-    TResult Function(_Error value)? error,
+    TResult Function(_Complete value)? complete,
+    TResult Function(_Reloading value)? reloading,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -132,10 +126,8 @@ class _$InitialImpl implements _Initial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
-        success,
-    required TResult Function(String error) error,
+    required TResult Function(Result result) complete,
+    required TResult Function(Result result) reloading,
   }) {
     return initial();
   }
@@ -145,10 +137,8 @@ class _$InitialImpl implements _Initial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult? Function(String error)? error,
+    TResult? Function(Result result)? complete,
+    TResult? Function(Result result)? reloading,
   }) {
     return initial?.call();
   }
@@ -158,10 +148,8 @@ class _$InitialImpl implements _Initial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult Function(String error)? error,
+    TResult Function(Result result)? complete,
+    TResult Function(Result result)? reloading,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -175,8 +163,8 @@ class _$InitialImpl implements _Initial {
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
-    required TResult Function(_Success value) success,
-    required TResult Function(_Error value) error,
+    required TResult Function(_Complete value) complete,
+    required TResult Function(_Reloading value) reloading,
   }) {
     return initial(this);
   }
@@ -186,8 +174,8 @@ class _$InitialImpl implements _Initial {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
-    TResult? Function(_Success value)? success,
-    TResult? Function(_Error value)? error,
+    TResult? Function(_Complete value)? complete,
+    TResult? Function(_Reloading value)? reloading,
   }) {
     return initial?.call(this);
   }
@@ -197,8 +185,8 @@ class _$InitialImpl implements _Initial {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
     TResult Function(_Loading value)? loading,
-    TResult Function(_Success value)? success,
-    TResult Function(_Error value)? error,
+    TResult Function(_Complete value)? complete,
+    TResult Function(_Reloading value)? reloading,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -252,10 +240,8 @@ class _$LoadingImpl implements _Loading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
-        success,
-    required TResult Function(String error) error,
+    required TResult Function(Result result) complete,
+    required TResult Function(Result result) reloading,
   }) {
     return loading();
   }
@@ -265,10 +251,8 @@ class _$LoadingImpl implements _Loading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult? Function(String error)? error,
+    TResult? Function(Result result)? complete,
+    TResult? Function(Result result)? reloading,
   }) {
     return loading?.call();
   }
@@ -278,10 +262,8 @@ class _$LoadingImpl implements _Loading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult Function(String error)? error,
+    TResult Function(Result result)? complete,
+    TResult Function(Result result)? reloading,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -295,8 +277,8 @@ class _$LoadingImpl implements _Loading {
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
-    required TResult Function(_Success value) success,
-    required TResult Function(_Error value) error,
+    required TResult Function(_Complete value) complete,
+    required TResult Function(_Reloading value) reloading,
   }) {
     return loading(this);
   }
@@ -306,8 +288,8 @@ class _$LoadingImpl implements _Loading {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
-    TResult? Function(_Success value)? success,
-    TResult? Function(_Error value)? error,
+    TResult? Function(_Complete value)? complete,
+    TResult? Function(_Reloading value)? reloading,
   }) {
     return loading?.call(this);
   }
@@ -317,8 +299,8 @@ class _$LoadingImpl implements _Loading {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
     TResult Function(_Loading value)? loading,
-    TResult Function(_Success value)? success,
-    TResult Function(_Error value)? error,
+    TResult Function(_Complete value)? complete,
+    TResult Function(_Reloading value)? reloading,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -333,100 +315,85 @@ abstract class _Loading implements BalancesState {
 }
 
 /// @nodoc
-abstract class _$$SuccessImplCopyWith<$Res> {
-  factory _$$SuccessImplCopyWith(
-          _$SuccessImpl value, $Res Function(_$SuccessImpl) then) =
-      __$$SuccessImplCopyWithImpl<$Res>;
+abstract class _$$CompleteImplCopyWith<$Res> {
+  factory _$$CompleteImplCopyWith(
+          _$CompleteImpl value, $Res Function(_$CompleteImpl) then) =
+      __$$CompleteImplCopyWithImpl<$Res>;
   @useResult
-  $Res call(
-      {List<AddressInfo> addressInfo, AddressInfo currentAddressBalances});
+  $Res call({Result result});
+
+  $ResultCopyWith<$Res> get result;
 }
 
 /// @nodoc
-class __$$SuccessImplCopyWithImpl<$Res>
-    extends _$BalancesStateCopyWithImpl<$Res, _$SuccessImpl>
-    implements _$$SuccessImplCopyWith<$Res> {
-  __$$SuccessImplCopyWithImpl(
-      _$SuccessImpl _value, $Res Function(_$SuccessImpl) _then)
+class __$$CompleteImplCopyWithImpl<$Res>
+    extends _$BalancesStateCopyWithImpl<$Res, _$CompleteImpl>
+    implements _$$CompleteImplCopyWith<$Res> {
+  __$$CompleteImplCopyWithImpl(
+      _$CompleteImpl _value, $Res Function(_$CompleteImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? addressInfo = null,
-    Object? currentAddressBalances = null,
+    Object? result = null,
   }) {
-    return _then(_$SuccessImpl(
-      addressInfo: null == addressInfo
-          ? _value._addressBalances
-          : addressInfo // ignore: cast_nullable_to_non_nullable
-              as List<AddressInfo>,
-      currentAddressBalances: null == currentAddressBalances
-          ? _value.currentAddressBalances
-          : currentAddressBalances // ignore: cast_nullable_to_non_nullable
-              as AddressInfo,
+    return _then(_$CompleteImpl(
+      null == result
+          ? _value.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as Result,
     ));
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $ResultCopyWith<$Res> get result {
+    return $ResultCopyWith<$Res>(_value.result, (value) {
+      return _then(_value.copyWith(result: value));
+    });
   }
 }
 
 /// @nodoc
 
-class _$SuccessImpl implements _Success {
-  const _$SuccessImpl(
-      {required final List<AddressInfo> addressInfo,
-      required this.currentAddressBalances})
-      : _addressBalances = addressInfo;
-
-  final List<AddressInfo> _addressBalances;
-  @override
-  List<AddressInfo> get addressInfo {
-    if (_addressBalances is EqualUnmodifiableListView) return _addressBalances;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_addressBalances);
-  }
+class _$CompleteImpl implements _Complete {
+  const _$CompleteImpl(this.result);
 
   @override
-  final AddressInfo currentAddressBalances;
+  final Result result;
 
   @override
   String toString() {
-    return 'BalancesState.success(addressInfo: $addressInfo, currentAddressBalances: $currentAddressBalances)';
+    return 'BalancesState.complete(result: $result)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SuccessImpl &&
-            const DeepCollectionEquality()
-                .equals(other._addressBalances, _addressBalances) &&
-            (identical(other.currentAddressBalances, currentAddressBalances) ||
-                other.currentAddressBalances == currentAddressBalances));
+            other is _$CompleteImpl &&
+            (identical(other.result, result) || other.result == result));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(_addressBalances),
-      currentAddressBalances);
+  int get hashCode => Object.hash(runtimeType, result);
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
-      __$$SuccessImplCopyWithImpl<_$SuccessImpl>(this, _$identity);
+  _$$CompleteImplCopyWith<_$CompleteImpl> get copyWith =>
+      __$$CompleteImplCopyWithImpl<_$CompleteImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
-        success,
-    required TResult Function(String error) error,
+    required TResult Function(Result result) complete,
+    required TResult Function(Result result) reloading,
   }) {
-    return success(addressInfo, currentAddressBalances);
+    return complete(result);
   }
 
   @override
@@ -434,12 +401,10 @@ class _$SuccessImpl implements _Success {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult? Function(String error)? error,
+    TResult? Function(Result result)? complete,
+    TResult? Function(Result result)? reloading,
   }) {
-    return success?.call(addressInfo, currentAddressBalances);
+    return complete?.call(result);
   }
 
   @override
@@ -447,14 +412,12 @@ class _$SuccessImpl implements _Success {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
-    TResult Function(String error)? error,
+    TResult Function(Result result)? complete,
+    TResult Function(Result result)? reloading,
     required TResult orElse(),
   }) {
-    if (success != null) {
-      return success(addressInfo, currentAddressBalances);
+    if (complete != null) {
+      return complete(result);
     }
     return orElse();
   }
@@ -464,10 +427,10 @@ class _$SuccessImpl implements _Success {
   TResult map<TResult extends Object?>({
     required TResult Function(_Initial value) initial,
     required TResult Function(_Loading value) loading,
-    required TResult Function(_Success value) success,
-    required TResult Function(_Error value) error,
+    required TResult Function(_Complete value) complete,
+    required TResult Function(_Reloading value) reloading,
   }) {
-    return success(this);
+    return complete(this);
   }
 
   @override
@@ -475,10 +438,10 @@ class _$SuccessImpl implements _Success {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Initial value)? initial,
     TResult? Function(_Loading value)? loading,
-    TResult? Function(_Success value)? success,
-    TResult? Function(_Error value)? error,
+    TResult? Function(_Complete value)? complete,
+    TResult? Function(_Reloading value)? reloading,
   }) {
-    return success?.call(this);
+    return complete?.call(this);
   }
 
   @override
@@ -486,26 +449,373 @@ class _$SuccessImpl implements _Success {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Initial value)? initial,
     TResult Function(_Loading value)? loading,
-    TResult Function(_Success value)? success,
-    TResult Function(_Error value)? error,
+    TResult Function(_Complete value)? complete,
+    TResult Function(_Reloading value)? reloading,
     required TResult orElse(),
   }) {
-    if (success != null) {
-      return success(this);
+    if (complete != null) {
+      return complete(this);
     }
     return orElse();
   }
 }
 
-abstract class _Success implements BalancesState {
-  const factory _Success(
-      {required final List<AddressInfo> addressInfo,
-      required final AddressInfo currentAddressBalances}) = _$SuccessImpl;
+abstract class _Complete implements BalancesState {
+  const factory _Complete(final Result result) = _$CompleteImpl;
 
-  List<AddressInfo> get addressInfo;
-  AddressInfo get currentAddressBalances;
+  Result get result;
   @JsonKey(ignore: true)
-  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
+  _$$CompleteImplCopyWith<_$CompleteImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ReloadingImplCopyWith<$Res> {
+  factory _$$ReloadingImplCopyWith(
+          _$ReloadingImpl value, $Res Function(_$ReloadingImpl) then) =
+      __$$ReloadingImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({Result result});
+
+  $ResultCopyWith<$Res> get result;
+}
+
+/// @nodoc
+class __$$ReloadingImplCopyWithImpl<$Res>
+    extends _$BalancesStateCopyWithImpl<$Res, _$ReloadingImpl>
+    implements _$$ReloadingImplCopyWith<$Res> {
+  __$$ReloadingImplCopyWithImpl(
+      _$ReloadingImpl _value, $Res Function(_$ReloadingImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? result = null,
+  }) {
+    return _then(_$ReloadingImpl(
+      null == result
+          ? _value.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as Result,
+    ));
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $ResultCopyWith<$Res> get result {
+    return $ResultCopyWith<$Res>(_value.result, (value) {
+      return _then(_value.copyWith(result: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$ReloadingImpl implements _Reloading {
+  const _$ReloadingImpl(this.result);
+
+  @override
+  final Result result;
+
+  @override
+  String toString() {
+    return 'BalancesState.reloading(result: $result)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ReloadingImpl &&
+            (identical(other.result, result) || other.result == result));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, result);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ReloadingImplCopyWith<_$ReloadingImpl> get copyWith =>
+      __$$ReloadingImplCopyWithImpl<_$ReloadingImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(Result result) complete,
+    required TResult Function(Result result) reloading,
+  }) {
+    return reloading(result);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(Result result)? complete,
+    TResult? Function(Result result)? reloading,
+  }) {
+    return reloading?.call(result);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(Result result)? complete,
+    TResult Function(Result result)? reloading,
+    required TResult orElse(),
+  }) {
+    if (reloading != null) {
+      return reloading(result);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Complete value) complete,
+    required TResult Function(_Reloading value) reloading,
+  }) {
+    return reloading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Complete value)? complete,
+    TResult? Function(_Reloading value)? reloading,
+  }) {
+    return reloading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Complete value)? complete,
+    TResult Function(_Reloading value)? reloading,
+    required TResult orElse(),
+  }) {
+    if (reloading != null) {
+      return reloading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _Reloading implements BalancesState {
+  const factory _Reloading(final Result result) = _$ReloadingImpl;
+
+  Result get result;
+  @JsonKey(ignore: true)
+  _$$ReloadingImplCopyWith<_$ReloadingImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$Result {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(List<Balance> balances) ok,
+    required TResult Function(String error) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(List<Balance> balances)? ok,
+    TResult? Function(String error)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(List<Balance> balances)? ok,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Ok value) ok,
+    required TResult Function(_Error value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Ok value)? ok,
+    TResult? Function(_Error value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Ok value)? ok,
+    TResult Function(_Error value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ResultCopyWith<$Res> {
+  factory $ResultCopyWith(Result value, $Res Function(Result) then) =
+      _$ResultCopyWithImpl<$Res, Result>;
+}
+
+/// @nodoc
+class _$ResultCopyWithImpl<$Res, $Val extends Result>
+    implements $ResultCopyWith<$Res> {
+  _$ResultCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$OkImplCopyWith<$Res> {
+  factory _$$OkImplCopyWith(_$OkImpl value, $Res Function(_$OkImpl) then) =
+      __$$OkImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({List<Balance> balances});
+}
+
+/// @nodoc
+class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
+    implements _$$OkImplCopyWith<$Res> {
+  __$$OkImplCopyWithImpl(_$OkImpl _value, $Res Function(_$OkImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? balances = null,
+  }) {
+    return _then(_$OkImpl(
+      null == balances
+          ? _value._balances
+          : balances // ignore: cast_nullable_to_non_nullable
+              as List<Balance>,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$OkImpl implements _Ok {
+  const _$OkImpl(final List<Balance> balances) : _balances = balances;
+
+  final List<Balance> _balances;
+  @override
+  List<Balance> get balances {
+    if (_balances is EqualUnmodifiableListView) return _balances;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_balances);
+  }
+
+  @override
+  String toString() {
+    return 'Result.ok(balances: $balances)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$OkImpl &&
+            const DeepCollectionEquality().equals(other._balances, _balances));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_balances));
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$OkImplCopyWith<_$OkImpl> get copyWith =>
+      __$$OkImplCopyWithImpl<_$OkImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(List<Balance> balances) ok,
+    required TResult Function(String error) error,
+  }) {
+    return ok(balances);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(List<Balance> balances)? ok,
+    TResult? Function(String error)? error,
+  }) {
+    return ok?.call(balances);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(List<Balance> balances)? ok,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (ok != null) {
+      return ok(balances);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Ok value) ok,
+    required TResult Function(_Error value) error,
+  }) {
+    return ok(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Ok value)? ok,
+    TResult? Function(_Error value)? error,
+  }) {
+    return ok?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Ok value)? ok,
+    TResult Function(_Error value)? error,
+    required TResult orElse(),
+  }) {
+    if (ok != null) {
+      return ok(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _Ok implements Result {
+  const factory _Ok(final List<Balance> balances) = _$OkImpl;
+
+  List<Balance> get balances;
+  @JsonKey(ignore: true)
+  _$$OkImplCopyWith<_$OkImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -520,7 +830,7 @@ abstract class _$$ErrorImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$ErrorImplCopyWithImpl<$Res>
-    extends _$BalancesStateCopyWithImpl<$Res, _$ErrorImpl>
+    extends _$ResultCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
       _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
@@ -550,7 +860,7 @@ class _$ErrorImpl implements _Error {
 
   @override
   String toString() {
-    return 'BalancesState.error(error: $error)';
+    return 'Result.error(error: $error)';
   }
 
   @override
@@ -573,11 +883,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
-        success,
+    required TResult Function(List<Balance> balances) ok,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -586,11 +892,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
+    TResult? Function(List<Balance> balances)? ok,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -599,11 +901,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
-        success,
+    TResult Function(List<Balance> balances)? ok,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -616,9 +914,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_Initial value) initial,
-    required TResult Function(_Loading value) loading,
-    required TResult Function(_Success value) success,
+    required TResult Function(_Ok value) ok,
     required TResult Function(_Error value) error,
   }) {
     return error(this);
@@ -627,9 +923,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Initial value)? initial,
-    TResult? Function(_Loading value)? loading,
-    TResult? Function(_Success value)? success,
+    TResult? Function(_Ok value)? ok,
     TResult? Function(_Error value)? error,
   }) {
     return error?.call(this);
@@ -638,9 +932,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Initial value)? initial,
-    TResult Function(_Loading value)? loading,
-    TResult Function(_Success value)? success,
+    TResult Function(_Ok value)? ok,
     TResult Function(_Error value)? error,
     required TResult orElse(),
   }) {
@@ -651,7 +943,7 @@ class _$ErrorImpl implements _Error {
   }
 }
 
-abstract class _Error implements BalancesState {
+abstract class _Error implements Result {
   const factory _Error(final String error) = _$ErrorImpl;
 
   String get error;

@@ -12,6 +12,33 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+String balancesStateToString(BalancesState state) {
+  return state.when(
+    initial: () => 'Initial',
+    loading: () => 'Loading',
+    complete: (result) => 'Complete: ${resultToString(result)}',
+    reloading: (result) => 'Reloading: ${resultToString(result)}',
+  );
+}
+
+String resultToString(Result result) {
+  return result.when(
+    ok: (balances) {
+      var assetTotals = <String, double>{};
+      for (var balance in balances) {
+        assetTotals[balance.asset] = (assetTotals[balance.asset] ?? 0) + balance.quantity;
+      }
+      
+      var assetSummaries = assetTotals.entries.map((entry) => 
+        '${entry.key}: ${entry.value.toStringAsFixed(2)}'
+      ).join(', ');
+      
+      return 'OK (${balances.length} balances, $assetSummaries)';
+    },
+    error: (error) => 'Error: $error',
+  );
+}
+
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
@@ -232,8 +259,8 @@ class BalancesDisplay extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => BalancesBloc()
-          ..add(FetchBalances(accountUuid: state.currentAccountUuid)),
+        create: (context) => BalancesBloc(accountUuid: state.currentAccountUuid)
+          ..add(Start(pollingInterval: const Duration(seconds: 60))),
         child: Balances(isDarkTheme: isDarkTheme),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -255,201 +282,203 @@ class Balances extends StatelessWidget {
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        error: (error) => Text("Error: $error"),
-        success: (addressInfo, currentAddressBalances) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Container(
-              height: 300,
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SelectableText(
-                          currentAddressBalances.address.address,
-                          style: const TextStyle(
-                              fontSize: 25), // Responsive font size
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.copy),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(
-                                    text:
-                                        currentAddressBalances.address.address))
-                                .then((_) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Address copied to clipboard!'),
-                                ),
-                              );
-                            });
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.list),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return Dialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                  child: Container(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.75,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: ListView.builder(
-                                        itemCount: addressInfo.length,
-                                        itemBuilder: (context, index) {
-                                          final info = addressInfo[index];
-                                          return TextButton(
-                                            onPressed: () => {},
-                                            style: TextButton.styleFrom(
-                                              padding: EdgeInsets.zero,
-                                              minimumSize: Size(50, 30),
-                                              tapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  info.address.address,
-                                                  style: const TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                if (info.balances.isEmpty)
-                                                  Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 8.0),
-                                                    child: Container(
-                                                      child: const Text(
-                                                        "No balance",
-                                                        style: TextStyle(
-                                                            fontSize: 16),
-                                                      ),
-                                                    ),
-                                                  )
-                                                else
-                                                  ...info.balances
-                                                      .map((balance) => Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical:
-                                                                        8.0),
-                                                            child: Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Text(
-                                                                    '${balance.asset} ${balance.quantity.toString()}',
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16)),
-                                                                const Text(
-                                                                    "\$ dollar value placeholder",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            16)),
-                                                              ],
-                                                            ),
-                                                          )),
-                                                const Divider(),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16.0),
-                    Expanded(
-                      child: ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        itemCount: currentAddressBalances.balances.length,
-                        itemBuilder: (context, index) {
-                          final balance =
-                              currentAddressBalances.balances[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Colors.black, // Underline color
-                                    width: 1.0, // Underline width
-                                  ),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        balance.asset,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16, // Responsive font size
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16.0),
-                                      Text(
-                                        balance.quantity.toString(),
-                                        style: const TextStyle(
-                                          fontSize: 16, // Responsive font size
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  const Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      "\$ dollar value placeholder",
-                                      style: TextStyle(
-                                        fontSize: 16, // Responsive font size
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
+        complete: ( result  ) =>  Text(resultToString(result)),
+        reloading: ( result ) =>  Text(resultToString(result)),
+
+        // success: (addressInfo, currentAddressBalances) {
+        //   return Padding(
+        //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        //     child: Container(
+        //       height: 300,
+        //       decoration: BoxDecoration(
+        //         color: backgroundColor,
+        //         borderRadius: BorderRadius.circular(30.0),
+        //       ),
+        //       child: Padding(
+        //         padding: const EdgeInsets.all(16.0),
+        //         child: Column(
+        //           crossAxisAlignment: CrossAxisAlignment.start,
+        //           children: [
+        //             Row(
+        //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //               children: [
+        //                 SelectableText(
+        //                   currentAddressBalances.address.address,
+        //                   style: const TextStyle(
+        //                       fontSize: 25), // Responsive font size
+        //                 ),
+        //                 IconButton(
+        //                   icon: const Icon(Icons.copy),
+        //                   onPressed: () {
+        //                     Clipboard.setData(ClipboardData(
+        //                             text:
+        //                                 currentAddressBalances.address.address))
+        //                         .then((_) {
+        //                       ScaffoldMessenger.of(context).showSnackBar(
+        //                         const SnackBar(
+        //                           content: Text('Address copied to clipboard!'),
+        //                         ),
+        //                       );
+        //                     });
+        //                   },
+        //                 ),
+        //                 IconButton(
+        //                   icon: const Icon(Icons.list),
+        //                   onPressed: () {
+        //                     showDialog(
+        //                       context: context,
+        //                       builder: (context) {
+        //                         return Dialog(
+        //                           shape: RoundedRectangleBorder(
+        //                             borderRadius: BorderRadius.circular(30.0),
+        //                           ),
+        //                           child: Container(
+        //                             width: MediaQuery.of(context).size.width *
+        //                                 0.75,
+        //                             child: Padding(
+        //                               padding: const EdgeInsets.all(16.0),
+        //                               child: ListView.builder(
+        //                                 itemCount: addressInfo.length,
+        //                                 itemBuilder: (context, index) {
+        //                                   final info = addressInfo[index];
+        //                                   return TextButton(
+        //                                     onPressed: () => {},
+        //                                     style: TextButton.styleFrom(
+        //                                       padding: EdgeInsets.zero,
+        //                                       minimumSize: Size(50, 30),
+        //                                       tapTargetSize:
+        //                                           MaterialTapTargetSize
+        //                                               .shrinkWrap,
+        //                                     ),
+        //                                     child: Column(
+        //                                       crossAxisAlignment:
+        //                                           CrossAxisAlignment.start,
+        //                                       children: [
+        //                                         Text(
+        //                                           info.address.address,
+        //                                           style: const TextStyle(
+        //                                               fontSize: 20,
+        //                                               fontWeight:
+        //                                                   FontWeight.bold),
+        //                                         ),
+        //                                         if (info.balances.isEmpty)
+        //                                           Padding(
+        //                                             padding: const EdgeInsets
+        //                                                 .symmetric(
+        //                                                 vertical: 8.0),
+        //                                             child: Container(
+        //                                               child: const Text(
+        //                                                 "No balance",
+        //                                                 style: TextStyle(
+        //                                                     fontSize: 16),
+        //                                               ),
+        //                                             ),
+        //                                           )
+        //                                         else
+        //                                           ...info.balances
+        //                                               .map((balance) => Padding(
+        //                                                     padding:
+        //                                                         const EdgeInsets
+        //                                                             .symmetric(
+        //                                                             vertical:
+        //                                                                 8.0),
+        //                                                     child: Row(
+        //                                                       mainAxisAlignment:
+        //                                                           MainAxisAlignment
+        //                                                               .spaceBetween,
+        //                                                       children: [
+        //                                                         Text(
+        //                                                             '${balance.asset} ${balance.quantity.toString()}',
+        //                                                             style: const TextStyle(
+        //                                                                 fontSize:
+        //                                                                     16)),
+        //                                                         const Text(
+        //                                                             "\$ dollar value placeholder",
+        //                                                             style: TextStyle(
+        //                                                                 fontSize:
+        //                                                                     16)),
+        //                                                       ],
+        //                                                     ),
+        //                                                   )),
+        //                                         const Divider(),
+        //                                       ],
+        //                                     ),
+        //                                   );
+        //                                 },
+        //                               ),
+        //                             ),
+        //                           ),
+        //                         );
+        //                       },
+        //                     );
+        //                   },
+        //                 ),
+        //               ],
+        //             ),
+        //             const SizedBox(height: 16.0),
+        //             Expanded(
+        //               child: ListView.builder(
+        //                 scrollDirection: Axis.vertical,
+        //                 itemCount: currentAddressBalances.balances.length,
+        //                 itemBuilder: (context, index) {
+        //                   final balance =
+        //                       currentAddressBalances.balances[index];
+        //                   return Padding(
+        //                     padding: const EdgeInsets.symmetric(vertical: 8.0),
+        //                     child: Container(
+        //                       decoration: const BoxDecoration(
+        //                         border: Border(
+        //                           bottom: BorderSide(
+        //                             color: Colors.black, // Underline color
+        //                             width: 1.0, // Underline width
+        //                           ),
+        //                         ),
+        //                       ),
+        //                       child: Row(
+        //                         mainAxisAlignment:
+        //                             MainAxisAlignment.spaceBetween,
+        //                         children: [
+        //                           Row(
+        //                             children: [
+        //                               Text(
+        //                                 balance.asset,
+        //                                 style: const TextStyle(
+        //                                   fontWeight: FontWeight.bold,
+        //                                   fontSize: 16, // Responsive font size
+        //                                 ),
+        //                               ),
+        //                               const SizedBox(width: 16.0),
+        //                               Text(
+        //                                 balance.quantity.toString(),
+        //                                 style: const TextStyle(
+        //                                   fontSize: 16, // Responsive font size
+        //                                 ),
+        //                               ),
+        //                             ],
+        //                           ),
+        //                           const Spacer(),
+        //                           const Align(
+        //                             alignment: Alignment.centerRight,
+        //                             child: Text(
+        //                               "\$ dollar value placeholder",
+        //                               style: TextStyle(
+        //                                 fontSize: 16, // Responsive font size
+        //                               ),
+        //                             ),
+        //                           ),
+        //                         ],
+        //                       ),
+        //                     ),
+        //                   );
+        //                 },
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //       ),
+        //     ),
+        //   );
+        // },
       );
     });
   }
