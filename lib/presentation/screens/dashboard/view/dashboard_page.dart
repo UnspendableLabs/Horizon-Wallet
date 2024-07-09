@@ -263,11 +263,16 @@ class BalancesDisplay extends StatelessWidget {
       orElse: () => const SizedBox.shrink(),
     );
   }
+
 }
 
 class Balances extends StatelessWidget {
   final bool isDarkTheme;
   const Balances({super.key, required this.isDarkTheme});
+
+
+
+  // TODO: handle dispose, send Stop to balances bloc
 
   @override
   Widget build(BuildContext context) {
