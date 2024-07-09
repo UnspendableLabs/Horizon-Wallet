@@ -19,7 +19,8 @@ class ComposeSendPage extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeSendBloc()..add(FetchFormData(accountUuid: state.currentAccountUuid)),
+        create: (context) => ComposeSendBloc()
+          ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
         child: _ComposeSendPage_(),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -58,12 +59,16 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         ),
         title: const Text('Compose Send', style: TextStyle(fontSize: 20.0)),
       ),
-      body: BlocConsumer<ComposeSendBloc, ComposeSendState>(listener: (context, state) {
+      body: BlocConsumer<ComposeSendBloc, ComposeSendState>(
+          listener: (context, state) {
         state.submitState.when(
           success: (transactionHex, sourceAddress) =>
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(transactionHex))),
-          error: (msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))),
-          loading: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Loading"))),
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(transactionHex))),
+          error: (msg) => ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(msg))),
+          loading: () => ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Loading"))),
           initial: () => const Text(''),
         );
       }, builder: (context, state) {
@@ -86,7 +91,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       children: <Widget>[
                         DropdownMenu<String>(
                             expandedInsets: const EdgeInsets.all(0),
-                            initialSelection: fromAddress ?? addresses[0].address,
+                            initialSelection:
+                                fromAddress ?? addresses[0].address,
                             controller: fromAddressController,
                             requestFocusOnTap: true,
                             label: const Text('Address'),
@@ -95,9 +101,12 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                 fromAddress = a!;
                               });
                               // fromAddressController.text = a!;
-                              context.read<ComposeSendBloc>().add(FetchBalances(address: a!));
+                              context
+                                  .read<ComposeSendBloc>()
+                                  .add(FetchBalances(address: a!));
                             },
-                            dropdownMenuEntries: addresses.map<DropdownMenuEntry<String>>((address) {
+                            dropdownMenuEntries: addresses
+                                .map<DropdownMenuEntry<String>>((address) {
                               return DropdownMenuEntry<String>(
                                 value: address.address,
                                 label: address.address,
@@ -110,7 +119,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Destination",
-                              floatingLabelBehavior: FloatingLabelBehavior.always),
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a destination address';
@@ -127,9 +137,12 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   labelText: 'Quantity',
-                                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a quantity';
@@ -138,29 +151,36 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                 },
                               ),
                             ),
-                            const SizedBox(width: 16.0), // Spacing between inputs
+                            const SizedBox(
+                                width: 16.0), // Spacing between inputs
                             Expanded(
                               child: Builder(builder: (context) {
                                 if (balances.isEmpty) {
                                   return DropdownMenu(
                                       expandedInsets: const EdgeInsets.all(0),
-                                      inputDecorationTheme: const InputDecorationTheme(
+                                      inputDecorationTheme:
+                                          const InputDecorationTheme(
                                         border: OutlineInputBorder(),
-                                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                                        floatingLabelBehavior:
+                                            FloatingLabelBehavior.always,
                                       ),
                                       initialSelection: "None",
                                       enabled: false,
                                       label: const Text('Asset'),
-                                      dropdownMenuEntries:
-                                          [const DropdownMenuEntry<String>(value: "None", label: "None")].toList());
+                                      dropdownMenuEntries: [
+                                        const DropdownMenuEntry<String>(
+                                            value: "None", label: "None")
+                                      ].toList());
                                 }
 
                                 return DropdownMenu<String>(
                                     expandedInsets: const EdgeInsets.all(0),
                                     controller: assetController,
-                                    inputDecorationTheme: const InputDecorationTheme(
+                                    inputDecorationTheme:
+                                        const InputDecorationTheme(
                                       border: OutlineInputBorder(),
-                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
                                     ),
                                     initialSelection: balances[0].asset,
                                     requestFocusOnTap: true,
@@ -170,11 +190,14 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                         asset = value;
                                       });
                                     },
-                                    dropdownMenuEntries: balances.map<DropdownMenuEntry<String>>((balance) {
+                                    dropdownMenuEntries: balances
+                                        .map<DropdownMenuEntry<String>>(
+                                            (balance) {
                                       return DropdownMenuEntry<String>(
                                         value: balance.asset,
                                         label: balance.asset,
-                                        trailingIcon: Text(balance.quantity.toString()),
+                                        trailingIcon:
+                                            Text(balance.quantity.toString()),
                                       );
                                     }).toList());
                               }),
@@ -187,7 +210,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Password",
-                              floatingLabelBehavior: FloatingLabelBehavior.always),
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
@@ -204,12 +228,16 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           child: ElevatedButton(
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                context.read<ComposeSendBloc>().add(SendTransactionEvent(
+                                context
+                                    .read<ComposeSendBloc>()
+                                    .add(SendTransactionEvent(
                                       sourceAddress: fromAddressController.text,
                                       password: passwordController.text,
-                                      destinationAddress: destinationAddressController.text,
+                                      destinationAddress:
+                                          destinationAddressController.text,
                                       asset: assetController.text,
-                                      quantity: double.parse(quantityController.text),
+                                      quantity:
+                                          double.parse(quantityController.text),
                                     ));
                               }
                             },

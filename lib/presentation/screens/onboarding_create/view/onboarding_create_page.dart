@@ -42,7 +42,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
       listener: (context, state) {
         if (state.createState is CreateStateSuccess) {
           final shell = context.read<ShellStateCubit>();
-          // reload shell to trigger redirect 
+          // reload shell to trigger redirect
           shell.initialize();
         }
       },
@@ -103,7 +103,9 @@ class PasswordPrompt extends StatelessWidget {
               children: [
                 TextField(
                   onChanged: (value) {
-                    context.read<OnboardingCreateBloc>().add(PasswordChanged(password: value));
+                    context
+                        .read<OnboardingCreateBloc>()
+                        .add(PasswordChanged(password: value));
                   },
                   controller: _passwordController,
                   decoration: const InputDecoration(
@@ -115,16 +117,19 @@ class PasswordPrompt extends StatelessWidget {
                 TextField(
                   controller: _passwordConfirmationController,
                   onChanged: (value) {
-                    context
-                        .read<OnboardingCreateBloc>()
-                        .add(PasswordConfirmationChanged(passwordConfirmation: _passwordConfirmationController.text));
+                    context.read<OnboardingCreateBloc>().add(
+                        PasswordConfirmationChanged(
+                            passwordConfirmation:
+                                _passwordConfirmationController.text));
                   },
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Confirm Password',
                   ),
                 ),
-                _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
+                _state.passwordError != null
+                    ? Text(_state.passwordError!)
+                    : const Text(""),
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -150,10 +155,15 @@ class PasswordPrompt extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
-                              context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            if (_passwordController.text == '' ||
+                                _passwordConfirmationController.text == '') {
+                              context.read<OnboardingCreateBloc>().add(
+                                  PasswordError(
+                                      error: 'Password cannot be empty'));
                             } else {
-                              context.read<OnboardingCreateBloc>().add(CreateWallet());
+                              context
+                                  .read<OnboardingCreateBloc>()
+                                  .add(CreateWallet());
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -242,7 +252,9 @@ class _MnemonicState extends State<Mnemonic> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
+                          context
+                              .read<OnboardingCreateBloc>()
+                              .add(UnconfirmMnemonic());
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(context).primaryColor,
@@ -273,7 +285,8 @@ class ConfirmSeedInputFields extends StatefulWidget {
 }
 
 class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
-  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
+  List<TextEditingController> controllers =
+      List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
 
   @override
@@ -310,12 +323,15 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: [
-                                  Text("${index + 1}. ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  Text("${index + 1}. ",
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
                                   Expanded(
                                     child: TextField(
                                       controller: controllers[index],
                                       focusNode: focusNodes[index],
-                                      onChanged: (value) => handleInput(value, index),
+                                      onChanged: (value) =>
+                                          handleInput(value, index),
                                       decoration: InputDecoration(
                                         labelText: 'Word ${index + 1}',
                                         border: const OutlineInputBorder(),
@@ -330,7 +346,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                       );
                     }),
                   ),
-                  widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+                  widget.mnemonicErrorState != null
+                      ? Text(widget.mnemonicErrorState!)
+                      : const Text(""),
                 ],
               ),
             ),
@@ -341,7 +359,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => context.read<OnboardingCreateBloc>().add(GoBackToMnemonic()),
+                    onPressed: () => context
+                        .read<OnboardingCreateBloc>()
+                        .add(GoBackToMnemonic()),
                     child: const Text('Back'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
@@ -356,7 +376,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic());
+                      context
+                          .read<OnboardingCreateBloc>()
+                          .add(ConfirmMnemonic());
                     },
                     child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(
@@ -390,7 +412,10 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   }
 
   void updateMnemonic() {
-    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
-    context.read<OnboardingCreateBloc>().add(ConfirmMnemonicChanged(mnemonic: mnemonic));
+    String mnemonic =
+        controllers.map((controller) => controller.text).join(' ').trim();
+    context
+        .read<OnboardingCreateBloc>()
+        .add(ConfirmMnemonicChanged(mnemonic: mnemonic));
   }
 }

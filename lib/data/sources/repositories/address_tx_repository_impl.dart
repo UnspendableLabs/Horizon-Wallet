@@ -11,7 +11,8 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
 
   @override
   Future<List<send_entity.Send>> getSendsByAddress(String address) async {
-    Response<List<Send>> response = await api.getSendsByAddress(address, true, 10);
+    Response<List<Send>> response =
+        await api.getSendsByAddress(address, true, 10);
     final List<send_entity.Send> sends = [];
 
     for (var send in response.result ?? []) {
@@ -39,8 +40,10 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
   }
 
   @override
-  Future<List<issuance_entity.Issuance>> getIssuancesByAddress(String address) async {
-    Response<List<Issuance>> response = await api.getIssuancesByAddress(address, true, 10);
+  Future<List<issuance_entity.Issuance>> getIssuancesByAddress(
+      String address) async {
+    Response<List<Issuance>> response =
+        await api.getIssuancesByAddress(address, true, 10);
     final List<issuance_entity.Issuance> issuances = [];
 
     for (var issuance in response.result ?? []) {
@@ -69,8 +72,10 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
   }
 
   @override
-  Future<List<transaction_entity.Transaction>> getTransactionsByAddress(String address) async {
-    Response<List<Transaction>> response = await api.getTransactionsByAddress(address, true, 10);
+  Future<List<transaction_entity.Transaction>> getTransactionsByAddress(
+      String address) async {
+    Response<List<Transaction>> response =
+        await api.getTransactionsByAddress(address, true, 10);
 
     List<transaction_entity.Transaction> transactions = [];
 

@@ -11,16 +11,21 @@ class UtxoRepositoryImpl implements UtxoRepository {
   UtxoRepositoryImpl({required this.api});
 
   @override
-  Future<List<Utxo>> getUnspentForAddress(String address, [bool? unconfirmed, String? unspentTxHash, bool? verbose]) async {
-    final response = await api.getUnspentUTXOs(address, unconfirmed, unspentTxHash, verbose);
+  Future<List<Utxo>> getUnspentForAddress(String address,
+      [bool? unconfirmed, String? unspentTxHash, bool? verbose]) async {
+    final response =
+        await api.getUnspentUTXOs(address, unconfirmed, unspentTxHash, verbose);
 
     final List<Utxo> utxos = [];
     for (var a in response.result ?? []) {
       utxos.add(Utxo(
-          vout: a.vout, height: a.height, value: a.value, confirmations: a.confirmations, amount: a.amount, txid: a.txid));
+          vout: a.vout,
+          height: a.height,
+          value: a.value,
+          confirmations: a.confirmations,
+          amount: a.amount,
+          txid: a.txid));
     }
     return utxos;
   }
-
-
 }

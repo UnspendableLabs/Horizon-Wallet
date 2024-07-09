@@ -12,17 +12,20 @@ import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 class TransactionServiceImpl implements TransactionService {
-  ecpair.ECPairFactory ecpairFactory = ecpair.ECPairFactory(tinysecp256k1js.ecc);
+  ecpair.ECPairFactory ecpairFactory =
+      ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
   @override
-  Future<String> signTransaction(
-      String unsignedTransaction, String privateKey, String sourceAddress, Map<String, Utxo> utxoMap) async {
-    bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(unsignedTransaction);
+  Future<String> signTransaction(String unsignedTransaction, String privateKey,
+      String sourceAddress, Map<String, Utxo> utxoMap) async {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
     print(privateKey);
-    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
 
     final network = _getNetwork();
 
@@ -31,13 +34,16 @@ class TransactionServiceImpl implements TransactionService {
     print("signer");
     print(signer);
 
-    bool isSegwit = sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
+    bool isSegwit =
+        sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
 
     bitcoinjs.Payment script;
     if (isSegwit) {
-      script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
+      script = bitcoinjs.p2wpkh(
+          bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
     } else {
-      script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
+      script = bitcoinjs.p2pkh(
+          bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
     }
 
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
@@ -49,7 +55,8 @@ class TransactionServiceImpl implements TransactionService {
 
       if (prev != null) {
         if (isSegwit) {
-          input.witnessUtxo = bitcoinjs.WitnessUTXO(script: script.output, value: prev.value);
+          input.witnessUtxo =
+              bitcoinjs.WitnessUTXO(script: script.output, value: prev.value);
           psbt.addInput(input);
         } else {
           input.script = script.output;

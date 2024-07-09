@@ -25,17 +25,25 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
-        List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
+        List<Account> accounts =
+            await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
         emit(state.copyWith(
             walletState: WalletStateSuccess(currentWallet: wallet),
-            accountState: AccountStateSuccess(currentAccount: accounts[0], accounts: accounts)));
+            accountState: AccountStateSuccess(
+                currentAccount: accounts[0], accounts: accounts)));
 
-        logger.d('SetAccountAndWallet event processed successfully. current Account: ${accounts[0].name}');
+        logger.d(
+            'SetAccountAndWallet event processed successfully. current Account: ${accounts[0].name}');
       } catch (e, stackTrace) {
-        logger.e({'message': 'Failed to process SetAccountAndWallet event', 'error': e, 'stackTrace': stackTrace});
+        logger.e({
+          'message': 'Failed to process SetAccountAndWallet event',
+          'error': e,
+          'stackTrace': stackTrace
+        });
 
         emit(state.copyWith(
-            walletState: WalletStateError(message: 'Failed to process SetAccountAndWallet event'),
+            walletState: WalletStateError(
+                message: 'Failed to process SetAccountAndWallet event'),
             accountState: AccountStateError()));
       }
     });
@@ -46,14 +54,24 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       emit(state.copyWith(addressState: AddressStateLoading()));
       try {
         final accountId = event.accountUuid;
-        final addresses = await addressRepository.getAllByAccountUuid(accountId);
-        emit(state.copyWith(addressState: AddressStateSuccess(currentAddress: addresses[0], addresses: addresses)));
+        final addresses =
+            await addressRepository.getAllByAccountUuid(accountId);
+        emit(state.copyWith(
+            addressState: AddressStateSuccess(
+                currentAddress: addresses[0], addresses: addresses)));
 
-        logger.d('GetAddresses event processed successfully. Current address: ${addresses[0].address}');
+        logger.d(
+            'GetAddresses event processed successfully. Current address: ${addresses[0].address}');
       } catch (e, stackTrace) {
-        logger.e({'message': 'Failed to process GetAddresses event', 'error': e, 'stackTrace': stackTrace});
+        logger.e({
+          'message': 'Failed to process GetAddresses event',
+          'error': e,
+          'stackTrace': stackTrace
+        });
 
-        emit(state.copyWith(addressState: AddressStateError(message: 'Failed to process GetAddresses event')));
+        emit(state.copyWith(
+            addressState: AddressStateError(
+                message: 'Failed to process GetAddresses event')));
       }
     });
 
@@ -62,14 +80,24 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       emit(state.copyWith(addressState: AddressStateLoading()));
       try {
-        List<Address> addresses = await addressRepository.getAllByAccountUuid(event.address.accountUuid!);
-        emit(state.copyWith(addressState: AddressStateSuccess(currentAddress: event.address, addresses: addresses)));
+        List<Address> addresses = await addressRepository
+            .getAllByAccountUuid(event.address.accountUuid!);
+        emit(state.copyWith(
+            addressState: AddressStateSuccess(
+                currentAddress: event.address, addresses: addresses)));
 
-        logger.d('ChangeAddress event processed successfully. Current address: ${event.address.address}');
+        logger.d(
+            'ChangeAddress event processed successfully. Current address: ${event.address.address}');
       } catch (e, stackTrace) {
-        logger.e({'message': 'Failed to process ChangeAddress event', 'error': e, 'stackTrace': stackTrace});
+        logger.e({
+          'message': 'Failed to process ChangeAddress event',
+          'error': e,
+          'stackTrace': stackTrace
+        });
 
-        emit(state.copyWith(addressState: AddressStateError(message: 'Failed to process ChangeAddress event')));
+        emit(state.copyWith(
+            addressState: AddressStateError(
+                message: 'Failed to process ChangeAddress event')));
       }
     });
 
@@ -86,7 +114,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
         logger.d('DeleteWallet event processed successfully');
       } catch (e, stackTrace) {
-        logger.e({'message': 'Failed to process DeleteWallet event', 'error': e, 'stackTrace': stackTrace});
+        logger.e({
+          'message': 'Failed to process DeleteWallet event',
+          'error': e,
+          'stackTrace': stackTrace
+        });
       }
     });
   }

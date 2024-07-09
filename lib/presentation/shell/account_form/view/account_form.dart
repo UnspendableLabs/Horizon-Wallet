@@ -50,7 +50,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
         .maybeWhen(success: (state) => state.accounts, orElse: () => null);
 
     if (accounts == null) {
-      throw Exception("invariant: accounts are null"); }
+      throw Exception("invariant: accounts are null");
+    }
     purposeController.text = account.purpose;
     coinTypeController.text = account.coinType;
 
@@ -63,7 +64,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
       }, success: (account) async {
         // update accounts in shell
         shell.refresh();
-
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),

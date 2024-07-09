@@ -3,7 +3,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 
 // TODO: define mnemonic type
 abstract class WalletService {
-
   EncryptionService encryptionService;
 
   WalletService(this.encryptionService);
@@ -12,5 +11,4 @@ abstract class WalletService {
   Future<Wallet> deriveRootFreewallet(String mnemonic, String password);
 
   Future<Wallet> fromPrivateKey(String privateKey, String chainCodeHex);
-
 }

@@ -35,5 +35,8 @@ class SignTransactionEvent extends ComposeSendEvent {
   final String unsignedTransactionHex;
   final Address sourceAddress;
   final String network;
-  SignTransactionEvent({required this.unsignedTransactionHex, required this.sourceAddress, required this.network});
+  SignTransactionEvent(
+      {required this.unsignedTransactionHex,
+      required this.sourceAddress,
+      required this.network});
 }

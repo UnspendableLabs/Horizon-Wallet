@@ -19,7 +19,8 @@ class ComposeIssuancePage extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeIssuanceBloc()..add(FetchFormData(accountUuid: state.currentAccountUuid)),
+        create: (context) => ComposeIssuanceBloc()
+          ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
         child: _ComposeIssuancePage_(),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -58,11 +59,15 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
         ),
         title: const Text('Compose Issuance', style: TextStyle(fontSize: 20.0)),
       ),
-      body: BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(listener: (context, state) {
+      body: BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
+          listener: (context, state) {
         state.submitState.when(
-          success: (transactionHex) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(transactionHex))),
-          error: (msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))),
-          loading: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Loading"))),
+          success: (transactionHex) => ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(transactionHex))),
+          error: (msg) => ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(msg))),
+          loading: () => ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Loading"))),
           initial: () => const Text(''),
         );
       }, builder: (context, state) {
@@ -77,8 +82,9 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               error: (e) => Text(e),
               success: (balances) {
                 // TODO
-                bool isNamedAssetEnabled =
-                    balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP' && balance.quantity >= 50000000);
+                bool isNamedAssetEnabled = balances.isNotEmpty &&
+                    balances.any((balance) =>
+                        balance.asset == 'XCP' && balance.quantity >= 50000000);
 
                 return Form(
                   key: _formKey,
@@ -89,7 +95,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       children: <Widget>[
                         DropdownMenu<String>(
                             expandedInsets: const EdgeInsets.all(0),
-                            initialSelection: fromAddress ?? addresses[0].address,
+                            initialSelection:
+                                fromAddress ?? addresses[0].address,
                             controller: fromAddressController,
                             requestFocusOnTap: true,
                             label: const Text('Address'),
@@ -97,9 +104,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               setState(() {
                                 fromAddress = a!;
                               });
-                              context.read<ComposeIssuanceBloc>().add(FetchBalances(address: a!));
+                              context
+                                  .read<ComposeIssuanceBloc>()
+                                  .add(FetchBalances(address: a!));
                             },
-                            dropdownMenuEntries: addresses.map<DropdownMenuEntry<String>>((address) {
+                            dropdownMenuEntries: addresses
+                                .map<DropdownMenuEntry<String>>((address) {
                               return DropdownMenuEntry<String>(
                                 value: address.address,
                                 label: address.address,
@@ -112,12 +122,14 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Token name",
-                              floatingLabelBehavior: FloatingLabelBehavior.always),
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a name for your asset';
                             }
-                            if (!isNamedAssetEnabled && !RegExp(r'^A\d+$').hasMatch(value)) {
+                            if (!isNamedAssetEnabled &&
+                                !RegExp(r'^A\d+$').hasMatch(value)) {
                               return 'You must have at least 0.5 XCP to create a named asset';
                             }
                             return null;
@@ -128,11 +140,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           return Row(
                             children: [
                               Checkbox(
-                                mouseCursor: isNamedAssetEnabled ? SystemMouseCursors.basic : SystemMouseCursors.forbidden,
-                                fillColor: WidgetStateProperty.resolveWith<Color>(
+                                mouseCursor: isNamedAssetEnabled
+                                    ? SystemMouseCursors.basic
+                                    : SystemMouseCursors.forbidden,
+                                fillColor:
+                                    WidgetStateProperty.resolveWith<Color>(
                                   (Set<WidgetState> states) {
                                     if (states.contains(WidgetState.disabled)) {
-                                      return isNamedAssetEnabled ? Colors.transparent : Colors.grey;
+                                      return isNamedAssetEnabled
+                                          ? Colors.transparent
+                                          : Colors.grey;
                                     }
                                     return Colors.transparent;
                                   },
@@ -168,7 +185,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             labelText: 'Quantity',
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                           ),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a quantity';
@@ -182,7 +200,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Password",
-                              floatingLabelBehavior: FloatingLabelBehavior.always),
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
@@ -199,11 +218,14 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           child: ElevatedButton(
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                context.read<ComposeIssuanceBloc>().add(CreateIssuanceEvent(
+                                context
+                                    .read<ComposeIssuanceBloc>()
+                                    .add(CreateIssuanceEvent(
                                       sourceAddress: fromAddressController.text,
                                       password: passwordController.text,
                                       name: nameController.text,
-                                      quantity: double.parse(quantityController.text),
+                                      quantity:
+                                          double.parse(quantityController.text),
                                     ));
                               }
                             },

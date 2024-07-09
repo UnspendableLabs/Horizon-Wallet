@@ -40,7 +40,6 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
     required this.addressRepository,
   }) : super(const AddressesState.initial()) {
     on<GetAll>((event, emit) async {
-
       print("GetAll event: ${event.accountUuid}");
 
       emit(const AddressesState.loading());

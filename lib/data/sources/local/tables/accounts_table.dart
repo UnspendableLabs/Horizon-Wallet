@@ -20,7 +20,7 @@ class Accounts extends Table {
   TextColumn get accountIndex => text()(); // add constraints
 
   @JsonKey('importFormat')
-  TextColumn get importFormat => text()(); 
+  TextColumn get importFormat => text()();
 
   @override
   Set<Column> get primaryKey => {uuid};

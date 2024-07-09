@@ -17,7 +17,8 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
 
-class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
+class OnboardingCreateBloc
+    extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
   final Logger logger = Logger();
   final mnmonicService = GetIt.I<MnemonicService>();
   final accountRepository = GetIt.I<AccountRepository>();
@@ -31,12 +32,16 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
     on<MnemonicSubmit>((event, emit) {
       logger.d('Processing MnemonicSubmit event');
       emit(state.copyWith(
-          createState: CreateStateLoading(), mnemonicState: GenerateMnemonicStateSuccess(mnemonic: event.mnemonic)));
+          createState: CreateStateLoading(),
+          mnemonicState:
+              GenerateMnemonicStateSuccess(mnemonic: event.mnemonic)));
     });
 
     on<PasswordChanged>((event, emit) {
       if (event.password.length != 32) {
-        emit(state.copyWith(passwordError: "Password must be 32 characters.  Don't worry, we'll change this :)"));
+        emit(state.copyWith(
+            passwordError:
+                "Password must be 32 characters.  Don't worry, we'll change this :)"));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
@@ -56,9 +61,11 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));
       try {
-        Wallet wallet = await walletService.deriveRoot(state.mnemonicState.mnemonic, state.password!);
+        Wallet wallet = await walletService.deriveRoot(
+            state.mnemonicState.mnemonic, state.password!);
 
-        String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+        String decryptedPrivKey = await encryptionService.decrypt(
+            wallet.encryptedPrivKey, state.password!);
 
         Account account = Account(
             name: 'Account 0',
@@ -86,7 +93,8 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
         emit(state.copyWith(createState: CreateStateSuccess()));
       } catch (e) {
         logger.e({'message': 'Failed to create wallet', 'error': e});
-        emit(state.copyWith(createState: CreateStateError(message: e.toString())));
+        emit(state.copyWith(
+            createState: CreateStateError(message: e.toString())));
       }
     });
 
@@ -96,15 +104,18 @@ class OnboardingCreateBloc extends Bloc<OnboardingCreateEvent, OnboardingCreateS
       try {
         String mnemonic = mnmonicService.generateMnemonic();
 
-        emit(state.copyWith(mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic)));
+        emit(state.copyWith(
+            mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic)));
       } catch (e) {
-        emit(state.copyWith(mnemonicState: GenerateMnemonicStateError(message: e.toString())));
+        emit(state.copyWith(
+            mnemonicState: GenerateMnemonicStateError(message: e.toString())));
       }
     });
 
     on<UnconfirmMnemonic>((event, emit) {
       emit(state.copyWith(
-          mnemonicState: GenerateMnemonicStateUnconfirmed(mnemonic: state.mnemonicState.mnemonic),
+          mnemonicState: GenerateMnemonicStateUnconfirmed(
+              mnemonic: state.mnemonicState.mnemonic),
           createState: CreateStateMnemonicUnconfirmed));
     });
 

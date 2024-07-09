@@ -17,7 +17,8 @@ class ComposeIssuanceState with _$ComposeIssuanceState {
 class AddressesState with _$AddressesState {
   const factory AddressesState.initial() = _AddressInitial;
   const factory AddressesState.loading() = _AddressLoading;
-  const factory AddressesState.success(List<Address> addresses) = _AddressSuccess;
+  const factory AddressesState.success(List<Address> addresses) =
+      _AddressSuccess;
   const factory AddressesState.error(String error) = _AddressError;
 }
 

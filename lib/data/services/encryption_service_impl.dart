@@ -27,6 +27,3 @@ class EncryptionServiceImpl implements EncryptionService {
     return encrypter.decrypt64(data, iv: iv);
   }
 }
-
-
-

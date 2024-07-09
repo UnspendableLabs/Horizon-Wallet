@@ -7,8 +7,6 @@ import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_i
 
 part 'onboarding_import_state.freezed.dart';
 
-
-
 @freezed
 class OnboardingImportState with _$OnboardingImportState {
   const factory OnboardingImportState({

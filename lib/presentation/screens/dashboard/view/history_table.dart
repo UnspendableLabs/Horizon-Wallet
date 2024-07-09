@@ -12,7 +12,8 @@ class HistoryTable extends StatefulWidget {
   _HistoryTableState createState() => _HistoryTableState();
 }
 
-class _HistoryTableState extends State<HistoryTable> with SingleTickerProviderStateMixin {
+class _HistoryTableState extends State<HistoryTable>
+    with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> _data = [];
   List<send_entity.Send> _sends = [];
   List<issuance_entity.Issuance> _issuances = [];
@@ -53,14 +54,16 @@ class _HistoryTableState extends State<HistoryTable> with SingleTickerProviderSt
         break;
       case 1:
         if (_issuances.isNotEmpty) return;
-        _issuances = await addressTxRepository.getIssuancesByAddress(widget.address);
+        _issuances =
+            await addressTxRepository.getIssuancesByAddress(widget.address);
         setState(() {
           _issuances = _issuances;
         });
         break;
       case 2:
         if (_transactions.isNotEmpty) return;
-        _transactions = await addressTxRepository.getTransactionsByAddress(widget.address);
+        _transactions =
+            await addressTxRepository.getTransactionsByAddress(widget.address);
         setState(() {
           _transactions = _transactions;
         });
@@ -153,7 +156,8 @@ class _HistoryTableState extends State<HistoryTable> with SingleTickerProviderSt
   }
 
   Widget _buildTransactionsTable() {
-    if (_transactions.isEmpty) return const Text('No transactions at this address');
+    if (_transactions.isEmpty)
+      return const Text('No transactions at this address');
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -170,7 +174,10 @@ class _HistoryTableState extends State<HistoryTable> with SingleTickerProviderSt
                   (item) => DataRow(cells: [
                     DataCell(Container(
                       width: 100,
-                      child: Text(item.txHash ?? "", overflow: TextOverflow.ellipsis, softWrap: false, maxLines: 1),
+                      child: Text(item.txHash ?? "",
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: false,
+                          maxLines: 1),
                     )),
                     DataCell(Text(item.source)),
                     DataCell(Text(item.destination ?? "")),

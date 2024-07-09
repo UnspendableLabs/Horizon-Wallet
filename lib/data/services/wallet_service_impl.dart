@@ -43,8 +43,9 @@ class WalletServiceImpl implements WalletService {
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
-@override
-  Future<entity.Wallet> deriveRootFreewallet(String mnemonic, String password) async {
+  @override
+  Future<entity.Wallet> deriveRootFreewallet(
+      String mnemonic, String password) async {
     Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
 
     Buffer buffer = Buffer.from(seed.bytes.toJS);
@@ -79,8 +80,8 @@ class WalletServiceImpl implements WalletService {
     Uint8List chainCodeHexBytes = hex.decode(chainCodeHex) as Uint8List;
     Buffer chainCodeHexBuffer = Buffer.from(chainCodeHexBytes.toJS);
 
-    bip32.BIP32Interface root =
-        _bip32.fromPrivateKey(privateKeyBuffer, chainCodeHexBuffer, _getNetwork());
+    bip32.BIP32Interface root = _bip32.fromPrivateKey(
+        privateKeyBuffer, chainCodeHexBuffer, _getNetwork());
 
     // String privKey = hex.encode(root.privateKey!.toDart);
     //
@@ -89,9 +90,6 @@ class WalletServiceImpl implements WalletService {
     // print("compare $privateKey");
     //
     // print("compre2 ${root.neutered().toBase58()}");
-
-
-
 
     return entity.Wallet(
         uuid: '',

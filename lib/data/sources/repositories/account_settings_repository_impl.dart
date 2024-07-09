@@ -13,11 +13,10 @@ class AccountSettingsRepositoryImpl implements AccountSettingsRepository {
   getGapLimit(String accountUuid) {
     dynamic gapLimit = _cacheProvider.getInt("$accountUuid:gap-limit");
 
-    if (gapLimit == null ) {
+    if (gapLimit == null) {
       return _defaultGapLimit;
     }
 
     return gapLimit.toInt();
-
   }
 }

@@ -35,13 +35,14 @@ class _BalanceDisplayState extends State<BalanceDisplay> {
             width: screenWidth - 300,
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // This spreads out the children across the main axis
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceBetween, // This spreads out the children across the main axis
 
               children: balances.isEmpty
                   ? [Text('no balance')]
                   : balances
-                      .map<Widget>(
-                          (balance) => Text('${balance.asset}: ${(balance.quantity / 100000000).toStringAsFixed(8)}'))
+                      .map<Widget>((balance) => Text(
+                          '${balance.asset}: ${(balance.quantity / 100000000).toStringAsFixed(8)}'))
                       .toList(),
             ),
           );

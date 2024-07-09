@@ -64,31 +64,37 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: OnboardingScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingCreateScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              child:
+                  OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder: (BuildContext context, GoRouterState state, navigationShell) {
+            builder:
+                (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -156,8 +162,6 @@ class AppRouter {
               );
             },
             success: (data) {
-
-
               Future.delayed(const Duration(milliseconds: 500), () {
                 shell.initialized();
               });

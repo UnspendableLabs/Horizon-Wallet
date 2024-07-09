@@ -18,15 +18,15 @@ class AddressDisplay extends StatefulWidget {
 }
 
 class _AddressDisplayState extends State<AddressDisplay> {
-
   @override
   void initState() {
     super.initState();
     final accountId = context.read<ShellStateCubit>().state.maybeWhen(
-      success: (state) => state.currentAccountUuid,
-      orElse: () => '',
-    );
-    BlocProvider.of<DashboardBloc>(context).add(GetAddresses(accountUuid: accountId));
+          success: (state) => state.currentAccountUuid,
+          orElse: () => '',
+        );
+    BlocProvider.of<DashboardBloc>(context)
+        .add(GetAddresses(accountUuid: accountId));
   }
 
   @override
@@ -34,7 +34,8 @@ class _AddressDisplayState extends State<AddressDisplay> {
     // final shell = context.
     double screenWidth = MediaQuery.of(context).size.width;
 
-    return BlocBuilder<DashboardBloc, DashboardState>(builder: (context, state) {
+    return BlocBuilder<DashboardBloc, DashboardState>(
+        builder: (context, state) {
       if (state.addressState is AddressStateSuccess) {
         return Flexible(
           child: Align(
@@ -50,14 +51,19 @@ class _AddressDisplayState extends State<AddressDisplay> {
                       Flexible(
                         child: SelectableText(
                           state.addressState.currentAddress.address,
-                          style: TextStyle(fontSize: screenWidth * 0.025), // Responsive font size
+                          style: TextStyle(
+                              fontSize:
+                                  screenWidth * 0.025), // Responsive font size
                           textAlign: TextAlign.center,
                         ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.copy),
                         onPressed: () {
-                          Clipboard.setData(ClipboardData(text: state.addressState.currentAddress.address)).then((_) {
+                          Clipboard.setData(ClipboardData(
+                                  text: state
+                                      .addressState.currentAddress.address))
+                              .then((_) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Address copied to clipboard!'),
@@ -75,16 +81,20 @@ class _AddressDisplayState extends State<AddressDisplay> {
                         ),
                       ),
                       padding: const EdgeInsets.fromLTRB(10, 40, 10, 0),
-                      child: BalanceDisplay(address: state.addressState.currentAddress.address)),
+                      child: BalanceDisplay(
+                          address: state.addressState.currentAddress.address)),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     state.addressState.addresses.length > 1
                         ? Padding(
-                            padding: const EdgeInsets.only(top: 40.0, right: 10),
+                            padding:
+                                const EdgeInsets.only(top: 40.0, right: 10),
                             child: ElevatedButton(
                               child: Text('Switch Address'),
                               onPressed: () {
                                 _showAddressDialog(
-                                    context, state.addressState.addresses, BlocProvider.of<DashboardBloc>(context));
+                                    context,
+                                    state.addressState.addresses,
+                                    BlocProvider.of<DashboardBloc>(context));
                               },
                             ),
                           )
@@ -111,7 +121,8 @@ class _AddressDisplayState extends State<AddressDisplay> {
                   Expanded(
                       child: Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: HistoryTable(address: state.addressState.currentAddress.address),
+                    child: HistoryTable(
+                        address: state.addressState.currentAddress.address),
                   )),
                 ],
               ),
@@ -126,7 +137,8 @@ class _AddressDisplayState extends State<AddressDisplay> {
     });
   }
 
-  void _showAddressDialog(BuildContext context, List<Address> addresses, DashboardBloc bloc) {
+  void _showAddressDialog(
+      BuildContext context, List<Address> addresses, DashboardBloc bloc) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {

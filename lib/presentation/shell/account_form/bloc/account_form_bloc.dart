@@ -66,9 +66,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
 
         await accountRepository.insert(account);
 
-
         await addressRepository.insertMany(addresses);
-               
 
         emit(RemoteDataState.success(account));
       } catch (e) {

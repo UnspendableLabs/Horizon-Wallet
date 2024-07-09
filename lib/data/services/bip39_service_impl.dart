@@ -29,6 +29,7 @@ class Bip39ServiceImpl implements Bip39Service {
 
   @override
   bool validateMnemonic(String mnemonic, [List<String>? wordlist]) {
-    return bip39js.validateMnemonic(mnemonic, wordlist?.map((word) => word.toJS).toList().toJS);
+    return bip39js.validateMnemonic(
+        mnemonic, wordlist?.map((word) => word.toJS).toList().toJS);
   }
 }

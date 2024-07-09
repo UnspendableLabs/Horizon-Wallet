@@ -37,14 +37,17 @@ class AccountRepositoryImpl implements AccountRepository {
             accountIndex: account.accountIndex,
             name: account.name,
             coinType: account.coinType,
-            importFormat: ImportFormat.values.firstWhere((e) => e.name == account.importFormat),
+            importFormat: ImportFormat.values
+                .firstWhere((e) => e.name == account.importFormat),
           )
         : null;
   }
 
   @override
-  Future<List<entity.Account>> getAccountsByWalletUuid(String walletUuid) async {
-    List<AccountModel> accounts = await _accountDao.getAccountsByWalletUuid(walletUuid);
+  Future<List<entity.Account>> getAccountsByWalletUuid(
+      String walletUuid) async {
+    List<AccountModel> accounts =
+        await _accountDao.getAccountsByWalletUuid(walletUuid);
     return accounts
         .map((account) => entity.Account(
               uuid: account.uuid,
@@ -53,7 +56,8 @@ class AccountRepositoryImpl implements AccountRepository {
               accountIndex: account.accountIndex,
               name: account.name,
               coinType: account.coinType,
-              importFormat: ImportFormat.values.firstWhere((e) => e.name == account.importFormat),
+              importFormat: ImportFormat.values
+                  .firstWhere((e) => e.name == account.importFormat),
             ))
         .toList();
   }

@@ -48,9 +48,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         success: (stateInner) =>
             ShellState.success(stateInner.copyWith(redirect: false)));
 
-
     emit(state_);
-
   }
 
   void onOnboarding() {

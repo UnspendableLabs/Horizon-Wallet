@@ -14,5 +14,3 @@ extension type Network._(JSObject _) implements JSObject {
   external int scriptHash;
   external String wif;
 }
-
-

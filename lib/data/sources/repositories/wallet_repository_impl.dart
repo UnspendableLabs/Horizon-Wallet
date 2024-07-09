@@ -38,7 +38,7 @@ class WalletRepositoryImpl implements WalletRepository {
   @override
   Future<entity.Wallet?> getCurrentWallet() async {
     WalletModel? wallet = await _walletDao.getCurrentWallet();
-    
+
     if (wallet == null) {
       return null;
     }

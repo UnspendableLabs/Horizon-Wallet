@@ -13,14 +13,13 @@ class MaterializedAddressRepositoryImpl
   final encryptionService = GetIt.I<EncryptionService>();
 
   @override
-  Future<List<Address>> getAddresses(Account account, int gapLimit, [bool change  = false]) async {
+  Future<List<Address>> getAddresses(Account account, int gapLimit,
+      [bool change = false]) async {
     final wallet = await _walletRepository.getCurrentWallet();
 
     if (wallet == null) {
       throw Exception("invariant: wallet is null");
     }
-
-
 
     final decryptedPrivKey = await encryptionService.decrypt(
         wallet.encryptedPrivKey, "UXGmJfeqoLXKGKk9tdk26hQvwIRpI6vm");

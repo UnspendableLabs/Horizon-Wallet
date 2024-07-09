@@ -174,7 +174,6 @@ class AddressServiceImpl extends AddressService {
     return hex.encode(child.privateKey!.toDart);
   }
 
-
   String _bech32FromBip32(bip32.BIP32Interface child) {
     List<int> identifier = child.identifier.toDart;
     List<int> words = bech32

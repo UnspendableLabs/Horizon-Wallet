@@ -10,9 +10,12 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
   AddressesDao(super.db);
 
   Future<List<Address>> getAllAddresses() => select(addresses).get();
-  Future<Address?> getAddress(String address) => (select(addresses)..where((tbl) => tbl.address.equals(address))).getSingle();
+  Future<Address?> getAddress(String address) =>
+      (select(addresses)..where((tbl) => tbl.address.equals(address)))
+          .getSingle();
   Future<List<Address>> getAllAddressesByAccountUuid(String accountUuid) =>
-      (select(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid))).get();
+      (select(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid)))
+          .get();
 
   // TODO: why does this return an int?
   Future<int> insertAddress(AddressModel address) {
@@ -25,10 +28,14 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
     });
   }
 
-  Future<bool> updateAddress(Insertable<AddressModel> address) => update(addresses).replace(address);
-  Future<int> deleteAddress(Insertable<AddressModel> address) => delete(addresses).delete(address);
+  Future<bool> updateAddress(Insertable<AddressModel> address) =>
+      update(addresses).replace(address);
+  Future<int> deleteAddress(Insertable<AddressModel> address) =>
+      delete(addresses).delete(address);
   Future<void> deleteAddresses(String accountUuid) async {
-    await (delete(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid))).go();
+    await (delete(addresses)
+          ..where((tbl) => tbl.accountUuid.equals(accountUuid)))
+        .go();
   }
 
   Future<int> deleteAllAddresses() {

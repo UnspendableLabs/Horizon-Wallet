@@ -12,8 +12,10 @@ class AddressRepositoryImpl implements AddressRepository {
 
   @override
   Future<void> insert(entity.Address address) async {
-    await _addressDao
-        .insertAddress(AddressModel(accountUuid: address.accountUuid, address: address.address, index: address.index));
+    await _addressDao.insertAddress(AddressModel(
+        accountUuid: address.accountUuid,
+        address: address.address,
+        index: address.index));
   }
 
   @override
@@ -33,15 +35,23 @@ class AddressRepositoryImpl implements AddressRepository {
   @override
   Future<entity.Address?> getAddress(String address) async {
     AddressModel? addressModel = await _addressDao.getAddress(address);
-    return addressModel != null ? entity.Address(accountUuid: addressModel.accountUuid, address: addressModel.address, index: addressModel.index) : null;
+    return addressModel != null
+        ? entity.Address(
+            accountUuid: addressModel.accountUuid,
+            address: addressModel.address,
+            index: addressModel.index)
+        : null;
   }
 
   @override
   Future<List<entity.Address>> getAllByAccountUuid(String accountUuid) async {
-    List<AddressModel> addresses = await _addressDao.getAllAddressesByAccountUuid(accountUuid);
-    return addresses.map((a) => entity.Address(accountUuid: a.accountUuid, address: a.address, index: a.index)).toList();
+    List<AddressModel> addresses =
+        await _addressDao.getAllAddressesByAccountUuid(accountUuid);
+    return addresses
+        .map((a) => entity.Address(
+            accountUuid: a.accountUuid, address: a.address, index: a.index))
+        .toList();
   }
-
 
   @override
   Future<void> deleteAddresses(String accountUuid) async {

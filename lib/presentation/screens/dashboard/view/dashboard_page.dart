@@ -17,9 +17,7 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final shell = context.watch<ShellStateCubit>().state;
-
 
     // we should only ever get to this page if shell is success
 
@@ -28,7 +26,9 @@ class DashboardPage extends StatelessWidget {
         onboarding: (_) => const Text("onboarding"),
         loading: () => const CircularProgressIndicator(),
         error: (error) => Text("Error: $error"),
-        success: (data) => _DashboardPage(key: Key(data.currentAccountUuid), accountUuid: data.currentAccountUuid));
+        success: (data) => _DashboardPage(
+            key: Key(data.currentAccountUuid),
+            accountUuid: data.currentAccountUuid));
   }
 }
 
@@ -59,9 +59,11 @@ class _DashboardPage_State extends State<_DashboardPage> {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     // Define background colors based on theme
-    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
+    Color backgroundColor =
+        isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
-    return BlocBuilder<AddressesBloc, AddressesState>(builder: (context, state) {
+    return BlocBuilder<AddressesBloc, AddressesState>(
+        builder: (context, state) {
       return state.when(
         initial: () => const Text("initial"),
         loading: () => const CircularProgressIndicator(),
@@ -108,7 +110,9 @@ class AddressActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
+    Color backgroundColor = isDarkTheme
+        ? const Color.fromRGBO(35, 35, 58, 1)
+        : const Color.fromRGBO(246, 247, 250, 1);
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(
@@ -132,10 +136,12 @@ class AddressActions extends StatelessWidget {
                         builder: (context) {
                           return Dialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0), // Updated border radius
+                              borderRadius: BorderRadius.circular(
+                                  30.0), // Updated border radius
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
+                              width: MediaQuery.of(context).size.width *
+                                  0.75, // 75% of the page width
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: ComposeIssuancePage(),
@@ -178,10 +184,12 @@ class AddressActions extends StatelessWidget {
                         builder: (context) {
                           return Dialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0), // Updated border radius
+                              borderRadius: BorderRadius.circular(
+                                  30.0), // Updated border radius
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
+                              width: MediaQuery.of(context).size.width *
+                                  0.75, // 75% of the page width
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: ComposeSendPage(),
@@ -224,7 +232,8 @@ class BalancesDisplay extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => BalancesBloc()..add(FetchBalances(accountUuid: state.currentAccountUuid)),
+        create: (context) => BalancesBloc()
+          ..add(FetchBalances(accountUuid: state.currentAccountUuid)),
         child: Balances(isDarkTheme: isDarkTheme),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -238,7 +247,9 @@ class Balances extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
+    Color backgroundColor = isDarkTheme
+        ? const Color.fromRGBO(35, 35, 58, 1)
+        : const Color.fromRGBO(246, 247, 250, 1);
 
     return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
       return state.when(
@@ -264,12 +275,16 @@ class Balances extends StatelessWidget {
                       children: [
                         SelectableText(
                           currentAddressBalances.address.address,
-                          style: const TextStyle(fontSize: 25), // Responsive font size
+                          style: const TextStyle(
+                              fontSize: 25), // Responsive font size
                         ),
                         IconButton(
                           icon: const Icon(Icons.copy),
                           onPressed: () {
-                            Clipboard.setData(ClipboardData(text: currentAddressBalances.address.address)).then((_) {
+                            Clipboard.setData(ClipboardData(
+                                    text:
+                                        currentAddressBalances.address.address))
+                                .then((_) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Address copied to clipboard!'),
@@ -289,7 +304,8 @@ class Balances extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(30.0),
                                   ),
                                   child: Container(
-                                    width: MediaQuery.of(context).size.width * 0.75,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.75,
                                     child: Padding(
                                       padding: const EdgeInsets.all(16.0),
                                       child: ListView.builder(
@@ -301,38 +317,60 @@ class Balances extends StatelessWidget {
                                             style: TextButton.styleFrom(
                                               padding: EdgeInsets.zero,
                                               minimumSize: Size(50, 30),
-                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              tapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
                                             ),
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   info.address.address,
-                                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                                  style: const TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold),
                                                 ),
                                                 if (info.balances.isEmpty)
                                                   Padding(
-                                                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 8.0),
                                                     child: Container(
                                                       child: const Text(
                                                         "No balance",
-                                                        style: TextStyle(fontSize: 16),
+                                                        style: TextStyle(
+                                                            fontSize: 16),
                                                       ),
                                                     ),
                                                   )
                                                 else
-                                                  ...info.balances.map((balance) => Padding(
-                                                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: [
-                                                            Text('${balance.asset} ${balance.quantity.toString()}',
-                                                                style: const TextStyle(fontSize: 16)),
-                                                            const Text("\$ dollar value placeholder",
-                                                                style: TextStyle(fontSize: 16)),
-                                                          ],
-                                                        ),
-                                                      )),
+                                                  ...info.balances
+                                                      .map((balance) => Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        8.0),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text(
+                                                                    '${balance.asset} ${balance.quantity.toString()}',
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16)),
+                                                                const Text(
+                                                                    "\$ dollar value placeholder",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            16)),
+                                                              ],
+                                                            ),
+                                                          )),
                                                 const Divider(),
                                               ],
                                             ),
@@ -354,7 +392,8 @@ class Balances extends StatelessWidget {
                         scrollDirection: Axis.vertical,
                         itemCount: currentAddressBalances.balances.length,
                         itemBuilder: (context, index) {
-                          final balance = currentAddressBalances.balances[index];
+                          final balance =
+                              currentAddressBalances.balances[index];
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Container(
@@ -367,7 +406,8 @@ class Balances extends StatelessWidget {
                                 ),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [

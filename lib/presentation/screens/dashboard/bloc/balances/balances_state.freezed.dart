@@ -20,7 +20,9 @@ mixin _$BalancesState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances) success,
+    required TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
+        success,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -28,7 +30,9 @@ mixin _$BalancesState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult? Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -36,7 +40,9 @@ mixin _$BalancesState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -70,12 +76,14 @@ mixin _$BalancesState {
 
 /// @nodoc
 abstract class $BalancesStateCopyWith<$Res> {
-  factory $BalancesStateCopyWith(BalancesState value, $Res Function(BalancesState) then) =
+  factory $BalancesStateCopyWith(
+          BalancesState value, $Res Function(BalancesState) then) =
       _$BalancesStateCopyWithImpl<$Res, BalancesState>;
 }
 
 /// @nodoc
-class _$BalancesStateCopyWithImpl<$Res, $Val extends BalancesState> implements $BalancesStateCopyWith<$Res> {
+class _$BalancesStateCopyWithImpl<$Res, $Val extends BalancesState>
+    implements $BalancesStateCopyWith<$Res> {
   _$BalancesStateCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
@@ -86,13 +94,18 @@ class _$BalancesStateCopyWithImpl<$Res, $Val extends BalancesState> implements $
 
 /// @nodoc
 abstract class _$$InitialImplCopyWith<$Res> {
-  factory _$$InitialImplCopyWith(_$InitialImpl value, $Res Function(_$InitialImpl) then) = __$$InitialImplCopyWithImpl<$Res>;
+  factory _$$InitialImplCopyWith(
+          _$InitialImpl value, $Res Function(_$InitialImpl) then) =
+      __$$InitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$InitialImplCopyWithImpl<$Res> extends _$BalancesStateCopyWithImpl<$Res, _$InitialImpl>
+class __$$InitialImplCopyWithImpl<$Res>
+    extends _$BalancesStateCopyWithImpl<$Res, _$InitialImpl>
     implements _$$InitialImplCopyWith<$Res> {
-  __$$InitialImplCopyWithImpl(_$InitialImpl _value, $Res Function(_$InitialImpl) _then) : super(_value, _then);
+  __$$InitialImplCopyWithImpl(
+      _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -107,7 +120,8 @@ class _$InitialImpl implements _Initial {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType && other is _$InitialImpl);
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$InitialImpl);
   }
 
   @override
@@ -118,7 +132,9 @@ class _$InitialImpl implements _Initial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances) success,
+    required TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
+        success,
     required TResult Function(String error) error,
   }) {
     return initial();
@@ -129,7 +145,9 @@ class _$InitialImpl implements _Initial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult? Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult? Function(String error)? error,
   }) {
     return initial?.call();
@@ -140,7 +158,9 @@ class _$InitialImpl implements _Initial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -194,13 +214,18 @@ abstract class _Initial implements BalancesState {
 
 /// @nodoc
 abstract class _$$LoadingImplCopyWith<$Res> {
-  factory _$$LoadingImplCopyWith(_$LoadingImpl value, $Res Function(_$LoadingImpl) then) = __$$LoadingImplCopyWithImpl<$Res>;
+  factory _$$LoadingImplCopyWith(
+          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
+      __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$LoadingImplCopyWithImpl<$Res> extends _$BalancesStateCopyWithImpl<$Res, _$LoadingImpl>
+class __$$LoadingImplCopyWithImpl<$Res>
+    extends _$BalancesStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
-  __$$LoadingImplCopyWithImpl(_$LoadingImpl _value, $Res Function(_$LoadingImpl) _then) : super(_value, _then);
+  __$$LoadingImplCopyWithImpl(
+      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -215,7 +240,8 @@ class _$LoadingImpl implements _Loading {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType && other is _$LoadingImpl);
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$LoadingImpl);
   }
 
   @override
@@ -226,7 +252,9 @@ class _$LoadingImpl implements _Loading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances) success,
+    required TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
+        success,
     required TResult Function(String error) error,
   }) {
     return loading();
@@ -237,7 +265,9 @@ class _$LoadingImpl implements _Loading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult? Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult? Function(String error)? error,
   }) {
     return loading?.call();
@@ -248,7 +278,9 @@ class _$LoadingImpl implements _Loading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -302,15 +334,21 @@ abstract class _Loading implements BalancesState {
 
 /// @nodoc
 abstract class _$$SuccessImplCopyWith<$Res> {
-  factory _$$SuccessImplCopyWith(_$SuccessImpl value, $Res Function(_$SuccessImpl) then) = __$$SuccessImplCopyWithImpl<$Res>;
+  factory _$$SuccessImplCopyWith(
+          _$SuccessImpl value, $Res Function(_$SuccessImpl) then) =
+      __$$SuccessImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({List<AddressInfo> addressInfo, AddressInfo currentAddressBalances});
+  $Res call(
+      {List<AddressInfo> addressInfo, AddressInfo currentAddressBalances});
 }
 
 /// @nodoc
-class __$$SuccessImplCopyWithImpl<$Res> extends _$BalancesStateCopyWithImpl<$Res, _$SuccessImpl>
+class __$$SuccessImplCopyWithImpl<$Res>
+    extends _$BalancesStateCopyWithImpl<$Res, _$SuccessImpl>
     implements _$$SuccessImplCopyWith<$Res> {
-  __$$SuccessImplCopyWithImpl(_$SuccessImpl _value, $Res Function(_$SuccessImpl) _then) : super(_value, _then);
+  __$$SuccessImplCopyWithImpl(
+      _$SuccessImpl _value, $Res Function(_$SuccessImpl) _then)
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -334,7 +372,9 @@ class __$$SuccessImplCopyWithImpl<$Res> extends _$BalancesStateCopyWithImpl<$Res
 /// @nodoc
 
 class _$SuccessImpl implements _Success {
-  const _$SuccessImpl({required final List<AddressInfo> addressInfo, required this.currentAddressBalances})
+  const _$SuccessImpl(
+      {required final List<AddressInfo> addressInfo,
+      required this.currentAddressBalances})
       : _addressBalances = addressInfo;
 
   final List<AddressInfo> _addressBalances;
@@ -358,26 +398,32 @@ class _$SuccessImpl implements _Success {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SuccessImpl &&
-            const DeepCollectionEquality().equals(other._addressBalances, _addressBalances) &&
+            const DeepCollectionEquality()
+                .equals(other._addressBalances, _addressBalances) &&
             (identical(other.currentAddressBalances, currentAddressBalances) ||
                 other.currentAddressBalances == currentAddressBalances));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_addressBalances), currentAddressBalances);
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_addressBalances),
+      currentAddressBalances);
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith => __$$SuccessImplCopyWithImpl<_$SuccessImpl>(this, _$identity);
+  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
+      __$$SuccessImplCopyWithImpl<_$SuccessImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances) success,
+    required TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
+        success,
     required TResult Function(String error) error,
   }) {
     return success(addressInfo, currentAddressBalances);
@@ -388,7 +434,9 @@ class _$SuccessImpl implements _Success {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult? Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult? Function(String error)? error,
   }) {
     return success?.call(addressInfo, currentAddressBalances);
@@ -399,7 +447,9 @@ class _$SuccessImpl implements _Success {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -448,26 +498,33 @@ class _$SuccessImpl implements _Success {
 }
 
 abstract class _Success implements BalancesState {
-  const factory _Success({required final List<AddressInfo> addressInfo, required final AddressInfo currentAddressBalances}) =
-      _$SuccessImpl;
+  const factory _Success(
+      {required final List<AddressInfo> addressInfo,
+      required final AddressInfo currentAddressBalances}) = _$SuccessImpl;
 
   List<AddressInfo> get addressInfo;
   AddressInfo get currentAddressBalances;
   @JsonKey(ignore: true)
-  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith => throw _privateConstructorUsedError;
+  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$ErrorImplCopyWith<$Res> {
-  factory _$$ErrorImplCopyWith(_$ErrorImpl value, $Res Function(_$ErrorImpl) then) = __$$ErrorImplCopyWithImpl<$Res>;
+  factory _$$ErrorImplCopyWith(
+          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
+      __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String error});
 }
 
 /// @nodoc
-class __$$ErrorImplCopyWithImpl<$Res> extends _$BalancesStateCopyWithImpl<$Res, _$ErrorImpl>
+class __$$ErrorImplCopyWithImpl<$Res>
+    extends _$BalancesStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
-  __$$ErrorImplCopyWithImpl(_$ErrorImpl _value, $Res Function(_$ErrorImpl) _then) : super(_value, _then);
+  __$$ErrorImplCopyWithImpl(
+      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -510,14 +567,17 @@ class _$ErrorImpl implements _Error {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith => __$$ErrorImplCopyWithImpl<_$ErrorImpl>(this, _$identity);
+  _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
+      __$$ErrorImplCopyWithImpl<_$ErrorImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances) success,
+    required TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)
+        success,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -528,7 +588,9 @@ class _$ErrorImpl implements _Error {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult? Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -539,7 +601,9 @@ class _$ErrorImpl implements _Error {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)? success,
+    TResult Function(
+            List<AddressInfo> addressInfo, AddressInfo currentAddressBalances)?
+        success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -592,5 +656,6 @@ abstract class _Error implements BalancesState {
 
   String get error;
   @JsonKey(ignore: true)
-  _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith => throw _privateConstructorUsedError;
+  _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }

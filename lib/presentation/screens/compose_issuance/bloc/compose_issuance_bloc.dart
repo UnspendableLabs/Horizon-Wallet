@@ -20,17 +20,23 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 
-class ComposeIssuanceBloc extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
+class ComposeIssuanceBloc
+    extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
   ComposeIssuanceBloc() : super(const ComposeIssuanceState()) {
-    final AddressRepository addressRepository = GetIt.I.get<AddressRepository>();
-    final BalanceRepository balanceRepository = GetIt.I.get<BalanceRepository>();
+    final AddressRepository addressRepository =
+        GetIt.I.get<AddressRepository>();
+    final BalanceRepository balanceRepository =
+        GetIt.I.get<BalanceRepository>();
     final composeRepository = GetIt.I.get<ComposeRepository>();
     final UtxoRepository utxoRepository = GetIt.I.get<UtxoRepository>();
-    final AccountRepository accountRepository = GetIt.I.get<AccountRepository>();
+    final AccountRepository accountRepository =
+        GetIt.I.get<AccountRepository>();
     final WalletRepository walletRepository = GetIt.I.get<WalletRepository>();
-    final EncryptionService encryptionService = GetIt.I.get<EncryptionService>();
+    final EncryptionService encryptionService =
+        GetIt.I.get<EncryptionService>();
     final AddressService addressService = GetIt.I.get<AddressService>();
-    final TransactionService transactionService = GetIt.I.get<TransactionService>();
+    final TransactionService transactionService =
+        GetIt.I.get<TransactionService>();
     final BitcoindService bitcoindService = GetIt.I.get<BitcoindService>();
 
     on<FetchFormData>((event, emit) async {
@@ -40,8 +46,10 @@ class ComposeIssuanceBloc extends Bloc<ComposeIssuanceEvent, ComposeIssuanceStat
           submitState: SubmitState.initial()));
 
       try {
-        List<Address> addresses = await addressRepository.getAllByAccountUuid(event.accountUuid);
-        List<Balance> balances = await balanceRepository.getBalance(addresses[0].address);
+        List<Address> addresses =
+            await addressRepository.getAllByAccountUuid(event.accountUuid);
+        List<Balance> balances =
+            await balanceRepository.getBalance(addresses[0].address);
         emit(ComposeIssuanceState(
           addressesState: AddressesState.success(addresses),
           balancesState: BalancesState.success(balances),
@@ -57,7 +65,8 @@ class ComposeIssuanceBloc extends Bloc<ComposeIssuanceEvent, ComposeIssuanceStat
     on<FetchBalances>((event, emit) async {
       emit(state.copyWith(balancesState: const BalancesState.loading()));
       try {
-        List<Balance> balances = await balanceRepository.getBalance(event.address);
+        List<Balance> balances =
+            await balanceRepository.getBalance(event.address);
         emit(state.copyWith(balancesState: BalancesState.success(balances)));
       } catch (e) {
         emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
@@ -78,16 +87,25 @@ class ComposeIssuanceBloc extends Bloc<ComposeIssuanceEvent, ComposeIssuanceStat
       emit(state.copyWith(submitState: const SubmitState.loading()));
       try {
         ComposeIssuance issuance = await composeRepository.composeIssuance(
-            source, name, quantity, divisible, lock, reset, description, transferDestination);
+            source,
+            name,
+            quantity,
+            divisible,
+            lock,
+            reset,
+            description,
+            transferDestination);
 
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
         Address? address = await addressRepository.getAddress(source);
-        Account? account = await accountRepository.getAccountByUuid(address!.accountUuid);
+        Account? account =
+            await accountRepository.getAccountByUuid(address!.accountUuid);
         Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
-        String decryptedRootPrivKey = await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+        String decryptedRootPrivKey =
+            await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
         String addressPrivKey = await addressService.deriveAddressPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: wallet.chainCodeHex,
@@ -97,16 +115,19 @@ class ComposeIssuanceBloc extends Bloc<ComposeIssuanceEvent, ComposeIssuanceStat
             change: '0', // TODO make sure change is stored
             index: address.index);
 
-        String txHex = await transactionService.signTransaction(issuance.rawtransaction, addressPrivKey, source, utxoMap);
+        String txHex = await transactionService.signTransaction(
+            issuance.rawtransaction, addressPrivKey, source, utxoMap);
         await bitcoindService.sendrawtransaction(txHex);
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {
         if (error is DioException) {
           emit(state.copyWith(
-              submitState: SubmitState.error("${error.response!.data.keys.first} ${error.response!.data.values.first}")));
+              submitState: SubmitState.error(
+                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
         } else {
-          emit(state.copyWith(submitState: SubmitState.error(error.toString())));
+          emit(
+              state.copyWith(submitState: SubmitState.error(error.toString())));
         }
       }
     });

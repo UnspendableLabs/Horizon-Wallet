@@ -1,3 +1,1 @@
-abstract class Bip32Service {
-  
-}
+abstract class Bip32Service {}

@@ -10,7 +10,8 @@ class BalancesState with _$BalancesState {
   const factory BalancesState.initial() = _Initial;
   const factory BalancesState.loading() = _Loading;
   const factory BalancesState.success(
-      {required List<AddressInfo> addressInfo, required AddressInfo currentAddressBalances}) = _Success;
+      {required List<AddressInfo> addressInfo,
+      required AddressInfo currentAddressBalances}) = _Success;
   const factory BalancesState.error(String error) = _Error;
 }
 
@@ -19,5 +20,8 @@ class AddressInfo {
   final List<Balance> balances;
   final List<Transaction> transactions;
 
-  AddressInfo({required this.address, required this.balances, required this.transactions});
+  AddressInfo(
+      {required this.address,
+      required this.balances,
+      required this.transactions});
 }
