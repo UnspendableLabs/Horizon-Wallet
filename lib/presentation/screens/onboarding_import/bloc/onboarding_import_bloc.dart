@@ -28,8 +28,8 @@ class OnboardingImportBloc
 
   OnboardingImportBloc() : super(OnboardingImportState()) {
     on<PasswordChanged>((event, emit) {
-      if (event.password.length != 32) {
-        emit(state.copyWith(passwordError: "Password must be 32 characters."));
+      if (event.password.length < 8) {
+        emit(state.copyWith(passwordError: "Password must be at least 8 characters."));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }

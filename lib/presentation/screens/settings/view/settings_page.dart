@@ -62,11 +62,6 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                   return 'Required';
                 }
 
-                // TODO: 32 byte password hack
-                if (value.length != 32) {
-                  return "Invalid";
-                }
-
                 return null;
               },
             ),
