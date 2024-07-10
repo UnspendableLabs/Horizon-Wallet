@@ -26,8 +26,6 @@ class BalanceRepositoryImpl implements BalanceRepository {
       }
     }
 
-    print(balances);
-
     return balances;
   }
 
@@ -41,7 +39,6 @@ class BalanceRepositoryImpl implements BalanceRepository {
       for (var a in response.result ?? []) {
         balances.add(entity.Balance(address: address, quantity: a.quantity, asset: a.asset));
       }
-      print('Cursor: $cursor');
       cursor = response.nextCursor;
     } while (cursor != null);
 

@@ -11,8 +11,6 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
-import '../../../../domain/entities/balance.dart';
-
 String balancesStateToString(BalancesState state) {
   return state.when(
     initial: () => 'Initial',
@@ -97,8 +95,11 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 AddressActions(
                   isDarkTheme: isDarkTheme,
                 ),
-                BalancesDisplay(
-                  isDarkTheme: isDarkTheme,
+                BlocProvider(
+                  create: (context) => BalancesBloc(accountUuid: widget.accountUuid),
+                  child: BalancesDisplay(
+                    isDarkTheme: isDarkTheme,
+                  ),
                 ),
               ],
             ),
@@ -218,7 +219,7 @@ class AddressActions extends StatelessWidget {
   }
 }
 
-class BalancesDisplay extends StatelessWidget {
+class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
   BalancesDisplay({
     Key? key,
@@ -226,15 +227,32 @@ class BalancesDisplay extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _BalancesDisplayState createState() => _BalancesDisplayState();
+}
+
+class _BalancesDisplayState extends State<BalancesDisplay> {
+  late BalancesBloc _balancesBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _balancesBloc = context.read<BalancesBloc>();
+    final state = context.read<ShellStateCubit>().state;
+    state.maybeWhen(
+      success: (state) {
+        _balancesBloc.add(Stop());
+        _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
+      },
+      orElse: () {},
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
+
     return shell.state.maybeWhen(
-      success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
-        create: (context) =>
-            BalancesBloc(accountUuid: state.currentAccountUuid)..add(Start(pollingInterval: const Duration(seconds: 60))),
-        child: Balances(isDarkTheme: isDarkTheme),
-      ),
+      success: (state) => Balances(isDarkTheme: widget.isDarkTheme),
       orElse: () => const SizedBox.shrink(),
     );
   }
@@ -251,40 +269,9 @@ class Balances extends StatefulWidget {
 class _BalancesState extends State<Balances> {
   bool _isExpanded = false;
 
-  // TODO: handle dispose, send Stop to balances bloc
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
-      // final dummyBalances = [
-      //   Balance(address: 'address1', quantity: 100.0, asset: 'Asset1'),
-      //   Balance(address: 'address2', quantity: 200.0, asset: 'Asset2'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset3'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset4'),
-      //   Balance(address: 'address3', quantity: 500.0, asset: 'Asset5'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset6'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset7'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset8'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset9'),
-      //   Balance(address: 'address3', quantity: 300.0, asset: 'Asset10'),
-      // ];
-
-      // final dummyAggregated = {
-      //   'Asset1': 100.0,
-      //   'Asset2': 200.0,
-      //   'Asset3': 300.0,
-      //   'Asset4': 300.0,
-      //   'Asset5': 500.0,
-      //   'Asset6': 300.0,
-      //   'Asset7': 300.0,
-      //   'Asset8': 300.0,
-      //   'Asset9': 300.0,
-      //   'Asset10': 300.0,
-      // };
-
-      // final dummyResult = Result.ok(dummyBalances, dummyAggregated);
-
       double height = MediaQuery.of(context).size.height * 0.75;
       return state.when(
         initial: () => const Text(""),
@@ -354,6 +341,10 @@ class _BalancesState extends State<Balances> {
   Widget _balanceList(Result result) {
     return result.when(
       ok: (balances, aggregated) {
+        if (balances.isEmpty) {
+          return const Center(child: Text("No balance"));
+        }
+
         final balanceWidgets = aggregated.entries.map((entry) {
           return Column(
             children: [
@@ -362,7 +353,19 @@ class _BalancesState extends State<Balances> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('${entry.key}: ${entry.value.toStringAsFixed(2)}'),
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${entry.key} ',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text: entry.value.toStringAsFixed(2),
+                          ),
+                        ],
+                      ),
+                    ),
                     const Text("\$ dollar placeholder"),
                   ],
                 ),
