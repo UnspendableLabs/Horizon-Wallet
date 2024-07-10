@@ -206,6 +206,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         ),
                         const SizedBox(height: 16.0), // Spacing between inputs
                         TextFormField(
+                          obscureText: true,
+                          enableSuggestions: false,
+                          autocorrect: false,
                           controller: passwordController,
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
@@ -215,9 +218,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
-                            }
-                            if (value.length != 32) {
-                              return 'Password must be 32 chars';
                             }
                             return null;
                           },
