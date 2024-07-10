@@ -52,6 +52,9 @@ class _PasswordPromptState extends State<PasswordPrompt> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             TextFormField(
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
               controller: passwordController,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(),

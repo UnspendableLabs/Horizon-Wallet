@@ -102,6 +102,9 @@ class PasswordPrompt extends StatelessWidget {
             child: Column(
               children: [
                 TextField(
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
                   onChanged: (value) {
                     context
                         .read<OnboardingCreateBloc>()
@@ -115,6 +118,9 @@ class PasswordPrompt extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
                   controller: _passwordConfirmationController,
                   onChanged: (value) {
                     context.read<OnboardingCreateBloc>().add(

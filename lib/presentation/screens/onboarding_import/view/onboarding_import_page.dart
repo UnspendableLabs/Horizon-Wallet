@@ -117,6 +117,9 @@ class PasswordPrompt extends StatelessWidget {
                         minWidth: double
                             .infinity), // Minimum height for the TextField
                     child: TextField(
+                      obscureText: true,
+                      enableSuggestions: false,
+                      autocorrect: false,
                       controller: _passwordController,
                       onChanged: (value) {
                         context
@@ -135,6 +138,9 @@ class PasswordPrompt extends StatelessWidget {
                       minWidth:
                           double.infinity), // Minimum height for the TextField
                   child: TextField(
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
                     controller: _passwordConfirmationController,
                     onChanged: (value) {
                       context.read<OnboardingImportBloc>().add(

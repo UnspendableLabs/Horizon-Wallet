@@ -79,6 +79,9 @@ class OnboardingImportBloc
       try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
+
+
+
             Wallet wallet =
                 await walletService.deriveRoot(state.mnemonic, state.password!);
             String decryptedPrivKey = await encryptionService.decrypt(
