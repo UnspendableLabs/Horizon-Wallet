@@ -764,6 +764,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("verbose") bool verbose, [
     @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
   ]);
 
   // Counterparty API Root

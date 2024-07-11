@@ -31,10 +31,11 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   Future<List<entity.Balance>> _fetchBalances(String address) async {
     final List<entity.Balance> balances = [];
+    int limit = 50;
     int? cursor;
 
     do {
-      final response = await api.getBalancesByAddress(address, true, cursor);
+      final response = await api.getBalancesByAddress(address, true, cursor, limit);
 
       for (var a in response.result ?? []) {
         balances.add(entity.Balance(address: address, quantity: a.quantity, asset: a.asset));

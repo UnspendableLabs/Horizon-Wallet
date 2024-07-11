@@ -584,11 +584,13 @@ class _V2Api implements V2Api {
     String address,
     bool verbose, [
     int? cursor,
+    int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'verbose': verbose,
       r'cursor': cursor,
+      r'limit': limit,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

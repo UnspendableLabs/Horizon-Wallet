@@ -237,24 +237,13 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
   void initState() {
     super.initState();
     _balancesBloc = context.read<BalancesBloc>();
-    final state = context.read<ShellStateCubit>().state;
-    state.maybeWhen(
-      success: (state) {
-        _balancesBloc.add(Stop());
-        _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
-      },
-      orElse: () {},
-    );
+
+    _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 3)));
   }
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-
-    return shell.state.maybeWhen(
-      success: (state) => Balances(isDarkTheme: widget.isDarkTheme),
-      orElse: () => const SizedBox.shrink(),
-    );
+    return Balances(isDarkTheme: widget.isDarkTheme);
   }
 }
 

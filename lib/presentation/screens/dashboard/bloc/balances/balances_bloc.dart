@@ -73,7 +73,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final List<Address> addresses = await addressRepository.getAllByAccountUuid(accountUuid);
 
       final List<Balance> balances = await balanceRepository.getBalances(addresses.map((a) => a.address).toList());
-
+      
       final Map<String, double> aggregated = aggregateAndSortBalancesByAsset(balances);
 
       emit(BalancesState.complete(Result.ok(balances, aggregated)));
