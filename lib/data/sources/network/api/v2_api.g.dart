@@ -13,6 +13,8 @@ Response<T> _$ResponseFromJson<T>(
     Response<T>(
       result: _$nullableGenericFromJson(json['result'], fromJsonT),
       error: json['error'] as String?,
+      nextCursor: (json['nextCursor'] as num?)?.toInt(),
+      resultCount: (json['resultCount'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$ResponseToJson<T>(
@@ -21,6 +23,8 @@ Map<String, dynamic> _$ResponseToJson<T>(
 ) =>
     <String, dynamic>{
       'result': _$nullableGenericToJson(instance.result, toJsonT),
+      'nextCursor': instance.nextCursor,
+      'resultCount': instance.resultCount,
       'error': instance.error,
     };
 
@@ -578,10 +582,17 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<Balance>>> getBalancesByAddress(
     String address,
-    bool verbose,
-  ) async {
+    bool verbose, [
+    int? cursor,
+    int? limit,
+  ]) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'verbose': verbose};
+    final queryParameters = <String, dynamic>{
+      r'verbose': verbose,
+      r'cursor': cursor,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
