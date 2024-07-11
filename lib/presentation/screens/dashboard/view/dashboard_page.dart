@@ -238,7 +238,7 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
     super.initState();
     _balancesBloc = context.read<BalancesBloc>();
 
-    _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 3)));
+    _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
   }
 
   @override
