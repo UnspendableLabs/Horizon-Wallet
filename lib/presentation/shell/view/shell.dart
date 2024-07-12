@@ -43,8 +43,7 @@ class AccountListView extends StatelessWidget {
 class ResponsiveAccountSidebar extends StatefulWidget {
   const ResponsiveAccountSidebar({super.key});
   @override
-  State<ResponsiveAccountSidebar> createState() =>
-      _ResponsiveAccountSidebarState();
+  State<ResponsiveAccountSidebar> createState() => _ResponsiveAccountSidebarState();
 }
 
 class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
@@ -58,8 +57,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     // Define background colors based on theme
-    final backgroundColor =
-        isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
+    final backgroundColor = isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
     SliverWoltModalSheetPage page1(
       BuildContext modalSheetContext,
@@ -102,8 +100,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       ListView.builder(
-                        shrinkWrap:
-                            true, // Ensures the ListView takes only the necessary space
+                        shrinkWrap: true, // Ensures the ListView takes only the necessary space
                         itemCount: state.accounts.length,
                         itemBuilder: (context, index) {
                           final account = state.accounts[index];
@@ -111,36 +108,27 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                             children: [
                               ListTile(
                                 title: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(
-                                          Icons.account_balance_wallet_rounded),
+                                      const Icon(Icons.account_balance_wallet_rounded),
                                       const SizedBox(width: 8.0),
                                       Text(account.name),
                                     ],
                                   ),
                                 ),
-                                hoverColor:
-                                    Colors.transparent, // No hover effect
-                                selected:
-                                    account.uuid == state.currentAccountUuid,
+                                hoverColor: Colors.transparent, // No hover effect
+                                selected: account.uuid == state.currentAccountUuid,
                                 onTap: () {
                                   setState(() => selectedAccount = account);
-                                  context
-                                      .read<ShellStateCubit>()
-                                      .onAccountChanged(account);
+                                  context.read<ShellStateCubit>().onAccountChanged(account);
                                   GoRouter.of(context).go('/dashboard');
                                 },
                               ),
-                              if (index !=
-                                  state.accounts.length -
-                                      1) // Avoid underline for the last element
+                              if (index != state.accounts.length - 1) // Avoid underline for the last element
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                   child: Divider(
                                     color: Colors.grey.shade300,
                                     thickness: 1.0,
@@ -188,8 +176,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                         child: Text(
                           "POWERED BY\nUNSPENDABLE LABS",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 10.0, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -228,8 +215,7 @@ class Shell extends StatelessWidget {
             shell.state.maybeWhen(
               success: (state) => WoltModalSheetPage(
                 isTopBarLayerAlwaysVisible: true,
-                topBarTitle:
-                    Text('Select an account', style: textTheme.titleSmall),
+                topBarTitle: Text('Select an account', style: textTheme.titleSmall),
                 trailingNavBarWidget: IconButton(
                   padding: const EdgeInsets.all(_pagePadding),
                   icon: const Icon(Icons.close),
@@ -241,15 +227,12 @@ class Shell extends StatelessWidget {
                     itemCount: state.accounts.length,
                     itemBuilder: (context, index) {
                       final account = state.accounts[index];
-                      final isSelected =
-                          account.uuid == state.currentAccountUuid;
+                      final isSelected = account.uuid == state.currentAccountUuid;
                       return ListTile(
                         title: Text(account.name),
                         selected: isSelected,
                         onTap: () {
-                          context
-                              .read<ShellStateCubit>()
-                              .onAccountChanged(account);
+                          context.read<ShellStateCubit>().onAccountChanged(account);
                           Navigator.of(modalSheetContext).pop();
                           GoRouter.of(context).go('/dashboard');
                         },
@@ -283,15 +266,10 @@ class Shell extends StatelessWidget {
             if (constraints.maxWidth > 768.0) {
               return const Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Horizon',
-                    style:
-                        TextStyle(fontSize: 34, fontWeight: FontWeight.bold)),
+                child: Text('Horizon', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold)),
               );
             } else {
-              return const Center(
-                  child: Text('Horizon',
-                      style: TextStyle(
-                          fontSize: 34, fontWeight: FontWeight.bold)));
+              return const Center(child: Text('Horizon', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold)));
             }
           },
         ),
@@ -316,8 +294,7 @@ class Shell extends StatelessWidget {
           Expanded(
               child: Scaffold(
                   body: shell.state.when(
-            initial: () => const Text(
-                "loading..."), // TODO: all of this is smell.  should only handle success branch
+            initial: () => const Text("loading..."), // TODO: all of this is smell.  should only handle success branch
             onboarding: (_) => const Text("onboarding"),
             loading: () => const Text("loading..."),
             error: (e) => const Text("error"),

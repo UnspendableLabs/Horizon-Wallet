@@ -43,7 +43,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             await addressRepository.getAllByAccountUuid(event.accountUuid);
 
         List<Balance> balances =
-            await balanceRepository.getBalance(addresses[0].address);
+            await balanceRepository.getBalancesForAddress(addresses[0].address);
         emit(ComposeSendState(
             addressesState: AddressesState.success(addresses),
             balancesState: BalancesState.success(balances),
@@ -60,7 +60,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
       emit(state.copyWith(balancesState: const BalancesState.loading()));
       try {
         List<Balance> balances =
-            await balanceRepository.getBalance(event.address);
+            await balanceRepository.getBalancesForAddress(event.address);
         emit(state.copyWith(balancesState: BalancesState.success(balances)));
       } catch (e) {
         emit(state.copyWith(balancesState: BalancesState.error(e.toString())));

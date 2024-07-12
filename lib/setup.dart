@@ -44,39 +44,29 @@ Future<void> setup() async {
   injector.registerLazySingleton<Dio>(() => buildDioClient());
   injector.registerLazySingleton<V2Api>(() => V2Api(GetIt.I.get<Dio>()));
 
-  injector.registerSingleton<AddressTxRepository>(
-      AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
-  injector.registerSingleton<ComposeRepository>(
-      ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
-  injector.registerSingleton<UtxoRepository>(
-      UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<AddressTxRepository>(AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<ComposeRepository>(ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<BalanceRepository>(
-      BalanceRepositoryImpl(api: GetIt.I.get<V2Api>()));
+      BalanceRepositoryImpl(api: GetIt.I.get<V2Api>(), utxoRepository: GetIt.I.get<UtxoRepository>()));
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl());
   injector.registerSingleton<EncryptionService>(EncryptionServiceImpl());
   injector.registerSingleton<WalletService>(WalletServiceImpl(injector()));
   injector.registerSingleton<AddressService>(AddressServiceImpl());
-  injector.registerSingleton<MnemonicService>(
-      MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
-  injector.registerSingleton<BitcoindService>(
-      BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
+  injector.registerSingleton<MnemonicService>(MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
+  injector.registerSingleton<BitcoindService>(BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
-  injector.registerSingleton<AccountRepository>(
-      AccountRepositoryImpl(injector.get<DatabaseManager>().database));
-  injector.registerSingleton<WalletRepository>(
-      WalletRepositoryImpl(injector.get<DatabaseManager>().database));
-  injector.registerSingleton<AddressRepository>(
-      AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<AccountRepository>(AccountRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<WalletRepository>(WalletRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<AddressRepository>(AddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<CacheProvider>(HiveCache());
 
-  injector.registerSingleton<AccountSettingsRepository>(
-      AccountSettingsRepositoryImpl(
+  injector.registerSingleton<AccountSettingsRepository>(AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
 
-  injector.registerSingleton<MaterializedAddressRepository>(
-      MaterializedAddressRepositoryImpl());
+  injector.registerSingleton<MaterializedAddressRepository>(MaterializedAddressRepositoryImpl());
 }

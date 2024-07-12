@@ -7,4 +7,10 @@ abstract class UtxoRepository {
     String? unspentTxHash,
     bool? verbose,
   ]);
+  Future<List<Utxo>> getUnspentForAddresses(
+    List<String> addresses, [
+    bool? unconfirmed,
+    String? unspentTxHash,
+    bool? verbose,
+  ]);
 }
