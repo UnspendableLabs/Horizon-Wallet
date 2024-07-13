@@ -322,7 +322,7 @@ class _BalancesState extends State<Balances> {
                               borderRadius: BorderRadius.circular(30.0),
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.33,
+                              width: MediaQuery.of(context).size.width * 0.75,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: QRCodeDialog(key: Key(widget.accountUuid), addresses: addresses),
@@ -478,46 +478,61 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
           size: 200.0,
         ),
         const SizedBox(height: 16.0),
-        Row(
-          children: [
-            if (widget.addresses.length > 1)
-              Expanded(
-                child: DropdownButton<String>(
-                  padding: const EdgeInsets.all(0),
-                  value: _selectedAddress,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedAddress = newValue!;
-                    });
-                  },
-                  items: widget.addresses.map<DropdownMenuItem<String>>((Address address) {
-                    return DropdownMenuItem<String>(
-                      value: address.address,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Text(address.address),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            double fontSize = constraints.maxWidth * 0.04; // Adjust the multiplier as needed
+
+            return Row(
+              children: [
+                if (widget.addresses.length > 1)
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: DropdownButton<String>(
+                        isExpanded: true, // Ensure the dropdown button expands to fill available space
+                        value: _selectedAddress,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedAddress = newValue!;
+                          });
+                        },
+                        items: widget.addresses.map<DropdownMenuItem<String>>((Address address) {
+                          return DropdownMenuItem<String>(
+                            value: address.address,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                address.address,
+                                style: TextStyle(fontSize: fontSize),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SelectableText(
+                        _selectedAddress,
+                        style: TextStyle(fontSize: fontSize),
+                      ),
+                    ),
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.copy),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: _selectedAddress));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Address copied to clipboard')),
                     );
-                  }).toList(),
+                  },
                 ),
-              )
-            else
-              Expanded(
-                child: SelectableText(
-                  _selectedAddress,
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-              ),
-            IconButton(
-              icon: const Icon(Icons.copy),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: _selectedAddress));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Address copied to clipboard')),
-                );
-              },
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ],
     );
