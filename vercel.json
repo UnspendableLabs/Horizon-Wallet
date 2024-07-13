@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "lib/main.dart",
+      "src": "web/index.html",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build/web"
@@ -15,5 +15,5 @@
     }
   },
   "installCommand": "if cd flutter; then git pull && cd .. ; else git clone https://github.com/flutter/flutter.git -b stable; fi && ls && flutter/bin/flutter doctor && flutter/bin/flutter clean && flutter/bin/flutter config --enable-web",
-  "buildCommand": "echo 'TEST=true' > .env && flutter/bin/flutter build web --release"
+  "buildCommand": "echo 'TEST=true' > web/.env && flutter/bin/flutter build web --release"
 }
