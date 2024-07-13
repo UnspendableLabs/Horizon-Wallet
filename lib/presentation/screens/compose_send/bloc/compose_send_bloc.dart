@@ -39,11 +39,10 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           submitState: SubmitState.initial()));
 
       try {
-        List<Address> addresses =
-            await addressRepository.getAllByAccountUuid(event.accountUuid);
+        List<Address> addresses = await addressRepository.getAllByAccountUuid(event.accountUuid);
 
-        List<Balance> balances =
-            await balanceRepository.getBalancesForAddresses(addresses.map((e) => e.address).toList());
+        List<Balance> balances = await balanceRepository.getBalancesForAddress(addresses[0].address);
+        print('BALANCES: ${balances.map((e) => e.quantity).toList()}');
         emit(ComposeSendState(
             addressesState: AddressesState.success(addresses),
             balancesState: BalancesState.success(balances),
@@ -59,8 +58,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
     on<FetchBalances>((event, emit) async {
       emit(state.copyWith(balancesState: const BalancesState.loading()));
       try {
-        List<Balance> balances =
-            await balanceRepository.getBalancesForAddress(event.address);
+        List<Balance> balances = await balanceRepository.getBalancesForAddress(event.address);
         emit(state.copyWith(balancesState: BalancesState.success(balances)));
       } catch (e) {
         emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
@@ -79,19 +77,17 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         // final memo = event.memo;
         // final memoIsHex = event.memoIsHex;
 
-        final rawTx = await composeRepository.composeSend(source, destination,
-            asset, quantity, true, 2766); // TODO: don't hardcode fee
+        final rawTx = await composeRepository.composeSend(
+            source, destination, asset, quantity, true, 2766); // TODO: don't hardcode fee
 
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
         Address? address = await addressRepository.getAddress(source);
-        Account? account =
-            await accountRepository.getAccountByUuid(address!.accountUuid);
+        Account? account = await accountRepository.getAccountByUuid(address!.accountUuid);
         Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
-        String decryptedRootPrivKey =
-            await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+        String decryptedRootPrivKey = await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
         String addressPrivKey = await addressService.deriveAddressPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: wallet.chainCodeHex,
@@ -101,19 +97,16 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             change: '0', // TODO make sure change is stored
             index: address.index);
 
-        String txHex = await transactionService.signTransaction(
-            rawTx.hex, addressPrivKey, source, utxoMap);
+        String txHex = await transactionService.signTransaction(rawTx.hex, addressPrivKey, source, utxoMap);
         await bitcoindService.sendrawtransaction(txHex);
 
         emit(state.copyWith(submitState: SubmitState.success(txHex, source)));
       } catch (error, stackTrace) {
         if (error is DioException) {
           emit(state.copyWith(
-              submitState: SubmitState.error(
-                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
+              submitState: SubmitState.error("${error.response!.data.keys.first} ${error.response!.data.values.first}")));
         } else {
-          emit(
-              state.copyWith(submitState: SubmitState.error(error.toString())));
+          emit(state.copyWith(submitState: SubmitState.error(error.toString())));
         }
       }
     });
