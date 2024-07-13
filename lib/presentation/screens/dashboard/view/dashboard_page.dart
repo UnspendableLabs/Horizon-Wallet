@@ -249,8 +249,6 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    // return Column(
-    //     children: [Text(widget.accountUuid), ...widget.addresses.map<Widget>((address) => Text(address.address)).toList()]);
     return Balances(
         key: Key(widget.accountUuid),
         isDarkTheme: widget.isDarkTheme,
@@ -280,8 +278,8 @@ class _BalancesState extends State<Balances> {
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses), // Pass addresses
-        reloading: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses), // Pass addresses
+        complete: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses),
+        reloading: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses),
       );
     });
   }
@@ -458,7 +456,7 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
   @override
   void initState() {
     super.initState();
-    _selectedAddress = widget.addresses.first.address; // Initialize with the first address
+    _selectedAddress = widget.addresses.first.address;
   }
 
   @override
@@ -471,7 +469,6 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16.0),
-        // QR Code placeholder for the selected address
         QrImageView(
           data: _selectedAddress,
           version: QrVersions.auto,
@@ -480,7 +477,7 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
         const SizedBox(height: 16.0),
         LayoutBuilder(
           builder: (context, constraints) {
-            double fontSize = constraints.maxWidth * 0.04; // Adjust the multiplier as needed
+            double fontSize = constraints.maxWidth * 0.04;
 
             return Row(
               children: [
@@ -489,7 +486,7 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: DropdownButton<String>(
-                        isExpanded: true, // Ensure the dropdown button expands to fill available space
+                        isExpanded: true,
                         value: _selectedAddress,
                         onChanged: (String? newValue) {
                           setState(() {
