@@ -54,10 +54,12 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   Future<List<entity.Balance>> _getBtcBalances(List<String> addresses) async {
-    final utxos = await utxoRepository.getUnspentForAddresses(addresses);
-    // final amounts = utxos.map(utxo)
-    utxos.forEach((utxo) {
-    });
-    return utxos.map((utxo) => entity.Balance(asset: 'BTC', quantity: utxo.amount, address: utxo.address)).toList();
+    final List<entity.Balance> balances = [];
+    for (var address in addresses) {
+      final utxos = await utxoRepository.getUnspentForAddress(address);
+      double sum = utxos.fold(0, (sum, utxo) => sum + utxo.amount);
+      balances.add(entity.Balance(asset: 'BTC', quantity: sum, address: address));
+    }
+    return balances;
   }
 }
