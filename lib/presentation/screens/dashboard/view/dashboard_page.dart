@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
+import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
@@ -10,6 +13,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bl
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 String balancesStateToString(BalancesState state) {
   return state.when(
@@ -65,10 +69,9 @@ class _DashboardPage_State extends State<_DashboardPage> {
   void initState() {
     super.initState();
 
-    // context.read<AddressesBloc>().add(Generate(
-    //       accountUuid: widget.accountUuid,
-    //       gapLimit: accountSettingsRepository.getGapLimit(widget.accountUuid),
-    //     ));
+    context.read<AddressesBloc>().add(GetAll(
+          accountUuid: widget.accountUuid,
+        ));
   }
 
   @override
@@ -99,6 +102,8 @@ class _DashboardPage_State extends State<_DashboardPage> {
                   create: (context) => BalancesBloc(accountUuid: widget.accountUuid),
                   child: BalancesDisplay(
                     isDarkTheme: isDarkTheme,
+                    addresses: addresses,
+                    accountUuid: widget.accountUuid,
                   ),
                 ),
               ],
@@ -221,10 +226,11 @@ class AddressActions extends StatelessWidget {
 
 class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
-  BalancesDisplay({
-    Key? key,
-    required this.isDarkTheme,
-  }) : super(key: key);
+  final List<Address> addresses;
+  final String accountUuid;
+
+  BalancesDisplay({Key? key, required this.isDarkTheme, required this.addresses, required this.accountUuid})
+      : super(key: key);
 
   @override
   _BalancesDisplayState createState() => _BalancesDisplayState();
@@ -243,13 +249,20 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    return Balances(isDarkTheme: widget.isDarkTheme);
+    return Balances(
+        key: Key(widget.accountUuid),
+        isDarkTheme: widget.isDarkTheme,
+        addresses: widget.addresses,
+        accountUuid: widget.accountUuid);
   }
 }
 
 class Balances extends StatefulWidget {
   final bool isDarkTheme;
-  const Balances({super.key, required this.isDarkTheme});
+  final List<Address> addresses;
+  final String accountUuid;
+
+  const Balances({super.key, required this.isDarkTheme, required this.addresses, required this.accountUuid});
 
   @override
   State<Balances> createState() => _BalancesState();
@@ -265,13 +278,13 @@ class _BalancesState extends State<Balances> {
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: (result) => _resultToBalanceList(result, height, widget.isDarkTheme),
-        reloading: (result) => _resultToBalanceList(result, height, widget.isDarkTheme),
+        complete: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses),
+        reloading: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses),
       );
     });
   }
 
-  Widget _resultToBalanceList(Result result, double height, bool isDarkTheme) {
+  Widget _resultToBalanceList(Result result, double height, bool isDarkTheme, List<Address> addresses) {
     Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
 
     return Padding(
@@ -284,14 +297,41 @@ class _BalancesState extends State<Balances> {
         ),
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Account Balances',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Account Balances',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.qr_code),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            child: Container(
+                              width: MediaQuery.of(context).size.width * 0.75,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: QRCodeDialog(key: Key(widget.accountUuid), addresses: addresses),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
             Expanded(child: _balanceList(result)),
@@ -350,7 +390,7 @@ class _BalancesState extends State<Balances> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           TextSpan(
-                            text: entry.value.toStringAsFixed(2),
+                            text: entry.value.toStringAsFixed(8),
                           ),
                         ],
                       ),
@@ -397,6 +437,101 @@ class _BalancesState extends State<Balances> {
         }
       },
       error: (error) => Text('Error: $error'),
+    );
+  }
+}
+
+class QRCodeDialog extends StatefulWidget {
+  final List<Address> addresses;
+
+  const QRCodeDialog({super.key, required this.addresses});
+
+  @override
+  _QRCodeDialogState createState() => _QRCodeDialogState();
+}
+
+class _QRCodeDialogState extends State<QRCodeDialog> {
+  late String _selectedAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedAddress = widget.addresses.first.address;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Receive',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16.0),
+        QrImageView(
+          data: _selectedAddress,
+          version: QrVersions.auto,
+          size: 200.0,
+        ),
+        const SizedBox(height: 16.0),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            double fontSize = constraints.maxWidth * 0.04;
+
+            return Row(
+              children: [
+                if (widget.addresses.length > 1)
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _selectedAddress,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedAddress = newValue!;
+                          });
+                        },
+                        items: widget.addresses.map<DropdownMenuItem<String>>((Address address) {
+                          return DropdownMenuItem<String>(
+                            value: address.address,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                address.address,
+                                style: TextStyle(fontSize: fontSize),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SelectableText(
+                        _selectedAddress,
+                        style: TextStyle(fontSize: fontSize),
+                      ),
+                    ),
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.copy),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: _selectedAddress));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Address copied to clipboard')),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 }

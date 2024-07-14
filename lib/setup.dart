@@ -51,7 +51,7 @@ Future<void> setup() async {
   injector.registerSingleton<UtxoRepository>(
       UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<BalanceRepository>(
-      BalanceRepositoryImpl(api: GetIt.I.get<V2Api>()));
+      BalanceRepositoryImpl(api: GetIt.I.get<V2Api>(), utxoRepository: GetIt.I.get<UtxoRepository>()));
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl());

@@ -24,7 +24,6 @@ import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.d
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/view/shell.dart';
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
 
@@ -187,7 +186,7 @@ void main() {
   // Catch uncaught asynchronous errors
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    await dotenv.load();
+    // await dotenv.load();
 
     await setup();
 

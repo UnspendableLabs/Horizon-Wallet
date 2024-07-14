@@ -63,6 +63,7 @@ dependencies:
   bloc_concurrency: ^0.2.5
   rxdart: ^0.28.0
   crypto: ^3.0.3
+  qr_flutter: ^4.1.0
 
 
 dev_dependencies:
@@ -96,10 +97,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  assets:
-    - web/.env
-    - assets/
-    - icons/
+  # assets:
+  #   - .env
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
