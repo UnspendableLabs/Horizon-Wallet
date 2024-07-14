@@ -2,7 +2,6 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
@@ -187,7 +186,7 @@ class AddressServiceImpl extends AddressService {
   }
 
   _getNetwork() {
-    bool isTestnet = dotenv.get('TEST') == 'true';
+    bool isTestnet = const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
 }

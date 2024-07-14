@@ -100,7 +100,8 @@ class WalletServiceImpl implements WalletService {
   }
 
   _getNetwork() {
-    bool isTestnet = dotenv.get('TEST') == 'true';
+    // bool isTestnet = dotenv.get('TEST') == 'true';
+    bool isTestnet = const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
 }
