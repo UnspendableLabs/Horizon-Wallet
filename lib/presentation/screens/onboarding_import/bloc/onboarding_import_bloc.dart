@@ -162,7 +162,8 @@ class OnboardingImportBloc
   }
 
   String _getCoinType() {
-    bool isTestnet = dotenv.get('TEST') == 'true';
+    // bool isTestnet = dotenv.get('TEST') == 'true';
+    bool isTestnet = const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? '1' : '0';
   }
 }
