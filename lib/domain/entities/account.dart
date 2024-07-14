@@ -1,5 +1,4 @@
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
 class Account {
   final String uuid;
