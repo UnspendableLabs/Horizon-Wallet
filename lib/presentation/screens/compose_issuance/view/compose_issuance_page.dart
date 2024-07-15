@@ -178,6 +178,9 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         const SizedBox(height: 16.0), // Spacing between inputs
                         TextFormField(
                           controller: passwordController,
+                          obscureText: true,
+                          enableSuggestions: false,
+                          autocorrect: false,
                           decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Password",
@@ -185,9 +188,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
-                            }
-                            if (value.length != 32) {
-                              return 'Password must be 32 chars';
                             }
                             return null;
                           },
