@@ -147,6 +147,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
             const SizedBox(height: 16.0), // Spacing between inputs
             TextFormField(
               controller: passwordController,
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Password',
@@ -156,10 +159,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                   return 'Required';
                 }
 
-                // TODO: 32 byte password hack
-                if (value.length != 32) {
-                  return "Invalid";
-                }
 
                 return null;
               },
