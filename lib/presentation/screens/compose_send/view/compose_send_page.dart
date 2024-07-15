@@ -197,7 +197,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                         value: balance.asset,
                                         label: balance.asset,
                                         trailingIcon:
-                                            Text(balance.quantity.toString()),
+                                            Text(balance.quantityNormalized)
                                       );
                                     }).toList());
                               }),

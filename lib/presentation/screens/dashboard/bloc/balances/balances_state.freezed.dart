@@ -629,21 +629,21 @@ mixin _$Result {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-            List<Balance> balances, Map<String, double> aggregated)
+            List<Balance> balances, Map<String, Balance> aggregated)
         ok,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<Balance> balances, Map<String, double> aggregated)?
+    TResult? Function(List<Balance> balances, Map<String, Balance> aggregated)?
         ok,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<Balance> balances, Map<String, double> aggregated)?
+    TResult Function(List<Balance> balances, Map<String, Balance> aggregated)?
         ok,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -692,7 +692,7 @@ abstract class _$$OkImplCopyWith<$Res> {
   factory _$$OkImplCopyWith(_$OkImpl value, $Res Function(_$OkImpl) then) =
       __$$OkImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({List<Balance> balances, Map<String, double> aggregated});
+  $Res call({List<Balance> balances, Map<String, Balance> aggregated});
 }
 
 /// @nodoc
@@ -715,7 +715,7 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
       null == aggregated
           ? _value._aggregated
           : aggregated // ignore: cast_nullable_to_non_nullable
-              as Map<String, double>,
+              as Map<String, Balance>,
     ));
   }
 }
@@ -724,7 +724,7 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
 
 class _$OkImpl implements _Ok {
   const _$OkImpl(
-      final List<Balance> balances, final Map<String, double> aggregated)
+      final List<Balance> balances, final Map<String, Balance> aggregated)
       : _balances = balances,
         _aggregated = aggregated;
 
@@ -736,9 +736,9 @@ class _$OkImpl implements _Ok {
     return EqualUnmodifiableListView(_balances);
   }
 
-  final Map<String, double> _aggregated;
+  final Map<String, Balance> _aggregated;
   @override
-  Map<String, double> get aggregated {
+  Map<String, Balance> get aggregated {
     if (_aggregated is EqualUnmodifiableMapView) return _aggregated;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableMapView(_aggregated);
@@ -775,7 +775,7 @@ class _$OkImpl implements _Ok {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-            List<Balance> balances, Map<String, double> aggregated)
+            List<Balance> balances, Map<String, Balance> aggregated)
         ok,
     required TResult Function(String error) error,
   }) {
@@ -785,7 +785,7 @@ class _$OkImpl implements _Ok {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<Balance> balances, Map<String, double> aggregated)?
+    TResult? Function(List<Balance> balances, Map<String, Balance> aggregated)?
         ok,
     TResult? Function(String error)? error,
   }) {
@@ -795,7 +795,7 @@ class _$OkImpl implements _Ok {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<Balance> balances, Map<String, double> aggregated)?
+    TResult Function(List<Balance> balances, Map<String, Balance> aggregated)?
         ok,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -840,11 +840,11 @@ class _$OkImpl implements _Ok {
 
 abstract class _Ok implements Result {
   const factory _Ok(
-          final List<Balance> balances, final Map<String, double> aggregated) =
+          final List<Balance> balances, final Map<String, Balance> aggregated) =
       _$OkImpl;
 
   List<Balance> get balances;
-  Map<String, double> get aggregated;
+  Map<String, Balance> get aggregated;
   @JsonKey(ignore: true)
   _$$OkImplCopyWith<_$OkImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -915,7 +915,7 @@ class _$ErrorImpl implements _Error {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-            List<Balance> balances, Map<String, double> aggregated)
+            List<Balance> balances, Map<String, Balance> aggregated)
         ok,
     required TResult Function(String error) error,
   }) {
@@ -925,7 +925,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<Balance> balances, Map<String, double> aggregated)?
+    TResult? Function(List<Balance> balances, Map<String, Balance> aggregated)?
         ok,
     TResult? Function(String error)? error,
   }) {
@@ -935,7 +935,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<Balance> balances, Map<String, double> aggregated)?
+    TResult Function(List<Balance> balances, Map<String, Balance> aggregated)?
         ok,
     TResult Function(String error)? error,
     required TResult orElse(),
