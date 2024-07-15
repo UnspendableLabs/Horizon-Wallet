@@ -31,8 +31,9 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
               assetLongname: send.assetInfo.assetLongname,
               description: send.assetInfo.description,
               divisible: send.assetInfo.divisible,
-              locked: send.assetInfo.locked,
-              issuer: send.assetInfo.issuer),
+              ),
+              // locked: send.assetInfo.locked,
+              // issuer: send.assetInfo.issuer),
           quantityNormalized: send.quantityNormalized));
     }
 

@@ -27,7 +27,7 @@ String balancesStateToString(BalancesState state) {
 String resultToString(Result result) {
   return result.when(
     ok: (balances, aggregated) {
-      var assetSummaries = aggregated.entries.map((entry) => '${entry.key}: ${entry.value.toStringAsFixed(2)}').join(', ');
+      var assetSummaries = aggregated.entries.map((entry) => '${entry.key}: ${entry.value.quantity.toStringAsFixed(2)}').join(', ');
 
       return 'OK (${balances.length} balances, $assetSummaries)';
     },
@@ -390,7 +390,7 @@ class _BalancesState extends State<Balances> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           TextSpan(
-                            text: entry.value.toStringAsFixed(8),
+                            text: entry.value.quantityNormalized,
                           ),
                         ],
                       ),

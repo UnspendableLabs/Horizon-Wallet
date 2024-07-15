@@ -13,9 +13,14 @@ class Response<T> {
   final int? resultCount;
   final String? error;
 
-  Response({required this.result, required this.error, this.nextCursor, this.resultCount});
+  Response(
+      {required this.result,
+      required this.error,
+      this.nextCursor,
+      this.resultCount});
 
-  factory Response.fromJson(Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
+  factory Response.fromJson(
+          Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
       _$ResponseFromJson(json, fromJsonT);
 }
 
@@ -72,7 +77,8 @@ class Transaction {
       required this.data,
       required this.supported});
 
-  factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
+  factory Transaction.fromJson(Map<String, dynamic> json) =>
+      _$TransactionFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -87,7 +93,26 @@ class Balance {
     required this.asset,
   });
 
-  factory Balance.fromJson(Map<String, dynamic> json) => _$BalanceFromJson(json);
+  factory Balance.fromJson(Map<String, dynamic> json) =>
+      _$BalanceFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class BalanceVerbose extends Balance {
+  final String quantityNormalized;
+  final AssetInfo assetInfo;
+
+  BalanceVerbose({
+    required super.address,
+    required super.quantity,
+
+    required super.asset,
+    required this.assetInfo,
+    required this.quantityNormalized
+  });
+
+  factory BalanceVerbose.fromJson(Map<String, dynamic> json) =>
+      _$BalanceVerboseFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -115,7 +140,8 @@ class EventCount {
     required this.eventCount,
   });
 
-  factory EventCount.fromJson(Map<String, dynamic> json) => _$EventCountFromJson(json);
+  factory EventCount.fromJson(Map<String, dynamic> json) =>
+      _$EventCountFromJson(json);
 }
 
 // {
@@ -137,20 +163,36 @@ class EventCount {
 //            }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class AssetInfo {
+class Asset {
+  final String asset;
   final String assetLongname;
   final String description;
   final String? issuer;
   final bool divisible;
   final bool locked;
-  const AssetInfo({
+  const Asset({
+    required this.asset,
     required this.assetLongname,
     required this.description,
     required this.divisible,
     required this.locked,
     this.issuer, // TODO: validate shape
   });
-  factory AssetInfo.fromJson(Map<String, dynamic> json) => _$AssetInfoFromJson(json);
+  factory Asset.fromJson(Map<String, dynamic> json) => _$AssetFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetInfo {
+  final String? assetLongname;
+  final String description;
+  final bool divisible;
+  const AssetInfo({
+    required this.assetLongname,
+    required this.description,
+    required this.divisible,
+  });
+  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
+      _$AssetInfoFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -236,7 +278,8 @@ class Expiration {
     required this.type,
     required this.objectId,
   });
-  factory Expiration.fromJson(Map<String, dynamic> json) => _$ExpirationFromJson(json);
+  factory Expiration.fromJson(Map<String, dynamic> json) =>
+      _$ExpirationFromJson(json);
 }
 
 // {
@@ -312,7 +355,8 @@ class Destruction {
     required this.quantityNormalized,
   });
 
-  factory Destruction.fromJson(Map<String, dynamic> json) => _$DestructionFromJson(json);
+  factory Destruction.fromJson(Map<String, dynamic> json) =>
+      _$DestructionFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -359,7 +403,8 @@ class Issuance {
     required this.reset,
   });
 
-  factory Issuance.fromJson(Map<String, dynamic> json) => _$IssuanceFromJson(json);
+  factory Issuance.fromJson(Map<String, dynamic> json) =>
+      _$IssuanceFromJson(json);
 }
 
 @JsonSerializable()
@@ -374,7 +419,8 @@ class ComposeIssuance {
     required this.name,
   });
 
-  factory ComposeIssuance.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceFromJson(json);
+  factory ComposeIssuance.fromJson(Map<String, dynamic> json) =>
+      _$ComposeIssuanceFromJson(json);
 }
 
 @JsonSerializable()
@@ -397,7 +443,8 @@ class ComposeIssuanceParams {
     this.transferDestination,
   });
 
-  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceParamsFromJson(json);
+  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) =>
+      _$ComposeIssuanceParamsFromJson(json);
 }
 
 // Send
@@ -528,7 +575,8 @@ class Dispenser {
     required this.escrowQuantityNormalized,
   });
 
-  factory Dispenser.fromJson(Map<String, dynamic> json) => _$DispenserFromJson(json);
+  factory Dispenser.fromJson(Map<String, dynamic> json) =>
+      _$DispenserFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -559,7 +607,8 @@ class Dispense {
     required this.assetInfo,
   });
 
-  factory Dispense.fromJson(Map<String, dynamic> json) => _$DispenseFromJson(json);
+  factory Dispense.fromJson(Map<String, dynamic> json) =>
+      _$DispenseFromJson(json);
 }
 
 // Sweep
@@ -633,7 +682,8 @@ class SendTxParams {
     required this.memoIsHex,
     required this.useEnhancedSend,
   });
-  factory SendTxParams.fromJson(Map<String, dynamic> json) => _$SendTxParamsFromJson(json);
+  factory SendTxParams.fromJson(Map<String, dynamic> json) =>
+      _$SendTxParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -763,6 +813,13 @@ abstract class V2Api {
   Future<Response<List<Balance>>> getBalancesByAddress(
     @Path("address") String address,
     @Query("verbose") bool verbose, [
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/{address}/balances?verbose=true")
+  Future<Response<List<BalanceVerbose>>> getBalancesByAddressVerbose(
+    @Path("address") String address, [
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
   ]);
@@ -1084,6 +1141,9 @@ abstract class V2Api {
   //     Compose Sweep
   // Assets
   //     Get Valid Assets
+  @GET("/assets/{asset}")
+  Future<Response<Asset>> getAsset(@Path("asset") String asset);
+
   //     Get Asset Info
   //     Get Asset Balances
   //     Get Balance By Address And Asset

@@ -105,6 +105,24 @@ Map<String, dynamic> _$BalanceToJson(Balance instance) => <String, dynamic>{
       'asset': instance.asset,
     };
 
+BalanceVerbose _$BalanceVerboseFromJson(Map<String, dynamic> json) =>
+    BalanceVerbose(
+      address: json['address'] as String,
+      quantity: (json['quantity'] as num).toDouble(),
+      asset: json['asset'] as String,
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$BalanceVerboseToJson(BalanceVerbose instance) =>
+    <String, dynamic>{
+      'address': instance.address,
+      'quantity': instance.quantity,
+      'asset': instance.asset,
+      'quantity_normalized': instance.quantityNormalized,
+      'asset_info': instance.assetInfo,
+    };
+
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
@@ -128,7 +146,8 @@ Map<String, dynamic> _$EventCountToJson(EventCount instance) =>
       'event_count': instance.eventCount,
     };
 
-AssetInfo _$AssetInfoFromJson(Map<String, dynamic> json) => AssetInfo(
+Asset _$AssetFromJson(Map<String, dynamic> json) => Asset(
+      asset: json['asset'] as String,
       assetLongname: json['asset_longname'] as String,
       description: json['description'] as String,
       divisible: json['divisible'] as bool,
@@ -136,12 +155,25 @@ AssetInfo _$AssetInfoFromJson(Map<String, dynamic> json) => AssetInfo(
       issuer: json['issuer'] as String?,
     );
 
-Map<String, dynamic> _$AssetInfoToJson(AssetInfo instance) => <String, dynamic>{
+Map<String, dynamic> _$AssetToJson(Asset instance) => <String, dynamic>{
+      'asset': instance.asset,
       'asset_longname': instance.assetLongname,
       'description': instance.description,
       'issuer': instance.issuer,
       'divisible': instance.divisible,
       'locked': instance.locked,
+    };
+
+AssetInfo _$AssetInfoFromJson(Map<String, dynamic> json) => AssetInfo(
+      assetLongname: json['asset_longname'] as String?,
+      description: json['description'] as String,
+      divisible: json['divisible'] as bool,
+    );
+
+Map<String, dynamic> _$AssetInfoToJson(AssetInfo instance) => <String, dynamic>{
+      'asset_longname': instance.assetLongname,
+      'description': instance.description,
+      'divisible': instance.divisible,
     };
 
 Credit _$CreditFromJson(Map<String, dynamic> json) => Credit(
@@ -617,6 +649,49 @@ class _V2Api implements V2Api {
       (json) => json is List<dynamic>
           ? json
               .map<Balance>((i) => Balance.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<BalanceVerbose>>> getBalancesByAddressVerbose(
+    String address, [
+    int? cursor,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'cursor': cursor,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<BalanceVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/balances?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<BalanceVerbose>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<BalanceVerbose>(
+                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );
@@ -1362,6 +1437,36 @@ class _V2Api implements V2Api {
               .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<Asset>> getAsset(String asset) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<Asset>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/assets/${asset}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<Asset>.fromJson(
+      _result.data!,
+      (json) => Asset.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

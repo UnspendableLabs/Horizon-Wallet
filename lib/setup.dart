@@ -38,6 +38,9 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
+import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -50,8 +53,12 @@ Future<void> setup() async {
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<UtxoRepository>(
       UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
-  injector.registerSingleton<BalanceRepository>(
-      BalanceRepositoryImpl(api: GetIt.I.get<V2Api>(), utxoRepository: GetIt.I.get<UtxoRepository>()));
+  injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
+      api: GetIt.I.get<V2Api>(),
+      utxoRepository: GetIt.I.get<UtxoRepository>()));
+
+  injector.registerSingleton<AssetRepository>(
+      AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl());

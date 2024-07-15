@@ -42,7 +42,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         List<Address> addresses = await addressRepository.getAllByAccountUuid(event.accountUuid);
 
         List<Balance> balances = await balanceRepository.getBalancesForAddress(addresses[0].address);
-        print('BALANCES: ${balances.map((e) => e.quantity).toList()}');
         emit(ComposeSendState(
             addressesState: AddressesState.success(addresses),
             balancesState: BalancesState.success(balances),
