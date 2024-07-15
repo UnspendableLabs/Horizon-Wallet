@@ -750,7 +750,7 @@ class UTXO {
 
 // TODO: inject baseURL ( or make dynamic)
 // @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
-@RestApi(baseUrl: "http://localhost:14000/v2")
+@RestApi(baseUrl: "https://dev.counterparty.io:14000/v2")
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 

@@ -535,14 +535,14 @@ Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
 // RetrofitGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers
+// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element
 
 class _V2Api implements V2Api {
   _V2Api(
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://localhost:14000/v2';
+    baseUrl ??= 'https://dev.counterparty.io:14000/v2';
   }
 
   final Dio _dio;
@@ -572,11 +572,11 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<String>.fromJson(
+    final _value = Response<String>.fromJson(
       _result.data!,
       (json) => json as String,
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -612,7 +612,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Balance>>.fromJson(
+    final _value = Response<List<Balance>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -620,7 +620,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -654,7 +654,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Block>>.fromJson(
+    final _value = Response<List<Block>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -662,7 +662,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -691,11 +691,11 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<Block>.fromJson(
+    final _value = Response<Block>.fromJson(
       _result.data!,
       (json) => Block.fromJson(json as Map<String, dynamic>),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -724,7 +724,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Transaction>>.fromJson(
+    final _value = Response<List<Transaction>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -733,7 +733,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -762,7 +762,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Event>>.fromJson(
+    final _value = Response<List<Event>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -770,7 +770,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -799,7 +799,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<EventCount>>.fromJson(
+    final _value = Response<List<EventCount>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -808,7 +808,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -838,7 +838,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Event>>.fromJson(
+    final _value = Response<List<Event>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -846,7 +846,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -875,7 +875,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Credit>>.fromJson(
+    final _value = Response<List<Credit>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -883,7 +883,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -912,7 +912,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Debit>>.fromJson(
+    final _value = Response<List<Debit>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -920,7 +920,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -949,7 +949,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Expiration>>.fromJson(
+    final _value = Response<List<Expiration>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -958,7 +958,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -987,7 +987,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Cancel>>.fromJson(
+    final _value = Response<List<Cancel>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -995,7 +995,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1024,7 +1024,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Destruction>>.fromJson(
+    final _value = Response<List<Destruction>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -1033,7 +1033,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1061,11 +1061,11 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<Info>.fromJson(
+    final _value = Response<Info>.fromJson(
       _result.data!,
       (json) => Info.fromJson(json as Map<String, dynamic>),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1091,11 +1091,11 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<Unpack>.fromJson(
+    final _value = Response<Unpack>.fromJson(
       _result.data!,
       (json) => Unpack.fromJson(json as Map<String, dynamic>),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1135,11 +1135,11 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<SendTx>.fromJson(
+    final _value = Response<SendTx>.fromJson(
       _result.data!,
       (json) => SendTx.fromJson(json as Map<String, dynamic>),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1173,7 +1173,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Send>>.fromJson(
+    final _value = Response<List<Send>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -1181,7 +1181,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1215,7 +1215,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Issuance>>.fromJson(
+    final _value = Response<List<Issuance>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -1224,7 +1224,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1272,11 +1272,11 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<ComposeIssuance>.fromJson(
+    final _value = Response<ComposeIssuance>.fromJson(
       _result.data!,
       (json) => ComposeIssuance.fromJson(json as Map<String, dynamic>),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1310,7 +1310,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<Transaction>>.fromJson(
+    final _value = Response<List<Transaction>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -1319,7 +1319,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   @override
@@ -1355,7 +1355,7 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = Response<List<UTXO>>.fromJson(
+    final _value = Response<List<UTXO>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
@@ -1363,7 +1363,7 @@ class _V2Api implements V2Api {
               .toList()
           : List.empty(),
     );
-    return value;
+    return _value;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
