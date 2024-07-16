@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -62,31 +63,37 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: OnboardingScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingCreateScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              child:
+                  OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder: (BuildContext context, GoRouterState state, navigationShell) {
+            builder:
+                (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -318,7 +325,8 @@ class MyApp extends StatelessWidget {
         child: MaterialApp.router(
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode.dark, // Automatically switch between light and dark themes
+          themeMode: ThemeMode
+              .light, // Automatically switch between light and dark themes
           routeInformationParser: AppRouter.router.routeInformationParser,
           routerDelegate: AppRouter.router.routerDelegate,
           routeInformationProvider: AppRouter.router.routeInformationProvider,
