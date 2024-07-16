@@ -50,6 +50,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
   String? asset;
   String? fromAddress;
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -192,6 +193,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                             value: "None", label: "None")
                                       ].toList());
                                 }
+
+                                // initialize val
+                                assetController.text = balances[0].asset;
 
                                 return DropdownMenu<String>(
                                     expandedInsets: const EdgeInsets.all(0),
