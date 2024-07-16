@@ -247,6 +247,13 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
     _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
   }
 
+
+  @override
+  void dispose() {
+    _balancesBloc.add(Stop());
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Balances(
