@@ -9,6 +9,8 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_even
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
+import 'package:decimal/decimal.dart';
 
 class ComposeSendPage extends StatelessWidget {
   ComposeSendPage({
@@ -39,6 +41,60 @@ class _ComposeSendPage_ extends StatefulWidget {
   _ComposeSendPageState createState() => _ComposeSendPageState();
 }
 
+class AssetDropdown extends StatefulWidget {
+  final List<Balance> balances;
+  final TextEditingController controller;
+  final void Function(String?) onSelected;
+
+  const AssetDropdown(
+      {super.key,
+      required this.balances,
+      required this.controller,
+      required this.onSelected});
+
+  @override
+  State<AssetDropdown> createState() => _AssetDropdownState();
+}
+
+class _AssetDropdownState extends State<AssetDropdown> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.text = widget.balances[0].asset;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownMenu<String>(
+        expandedInsets: const EdgeInsets.all(0),
+        controller: widget.controller,
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+        ),
+        initialSelection: widget.balances[0].asset,
+        requestFocusOnTap: true,
+        label: const Text('Asset'),
+        onSelected: widget.onSelected,
+        dropdownMenuEntries:
+            widget.balances.map<DropdownMenuEntry<String>>((balance) {
+          return DropdownMenuEntry<String>(
+              value: balance.asset,
+              label: balance.asset,
+              trailingIcon: Text(balance.quantityNormalized));
+        }).toList());
+  }
+}
+
+_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
+  if (balances.isEmpty) {
+    return null;
+  }
+
+  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
+      balances[0];
+}
+
 class _ComposeSendPageState extends State<_ComposeSendPage_> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
@@ -49,7 +105,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   String? asset;
   String? fromAddress;
-
 
   @override
   Widget build(BuildContext context) {
@@ -122,8 +177,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Destination",
-                              suffix: Text(assetController.text),
-                              helper: Text(assetController.text),
                               floatingLabelBehavior:
                                   FloatingLabelBehavior.always),
                           validator: (value) {
@@ -139,9 +192,23 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                             Expanded(
                               child: TextFormField(
                                 controller: quantityController,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
                                   labelText: 'Quantity',
+                                  suffix: Builder(
+                                    builder: (context) {
+                                      Balance? balance =
+                                          _getBalanceForSelectedAsset(
+                                              balances, assetController.text);
+
+                                      if (balance == null) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return Text(
+                                          "${balance.quantityNormalized} max");
+                                    },
+                                  ),
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.always,
                                 ),
@@ -165,9 +232,29 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
                                 validator: (value) {
+                                  Balance? balance =
+                                      _getBalanceForSelectedAsset(
+                                          balances, assetController.text);
+
+                                  if (balance == null) {
+                                    throw Exception(
+                                        "invariant: No balance found for asset");
+                                  }
+
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a quantity';
                                   }
+
+                                  // this works because we still get normalised values
+                                  // for non divisible assets
+                                  Decimal input = Decimal.parse(value);
+                                  Decimal max =
+                                      Decimal.parse(balance.quantityNormalized);
+
+                                  if (input > max) {
+                                    return "quantity exceeds max";
+                                  }
+
                                   return null;
                                 },
                               ),
@@ -194,8 +281,15 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                       ].toList());
                                 }
 
-                                // initialize val
-                                assetController.text = balances[0].asset;
+                                return AssetDropdown(
+                                  balances: balances,
+                                  controller: assetController,
+                                  onSelected: (String? value) {
+                                    setState(() {
+                                      asset = value;
+                                    });
+                                  },
+                                );
 
                                 return DropdownMenu<String>(
                                     expandedInsets: const EdgeInsets.all(0),
