@@ -27,7 +27,8 @@ String balancesStateToString(BalancesState state) {
 String resultToString(Result result) {
   return result.when(
     ok: (balances, aggregated) {
-      var assetSummaries = aggregated.entries.map((entry) => '${entry.key}: ${entry.value.quantity.toStringAsFixed(2)}').join(', ');
+      var assetSummaries =
+          aggregated.entries.map((entry) => '${entry.key}: ${entry.value.quantity.toStringAsFixed(2)}').join(', ');
 
       return 'OK (${balances.length} balances, $assetSummaries)';
     },
@@ -145,10 +146,11 @@ class AddressActions extends StatelessWidget {
                         builder: (context) {
                           return Dialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0), // Updated border radius
+                              borderRadius: BorderRadius.circular(30.0),
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
+                              width: MediaQuery.of(context).size.width * 0.5,
+                              height: MediaQuery.of(context).size.height * 0.75,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: ComposeIssuancePage(),
@@ -191,10 +193,11 @@ class AddressActions extends StatelessWidget {
                         builder: (context) {
                           return Dialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0), // Updated border radius
+                              borderRadius: BorderRadius.circular(30.0),
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.75, // 75% of the page width
+                              width: MediaQuery.of(context).size.width * 0.5,
+                              height: MediaQuery.of(context).size.height * 0.75,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: ComposeSendPage(),
@@ -246,7 +249,6 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
 
     _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
   }
-
 
   @override
   void dispose() {
@@ -327,7 +329,7 @@ class _BalancesState extends State<Balances> {
                               borderRadius: BorderRadius.circular(30.0),
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.75,
+                              width: MediaQuery.of(context).size.width * 0.3,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: QRCodeDialog(key: Key(widget.accountUuid), addresses: addresses),

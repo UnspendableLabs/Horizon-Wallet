@@ -44,9 +44,14 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
 
   String? asset = null;
   String? fromAddress = null;
+
+  bool isDivisible = false;
+  bool isLocked = false;
+  bool isReset = false;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +81,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               loading: () => const SizedBox.shrink(),
               error: (e) => Text(e),
               success: (balances) {
-                // TODO
                 bool isNamedAssetEnabled =
                     balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP' && balance.quantity >= 50000000);
                 return Form(
@@ -104,8 +108,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 label: address.address,
                               );
                             }).toList()),
-
-                        const SizedBox(height: 16.0), // Spacing between inputs
+                        const SizedBox(height: 16.0),
                         TextFormField(
                           controller: nameController,
                           decoration: const InputDecoration(
@@ -122,7 +125,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
+                        const SizedBox(height: 4.0),
                         Builder(builder: (context) {
                           return Row(
                             children: [
@@ -156,10 +159,20 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                       child: const Icon(Icons.info),
                                     )
                                   : const SizedBox.shrink(),
+                              const SizedBox(width: 16.0),
+                              Checkbox(
+                                value: isDivisible,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    isDivisible = value ?? false;
+                                  });
+                                },
+                              ),
+                              const Text('Divisible'),
                             ],
                           );
                         }),
-                        const SizedBox(height: 16.0), // Spacing between inputs
+                        const SizedBox(height: 4.0),
                         TextFormField(
                           controller: quantityController,
                           decoration: const InputDecoration(
@@ -175,7 +188,22 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
+                        const SizedBox(height: 16.0),
+                        TextFormField(
+                          controller: descriptionController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Description',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a description';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16.0),
                         TextFormField(
                           controller: passwordController,
                           obscureText: true,
@@ -192,7 +220,31 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             return null;
                           },
                         ),
-                        const Spacer(),
+                        const SizedBox(height: 16.0),
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: isLocked,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  isLocked = value ?? false;
+                                });
+                              },
+                            ),
+                            const Text('Lock'),
+                            const SizedBox(width: 16.0),
+                            Checkbox(
+                              value: isReset,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  isReset = value ?? false;
+                                });
+                              },
+                            ),
+                            const Text('Reset'),
+                          ],
+                        ),
+                        const SizedBox(height: 4.0),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -203,6 +255,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                       password: passwordController.text,
                                       name: nameController.text,
                                       quantity: double.parse(quantityController.text),
+                                      description: descriptionController.text,
+                                      divisible: isDivisible,
+                                      lock: isLocked,
+                                      reset: isReset,
                                     ));
                               }
                             },
