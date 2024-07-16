@@ -980,7 +980,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("destination") String destination,
     @Query("asset") String asset,
-    @Query("quantity") double quantity, [
+    @Query("quantity") int quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("fee") int? fee,
   ]);

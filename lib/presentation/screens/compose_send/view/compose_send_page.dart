@@ -190,6 +190,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         Row(
                           children: [
                             Expanded(
+                              // TODO: make his type of input it's own component ( e.g. BalanceInput )
                               child: TextFormField(
                                 controller: quantityController,
                                 decoration: InputDecoration(
@@ -225,8 +226,14 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                     }
                                     return oldValue;
                                   }),
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*$')),
+                                  _getBalanceForSelectedAsset(balances,
+                                                  assetController.text)
+                                              ?.assetInfo
+                                              .divisible ??
+                                          false
+                                      ? FilteringTextInputFormatter.allow(
+                                          RegExp(r'^\d*\.?\d*$'))
+                                      : FilteringTextInputFormatter.digitsOnly
                                 ], // Only
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
@@ -291,32 +298,32 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                   },
                                 );
 
-                                return DropdownMenu<String>(
-                                    expandedInsets: const EdgeInsets.all(0),
-                                    controller: assetController,
-                                    inputDecorationTheme:
-                                        const InputDecorationTheme(
-                                      border: OutlineInputBorder(),
-                                      floatingLabelBehavior:
-                                          FloatingLabelBehavior.always,
-                                    ),
-                                    initialSelection: balances[0].asset,
-                                    requestFocusOnTap: true,
-                                    label: const Text('Asset'),
-                                    onSelected: (String? value) {
-                                      setState(() {
-                                        asset = value;
-                                      });
-                                    },
-                                    dropdownMenuEntries: balances
-                                        .map<DropdownMenuEntry<String>>(
-                                            (balance) {
-                                      return DropdownMenuEntry<String>(
-                                          value: balance.asset,
-                                          label: balance.asset,
-                                          trailingIcon:
-                                              Text(balance.quantityNormalized));
-                                    }).toList());
+                                // return DropdownMenu<String>(
+                                //     expandedInsets: const EdgeInsets.all(0),
+                                //     controller: assetController,
+                                //     inputDecorationTheme:
+                                //         const InputDecorationTheme(
+                                //       border: OutlineInputBorder(),
+                                //       floatingLabelBehavior:
+                                //           FloatingLabelBehavior.always,
+                                //     ),
+                                //     initialSelection: balances[0].asset,
+                                //     requestFocusOnTap: true,
+                                //     label: const Text('Asset'),
+                                //     onSelected: (String? value) {
+                                //       setState(() {
+                                //         asset = value;
+                                //       });
+                                //     },
+                                //     dropdownMenuEntries: balances
+                                //         .map<DropdownMenuEntry<String>>(
+                                //             (balance) {
+                                //       return DropdownMenuEntry<String>(
+                                //           value: balance.asset,
+                                //           label: balance.asset,
+                                //           trailingIcon:
+                                //               Text(balance.quantityNormalized));
+                                //     }).toList());
                               }),
                             ),
                           ],
@@ -345,6 +352,28 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           child: ElevatedButton(
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
+                                // TODO: wrap this in function and write some tests
+                                Decimal input =
+                                    Decimal.parse(quantityController.text);
+                                Balance? balance = _getBalanceForSelectedAsset(
+                                    balances, assetController.text);
+                                int quantity;
+
+                                if (balance == null) {
+                                  throw Exception(
+                                      "invariant: No balance found for asset");
+                                }
+
+                                if (balance.assetInfo.divisible) {
+                                  quantity =
+                                      (input * Decimal.fromInt(100000000))
+                                          .toBigInt()
+                                          .toInt();
+                                } else {
+                                  quantity = (input).toBigInt().toInt();
+                                }
+
+
                                 context
                                     .read<ComposeSendBloc>()
                                     .add(SendTransactionEvent(
@@ -353,8 +382,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                       destinationAddress:
                                           destinationAddressController.text,
                                       asset: assetController.text,
-                                      quantity:
-                                          double.parse(quantityController.text),
+                                      quantity: quantity
                                     ));
                               }
                             },
