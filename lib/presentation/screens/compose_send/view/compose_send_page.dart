@@ -7,6 +7,7 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:flutter/services.dart';
 
 class ComposeSendPage extends StatelessWidget {
   ComposeSendPage({
@@ -140,6 +141,22 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.always,
                                 ),
+
+                                inputFormatters: <TextInputFormatter>[
+                                  TextInputFormatter.withFunction(
+                                      (oldValue, newValue) {
+                                    if (newValue.text.isEmpty) {
+                                      return newValue;
+                                    }
+                                    if (double.tryParse(newValue.text) !=
+                                        null) {
+                                      return newValue;
+                                    }
+                                    return oldValue;
+                                  }),
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d*\.?\d*$')),
+                                ], // Only
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
@@ -194,11 +211,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                         .map<DropdownMenuEntry<String>>(
                                             (balance) {
                                       return DropdownMenuEntry<String>(
-                                        value: balance.asset,
-                                        label: balance.asset,
-                                        trailingIcon:
-                                            Text(balance.quantityNormalized)
-                                      );
+                                          value: balance.asset,
+                                          label: balance.asset,
+                                          trailingIcon:
+                                              Text(balance.quantityNormalized));
                                     }).toList());
                               }),
                             ),
