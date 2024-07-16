@@ -78,100 +78,108 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           loading: () => const SizedBox.shrink(),
           error: (e) => Text(e),
           success: (addresses) {
-            return state.balancesState.when(
-              initial: () => const SizedBox.shrink(),
-              loading: () => const SizedBox.shrink(),
-              error: (e) => Text(e),
-              success: (balances) {
-                return Form(
-                  key: _formKey,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        DropdownMenu<String>(
-                            expandedInsets: const EdgeInsets.all(0),
-                            initialSelection:
-                                fromAddress ?? addresses[0].address,
-                            controller: fromAddressController,
-                            requestFocusOnTap: true,
-                            label: const Text('Address'),
-                            onSelected: (String? a) {
-                              setState(() {
-                                fromAddress = a!;
-                              });
-                              // fromAddressController.text = a!;
-                              context
-                                  .read<ComposeSendBloc>()
-                                  .add(FetchBalances(address: a!));
-                            },
-                            dropdownMenuEntries: addresses
-                                .map<DropdownMenuEntry<String>>((address) {
-                              return DropdownMenuEntry<String>(
-                                value: address.address,
-                                label: address.address,
-                              );
-                            }).toList()),
+            return Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    DropdownMenu<String>(
+                        expandedInsets: const EdgeInsets.all(0),
+                        initialSelection: fromAddress ?? addresses[0].address,
+                        controller: fromAddressController,
+                        requestFocusOnTap: true,
+                        label: const Text('Address'),
+                        onSelected: (String? a) {
+                          setState(() {
+                            fromAddress = a!;
+                          });
+                          // fromAddressController.text = a!;
+                          context
+                              .read<ComposeSendBloc>()
+                              .add(FetchBalances(address: a!));
+                        },
+                        dropdownMenuEntries:
+                            addresses.map<DropdownMenuEntry<String>>((address) {
+                          return DropdownMenuEntry<String>(
+                            value: address.address,
+                            label: address.address,
+                          );
+                        }).toList()),
 
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        TextFormField(
-                          controller: destinationAddressController,
-                          decoration: const InputDecoration(
+                    const SizedBox(height: 16.0), // Spacing between inputs
+                    TextFormField(
+                      controller: destinationAddressController,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Destination",
+                          floatingLabelBehavior: FloatingLabelBehavior.always),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a destination address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16.0), // Spacing between inputs
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: quantityController,
+                            decoration: const InputDecoration(
                               border: OutlineInputBorder(),
-                              labelText: "Destination",
+                              labelText: 'Quantity',
                               floatingLabelBehavior:
-                                  FloatingLabelBehavior.always),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a destination address';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: quantityController,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: 'Quantity',
-                                  floatingLabelBehavior:
-                                      FloatingLabelBehavior.always,
-                                ),
-
-                                inputFormatters: <TextInputFormatter>[
-                                  TextInputFormatter.withFunction(
-                                      (oldValue, newValue) {
-                                    if (newValue.text.isEmpty) {
-                                      return newValue;
-                                    }
-                                    if (double.tryParse(newValue.text) !=
-                                        null) {
-                                      return newValue;
-                                    }
-                                    return oldValue;
-                                  }),
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*$')),
-                                ], // Only
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a quantity';
-                                  }
-                                  return null;
-                                },
-                              ),
+                                  FloatingLabelBehavior.always,
                             ),
-                            const SizedBox(
-                                width: 16.0), // Spacing between inputs
-                            Expanded(
-                              child: Builder(builder: (context) {
+
+                            inputFormatters: <TextInputFormatter>[
+                              TextInputFormatter.withFunction(
+                                  (oldValue, newValue) {
+                                if (newValue.text.isEmpty) {
+                                  return newValue;
+                                }
+                                if (double.tryParse(newValue.text) != null) {
+                                  return newValue;
+                                }
+                                return oldValue;
+                              }),
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*$')),
+                            ], // Only
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a quantity';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16.0), // Spacing between inputs
+                        Expanded(
+                          child: Builder(builder: (context) {
+                            return state.balancesState.when(
+                              initial: () => const SizedBox.shrink(),
+                              loading: () => DropdownMenu(
+                                  expandedInsets: const EdgeInsets.all(0),
+                                  inputDecorationTheme:
+                                      const InputDecorationTheme(
+                                    border: OutlineInputBorder(),
+                                    floatingLabelBehavior:
+                                        FloatingLabelBehavior.always,
+                                  ),
+                                  initialSelection: "Loading...",
+                                  enabled: false,
+                                  label: const Text('Asset'),
+                                  dropdownMenuEntries: [
+                                    const DropdownMenuEntry<String>(
+                                        value: "None", label: "None")
+                                  ].toList()),
+                              success: (balances) {
                                 if (balances.isEmpty) {
                                   return DropdownMenu(
                                       expandedInsets: const EdgeInsets.all(0),
@@ -216,60 +224,60 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                           trailingIcon:
                                               Text(balance.quantityNormalized));
                                     }).toList());
-                              }),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        TextFormField(
-                          obscureText: true,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          controller: passwordController,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: "Password",
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.always),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
-                        ),
-                        const Spacer(),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                context
-                                    .read<ComposeSendBloc>()
-                                    .add(SendTransactionEvent(
-                                      sourceAddress: fromAddressController.text,
-                                      password: passwordController.text,
-                                      destinationAddress:
-                                          destinationAddressController.text,
-                                      asset: assetController.text,
-                                      quantity:
-                                          double.parse(quantityController.text),
-                                    ));
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            child: const Text('Submit'),
-                          ),
+                              },
+                              error: (msg) => Text(msg),
+                            );
+                          }),
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
+                    const SizedBox(height: 16.0), // Spacing between inputs
+                    TextFormField(
+                      obscureText: true,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      controller: passwordController,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Password",
+                          floatingLabelBehavior: FloatingLabelBehavior.always),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            context
+                                .read<ComposeSendBloc>()
+                                .add(SendTransactionEvent(
+                                  sourceAddress: fromAddressController.text,
+                                  password: passwordController.text,
+                                  destinationAddress:
+                                      destinationAddressController.text,
+                                  asset: assetController.text,
+                                  quantity:
+                                      double.parse(quantityController.text),
+                                ));
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text('Submit'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         );
