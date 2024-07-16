@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -81,7 +82,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
               initial: () => const SizedBox.shrink(),
               loading: () => const SizedBox.shrink(),
               error: (e) => Text(e),
-              success: (balances) {
+              success: (balances_) {
+                List<Balance> balances = balances_;
                 return Form(
                   key: _formKey,
                   child: Padding(
