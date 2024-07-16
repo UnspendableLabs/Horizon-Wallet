@@ -46,8 +46,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
   TextEditingController assetController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
-  String? asset = null;
-  String? fromAddress = null;
+  String? asset;
+  String? fromAddress;
 
   @override
   Widget build(BuildContext context) {
