@@ -39,7 +39,6 @@ class _ComposeSendPage_ extends StatefulWidget {
 }
 
 class _ComposeSendPageState extends State<_ComposeSendPage_> {
-  final balanceRepository = GetIt.I.get<BalanceRepository>();
   final _formKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
@@ -117,9 +116,11 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         const SizedBox(height: 16.0), // Spacing between inputs
                         TextFormField(
                           controller: destinationAddressController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Destination",
+                              suffix: Text(assetController.text),
+                              helper: Text(assetController.text),
                               floatingLabelBehavior:
                                   FloatingLabelBehavior.always),
                           validator: (value) {
