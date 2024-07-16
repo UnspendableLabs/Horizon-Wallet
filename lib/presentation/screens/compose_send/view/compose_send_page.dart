@@ -373,17 +373,15 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                   quantity = (input).toBigInt().toInt();
                                 }
 
-
-                                context
-                                    .read<ComposeSendBloc>()
-                                    .add(SendTransactionEvent(
-                                      sourceAddress: fromAddressController.text,
-                                      password: passwordController.text,
-                                      destinationAddress:
-                                          destinationAddressController.text,
-                                      asset: assetController.text,
-                                      quantity: quantity
-                                    ));
+                                context.read<ComposeSendBloc>().add(
+                                    SendTransactionEvent(
+                                        sourceAddress:
+                                            fromAddressController.text,
+                                        password: passwordController.text,
+                                        destinationAddress:
+                                            destinationAddressController.text,
+                                        asset: assetController.text,
+                                        quantity: quantity));
                               }
                             },
                             style: ElevatedButton.styleFrom(
