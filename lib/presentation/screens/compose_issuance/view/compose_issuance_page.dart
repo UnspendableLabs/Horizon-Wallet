@@ -48,8 +48,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
 
-  String? asset = null;
-  String? fromAddress = null;
+  String? asset;
+  String? fromAddress;
 
   bool isDivisible = false;
   bool isLocked = false;
