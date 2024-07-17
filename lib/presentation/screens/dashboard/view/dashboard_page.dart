@@ -157,7 +157,7 @@ class AddressActions extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.0),
                             ),
-                            child: Container(
+                            child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.5,
                               child: const Padding(
                                 padding: EdgeInsets.all(16.0),
@@ -203,7 +203,7 @@ class AddressActions extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.0),
                             ),
-                            child: Container(
+                            child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.5,
                               height: MediaQuery.of(context).size.height * 0.75,
                               child: const Padding(
@@ -349,7 +349,7 @@ class _BalancesState extends State<Balances> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.0),
                             ),
-                            child: Container(
+                            child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.3,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),

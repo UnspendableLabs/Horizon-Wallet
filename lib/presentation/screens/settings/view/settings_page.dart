@@ -244,7 +244,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          Container(
+          SizedBox(
             height: MediaQuery.of(context).size.height - 220,
             child: BlocBuilder<AddressesBloc, AddressesState>(
               builder: (context, state) {

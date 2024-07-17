@@ -173,7 +173,7 @@ class _HistoryTableState extends State<HistoryTable>
             rows: _transactions
                 .map(
                   (item) => DataRow(cells: [
-                    DataCell(Container(
+                    DataCell(SizedBox(
                       width: 100,
                       child: Text(item.txHash ?? "",
                           overflow: TextOverflow.ellipsis,

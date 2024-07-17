@@ -31,7 +31,7 @@ class _BalanceDisplayState extends State<BalanceDisplay> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Balance> balances = snapshot.data as List<Balance>;
-          return Container(
+          return SizedBox(
             width: screenWidth - 300,
             child: Row(
               mainAxisSize: MainAxisSize.min,
