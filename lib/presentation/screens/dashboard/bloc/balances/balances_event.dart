@@ -1,4 +1,3 @@
-
 abstract class BalancesEvent {}
 
 class Fetch extends BalancesEvent {

@@ -1,4 +1,3 @@
-
 abstract class ComposeIssuanceEvent {}
 
 class FetchFormData extends ComposeIssuanceEvent {

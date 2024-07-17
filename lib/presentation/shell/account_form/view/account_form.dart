@@ -7,7 +7,6 @@ import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.d
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
-
 final validAccount = RegExp(r"^\d\'$");
 
 class AddAccountForm extends StatefulWidget {
@@ -161,8 +160,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
             const SizedBox(height: 16.0), // Spacing between inputs
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize: const Size(120, 48), // Ensures button doesn't resize
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                minimumSize:
+                    const Size(120, 48), // Ensures button doesn't resize
               ),
               onPressed: () {
                 // Validate will return true if the form is valid, or false if
@@ -194,9 +195,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
               },
               child: state == const RemoteDataState.loading()
                   ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator())
+                      width: 20, height: 20, child: CircularProgressIndicator())
                   : const Text('Submit'),
             ),
           ],

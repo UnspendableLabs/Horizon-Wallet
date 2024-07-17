@@ -113,7 +113,6 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 }
 
 class SettingsPage extends StatelessWidget {
-
   final cacheProvider = GetIt.I.get<CacheProvider>();
   SettingsPage({super.key});
 
