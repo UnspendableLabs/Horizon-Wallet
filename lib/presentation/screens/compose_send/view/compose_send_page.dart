@@ -41,6 +41,37 @@ class _ComposeSendPage_ extends StatefulWidget {
   _ComposeSendPageState createState() => _ComposeSendPageState();
 }
 
+class AssetDropdownLoading extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      DropdownMenu(
+          expandedInsets: const EdgeInsets.all(0),
+          inputDecorationTheme: const InputDecorationTheme(
+            border: OutlineInputBorder(),
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+          ),
+          initialSelection: "",
+          // enabled: false,
+          label: const Text('Asset'),
+          dropdownMenuEntries:
+              [const DropdownMenuEntry<String>(value: "", label: "")].toList()),
+      const Positioned(
+         left: 12,
+         top: 0,
+         bottom: 0,
+        child: Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      ),
+    ]);
+  }
+}
+
 class AssetDropdown extends StatefulWidget {
   final List<Balance> balances;
   final TextEditingController controller;
@@ -105,6 +136,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   String? asset;
   String? fromAddress;
+  Balance? balance_;
 
   @override
   Widget build(BuildContext context) {
@@ -134,269 +166,214 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           loading: () => const SizedBox.shrink(),
           error: (e) => Text(e),
           success: (addresses) {
-            return state.balancesState.when(
-              initial: () => const SizedBox.shrink(),
-              loading: () => const SizedBox.shrink(),
-              error: (e) => Text(e),
-              success: (balances_) {
-                List<Balance> balances = balances_;
-                return Form(
-                  key: _formKey,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        DropdownMenu<String>(
-                            expandedInsets: const EdgeInsets.all(0),
-                            initialSelection:
-                                fromAddress ?? addresses[0].address,
-                            controller: fromAddressController,
-                            requestFocusOnTap: true,
-                            label: const Text('Address'),
-                            onSelected: (String? a) {
-                              setState(() {
-                                fromAddress = a!;
-                              });
-                              // fromAddressController.text = a!;
-                              context
-                                  .read<ComposeSendBloc>()
-                                  .add(FetchBalances(address: a!));
-                            },
-                            dropdownMenuEntries: addresses
-                                .map<DropdownMenuEntry<String>>((address) {
-                              return DropdownMenuEntry<String>(
-                                value: address.address,
-                                label: address.address,
-                              );
-                            }).toList()),
+            return Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    DropdownMenu<String>(
+                        expandedInsets: const EdgeInsets.all(0),
+                        initialSelection: fromAddress ?? addresses[0].address,
+                        controller: fromAddressController,
+                        requestFocusOnTap: true,
+                        label: const Text('Address'),
+                        onSelected: (String? a) {
+                          setState(() {
+                            fromAddress = a!;
+                          });
+                          // fromAddressController.text = a!;
+                          context
+                              .read<ComposeSendBloc>()
+                              .add(FetchBalances(address: a!));
+                        },
+                        dropdownMenuEntries:
+                            addresses.map<DropdownMenuEntry<String>>((address) {
+                          return DropdownMenuEntry<String>(
+                            value: address.address,
+                            label: address.address,
+                          );
+                        }).toList()),
 
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        TextFormField(
-                          controller: destinationAddressController,
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: "Destination",
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.always),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a destination address';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        Row(
-                          children: [
-                            Expanded(
-                              // TODO: make his type of input it's own component ( e.g. BalanceInput )
-                              child: TextFormField(
-                                controller: quantityController,
-                                decoration: InputDecoration(
-                                  border: const OutlineInputBorder(),
-                                  labelText: 'Quantity',
-                                  suffix: Builder(
-                                    builder: (context) {
-                                      Balance? balance =
-                                          _getBalanceForSelectedAsset(
-                                              balances, assetController.text);
-
-                                      if (balance == null) {
-                                        return const SizedBox.shrink();
-                                      }
-
-                                      return Text(
-                                          "${balance.quantityNormalized} max");
-                                    },
-                                  ),
-                                  floatingLabelBehavior:
-                                      FloatingLabelBehavior.always,
-                                ),
-
-                                inputFormatters: <TextInputFormatter>[
-                                  TextInputFormatter.withFunction(
-                                      (oldValue, newValue) {
-                                    if (newValue.text.isEmpty) {
-                                      return newValue;
-                                    }
-                                    if (double.tryParse(newValue.text) !=
-                                        null) {
-                                      return newValue;
-                                    }
-                                    return oldValue;
-                                  }),
-                                  _getBalanceForSelectedAsset(balances,
-                                                  assetController.text)
-                                              ?.assetInfo
-                                              .divisible ??
-                                          false
-                                      ? FilteringTextInputFormatter.allow(
-                                          RegExp(r'^\d*\.?\d*$'))
-                                      : FilteringTextInputFormatter.digitsOnly
-                                ], // Only
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                validator: (value) {
-                                  Balance? balance =
-                                      _getBalanceForSelectedAsset(
-                                          balances, assetController.text);
+                    const SizedBox(height: 16.0), // Spacing between inputs
+                    TextFormField(
+                      controller: destinationAddressController,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Destination",
+                          floatingLabelBehavior: FloatingLabelBehavior.always),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a destination address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16.0), // Spacing between inputs
+                    Row(
+                      children: [
+                        Expanded(
+                            // TODO: make his type of input it's own component ( e.g. BalanceInput )
+                            child: Builder(builder: (context) {
+                          return TextFormField(
+                            controller: quantityController,
+                            decoration: InputDecoration(
+                              border: const OutlineInputBorder(),
+                              labelText: 'Quantity',
+                              suffix: Builder(
+                                builder: (context) {
+                                  Balance? balance = balance_;
 
                                   if (balance == null) {
-                                    throw Exception(
-                                        "invariant: No balance found for asset");
+                                    return const SizedBox.shrink();
                                   }
 
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a quantity';
-                                  }
-
-                                  // this works because we still get normalised values
-                                  // for non divisible assets
-                                  Decimal input = Decimal.parse(value);
-                                  Decimal max =
-                                      Decimal.parse(balance.quantityNormalized);
-
-                                  if (input > max) {
-                                    return "quantity exceeds max";
-                                  }
-
-                                  return null;
+                                  return Text(
+                                      "${balance.quantityNormalized} max");
                                 },
                               ),
-                            ),
-                            const SizedBox(
-                                width: 16.0), // Spacing between inputs
-                            Expanded(
-                              child: Builder(builder: (context) {
-                                if (balances.isEmpty) {
-                                  return DropdownMenu(
-                                      expandedInsets: const EdgeInsets.all(0),
-                                      inputDecorationTheme:
-                                          const InputDecorationTheme(
-                                        border: OutlineInputBorder(),
-                                        floatingLabelBehavior:
-                                            FloatingLabelBehavior.always,
-                                      ),
-                                      initialSelection: "None",
-                                      enabled: false,
-                                      label: const Text('Asset'),
-                                      dropdownMenuEntries: [
-                                        const DropdownMenuEntry<String>(
-                                            value: "None", label: "None")
-                                      ].toList());
-                                }
-
-                                return AssetDropdown(
-                                  balances: balances,
-                                  controller: assetController,
-                                  onSelected: (String? value) {
-                                    setState(() {
-                                      asset = value;
-                                    });
-                                  },
-                                );
-
-                                // return DropdownMenu<String>(
-                                //     expandedInsets: const EdgeInsets.all(0),
-                                //     controller: assetController,
-                                //     inputDecorationTheme:
-                                //         const InputDecorationTheme(
-                                //       border: OutlineInputBorder(),
-                                //       floatingLabelBehavior:
-                                //           FloatingLabelBehavior.always,
-                                //     ),
-                                //     initialSelection: balances[0].asset,
-                                //     requestFocusOnTap: true,
-                                //     label: const Text('Asset'),
-                                //     onSelected: (String? value) {
-                                //       setState(() {
-                                //         asset = value;
-                                //       });
-                                //     },
-                                //     dropdownMenuEntries: balances
-                                //         .map<DropdownMenuEntry<String>>(
-                                //             (balance) {
-                                //       return DropdownMenuEntry<String>(
-                                //           value: balance.asset,
-                                //           label: balance.asset,
-                                //           trailingIcon:
-                                //               Text(balance.quantityNormalized));
-                                //     }).toList());
-                              }),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        TextFormField(
-                          obscureText: true,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          controller: passwordController,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: "Password",
                               floatingLabelBehavior:
-                                  FloatingLabelBehavior.always),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
-                        ),
-                        const Spacer(),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                // TODO: wrap this in function and write some tests
-                                Decimal input =
-                                    Decimal.parse(quantityController.text);
-                                Balance? balance = _getBalanceForSelectedAsset(
-                                    balances, assetController.text);
-                                int quantity;
-
-                                if (balance == null) {
-                                  throw Exception(
-                                      "invariant: No balance found for asset");
-                                }
-
-                                if (balance.assetInfo.divisible) {
-                                  quantity =
-                                      (input * Decimal.fromInt(100000000))
-                                          .toBigInt()
-                                          .toInt();
-                                } else {
-                                  quantity = (input).toBigInt().toInt();
-                                }
-
-                                context.read<ComposeSendBloc>().add(
-                                    SendTransactionEvent(
-                                        sourceAddress:
-                                            fromAddressController.text,
-                                        password: passwordController.text,
-                                        destinationAddress:
-                                            destinationAddressController.text,
-                                        asset: assetController.text,
-                                        quantity: quantity));
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
+                                  FloatingLabelBehavior.always,
                             ),
-                            child: const Text('Submit'),
-                          ),
+
+                            inputFormatters: <TextInputFormatter>[
+                              TextInputFormatter.withFunction(
+                                  (oldValue, newValue) {
+                                if (newValue.text.isEmpty) {
+                                  return newValue;
+                                }
+                                if (double.tryParse(newValue.text) != null) {
+                                  return newValue;
+                                }
+                                return oldValue;
+                              }),
+                              balance_?.assetInfo.divisible ?? false
+                                  ? FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d*\.?\d*$'))
+                                  : FilteringTextInputFormatter.digitsOnly
+                            ], // Only
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            validator: (value) {
+                              Balance? balance = balance_;
+
+                              if (balance == null) {
+                                throw Exception(
+                                    "invariant: No balance found for asset");
+                              }
+
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a quantity';
+                              }
+
+                              // this works because we still get normalised values
+                              // for non divisible assets
+                              Decimal input = Decimal.parse(value);
+                              Decimal max =
+                                  Decimal.parse(balance.quantityNormalized);
+
+                              if (input > max) {
+                                return "quantity exceeds max";
+                              }
+
+                              setState(() {
+                                balance_ = balance;
+                              });
+
+                              return null;
+                            },
+                          );
+                        })),
+                        const SizedBox(width: 16.0), // Spacing between inputs
+                        Expanded(
+                          child: Builder(builder: (context) {
+                            return state.balancesState.maybeWhen(
+                                orElse: () => AssetDropdownLoading(),
+                                success: (balances) {
+                                  if (balances.isEmpty) {
+                                    return AssetDropdownLoading();
+                                  }
+
+                                  return AssetDropdown(
+                                    balances: balances,
+                                    controller: assetController,
+                                    onSelected: (String? value) {
+                                      setState(() {
+                                        asset = value;
+                                      });
+                                    },
+                                  );
+                                });
+                          }),
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
+                    const SizedBox(height: 16.0), // Spacing between inputs
+                    TextFormField(
+                      obscureText: true,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      controller: passwordController,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Password",
+                          floatingLabelBehavior: FloatingLabelBehavior.always),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            // TODO: wrap this in function and write some tests
+                            Decimal input =
+                                Decimal.parse(quantityController.text);
+
+                            Balance? balance = balance_;
+
+                            int quantity;
+
+                            if (balance == null) {
+                              throw Exception(
+                                  "invariant: No balance found for asset");
+                            }
+
+                            if (balance.assetInfo.divisible) {
+                              quantity = (input * Decimal.fromInt(100000000))
+                                  .toBigInt()
+                                  .toInt();
+                            } else {
+                              quantity = (input).toBigInt().toInt();
+                            }
+
+                            context.read<ComposeSendBloc>().add(
+                                SendTransactionEvent(
+                                    sourceAddress: fromAddressController.text,
+                                    password: passwordController.text,
+                                    destinationAddress:
+                                        destinationAddressController.text,
+                                    asset: assetController.text,
+                                    quantity: quantity));
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text('Submit'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         );
