@@ -296,8 +296,12 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
 
   @override
   void dispose() {
-    controllers.forEach((controller) => controller.dispose());
-    focusNodes.forEach((node) => node.dispose());
+    for (var controller in controllers) {
+      controller.dispose();
+    }
+    for (var node in focusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
