@@ -79,10 +79,10 @@ class _HistoryTableState extends State<HistoryTable>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          tabs: [
-            const Tab(text: 'Sends'),
-            const Tab(text: 'Issuances'),
-            const Tab(text: 'Transactions'),
+          tabs: const [
+            Tab(text: 'Sends'),
+            Tab(text: 'Issuances'),
+            Tab(text: 'Transactions'),
           ],
         ),
       ),
