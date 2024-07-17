@@ -8,8 +8,8 @@ import 'package:get_it/get_it.dart';
 
 class MaterializedAddressRepositoryImpl
     implements MaterializedAddressRepository {
-  AddressService _addressService = GetIt.I.get<AddressService>();
-  WalletRepository _walletRepository = GetIt.I.get<WalletRepository>();
+  final AddressService _addressService = GetIt.I.get<AddressService>();
+  final WalletRepository _walletRepository = GetIt.I.get<WalletRepository>();
   final encryptionService = GetIt.I<EncryptionService>();
 
   @override

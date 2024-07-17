@@ -14,7 +14,7 @@ class HistoryTable extends StatefulWidget {
 
 class _HistoryTableState extends State<HistoryTable>
     with SingleTickerProviderStateMixin {
-  List<Map<String, dynamic>> _data = [];
+  final List<Map<String, dynamic>> _data = [];
   List<send_entity.Send> _sends = [];
   List<issuance_entity.Issuance> _issuances = [];
   List<transaction_entity.Transaction> _transactions = [];
