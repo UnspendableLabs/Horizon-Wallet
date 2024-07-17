@@ -371,7 +371,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     onPressed: () => context
                         .read<OnboardingCreateBloc>()
                         .add(GoBackToMnemonic()),
-                    child: const Text('Back'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
                       foregroundColor: Colors.white,
@@ -379,6 +378,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
+                    child: const Text('Back'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -389,7 +389,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                           .read<OnboardingCreateBloc>()
                           .add(ConfirmMnemonic());
                     },
-                    child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
@@ -397,6 +396,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
+                    child: const Text('Continue'),
                   ),
                 ),
               ],

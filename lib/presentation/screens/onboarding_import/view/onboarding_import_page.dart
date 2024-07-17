@@ -352,7 +352,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                             importFormat: selectedFormat!,
                           ));
                     },
-                    child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
@@ -360,6 +359,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
+                    child: const Text('Continue'),
                   ),
                 ),
               ],
