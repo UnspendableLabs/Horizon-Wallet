@@ -8,6 +8,8 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingImportPage extends StatelessWidget {
+  const OnboardingImportPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(

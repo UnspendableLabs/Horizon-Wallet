@@ -38,6 +38,8 @@ class _ComposeSendPage_ extends StatefulWidget {
 }
 
 class AssetDropdownLoading extends StatelessWidget {
+  const AssetDropdownLoading({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
