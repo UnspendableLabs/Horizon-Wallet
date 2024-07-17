@@ -243,6 +243,16 @@ class MyApp extends StatelessWidget {
     dialogTheme: const DialogTheme(
       backgroundColor: Color.fromRGBO(246, 247, 250, 1),
     ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith<Color?>(
+        (Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
+            return const Color.fromRGBO(68, 121, 252, 1); // Color when selected
+          }
+          return null; // Use default color when not selected
+        },
+      ),
+    ),
   );
 
   final ThemeData darkTheme = ThemeData(
@@ -274,6 +284,16 @@ class MyApp extends StatelessWidget {
     ),
     dialogTheme: const DialogTheme(
       backgroundColor: Color.fromRGBO(35, 35, 58, 1),
+    ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith<Color?>(
+        (Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
+            return const Color.fromRGBO(146, 209, 254, 1); // Color when selected
+          }
+          return null; // Use default color when not selected
+        },
+      ),
     ),
   );
 

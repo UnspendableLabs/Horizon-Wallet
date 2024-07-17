@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
@@ -44,9 +45,14 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
 
   String? asset = null;
   String? fromAddress = null;
+
+  bool isDivisible = false;
+  bool isLocked = false;
+  bool isReset = false;
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +82,11 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               loading: () => const SizedBox.shrink(),
               error: (e) => Text(e),
               success: (balances) {
-                // TODO
-                bool isNamedAssetEnabled =
-                    balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP' && balance.quantity >= 50000000);
+                bool hasXCPBalance = balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP');
+                Balance? xcpBalance = hasXCPBalance ? balances.firstWhere((element) => element.asset == 'XCP') : null;
+                bool isNamedAssetEnabled = xcpBalance != null && xcpBalance.quantity >= 50000000;
+                String quantity = xcpBalance != null ? xcpBalance.quantityNormalized : '0';
+
                 return Form(
                   key: _formKey,
                   child: Padding(
@@ -104,8 +112,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 label: address.address,
                               );
                             }).toList()),
-
-                        const SizedBox(height: 16.0), // Spacing between inputs
+                        const SizedBox(height: 16.0),
                         TextFormField(
                           controller: nameController,
                           decoration: const InputDecoration(
@@ -117,49 +124,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               return 'Please enter a name for your asset';
                             }
                             if (!isNamedAssetEnabled && !RegExp(r'^A\d+$').hasMatch(value)) {
-                              return 'You must have at least 0.5 XCP to create a named asset';
+                              return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
                             }
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
-                        Builder(builder: (context) {
-                          return Row(
-                            children: [
-                              Checkbox(
-                                mouseCursor: isNamedAssetEnabled ? SystemMouseCursors.basic : SystemMouseCursors.forbidden,
-                                fillColor: WidgetStateProperty.resolveWith<Color>(
-                                  (Set<WidgetState> states) {
-                                    if (states.contains(WidgetState.disabled)) {
-                                      return isNamedAssetEnabled ? Colors.transparent : Colors.grey;
-                                    }
-                                    return Colors.transparent;
-                                  },
-                                ),
-                                value: isNamedAssetEnabled,
-                                onChanged: isNamedAssetEnabled
-                                    ? (bool? value) {
-                                        setState(() {
-                                          isNamedAssetEnabled = value ?? false;
-                                        });
-                                      }
-                                    : null,
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                child: Text('Named Asset'),
-                              ),
-                              !isNamedAssetEnabled
-                                  ? Tooltip(
-                                      message:
-                                          'You must have at least 0.5 XCP to create a named asset. ', // TODO: format quantity
-                                      child: const Icon(Icons.info),
-                                    )
-                                  : const SizedBox.shrink(),
-                            ],
-                          );
-                        }),
-                        const SizedBox(height: 16.0), // Spacing between inputs
+                        const SizedBox(height: 16.0),
                         TextFormField(
                           controller: quantityController,
                           decoration: const InputDecoration(
@@ -175,7 +145,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16.0), // Spacing between inputs
+                        const SizedBox(height: 16.0),
+                        TextFormField(
+                          controller: descriptionController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Description',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                          ),
+                        ),
+                        const SizedBox(height: 16.0),
                         TextFormField(
                           controller: passwordController,
                           obscureText: true,
@@ -192,7 +171,85 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             return null;
                           },
                         ),
-                        const Spacer(),
+                        const SizedBox(height: 16.0),
+                        Column(
+                          children: [
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isDivisible,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isDivisible = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Text('Divisible', style: TextStyle(color: Colors.black87)),
+                              ],
+                            ),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0), // Width of the checkbox and some padding
+                                Expanded(
+                                  child: Text(
+                                    'Whether this asset is divisible or not. Defaults to true.',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isLocked,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isLocked = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Text('Lock', style: TextStyle(color: Colors.black87)),
+                              ],
+                            ),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0), // Width of the checkbox and some padding
+                                Expanded(
+                                  child: Text(
+                                    'Whether this issuance should lock supply of this asset forever. Defaults to false.',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16.0),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isReset,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isReset = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Text('Reset', style: TextStyle(color: Colors.black87)),
+                              ],
+                            ),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0), // Width of the checkbox and some padding
+                                Expanded(
+                                  child: Text(
+                                    'Wether this issuance should reset any existing supply. Defaults to false.',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4.0),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -203,6 +260,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                       password: passwordController.text,
                                       name: nameController.text,
                                       quantity: double.parse(quantityController.text),
+                                      description: descriptionController.text,
+                                      divisible: isDivisible,
+                                      lock: isLocked,
+                                      reset: isReset,
                                     ));
                               }
                             },
