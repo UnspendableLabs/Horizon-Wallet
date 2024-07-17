@@ -57,9 +57,9 @@ class AssetDropdownLoading extends StatelessWidget {
           dropdownMenuEntries:
               [const DropdownMenuEntry<String>(value: "", label: "")].toList()),
       const Positioned(
-         left: 12,
-         top: 0,
-         bottom: 0,
+        left: 12,
+        top: 0,
+        bottom: 0,
         child: Center(
           child: SizedBox(
             width: 20,
@@ -181,6 +181,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         label: const Text('Address'),
                         onSelected: (String? a) {
                           setState(() {
+                            balance_ = null;
                             fromAddress = a!;
                           });
                           // fromAddressController.text = a!;
@@ -221,18 +222,23 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
                               labelText: 'Quantity',
-                              suffix: Builder(
-                                builder: (context) {
-                                  Balance? balance = balance_;
+                              suffix: Builder(builder: (context) {
+                                return state.balancesState.maybeWhen(
+                                    orElse: () => const SizedBox.shrink(),
+                                    success: (balances_) {
+                                      List<Balance> balances = balances_;
 
-                                  if (balance == null) {
-                                    return const SizedBox.shrink();
-                                  }
+                                      Balance? balance =
+                                          balance_ ?? balances.firstOrNull;
 
-                                  return Text(
-                                      "${balance.quantityNormalized} max");
-                                },
-                              ),
+                                      if (balance == null) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return Text(
+                                          "${balance.quantityNormalized} max");
+                                    });
+                              }),
                               floatingLabelBehavior:
                                   FloatingLabelBehavior.always,
                             ),
@@ -299,8 +305,18 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                     balances: balances,
                                     controller: assetController,
                                     onSelected: (String? value) {
+                                      Balance? balance =
+                                          _getBalanceForSelectedAsset(
+                                              balances, value!);
+
+                                      if (balance == null) {
+                                        throw Exception(
+                                            "invariant: No balance found for asset");
+                                      }
+
                                       setState(() {
                                         asset = value;
+                                        balance_ = balance;
                                       });
                                     },
                                   );
