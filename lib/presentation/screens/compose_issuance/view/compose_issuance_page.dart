@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
@@ -81,8 +82,11 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               loading: () => const SizedBox.shrink(),
               error: (e) => Text(e),
               success: (balances) {
-                bool isNamedAssetEnabled =
-                    balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP' && balance.quantity >= 50000000);
+                bool hasXCPBalance = balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP');
+                Balance? xcpBalance = hasXCPBalance ? balances.firstWhere((element) => element.asset == 'XCP') : null;
+                bool isNamedAssetEnabled = xcpBalance != null && xcpBalance.quantity >= 50000000;
+                String quantity = xcpBalance != null ? xcpBalance.quantityNormalized : '0';
+
                 return Form(
                   key: _formKey,
                   child: Padding(
@@ -120,59 +124,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               return 'Please enter a name for your asset';
                             }
                             if (!isNamedAssetEnabled && !RegExp(r'^A\d+$').hasMatch(value)) {
-                              return 'You must have at least 0.5 XCP to create a named asset';
+                              return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
                             }
                             return null;
                           },
                         ),
-                        const SizedBox(height: 4.0),
-                        Builder(builder: (context) {
-                          return Row(
-                            children: [
-                              Checkbox(
-                                mouseCursor: isNamedAssetEnabled ? SystemMouseCursors.basic : SystemMouseCursors.forbidden,
-                                fillColor: WidgetStateProperty.resolveWith<Color>(
-                                  (Set<WidgetState> states) {
-                                    if (states.contains(WidgetState.disabled)) {
-                                      return isNamedAssetEnabled ? Colors.transparent : Colors.grey;
-                                    }
-                                    return Colors.transparent;
-                                  },
-                                ),
-                                value: isNamedAssetEnabled,
-                                onChanged: isNamedAssetEnabled
-                                    ? (bool? value) {
-                                        setState(() {
-                                          isNamedAssetEnabled = value ?? false;
-                                        });
-                                      }
-                                    : null,
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                child: Text('Named Asset'),
-                              ),
-                              !isNamedAssetEnabled
-                                  ? Tooltip(
-                                      message:
-                                          'You must have at least 0.5 XCP to create a named asset. ', // TODO: format quantity
-                                      child: const Icon(Icons.info),
-                                    )
-                                  : const SizedBox.shrink(),
-                              const SizedBox(width: 16.0),
-                              Checkbox(
-                                value: isDivisible,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isDivisible = value ?? false;
-                                  });
-                                },
-                              ),
-                              const Text('Divisible'),
-                            ],
-                          );
-                        }),
-                        const SizedBox(height: 4.0),
+                        const SizedBox(height: 16.0),
                         TextFormField(
                           controller: quantityController,
                           decoration: const InputDecoration(
@@ -196,12 +153,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             labelText: 'Description',
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a description';
-                            }
-                            return null;
-                          },
                         ),
                         const SizedBox(height: 16.0),
                         TextFormField(
@@ -221,27 +172,81 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           },
                         ),
                         const SizedBox(height: 16.0),
-                        Row(
+                        Column(
                           children: [
-                            Checkbox(
-                              value: isLocked,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  isLocked = value ?? false;
-                                });
-                              },
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isDivisible,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isDivisible = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Text('Divisible', style: TextStyle(color: Colors.black87)),
+                              ],
                             ),
-                            const Text('Lock'),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0), // Width of the checkbox and some padding
+                                Expanded(
+                                  child: Text(
+                                    'Whether this asset is divisible or not. Defaults to true.',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isLocked,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isLocked = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Text('Lock', style: TextStyle(color: Colors.black87)),
+                              ],
+                            ),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0), // Width of the checkbox and some padding
+                                Expanded(
+                                  child: Text(
+                                    'Whether this issuance should lock supply of this asset forever. Defaults to false.',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(width: 16.0),
-                            Checkbox(
-                              value: isReset,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  isReset = value ?? false;
-                                });
-                              },
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isReset,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isReset = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Text('Reset', style: TextStyle(color: Colors.black87)),
+                              ],
                             ),
-                            const Text('Reset'),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0), // Width of the checkbox and some padding
+                                Expanded(
+                                  child: Text(
+                                    'Wether this issuance should reset any existing supply. Defaults to false.',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                         const SizedBox(height: 4.0),
