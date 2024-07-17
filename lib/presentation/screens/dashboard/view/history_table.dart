@@ -156,8 +156,9 @@ class _HistoryTableState extends State<HistoryTable>
   }
 
   Widget _buildTransactionsTable() {
-    if (_transactions.isEmpty)
+    if (_transactions.isEmpty) {
       return const Text('No transactions at this address');
+    }
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
