@@ -23,7 +23,7 @@ class ComposeSendPage extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeSendBloc()
           ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
-        child: _ComposeSendPage_(),
+        child: const _ComposeSendPage_(),
       ),
       orElse: () => const SizedBox.shrink(),
     );

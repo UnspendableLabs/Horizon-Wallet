@@ -22,7 +22,7 @@ class ComposeIssuancePage extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeIssuanceBloc()
           ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
-        child: _ComposeIssuancePage_(),
+        child: const _ComposeIssuancePage_(),
       ),
       orElse: () => const SizedBox.shrink(),
     );

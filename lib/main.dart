@@ -109,14 +109,14 @@ class AppRouter {
                 GoRoute(
                     path: "/compose/send",
                     builder: (context, state) {
-                      return ComposeSendPage();
+                      return const ComposeSendPage();
                     })
               ]),
               StatefulShellBranch(routes: [
                 GoRoute(
                   path: "/compose/issuance",
                   builder: (context, state) {
-                    return ComposeIssuancePage();
+                    return const ComposeIssuancePage();
                   },
                 ),
               ]),
