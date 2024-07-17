@@ -3,11 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
+import 'package:decimal/decimal.dart';
 
 class ComposeSendPage extends StatelessWidget {
   ComposeSendPage({
@@ -38,8 +41,61 @@ class _ComposeSendPage_ extends StatefulWidget {
   _ComposeSendPageState createState() => _ComposeSendPageState();
 }
 
+class AssetDropdown extends StatefulWidget {
+  final List<Balance> balances;
+  final TextEditingController controller;
+  final void Function(String?) onSelected;
+
+  const AssetDropdown(
+      {super.key,
+      required this.balances,
+      required this.controller,
+      required this.onSelected});
+
+  @override
+  State<AssetDropdown> createState() => _AssetDropdownState();
+}
+
+class _AssetDropdownState extends State<AssetDropdown> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.text = widget.balances[0].asset;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownMenu<String>(
+        expandedInsets: const EdgeInsets.all(0),
+        controller: widget.controller,
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+        ),
+        initialSelection: widget.balances[0].asset,
+        requestFocusOnTap: true,
+        label: const Text('Asset'),
+        onSelected: widget.onSelected,
+        dropdownMenuEntries:
+            widget.balances.map<DropdownMenuEntry<String>>((balance) {
+          return DropdownMenuEntry<String>(
+              value: balance.asset,
+              label: balance.asset,
+              trailingIcon: Text(balance.quantityNormalized));
+        }).toList());
+  }
+}
+
+_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
+  if (balances.isEmpty) {
+    return null;
+  }
+
+  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
+      balances[0];
+}
+
 class _ComposeSendPageState extends State<_ComposeSendPage_> {
-  final balanceRepository = GetIt.I.get<BalanceRepository>();
   final _formKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
@@ -47,8 +103,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
   TextEditingController assetController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
-  String? asset = null;
-  String? fromAddress = null;
+  String? asset;
+  String? fromAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +138,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
               initial: () => const SizedBox.shrink(),
               loading: () => const SizedBox.shrink(),
               error: (e) => Text(e),
-              success: (balances) {
+              success: (balances_) {
+                List<Balance> balances = balances_;
                 return Form(
                   key: _formKey,
                   child: Padding(
@@ -117,7 +174,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         const SizedBox(height: 16.0), // Spacing between inputs
                         TextFormField(
                           controller: destinationAddressController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Destination",
                               floatingLabelBehavior:
@@ -133,11 +190,26 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         Row(
                           children: [
                             Expanded(
+                              // TODO: make his type of input it's own component ( e.g. BalanceInput )
                               child: TextFormField(
                                 controller: quantityController,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
                                   labelText: 'Quantity',
+                                  suffix: Builder(
+                                    builder: (context) {
+                                      Balance? balance =
+                                          _getBalanceForSelectedAsset(
+                                              balances, assetController.text);
+
+                                      if (balance == null) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return Text(
+                                          "${balance.quantityNormalized} max");
+                                    },
+                                  ),
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.always,
                                 ),
@@ -154,16 +226,42 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                     }
                                     return oldValue;
                                   }),
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*$')),
+                                  _getBalanceForSelectedAsset(balances,
+                                                  assetController.text)
+                                              ?.assetInfo
+                                              .divisible ??
+                                          false
+                                      ? FilteringTextInputFormatter.allow(
+                                          RegExp(r'^\d*\.?\d*$'))
+                                      : FilteringTextInputFormatter.digitsOnly
                                 ], // Only
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
                                 validator: (value) {
+                                  Balance? balance =
+                                      _getBalanceForSelectedAsset(
+                                          balances, assetController.text);
+
+                                  if (balance == null) {
+                                    throw Exception(
+                                        "invariant: No balance found for asset");
+                                  }
+
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a quantity';
                                   }
+
+                                  // this works because we still get normalised values
+                                  // for non divisible assets
+                                  Decimal input = Decimal.parse(value);
+                                  Decimal max =
+                                      Decimal.parse(balance.quantityNormalized);
+
+                                  if (input > max) {
+                                    return "quantity exceeds max";
+                                  }
+
                                   return null;
                                 },
                               ),
@@ -190,32 +288,42 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                       ].toList());
                                 }
 
-                                return DropdownMenu<String>(
-                                    expandedInsets: const EdgeInsets.all(0),
-                                    controller: assetController,
-                                    inputDecorationTheme:
-                                        const InputDecorationTheme(
-                                      border: OutlineInputBorder(),
-                                      floatingLabelBehavior:
-                                          FloatingLabelBehavior.always,
-                                    ),
-                                    initialSelection: balances[0].asset,
-                                    requestFocusOnTap: true,
-                                    label: const Text('Asset'),
-                                    onSelected: (String? value) {
-                                      setState(() {
-                                        asset = value;
-                                      });
-                                    },
-                                    dropdownMenuEntries: balances
-                                        .map<DropdownMenuEntry<String>>(
-                                            (balance) {
-                                      return DropdownMenuEntry<String>(
-                                          value: balance.asset,
-                                          label: balance.asset,
-                                          trailingIcon:
-                                              Text(balance.quantityNormalized));
-                                    }).toList());
+                                return AssetDropdown(
+                                  balances: balances,
+                                  controller: assetController,
+                                  onSelected: (String? value) {
+                                    setState(() {
+                                      asset = value;
+                                    });
+                                  },
+                                );
+
+                                // return DropdownMenu<String>(
+                                //     expandedInsets: const EdgeInsets.all(0),
+                                //     controller: assetController,
+                                //     inputDecorationTheme:
+                                //         const InputDecorationTheme(
+                                //       border: OutlineInputBorder(),
+                                //       floatingLabelBehavior:
+                                //           FloatingLabelBehavior.always,
+                                //     ),
+                                //     initialSelection: balances[0].asset,
+                                //     requestFocusOnTap: true,
+                                //     label: const Text('Asset'),
+                                //     onSelected: (String? value) {
+                                //       setState(() {
+                                //         asset = value;
+                                //       });
+                                //     },
+                                //     dropdownMenuEntries: balances
+                                //         .map<DropdownMenuEntry<String>>(
+                                //             (balance) {
+                                //       return DropdownMenuEntry<String>(
+                                //           value: balance.asset,
+                                //           label: balance.asset,
+                                //           trailingIcon:
+                                //               Text(balance.quantityNormalized));
+                                //     }).toList());
                               }),
                             ),
                           ],
@@ -244,17 +352,36 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           child: ElevatedButton(
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                context
-                                    .read<ComposeSendBloc>()
-                                    .add(SendTransactionEvent(
-                                      sourceAddress: fromAddressController.text,
-                                      password: passwordController.text,
-                                      destinationAddress:
-                                          destinationAddressController.text,
-                                      asset: assetController.text,
-                                      quantity:
-                                          double.parse(quantityController.text),
-                                    ));
+                                // TODO: wrap this in function and write some tests
+                                Decimal input =
+                                    Decimal.parse(quantityController.text);
+                                Balance? balance = _getBalanceForSelectedAsset(
+                                    balances, assetController.text);
+                                int quantity;
+
+                                if (balance == null) {
+                                  throw Exception(
+                                      "invariant: No balance found for asset");
+                                }
+
+                                if (balance.assetInfo.divisible) {
+                                  quantity =
+                                      (input * Decimal.fromInt(100000000))
+                                          .toBigInt()
+                                          .toInt();
+                                } else {
+                                  quantity = (input).toBigInt().toInt();
+                                }
+
+                                context.read<ComposeSendBloc>().add(
+                                    SendTransactionEvent(
+                                        sourceAddress:
+                                            fromAddressController.text,
+                                        password: passwordController.text,
+                                        destinationAddress:
+                                            destinationAddressController.text,
+                                        asset: assetController.text,
+                                        quantity: quantity));
                               }
                             },
                             style: ElevatedButton.styleFrom(

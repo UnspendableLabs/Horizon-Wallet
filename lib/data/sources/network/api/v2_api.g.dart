@@ -1178,7 +1178,7 @@ class _V2Api implements V2Api {
     String address,
     String destination,
     String asset,
-    double quantity, [
+    int quantity, [
     bool? allowUnconfirmedInputs,
     int? fee,
   ]) async {

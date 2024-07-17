@@ -15,7 +15,7 @@ class FetchBalances extends ComposeSendEvent {
 class SendTransactionEvent extends ComposeSendEvent {
   final String sourceAddress;
   final String destinationAddress;
-  final double quantity;
+  final int quantity;
   final String asset;
   final String password;
   final String? memo;

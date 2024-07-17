@@ -3,7 +3,7 @@ import 'package:horizon/domain/entities/raw_transaction.dart';
 
 abstract class ComposeRepository {
   Future<RawTransaction> composeSend(
-      String sourceAddress, String destination, String asset, double quantity,
+      String sourceAddress, String destination, String asset, int quantity,
       [bool? allowUnconfirmedTx, int? fee]);
   Future<ComposeIssuance> composeIssuance(
       String sourceAddress, String name, double quantity,
