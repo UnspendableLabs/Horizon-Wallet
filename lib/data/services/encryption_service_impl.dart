@@ -21,7 +21,7 @@ class EncryptionServiceImpl implements EncryptionService {
     final iv = IV(base64Decode(_generateRandomIV()));
     final key = _generate32ByteKeyFromPassword(password);
     final encrypter = Encrypter(AES(key));
-    final cypher =  encrypter.encrypt(data, iv: iv).base64;
+    final cypher = encrypter.encrypt(data, iv: iv).base64;
     return iv.base64 + cypher;
   }
 

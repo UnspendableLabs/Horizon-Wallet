@@ -289,7 +289,8 @@ class MyApp extends StatelessWidget {
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(146, 209, 254, 1); // Color when selected
+            return const Color.fromRGBO(
+                146, 209, 254, 1); // Color when selected
           }
           return null; // Use default color when not selected
         },

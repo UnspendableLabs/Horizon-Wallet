@@ -1,4 +1,3 @@
-
 // this is not comprehensivew, just adding minimal set of fields that we need
 class Asset {
   final String asset;

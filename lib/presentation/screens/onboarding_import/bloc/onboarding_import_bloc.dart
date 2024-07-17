@@ -29,7 +29,8 @@ class OnboardingImportBloc
   OnboardingImportBloc() : super(OnboardingImportState()) {
     on<PasswordChanged>((event, emit) {
       if (event.password.length < 8) {
-        emit(state.copyWith(passwordError: "Password must be at least 8 characters."));
+        emit(state.copyWith(
+            passwordError: "Password must be at least 8 characters."));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
@@ -79,9 +80,6 @@ class OnboardingImportBloc
       try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
-
-
-
             Wallet wallet =
                 await walletService.deriveRoot(state.mnemonic, state.password!);
             String decryptedPrivKey = await encryptionService.decrypt(
@@ -163,7 +161,8 @@ class OnboardingImportBloc
 
   String _getCoinType() {
     // bool isTestnet = dotenv.get('TEST') == 'true';
-    bool isTestnet = const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
+    bool isTestnet =
+        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? '1' : '0';
   }
 }

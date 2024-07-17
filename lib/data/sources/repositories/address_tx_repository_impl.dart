@@ -28,12 +28,12 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
           msgIndex: send.msgIndex,
           memo: send.memo,
           assetInfo: asset_entity.AssetInfo(
-              assetLongname: send.assetInfo.assetLongname,
-              description: send.assetInfo.description,
-              divisible: send.assetInfo.divisible,
-              ),
-              // locked: send.assetInfo.locked,
-              // issuer: send.assetInfo.issuer),
+            assetLongname: send.assetInfo.assetLongname,
+            description: send.assetInfo.description,
+            divisible: send.assetInfo.divisible,
+          ),
+          // locked: send.assetInfo.locked,
+          // issuer: send.assetInfo.issuer),
           quantityNormalized: send.quantityNormalized));
     }
 

@@ -49,7 +49,6 @@ class BalanceRepositoryImpl implements BalanceRepository {
           await api.getBalancesByAddressVerbose(address, cursor, limit);
 
       for (var a in response.result ?? []) {
-
         balances.add(b.Balance(
             address: address,
             quantity: a.quantity,

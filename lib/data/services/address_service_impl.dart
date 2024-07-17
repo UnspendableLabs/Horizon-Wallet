@@ -186,7 +186,8 @@ class AddressServiceImpl extends AddressService {
   }
 
   _getNetwork() {
-    bool isTestnet = const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
+    bool isTestnet =
+        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
 }

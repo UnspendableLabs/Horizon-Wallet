@@ -36,7 +36,8 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
       emit(const AddressesState.loading());
 
       try {
-        List<Address> addresses = await addressRepository.getAllByAccountUuid(event.accountUuid);
+        List<Address> addresses =
+            await addressRepository.getAllByAccountUuid(event.accountUuid);
 
         emit(AddressesState.success(addresses));
       } catch (e) {
@@ -49,7 +50,8 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
         emit(const AddressesState.loading());
 
         try {
-          Account? account = await accountRepository.getAccountByUuid(event.accountUuid);
+          Account? account =
+              await accountRepository.getAccountByUuid(event.accountUuid);
 
           if (account == null) {
             throw Exception("invariant: account not found");
@@ -63,7 +65,8 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
             throw Exception("invariant: wallet is null");
           }
 
-          String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, event.password);
+          String decryptedPrivKey = await encryptionService.decrypt(
+              wallet.encryptedPrivKey, event.password);
 
           for (int i = 0; i < event.gapLimit; i++) {
             if (_cache.containsKey((account, i))) {
@@ -108,7 +111,9 @@ EventTransformer<Event> debounce<Event>(Duration duration) {
         StreamTransformer<Event, Event>.fromHandlers(
           handleData: (Event event, EventSink<Event> sink) => sink.add(event),
           handleDone: (EventSink<Event> sink) => sink.close(),
-          handleError: (Object error, StackTrace stackTrace, EventSink<Event> sink) => sink.addError(error, stackTrace),
+          handleError:
+              (Object error, StackTrace stackTrace, EventSink<Event> sink) =>
+                  sink.addError(error, stackTrace),
         ),
       )
       .debounceTime(duration)

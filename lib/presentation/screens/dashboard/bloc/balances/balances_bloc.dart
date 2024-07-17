@@ -42,7 +42,6 @@ Map<String, Balance> aggregateBalancesByAsset(List<Balance> balances) {
 
     aggregatedBalances[balance.asset] = next;
   }
-   
 
   return aggregatedBalances;
 }

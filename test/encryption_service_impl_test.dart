@@ -10,5 +10,4 @@ void main() {
     final decrypted = await encryptionService.decrypt(encrypted, password);
     expect(decrypted, data);
   });
-
 }

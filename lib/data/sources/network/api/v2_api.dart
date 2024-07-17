@@ -102,14 +102,12 @@ class BalanceVerbose extends Balance {
   final String quantityNormalized;
   final AssetInfo assetInfo;
 
-  BalanceVerbose({
-    required super.address,
-    required super.quantity,
-
-    required super.asset,
-    required this.assetInfo,
-    required this.quantityNormalized
-  });
+  BalanceVerbose(
+      {required super.address,
+      required super.quantity,
+      required super.asset,
+      required this.assetInfo,
+      required this.quantityNormalized});
 
   factory BalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$BalanceVerboseFromJson(json);

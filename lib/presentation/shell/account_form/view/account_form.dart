@@ -159,7 +159,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                   return 'Required';
                 }
 
-
                 return null;
               },
             ),

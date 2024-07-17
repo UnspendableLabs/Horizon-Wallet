@@ -29,7 +29,6 @@ class TransactionServiceImpl implements TransactionService {
 
     dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
-
     bool isSegwit =
         sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
 
@@ -81,7 +80,8 @@ class TransactionServiceImpl implements TransactionService {
 
   _getNetwork() {
     // bool isTestnet = dotenv.get('TEST') == 'true';
-    bool isTestnet = const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
+    bool isTestnet =
+        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
 }
