@@ -11,8 +11,8 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeIssuancePage extends StatelessWidget {
   const ComposeIssuancePage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +31,8 @@ class ComposeIssuancePage extends StatelessWidget {
 
 class _ComposeIssuancePage_ extends StatefulWidget {
   const _ComposeIssuancePage_({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();

@@ -241,11 +241,10 @@ class BalancesDisplay extends StatefulWidget {
   final String accountUuid;
 
   const BalancesDisplay(
-      {Key? key,
+      {super.key,
       required this.isDarkTheme,
       required this.addresses,
-      required this.accountUuid})
-      : super(key: key);
+      required this.accountUuid});
 
   @override
   _BalancesDisplayState createState() => _BalancesDisplayState();

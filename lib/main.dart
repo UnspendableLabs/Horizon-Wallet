@@ -30,7 +30,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({this.from, Key? key}) : super(key: key);
+  const LoadingScreen({this.from, super.key});
   final String? from;
 
   @override

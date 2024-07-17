@@ -487,11 +487,11 @@ class AddressListView extends StatelessWidget {
   final void Function(Address, bool) onCheckedChanged;
 
   const AddressListView({
-    Key? key,
+    super.key,
     required this.addresses,
     required this.isCheckedMap,
     required this.onCheckedChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -523,11 +523,11 @@ class AddressListItem extends StatelessWidget {
   final ValueChanged<bool> onCheckedChanged;
 
   const AddressListItem({
-    Key? key,
+    super.key,
     required this.address,
     required this.isChecked,
     required this.onCheckedChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

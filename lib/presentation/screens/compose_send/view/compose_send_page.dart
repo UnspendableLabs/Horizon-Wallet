@@ -12,8 +12,8 @@ import 'package:decimal/decimal.dart';
 
 class ComposeSendPage extends StatelessWidget {
   const ComposeSendPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +32,8 @@ class ComposeSendPage extends StatelessWidget {
 
 class _ComposeSendPage_ extends StatefulWidget {
   const _ComposeSendPage_({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
