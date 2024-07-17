@@ -10,9 +10,9 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeIssuancePage extends StatelessWidget {
-  ComposeIssuancePage({
-    Key? key,
-  }) : super(key: key);
+  const ComposeIssuancePage({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class ComposeIssuancePage extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeIssuanceBloc()
           ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
-        child: _ComposeIssuancePage_(),
+        child: const _ComposeIssuancePage_(),
       ),
       orElse: () => const SizedBox.shrink(),
     );
@@ -30,9 +30,7 @@ class ComposeIssuancePage extends StatelessWidget {
 }
 
 class _ComposeIssuancePage_ extends StatefulWidget {
-  _ComposeIssuancePage_({
-    Key? key,
-  }) : super(key: key);
+  const _ComposeIssuancePage_();
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
@@ -48,8 +46,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
 
-  String? asset = null;
-  String? fromAddress = null;
+  String? asset;
+  String? fromAddress;
 
   bool isDivisible = false;
   bool isLocked = false;

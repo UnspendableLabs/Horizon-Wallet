@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
@@ -26,7 +25,7 @@ class OnboardingImportBloc
   final mnemonicService = GetIt.I<MnemonicService>();
   final encryptionService = GetIt.I<EncryptionService>();
 
-  OnboardingImportBloc() : super(OnboardingImportState()) {
+  OnboardingImportBloc() : super(const OnboardingImportState()) {
     on<PasswordChanged>((event, emit) {
       if (event.password.length < 8) {
         emit(state.copyWith(

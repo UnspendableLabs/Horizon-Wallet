@@ -218,7 +218,7 @@ class Shell extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final shell = context.read<ShellStateCubit>();
 
-    void _showAccountList(BuildContext context) {
+    void showAccountList(BuildContext context) {
       final textTheme = Theme.of(context).textTheme;
 
       WoltModalSheet.show<void>(
@@ -298,7 +298,7 @@ class Shell extends StatelessWidget {
         leading: screenWidth < 768.0
             ? IconButton(
                 icon: const Icon(Icons.account_balance_wallet_rounded),
-                onPressed: () => _showAccountList(context),
+                onPressed: () => showAccountList(context),
               )
             : null,
         actions: [

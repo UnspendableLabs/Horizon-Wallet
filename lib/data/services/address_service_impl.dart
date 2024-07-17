@@ -150,6 +150,7 @@ class AddressServiceImpl extends AddressService {
     return addresses;
   }
 
+  @override
   Future<String> deriveAddressPrivateKey(
       {required String rootPrivKey,
       required String chainCodeHex,

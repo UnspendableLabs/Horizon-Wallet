@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_event.dart';
@@ -89,7 +88,7 @@ class _AddressDisplayState extends State<AddressDisplay> {
                             padding:
                                 const EdgeInsets.only(top: 40.0, right: 10),
                             child: ElevatedButton(
-                              child: Text('Switch Address'),
+                              child: const Text('Switch Address'),
                               onPressed: () {
                                 _showAddressDialog(
                                     context,
@@ -148,7 +147,7 @@ class _AddressDisplayState extends State<AddressDisplay> {
             child: ListBody(
               children: addresses.map((address) {
                 return Container(
-                  padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                   child: Container(
                     decoration: const BoxDecoration(
                         border: Border(

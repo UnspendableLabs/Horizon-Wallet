@@ -114,6 +114,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
 class SettingsPage extends StatelessWidget {
   final cacheProvider = GetIt.I.get<CacheProvider>();
+  SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +245,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          Container(
+          SizedBox(
             height: MediaQuery.of(context).size.height - 220,
             child: BlocBuilder<AddressesBloc, AddressesState>(
               builder: (context, state) {

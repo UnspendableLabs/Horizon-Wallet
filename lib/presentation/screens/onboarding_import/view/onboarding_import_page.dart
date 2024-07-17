@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
@@ -9,6 +8,8 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingImportPage extends StatelessWidget {
+  const OnboardingImportPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -229,8 +230,12 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
 
   @override
   void dispose() {
-    controllers.forEach((controller) => controller.dispose());
-    focusNodes.forEach((node) => node.dispose());
+    for (var controller in controllers) {
+      controller.dispose();
+    }
+    for (var node in focusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -334,10 +339,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: Text('Cancel'),
+                    child: const Text('Cancel'),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -349,7 +354,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                             importFormat: selectedFormat!,
                           ));
                     },
-                    child: const Text('Continue'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
@@ -357,6 +361,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
+                    child: const Text('Continue'),
                   ),
                 ),
               ],
@@ -455,7 +460,7 @@ class SeedPrompt extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
               ])),
               _state.importState is ImportStateError
                   ? Text(_state.importState.message)
@@ -470,7 +475,7 @@ class SeedPrompt extends StatelessWidget {
                 ),
               ]),
               _state.importState is ImportStateLoading
-                  ? CircularProgressIndicator()
+                  ? const CircularProgressIndicator()
                   : const Text("")
             ],
           )),
@@ -484,11 +489,11 @@ class AddressListView extends StatelessWidget {
   final void Function(Address, bool) onCheckedChanged;
 
   const AddressListView({
-    Key? key,
+    super.key,
     required this.addresses,
     required this.isCheckedMap,
     required this.onCheckedChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -520,11 +525,11 @@ class AddressListItem extends StatelessWidget {
   final ValueChanged<bool> onCheckedChanged;
 
   const AddressListItem({
-    Key? key,
+    super.key,
     required this.address,
     required this.isChecked,
     required this.onCheckedChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

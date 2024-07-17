@@ -14,7 +14,7 @@ import 'package:logger/logger.dart';
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final Logger logger = Logger();
 
-  DashboardBloc() : super(DashboardState()) {
+  DashboardBloc() : super(const DashboardState()) {
     final walletRepository = GetIt.I<WalletRepository>();
     final accountRepository = GetIt.I<AccountRepository>();
     final addressRepository = GetIt.I<AddressRepository>();
@@ -26,7 +26,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
         List<Account> accounts =
-            await accountRepository.getAccountsByWalletUuid(wallet!.uuid!);
+            await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
         emit(state.copyWith(
             walletState: WalletStateSuccess(currentWallet: wallet),
             accountState: AccountStateSuccess(
@@ -81,7 +81,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       emit(state.copyWith(addressState: AddressStateLoading()));
       try {
         List<Address> addresses = await addressRepository
-            .getAllByAccountUuid(event.address.accountUuid!);
+            .getAllByAccountUuid(event.address.accountUuid);
         emit(state.copyWith(
             addressState: AddressStateSuccess(
                 currentAddress: event.address, addresses: addresses)));

@@ -6,11 +6,6 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
-import 'package:horizon/domain/entities/account.dart';
-
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
 
 final validAccount = RegExp(r"^\d\'$");
 
@@ -165,8 +160,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
             const SizedBox(height: 16.0), // Spacing between inputs
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize: Size(120, 48), // Ensures button doesn't resize
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                minimumSize:
+                    const Size(120, 48), // Ensures button doesn't resize
               ),
               onPressed: () {
                 // Validate will return true if the form is valid, or false if
@@ -197,10 +194,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 }
               },
               child: state == const RemoteDataState.loading()
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: const CircularProgressIndicator())
+                  ? const SizedBox(
+                      width: 20, height: 20, child: CircularProgressIndicator())
                   : const Text('Submit'),
             ),
           ],

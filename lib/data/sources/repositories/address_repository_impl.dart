@@ -23,7 +23,7 @@ class AddressRepositoryImpl implements AddressRepository {
     // TODO: this is a little gross
     List<AddressModel> addresses_ = addresses
         .map((a) => AddressModel(
-              accountUuid: a.accountUuid!,
+              accountUuid: a.accountUuid,
               address: a.address,
               index: a.index,
             ))

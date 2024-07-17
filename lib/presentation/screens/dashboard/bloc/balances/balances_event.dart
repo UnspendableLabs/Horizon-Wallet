@@ -1,5 +1,3 @@
-import "./balances_state.dart";
-
 abstract class BalancesEvent {}
 
 class Fetch extends BalancesEvent {

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -31,7 +30,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({this.from, Key? key}) : super(key: key);
+  const LoadingScreen({this.from, super.key});
   final String? from;
 
   @override
@@ -70,7 +69,7 @@ class AppRouter {
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: OnboardingScreen(),
+              child: const OnboardingScreen(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -87,7 +86,7 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child:
-                  OnboardingImportPage(), // TODO: be consistent with screen / page
+                  const OnboardingImportPage(), // TODO: be consistent with screen / page
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -110,14 +109,14 @@ class AppRouter {
                 GoRoute(
                     path: "/compose/send",
                     builder: (context, state) {
-                      return ComposeSendPage();
+                      return const ComposeSendPage();
                     })
               ]),
               StatefulShellBranch(routes: [
                 GoRoute(
                   path: "/compose/issuance",
                   builder: (context, state) {
-                    return ComposeIssuancePage();
+                    return const ComposeIssuancePage();
                   },
                 ),
               ]),
@@ -203,8 +202,8 @@ Future<ValueNotifier<Color>> initSettings() async {
   await Settings.init(
     cacheProvider: GetIt.I<CacheProvider>(),
   );
-  final _accentColor = ValueNotifier(Colors.blueAccent);
-  return _accentColor;
+  final accentColor = ValueNotifier(Colors.blueAccent);
+  return accentColor;
 }
 
 class MyApp extends StatelessWidget {

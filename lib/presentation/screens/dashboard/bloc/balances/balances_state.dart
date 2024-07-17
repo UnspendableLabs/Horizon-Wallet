@@ -1,7 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/transaction.dart';
 
 part "balances_state.freezed.dart";
 

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
@@ -13,9 +11,9 @@ import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 
 class ComposeSendPage extends StatelessWidget {
-  ComposeSendPage({
-    Key? key,
-  }) : super(key: key);
+  const ComposeSendPage({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +23,7 @@ class ComposeSendPage extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeSendBloc()
           ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
-        child: _ComposeSendPage_(),
+        child: const _ComposeSendPage_(),
       ),
       orElse: () => const SizedBox.shrink(),
     );
@@ -33,15 +31,15 @@ class ComposeSendPage extends StatelessWidget {
 }
 
 class _ComposeSendPage_ extends StatefulWidget {
-  _ComposeSendPage_({
-    Key? key,
-  }) : super(key: key);
+  const _ComposeSendPage_();
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
 }
 
 class AssetDropdownLoading extends StatelessWidget {
+  const AssetDropdownLoading({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -295,10 +293,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         Expanded(
                           child: Builder(builder: (context) {
                             return state.balancesState.maybeWhen(
-                                orElse: () => AssetDropdownLoading(),
+                                orElse: () => const AssetDropdownLoading(),
                                 success: (balances) {
                                   if (balances.isEmpty) {
-                                    return AssetDropdownLoading();
+                                    return const AssetDropdownLoading();
                                   }
 
                                   return AssetDropdown(

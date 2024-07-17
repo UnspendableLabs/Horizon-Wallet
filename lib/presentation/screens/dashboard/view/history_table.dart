@@ -14,7 +14,7 @@ class HistoryTable extends StatefulWidget {
 
 class _HistoryTableState extends State<HistoryTable>
     with SingleTickerProviderStateMixin {
-  List<Map<String, dynamic>> _data = [];
+  final List<Map<String, dynamic>> _data = [];
   List<send_entity.Send> _sends = [];
   List<issuance_entity.Issuance> _issuances = [];
   List<transaction_entity.Transaction> _transactions = [];
@@ -75,11 +75,11 @@ class _HistoryTableState extends State<HistoryTable>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('History'),
+        title: const Text('History'),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          tabs: [
+          tabs: const [
             Tab(text: 'Sends'),
             Tab(text: 'Issuances'),
             Tab(text: 'Transactions'),
@@ -156,8 +156,9 @@ class _HistoryTableState extends State<HistoryTable>
   }
 
   Widget _buildTransactionsTable() {
-    if (_transactions.isEmpty)
+    if (_transactions.isEmpty) {
       return const Text('No transactions at this address');
+    }
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +173,7 @@ class _HistoryTableState extends State<HistoryTable>
             rows: _transactions
                 .map(
                   (item) => DataRow(cells: [
-                    DataCell(Container(
+                    DataCell(SizedBox(
                       width: 100,
                       child: Text(item.txHash ?? "",
                           overflow: TextOverflow.ellipsis,

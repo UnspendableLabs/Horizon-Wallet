@@ -3,8 +3,6 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/remote_data_bloc/remote_data_cubit.dart';
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
 import './shell_state.dart';
 

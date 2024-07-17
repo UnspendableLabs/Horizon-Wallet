@@ -2,8 +2,6 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/entities/wallet.dart' as entity;
@@ -16,6 +14,7 @@ import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 class WalletServiceImpl implements WalletService {
+  @override
   EncryptionService encryptionService;
 
   WalletServiceImpl(this.encryptionService);
