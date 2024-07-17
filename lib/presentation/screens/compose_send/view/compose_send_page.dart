@@ -31,9 +31,7 @@ class ComposeSendPage extends StatelessWidget {
 }
 
 class _ComposeSendPage_ extends StatefulWidget {
-  const _ComposeSendPage_({
-    super.key,
-  });
+  const _ComposeSendPage_();
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();

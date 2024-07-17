@@ -30,9 +30,7 @@ class ComposeIssuancePage extends StatelessWidget {
 }
 
 class _ComposeIssuancePage_ extends StatefulWidget {
-  const _ComposeIssuancePage_({
-    super.key,
-  });
+  const _ComposeIssuancePage_();
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
