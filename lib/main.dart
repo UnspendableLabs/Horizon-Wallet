@@ -202,8 +202,8 @@ Future<ValueNotifier<Color>> initSettings() async {
   await Settings.init(
     cacheProvider: GetIt.I<CacheProvider>(),
   );
-  final _accentColor = ValueNotifier(Colors.blueAccent);
-  return _accentColor;
+  final accentColor = ValueNotifier(Colors.blueAccent);
+  return accentColor;
 }
 
 class MyApp extends StatelessWidget {
