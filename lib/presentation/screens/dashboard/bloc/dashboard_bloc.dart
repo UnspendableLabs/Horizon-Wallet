@@ -14,7 +14,7 @@ import 'package:logger/logger.dart';
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final Logger logger = Logger();
 
-  DashboardBloc() : super(DashboardState()) {
+  DashboardBloc() : super(const DashboardState()) {
     final walletRepository = GetIt.I<WalletRepository>();
     final accountRepository = GetIt.I<AccountRepository>();
     final addressRepository = GetIt.I<AddressRepository>();

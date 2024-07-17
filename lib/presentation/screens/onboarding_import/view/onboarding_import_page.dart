@@ -337,10 +337,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: Text('Cancel'),
+                    child: const Text('Cancel'),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -458,7 +458,7 @@ class SeedPrompt extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
               ])),
               _state.importState is ImportStateError
                   ? Text(_state.importState.message)
@@ -473,7 +473,7 @@ class SeedPrompt extends StatelessWidget {
                 ),
               ]),
               _state.importState is ImportStateLoading
-                  ? CircularProgressIndicator()
+                  ? const CircularProgressIndicator()
                   : const Text("")
             ],
           )),

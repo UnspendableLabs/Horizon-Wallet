@@ -39,7 +39,7 @@ class _BalanceDisplayState extends State<BalanceDisplay> {
                   .spaceBetween, // This spreads out the children across the main axis
 
               children: balances.isEmpty
-                  ? [Text('no balance')]
+                  ? [const Text('no balance')]
                   : balances
                       .map<Widget>((balance) => Text(
                           '${balance.asset}: ${(balance.quantity / 100000000).toStringAsFixed(8)}'))

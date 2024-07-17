@@ -69,7 +69,7 @@ class AppRouter {
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: OnboardingScreen(),
+              child: const OnboardingScreen(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),

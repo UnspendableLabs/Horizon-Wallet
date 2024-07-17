@@ -27,7 +27,7 @@ class OnboardingCreateBloc
   final walletService = GetIt.I<WalletService>();
   final addressService = GetIt.I<AddressService>();
 
-  OnboardingCreateBloc() : super(OnboardingCreateState()) {
+  OnboardingCreateBloc() : super(const OnboardingCreateState()) {
     on<MnemonicSubmit>((event, emit) {
       logger.d('Processing MnemonicSubmit event');
       emit(state.copyWith(

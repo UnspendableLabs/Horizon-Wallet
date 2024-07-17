@@ -25,7 +25,7 @@ class OnboardingImportBloc
   final mnemonicService = GetIt.I<MnemonicService>();
   final encryptionService = GetIt.I<EncryptionService>();
 
-  OnboardingImportBloc() : super(OnboardingImportState()) {
+  OnboardingImportBloc() : super(const OnboardingImportState()) {
     on<PasswordChanged>((event, emit) {
       if (event.password.length < 8) {
         emit(state.copyWith(

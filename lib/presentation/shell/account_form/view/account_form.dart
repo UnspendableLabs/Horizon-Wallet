@@ -161,8 +161,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
             const SizedBox(height: 16.0), // Spacing between inputs
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize: Size(120, 48), // Ensures button doesn't resize
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                minimumSize: const Size(120, 48), // Ensures button doesn't resize
               ),
               onPressed: () {
                 // Validate will return true if the form is valid, or false if
@@ -193,10 +193,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 }
               },
               child: state == const RemoteDataState.loading()
-                  ? SizedBox(
+                  ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: const CircularProgressIndicator())
+                      child: CircularProgressIndicator())
                   : const Text('Submit'),
             ),
           ],

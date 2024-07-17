@@ -75,14 +75,14 @@ class _HistoryTableState extends State<HistoryTable>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('History'),
+        title: const Text('History'),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           tabs: [
-            Tab(text: 'Sends'),
-            Tab(text: 'Issuances'),
-            Tab(text: 'Transactions'),
+            const Tab(text: 'Sends'),
+            const Tab(text: 'Issuances'),
+            const Tab(text: 'Transactions'),
           ],
         ),
       ),
