@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';

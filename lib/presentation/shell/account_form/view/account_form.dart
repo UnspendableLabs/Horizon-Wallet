@@ -8,9 +8,6 @@ import "package:horizon/presentation/shell/account_form/bloc/account_form_event.
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 import 'package:horizon/domain/entities/account.dart';
 
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
 
 final validAccount = RegExp(r"^\d\'$");
 

@@ -1,4 +1,3 @@
-import 'package:horizon/domain/entities/address.dart';
 
 abstract class ComposeIssuanceEvent {}
 

@@ -1,5 +1,4 @@
 import 'dart:js_interop';
-import 'dart:typed_data';
 
 extension type Bip32._(JSObject _) implements JSObject {
   external int public;

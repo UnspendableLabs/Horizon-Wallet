@@ -1,4 +1,3 @@
-import "./balances_state.dart";
 
 abstract class BalancesEvent {}
 

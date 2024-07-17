@@ -2,8 +2,6 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/entities/wallet.dart' as entity;
