@@ -6,7 +6,6 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
-import 'package:horizon/domain/entities/account.dart';
 
 
 final validAccount = RegExp(r"^\d\'$");

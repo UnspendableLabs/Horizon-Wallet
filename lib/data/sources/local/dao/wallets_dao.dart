@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:horizon/data/models/wallet.dart';
-import 'package:horizon/data/models/wallet.dart';
 import 'package:horizon/data/sources/local/db.dart';
 import 'package:horizon/data/sources/local/tables/wallets_table.dart';
 
