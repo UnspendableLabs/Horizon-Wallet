@@ -293,10 +293,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         Expanded(
                           child: Builder(builder: (context) {
                             return state.balancesState.maybeWhen(
-                                orElse: () => AssetDropdownLoading(),
+                                orElse: () => const AssetDropdownLoading(),
                                 success: (balances) {
                                   if (balances.isEmpty) {
-                                    return AssetDropdownLoading();
+                                    return const AssetDropdownLoading();
                                   }
 
                                   return AssetDropdown(

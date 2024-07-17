@@ -86,7 +86,7 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child:
-                  OnboardingImportPage(), // TODO: be consistent with screen / page
+                  const OnboardingImportPage(), // TODO: be consistent with screen / page
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
