@@ -14,6 +14,7 @@ import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 class WalletServiceImpl implements WalletService {
+  @override
   EncryptionService encryptionService;
 
   WalletServiceImpl(this.encryptionService);
