@@ -240,7 +240,7 @@ class BalancesDisplay extends StatefulWidget {
   final List<Address> addresses;
   final String accountUuid;
 
-  BalancesDisplay(
+  const BalancesDisplay(
       {Key? key,
       required this.isDarkTheme,
       required this.addresses,

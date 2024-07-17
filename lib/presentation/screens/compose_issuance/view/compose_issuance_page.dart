@@ -10,7 +10,7 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeIssuancePage extends StatelessWidget {
-  ComposeIssuancePage({
+  const ComposeIssuancePage({
     Key? key,
   }) : super(key: key);
 
@@ -30,7 +30,7 @@ class ComposeIssuancePage extends StatelessWidget {
 }
 
 class _ComposeIssuancePage_ extends StatefulWidget {
-  _ComposeIssuancePage_({
+  const _ComposeIssuancePage_({
     Key? key,
   }) : super(key: key);
 

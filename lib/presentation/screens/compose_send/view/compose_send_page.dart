@@ -11,7 +11,7 @@ import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 
 class ComposeSendPage extends StatelessWidget {
-  ComposeSendPage({
+  const ComposeSendPage({
     Key? key,
   }) : super(key: key);
 
@@ -31,7 +31,7 @@ class ComposeSendPage extends StatelessWidget {
 }
 
 class _ComposeSendPage_ extends StatefulWidget {
-  _ComposeSendPage_({
+  const _ComposeSendPage_({
     Key? key,
   }) : super(key: key);
 
