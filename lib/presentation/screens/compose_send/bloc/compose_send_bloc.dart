@@ -106,7 +106,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         await bitcoindService.sendrawtransaction(txHex);
 
         emit(state.copyWith(submitState: SubmitState.success(txHex, source)));
-      } catch (error, stackTrace) {
+      } catch (error) {
         if (error is DioException) {
           emit(state.copyWith(
               submitState: SubmitState.error(
