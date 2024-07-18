@@ -229,8 +229,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           return state.balancesState.maybeWhen(orElse: () {
                             return TextFormField(
                                 controller: quantityController,
-                                decoration: InputDecoration(
-                                  border: const OutlineInputBorder(),
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
                                   labelText: 'Quantity',
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.always,
