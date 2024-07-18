@@ -148,16 +148,26 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       ),
       body: BlocConsumer<ComposeSendBloc, ComposeSendState>(
           listener: (context, state) {
-        state.submitState.when(
-          success: (transactionHex, sourceAddress) =>
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(transactionHex))),
-          error: (msg) => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(msg))),
-          loading: () => ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("Loading"))),
-          initial: () => const Text(''),
-        );
+        state.submitState.maybeWhen(
+            success: (txHash, sourceAddress) {
+              // 1) close modal
+              Navigator.of(context).pop();
+              // 2) show snackbar with copy tx action
+
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  duration: const Duration(seconds: 5),
+                  action: SnackBarAction(
+                    label: 'Copy',
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: txHash));
+                    },
+                  ),
+                  content: Text(txHash),
+                  behavior: SnackBarBehavior.floating));
+            },
+            error: (msg) => ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(msg))),
+            orElse: () => null);
       }, builder: (context, state) {
         return state.addressesState.when(
           initial: () => const SizedBox.shrink(),
@@ -214,80 +224,77 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       children: [
                         Expanded(
                             // TODO: make his type of input it's own component ( e.g. BalanceInput )
+
                             child: Builder(builder: (context) {
-                          return TextFormField(
-                            controller: quantityController,
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              labelText: 'Quantity',
-                              suffix: Builder(builder: (context) {
-                                return state.balancesState.maybeWhen(
-                                    orElse: () => const SizedBox.shrink(),
-                                    success: (balances_) {
-                                      List<Balance> balances = balances_;
+                          return state.balancesState.maybeWhen(orElse: () {
+                            return TextFormField(
+                                controller: quantityController,
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
+                                  labelText: 'Quantity',
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                ));
+                          }, success: (balances) {
+                            Balance? balance = _getBalanceForSelectedAsset(
+                                balances, assetController.text);
 
-                                      Balance? balance =
-                                          balance_ ?? balances.firstOrNull;
+                            if (balance == null) {
+                              throw Exception("invariant: balance is null");
+                            }
 
-                                      if (balance == null) {
-                                        return const SizedBox.shrink();
-                                      }
+                            return TextFormField(
+                              controller: quantityController,
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+                                labelText: 'Quantity',
+                                suffix: Builder(builder: (context) {
+                                  return Text(
+                                      "${balance.quantityNormalized} max");
+                                }),
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
+                              ),
 
-                                      return Text(
-                                          "${balance.quantityNormalized} max");
-                                    });
-                              }),
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.always,
-                            ),
-
-                            inputFormatters: <TextInputFormatter>[
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
-                                if (newValue.text.isEmpty) {
-                                  return newValue;
+                              inputFormatters: <TextInputFormatter>[
+                                TextInputFormatter.withFunction(
+                                    (oldValue, newValue) {
+                                  if (newValue.text.isEmpty) {
+                                    return newValue;
+                                  }
+                                  if (double.tryParse(newValue.text) != null) {
+                                    return newValue;
+                                  }
+                                  return oldValue;
+                                }),
+                                balance.assetInfo.divisible
+                                    ? FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d*\.?\d*$'))
+                                    : FilteringTextInputFormatter.digitsOnly,
+                              ], // Only
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a quantity';
                                 }
-                                if (double.tryParse(newValue.text) != null) {
-                                  return newValue;
+                                Decimal input = Decimal.parse(value);
+                                Decimal max =
+                                    Decimal.parse(balance.quantityNormalized);
+
+                                if (input > max) {
+                                  return "quantity exceeds max";
                                 }
-                                return oldValue;
-                              }),
-                              balance_?.assetInfo.divisible ?? false
-                                  ? FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*$'))
-                                  : FilteringTextInputFormatter.digitsOnly
-                            ], // Only
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            validator: (value) {
-                              Balance? balance = balance_;
 
-                              if (balance == null) {
-                                throw Exception(
-                                    "invariant: No balance found for asset");
-                              }
+                                setState(() {
+                                  balance_ = balance;
+                                });
 
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a quantity';
-                              }
-
-                              // this works because we still get normalised values
-                              // for non divisible assets
-                              Decimal input = Decimal.parse(value);
-                              Decimal max =
-                                  Decimal.parse(balance.quantityNormalized);
-
-                              if (input > max) {
-                                return "quantity exceeds max";
-                              }
-
-                              setState(() {
-                                balance_ = balance;
-                              });
-
-                              return null;
-                            },
-                          );
+                                return null;
+                              },
+                            );
+                          });
                         })),
                         const SizedBox(width: 16.0), // Spacing between inputs
                         Expanded(
