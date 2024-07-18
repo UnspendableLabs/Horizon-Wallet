@@ -8,7 +8,7 @@ class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
 
   @override
   Future<String> sendrawtransaction(String signedHex) async {
-    v2_api.Response<String>  res = await api.createTransaction(signedHex);
+    v2_api.Response<String> res = await api.createTransaction(signedHex);
     return res.result!;
   }
 }
