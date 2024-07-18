@@ -103,9 +103,10 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         String txHex = await transactionService.signTransaction(
             rawTx.hex, addressPrivKey, source, utxoMap);
-        await bitcoindService.sendrawtransaction(txHex);
 
-        emit(state.copyWith(submitState: SubmitState.success(txHex, source)));
+        String txHash = await bitcoindService.sendrawtransaction(txHex);
+
+        emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
       } catch (error) {
         if (error is DioException) {
           emit(state.copyWith(

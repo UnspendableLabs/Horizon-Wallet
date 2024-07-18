@@ -1,3 +1,3 @@
 abstract class BitcoindService {
-  Future<void> sendrawtransaction(String signedHex);
+  Future<String> sendrawtransaction(String signedHex);
 }
