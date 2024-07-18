@@ -148,16 +148,26 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       ),
       body: BlocConsumer<ComposeSendBloc, ComposeSendState>(
           listener: (context, state) {
-        state.submitState.when(
-          success: (transactionHex, sourceAddress) =>
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(transactionHex))),
-          error: (msg) => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(msg))),
-          loading: () => ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("Loading"))),
-          initial: () => const Text(''),
-        );
+        state.submitState.maybeWhen(
+            success: (txHash, sourceAddress) {
+              // 1) close modal
+              Navigator.of(context).pop();
+              // 2) show snackbar with copy tx action
+
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  duration: const Duration(seconds: 5),
+                  action: SnackBarAction(
+                    label: 'Copy',
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: txHash));
+                    },
+                  ),
+                  content: Text(txHash),
+                  behavior: SnackBarBehavior.floating));
+            },
+            error: (msg) => ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(msg))),
+            orElse: () => null);
       }, builder: (context, state) {
         return state.addressesState.when(
           initial: () => const SizedBox.shrink(),
