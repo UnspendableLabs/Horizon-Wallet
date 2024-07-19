@@ -41,6 +41,9 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -59,6 +62,12 @@ Future<void> setup() async {
 
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
+
+  injector.registerSingleton<TransactionRepository>(
+      TransactionRepositoryImpl(api: GetIt.I.get<V2Api>()));
+
+    
+
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl());
