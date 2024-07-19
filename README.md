@@ -44,3 +44,10 @@ to run in testnet mode, set TEST=true
 
     - To use a Chrome substitute (such as Chromium), export the following from your shell env:
     `export CHROME_EXECUTABLE=$(which chromium)`
+
+
+
+### gen drift schema
+
+❯ dart run drift_dev schema dump lib/data/sources/local/db.dart drift_schemas/
+
