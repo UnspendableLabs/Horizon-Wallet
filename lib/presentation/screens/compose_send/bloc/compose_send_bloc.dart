@@ -6,12 +6,14 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -20,6 +22,7 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_even
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 
 class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
+  // TODO: pass these in constructor to the bloc
   final addressRepository = GetIt.I.get<AddressRepository>();
   final balanceRepository = GetIt.I.get<BalanceRepository>();
   final composeRepository = GetIt.I.get<ComposeRepository>();
@@ -30,6 +33,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
   final walletRepository = GetIt.I.get<WalletRepository>();
   final encryptionService = GetIt.I.get<EncryptionService>();
   final addressService = GetIt.I.get<AddressService>();
+  final transactionRepository = GetIt.I.get<TransactionRepository>();
 
   ComposeSendBloc() : super(const ComposeSendState()) {
     on<FetchFormData>((event, emit) async {
@@ -80,9 +84,10 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         // final memoIsHex = event.memoIsHex;
 
         final rawTx = await composeRepository.composeSend(source, destination,
-            asset, quantity, false, 2766); // TODO: don't hardcode fee
+            asset, quantity, true, 0); // TODO: don't hardcode fee
 
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
+        final utxoResponse =
+            await utxoRepository.getUnspentForAddress(source, true);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
@@ -104,7 +109,18 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         String txHex = await transactionService.signTransaction(
             rawTx.hex, addressPrivKey, source, utxoMap);
 
+        TransactionUnpacked unpacked =
+            await transactionRepository.unpack(txHex);
+
+
         String txHash = await bitcoindService.sendrawtransaction(txHex);
+
+        await transactionRepository.insert(
+          source: source,
+          hash: txHash,
+          hex: txHex,
+          unpacked: unpacked,
+        );
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
       } catch (error) {
