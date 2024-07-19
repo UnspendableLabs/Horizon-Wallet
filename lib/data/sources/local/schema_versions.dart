@@ -195,7 +195,9 @@ i1.GeneratedColumn<String> _column_15(String aliasedName) =>
         type: i1.DriftSqlType.string);
 i1.GeneratedColumn<String> _column_16(String aliasedName) =>
     i1.GeneratedColumn<String>('source', aliasedName, false,
-        type: i1.DriftSqlType.string);
+        type: i1.DriftSqlType.string,
+        defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
+            'REFERENCES addresses (address)'));
 i1.GeneratedColumn<String> _column_17(String aliasedName) =>
     i1.GeneratedColumn<String>('unpacked', aliasedName, false,
         type: i1.DriftSqlType.string);

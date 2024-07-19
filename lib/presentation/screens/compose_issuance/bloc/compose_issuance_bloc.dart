@@ -20,6 +20,9 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 
+import 'package:horizon/domain/entities/transaction_unpacked.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
+
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
   ComposeIssuanceBloc() : super(const ComposeIssuanceState()) {
@@ -38,6 +41,7 @@ class ComposeIssuanceBloc
     final TransactionService transactionService =
         GetIt.I.get<TransactionService>();
     final BitcoindService bitcoindService = GetIt.I.get<BitcoindService>();
+    final transactionRepository = GetIt.I.get<TransactionRepository>();
 
     on<FetchFormData>((event, emit) async {
       emit(const ComposeIssuanceState(
@@ -117,7 +121,18 @@ class ComposeIssuanceBloc
 
         String txHex = await transactionService.signTransaction(
             issuance.rawtransaction, addressPrivKey, source, utxoMap);
-        await bitcoindService.sendrawtransaction(txHex);
+
+        String txHash = await bitcoindService.sendrawtransaction(txHex);
+
+        TransactionUnpacked unpacked =
+            await transactionRepository.unpack(txHex);
+
+        await transactionRepository.insert(
+          source: source,
+          hash: txHash,
+          hex: txHex,
+          unpacked: unpacked,
+        );
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {

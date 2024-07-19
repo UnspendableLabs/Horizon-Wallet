@@ -748,7 +748,7 @@ class $AddressesTable extends Addresses
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {accountUuid, index};
+  Set<GeneratedColumn> get $primaryKey => {address};
   @override
   Address map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -913,15 +913,321 @@ class AddressesCompanion extends UpdateCompanion<Address> {
   }
 }
 
+class $TransactionsTable extends Transactions
+    with TableInfo<$TransactionsTable, Transaction> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
+  @override
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+      'hash', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
+  static const VerificationMeta _submittedAtMeta =
+      const VerificationMeta('submittedAt');
+  @override
+  late final GeneratedColumn<DateTime> submittedAt = GeneratedColumn<DateTime>(
+      'submitted_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _hexMeta = const VerificationMeta('hex');
+  @override
+  late final GeneratedColumn<String> hex = GeneratedColumn<String>(
+      'hex', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+      'source', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES addresses (address)'));
+  static const VerificationMeta _unpackedMeta =
+      const VerificationMeta('unpacked');
+  @override
+  late final GeneratedColumn<String> unpacked = GeneratedColumn<String>(
+      'unpacked', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [hash, submittedAt, hex, source, unpacked];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transactions';
+  @override
+  VerificationContext validateIntegrity(Insertable<Transaction> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('hash')) {
+      context.handle(
+          _hashMeta, hash.isAcceptableOrUnknown(data['hash']!, _hashMeta));
+    } else if (isInserting) {
+      context.missing(_hashMeta);
+    }
+    if (data.containsKey('submitted_at')) {
+      context.handle(
+          _submittedAtMeta,
+          submittedAt.isAcceptableOrUnknown(
+              data['submitted_at']!, _submittedAtMeta));
+    } else if (isInserting) {
+      context.missing(_submittedAtMeta);
+    }
+    if (data.containsKey('hex')) {
+      context.handle(
+          _hexMeta, hex.isAcceptableOrUnknown(data['hex']!, _hexMeta));
+    } else if (isInserting) {
+      context.missing(_hexMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(_sourceMeta,
+          source.isAcceptableOrUnknown(data['source']!, _sourceMeta));
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('unpacked')) {
+      context.handle(_unpackedMeta,
+          unpacked.isAcceptableOrUnknown(data['unpacked']!, _unpackedMeta));
+    } else if (isInserting) {
+      context.missing(_unpackedMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {hash};
+  @override
+  Transaction map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Transaction(
+      hash: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}hash'])!,
+      submittedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}submitted_at'])!,
+      hex: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}hex'])!,
+      source: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}source'])!,
+      unpacked: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}unpacked'])!,
+    );
+  }
+
+  @override
+  $TransactionsTable createAlias(String alias) {
+    return $TransactionsTable(attachedDatabase, alias);
+  }
+}
+
+class Transaction extends DataClass implements Insertable<Transaction> {
+  final String hash;
+  final DateTime submittedAt;
+  final String hex;
+  final String source;
+  final String unpacked;
+  const Transaction(
+      {required this.hash,
+      required this.submittedAt,
+      required this.hex,
+      required this.source,
+      required this.unpacked});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['hash'] = Variable<String>(hash);
+    map['submitted_at'] = Variable<DateTime>(submittedAt);
+    map['hex'] = Variable<String>(hex);
+    map['source'] = Variable<String>(source);
+    map['unpacked'] = Variable<String>(unpacked);
+    return map;
+  }
+
+  TransactionsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionsCompanion(
+      hash: Value(hash),
+      submittedAt: Value(submittedAt),
+      hex: Value(hex),
+      source: Value(source),
+      unpacked: Value(unpacked),
+    );
+  }
+
+  factory Transaction.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Transaction(
+      hash: serializer.fromJson<String>(json['hash']),
+      submittedAt: serializer.fromJson<DateTime>(json['submittedAt']),
+      hex: serializer.fromJson<String>(json['hex']),
+      source: serializer.fromJson<String>(json['source']),
+      unpacked: serializer.fromJson<String>(json['unpacked']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'hash': serializer.toJson<String>(hash),
+      'submittedAt': serializer.toJson<DateTime>(submittedAt),
+      'hex': serializer.toJson<String>(hex),
+      'source': serializer.toJson<String>(source),
+      'unpacked': serializer.toJson<String>(unpacked),
+    };
+  }
+
+  Transaction copyWith(
+          {String? hash,
+          DateTime? submittedAt,
+          String? hex,
+          String? source,
+          String? unpacked}) =>
+      Transaction(
+        hash: hash ?? this.hash,
+        submittedAt: submittedAt ?? this.submittedAt,
+        hex: hex ?? this.hex,
+        source: source ?? this.source,
+        unpacked: unpacked ?? this.unpacked,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Transaction(')
+          ..write('hash: $hash, ')
+          ..write('submittedAt: $submittedAt, ')
+          ..write('hex: $hex, ')
+          ..write('source: $source, ')
+          ..write('unpacked: $unpacked')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(hash, submittedAt, hex, source, unpacked);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Transaction &&
+          other.hash == this.hash &&
+          other.submittedAt == this.submittedAt &&
+          other.hex == this.hex &&
+          other.source == this.source &&
+          other.unpacked == this.unpacked);
+}
+
+class TransactionsCompanion extends UpdateCompanion<Transaction> {
+  final Value<String> hash;
+  final Value<DateTime> submittedAt;
+  final Value<String> hex;
+  final Value<String> source;
+  final Value<String> unpacked;
+  final Value<int> rowid;
+  const TransactionsCompanion({
+    this.hash = const Value.absent(),
+    this.submittedAt = const Value.absent(),
+    this.hex = const Value.absent(),
+    this.source = const Value.absent(),
+    this.unpacked = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransactionsCompanion.insert({
+    required String hash,
+    required DateTime submittedAt,
+    required String hex,
+    required String source,
+    required String unpacked,
+    this.rowid = const Value.absent(),
+  })  : hash = Value(hash),
+        submittedAt = Value(submittedAt),
+        hex = Value(hex),
+        source = Value(source),
+        unpacked = Value(unpacked);
+  static Insertable<Transaction> custom({
+    Expression<String>? hash,
+    Expression<DateTime>? submittedAt,
+    Expression<String>? hex,
+    Expression<String>? source,
+    Expression<String>? unpacked,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (hash != null) 'hash': hash,
+      if (submittedAt != null) 'submitted_at': submittedAt,
+      if (hex != null) 'hex': hex,
+      if (source != null) 'source': source,
+      if (unpacked != null) 'unpacked': unpacked,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransactionsCompanion copyWith(
+      {Value<String>? hash,
+      Value<DateTime>? submittedAt,
+      Value<String>? hex,
+      Value<String>? source,
+      Value<String>? unpacked,
+      Value<int>? rowid}) {
+    return TransactionsCompanion(
+      hash: hash ?? this.hash,
+      submittedAt: submittedAt ?? this.submittedAt,
+      hex: hex ?? this.hex,
+      source: source ?? this.source,
+      unpacked: unpacked ?? this.unpacked,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
+    }
+    if (submittedAt.present) {
+      map['submitted_at'] = Variable<DateTime>(submittedAt.value);
+    }
+    if (hex.present) {
+      map['hex'] = Variable<String>(hex.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (unpacked.present) {
+      map['unpacked'] = Variable<String>(unpacked.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionsCompanion(')
+          ..write('hash: $hash, ')
+          ..write('submittedAt: $submittedAt, ')
+          ..write('hex: $hex, ')
+          ..write('source: $source, ')
+          ..write('unpacked: $unpacked, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $AddressesTable addresses = $AddressesTable(this);
+  late final $TransactionsTable transactions = $TransactionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [wallets, accounts, addresses];
+      [wallets, accounts, addresses, transactions];
 }

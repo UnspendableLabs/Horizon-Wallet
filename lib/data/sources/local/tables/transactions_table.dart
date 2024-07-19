@@ -6,7 +6,7 @@ class Transactions extends Table {
   TextColumn get hash => text().customConstraint('UNIQUE NOT NULL')();
   DateTimeColumn get submittedAt => dateTime()();
   TextColumn get hex => text()();
-  TextColumn get source => text().references(Addresses, #id)();
+  TextColumn get source => text().references(Addresses, #address)();
   TextColumn get unpacked => text()();
   @override
   Set<Column> get primaryKey => {hash};

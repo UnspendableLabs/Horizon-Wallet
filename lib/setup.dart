@@ -41,12 +41,14 @@ import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
 
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
+import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
   injector.registerLazySingleton<Dio>(() => buildDioClient());
   injector.registerLazySingleton<V2Api>(() => V2Api(GetIt.I.get<Dio>()));
+  injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
   injector.registerSingleton<AddressTxRepository>(
       AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
@@ -61,11 +63,10 @@ Future<void> setup() async {
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
-  injector.registerSingleton<TransactionRepository>(
-      TransactionRepositoryImpl(api: GetIt.I.get<V2Api>()));
-
-    
-
+  injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
+      api: GetIt.I.get<V2Api>(),
+      transactionDao:
+          TransactionsDao(injector.get<DatabaseManager>().database)));
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl());
@@ -76,7 +77,6 @@ Future<void> setup() async {
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
-  injector.registerSingleton<DatabaseManager>(DatabaseManager());
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<WalletRepository>(
@@ -90,5 +90,4 @@ Future<void> setup() async {
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
-
 }
