@@ -7,5 +7,4 @@ abstract class TransactionRepository {
       required String hex,
       required String source,
       required TransactionUnpacked unpacked});
-
 }

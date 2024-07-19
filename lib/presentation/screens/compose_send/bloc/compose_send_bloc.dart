@@ -112,7 +112,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         TransactionUnpacked unpacked =
             await transactionRepository.unpack(txHex);
 
-
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
         await transactionRepository.insert(
