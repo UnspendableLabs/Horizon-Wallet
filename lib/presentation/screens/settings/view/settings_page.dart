@@ -27,7 +27,8 @@ const double _pagePadding = 16.0;
 class PasswordPrompt extends StatefulWidget {
   final String accountUuid;
 
-  final AccountSettingsRepository accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
+  final AccountSettingsRepository accountSettingsRepository =
+      GetIt.I.get<AccountSettingsRepository>();
 
   PasswordPrompt({required this.accountUuid, super.key});
 
@@ -50,7 +51,8 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PasswordPromptBloc, PasswordPromptState>(builder: (context, state) {
+    return BlocBuilder<PasswordPromptBloc, PasswordPromptState>(
+        builder: (context, state) {
       return Form(
         key: _formKey,
         child: Column(
@@ -62,7 +64,9 @@ class _PasswordPromptState extends State<PasswordPrompt> {
               autocorrect: false,
               controller: passwordController,
               decoration: const InputDecoration(
-                  border: OutlineInputBorder(), labelText: "Password", floatingLabelBehavior: FloatingLabelBehavior.always),
+                  border: OutlineInputBorder(),
+                  labelText: "Password",
+                  floatingLabelBehavior: FloatingLabelBehavior.always),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Required';
@@ -75,8 +79,10 @@ class _PasswordPromptState extends State<PasswordPrompt> {
             const SizedBox(height: 16.0), // Spacing between inputs
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize: const Size(120, 48), // Ensures button doesn't resize
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                minimumSize:
+                    const Size(120, 48), // Ensures button doesn't resize
               ),
               onPressed: () {
                 // Validate will return true if the form is valid, or false if
@@ -88,7 +94,8 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
                   String password = passwordController.text;
 
-                  int gapLimit = widget.accountSettingsRepository.getGapLimit(widget.accountUuid);
+                  int gapLimit = widget.accountSettingsRepository
+                      .getGapLimit(widget.accountUuid);
 
                   context.read<PasswordPromptBloc>().add(Submit(
                         password: password,
@@ -99,7 +106,8 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                 }
               },
               child: state.maybeWhen(
-                validate: () => const SizedBox(width: 20, height: 20, child: CircularProgressIndicator()),
+                validate: () => const SizedBox(
+                    width: 20, height: 20, child: CircularProgressIndicator()),
                 orElse: () => const Text('Submit'),
               ),
             ),
@@ -113,24 +121,23 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
 class SettingsPage extends StatelessWidget {
   final cacheProvider = GetIt.I.get<CacheProvider>();
-
   SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
 
     Account? account = shell.state.maybeWhen(
-        success: (state) => state.accounts.firstWhere((account) => account.uuid == state.currentAccountUuid),
+        success: (state) => state.accounts
+            .firstWhere((account) => account.uuid == state.currentAccountUuid),
         orElse: () => null);
 
     if (account == null) {
       throw Exception("invariant: account is null");
     }
 
-    final initialGapLimit = GetIt.I.get<AccountSettingsRepository>().getGapLimit(account.uuid);
+    final initialGapLimit =
+        GetIt.I.get<AccountSettingsRepository>().getGapLimit(account.uuid);
 
     SliverWoltModalSheetPage passwordPrompt(
       BuildContext modalSheetContext,
@@ -144,7 +151,9 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.all(_pagePadding),
             icon: const Icon(Icons.close),
             onPressed: () {
-              context.read<PasswordPromptBloc>().add(Reset(gapLimit: initialGapLimit));
+              context
+                  .read<PasswordPromptBloc>()
+                  .add(Reset(gapLimit: initialGapLimit));
 
               Navigator.of(modalSheetContext).pop();
             },
@@ -170,50 +179,53 @@ class SettingsPage extends StatelessWidget {
       ),
       child: BlocConsumer<PasswordPromptBloc, PasswordPromptState>(
         listener: (context, state) {
-          state.whenOrNull(error: (msg) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(msg),
-            ));
-          }, success: (password, gapLimit) async {
-            context.read<AddressesBloc>().add(Update(accountUuid: account.uuid, gapLimit: gapLimit, password: password));
+      state.whenOrNull(error: (msg) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(msg),
+        ));
+      }, success: (password, gapLimit) async {
+        context.read<AddressesBloc>().add(Update(
+            accountUuid: account.uuid, gapLimit: gapLimit, password: password));
 
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text("Success"),
-            ));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Success"),
+        ));
 
-            await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        Navigator.of(context).pop();
+      }, initial: (maybeGapLimit) {
+        if (maybeGapLimit != null) {
+          // TODO put in account settings repository
+          Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit,
+              notify: true);
+        }
+      }, prompt: (gapLimit) {
+        WoltModalSheet.show<void>(
+          context: context,
+          onModalDismissedWithBarrierTap: () {
+            context
+                .read<PasswordPromptBloc>()
+                .add(Reset(gapLimit: initialGapLimit));
 
             Navigator.of(context).pop();
-          }, initial: (maybeGapLimit) {
-            if (maybeGapLimit != null) {
-              // TODO put in account settings repository
-              Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit, notify: true);
+          },
+          pageListBuilder: (modalSheetContext) {
+            final textTheme = Theme.of(context).textTheme;
+            return [passwordPrompt(modalSheetContext, textTheme, gapLimit)];
+          },
+          modalTypeBuilder: (context) {
+            final size = MediaQuery.sizeOf(context).width;
+            if (size < 768.0) {
+              return WoltModalType.bottomSheet;
+            } else {
+              return WoltModalType.dialog;
             }
-          }, prompt: (gapLimit) {
-            WoltModalSheet.show<void>(
-              context: context,
-              onModalDismissedWithBarrierTap: () {
-                context.read<PasswordPromptBloc>().add(Reset(gapLimit: initialGapLimit));
-
-                Navigator.of(context).pop();
-              },
-              pageListBuilder: (modalSheetContext) {
-                final textTheme = Theme.of(context).textTheme;
-                return [passwordPrompt(modalSheetContext, textTheme, gapLimit)];
-              },
-              modalTypeBuilder: (context) {
-                final size = MediaQuery.sizeOf(context).width;
-                if (size < 768.0) {
-                  return WoltModalType.bottomSheet;
-                } else {
-                  return WoltModalType.dialog;
-                }
-              },
-            );
-          });
-        },
-        builder: (context, state) {
-          return Column(
+          },
+        );
+      });
+    }, builder: (context, state) {
+      return Column(
             children: [
               Container(
                 child: Expanded(
@@ -273,32 +285,34 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height - 220,
-                child: BlocBuilder<AddressesBloc, AddressesState>(
-                  builder: (context, state) {
-                    return state.when(
-                      initial: () => const Text("initial"),
-                      loading: () => const Text("loading"),
-                      error: (error) => Text("Error: $error"),
-                      success: (addresses) => ListView.builder(
-                        itemCount: addresses.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return ListTile(
-                            title: SelectableText(addresses[index].address),
-                            subtitle: Text(addresses[index].index.toString()),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height - 220,
+            child: BlocBuilder<AddressesBloc, AddressesState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => const Text("initial"),
+                  loading: () => const Text("loading"),
+                  error: (error) => Text("Error: $error"),
+                  // success: (addresses) => Text("length ${addresses.length}")
+
+                  success: (addresses) => ListView.builder(
+                    itemCount: addresses.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ListTile(
+                        title: SelectableText(addresses[index].address),
+                        subtitle: Text(addresses[index].index.toString()),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+
+    }
+    ));
   }
 }

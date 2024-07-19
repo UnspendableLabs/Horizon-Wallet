@@ -62,31 +62,37 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingCreateScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: const OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              child:
+                  const OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder: (BuildContext context, GoRouterState state, navigationShell) {
+            builder:
+                (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -207,6 +213,7 @@ class MyApp extends StatelessWidget {
 
   // Define light and dark themes
   final ThemeData lightTheme = ThemeData(
+    // define a color scheme so it doesn't display flutter default purples
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.white,
       brightness: Brightness.light,
@@ -269,6 +276,7 @@ class MyApp extends StatelessWidget {
   );
 
   final ThemeData darkTheme = ThemeData(
+    // define a color scheme so it doesn't display flutter default purples
     colorScheme: ColorScheme.fromSeed(
       seedColor: const Color.fromRGBO(35, 35, 58, 1),
       brightness: Brightness.dark,
@@ -317,7 +325,8 @@ class MyApp extends StatelessWidget {
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(146, 209, 254, 1); // Color when selected
+            return const Color.fromRGBO(
+                146, 209, 254, 1); // Color when selected
           }
           return null; // Use default color when not selected
         },
@@ -358,7 +367,8 @@ class MyApp extends StatelessWidget {
         child: MaterialApp.router(
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode.light, // Automatically switch between light and dark themes
+          themeMode: ThemeMode
+              .light, // Automatically switch between light and dark themes
           routeInformationParser: AppRouter.router.routeInformationParser,
           routerDelegate: AppRouter.router.routerDelegate,
           routeInformationProvider: AppRouter.router.routeInformationProvider,

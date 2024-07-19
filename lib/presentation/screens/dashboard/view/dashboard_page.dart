@@ -27,8 +27,10 @@ String balancesStateToString(BalancesState state) {
 String resultToString(Result result) {
   return result.when(
     ok: (balances, aggregated) {
-      var assetSummaries =
-          aggregated.entries.map((entry) => '${entry.key}: ${entry.value.quantity.toStringAsFixed(2)}').join(', ');
+      var assetSummaries = aggregated.entries
+          .map((entry) =>
+              '${entry.key}: ${entry.value.quantity.toStringAsFixed(2)}')
+          .join(', ');
 
       return 'OK (${balances.length} balances, $assetSummaries)';
     },
@@ -50,7 +52,9 @@ class DashboardPage extends StatelessWidget {
         onboarding: (_) => const Text("onboarding"),
         loading: () => const CircularProgressIndicator(),
         error: (error) => Text("Error: $error"),
-        success: (data) => _DashboardPage(key: Key(data.currentAccountUuid), accountUuid: data.currentAccountUuid));
+        success: (data) => _DashboardPage(
+            key: Key(data.currentAccountUuid),
+            accountUuid: data.currentAccountUuid));
   }
 }
 
@@ -80,9 +84,11 @@ class _DashboardPage_State extends State<_DashboardPage> {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     // Define background colors based on theme
-    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
+    Color backgroundColor =
+        isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
-    return BlocBuilder<AddressesBloc, AddressesState>(builder: (context, state) {
+    return BlocBuilder<AddressesBloc, AddressesState>(
+        builder: (context, state) {
       return state.when(
         initial: () => const Text("initial"),
         loading: () => const CircularProgressIndicator(),
@@ -101,7 +107,8 @@ class _DashboardPage_State extends State<_DashboardPage> {
                     isDarkTheme: isDarkTheme,
                   ),
                   BlocProvider(
-                    create: (context) => BalancesBloc(accountUuid: widget.accountUuid),
+                    create: (context) =>
+                        BalancesBloc(accountUuid: widget.accountUuid),
                     child: BalancesDisplay(
                       isDarkTheme: isDarkTheme,
                       addresses: addresses,
@@ -124,7 +131,9 @@ class AddressActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
+    Color backgroundColor = isDarkTheme
+        ? const Color.fromRGBO(35, 35, 58, 1)
+        : const Color.fromRGBO(246, 247, 250, 1);
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(
@@ -212,14 +221,14 @@ class AddressActions extends StatelessWidget {
                   child: const Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.send),
-                        SizedBox(width: 8.0), // Space between icon and text
-                        Text(
-                          "SEND",
-                          style: TextStyle(fontSize: 16.0),
-                        ),
-                      ],
+                    children: [
+                      Icon(Icons.send),
+                      SizedBox(width: 8.0), // Space between icon and text
+                      Text(
+                        "SEND",
+                        style: TextStyle(fontSize: 16.0),
+                      ),
+                    ],
                     ),
                   ),
                 ),
@@ -237,7 +246,11 @@ class BalancesDisplay extends StatefulWidget {
   final List<Address> addresses;
   final String accountUuid;
 
-  const BalancesDisplay({super.key, required this.isDarkTheme, required this.addresses, required this.accountUuid});
+  const BalancesDisplay(
+      {super.key,
+      required this.isDarkTheme,
+      required this.addresses,
+      required this.accountUuid});
 
   @override
   _BalancesDisplayState createState() => _BalancesDisplayState();
@@ -275,7 +288,11 @@ class Balances extends StatefulWidget {
   final List<Address> addresses;
   final String accountUuid;
 
-  const Balances({super.key, required this.isDarkTheme, required this.addresses, required this.accountUuid});
+  const Balances(
+      {super.key,
+      required this.isDarkTheme,
+      required this.addresses,
+      required this.accountUuid});
 
   @override
   State<Balances> createState() => _BalancesState();
@@ -291,14 +308,19 @@ class _BalancesState extends State<Balances> {
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses),
-        reloading: (result) => _resultToBalanceList(result, height, widget.isDarkTheme, widget.addresses),
+        complete: (result) => _resultToBalanceList(
+            result, height, widget.isDarkTheme, widget.addresses),
+        reloading: (result) => _resultToBalanceList(
+            result, height, widget.isDarkTheme, widget.addresses),
       );
     });
   }
 
-  Widget _resultToBalanceList(Result result, double height, bool isDarkTheme, List<Address> addresses) {
-    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
+  Widget _resultToBalanceList(
+      Result result, double height, bool isDarkTheme, List<Address> addresses) {
+    Color backgroundColor = isDarkTheme
+        ? const Color.fromRGBO(35, 35, 58, 1)
+        : const Color.fromRGBO(246, 247, 250, 1);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -336,7 +358,9 @@ class _BalancesState extends State<Balances> {
                               width: MediaQuery.of(context).size.width * 0.3,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
-                                child: QRCodeDialog(key: Key(widget.accountUuid), addresses: addresses),
+                                child: QRCodeDialog(
+                                    key: Key(widget.accountUuid),
+                                    addresses: addresses),
                               ),
                             ),
                           );
@@ -395,19 +419,17 @@ class _BalancesState extends State<Balances> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: '${entry.key} ',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: entry.value.quantityNormalized,
-                            ),
-                          ],
-                        ),
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${entry.key} ',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text: entry.value.quantityNormalized,
+                          ),
+                        ],
                       ),
                     ),
                     const Text("\$ dollar placeholder"),
@@ -508,7 +530,8 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                             _selectedAddress = newValue!;
                           });
                         },
-                        items: widget.addresses.map<DropdownMenuItem<String>>((Address address) {
+                        items: widget.addresses
+                            .map<DropdownMenuItem<String>>((Address address) {
                           return DropdownMenuItem<String>(
                             value: address.address,
                             child: FittedBox(
@@ -538,7 +561,8 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: _selectedAddress));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Address copied to clipboard')),
+                      const SnackBar(
+                          content: Text('Address copied to clipboard')),
                     );
                   },
                 ),
