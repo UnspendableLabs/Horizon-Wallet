@@ -5,8 +5,11 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
 import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
+import 'package:logger/logger.dart';
 
 class LogoutBloc extends Bloc<LogoutEvent, LogoutState> {
+  final logger = Logger();
+
   final WalletRepository walletRepository;
   final AccountRepository accountRepository;
   final AddressRepository addressRepository;
@@ -22,10 +25,13 @@ class LogoutBloc extends Bloc<LogoutEvent, LogoutState> {
   }
 
   void _onLogout(LogoutEvent event, Emitter emit) async {
+    logger.d('Logout event received');
     await walletRepository.deleteAllWallets();
     await accountRepository.deleteAllAccounts();
     await addressRepository.deleteAllAddresses();
     cacheProvider.removeAll();
+
+    logger.d('emit logout state');
     emit(LogoutState(logoutState: LoggedOut()));
   }
 }

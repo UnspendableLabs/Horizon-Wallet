@@ -62,37 +62,31 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingCreateScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              child: const OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder:
-                (BuildContext context, GoRouterState state, navigationShell) {
+            builder: (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -214,11 +208,13 @@ class MyApp extends StatelessWidget {
   // Define light and dark themes
   final ThemeData lightTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color.fromRGBO(246, 247, 250, 1),
+      seedColor: Colors.white,
       brightness: Brightness.light,
-      primary: Color.fromRGBO(68, 69, 99, 1),
-      onPrimary: Color.fromRGBO(227, 237, 254, 1),
-      onSurface: Color.fromRGBO(68, 69, 99, 1),
+      primary: const Color.fromRGBO(68, 69, 99, 1),
+      onPrimary: Colors.white,
+      onSurface: const Color.fromRGBO(68, 69, 99, 1),
+      secondary: const Color.fromRGBO(227, 237, 254, 1),
+      onSecondary: const Color.fromRGBO(68, 121, 252, 1),
     ),
     brightness: Brightness.light,
     scaffoldBackgroundColor: const Color.fromRGBO(246, 247, 250, 1),
@@ -234,6 +230,12 @@ class MyApp extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color.fromRGBO(227, 237, 254, 1),
         foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(68, 121, 252, 1),
+        foregroundColor: const Color.fromRGBO(227, 237, 254, 1),
       ),
     ),
     listTileTheme: const ListTileThemeData(
@@ -270,9 +272,11 @@ class MyApp extends StatelessWidget {
     colorScheme: ColorScheme.fromSeed(
       seedColor: const Color.fromRGBO(35, 35, 58, 1),
       brightness: Brightness.dark,
-      primary: Color.fromRGBO(255, 255, 255, 1),
-      onPrimary: Color.fromRGBO(25, 25, 39, 1),
-      onSurface: Color.fromRGBO(255, 255, 255, 1),
+      primary: const Color.fromRGBO(255, 255, 255, 1),
+      onPrimary: const Color.fromRGBO(25, 25, 39, 1),
+      onSurface: const Color.fromRGBO(255, 255, 255, 1),
+      secondary: const Color.fromRGBO(227, 237, 254, 1),
+      onSecondary: const Color.fromRGBO(68, 121, 252, 1),
     ),
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color.fromRGBO(35, 35, 58, 1),
@@ -288,6 +292,12 @@ class MyApp extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
         foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(146, 209, 253, 1),
+        foregroundColor: const Color.fromRGBO(25, 25, 39, 1),
       ),
     ),
     listTileTheme: const ListTileThemeData(
@@ -307,8 +317,7 @@ class MyApp extends StatelessWidget {
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(
-                146, 209, 254, 1); // Color when selected
+            return const Color.fromRGBO(146, 209, 254, 1); // Color when selected
           }
           return null; // Use default color when not selected
         },
@@ -349,8 +358,7 @@ class MyApp extends StatelessWidget {
         child: MaterialApp.router(
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode
-              .light, // Automatically switch between light and dark themes
+          themeMode: ThemeMode.light, // Automatically switch between light and dark themes
           routeInformationParser: AppRouter.router.routeInformationParser,
           routerDelegate: AppRouter.router.routerDelegate,
           routeInformationProvider: AppRouter.router.routeInformationProvider,
