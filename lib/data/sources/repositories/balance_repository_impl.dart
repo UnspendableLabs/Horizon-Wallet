@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:logger/logger.dart';
+import 'package:decimal/decimal.dart';
 
 final logger = Logger();
 
@@ -74,7 +75,10 @@ class BalanceRepositoryImpl implements BalanceRepository {
       final utxos = await utxoRepository.getUnspentForAddress(address);
       // value is in sats, amount is in BTC
       int sum = utxos.fold(0, (sum, utxo) => sum + utxo.value);
-      double normalized = utxos.fold(0, (sum, utxo) => sum + utxo.amount);
+
+      Decimal normalized = utxos.fold(Decimal.zero,
+          (sum, utxo) => sum + Decimal.parse(utxo.amount.toString()));
+
       balances.add(b.Balance(
           asset: 'BTC',
           quantity: sum,
