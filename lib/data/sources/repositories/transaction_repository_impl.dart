@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';

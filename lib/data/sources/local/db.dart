@@ -11,7 +11,7 @@ import 'schema_versions.dart';
 part "db.g.dart";
 
 // TODO: read from env
-final ENV = "dev";
+const ENV = "dev";
 
 @DriftDatabase(tables: [Wallets, Accounts, Addresses, Transactions])
 class DB extends _$DB {
