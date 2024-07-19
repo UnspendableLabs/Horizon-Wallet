@@ -317,9 +317,9 @@ class Shell extends StatelessWidget {
               child: Scaffold(
                   body: shell.state.when(
             initial: () => const Text(
-                "loading..."), // TODO: all of this is smell.  should only handle success branch
+                "Loading..."), // TODO: all of this is smell.  should only handle success branch
             onboarding: (_) => const Text("onboarding"),
-            loading: () => const Text("loading..."),
+            loading: () => const Text("Loading..."),
             error: (e) => const Text("error"),
             success: (shell) {
               return BlocProvider<AddressesBloc>(

@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_event.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_state.dart';
@@ -20,8 +27,7 @@ const double _pagePadding = 16.0;
 class PasswordPrompt extends StatefulWidget {
   final String accountUuid;
 
-  final AccountSettingsRepository accountSettingsRepository =
-      GetIt.I.get<AccountSettingsRepository>();
+  final AccountSettingsRepository accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
 
   PasswordPrompt({required this.accountUuid, super.key});
 
@@ -44,8 +50,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PasswordPromptBloc, PasswordPromptState>(
-        builder: (context, state) {
+    return BlocBuilder<PasswordPromptBloc, PasswordPromptState>(builder: (context, state) {
       return Form(
         key: _formKey,
         child: Column(
@@ -57,9 +62,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
               autocorrect: false,
               controller: passwordController,
               decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Password",
-                  floatingLabelBehavior: FloatingLabelBehavior.always),
+                  border: OutlineInputBorder(), labelText: "Password", floatingLabelBehavior: FloatingLabelBehavior.always),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Required';
@@ -72,10 +75,8 @@ class _PasswordPromptState extends State<PasswordPrompt> {
             const SizedBox(height: 16.0), // Spacing between inputs
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize:
-                    const Size(120, 48), // Ensures button doesn't resize
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                minimumSize: const Size(120, 48), // Ensures button doesn't resize
               ),
               onPressed: () {
                 // Validate will return true if the form is valid, or false if
@@ -87,8 +88,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
                   String password = passwordController.text;
 
-                  int gapLimit = widget.accountSettingsRepository
-                      .getGapLimit(widget.accountUuid);
+                  int gapLimit = widget.accountSettingsRepository.getGapLimit(widget.accountUuid);
 
                   context.read<PasswordPromptBloc>().add(Submit(
                         password: password,
@@ -99,8 +99,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                 }
               },
               child: state.maybeWhen(
-                validate: () => const SizedBox(
-                    width: 20, height: 20, child: CircularProgressIndicator()),
+                validate: () => const SizedBox(width: 20, height: 20, child: CircularProgressIndicator()),
                 orElse: () => const Text('Submit'),
               ),
             ),
@@ -114,23 +113,24 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
 class SettingsPage extends StatelessWidget {
   final cacheProvider = GetIt.I.get<CacheProvider>();
+
   SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    Color backgroundColor = isDarkTheme ? const Color.fromRGBO(35, 35, 58, 1) : const Color.fromRGBO(246, 247, 250, 1);
 
     Account? account = shell.state.maybeWhen(
-        success: (state) => state.accounts
-            .firstWhere((account) => account.uuid == state.currentAccountUuid),
+        success: (state) => state.accounts.firstWhere((account) => account.uuid == state.currentAccountUuid),
         orElse: () => null);
 
     if (account == null) {
       throw Exception("invariant: account is null");
     }
 
-    final initialGapLimit =
-        GetIt.I.get<AccountSettingsRepository>().getGapLimit(account.uuid);
+    final initialGapLimit = GetIt.I.get<AccountSettingsRepository>().getGapLimit(account.uuid);
 
     SliverWoltModalSheetPage passwordPrompt(
       BuildContext modalSheetContext,
@@ -144,9 +144,7 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.all(_pagePadding),
             icon: const Icon(Icons.close),
             onPressed: () {
-              context
-                  .read<PasswordPromptBloc>()
-                  .add(Reset(gapLimit: initialGapLimit));
+              context.read<PasswordPromptBloc>().add(Reset(gapLimit: initialGapLimit));
 
               Navigator.of(modalSheetContext).pop();
             },
@@ -163,15 +161,13 @@ class SettingsPage extends StatelessWidget {
               )));
     }
 
-    return BlocConsumer<PasswordPromptBloc, PasswordPromptState>(
-        listener: (context, state) {
+    return BlocConsumer<PasswordPromptBloc, PasswordPromptState>(listener: (context, state) {
       state.whenOrNull(error: (msg) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(msg),
         ));
       }, success: (password, gapLimit) async {
-        context.read<AddressesBloc>().add(Update(
-            accountUuid: account.uuid, gapLimit: gapLimit, password: password));
+        context.read<AddressesBloc>().add(Update(accountUuid: account.uuid, gapLimit: gapLimit, password: password));
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),
@@ -183,16 +179,13 @@ class SettingsPage extends StatelessWidget {
       }, initial: (maybeGapLimit) {
         if (maybeGapLimit != null) {
           // TODO put in account settings repository
-          Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit,
-              notify: true);
+          Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit, notify: true);
         }
       }, prompt: (gapLimit) {
         WoltModalSheet.show<void>(
           context: context,
           onModalDismissedWithBarrierTap: () {
-            context
-                .read<PasswordPromptBloc>()
-                .add(Reset(gapLimit: initialGapLimit));
+            context.read<PasswordPromptBloc>().add(Reset(gapLimit: initialGapLimit));
 
             Navigator.of(context).pop();
           },
@@ -219,28 +212,62 @@ class SettingsPage extends StatelessWidget {
                 hasAppBar: false,
                 key: Key(account.uuid),
                 children: [
-                  SettingsGroup(title: "Address Settings", children: [
-                    SliderSettingsTile(
-                      title: 'Gap Limit',
-                      leading: const Icon(Icons.numbers),
-                      settingKey: '${account.uuid}:gap-limit',
-                      defaultValue: 10,
-                      min: 1,
-                      max: 50,
-                      step: 1,
-                      // leading: Icon(Icons.volume_up),
-                      decimalPrecision: 0,
-                      onChange: (value) {
-                        context
-                            .read<PasswordPromptBloc>()
-                            .add(Show(initialGapLimit: initialGapLimit));
-                        // context.read<AddressesBloc>().add(Generate(
-                        //       accountUuid: account.uuid,
-                        //       gapLimit: value.toInt(),
-                        //     ));
-                      },
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30.0),
                     ),
-                  ]),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Address Settings',
+                              ),
+                              BlocProvider(
+                                create: (context) => LogoutBloc(
+                                  walletRepository: GetIt.I.get<WalletRepository>(),
+                                  accountRepository: GetIt.I.get<AccountRepository>(),
+                                  addressRepository: GetIt.I.get<AddressRepository>(),
+                                  cacheProvider: GetIt.I.get<CacheProvider>(),
+                                ),
+                                child: BlocListener<LogoutBloc, LogoutState>(
+                                  listener: (context, state) {
+                                    if (state is LoggedOut) {
+                                      GoRouter.of(context).go('/onboarding');
+                                    }
+                                  },
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      context.read<LogoutBloc>().add(LogoutEvent());
+                                    },
+                                    child: const Text('Logout'),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SliderSettingsTile(
+                          title: 'Address Settings',
+                          subtitle: 'Gap Limit',
+                          leading: const Icon(Icons.numbers),
+                          settingKey: '${account.uuid}:gap-limit',
+                          defaultValue: 10,
+                          min: 1,
+                          max: 50,
+                          step: 1,
+                          decimalPrecision: 0,
+                          onChange: (value) {
+                            context.read<PasswordPromptBloc>().add(Show(initialGapLimit: initialGapLimit));
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

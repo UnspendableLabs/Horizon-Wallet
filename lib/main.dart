@@ -40,7 +40,7 @@ class LoadingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(),
-              Text('loading...'),
+              Text('Loading...'),
             ],
           ),
         ),
@@ -213,6 +213,13 @@ class MyApp extends StatelessWidget {
 
   // Define light and dark themes
   final ThemeData lightTheme = ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color.fromRGBO(246, 247, 250, 1),
+      brightness: Brightness.light,
+      primary: Color.fromRGBO(68, 69, 99, 1),
+      onPrimary: Color.fromRGBO(227, 237, 254, 1),
+      onSurface: Color.fromRGBO(68, 69, 99, 1),
+    ),
     brightness: Brightness.light,
     scaffoldBackgroundColor: const Color.fromRGBO(246, 247, 250, 1),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
@@ -252,9 +259,21 @@ class MyApp extends StatelessWidget {
         },
       ),
     ),
+    cardTheme: CardTheme(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
+      ),
+    ),
   );
 
   final ThemeData darkTheme = ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color.fromRGBO(35, 35, 58, 1),
+      brightness: Brightness.dark,
+      primary: Color.fromRGBO(255, 255, 255, 1),
+      onPrimary: Color.fromRGBO(25, 25, 39, 1),
+      onSurface: Color.fromRGBO(255, 255, 255, 1),
+    ),
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color.fromRGBO(35, 35, 58, 1),
     primaryColor: Colors.white,
@@ -293,6 +312,11 @@ class MyApp extends StatelessWidget {
           }
           return null; // Use default color when not selected
         },
+      ),
+    ),
+    cardTheme: CardTheme(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
       ),
     ),
   );
