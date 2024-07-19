@@ -5,7 +5,7 @@ import 'package:horizon/data/sources/local/tables/transactions_table.dart';
 
 part 'transactions_dao.g.dart';
 
-@DriftAccessor(tables: [ Transactions])
+@DriftAccessor(tables: [Transactions])
 class TransactionsDao extends DatabaseAccessor<DB> with _$TransactionsDaoMixin {
   TransactionsDao(super.db);
   Future<void> insert(TransactionModel transaction) {
