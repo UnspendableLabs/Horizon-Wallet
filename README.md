@@ -51,3 +51,7 @@ to run in testnet mode, set TEST=true
 
 ❯ dart run drift_dev schema dump lib/data/sources/local/db.dart drift_schemas/
 
+### derive migration step fn
+
+❯ dart run drift_dev schema steps drift_schemas/ lib/data/sources/local/schema_versions.dart
+
