@@ -240,6 +240,14 @@ class MyApp extends StatelessWidget {
         foregroundColor: const Color.fromRGBO(227, 237, 254, 1),
       ),
     ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
+        side: const BorderSide(
+          color: Color.fromRGBO(68, 121, 252, 1),
+        ),
+      ),
+    ),
     listTileTheme: const ListTileThemeData(
         iconColor: Color.fromRGBO(106, 106, 134, 1),
         textColor: Color.fromRGBO(106, 106, 134, 1),
@@ -301,6 +309,14 @@ class MyApp extends StatelessWidget {
       style: FilledButton.styleFrom(
         backgroundColor: const Color.fromRGBO(146, 209, 253, 1),
         foregroundColor: const Color.fromRGBO(25, 25, 39, 1),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+        side: const BorderSide(
+          color: Color.fromRGBO(146, 209, 253, 1),
+        ),
       ),
     ),
     listTileTheme: const ListTileThemeData(

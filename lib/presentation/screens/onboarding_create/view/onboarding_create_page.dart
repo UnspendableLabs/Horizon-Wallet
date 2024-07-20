@@ -48,7 +48,12 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
       child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
           builder: (context, state) {
         return Scaffold(
-            appBar: AppBar(title: const Text('Horizon')),
+            appBar: AppBar(
+              title: const Text(
+                'Horizon',
+                style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+              ),
+            ),
             body: switch (state.createState) {
               CreateStateNotAsked => const Mnemonic(),
               CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
@@ -147,8 +152,6 @@ class PasswordPrompt extends StatelessWidget {
                             shell.onOnboarding();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -165,15 +168,19 @@ class PasswordPrompt extends StatelessWidget {
                               context.read<OnboardingCreateBloc>().add(
                                   PasswordError(
                                       error: 'Password cannot be empty'));
+                            } else if (_passwordController.text !=
+                                _passwordConfirmationController.text) {
+                              context.read<OnboardingCreateBloc>().add(
+                                  PasswordError(
+                                      error: 'Passwords do not match'));
                             } else {
                               context
                                   .read<OnboardingCreateBloc>()
-                                  .add(CreateWallet());
+                                  .add(CreateWallet(
+                                    ));
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -244,8 +251,6 @@ class _MnemonicState extends State<Mnemonic> {
                           shell.onOnboarding();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
-                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -262,8 +267,6 @@ class _MnemonicState extends State<Mnemonic> {
                               .add(UnconfirmMnemonic());
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -372,8 +375,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                         .read<OnboardingCreateBloc>()
                         .add(GoBackToMnemonic()),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -387,11 +388,13 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     onPressed: () {
                       context
                           .read<OnboardingCreateBloc>()
-                          .add(ConfirmMnemonic());
+                          .add(ConfirmMnemonic(
+                              mnemonic: controllers
+                                  .map((controller) => controller.text)
+                                  .join(' ')
+                                  .trim()));
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),

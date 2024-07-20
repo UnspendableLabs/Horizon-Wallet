@@ -48,6 +48,8 @@ class OnboardingCreateBloc
     on<PasswordConfirmationChanged>((event, emit) {
       if (state.password != event.passwordConfirmation) {
         emit(state.copyWith(passwordError: "Passwords do not match"));
+      } else {
+        emit(state.copyWith(passwordError: null));
       }
     });
 
@@ -126,7 +128,11 @@ class OnboardingCreateBloc
     });
 
     on<ConfirmMnemonic>((event, emit) {
-      emit(state.copyWith(createState: CreateStateMnemonicConfirmed));
+      if (state.mnemonicState.mnemonic != event.mnemonic) {
+        emit(state.copyWith(mnemonicError: 'Mnemonic does not match'));
+      } else {
+        emit(state.copyWith(createState: CreateStateMnemonicConfirmed, mnemonicError: null));
+      }
     });
 
     on<GoBackToMnemonic>((event, emit) {

@@ -54,7 +54,11 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
       child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
           builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Horizon')),
+          appBar: AppBar(
+              title: const Text(
+            'Horizon',
+            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+          )),
           body: Column(
             children: [
               Flexible(
@@ -104,9 +108,10 @@ class PasswordPrompt extends StatelessWidget {
         children: [
           const Row(children: [
             Text('Password', style: TextStyle(fontSize: 16)),
+            SizedBox(width: 4),
             Tooltip(
-              message: 'Password to encrypt your wallet',
-              child: Icon(Icons.info, size: 16),
+              message: 'This password will only be used to encrypt your wallet. It will not be used to access your wallet.',
+              child: Icon(Icons.info, size: 12),
             ),
           ]),
           Expanded(
