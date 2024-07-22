@@ -63,31 +63,37 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingCreateScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: const OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              child:
+                  const OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder: (BuildContext context, GoRouterState state, navigationShell) {
+            builder:
+                (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -336,7 +342,8 @@ class MyApp extends StatelessWidget {
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(146, 209, 254, 1); // Color when selected
+            return const Color.fromRGBO(
+                146, 209, 254, 1); // Color when selected
           }
           return null; // Use default color when not selected
         },
@@ -369,24 +376,24 @@ class MyApp extends StatelessWidget {
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(),
         ),
-        BlocProvider<ThemeBloc>(
+         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),
         ),
       ],
       child: BlocListener<ShellStateCubit, ShellState>(
-        listener: (context, themeMode) {
+        listener: (context, state) {
           AppRouter.router.refresh();
         },
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
             return MaterialApp.router(
-       theme: lightTheme,
-              darkTheme: darkTheme,
-              themeMode: themeMode,
-              routeInformationParser: AppRouter.router.routeInformationParser,
-              routerDelegate: AppRouter.router.routerDelegate,
-              routeInformationProvider: AppRouter.router.routeInformationProvider,
-            );
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  themeMode: themeMode,
+                  routeInformationParser: AppRouter.router.routeInformationParser,
+                  routerDelegate: AppRouter.router.routerDelegate,
+                  routeInformationProvider: AppRouter.router.routeInformationProvider,
+                );
           },
         ),
       ),
