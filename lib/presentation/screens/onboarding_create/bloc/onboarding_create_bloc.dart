@@ -28,18 +28,11 @@ class OnboardingCreateBloc
   final addressService = GetIt.I<AddressService>();
 
   OnboardingCreateBloc() : super(const OnboardingCreateState()) {
-    on<MnemonicSubmit>((event, emit) {
-      logger.d('Processing MnemonicSubmit event');
-      emit(state.copyWith(
-          createState: CreateStateLoading(),
-          mnemonicState:
-              GenerateMnemonicStateSuccess(mnemonic: event.mnemonic)));
-    });
 
     on<PasswordChanged>((event, emit) {
       if (event.password.length < 8) {
         emit(state.copyWith(
-            passwordError: "Password must be at least 8 characters."));
+          passwordError: "Password must be at least 8 characters."));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
@@ -62,10 +55,10 @@ class OnboardingCreateBloc
       emit(state.copyWith(createState: CreateStateLoading()));
       try {
         Wallet wallet = await walletService.deriveRoot(
-            state.mnemonicState.mnemonic, state.password!);
+          state.mnemonicState.mnemonic, state.password!);
 
         String decryptedPrivKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, state.password!);
+          wallet.encryptedPrivKey, state.password!);
 
         Account account = Account(
             name: 'Account 0',
@@ -94,7 +87,7 @@ class OnboardingCreateBloc
       } catch (e) {
         logger.e({'message': 'Failed to create wallet', 'error': e});
         emit(state.copyWith(
-            createState: CreateStateError(message: e.toString())));
+          createState: CreateStateError(message: e.toString())));
       }
     });
 
@@ -105,17 +98,17 @@ class OnboardingCreateBloc
         String mnemonic = mnmonicService.generateMnemonic();
 
         emit(state.copyWith(
-            mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic)));
+          mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic)));
       } catch (e) {
         emit(state.copyWith(
-            mnemonicState: GenerateMnemonicStateError(message: e.toString())));
+          mnemonicState: GenerateMnemonicStateError(message: e.toString())));
       }
     });
 
     on<UnconfirmMnemonic>((event, emit) {
       emit(state.copyWith(
           mnemonicState: GenerateMnemonicStateUnconfirmed(
-              mnemonic: state.mnemonicState.mnemonic),
+            mnemonic: state.mnemonicState.mnemonic),
           createState: CreateStateMnemonicUnconfirmed));
     });
 
@@ -143,7 +136,7 @@ class OnboardingCreateBloc
   _getCoinType() {
     // bool isTestnet = dotenv.get('TEST') == 'true';
     bool isTestnet =
-        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
+     const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? '1\'' : '0\'';
   }
 }

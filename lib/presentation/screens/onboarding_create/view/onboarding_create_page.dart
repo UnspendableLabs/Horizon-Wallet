@@ -97,9 +97,10 @@ class PasswordPrompt extends StatelessWidget {
         children: [
           const Row(children: [
             Text('Password', style: TextStyle(fontSize: 16)),
+            SizedBox(width: 4),
             Tooltip(
-              message: 'Password to encrypt your wallet',
-              child: Icon(Icons.info, size: 16),
+              message: 'This password will be used to locally encrypt your wallet',
+              child: Icon(Icons.info, size: 12),
             ),
           ]),
           Expanded(
@@ -250,7 +251,7 @@ class _MnemonicState extends State<Mnemonic> {
                           final shell = context.read<ShellStateCubit>();
                           shell.onOnboarding();
                         },
-                        style: ElevatedButton.styleFrom(
+                        style: FilledButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -374,7 +375,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     onPressed: () => context
                         .read<OnboardingCreateBloc>()
                         .add(GoBackToMnemonic()),
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
