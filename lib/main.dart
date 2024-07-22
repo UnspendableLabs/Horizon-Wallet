@@ -374,14 +374,13 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: BlocListener<ShellStateCubit, ShellState>(
-        listener: (context, state) {
+        listener: (context, themeMode) {
           AppRouter.router.refresh();
         },
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
-            print('theme mode:');
             return MaterialApp.router(
-              theme: lightTheme,
+       theme: lightTheme,
               darkTheme: darkTheme,
               themeMode: themeMode,
               routeInformationParser: AppRouter.router.routeInformationParser,

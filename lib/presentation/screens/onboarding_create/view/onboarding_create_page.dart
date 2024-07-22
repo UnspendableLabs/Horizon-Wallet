@@ -177,8 +177,7 @@ class PasswordPrompt extends StatelessWidget {
                             } else {
                               context
                                   .read<OnboardingCreateBloc>()
-                                  .add(CreateWallet(
-                                    ));
+                                  .add(CreateWallet());
                             }
                           },
                           style: ElevatedButton.styleFrom(
