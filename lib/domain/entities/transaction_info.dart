@@ -12,8 +12,7 @@ class TransactionInfo {
   final TransactionUnpacked unpackedData;
 
   const TransactionInfo(
-      {
-      required this.raw,
+      {required this.raw,
       required this.hash,
       required this.source,
       required this.destination,

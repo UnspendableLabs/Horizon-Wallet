@@ -84,7 +84,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         // final memoIsHex = event.memoIsHex;
 
         final rawTx = await composeRepository.composeSend(source, destination,
-            asset, quantity, true, 2000 ); // TODO: don't hardcode fee
+            asset, quantity, true, 2000); // TODO: don't hardcode fee
 
         final utxoResponse =
             await utxoRepository.getUnspentForAddress(source, true);

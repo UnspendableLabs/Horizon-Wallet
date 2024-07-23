@@ -29,16 +29,12 @@ class TransactionRepositoryImpl implements TransactionRepository {
     );
   }
 
-
   @override
-
   Future<void> insert(TransactionInfo transactionInfo) async {
-
     Map<String, dynamic> unpackedJson = {
       "messageType": transactionInfo.unpackedData.messageType,
       "messageData": transactionInfo.unpackedData.messageData,
     };
-
 
     TransactionModel tx = TransactionModel(
       hash: transactionInfo.hash,
