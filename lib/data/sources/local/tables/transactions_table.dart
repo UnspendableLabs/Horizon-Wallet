@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import "addresses_table.dart";
 
 @DataClassName("Transaction")
 class Transactions extends Table {
@@ -12,5 +11,6 @@ class Transactions extends Table {
   TextColumn get data => text()();
   TextColumn get unpackedData => text()();
   DateTimeColumn get submittedAt => dateTime()();
+  @override
   Set<Column> get primaryKey => {hash};
 }

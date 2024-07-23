@@ -6,7 +6,6 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
