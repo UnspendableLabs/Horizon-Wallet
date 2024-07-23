@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -84,7 +85,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         // final memoIsHex = event.memoIsHex;
 
         final rawTx = await composeRepository.composeSend(source, destination,
-            asset, quantity, true, 0); // TODO: don't hardcode fee
+            asset, quantity, true, 2000 ); // TODO: don't hardcode fee
 
         final utxoResponse =
             await utxoRepository.getUnspentForAddress(source, true);
@@ -109,20 +110,15 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         String txHex = await transactionService.signTransaction(
             rawTx.hex, addressPrivKey, source, utxoMap);
 
-        TransactionUnpacked unpacked =
-            await transactionRepository.unpack(txHex);
+        TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-        await transactionRepository.insert(
-          source: source,
-          hash: txHash,
-          hex: txHex,
-          unpacked: unpacked,
-        );
+        await transactionRepository.insert(txInfo);
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
       } catch (error) {
+        rethrow;
         if (error is DioException) {
           emit(state.copyWith(
               submitState: SubmitState.error(

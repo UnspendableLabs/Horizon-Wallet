@@ -798,8 +798,8 @@ class Unpack {
 @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
 class Info {
   final String source;
-  final String destination;
-  final double btcAmount;
+  final String? destination;
+  final int btcAmount;
   final int fee;
   final String data;
   final Unpack unpackedData;
@@ -1077,8 +1077,7 @@ abstract class V2Api {
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
     @Query("description") String? description,
-    @Query("verbose") bool? verbose,
-    @Query("limit") int? limit,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")

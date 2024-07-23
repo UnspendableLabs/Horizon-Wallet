@@ -15,6 +15,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
       [bool? allowUnconfirmedTx, int? fee]) async {
     final response = await api.composeSend(
         sourceAddress, destination, asset, quantity, allowUnconfirmedTx, fee);
+
+
     if (response.result == null) {
       // TODO: handle errors
       throw Exception('Failed to compose send');
@@ -31,7 +33,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
       String? description,
       String? transferDestination]) async {
     final response = await api.composeIssuance(sourceAddress, name, quantity,
-        transferDestination, divisible, lock, reset, description, true);
+        transferDestination, divisible, lock, reset, description, true );
     if (response.result == null) {
       // TODO: handle errors
       throw Exception('Failed to compose issuance');
