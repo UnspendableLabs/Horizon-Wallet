@@ -593,8 +593,8 @@ Map<String, dynamic> _$UnpackToJson(Unpack instance) => <String, dynamic>{
 
 Info _$InfoFromJson(Map<String, dynamic> json) => Info(
       source: json['source'] as String,
-      destination: json['destination'] as String,
-      btcAmount: (json['btc_amount'] as num).toDouble(),
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num).toInt(),
       fee: (json['fee'] as num).toInt(),
       data: json['data'] as String,
       unpackedData:
@@ -1469,8 +1469,7 @@ class _V2Api implements V2Api {
     bool? lock,
     bool? reset,
     String? description,
-    bool? verbose,
-    int? limit,
+    bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -1481,8 +1480,7 @@ class _V2Api implements V2Api {
       r'lock': lock,
       r'reset': reset,
       r'description': description,
-      r'verbose': verbose,
-      r'limit': limit,
+      r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

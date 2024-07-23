@@ -1,5 +1,7 @@
+import "dart:convert";
 
 import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
@@ -27,19 +29,54 @@ class TransactionRepositoryImpl implements TransactionRepository {
     );
   }
 
+
   @override
-  Future<void> insert(
-      {required String hash,
-      required String hex,
-      required String source,
-      required TransactionUnpacked unpacked}) async {
+
+  Future<void> insert(TransactionInfo transactionInfo) async {
+
+    Map<String, dynamic> unpackedJson = {
+      "messageType": transactionInfo.unpackedData.messageType,
+      "messageData": transactionInfo.unpackedData.messageData,
+    };
+
+
     TransactionModel tx = TransactionModel(
-        hash: hash,
-        submittedAt: DateTime.now(),
-        hex: hex,
-        source: source,
-        unpacked: "");
+      hash: transactionInfo.hash,
+      raw: transactionInfo.raw,
+      source: transactionInfo.source,
+      destination: transactionInfo.destination,
+      btcAmount: transactionInfo.btcAmount,
+      fee: transactionInfo.fee,
+      data: transactionInfo.data,
+      unpackedData: jsonEncode(unpackedJson),
+      submittedAt: DateTime.now(),
+    );
 
     await transactionDao.insert(tx);
+  }
+
+  @override
+  Future<TransactionInfo> getInfo(String raw) async {
+    final response = await api.getTransactionInfo(raw);
+
+    if (response.result == null) {
+      throw Exception("Failed to get transaction info: $raw");
+    }
+
+    Info info = response.result!;
+
+    Unpack unpacked = info.unpackedData;
+
+    return TransactionInfo(
+      hash: "",
+      raw: raw,
+      source: info.source,
+      destination: info.destination,
+      btcAmount: info.btcAmount,
+      fee: info.fee,
+      data: info.data,
+      unpackedData: TransactionUnpacked(
+          messageType: unpacked.messageType, messageData: unpacked.messageData),
+    );
   }
 }

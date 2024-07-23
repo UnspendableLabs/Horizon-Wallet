@@ -20,7 +20,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 
-import 'package:horizon/domain/entities/transaction_unpacked.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 
 class ComposeIssuanceBloc
@@ -124,15 +124,9 @@ class ComposeIssuanceBloc
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-        TransactionUnpacked unpacked =
-            await transactionRepository.unpack(txHex);
+        TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
-        await transactionRepository.insert(
-          source: source,
-          hash: txHash,
-          hex: txHex,
-          unpacked: unpacked,
-        );
+        await transactionRepository.insert(txInfo);
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {
