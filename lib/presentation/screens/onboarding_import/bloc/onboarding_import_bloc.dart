@@ -81,13 +81,6 @@ class OnboardingImportBloc
             mnemonicError: "Invalid mnemonic length"));
         return;
       } else {
-        try {
-          String validMnemonicEntropy = mnemonicService.mnemonicToEntropy(state.mnemonic);
-        } catch (e) {
-          emit(state.copyWith(
-              mnemonicError: e.toString()));
-          return;
-        }
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
           emit(state.copyWith(

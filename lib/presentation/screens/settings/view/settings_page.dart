@@ -245,19 +245,47 @@ class SettingsPage extends StatelessWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Address Settings',
                                   ),
                                   BlocListener<LogoutBloc, LogoutState>(
                                     listener: (context, state) {
-                                      print('in the listener');
                                       if (state.logoutState is LoggedOut) {
                                         GoRouter.of(context).go('/onboarding');
                                       }
                                     },
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        context.read<LogoutBloc>().add(LogoutEvent());
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) {
+                                            return BlocProvider.value(
+                                              value: BlocProvider.of<LogoutBloc>(context),
+                                              child: AlertDialog(
+                                                title: const Text('Confirm Logout'),
+                                                content: Text(
+                                                  'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                                  style:
+                                                      TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary),
+                                                ),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      GoRouter.of(context).pop();
+                                                    },
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      context.read<LogoutBloc>().add(LogoutEvent());
+                                                    },
+                                                    child: const Text('Logout'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
                                       },
                                       child: const Text('Logout'),
                                     ),
@@ -316,3 +344,7 @@ class SettingsPage extends StatelessWidget {
     ));
   }
 }
+
+/**
+ *
+ */
