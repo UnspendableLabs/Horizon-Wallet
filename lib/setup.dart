@@ -63,11 +63,6 @@ Future<void> setup() async {
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
-  injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
-      transactionDao:
-          TransactionsDao(injector.get<DatabaseManager>().database)));
-
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl());
   injector.registerSingleton<EncryptionService>(EncryptionServiceImpl());
@@ -83,6 +78,12 @@ Future<void> setup() async {
       WalletRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<AddressRepository>(
       AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
+      addressRepository: GetIt.I.get<AddressRepository>(),
+      api: GetIt.I.get<V2Api>(),
+      transactionDao:
+          TransactionsDao(injector.get<DatabaseManager>().database)));
 
   injector.registerSingleton<CacheProvider>(HiveCache());
 
