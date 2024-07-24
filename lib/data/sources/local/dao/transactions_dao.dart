@@ -11,4 +11,11 @@ class TransactionsDao extends DatabaseAccessor<DB> with _$TransactionsDaoMixin {
   Future<void> insert(TransactionModel transaction) {
     return into(transactions).insert(transaction);
   }
+
+  Future<List<TransactionModel>> getAll() => select(transactions).get();
+
+  Future<List<TransactionModel>> getAllBySources(List<String> sources) {
+    return (select(transactions)..where((tbl) => tbl.source.isIn(sources)))
+        .get();
+  }
 }
