@@ -34,10 +34,24 @@ class UtxoRepositoryImpl implements UtxoRepository {
   Future<List<Utxo>> getUnspentForAddresses(List<String> addresses,
       [bool? unconfirmed, String? unspentTxHash, bool? verbose]) async {
     List<Utxo> utxos = [];
-    for (var address in addresses) {
-      utxos.addAll(await getUnspentForAddress(
-          address, unconfirmed, unspentTxHash, verbose));
-    }
+    int limit = 50;
+    int? cursor;
+
+    do {
+      final response = await api.getUnspentUTXOsByAddresses(addresses, unconfirmed, verbose, limit, cursor);
+      for (UTXO a in response.result ?? []) {
+        utxos.add(Utxo(
+            vout: a.vout,
+            height: a.height,
+            value: a.value,
+            confirmations: a.confirmations,
+            amount: a.amount,
+            txid: a.txid,
+            address: a.address!));
+      }
+      cursor = response.nextCursor;
+    } while (cursor != null);
+
     return utxos;
   }
 }

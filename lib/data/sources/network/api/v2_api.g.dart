@@ -552,6 +552,7 @@ UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       confirmations: (json['confirmations'] as num).toInt(),
       amount: (json['amount'] as num).toDouble(),
       txid: json['txid'] as String,
+      address: json['address'] as String?,
     );
 
 Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
@@ -561,6 +562,7 @@ Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
       'confirmations': instance.confirmations,
       'amount': instance.amount,
       'txid': instance.txid,
+      'address': instance.address,
     };
 
 // **************************************************************************
@@ -678,6 +680,50 @@ class _V2Api implements V2Api {
             .compose(
               _dio.options,
               '/addresses/${address}/balances?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<BalanceVerbose>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<BalanceVerbose>(
+                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<BalanceVerbose>>> getBalancesByAddressesVerbose(
+    List<String> addresses, [
+    int? cursor,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'cursor': cursor,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<BalanceVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/balances?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -1422,6 +1468,53 @@ class _V2Api implements V2Api {
             .compose(
               _dio.options,
               '/bitcoin/addresses/${address}/utxos',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<UTXO>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<UTXO>>> getUnspentUTXOsByAddresses(
+    List<String> addresses, [
+    bool? unconfirmed,
+    bool? verbose,
+    int? limit,
+    int? cursor,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'unconfirmed': unconfirmed,
+      r'verbose': verbose,
+      r'limit': limit,
+      r'cursor': cursor,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<UTXO>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/addresses/utxos',
               queryParameters: queryParameters,
               data: _data,
             )

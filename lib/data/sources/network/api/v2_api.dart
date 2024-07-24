@@ -13,14 +13,9 @@ class Response<T> {
   final int? resultCount;
   final String? error;
 
-  Response(
-      {required this.result,
-      required this.error,
-      this.nextCursor,
-      this.resultCount});
+  Response({required this.result, required this.error, this.nextCursor, this.resultCount});
 
-  factory Response.fromJson(
-          Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
+  factory Response.fromJson(Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
       _$ResponseFromJson(json, fromJsonT);
 }
 
@@ -77,8 +72,7 @@ class Transaction {
       required this.data,
       required this.supported});
 
-  factory Transaction.fromJson(Map<String, dynamic> json) =>
-      _$TransactionFromJson(json);
+  factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -93,8 +87,7 @@ class Balance {
     required this.asset,
   });
 
-  factory Balance.fromJson(Map<String, dynamic> json) =>
-      _$BalanceFromJson(json);
+  factory Balance.fromJson(Map<String, dynamic> json) => _$BalanceFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -109,8 +102,7 @@ class BalanceVerbose extends Balance {
       required this.assetInfo,
       required this.quantityNormalized});
 
-  factory BalanceVerbose.fromJson(Map<String, dynamic> json) =>
-      _$BalanceVerboseFromJson(json);
+  factory BalanceVerbose.fromJson(Map<String, dynamic> json) => _$BalanceVerboseFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -138,8 +130,7 @@ class EventCount {
     required this.eventCount,
   });
 
-  factory EventCount.fromJson(Map<String, dynamic> json) =>
-      _$EventCountFromJson(json);
+  factory EventCount.fromJson(Map<String, dynamic> json) => _$EventCountFromJson(json);
 }
 
 // {
@@ -189,8 +180,7 @@ class AssetInfo {
     required this.description,
     required this.divisible,
   });
-  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
-      _$AssetInfoFromJson(json);
+  factory AssetInfo.fromJson(Map<String, dynamic> json) => _$AssetInfoFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -276,8 +266,7 @@ class Expiration {
     required this.type,
     required this.objectId,
   });
-  factory Expiration.fromJson(Map<String, dynamic> json) =>
-      _$ExpirationFromJson(json);
+  factory Expiration.fromJson(Map<String, dynamic> json) => _$ExpirationFromJson(json);
 }
 
 // {
@@ -353,8 +342,7 @@ class Destruction {
     required this.quantityNormalized,
   });
 
-  factory Destruction.fromJson(Map<String, dynamic> json) =>
-      _$DestructionFromJson(json);
+  factory Destruction.fromJson(Map<String, dynamic> json) => _$DestructionFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -401,8 +389,7 @@ class Issuance {
     required this.reset,
   });
 
-  factory Issuance.fromJson(Map<String, dynamic> json) =>
-      _$IssuanceFromJson(json);
+  factory Issuance.fromJson(Map<String, dynamic> json) => _$IssuanceFromJson(json);
 }
 
 @JsonSerializable()
@@ -417,8 +404,7 @@ class ComposeIssuance {
     required this.name,
   });
 
-  factory ComposeIssuance.fromJson(Map<String, dynamic> json) =>
-      _$ComposeIssuanceFromJson(json);
+  factory ComposeIssuance.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceFromJson(json);
 }
 
 @JsonSerializable()
@@ -441,8 +427,7 @@ class ComposeIssuanceParams {
     this.transferDestination,
   });
 
-  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) =>
-      _$ComposeIssuanceParamsFromJson(json);
+  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceParamsFromJson(json);
 }
 
 // Send
@@ -573,8 +558,7 @@ class Dispenser {
     required this.escrowQuantityNormalized,
   });
 
-  factory Dispenser.fromJson(Map<String, dynamic> json) =>
-      _$DispenserFromJson(json);
+  factory Dispenser.fromJson(Map<String, dynamic> json) => _$DispenserFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -605,8 +589,7 @@ class Dispense {
     required this.assetInfo,
   });
 
-  factory Dispense.fromJson(Map<String, dynamic> json) =>
-      _$DispenseFromJson(json);
+  factory Dispense.fromJson(Map<String, dynamic> json) => _$DispenseFromJson(json);
 }
 
 // Sweep
@@ -680,8 +663,7 @@ class SendTxParams {
     required this.memoIsHex,
     required this.useEnhancedSend,
   });
-  factory SendTxParams.fromJson(Map<String, dynamic> json) =>
-      _$SendTxParamsFromJson(json);
+  factory SendTxParams.fromJson(Map<String, dynamic> json) => _$SendTxParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -783,6 +765,7 @@ class UTXO {
   final int confirmations;
   final double amount;
   final String txid;
+  final String? address;
 
   const UTXO({
     required this.vout,
@@ -791,6 +774,7 @@ class UTXO {
     required this.confirmations,
     required this.amount,
     required this.txid,
+    this.address,
   });
 
   factory UTXO.fromJson(Map<String, dynamic> json) => _$UTXOFromJson(json);
@@ -818,6 +802,13 @@ abstract class V2Api {
   @GET("/addresses/{address}/balances?verbose=true")
   Future<Response<List<BalanceVerbose>>> getBalancesByAddressVerbose(
     @Path("address") String address, [
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/balances?verbose=true")
+  Future<Response<List<BalanceVerbose>>> getBalancesByAddressesVerbose(
+    @Query("addresses") List<String> addresses, [
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
   ]);
@@ -1084,6 +1075,15 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
     @Query("unspent_tx_hash") String? unspentTxHash,
     @Query("verbose") bool? verbose,
+  ]);
+
+  @GET("/bitcoin/addresses/utxos")
+  Future<Response<List<UTXO>>> getUnspentUTXOsByAddresses(
+    @Query("addresses") List<String> addresses, [
+    @Query("unconfirmed") bool? unconfirmed,
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
+    @Query("cursor") int? cursor,
   ]);
 
   //     PubKeyHash To Pubkey
