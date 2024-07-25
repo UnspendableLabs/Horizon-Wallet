@@ -91,18 +91,29 @@ void main() {
   group("add StartPolling", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "sets timer",
-        build: () => DashboardActivityFeedBloc(
-            pageSize: 10,
-            accountUuid: "123",
-            transactionLocalRepository: MockTransactionLocalRepository(),
-            transactionRepository: MockTransactionRepository()),
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => []);
+
+          final mockTransactionRepository = MockTransactionRepository();
+          when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
         act: (bloc) =>
             bloc.add(const StartPolling(interval: Duration(seconds: 5))),
         wait: const Duration(milliseconds: 1),
-        // expect: () => [
-        //       DashboardActivityFeedStateLoading(),
-        //       isA<DashboardActivityFeedState>()
-        //     ],
+        expect: () => [
+              DashboardActivityFeedStateLoading(),
+              isA<DashboardActivityFeedState>()
+            ],
         verify: (bloc) {
           expect(bloc.timer, isA<Timer>());
         });
@@ -111,11 +122,22 @@ void main() {
   group("add StartPolling, add StopPolliong", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "clears timer",
-        build: () => DashboardActivityFeedBloc(
-            pageSize: 10,
-            accountUuid: "123",
-            transactionLocalRepository: MockTransactionLocalRepository(),
-            transactionRepository: MockTransactionRepository()),
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => []);
+
+          final mockTransactionRepository = MockTransactionRepository();
+          when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
         act: (bloc) => bloc
           ..add(const StartPolling(interval: Duration(seconds: 5)))
           ..add(const StopPolling()),
@@ -131,11 +153,22 @@ void main() {
 
   group("add Load", () {
     blocTest("emits loading state when load event is added",
-        build: () => DashboardActivityFeedBloc(
-            pageSize: 10,
-            accountUuid: "123",
-            transactionLocalRepository: MockTransactionLocalRepository(),
-            transactionRepository: MockTransactionRepository()),
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => []);
+
+          final mockTransactionRepository = MockTransactionRepository();
+          when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
         act: (bloc) => bloc.add(const Load()),
         wait: const Duration(milliseconds: 1),
         expect: () => [
@@ -144,11 +177,22 @@ void main() {
             ]);
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "emits reloading ok when state is complete ok",
-        build: () => DashboardActivityFeedBloc(
-            pageSize: 10,
-            accountUuid: "123",
-            transactionLocalRepository: MockTransactionLocalRepository(),
-            transactionRepository: MockTransactionRepository()),
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => []);
+
+          final mockTransactionRepository = MockTransactionRepository();
+          when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
         seed: () => const DashboardActivityFeedStateCompleteOk(
             transactions: [], newTransactionCount: 0),
         act: (bloc) => bloc.add(const Load()),
@@ -162,11 +206,22 @@ void main() {
             ]);
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "emits reloading error when state is complete error",
-        build: () => DashboardActivityFeedBloc(
-            pageSize: 10,
-            accountUuid: "123",
-            transactionLocalRepository: MockTransactionLocalRepository(),
-            transactionRepository: MockTransactionRepository()),
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => []);
+
+          final mockTransactionRepository = MockTransactionRepository();
+          when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
         act: (bloc) => bloc.add(const Load()),
@@ -183,18 +238,18 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
-              .thenAnswer((_) async => []);
+          final mockTransactionRepository = MockTransactionRepository();
+          when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: MockTransactionRepository());
+              transactionRepository: mockTransactionRepository);
         },
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
@@ -209,13 +264,16 @@ void main() {
   });
 
   group("interleaving", () {
+    late List<MockTransactionInfo> mockedLocal;
+    late List<MockTransactionInfo> mockedRemote;
+
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "non overlapping",
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          final mockedLocal = MockTransactionInfoFactory.createMultiple([
+          mockedLocal = MockTransactionInfoFactory.createMultiple([
             ("0001", TransactionInfoDomainLocal(raw: "")),
             ("0002", TransactionInfoDomainLocal(raw: "")),
             ("0003", TransactionInfoDomainLocal(raw: "")),
@@ -227,7 +285,7 @@ void main() {
 
           final mockTransactionRepository = MockTransactionRepository();
 
-          final mockedRemote = MockTransactionInfoFactory.createMultiple([
+          mockedRemote = MockTransactionInfoFactory.createMultiple([
             ("0004", TransactionInfoDomainMempool()),
             (
               "0005",
@@ -256,14 +314,67 @@ void main() {
         wait: const Duration(milliseconds: 1),
         expect: () => [
               DashboardActivityFeedStateLoading(),
-              const DashboardActivityFeedStateCompleteOk(
+              DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  DisplayTransaction(hash: "0001"),
-                  DisplayTransaction(hash: "0002"),
-                  DisplayTransaction(hash: "0003"),
-                  DisplayTransaction(hash: "0004"),
-                  DisplayTransaction(hash: "0005"),
-                  DisplayTransaction(hash: "0006"),
+                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
+                  DisplayTransaction(hash: "0002", info: mockedLocal[1]),
+                  DisplayTransaction(hash: "0003", info: mockedLocal[2]),
+                  DisplayTransaction(hash: "0004", info: mockedRemote[0]),
+                  DisplayTransaction(hash: "0005", info: mockedRemote[1]),
+                  DisplayTransaction(hash: "0006", info: mockedRemote[2]),
+                ],
+                newTransactionCount: 0,
+              ),
+            ]);
+
+    blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+        "overlapping",
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+
+          mockedLocal = MockTransactionInfoFactory.createMultiple([
+            ("0001", TransactionInfoDomainLocal(raw: "")),
+            ("0002", TransactionInfoDomainLocal(raw: "")),
+            ("0003", TransactionInfoDomainLocal(raw: "")),
+          ]);
+
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccount("account-id"))
+              .thenAnswer((_) async => mockedLocal);
+
+          final mockTransactionRepository = MockTransactionRepository();
+
+          mockedRemote = MockTransactionInfoFactory.createMultiple([
+            ("0002", TransactionInfoDomainMempool()),
+            (
+              "0003",
+              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
+            ),
+          ]);
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "account-id"))
+              .thenAnswer((_) async => (mockedRemote, null));
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "account-id"))
+              .thenAnswer((_) async => (mockedRemote, null));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "account-id",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
+        act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(milliseconds: 1),
+        expect: () => [
+              DashboardActivityFeedStateLoading(),
+              DashboardActivityFeedStateCompleteOk(
+                transactions: [
+                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
+                  DisplayTransaction(hash: "0002", info: mockedRemote[0]),
+                  DisplayTransaction(hash: "0003", info: mockedRemote[1]),
                 ],
                 newTransactionCount: 0,
               ),
