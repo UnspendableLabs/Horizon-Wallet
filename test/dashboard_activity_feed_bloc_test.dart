@@ -7,12 +7,85 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
+import 'package:horizon/domain/entities/transaction_unpacked.dart';
+import 'package:horizon/domain/entities/display_transaction.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockTransactionRepository extends Mock implements TransactionRepository {}
 
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
+
+class MockTransactionInfo extends Mock implements TransactionInfo {
+  @override
+  final String hash;
+  @override
+  final TransactionInfoDomain domain;
+  @override
+  final String source;
+  @override
+  final String? destination;
+  @override
+  final int btcAmount;
+  @override
+  final int fee;
+  @override
+  final String data;
+  @override
+  final TransactionUnpacked unpackedData;
+
+  MockTransactionInfo({
+    required this.hash,
+    required this.domain,
+    required this.source,
+    this.destination,
+    required this.btcAmount,
+    required this.fee,
+    required this.data,
+    required this.unpackedData,
+  });
+}
+
+class MockTransactionInfoFactory {
+  static int _counter = 0;
+
+  static MockTransactionInfo create({
+    required String hash,
+    required TransactionInfoDomain domain,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionUnpacked? unpackedData,
+  }) {
+    _counter++;
+    return MockTransactionInfo(
+      hash: hash,
+      domain: domain,
+      source: source ?? 'mockedSource$_counter',
+      destination: destination,
+      btcAmount: btcAmount ?? 1000 * _counter,
+      fee: fee ?? 100 * _counter,
+      data: data ?? 'mockedData$_counter',
+      unpackedData: unpackedData ?? MockTransactionUnpacked(),
+    );
+  }
+
+  static List<MockTransactionInfo> createMultiple(
+    List<(String, TransactionInfoDomain)> hashDomainPairs,
+  ) {
+    return hashDomainPairs.map((pair) {
+      return create(
+        hash: pair.$1,
+        domain: pair.$2,
+      );
+    }).toList();
+  }
+}
+
+class MockTransactionUnpacked extends Mock implements TransactionUnpacked {}
 
 void main() {
   group("add StartPolling", () {
@@ -104,8 +177,9 @@ void main() {
               ),
               isA<DashboardActivityFeedState>()
             ]);
+
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
-        "basic merge of local / confirmed",
+        "basic merge of local / remote t",
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
@@ -131,6 +205,68 @@ void main() {
                 error: "error",
               ),
               isA<DashboardActivityFeedState>()
+            ]);
+  });
+
+  group("interleaving", () {
+    blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+        "non overlapping",
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+
+          final mockedLocal = MockTransactionInfoFactory.createMultiple([
+            ("0001", TransactionInfoDomainLocal(raw: "")),
+            ("0002", TransactionInfoDomainLocal(raw: "")),
+            ("0003", TransactionInfoDomainLocal(raw: "")),
+          ]);
+
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccount("account-id"))
+              .thenAnswer((_) async => mockedLocal);
+
+          final mockTransactionRepository = MockTransactionRepository();
+
+          final mockedRemote = MockTransactionInfoFactory.createMultiple([
+            ("0004", TransactionInfoDomainMempool()),
+            (
+              "0005",
+              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
+            ),
+            (
+              "0006",
+              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
+            ),
+          ]);
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "account-id"))
+              .thenAnswer((_) async => (mockedRemote, null));
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "account-id"))
+              .thenAnswer((_) async => (mockedRemote, null));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "account-id",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
+        act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(milliseconds: 1),
+        expect: () => [
+              DashboardActivityFeedStateLoading(),
+              const DashboardActivityFeedStateCompleteOk(
+                transactions: [
+                  DisplayTransaction(hash: "0001"),
+                  DisplayTransaction(hash: "0002"),
+                  DisplayTransaction(hash: "0003"),
+                  DisplayTransaction(hash: "0004"),
+                  DisplayTransaction(hash: "0005"),
+                  DisplayTransaction(hash: "0006"),
+                ],
+                newTransactionCount: 0,
+              ),
             ]);
   });
 }
