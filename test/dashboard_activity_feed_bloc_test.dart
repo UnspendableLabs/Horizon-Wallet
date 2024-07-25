@@ -19,6 +19,7 @@ void main() {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "sets timer",
         build: () => DashboardActivityFeedBloc(
+            pageSize: 10,
             accountUuid: "123",
             transactionLocalRepository: MockTransactionLocalRepository(),
             transactionRepository: MockTransactionRepository()),
@@ -38,6 +39,7 @@ void main() {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "clears timer",
         build: () => DashboardActivityFeedBloc(
+            pageSize: 10,
             accountUuid: "123",
             transactionLocalRepository: MockTransactionLocalRepository(),
             transactionRepository: MockTransactionRepository()),
@@ -57,6 +59,7 @@ void main() {
   group("add Load", () {
     blocTest("emits loading state when load event is added",
         build: () => DashboardActivityFeedBloc(
+            pageSize: 10,
             accountUuid: "123",
             transactionLocalRepository: MockTransactionLocalRepository(),
             transactionRepository: MockTransactionRepository()),
@@ -69,6 +72,7 @@ void main() {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "emits reloading ok when state is complete ok",
         build: () => DashboardActivityFeedBloc(
+            pageSize: 10,
             accountUuid: "123",
             transactionLocalRepository: MockTransactionLocalRepository(),
             transactionRepository: MockTransactionRepository()),
@@ -86,6 +90,7 @@ void main() {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "emits reloading error when state is complete error",
         build: () => DashboardActivityFeedBloc(
+            pageSize: 10,
             accountUuid: "123",
             transactionLocalRepository: MockTransactionLocalRepository(),
             transactionRepository: MockTransactionRepository()),
@@ -112,6 +117,7 @@ void main() {
               .thenAnswer((_) async => []);
 
           return DashboardActivityFeedBloc(
+              pageSize: 10,
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               transactionRepository: MockTransactionRepository());
