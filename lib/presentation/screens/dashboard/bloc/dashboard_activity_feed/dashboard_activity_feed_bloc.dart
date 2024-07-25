@@ -11,12 +11,14 @@ class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
   Timer? timer;
   String accountUuid;
+  int pageSize;
   TransactionRepository transactionRepository;
   TransactionLocalRepository transactionLocalRepository;
 
   DashboardActivityFeedBloc(
       {required this.accountUuid,
       required this.transactionRepository,
+      required this.pageSize,
       required this.transactionLocalRepository})
       : super(DashboardActivityFeedStateInitial()) {
     on<StartPolling>(_onStartPolling);
