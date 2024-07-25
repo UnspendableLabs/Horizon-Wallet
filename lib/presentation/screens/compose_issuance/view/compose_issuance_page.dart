@@ -201,7 +201,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   },
                                 ),
                                 const Text('Divisible',
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
                             const Row(
@@ -227,7 +228,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   },
                                 ),
                                 const Text('Lock',
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
                             const Row(
@@ -254,7 +256,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   },
                                 ),
                                 const Text('Reset',
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
                             const Row(
