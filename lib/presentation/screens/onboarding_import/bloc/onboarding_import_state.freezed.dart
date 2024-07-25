@@ -19,6 +19,7 @@ mixin _$OnboardingImportState {
   String? get password => throw _privateConstructorUsedError;
   String? get passwordError => throw _privateConstructorUsedError;
   String get mnemonic => throw _privateConstructorUsedError;
+  String? get mnemonicError => throw _privateConstructorUsedError;
   dynamic get importFormat => throw _privateConstructorUsedError;
   dynamic get getAddressesState => throw _privateConstructorUsedError;
   Map<Address, bool> get isCheckedMap => throw _privateConstructorUsedError;
@@ -39,6 +40,7 @@ abstract class $OnboardingImportStateCopyWith<$Res> {
       {String? password,
       String? passwordError,
       String mnemonic,
+      String? mnemonicError,
       dynamic importFormat,
       dynamic getAddressesState,
       Map<Address, bool> isCheckedMap,
@@ -62,6 +64,7 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
     Object? password = freezed,
     Object? passwordError = freezed,
     Object? mnemonic = null,
+    Object? mnemonicError = freezed,
     Object? importFormat = freezed,
     Object? getAddressesState = freezed,
     Object? isCheckedMap = null,
@@ -80,6 +83,10 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
           ? _value.mnemonic
           : mnemonic // ignore: cast_nullable_to_non_nullable
               as String,
+      mnemonicError: freezed == mnemonicError
+          ? _value.mnemonicError
+          : mnemonicError // ignore: cast_nullable_to_non_nullable
+              as String?,
       importFormat: freezed == importFormat
           ? _value.importFormat
           : importFormat // ignore: cast_nullable_to_non_nullable
@@ -113,6 +120,7 @@ abstract class _$$OnboardingImportStateImplCopyWith<$Res>
       {String? password,
       String? passwordError,
       String mnemonic,
+      String? mnemonicError,
       dynamic importFormat,
       dynamic getAddressesState,
       Map<Address, bool> isCheckedMap,
@@ -134,6 +142,7 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
     Object? password = freezed,
     Object? passwordError = freezed,
     Object? mnemonic = null,
+    Object? mnemonicError = freezed,
     Object? importFormat = freezed,
     Object? getAddressesState = freezed,
     Object? isCheckedMap = null,
@@ -152,6 +161,10 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
           ? _value.mnemonic
           : mnemonic // ignore: cast_nullable_to_non_nullable
               as String,
+      mnemonicError: freezed == mnemonicError
+          ? _value.mnemonicError
+          : mnemonicError // ignore: cast_nullable_to_non_nullable
+              as String?,
       importFormat:
           freezed == importFormat ? _value.importFormat! : importFormat,
       getAddressesState: freezed == getAddressesState
@@ -173,6 +186,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       {this.password,
       this.passwordError,
       this.mnemonic = "",
+      this.mnemonicError = "",
       this.importFormat = ImportFormat.segwit,
       this.getAddressesState = GetAddressesStateNotAsked,
       final Map<Address, bool> isCheckedMap = const {},
@@ -186,6 +200,9 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
   @override
   @JsonKey()
   final String mnemonic;
+  @override
+  @JsonKey()
+  final String? mnemonicError;
   @override
   @JsonKey()
   final dynamic importFormat;
@@ -207,7 +224,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
 
   @override
   String toString() {
-    return 'OnboardingImportState(password: $password, passwordError: $passwordError, mnemonic: $mnemonic, importFormat: $importFormat, getAddressesState: $getAddressesState, isCheckedMap: $isCheckedMap, importState: $importState)';
+    return 'OnboardingImportState(password: $password, passwordError: $passwordError, mnemonic: $mnemonic, mnemonicError: $mnemonicError, importFormat: $importFormat, getAddressesState: $getAddressesState, isCheckedMap: $isCheckedMap, importState: $importState)';
   }
 
   @override
@@ -221,6 +238,8 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
                 other.passwordError == passwordError) &&
             (identical(other.mnemonic, mnemonic) ||
                 other.mnemonic == mnemonic) &&
+            (identical(other.mnemonicError, mnemonicError) ||
+                other.mnemonicError == mnemonicError) &&
             const DeepCollectionEquality()
                 .equals(other.importFormat, importFormat) &&
             const DeepCollectionEquality()
@@ -237,6 +256,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       password,
       passwordError,
       mnemonic,
+      mnemonicError,
       const DeepCollectionEquality().hash(importFormat),
       const DeepCollectionEquality().hash(getAddressesState),
       const DeepCollectionEquality().hash(_isCheckedMap),
@@ -255,6 +275,7 @@ abstract class _OnboardingImportState implements OnboardingImportState {
       {final String? password,
       final String? passwordError,
       final String mnemonic,
+      final String? mnemonicError,
       final dynamic importFormat,
       final dynamic getAddressesState,
       final Map<Address, bool> isCheckedMap,
@@ -266,6 +287,8 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   String? get passwordError;
   @override
   String get mnemonic;
+  @override
+  String? get mnemonicError;
   @override
   dynamic get importFormat;
   @override

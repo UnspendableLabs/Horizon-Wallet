@@ -100,21 +100,23 @@ class _DashboardPage_State extends State<_DashboardPage> {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(30.0),
             ),
-            child: Column(
-              children: [
-                AddressActions(
-                  isDarkTheme: isDarkTheme,
-                ),
-                BlocProvider(
-                  create: (context) =>
-                      BalancesBloc(accountUuid: widget.accountUuid),
-                  child: BalancesDisplay(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  AddressActions(
                     isDarkTheme: isDarkTheme,
-                    addresses: addresses,
-                    accountUuid: widget.accountUuid,
                   ),
-                ),
-              ],
+                  BlocProvider(
+                    create: (context) =>
+                        BalancesBloc(accountUuid: widget.accountUuid),
+                    child: BalancesDisplay(
+                      isDarkTheme: isDarkTheme,
+                      addresses: addresses,
+                      accountUuid: widget.accountUuid,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -167,16 +169,18 @@ class AddressActions extends StatelessWidget {
                           );
                         });
                   },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add),
-                      SizedBox(width: 8.0),
-                      Text(
-                        "ISSUE",
-                        style: TextStyle(fontSize: 16.0),
-                      ),
-                    ],
+                  child: const Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add),
+                        SizedBox(width: 8.0),
+                        Text(
+                          "ISSUE",
+                          style: TextStyle(fontSize: 16.0),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -214,16 +218,18 @@ class AddressActions extends StatelessWidget {
                           );
                         });
                   },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.send),
-                      SizedBox(width: 8.0), // Space between icon and text
-                      Text(
-                        "SEND",
-                        style: TextStyle(fontSize: 16.0),
-                      ),
-                    ],
+                  child: const Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.send),
+                        SizedBox(width: 8.0), // Space between icon and text
+                        Text(
+                          "SEND",
+                          style: TextStyle(fontSize: 16.0),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

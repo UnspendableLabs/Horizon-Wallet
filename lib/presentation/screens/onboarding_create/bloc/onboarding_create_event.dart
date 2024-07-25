@@ -28,7 +28,10 @@ class ConfirmMnemonicChanged extends OnboardingCreateEvent {
   ConfirmMnemonicChanged({required this.mnemonic});
 }
 
-class ConfirmMnemonic extends OnboardingCreateEvent {}
+class ConfirmMnemonic extends OnboardingCreateEvent {
+  final String mnemonic;
+  ConfirmMnemonic({required this.mnemonic});
+}
 
 class MnemonicSubmit extends OnboardingCreateEvent {
   final String mnemonic;
