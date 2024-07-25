@@ -22,6 +22,7 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
@@ -42,6 +43,8 @@ class ComposeIssuanceBloc
         GetIt.I.get<TransactionService>();
     final BitcoindService bitcoindService = GetIt.I.get<BitcoindService>();
     final transactionRepository = GetIt.I.get<TransactionRepository>();
+    final transactionLocalRepository =
+        GetIt.I.get<TransactionLocalRepository>();
 
     on<FetchFormData>((event, emit) async {
       emit(const ComposeIssuanceState(
@@ -126,7 +129,7 @@ class ComposeIssuanceBloc
 
         TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
-        await transactionRepository.insert(txInfo);
+        await transactionLocalRepository.insert(txInfo);
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {

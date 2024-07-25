@@ -12,11 +12,10 @@ class TransactionInfoDomainMempool extends TransactionInfoDomain {}
 class TransactionInfoDomainConfirmed extends TransactionInfoDomain {
   final int blockHeight;
   final int blockTime;
-  final int confirmations;
-  TransactionInfoDomainConfirmed(
-      {required this.blockHeight,
-      required this.blockTime,
-      required this.confirmations});
+  TransactionInfoDomainConfirmed({
+    required this.blockHeight,
+    required this.blockTime,
+  });
 }
 
 class TransactionInfo {

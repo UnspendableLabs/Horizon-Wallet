@@ -14,6 +14,7 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -34,6 +35,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
   final encryptionService = GetIt.I.get<EncryptionService>();
   final addressService = GetIt.I.get<AddressService>();
   final transactionRepository = GetIt.I.get<TransactionRepository>();
+  final transactionLocalRepository = GetIt.I.get<TransactionLocalRepository>();
 
   ComposeSendBloc() : super(const ComposeSendState()) {
     on<FetchFormData>((event, emit) async {
@@ -113,7 +115,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-        await transactionRepository.insert(txInfo);
+        await transactionLocalRepository.insert(txInfo);
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
       } catch (error) {

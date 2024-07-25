@@ -4,6 +4,21 @@ import 'package:retrofit/retrofit.dart';
 
 part 'v2_api.g.dart';
 
+class Verbose {
+  const Verbose();
+}
+
+// Custom interceptor
+class VerboseInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (options.extra['verbose'] == true) {
+      options.queryParameters['verbose'] = 'true';
+    }
+    super.onRequest(options, handler);
+  }
+}
+
 // Domain
 
 @JsonSerializable(genericArgumentFactories: true)
@@ -50,23 +65,22 @@ class Block {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Transaction {
+  final int? txIndex;
   final String txHash;
-  final int txIndex;
-  final String? txlistHash;
-  final int blockIndex;
+  final int? blockIndex;
   final String? blockHash;
-  final int blockTime;
+  final int? blockTime;
   final String source;
   final String? destination;
-  final double btcAmount;
+  final int btcAmount;
   final int fee;
   final String data;
   final bool supported;
+  final bool confirmed;
 
   const Transaction(
       {required this.txHash,
       required this.txIndex,
-      required this.txlistHash,
       required this.blockIndex,
       required this.blockHash,
       required this.blockTime,
@@ -75,10 +89,38 @@ class Transaction {
       required this.btcAmount,
       required this.fee,
       required this.data,
-      required this.supported});
+      required this.supported,
+      required this.confirmed});
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>
       _$TransactionFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class TransactionVerbose extends Transaction {
+  final Unpack unpackedData;
+  final String btcAmountNormalized;
+
+  const TransactionVerbose(
+      {required super.txHash,
+      super.txIndex,
+      super.blockIndex,
+      super.blockHash,
+      super.blockTime,
+      required super.source,
+      super.destination,
+      required super.btcAmount,
+      required super.fee,
+      required super.data,
+      required super.supported,
+      required super.confirmed,
+      required this.unpackedData,
+      required this.btcAmountNormalized});
+
+  factory TransactionVerbose.fromJson(Map<String, dynamic> json) =>
+      _$TransactionVerboseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TransactionVerboseToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1085,6 +1127,13 @@ abstract class V2Api {
     @Path("address") String address, [
     @Query("verbose") bool? verbose,
     @Query("limit") int? limit,
+  ]);
+
+  @Verbose()
+  @GET("/addresses/transactions")
+  Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
+    @Path("addresses") String addresses, [
+    @Query("cursor") int? limit,
   ]);
 
   // {

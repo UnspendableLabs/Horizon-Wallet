@@ -67,6 +67,7 @@ dependencies:
   decimal: ^2.3.3
   collection: ^1.18.0
   flutter_svg: ^1.0.0
+  mocktail: ^1.0.4
 
 
 dev_dependencies:
@@ -86,6 +87,7 @@ dev_dependencies:
   json_serializable: ^6.8.0
   freezed: ^2.5.2
   drift_dev: ^2.16.0
+  bloc_test: ^9.1.7
 
 
 # For information on the generic Dart part of this file, see the
