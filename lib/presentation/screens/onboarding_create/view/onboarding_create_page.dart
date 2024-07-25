@@ -99,7 +99,8 @@ class PasswordPrompt extends StatelessWidget {
             Text('Password', style: TextStyle(fontSize: 16)),
             SizedBox(width: 4),
             Tooltip(
-              message: 'This password will be used to locally encrypt your wallet',
+              message:
+                  'This password will be used to locally encrypt your wallet',
               child: Icon(Icons.info, size: 12),
             ),
           ]),
@@ -386,13 +387,11 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context
-                          .read<OnboardingCreateBloc>()
-                          .add(ConfirmMnemonic(
-                              mnemonic: controllers
-                                  .map((controller) => controller.text)
-                                  .join(' ')
-                                  .trim()));
+                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
+                          mnemonic: controllers
+                              .map((controller) => controller.text)
+                              .join(' ')
+                              .trim()));
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(

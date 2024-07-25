@@ -49,15 +49,19 @@ class OnboardingImportBloc
 
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
-        emit(state.copyWith(mnemonicError: "Mnemonic is required", mnemonic: event.mnemonic));
+        emit(state.copyWith(
+            mnemonicError: "Mnemonic is required", mnemonic: event.mnemonic));
         return;
       } else if (event.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(mnemonicError: "Invalid mnemonic length", mnemonic: event.mnemonic));
+        emit(state.copyWith(
+            mnemonicError: "Invalid mnemonic length",
+            mnemonic: event.mnemonic));
         return;
       } else {
         bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
         if (!validMnemonic) {
-          emit(state.copyWith(mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
+          emit(state.copyWith(
+              mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
           return;
         }
         emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
@@ -73,18 +77,15 @@ class OnboardingImportBloc
 
     on<MnemonicSubmit>((event, emit) async {
       if (state.mnemonic.isEmpty) {
-        emit(state.copyWith(
-            mnemonicError: "Mnemonic is required"));
+        emit(state.copyWith(mnemonicError: "Mnemonic is required"));
         return;
       } else if (state.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(
-            mnemonicError: "Invalid mnemonic length"));
+        emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
         return;
       } else {
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
-          emit(state.copyWith(
-              mnemonicError: "Invalid mnemonic"));
+          emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
           return;
         }
       }

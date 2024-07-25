@@ -221,14 +221,14 @@ class AddressActions extends StatelessWidget {
                   child: const Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.send),
-                      SizedBox(width: 8.0), // Space between icon and text
-                      Text(
-                        "SEND",
-                        style: TextStyle(fontSize: 16.0),
-                      ),
-                    ],
+                      children: [
+                        Icon(Icons.send),
+                        SizedBox(width: 8.0), // Space between icon and text
+                        Text(
+                          "SEND",
+                          style: TextStyle(fontSize: 16.0),
+                        ),
+                      ],
                     ),
                   ),
                 ),

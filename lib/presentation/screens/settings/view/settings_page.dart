@@ -171,61 +171,63 @@ class SettingsPage extends StatelessWidget {
     }
 
     return BlocProvider(
-      create: (context) => LogoutBloc(
-        walletRepository: GetIt.I.get<WalletRepository>(),
-        accountRepository: GetIt.I.get<AccountRepository>(),
-        addressRepository: GetIt.I.get<AddressRepository>(),
-        cacheProvider: GetIt.I.get<CacheProvider>(),
-      ),
-      child: BlocConsumer<PasswordPromptBloc, PasswordPromptState>(
-        listener: (context, state) {
-      state.whenOrNull(error: (msg) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(msg),
-        ));
-      }, success: (password, gapLimit) async {
-        context.read<AddressesBloc>().add(Update(
-            accountUuid: account.uuid, gapLimit: gapLimit, password: password));
+        create: (context) => LogoutBloc(
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              accountRepository: GetIt.I.get<AccountRepository>(),
+              addressRepository: GetIt.I.get<AddressRepository>(),
+              cacheProvider: GetIt.I.get<CacheProvider>(),
+            ),
+        child: BlocConsumer<PasswordPromptBloc, PasswordPromptState>(
+            listener: (context, state) {
+          state.whenOrNull(error: (msg) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(msg),
+            ));
+          }, success: (password, gapLimit) async {
+            context.read<AddressesBloc>().add(Update(
+                accountUuid: account.uuid,
+                gapLimit: gapLimit,
+                password: password));
 
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Success"),
-        ));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Success"),
+            ));
 
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        Navigator.of(context).pop();
-      }, initial: (maybeGapLimit) {
-        if (maybeGapLimit != null) {
-          // TODO put in account settings repository
-          Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit,
-              notify: true);
-        }
-      }, prompt: (gapLimit) {
-        WoltModalSheet.show<void>(
-          context: context,
-          onModalDismissedWithBarrierTap: () {
-            context
-                .read<PasswordPromptBloc>()
-                .add(Reset(gapLimit: initialGapLimit));
+            await Future.delayed(const Duration(milliseconds: 500));
 
             Navigator.of(context).pop();
-          },
-          pageListBuilder: (modalSheetContext) {
-            final textTheme = Theme.of(context).textTheme;
-            return [passwordPrompt(modalSheetContext, textTheme, gapLimit)];
-          },
-          modalTypeBuilder: (context) {
-            final size = MediaQuery.sizeOf(context).width;
-            if (size < 768.0) {
-              return WoltModalType.bottomSheet;
-            } else {
-              return WoltModalType.dialog;
+          }, initial: (maybeGapLimit) {
+            if (maybeGapLimit != null) {
+              // TODO put in account settings repository
+              Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit,
+                  notify: true);
             }
-          },
-        );
-      });
-    }, builder: (context, state) {
-      return Column(
+          }, prompt: (gapLimit) {
+            WoltModalSheet.show<void>(
+              context: context,
+              onModalDismissedWithBarrierTap: () {
+                context
+                    .read<PasswordPromptBloc>()
+                    .add(Reset(gapLimit: initialGapLimit));
+
+                Navigator.of(context).pop();
+              },
+              pageListBuilder: (modalSheetContext) {
+                final textTheme = Theme.of(context).textTheme;
+                return [passwordPrompt(modalSheetContext, textTheme, gapLimit)];
+              },
+              modalTypeBuilder: (context) {
+                final size = MediaQuery.sizeOf(context).width;
+                if (size < 768.0) {
+                  return WoltModalType.bottomSheet;
+                } else {
+                  return WoltModalType.dialog;
+                }
+              },
+            );
+          });
+        }, builder: (context, state) {
+          return Column(
             children: [
               Container(
                 child: Expanded(
@@ -241,9 +243,11 @@ class SettingsPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 16.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
                                     'Address Settings',
@@ -251,7 +255,9 @@ class SettingsPage extends StatelessWidget {
                                   BlocListener<LogoutBloc, LogoutState>(
                                     listener: (context, state) {
                                       if (state.logoutState is LoggedOut) {
-                                        GoRouter.of(context).go('/onboarding');
+                                        final shell =
+                                            context.read<ShellStateCubit>();
+                                        shell.onOnboarding();
                                       }
                                     },
                                     child: ElevatedButton(
@@ -260,24 +266,33 @@ class SettingsPage extends StatelessWidget {
                                           context: context,
                                           builder: (_) {
                                             return BlocProvider.value(
-                                              value: BlocProvider.of<LogoutBloc>(context),
+                                              value:
+                                                  BlocProvider.of<LogoutBloc>(
+                                                      context),
                                               child: AlertDialog(
-                                                title: const Text('Confirm Logout'),
+                                                title: const Text(
+                                                    'Confirm Logout'),
                                                 content: Text(
                                                   'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
-                                                  style:
-                                                      TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary),
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .primary),
                                                 ),
                                                 actions: <Widget>[
                                                   TextButton(
                                                     onPressed: () {
-                                                      GoRouter.of(context).pop();
+                                                      GoRouter.of(context)
+                                                          .pop();
                                                     },
                                                     child: const Text('Cancel'),
                                                   ),
                                                   TextButton(
                                                     onPressed: () {
-                                                      context.read<LogoutBloc>().add(LogoutEvent());
+                                                      context
+                                                          .read<LogoutBloc>()
+                                                          .add(LogoutEvent());
                                                     },
                                                     child: const Text('Logout'),
                                                   ),
@@ -304,7 +319,8 @@ class SettingsPage extends StatelessWidget {
                               step: 1,
                               decimalPrecision: 0,
                               onChange: (value) {
-                                context.read<PasswordPromptBloc>().add(Show(initialGapLimit: initialGapLimit));
+                                context.read<PasswordPromptBloc>().add(
+                                    Show(initialGapLimit: initialGapLimit));
                               },
                             ),
                           ],
@@ -313,34 +329,32 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height - 220,
-            child: BlocBuilder<AddressesBloc, AddressesState>(
-              builder: (context, state) {
-                return state.when(
-                  initial: () => const Text("initial"),
-                  loading: () => const Text("loading"),
-                  error: (error) => Text("Error: $error"),
-                  // success: (addresses) => Text("length ${addresses.length}")
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height - 220,
+                child: BlocBuilder<AddressesBloc, AddressesState>(
+                  builder: (context, state) {
+                    return state.when(
+                      initial: () => const Text("initial"),
+                      loading: () => const Text("loading"),
+                      error: (error) => Text("Error: $error"),
+                      // success: (addresses) => Text("length ${addresses.length}")
 
-                  success: (addresses) => ListView.builder(
-                    itemCount: addresses.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                        title: SelectableText(addresses[index].address),
-                        subtitle: Text(addresses[index].index.toString()),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      );
-
-    }
-    ));
+                      success: (addresses) => ListView.builder(
+                        itemCount: addresses.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            title: SelectableText(addresses[index].address),
+                            subtitle: Text(addresses[index].index.toString()),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        }));
   }
 }

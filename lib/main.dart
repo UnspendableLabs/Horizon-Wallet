@@ -376,7 +376,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(),
         ),
-         BlocProvider<ThemeBloc>(
+        BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),
         ),
       ],
@@ -387,13 +387,14 @@ class MyApp extends StatelessWidget {
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
             return MaterialApp.router(
-                  theme: lightTheme,
-                  darkTheme: darkTheme,
-                  themeMode: themeMode,
-                  routeInformationParser: AppRouter.router.routeInformationParser,
-                  routerDelegate: AppRouter.router.routerDelegate,
-                  routeInformationProvider: AppRouter.router.routeInformationProvider,
-                );
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: themeMode,
+              routeInformationParser: AppRouter.router.routeInformationParser,
+              routerDelegate: AppRouter.router.routerDelegate,
+              routeInformationProvider:
+                  AppRouter.router.routeInformationProvider,
+            );
           },
         ),
       ),

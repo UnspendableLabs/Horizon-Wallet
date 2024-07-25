@@ -5,7 +5,6 @@ part 'logout_state.freezed.dart';
 @freezed
 class LogoutState with _$LogoutState {
   const factory LogoutState({
-
     @Default(LoggedIn) logoutState,
   }) = _LogoutState;
 }
@@ -13,5 +12,5 @@ class LogoutState with _$LogoutState {
 abstract class LoggedInOrOut {}
 
 class LoggedIn extends LoggedInOrOut {}
-class LoggedOut extends LoggedInOrOut {}
 
+class LoggedOut extends LoggedInOrOut {}

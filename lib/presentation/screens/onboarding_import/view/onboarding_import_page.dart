@@ -112,7 +112,8 @@ class PasswordPrompt extends StatelessWidget {
             Text('Password', style: TextStyle(fontSize: 16)),
             SizedBox(width: 4),
             Tooltip(
-              message: 'This password will be used to locally encrypt your wallet.',
+              message:
+                  'This password will be used to locally encrypt your wallet.',
               child: Icon(Icons.info, size: 12),
             ),
           ]),
@@ -188,12 +189,20 @@ class PasswordPrompt extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
-                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Password cannot be empty'));
-                            } else if (_passwordController.text != _passwordConfirmationController.text) {
-                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Passwords do not match'));
+                            if (_passwordController.text == '' ||
+                                _passwordConfirmationController.text == '') {
+                              context.read<OnboardingImportBloc>().add(
+                                  PasswordError(
+                                      error: 'Password cannot be empty'));
+                            } else if (_passwordController.text !=
+                                _passwordConfirmationController.text) {
+                              context.read<OnboardingImportBloc>().add(
+                                  PasswordError(
+                                      error: 'Passwords do not match'));
                             } else {
-                              context.read<OnboardingImportBloc>().add(ImportWallet());
+                              context
+                                  .read<OnboardingImportBloc>()
+                                  .add(ImportWallet());
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -337,7 +346,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                       shell.onOnboarding();
                     },
                     style: FilledButton.styleFrom(
-
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),

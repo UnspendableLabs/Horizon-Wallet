@@ -9,7 +9,8 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeMode> {
   ThemeBloc(this.cacheProvider) : super(ThemeMode.light) {
     on<ThemeEvent>((event, emit) async {
       if (event == ThemeEvent.toggle) {
-        final newTheme = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+        final newTheme =
+            state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
         await cacheProvider.setBool('isDarkMode', newTheme == ThemeMode.dark);
         emit(newTheme);
       }
