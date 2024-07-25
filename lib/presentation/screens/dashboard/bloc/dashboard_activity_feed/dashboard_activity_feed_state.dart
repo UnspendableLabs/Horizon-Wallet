@@ -23,6 +23,9 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
 
   const DashboardActivityFeedStateCompleteOk(
       {required this.transactions, required this.newTransactionCount});
+
+  @override
+  List<Object> get props => [transactions, newTransactionCount];
 }
 
 class DashboardActivityFeedStateCompleteError

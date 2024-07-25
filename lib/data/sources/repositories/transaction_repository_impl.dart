@@ -39,9 +39,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     Unpack unpacked = info.unpackedData;
 
+    // TODO: domain isn't being properly set here
     return TransactionInfo(
       hash: "",
-      domain: TransactionInfoDomainLocal(raw: raw),
+      domain: TransactionInfoDomainLocal(raw: raw, submittedAt: DateTime.now()),
       source: info.source,
       destination: info.destination,
       btcAmount: info.btcAmount,
@@ -56,6 +57,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<(List<TransactionInfo>, int? nextCursor)> getByAccount({
     required String accountUuid,
     int? cursor,
+    int? limit,
+    bool? unconfirmed = false,
   }) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
 
@@ -63,9 +66,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         addresses.map((address) => address.address).join(',');
 
     final response = await api.getTransactionsByAddressesVerbose(
-      addressesParam,
-      cursor,
-    );
+        addressesParam, cursor, unconfirmed);
 
     if (response.error != null) {
       throw Exception("Failed to get transactions by account: $accountUuid");

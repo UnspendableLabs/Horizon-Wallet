@@ -1,9 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 
-
-
-
 class DisplayTransaction extends Equatable {
   final String hash;
   final TransactionInfo info;

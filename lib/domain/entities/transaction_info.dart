@@ -4,7 +4,8 @@ abstract class TransactionInfoDomain {}
 
 class TransactionInfoDomainLocal extends TransactionInfoDomain {
   final String raw;
-  TransactionInfoDomainLocal({required this.raw});
+  final DateTime submittedAt;
+  TransactionInfoDomainLocal({required this.raw, required this.submittedAt});
 }
 
 class TransactionInfoDomainMempool extends TransactionInfoDomain {}

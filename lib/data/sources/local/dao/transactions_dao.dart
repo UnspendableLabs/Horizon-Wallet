@@ -18,4 +18,18 @@ class TransactionsDao extends DatabaseAccessor<DB> with _$TransactionsDaoMixin {
     return (select(transactions)..where((tbl) => tbl.source.isIn(sources)))
         .get();
   }
+
+  Future<List<TransactionModel>> getAllBySourcesAfterDate(
+    List<String> sources,
+    DateTime date,
+  ) {
+    return (select(transactions)
+          ..where((row) {
+            final matchesSources = row.source.isIn(sources);
+            final matchesDate = row.submittedAt.isBiggerOrEqualValue(date);
+
+            return matchesSources & matchesDate;
+          }))
+        .get();
+  }
 }

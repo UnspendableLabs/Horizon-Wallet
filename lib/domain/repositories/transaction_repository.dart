@@ -7,5 +7,8 @@ abstract class TransactionRepository {
   Future<TransactionUnpacked> unpack(String raw);
   Future<TransactionInfo> getInfo(String raw);
   Future<(List<TransactionInfo>, int? nextCursor)> getByAccount(
-      {required String accountUuid, int? cursor});
+      {required String accountUuid,
+      int? limit,
+      int? cursor,
+      bool? unconfirmed = false});
 }
