@@ -1,5 +1,8 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:decimal/decimal.dart';
 import 'package:test/test.dart';
 import 'dart:async';
+import "package:fpdart/src/either.dart";
 
 import 'package:bloc_test/bloc_test.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
@@ -8,11 +11,14 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:mocktail/mocktail.dart';
 
 final DEFAULT_WHITELIST = [
@@ -25,6 +31,80 @@ extension DateTimeExtension on DateTime {
     return isUtc
         ? DateTime.utc(year, month, day, hour, minute, second)
         : DateTime(year, month, day, hour, minute, second);
+  }
+}
+
+class MockBitcoinTx extends Mock implements BitcoinTx {
+  @override
+  final String txid;
+  @override
+  final Status status;
+
+  MockBitcoinTx({
+    required this.txid,
+    required this.status,
+  });
+
+  @override
+  TransactionType getTransactionType(List<String> addresses) =>
+      TransactionType.neither;
+
+  @override
+  Decimal getAmountSent(List<String> addresses) => Decimal.zero;
+
+  @override
+  Decimal getAmountReceived(List<String> addresses) => Decimal.zero;
+}
+
+class MockStatus extends Mock implements Status {
+  @override
+  final bool confirmed;
+  @override
+  final int? blockHeight;
+  @override
+  final String? blockHash;
+  @override
+  final int? blockTime;
+
+  MockStatus({
+    required this.confirmed,
+    this.blockHeight,
+    this.blockHash,
+    this.blockTime,
+  });
+}
+
+class MockBitcoinTxFactory {
+  static MockBitcoinTx create({
+    required String txid,
+    required bool confirmed,
+    int? blockHeight,
+    String? blockHash,
+    int? blockTime,
+  }) {
+    return MockBitcoinTx(
+      txid: txid,
+      status: MockStatus(
+        confirmed: confirmed,
+        blockHeight: blockHeight,
+        blockHash: blockHash,
+        blockTime: blockTime,
+      ),
+    );
+  }
+
+  static List<MockBitcoinTx> createMultiple(
+    List<(String, bool, int?, String?, int?)> txSpecs,
+  ) {
+    return txSpecs.map((spec) {
+      return create(
+        txid: spec.$1,
+        confirmed: spec.$2,
+        blockHeight: spec.$3,
+        blockHash: spec.$4,
+        blockTime: spec.$5,
+      );
+    }).toList();
   }
 }
 
@@ -75,6 +155,8 @@ class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
 
 class MockAddressRepository extends Mock implements AddressRepository {}
+
+class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
 class MockTransactionInfo extends Mock implements TransactionInfoVerbose {
   @override
@@ -187,6 +269,14 @@ void main() {
       (_) async =>
           [const Address(index: 0, address: "0x123", accountUuid: "123")]);
 
+  final defaultBitcoinRepository = MockBitcoinRepository();
+
+  when(() => defaultBitcoinRepository.getMempoolTransactions(any()))
+      .thenAnswer((_) async => const Right([]));
+
+  when(() => defaultBitcoinRepository.getTransactions(any()))
+      .thenAnswer((_) async => const Right([]));
+
   group("StartPolling", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "sets timer",
@@ -194,7 +284,8 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -218,6 +309,7 @@ void main() {
             accountUuid: "123",
             transactionLocalRepository: mockTransactionLocalRepository,
             addressRepository: mockAddressRepository,
+            bitcoinRepository: defaultBitcoinRepository,
           );
         },
         act: (bloc) =>
@@ -237,7 +329,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -260,7 +353,8 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               eventsRepository: mockEventsRepository,
-              addressRepository: mockAddressRepository);
+              addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository);
         },
         act: (bloc) => bloc
           ..add(const StartPolling(interval: Duration(seconds: 5)))
@@ -279,7 +373,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -298,12 +393,12 @@ void main() {
               limit: 10)).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           return DashboardActivityFeedBloc(
-            pageSize: 10,
-            accountUuid: "123",
-            transactionLocalRepository: mockTransactionLocalRepository,
-            eventsRepository: mockEventsRepository,
-            addressRepository: mockAddressRepository,
-          );
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              eventsRepository: mockEventsRepository,
+              addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository);
         },
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
@@ -315,7 +410,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -326,7 +422,6 @@ void main() {
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
-
           when(() => mockEventsRepository.getByAddressesVerbose(
               whitelist: DEFAULT_WHITELIST,
               addresses: ["0x123"],
@@ -338,13 +433,14 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => const DashboardActivityFeedStateCompleteOk(
             transactions: [],
             newTransactionCount: 0,
             nextCursor: null,
-            mostRecentRemoteHash: null),
+            mostRecentCounterpartyEventHash: null),
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
               const DashboardActivityFeedStateReloadingOk(
@@ -359,7 +455,8 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -382,6 +479,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () =>
@@ -399,7 +497,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -422,6 +521,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () =>
@@ -464,7 +564,8 @@ void main() {
             ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -487,6 +588,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
@@ -503,7 +605,7 @@ void main() {
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
-                mostRecentRemoteHash: "0004",
+                mostRecentCounterpartyEventHash: "0004",
               ),
             ]);
 
@@ -528,7 +630,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -556,6 +659,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
@@ -569,7 +673,7 @@ void main() {
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
-                mostRecentRemoteHash: "0002",
+                mostRecentCounterpartyEventHash: "0002",
               ),
             ]);
 
@@ -584,8 +688,10 @@ void main() {
               MockTransactionLocalRepository();
 
           // effectively asserts that right method is calleD with right args
-          when(() => mockTransactionLocalRepository.getAllByAccountAfterDateVerbose(
-              "123", mostRecentConfirmedBlocktime)).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository
+                  .getAllByAccountAfterDateVerbose(
+                      "123", mostRecentConfirmedBlocktime))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -620,6 +726,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
@@ -632,7 +739,7 @@ void main() {
                   ],
                   newTransactionCount: 0,
                   nextCursor: 1,
-                  mostRecentRemoteHash: "0005"),
+                  mostRecentCounterpartyEventHash: "0005"),
             ]);
   }); // Load more appends transactions to the end of the list.  it does not add any transactions to the beginning of the list
   group("LoadMore", () {
@@ -661,7 +768,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -689,6 +797,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
@@ -699,7 +808,7 @@ void main() {
               ],
               newTransactionCount: 0,
               nextCursor: 4,
-              mostRecentRemoteHash: "0002",
+              mostRecentCounterpartyEventHash: "0002",
             ),
         act: (bloc) => bloc..add(const LoadMore()),
         expect: () => [
@@ -721,7 +830,7 @@ void main() {
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
-                mostRecentRemoteHash: "0002",
+                mostRecentCounterpartyEventHash: "0002",
               ),
             ]);
 
@@ -736,13 +845,14 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: MockTransactionLocalRepository(),
               addressRepository: MockAddressRepository(),
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: MockEventsRepository());
         },
         seed: () => const DashboardActivityFeedStateCompleteOk(
               transactions: [],
               newTransactionCount: 0,
               nextCursor: null,
-              mostRecentRemoteHash: "0002",
+              mostRecentCounterpartyEventHash: "0002",
             ),
         act: (bloc) => bloc..add(const LoadMore()),
         expect: () => []);
@@ -774,7 +884,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -800,6 +911,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
@@ -810,7 +922,7 @@ void main() {
               ],
               newTransactionCount: 0,
               nextCursor: 4, // doesn't matter since we are prepending
-              mostRecentRemoteHash: "0002",
+              mostRecentCounterpartyEventHash: "0002",
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
@@ -837,8 +949,8 @@ void main() {
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 2)
                   .having((state) => state.nextCursor, 'nextCursor', 4)
-                  .having((state) => state.mostRecentRemoteHash,
-                      'mostRecentRemoteHash', '0002'),
+                  .having((state) => state.mostRecentCounterpartyEventHash,
+                      'mostRecentCounterpartyEventHash', '0002'),
             ]);
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
@@ -854,7 +966,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -883,6 +996,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
@@ -892,7 +1006,7 @@ void main() {
               ],
               newTransactionCount: 0,
               nextCursor: 4,
-              mostRecentRemoteHash: "0002",
+              mostRecentCounterpartyEventHash: "0002",
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
@@ -915,8 +1029,8 @@ void main() {
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 0)
                   .having((state) => state.nextCursor, 'nextCursor', 4)
-                  .having((state) => state.mostRecentRemoteHash,
-                      'mostRecentRemoteHash', '0001'),
+                  .having((state) => state.mostRecentCounterpartyEventHash,
+                      'mostRecentCounterpartyEventHash', '0001'),
             ]);
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
@@ -936,7 +1050,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -976,6 +1091,7 @@ void main() {
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
@@ -986,7 +1102,7 @@ void main() {
               ],
               newTransactionCount: 0,
               nextCursor: 4,
-              mostRecentRemoteHash: "0003",
+              mostRecentCounterpartyEventHash: "0003",
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
@@ -1019,8 +1135,146 @@ void main() {
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 0)
                   .having((state) => state.nextCursor, 'nextCursor', 4)
-                  .having((state) => state.mostRecentRemoteHash,
-                      'mostRecentRemoteHash', '0001'),
+                  .having((state) => state.mostRecentCounterpartyEventHash,
+                      'mostRecentCounterpartyEventHash', '0001'),
             ]);
+  });
+
+  group("w bitcoin_tx", () {
+    group("Load", () {
+      late List<MockTransactionInfo> mockedLocal;
+      late List<MockEvent> mockedRemote;
+      late List<MockBitcoinTx> mockedBtcMempool;
+      late List<MockBitcoinTx> mockedBtcConfirmed;
+
+      blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+          "interleaving 1 btx local, 1 btx mempool",
+          build: () {
+            // local mocks
+            final mockTransactionLocalRepository =
+                MockTransactionLocalRepository();
+            mockedLocal = MockTransactionInfoFactory.createMultiple([
+              (
+                "btx_1",
+                TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+              ),
+            ]);
+            when(() => mockTransactionLocalRepository.getAllByAccountVerbose(
+                "123")).thenAnswer((_) async => mockedLocal);
+
+            // btc mocks
+            final mockBitcoinRepository = MockBitcoinRepository();
+            mockedBtcMempool = MockBitcoinTxFactory.createMultiple([
+              ("btx_1", false, 0, "", 0),
+            ]);
+            when(() => mockBitcoinRepository.getMempoolTransactions(any()))
+                .thenAnswer((_) async => Right(mockedBtcMempool));
+
+            when(() => mockBitcoinRepository.getTransactions(any()))
+                .thenAnswer((_) async => const Right([]));
+
+            // cp event mocks
+            final mockEventsRepository = MockEventsRepository();
+
+            when(() => mockEventsRepository.getByAddressesVerbose(
+                    whitelist: DEFAULT_WHITELIST,
+                    addresses: ["0x123"],
+                    limit: 10,
+                    unconfirmed: false))
+                .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
+
+            when(() => mockEventsRepository.getByAddressesVerbose(
+                    whitelist: DEFAULT_WHITELIST,
+                    addresses: ["0x123"],
+                    limit: 10,
+                    unconfirmed: true))
+                .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
+
+            return DashboardActivityFeedBloc(
+                pageSize: 10,
+                accountUuid: "123",
+                transactionLocalRepository: mockTransactionLocalRepository,
+                addressRepository: mockAddressRepository,
+                bitcoinRepository: mockBitcoinRepository,
+                eventsRepository: mockEventsRepository);
+          },
+          act: (bloc) => bloc..add(const Load()),
+          expect: () => [
+                DashboardActivityFeedStateLoading(),
+                DashboardActivityFeedStateCompleteOk(
+                  transactions: [
+                    ActivityFeedItem(
+                        hash: "btx_1", bitcoinTx: mockedBtcMempool[0]),
+                  ],
+                  newTransactionCount: 0,
+                  nextCursor: null,
+                  mostRecentCounterpartyEventHash: null,
+                ),
+              ]);
+
+      blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+          "interleaving 1 btx local, 1 btx confirmed",
+          build: () {
+            // local mocks
+            final mockTransactionLocalRepository =
+                MockTransactionLocalRepository();
+            mockedLocal = MockTransactionInfoFactory.createMultiple([
+              (
+                "btx_1",
+                TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+              ),
+            ]);
+            when(() => mockTransactionLocalRepository.getAllByAccountVerbose(
+                "123")).thenAnswer((_) async => mockedLocal);
+
+            // btc mocks
+            final mockBitcoinRepository = MockBitcoinRepository();
+            mockedBtcConfirmed = MockBitcoinTxFactory.createMultiple([
+              ("btx_1", true, 0, "", 0),
+            ]);
+            when(() => mockBitcoinRepository.getMempoolTransactions(any()))
+                .thenAnswer((_) async => const Right([]));
+
+            when(() => mockBitcoinRepository.getTransactions(any()))
+                .thenAnswer((_) async => Right(mockedBtcConfirmed));
+            // cp event mocks
+            final mockEventsRepository = MockEventsRepository();
+
+            when(() => mockEventsRepository.getByAddressesVerbose(
+                    whitelist: DEFAULT_WHITELIST,
+                    addresses: ["0x123"],
+                    limit: 10,
+                    unconfirmed: false))
+                .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
+
+            when(() => mockEventsRepository.getByAddressesVerbose(
+                    whitelist: DEFAULT_WHITELIST,
+                    addresses: ["0x123"],
+                    limit: 10,
+                    unconfirmed: true))
+                .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
+
+            return DashboardActivityFeedBloc(
+                pageSize: 10,
+                accountUuid: "123",
+                transactionLocalRepository: mockTransactionLocalRepository,
+                addressRepository: mockAddressRepository,
+                bitcoinRepository: mockBitcoinRepository,
+                eventsRepository: mockEventsRepository);
+          },
+          act: (bloc) => bloc..add(const Load()),
+          expect: () => [
+                DashboardActivityFeedStateLoading(),
+                DashboardActivityFeedStateCompleteOk(
+                  transactions: [
+                    ActivityFeedItem(
+                        hash: "btx_1", bitcoinTx: mockedBtcConfirmed[0]),
+                  ],
+                  newTransactionCount: 0,
+                  nextCursor: null,
+                  mostRecentCounterpartyEventHash: null,
+                ),
+              ]);
+    });
   });
 }

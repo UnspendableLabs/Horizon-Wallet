@@ -1,9 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import "package:fpdart/src/either.dart";
 import 'dart:async';
 import 'dart:math';
 
 import "dashboard_activity_feed_event.dart";
 import "dashboard_activity_feed_state.dart";
+
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -20,13 +23,15 @@ class DashboardActivityFeedBloc
   TransactionLocalRepository transactionLocalRepository;
   EventsRepository eventsRepository;
   AddressRepository addressRepository;
+  BitcoinRepository bitcoinRepository;
 
   DashboardActivityFeedBloc(
       {required this.accountUuid,
       required this.eventsRepository,
       required this.pageSize,
       required this.transactionLocalRepository,
-      required this.addressRepository})
+      required this.addressRepository,
+      required this.bitcoinRepository})
       : super(DashboardActivityFeedStateInitial()) {
     on<StartPolling>(_onStartPolling);
     on<StopPolling>(_onStopPolling);
@@ -54,8 +59,8 @@ class DashboardActivityFeedBloc
 
     try {
       // get most recent confirmed tx
-
-      String? mostRecentRemoteHash = currentState.mostRecentRemoteHash;
+      String? mostRecentCounterpartyEventHash =
+          currentState.mostRecentCounterpartyEventHash;
 
       final addresses_ =
           await addressRepository.getAllByAccountUuid(accountUuid);
@@ -63,7 +68,7 @@ class DashboardActivityFeedBloc
       List<String> addresses = addresses_.map((a) => a.address).toList();
 
       // no transactions found on initial load
-      if (mostRecentRemoteHash == null) {
+      if (mostRecentCounterpartyEventHash == null) {
         // get highest confirmed
 
         final (events, _, resultCount) =
@@ -73,11 +78,14 @@ class DashboardActivityFeedBloc
                 unconfirmed: true,
                 whitelist: DEFAULT_WHITELIST);
 
+        // TODO: add mempool here
+
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: null,
             newTransactionCount: events.length,
-            mostRecentRemoteHash: null,
-            transactions: currentState.transactions)); // might have sme locally;
+            mostRecentCounterpartyEventHash: null,
+            transactions:
+                currentState.transactions)); // might have sme locally;
 
         return;
       } else {
@@ -98,12 +106,10 @@ class DashboardActivityFeedBloc
           remoteEvents = [...remoteEvents, ...remoteEvents_];
           // iterate all remote transactions
           for (final event in remoteEvents_) {
-            if (event.txHash != mostRecentRemoteHash
+            if (event.txHash != mostRecentCounterpartyEventHash
                 // &&
                 //   event.txHash != currentState.transactions[0].hash
                 ) {
-              print("event.txHash $currentState");
-              print("mostRecentRemoteHash $mostRecentRemoteHash");
               newTransactionCount += 1;
             } else {
               found = true;
@@ -112,7 +118,7 @@ class DashboardActivityFeedBloc
           }
 
           // if we don't have a cursor, and we haven't
-          // found a match, break... but this shouldn't
+          // found a match, brea... but this shouldn't
           // happen i don't think
           if (nextCursor == null) {
             break;
@@ -121,36 +127,44 @@ class DashboardActivityFeedBloc
           }
         }
 
-        // final localTransactions =
-        //     await transactionLocalRepository.getAllByAccount(accountUuid);
-        //
-        // final localTransactionsHashes =
-        //     Set<String>.from(localTransactions.map((tx) => tx.hash));
-        //
         final remoteMap = {for (var e in remoteEvents) e.txHash: e};
-        //
-        // for (final event in remoteEvents) {
-        //   // if at most recent remote hash, break;
-        //   if (event.txHash == mostRecentRemoteHash) {
-        //     break;
-        //   }
-        //
-        //   if (localTransactionsHashes.contains(event.txHash)) {
-        //     newTransactionCount -= 1;
-        //   }
-        // }
+
+        final btcMempoolE =
+            await bitcoinRepository.getMempoolTransactions(addresses);
+
+        final btcMempoolList = switch (btcMempoolE) {
+          Left(value: var failure) => throw Exception(failure.message),
+          Right(value: var transactions) => transactions
+        };
+
+        final btcMempoolMap = {for (var tx in btcMempoolList) tx.txid: tx};
+
+        // increase new tx count by length of mempool list
+        // TODO: ( we may need to factor out OP return );
+        // not an issue on regtest on testnet tho
+
+        newTransactionCount += btcMempoolList.length;
 
         String? replacedHash;
         List<ActivityFeedItem> nextList = currentState.transactions.map(
           (tx) {
-            // if we have a remote representation of a
+            if (tx.info != null &&
+                tx.info!.btcAmount != null &&
+                tx.info!.btcAmount! > 0 &&
+                btcMempoolMap.containsKey(tx.hash)) {
+              // this is a btc transaction so we can swap it out
+              newTransactionCount -= 1;
+              return ActivityFeedItem(
+                  hash: tx.hash, bitcoinTx: btcMempoolMap[tx.hash]);
+            }
+
             if (tx.info != null && remoteMap.containsKey(tx.hash)) {
               newTransactionCount -= 1;
               replacedHash ??= tx.hash;
               return ActivityFeedItem(hash: tx.hash, event: remoteMap[tx.hash]);
-            } else {
-              return tx;
             }
+
+            return tx;
           },
         ).toList();
 
@@ -163,9 +177,9 @@ class DashboardActivityFeedBloc
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: currentState.nextCursor,
             newTransactionCount: nextNewTransactionCount,
-            // mostRecentRemoteHash: nextNewTransactionCount == 0 ? nextList[0].hash : currentState.mostRecentRemoteHash,
-            mostRecentRemoteHash:
-                replacedHash ?? currentState.mostRecentRemoteHash,
+            // mostRecentCounterpartyEventHash: nextNewTransactionCount == 0 ? nextList[0].hash : currentState.mostRecentCounterpartyEventHash,
+            mostRecentCounterpartyEventHash:
+                replacedHash ?? currentState.mostRecentCounterpartyEventHash,
             transactions: nextList));
       }
     } catch (e) {
@@ -217,7 +231,8 @@ class DashboardActivityFeedBloc
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
-          mostRecentRemoteHash: currentState.mostRecentRemoteHash,
+          mostRecentCounterpartyEventHash:
+              currentState.mostRecentCounterpartyEventHash,
           newTransactionCount: currentState.newTransactionCount,
           transactions: [
             ...currentState.transactions,
@@ -253,14 +268,16 @@ class DashboardActivityFeedBloc
 
       List<String> addresses = addresses_.map((a) => a.address).toList();
 
-      final (confirmed, _, _) = await eventsRepository.getByAddressesVerbose(
-          addresses: addresses,
-          limit: 10,
-          unconfirmed: false,
-          whitelist: DEFAULT_WHITELIST);
+      // get most recent confirmed tx so we can query local txs above blocktime
+      final (confirmedCounterpartyEvents, _, _) =
+          await eventsRepository.getByAddressesVerbose(
+              addresses: addresses,
+              limit: 10,
+              unconfirmed: false,
+              whitelist: DEFAULT_WHITELIST);
 
-      if (confirmed.isNotEmpty) {
-        final event = confirmed[0];
+      if (confirmedCounterpartyEvents.isNotEmpty) {
+        final event = confirmedCounterpartyEvents[0];
         if (event.state is EventStateConfirmed) {
           int blocktime = (event.state as EventStateConfirmed).blockTime!;
 
@@ -269,39 +286,123 @@ class DashboardActivityFeedBloc
         }
       }
 
+      // query local transactions above mose recent confirmed event
       final localTransactions = mostRecentBlocktime != null
           ? await transactionLocalRepository.getAllByAccountAfterDateVerbose(
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository
               .getAllByAccountVerbose(accountUuid);
 
-      final (remoteEvents, nextCursor, _) =
+      // get all counterparty events
+
+      final (counterpartyEvents, nextCursor, _) =
           await eventsRepository.getByAddressesVerbose(
               addresses: addresses,
               limit: pageSize,
               unconfirmed: true,
               whitelist: DEFAULT_WHITELIST);
 
-      final remoteHashes =
-          Set<String>.from(remoteEvents.map((event) => event.txHash));
+      // factor out counterparty events by unconfirmed / confirmed
+      List<VerboseEvent> counterpartyMempool = [];
+      List<VerboseEvent> counterpartyConfirmed = [];
 
-      final localDisplayTransactions = localTransactions
-          .where((tx) => !remoteHashes.contains(tx.hash))
-          .map((tx) => ActivityFeedItem(hash: tx.hash, info: tx))
-          .toList();
+      for (final event in counterpartyEvents) {
+        switch (event.state) {
+          case EventStateMempool():
+            counterpartyMempool.add(event);
+          case EventStateConfirmed():
+            counterpartyConfirmed.add(event);
+        }
+      }
 
-      final remoteDisplayTransactions = remoteEvents
-          .map((event) => ActivityFeedItem(hash: event.txHash, event: event))
-          .toList();
+      final counterpartyMempoolByHash = {
+        for (var e in counterpartyMempool) e.txHash: e
+      };
+
+      final counterpartyConfirmedByHash = {
+        for (var e in counterpartyConfirmed) e.txHash: e
+      };
+
+      // get all btc mempool transactions
+      final btcMempoolE =
+          await bitcoinRepository.getMempoolTransactions(addresses);
+
+      final btcMempoolList =
+          btcMempoolE.getOrElse((left) => throw Exception(left));
+
+      final btcMempoolMap = {for (var tx in btcMempoolList) tx.txid: tx};
+
+      final btcConfirmedE = await bitcoinRepository.getTransactions(addresses);
+
+      final btcConfirmedList =
+          btcConfirmedE.getOrElse((left) => throw Exception(left));
+
+      final btcConfirmedMap = {for (var tx in btcConfirmedList) tx.txid: tx};
+
+      // Local transactions are not seen in either the:
+      //    1) counterparty mempool
+      //    2) counterparty confirmed
+      //    3) btc mempool
+      //    4) btc confirmed
+
+      List<ActivityFeedItem> localActivityFeedItems = localTransactions
+          .where((tx) =>
+              !counterpartyMempoolByHash.keys.contains(tx.hash) &&
+              !counterpartyConfirmedByHash.keys.contains(tx.hash) &&
+              !btcConfirmedMap.keys.contains(tx.hash) &&
+              !btcMempoolMap.keys.contains(tx.hash))
+          .map((tx) {
+        return ActivityFeedItem(hash: tx.hash, info: tx);
+      }).toList();
+
+      // mempool transactions are the set of txs in ( preferring counterparty events over btc):
+      //  1) counterpartry mempool
+      //  2) btc mempool
+      List<ActivityFeedItem> mempoolActivityFeedItems = [];
+
+      // don't add btc mempool if it's in the counterparty mempoool
+      for (final tx in btcMempoolList) {
+        mempoolActivityFeedItems
+            .add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
+      }
+
+      for (final tx in counterpartyMempool) {
+        mempoolActivityFeedItems
+            .add(ActivityFeedItem(hash: tx.txHash, event: tx));
+      }
+
+      // add btc confirmed, preferring counterparty events
+      // where there are conflicts and sorting by blockIndex
+
+      List<ActivityFeedItem> confirmedActivityFeedItems = [];
+
+      for (final tx in btcConfirmedList) {
+        if (counterpartyConfirmedByHash.containsKey(tx.txid)) {
+          confirmedActivityFeedItems.add(ActivityFeedItem(
+              hash: tx.txid, event: counterpartyConfirmedByHash[tx.txid]));
+        } else {
+          confirmedActivityFeedItems
+              .add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
+        }
+      }
+
+      for (final tx in counterpartyConfirmed) {
+        if (!btcConfirmedMap.containsKey(tx.txHash)) {
+          confirmedActivityFeedItems
+              .add(ActivityFeedItem(hash: tx.txHash, event: tx));
+        }
+      }
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
           newTransactionCount: 0,
-          mostRecentRemoteHash:
-              remoteEvents.isNotEmpty ? remoteEvents[0].txHash : null,
+          mostRecentCounterpartyEventHash: counterpartyEvents.isNotEmpty
+              ? counterpartyEvents[0].txHash
+              : null,
           transactions: [
-            ...localDisplayTransactions,
-            ...remoteDisplayTransactions
+            ...localActivityFeedItems,
+            ...mempoolActivityFeedItems,
+            ...confirmedActivityFeedItems, // ...remoteDisplayTransactions
           ]));
     } catch (e) {
       rethrow;
