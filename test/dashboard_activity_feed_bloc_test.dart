@@ -109,7 +109,6 @@ void main() {
         },
         act: (bloc) =>
             bloc.add(const StartPolling(interval: Duration(seconds: 5))),
-        wait: const Duration(milliseconds: 1),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               isA<DashboardActivityFeedState>()
@@ -141,7 +140,6 @@ void main() {
         act: (bloc) => bloc
           ..add(const StartPolling(interval: Duration(seconds: 5)))
           ..add(const StopPolling()),
-        wait: const Duration(milliseconds: 1),
         // expect: () => [
         //       DashboardActivityFeedStateLoading(),
         //       isA<DashboardActivityFeedState>()
@@ -170,7 +168,6 @@ void main() {
               transactionRepository: mockTransactionRepository);
         },
         act: (bloc) => bloc.add(const Load()),
-        wait: const Duration(milliseconds: 1),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               isA<DashboardActivityFeedState>()
@@ -196,7 +193,6 @@ void main() {
         seed: () => const DashboardActivityFeedStateCompleteOk(
             transactions: [], newTransactionCount: 0),
         act: (bloc) => bloc.add(const Load()),
-        wait: const Duration(milliseconds: 1),
         expect: () => [
               const DashboardActivityFeedStateReloadingOk(
                 transactions: [],
@@ -225,7 +221,6 @@ void main() {
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
         act: (bloc) => bloc.add(const Load()),
-        wait: const Duration(milliseconds: 1),
         expect: () => [
               const DashboardActivityFeedStateReloadingError(
                 error: "error",
@@ -254,7 +249,6 @@ void main() {
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
         act: (bloc) => bloc.add(const Load()),
-        wait: const Duration(milliseconds: 1),
         expect: () => [
               const DashboardActivityFeedStateReloadingError(
                 error: "error",
@@ -311,7 +305,6 @@ void main() {
               transactionRepository: mockTransactionRepository);
         },
         act: (bloc) => bloc.add(const Load()),
-        wait: const Duration(milliseconds: 1),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
@@ -367,7 +360,6 @@ void main() {
               transactionRepository: mockTransactionRepository);
         },
         act: (bloc) => bloc.add(const Load()),
-        wait: const Duration(milliseconds: 1),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
