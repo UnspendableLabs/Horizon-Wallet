@@ -12,6 +12,56 @@ import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/display_transaction.dart';
 import 'package:mocktail/mocktail.dart';
 
+extension DateTimeExtension on DateTime {
+  DateTime stripMilliseconds() {
+    return isUtc
+        ? DateTime.utc(year, month, day, hour, minute, second)
+        : DateTime(year, month, day, hour, minute, second);
+  }
+}
+
+class PastDateTime extends DateTime {
+  PastDateTime._(int year,
+      [int month = 1,
+      int day = 1,
+      int hour = 0,
+      int minute = 0,
+      int second = 0,
+      int millisecond = 0,
+      int microsecond = 0])
+      : super(year, month, day, hour, minute, second, millisecond, microsecond);
+
+  factory PastDateTime.subtractDuration(Duration duration) {
+    final now = DateTime.now();
+    final past = now.subtract(duration);
+    return PastDateTime._(
+      past.year,
+      past.month,
+      past.day,
+      past.hour,
+      past.minute,
+      past.second,
+      past.millisecond,
+      past.microsecond,
+    );
+  }
+
+  // You can add more factory constructors or methods here if needed
+}
+
+// Extension on DateTime for easier usage
+extension PastDateTimeExtension on DateTime {
+  PastDateTime subtractDuration(Duration duration) {
+    return PastDateTime.subtractDuration(duration);
+  }
+}
+
+extension BlockTimeExtension on DateTime {
+  int toIntDividedBy1000() {
+    return millisecondsSinceEpoch ~/ 1000;
+  }
+}
+
 class MockTransactionRepository extends Mock implements TransactionRepository {}
 
 class MockTransactionLocalRepository extends Mock
@@ -94,10 +144,16 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
+
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
           final mockTransactionRepository = MockTransactionRepository();
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "123", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
           when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
               .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
@@ -128,6 +184,11 @@ void main() {
               .thenAnswer((_) async => []);
 
           final mockTransactionRepository = MockTransactionRepository();
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "123", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
           when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
               .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
@@ -158,6 +219,11 @@ void main() {
               .thenAnswer((_) async => []);
 
           final mockTransactionRepository = MockTransactionRepository();
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "123", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
           when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
               .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
@@ -181,6 +247,11 @@ void main() {
               .thenAnswer((_) async => []);
 
           final mockTransactionRepository = MockTransactionRepository();
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "123", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
           when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
               .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
@@ -205,10 +276,16 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
+
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
           final mockTransactionRepository = MockTransactionRepository();
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "123", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
           when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
               .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
@@ -237,6 +314,11 @@ void main() {
               .thenAnswer((_) async => []);
 
           final mockTransactionRepository = MockTransactionRepository();
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "123", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
           when(() => mockTransactionRepository.getByAccount(accountUuid: "123"))
               .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
@@ -268,9 +350,18 @@ void main() {
               MockTransactionLocalRepository();
 
           mockedLocal = MockTransactionInfoFactory.createMultiple([
-            ("0001", TransactionInfoDomainLocal(raw: "")),
-            ("0002", TransactionInfoDomainLocal(raw: "")),
-            ("0003", TransactionInfoDomainLocal(raw: "")),
+            (
+              "0001",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
+            (
+              "0002",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
+            (
+              "0003",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
           ]);
 
           when(() =>
@@ -290,9 +381,10 @@ void main() {
               TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
             ),
           ]);
+
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id"))
-              .thenAnswer((_) async => (mockedRemote, null));
+                  accountUuid: "account-id", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
 
           when(() => mockTransactionRepository.getByAccount(
                   accountUuid: "account-id"))
@@ -327,9 +419,18 @@ void main() {
               MockTransactionLocalRepository();
 
           mockedLocal = MockTransactionInfoFactory.createMultiple([
-            ("0001", TransactionInfoDomainLocal(raw: "")),
-            ("0002", TransactionInfoDomainLocal(raw: "")),
-            ("0003", TransactionInfoDomainLocal(raw: "")),
+            (
+              "0001",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
+            (
+              "0002",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
+            (
+              "0003",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
           ]);
 
           when(() =>
@@ -345,6 +446,11 @@ void main() {
               TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
             ),
           ]);
+
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "account-id", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<TransactionInfo>[], 1));
+
           when(() => mockTransactionRepository.getByAccount(
                   accountUuid: "account-id"))
               .thenAnswer((_) async => (mockedRemote, null));
@@ -367,6 +473,67 @@ void main() {
                   DisplayTransaction(hash: "0001", info: mockedLocal[0]),
                   DisplayTransaction(hash: "0002", info: mockedRemote[0]),
                   DisplayTransaction(hash: "0003", info: mockedRemote[1]),
+                ],
+                newTransactionCount: 0,
+              ),
+            ]);
+
+    // we need to query confirmed transactiuns to get account tx
+    // with most recent blocktime.
+    // then we need to filter out local transactions that are older
+    // easiest way is to query local db submittedAd > most recent blocktime
+
+    blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+        "first remote, newer than local",
+        build: () {
+          DateTime mostRecentConfirmedBlocktime =
+              PastDateTime.subtractDuration(const Duration(seconds: 1))
+                  .stripMilliseconds();
+
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+
+          // effectively asserts that right method is calleD with right args
+          when(() => mockTransactionLocalRepository.getAllByAccountAfterDate(
+                  "account-id", mostRecentConfirmedBlocktime))
+              .thenAnswer((_) async => []);
+
+          final mockTransactionRepository = MockTransactionRepository();
+
+          mockedRemote = MockTransactionInfoFactory.createMultiple([
+            ("0005", TransactionInfoDomainMempool()),
+            (
+              "0004",
+              TransactionInfoDomainConfirmed(
+                  blockHeight: 1,
+                  blockTime:
+                      mostRecentConfirmedBlocktime.toUtc().toIntDividedBy1000())
+            ),
+          ]);
+
+          // Return the most recent confirmed transaction
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "account-id", limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => ([mockedRemote[1]], 1));
+
+          // Return all transactions
+          when(() => mockTransactionRepository.getByAccount(
+                  accountUuid: "account-id"))
+              .thenAnswer((_) async => (mockedRemote, 1));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "account-id",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              transactionRepository: mockTransactionRepository);
+        },
+        act: (bloc) => bloc.add(const Load()),
+        expect: () => [
+              DashboardActivityFeedStateLoading(),
+              DashboardActivityFeedStateCompleteOk(
+                transactions: [
+                  DisplayTransaction(hash: "0005", info: mockedRemote[0]),
+                  DisplayTransaction(hash: "0004", info: mockedRemote[1]),
                 ],
                 newTransactionCount: 0,
               ),

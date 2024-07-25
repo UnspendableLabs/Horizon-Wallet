@@ -1130,10 +1130,12 @@ abstract class V2Api {
   ]);
 
   @Verbose()
-  @GET("/addresses/transactions")
+  @GET("/addresses/transactions?verbose=true")
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
     @Path("addresses") String addresses, [
-    @Query("cursor") int? limit,
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   // {

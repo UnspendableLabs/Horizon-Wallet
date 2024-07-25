@@ -53,7 +53,33 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
 
     return transactions
         .map((tx) => TransactionInfo(
-              domain: TransactionInfoDomainLocal(raw: tx.raw),
+              domain: TransactionInfoDomainLocal(
+                  raw: tx.raw, submittedAt: tx.submittedAt),
+              hash: tx.hash,
+              source: tx.source,
+              destination: tx.destination,
+              btcAmount: tx.btcAmount,
+              fee: tx.fee,
+              data: tx.data,
+              unpackedData: TransactionUnpacked(
+                  messageType: "",
+                  messageData: Map<String, dynamic>.from(jsonDecode(tx
+                      .unpackedData))), // TODO: this is a little broken, lift up message type
+            ))
+        .toList();
+  }
+
+  @override
+  Future<List<TransactionInfo>> getAllByAccountAfterDate(
+      String accountUuid, DateTime date) async {
+    final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
+    final transactions = await transactionDao.getAllBySourcesAfterDate(
+        addresses.map((e) => e.address).toList(), date);
+
+    return transactions
+        .map((tx) => TransactionInfo(
+              domain: TransactionInfoDomainLocal(
+                  raw: tx.raw, submittedAt: tx.submittedAt),
               hash: tx.hash,
               source: tx.source,
               destination: tx.destination,

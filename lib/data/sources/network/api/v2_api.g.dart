@@ -1592,10 +1592,16 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
     String addresses, [
+    int? cursor,
     int? limit,
+    bool? showUnconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'cursor': limit};
+    final queryParameters = <String, dynamic>{
+      r'cursor': cursor,
+      r'limit': limit,
+      r'show_unconfirmed': showUnconfirmed,
+    };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
@@ -1607,7 +1613,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/addresses/transactions',
+              '/addresses/transactions?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )

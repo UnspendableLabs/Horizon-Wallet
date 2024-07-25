@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
 import 'dart:async';
 
 import "dashboard_activity_feed_event.dart";
@@ -72,11 +73,31 @@ class DashboardActivityFeedBloc
     emit(nextState);
 
     try {
-      final localTransactions =
-          await transactionLocalRepository.getAllByAccount(accountUuid);
+      DateTime? mostRecentBlocktime;
+      // get most recent confirmed tx
+      final (confirmed, _) = await transactionRepository.getByAccount(
+          accountUuid: accountUuid, limit: 1, unconfirmed: false);
+
+      if (confirmed.isNotEmpty) {
+        final transaction = confirmed[0];
+        if (transaction.domain is TransactionInfoDomainConfirmed) {
+          int blocktime =
+              (transaction.domain as TransactionInfoDomainConfirmed).blockTime;
+
+          mostRecentBlocktime =
+              DateTime.fromMillisecondsSinceEpoch(blocktime * 1000);
+        } else {
+          print(transaction.domain);
+        }
+      }
+
+      final localTransactions = mostRecentBlocktime != null
+          ? await transactionLocalRepository.getAllByAccountAfterDate(
+              accountUuid, mostRecentBlocktime)
+          : await transactionLocalRepository.getAllByAccount(accountUuid);
 
       // 1. Get all local transactions
-      final (remoteTransactions, _nextCursor) =
+      final (remoteTransactions, _) =
           await transactionRepository.getByAccount(accountUuid: accountUuid);
 
       // 2. Create a set of remote transaction hashes for quick lookup
