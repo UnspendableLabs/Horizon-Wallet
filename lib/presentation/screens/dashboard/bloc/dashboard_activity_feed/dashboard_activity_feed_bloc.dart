@@ -75,23 +75,30 @@ class DashboardActivityFeedBloc
       final localTransactions =
           await transactionLocalRepository.getAllByAccount(accountUuid);
 
-      final displayTransactionsLocal = localTransactions
-          .map((tx) => DisplayTransaction(hash: tx.hash))
-          .toList();
-
       // 1. Get all local transactions
       final (remoteTransactions, _nextCursor) =
           await transactionRepository.getByAccount(accountUuid: accountUuid);
 
-      final displayTransactionsRemote = remoteTransactions
-          .map((tx) => DisplayTransaction(hash: tx.hash))
+      // 2. Create a set of remote transaction hashes for quick lookup
+      final remoteHashes =
+          Set<String>.from(remoteTransactions.map((tx) => tx.hash));
+
+      // 3. Create DisplayTransactions for local transactions, excluding those that exist in remote
+      final localDisplayTransactions = localTransactions
+          .where((tx) => !remoteHashes.contains(tx.hash))
+          .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
+          .toList();
+
+      // 4. Create DisplayTransactions for remote transactions
+      final remoteDisplayTransactions = remoteTransactions
+          .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
           .toList();
 
       emit(DashboardActivityFeedStateCompleteOk(
           newTransactionCount: 0,
           transactions: [
-            ...displayTransactionsLocal,
-            ...displayTransactionsRemote
+            ...localDisplayTransactions,
+            ...remoteDisplayTransactions
           ]));
     } catch (e) {
       rethrow;
