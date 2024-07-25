@@ -64,24 +64,23 @@ Map<String, dynamic> _$BlockToJson(Block instance) => <String, dynamic>{
 
 Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
       txHash: json['tx_hash'] as String,
-      txIndex: (json['tx_index'] as num).toInt(),
-      txlistHash: json['txlist_hash'] as String?,
-      blockIndex: (json['block_index'] as num).toInt(),
+      txIndex: (json['tx_index'] as num?)?.toInt(),
+      blockIndex: (json['block_index'] as num?)?.toInt(),
       blockHash: json['block_hash'] as String?,
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       source: json['source'] as String,
       destination: json['destination'] as String?,
-      btcAmount: (json['btc_amount'] as num).toDouble(),
+      btcAmount: (json['btc_amount'] as num).toInt(),
       fee: (json['fee'] as num).toInt(),
       data: json['data'] as String,
       supported: json['supported'] as bool,
+      confirmed: json['confirmed'] as bool,
     );
 
 Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
     <String, dynamic>{
-      'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
-      'txlist_hash': instance.txlistHash,
+      'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
       'block_hash': instance.blockHash,
       'block_time': instance.blockTime,
@@ -91,6 +90,44 @@ Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
       'fee': instance.fee,
       'data': instance.data,
       'supported': instance.supported,
+      'confirmed': instance.confirmed,
+    };
+
+TransactionVerbose _$TransactionVerboseFromJson(Map<String, dynamic> json) =>
+    TransactionVerbose(
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num?)?.toInt(),
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockHash: json['block_hash'] as String?,
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num).toInt(),
+      fee: (json['fee'] as num).toInt(),
+      data: json['data'] as String,
+      supported: json['supported'] as bool,
+      confirmed: json['confirmed'] as bool,
+      unpackedData:
+          Unpack.fromJson(json['unpacked_data'] as Map<String, dynamic>),
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+    );
+
+Map<String, dynamic> _$TransactionVerboseToJson(TransactionVerbose instance) =>
+    <String, dynamic>{
+      'tx_index': instance.txIndex,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_hash': instance.blockHash,
+      'block_time': instance.blockTime,
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'supported': instance.supported,
+      'confirmed': instance.confirmed,
+      'unpacked_data': instance.unpackedData,
+      'btc_amount_normalized': instance.btcAmountNormalized,
     };
 
 Balance _$BalanceFromJson(Map<String, dynamic> json) => Balance(
@@ -1546,6 +1583,45 @@ class _V2Api implements V2Api {
           ? json
               .map<Transaction>(
                   (i) => Transaction.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
+    String addresses, [
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'cursor': limit};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<TransactionVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/transactions',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<TransactionVerbose>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<TransactionVerbose>(
+                  (i) => TransactionVerbose.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );

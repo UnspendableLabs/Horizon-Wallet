@@ -43,6 +43,9 @@ import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
 import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
 
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/data/sources/repositories/transaction_local_repository_impl.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -80,10 +83,16 @@ Future<void> setup() async {
       AddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
-      addressRepository: GetIt.I.get<AddressRepository>(),
-      api: GetIt.I.get<V2Api>(),
-      transactionDao:
-          TransactionsDao(injector.get<DatabaseManager>().database)));
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    api: GetIt.I.get<V2Api>(),
+  ));
+
+  injector.registerSingleton<TransactionLocalRepository>(
+      TransactionLocalRepositoryImpl(
+          addressRepository: GetIt.I.get<AddressRepository>(),
+          api: GetIt.I.get<V2Api>(),
+          transactionDao:
+              TransactionsDao(injector.get<DatabaseManager>().database)));
 
   injector.registerSingleton<CacheProvider>(HiveCache());
 

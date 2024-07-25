@@ -39,12 +39,22 @@ class DashboardActivityFeedStateReloadingOk extends DashboardActivityFeedState {
 
   const DashboardActivityFeedStateReloadingOk(
       {required this.transactions, required this.newTransactionCount});
+
+  copyWith({List<DisplayTransaction>? transactions, int? newTransactionCount}) {
+    return DashboardActivityFeedStateReloadingOk(
+        transactions: transactions ?? this.transactions,
+        newTransactionCount: newTransactionCount ?? this.newTransactionCount);
+  }
 }
 
 class DashboardActivityFeedStateReloadingError
     extends DashboardActivityFeedState {
   final String error;
   const DashboardActivityFeedStateReloadingError({required this.error});
+
+  copyWith({String? error}) {
+    return DashboardActivityFeedStateReloadingError(error: error ?? this.error);
+  }
 
   @override
   List<Object> get props => [error];
