@@ -72,16 +72,29 @@ class DashboardActivityFeedBloc
     emit(nextState);
 
     try {
+      final localTransactions =
+          await transactionLocalRepository.getAllByAccount(accountUuid);
+
+      final displayTransactionsLocal = localTransactions
+          .map((tx) => DisplayTransaction(hash: tx.hash))
+          .toList();
+
       // 1. Get all local transactions
-      final (transactions, nextCursor) =
+      final (remoteTransactions, _nextCursor) =
           await transactionRepository.getByAccount(accountUuid: accountUuid);
 
-      final displayTransactions =
-          transactions.map((tx) => DisplayTransaction(hash: tx.hash)).toList();
+      final displayTransactionsRemote = remoteTransactions
+          .map((tx) => DisplayTransaction(hash: tx.hash))
+          .toList();
 
       emit(DashboardActivityFeedStateCompleteOk(
-          newTransactionCount: 0, transactions: displayTransactions));
+          newTransactionCount: 0,
+          transactions: [
+            ...displayTransactionsLocal,
+            ...displayTransactionsRemote
+          ]));
     } catch (e) {
+      rethrow;
       emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
     }
   }
