@@ -77,8 +77,8 @@ class _PasswordPromptState extends State<PasswordPrompt> {
             ),
 
             const SizedBox(height: 16.0), // Spacing between inputs
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
+            FilledButton(
+              style: FilledButton.styleFrom(
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                 minimumSize:
@@ -260,7 +260,7 @@ class SettingsPage extends StatelessWidget {
                                         shell.onOnboarding();
                                       }
                                     },
-                                    child: ElevatedButton(
+                                    child: FilledButton(
                                       onPressed: () {
                                         showDialog(
                                           context: context,
@@ -309,8 +309,7 @@ class SettingsPage extends StatelessWidget {
                               ),
                             ),
                             SliderSettingsTile(
-                              title: 'Address Settings',
-                              subtitle: 'Gap Limit',
+                              title: 'Gap Limit',
                               leading: const Icon(Icons.numbers),
                               settingKey: '${account.uuid}:gap-limit',
                               defaultValue: 10,

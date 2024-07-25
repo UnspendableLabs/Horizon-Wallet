@@ -201,7 +201,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   },
                                 ),
                                 const Text('Divisible',
-                                    style: TextStyle(color: Colors.black87)),
+                                    style: TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
                             const Row(
@@ -212,7 +212,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 Expanded(
                                   child: Text(
                                     'Whether this asset is divisible or not. Defaults to true.',
-                                    style: TextStyle(color: Colors.black54),
                                   ),
                                 ),
                               ],
@@ -228,7 +227,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   },
                                 ),
                                 const Text('Lock',
-                                    style: TextStyle(color: Colors.black87)),
+                                    style: TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
                             const Row(
@@ -239,7 +238,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 Expanded(
                                   child: Text(
                                     'Whether this issuance should lock supply of this asset forever. Defaults to false.',
-                                    style: TextStyle(color: Colors.black54),
                                   ),
                                 ),
                               ],
@@ -256,7 +254,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   },
                                 ),
                                 const Text('Reset',
-                                    style: TextStyle(color: Colors.black87)),
+                                    style: TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
                             const Row(
@@ -267,7 +265,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 Expanded(
                                   child: Text(
                                     'Wether this issuance should reset any existing supply. Defaults to false.',
-                                    style: TextStyle(color: Colors.black54),
                                   ),
                                 ),
                               ],
@@ -277,7 +274,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         const SizedBox(height: 4.0),
                         SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton(
+                          child: FilledButton(
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 context
@@ -295,7 +292,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                     ));
                               }
                             },
-                            style: ElevatedButton.styleFrom(
+                            style: FilledButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),

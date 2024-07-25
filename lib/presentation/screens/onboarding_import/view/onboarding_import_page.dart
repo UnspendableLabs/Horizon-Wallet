@@ -171,7 +171,7 @@ class PasswordPrompt extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             final shell = context.read<ShellStateCubit>();
 
@@ -187,7 +187,7 @@ class PasswordPrompt extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             if (_passwordController.text == '' ||
                                 _passwordConfirmationController.text == '') {
@@ -205,7 +205,7 @@ class PasswordPrompt extends StatelessWidget {
                                   .add(ImportWallet());
                             }
                           },
-                          style: ElevatedButton.styleFrom(
+                          style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -340,7 +340,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () {
                       final shell = context.read<ShellStateCubit>();
                       shell.onOnboarding();
@@ -355,7 +355,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () {
                       context.read<OnboardingImportBloc>().add(MnemonicSubmit(
                             mnemonic: controllers
@@ -365,7 +365,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                             importFormat: selectedFormat!,
                           ));
                     },
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),

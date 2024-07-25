@@ -350,7 +350,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     const Spacer(),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             // TODO: wrap this in function and write some tests
@@ -384,7 +384,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                     quantity: quantity));
                           }
                         },
-                        style: ElevatedButton.styleFrom(
+                        style: FilledButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),

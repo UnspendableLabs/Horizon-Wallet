@@ -148,12 +148,12 @@ class PasswordPrompt extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             final shell = context.read<ShellStateCubit>();
                             shell.onOnboarding();
                           },
-                          style: ElevatedButton.styleFrom(
+                          style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -163,7 +163,7 @@ class PasswordPrompt extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             if (_passwordController.text == '' ||
                                 _passwordConfirmationController.text == '') {
@@ -181,7 +181,7 @@ class PasswordPrompt extends StatelessWidget {
                                   .add(CreateWallet());
                             }
                           },
-                          style: ElevatedButton.styleFrom(
+                          style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -246,7 +246,7 @@ class _MnemonicState extends State<Mnemonic> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () {
                           final shell = context.read<ShellStateCubit>();
                           shell.onOnboarding();
@@ -261,13 +261,13 @@ class _MnemonicState extends State<Mnemonic> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () {
                           context
                               .read<OnboardingCreateBloc>()
                               .add(UnconfirmMnemonic());
                         },
-                        style: ElevatedButton.styleFrom(
+                        style: FilledButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -371,7 +371,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () => context
                         .read<OnboardingCreateBloc>()
                         .add(GoBackToMnemonic()),
@@ -385,7 +385,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () {
                       context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
                           mnemonic: controllers
@@ -393,7 +393,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                               .join(' ')
                               .trim()));
                     },
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
