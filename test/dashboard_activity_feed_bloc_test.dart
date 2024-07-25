@@ -1,5 +1,4 @@
 import 'package:test/test.dart';
-import 'package:async/async.dart';
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
