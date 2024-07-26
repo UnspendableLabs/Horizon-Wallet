@@ -307,14 +307,14 @@ class MyApp extends StatelessWidget {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
+        backgroundColor: const Color.fromRGBO(35, 35, 59, 1),
         foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(146, 209, 253, 1),
-        foregroundColor: const Color.fromRGBO(25, 25, 39, 1),
+        backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
+        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
