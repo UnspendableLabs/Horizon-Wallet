@@ -73,7 +73,10 @@ class DashboardActivityFeedBloc
         while (!found) {
           final (remoteTransactions, nextCursor_, _) =
               await transactionRepository.getByAccount(
-                  accountUuid: accountUuid, limit: pageSize, unconfirmed: true, cursor: nextCursor );
+                  accountUuid: accountUuid,
+                  limit: pageSize,
+                  unconfirmed: true,
+                  cursor: nextCursor);
           // iterate all remote transactions
           for (final tx in remoteTransactions) {
             if (tx.hash != mostRecentRemoteHash) {
@@ -94,16 +97,15 @@ class DashboardActivityFeedBloc
           }
         }
 
-        // we only update new transaction count 
+        // we only update new transaction count
         // ( i.e. UI stays the same save for banner)
         // that shows current number of news transactions
-        // that can be loaded with a click 
+        // that can be loaded with a click
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: currentState.nextCursor,
             newTransactionCount: newTransactionCount,
             mostRecentRemoteHash: currentState.mostRecentRemoteHash,
-            transactions: currentState.transactions ));
-
+            transactions: currentState.transactions));
       }
     } catch (e) {
       rethrow;
@@ -118,7 +120,14 @@ class DashboardActivityFeedBloc
       return;
     }
 
+
     final currentState = state as DashboardActivityFeedStateCompleteOk;
+
+    // we are at the end of the list
+    if ( currentState.nextCursor == null  ) {
+      return;
+    }
+
 
     emit(DashboardActivityFeedStateReloadingOk(
       transactions: currentState.transactions,
@@ -131,6 +140,7 @@ class DashboardActivityFeedBloc
           await transactionRepository.getByAccount(
               accountUuid: accountUuid,
               cursor: currentState.nextCursor,
+              limit: pageSize,
               unconfirmed: true);
 
       // appent new transactions to existing transactions
@@ -174,6 +184,7 @@ class DashboardActivityFeedBloc
       DateTime? mostRecentBlocktime;
       // get most recent confirmed tx
 
+
       final (confirmed, _, _) = await transactionRepository.getByAccount(
           accountUuid: accountUuid, limit: 1, unconfirmed: false);
 
@@ -193,8 +204,9 @@ class DashboardActivityFeedBloc
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository.getAllByAccount(accountUuid);
 
+
       final (remoteTransactions, nextCursor, _) = await transactionRepository
-          .getByAccount(accountUuid: accountUuid, unconfirmed: true);
+          .getByAccount(accountUuid: accountUuid, limit: pageSize, unconfirmed: true);
 
       final remoteHashes =
           Set<String>.from(remoteTransactions.map((tx) => tx.hash));
@@ -207,6 +219,8 @@ class DashboardActivityFeedBloc
       final remoteDisplayTransactions = remoteTransactions
           .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
           .toList();
+
+
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,

@@ -155,7 +155,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true))
+                  accountUuid: "123", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           return DashboardActivityFeedBloc(
@@ -191,7 +191,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true))
+                  accountUuid: "123", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           return DashboardActivityFeedBloc(
@@ -227,7 +227,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true))
+                  accountUuid: "123", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           return DashboardActivityFeedBloc(
@@ -256,7 +256,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true))
+                  accountUuid: "123", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           return DashboardActivityFeedBloc(
@@ -294,7 +294,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true))
+                  accountUuid: "123", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           return DashboardActivityFeedBloc(
@@ -328,7 +328,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true))
+                  accountUuid: "123", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
 
           return DashboardActivityFeedBloc(
@@ -396,7 +396,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 3));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id", unconfirmed: true))
+                  accountUuid: "account-id", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (mockedRemote, null, 3));
 
           return DashboardActivityFeedBloc(
@@ -463,7 +463,7 @@ void main() {
               .thenAnswer((_) async => (<TransactionInfo>[], 1, 2));
 
           when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id", unconfirmed: true))
+                  accountUuid: "account-id", unconfirmed: true, limit: 10))
               .thenAnswer((_) async => (mockedRemote, null, 2));
 
           return DashboardActivityFeedBloc(
@@ -527,7 +527,7 @@ void main() {
 
           // Return all transactions
           when(() => mockTransactionRepository.getByAccount(
-                  unconfirmed: true, accountUuid: "account-id"))
+                  unconfirmed: true, accountUuid: "account-id", limit: 10))
               .thenAnswer((_) async => (mockedRemote, 1, 2));
 
           return DashboardActivityFeedBloc(
@@ -605,6 +605,7 @@ void main() {
           when(() => mockTransactionRepository.getByAccount(
               unconfirmed: true,
               accountUuid: "account-id",
+              limit: 10,
               cursor: 4)).thenAnswer((_) async => (mockedRemote2, null, 2));
 
           return DashboardActivityFeedBloc(
@@ -646,6 +647,27 @@ void main() {
                 mostRecentRemoteHash: "0004",
               ),
             ]);
+
+    blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+        "does nothing when no cursor",
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "account-id",
+              transactionLocalRepository: MockTransactionLocalRepository(),
+              transactionRepository: MockTransactionRepository());
+        },
+        seed: () => DashboardActivityFeedStateCompleteOk(
+              transactions: [],
+              newTransactionCount: 0,
+              nextCursor: null,
+              mostRecentRemoteHash: "0002",
+            ),
+        act: (bloc) => bloc..add(const LoadMore()),
+        expect: () => []);
   });
 
   group("LoadQuiet", () {
@@ -680,7 +702,6 @@ void main() {
 
           final mockTransactionRepository = MockTransactionRepository();
 
-
           mockedRemote = MockTransactionInfoFactory.createMultiple([
             ("0004", TransactionInfoDomainMempool()),
             (
@@ -696,12 +717,11 @@ void main() {
 
           // `LoadMore`
           when(() => mockTransactionRepository.getByAccount(
-              unconfirmed: true,
-              accountUuid: "account-id",
-              cursor: null, 
-              limit: 10,
-              )).thenAnswer((_) async => (mockedRemote, null, null ));
-
+                unconfirmed: true,
+                accountUuid: "account-id",
+                cursor: null,
+                limit: 10,
+              )).thenAnswer((_) async => (mockedRemote, null, null));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -716,7 +736,7 @@ void main() {
                 DisplayTransaction(hash: "0003", info: mockedRemote[3]),
               ],
               newTransactionCount: 0,
-              nextCursor: 4, // doesn't matter since we are prepending 
+              nextCursor: 4, // doesn't matter since we are prepending
               mostRecentRemoteHash: "0002",
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
@@ -737,7 +757,7 @@ void main() {
                 ],
                 newTransactionCount: 2,
                 nextCursor: 4,
-                mostRecentRemoteHash: "0002" ,
+                mostRecentRemoteHash: "0002",
               ),
             ]);
   });

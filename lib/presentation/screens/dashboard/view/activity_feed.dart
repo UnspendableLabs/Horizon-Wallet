@@ -30,18 +30,20 @@ class NewTransactionsBanner extends StatelessWidget {
 }
 
 class TransactionListItem extends StatelessWidget {
-final DisplayTransaction transaction;
-const TransactionListItem({Key? key, required this.transaction}) : super(key: key);
-@override
-Widget build(BuildContext context) {
-return ListTile(
-title: Text(transaction.hash),
-subtitle: Text(transaction.info.toString()), // You may want to customize this based on your TransactionInfo structure
-onTap: () {
+  final DisplayTransaction transaction;
+  const TransactionListItem({Key? key, required this.transaction})
+      : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(transaction.hash),
+      subtitle: Text(transaction.info
+          .toString()), // You may want to customize this based on your TransactionInfo structure
+      onTap: () {
 // Handle transaction tap
-},
-);
-}
+      },
+    );
+  }
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
@@ -53,76 +55,68 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 
 class _DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
-  final ScrollController _scrollController = ScrollController();
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
-    context.read<DashboardActivityFeedBloc>().add(const Load());
+    context
+        .read<DashboardActivityFeedBloc>()
+        .add(const StartPolling(interval: Duration(seconds: 30)));
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    context.read<DashboardActivityFeedBloc>().add(const StopPolling());
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      context.read<DashboardActivityFeedBloc>().add(const LoadMore());
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Activity Feed'),
-      ),
-      body: BlocBuilder<DashboardActivityFeedBloc, DashboardActivityFeedState>(
-        builder: (context, state) {
-          if (state is DashboardActivityFeedStateInitial ||
-              state is DashboardActivityFeedStateLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is DashboardActivityFeedStateCompleteError) {
-            return Center(child: Text('Error: ${state.error}'));
-          } else if (state is DashboardActivityFeedStateCompleteOk ||
-              state is DashboardActivityFeedStateReloadingOk) {
-            final transactions =
-                (state as dynamic).transactions as List<DisplayTransaction>;
-            final newTransactionCount =
-                (state as dynamic).newTransactionCount as int;
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<DashboardActivityFeedBloc>().add(const Load());
-              },
-              child: Column(
-                children: [
-                  if (newTransactionCount > 0)
-                    NewTransactionsBanner(count: newTransactionCount),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: transactions.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == transactions.length) {
-                          return state is DashboardActivityFeedStateReloadingOk
-                              ? const Center(child: CircularProgressIndicator())
-                              : const SizedBox.shrink();
-                        }
-                        return TransactionListItem(
-                            transaction: transactions[index]);
-                      },
-                    ),
-                  ),
-                ],
+    return BlocBuilder<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+      builder: (context, state) {
+        if (state is DashboardActivityFeedStateInitial ||
+            state is DashboardActivityFeedStateLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is DashboardActivityFeedStateCompleteError) {
+          return Center(child: Text('Error: ${state.error}'));
+        } else if (state is DashboardActivityFeedStateCompleteOk ||
+            state is DashboardActivityFeedStateReloadingOk) {
+          final transactions =
+              (state as dynamic).transactions as List<DisplayTransaction>;
+          final newTransactionCount =
+              (state as dynamic).newTransactionCount as int;
+          return Column(
+            children: [
+              if (newTransactionCount > 0)
+                NewTransactionsBanner(count: newTransactionCount),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: transactions.length + 1,
+                itemBuilder: (context, index) {
+                  if (index < transactions.length) {
+                    return TransactionListItem(
+                        transaction: transactions[index]);
+                  } else if (index == transactions.length) {
+                    return state is DashboardActivityFeedStateReloadingOk
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink();
+                  }
+                  return null;
+                },
               ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
+              ElevatedButton(
+                onPressed: () {
+                  context
+                      .read<DashboardActivityFeedBloc>()
+                      .add(const LoadMore());
+                },
+                child: const Text("Load More"),
+              ),
+            ],
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }

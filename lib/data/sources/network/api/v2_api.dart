@@ -21,7 +21,7 @@ class VerboseInterceptor extends Interceptor {
 
 // Domain
 
-@JsonSerializable(genericArgumentFactories: true)
+@JsonSerializable(genericArgumentFactories: true, fieldRename: FieldRename.snake )
 class Response<T> {
   final T? result;
   final int? nextCursor;
@@ -1132,7 +1132,7 @@ abstract class V2Api {
   @Verbose()
   @GET("/addresses/transactions?verbose=true")
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
-    @Path("addresses") String addresses, [
+    @Query("addresses") String addresses, [
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,

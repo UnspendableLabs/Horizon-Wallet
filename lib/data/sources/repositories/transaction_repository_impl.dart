@@ -62,8 +62,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
 
+
     final addressesParam =
         addresses.map((address) => address.address).join(',');
+
 
     final response = await api.getTransactionsByAddressesVerbose(
       addressesParam,
