@@ -25,36 +25,50 @@ class DashboardActivityFeedBloc
     on<StartPolling>(_onStartPolling);
     on<StopPolling>(_onStopPolling);
     on<Load>(_onLoad);
+    on<LoadMore>(_onLoadMore);
     // on<Reload>(_onReload);
   }
 
-  // void _onLoad(Load event, Emitter<DashboardActivityFeedState> emit) async {
-  //   emit(DashboardActivityFeedStateLoading());
-  //
-  //
-  //   try {
-  //     // 1. Get all local transactions
-  //
-  //     final transactions =
-  //         await transactionRepository.getAllByAccount(accountUuid);
-  //
-  //     // 2. get all transactions in mempool
-  //     // skipping for now since can't really test mempool on
-  //     // on testnet
-  //
-  //     // 3. get all confirmed transactions up to a limit
-  //
-  //     // 4. convert to display
-  //
-  //     final displayTransactions =
-  //         transactions.map((tx) => DisplayTransaction(hash: tx.hash)).toList();
-  //
-  //     emit(DashboardActivityFeedStateCompleteOk(
-  //         newTransactionCount: 0, transactions: displayTransactions));
-  //   } catch (e) {
-  //     emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
-  //   }
-  // }
+  void _onLoadMore(
+      LoadMore event, Emitter<DashboardActivityFeedState> emit) async {
+    // can only call when stte is complete ok
+    if (state is! DashboardActivityFeedStateCompleteOk) {
+      return;
+    }
+
+    final currentState = state as DashboardActivityFeedStateCompleteOk;
+
+    emit(DashboardActivityFeedStateReloadingOk(
+      transactions: currentState.transactions,
+      newTransactionCount: currentState.newTransactionCount,
+    ));
+
+    try {
+      // we don't care about local transactions, just load remote if we have a cursor
+      final (remoteTransactions, nextCursor) =
+          await transactionRepository.getByAccount(
+              accountUuid: accountUuid,
+              cursor: currentState.nextCursor,
+              unconfirmed: true);
+
+      // appent new transactions to existing transactions
+
+      final remoteDisplayTransactions = remoteTransactions
+          .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
+          .toList();
+
+      emit(DashboardActivityFeedStateCompleteOk(
+          nextCursor: nextCursor,
+          newTransactionCount: currentState.newTransactionCount,
+          transactions: [
+            ...currentState.transactions,
+            ...remoteDisplayTransactions
+          ]));
+    } catch (e) {
+      rethrow;
+      emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
+    }
+  }
 
   void _onLoad(event, Emitter<DashboardActivityFeedState> emit) async {
     final nextState = switch (state) {
@@ -75,6 +89,9 @@ class DashboardActivityFeedBloc
     try {
       DateTime? mostRecentBlocktime;
       // get most recent confirmed tx
+
+
+      print( "accountUuid $accountUuid ");
       final (confirmed, _) = await transactionRepository.getByAccount(
           accountUuid: accountUuid, limit: 1, unconfirmed: false);
 
@@ -96,26 +113,23 @@ class DashboardActivityFeedBloc
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository.getAllByAccount(accountUuid);
 
-      // 1. Get all local transactions
-      final (remoteTransactions, _) =
-          await transactionRepository.getByAccount(accountUuid: accountUuid);
+      final (remoteTransactions, nextCursor) = await transactionRepository
+          .getByAccount(accountUuid: accountUuid, unconfirmed: true);
 
-      // 2. Create a set of remote transaction hashes for quick lookup
       final remoteHashes =
           Set<String>.from(remoteTransactions.map((tx) => tx.hash));
 
-      // 3. Create DisplayTransactions for local transactions, excluding those that exist in remote
       final localDisplayTransactions = localTransactions
           .where((tx) => !remoteHashes.contains(tx.hash))
           .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
           .toList();
 
-      // 4. Create DisplayTransactions for remote transactions
       final remoteDisplayTransactions = remoteTransactions
           .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
           .toList();
 
       emit(DashboardActivityFeedStateCompleteOk(
+          nextCursor: nextCursor,
           newTransactionCount: 0,
           transactions: [
             ...localDisplayTransactions,

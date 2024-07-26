@@ -19,9 +19,13 @@ class Load extends DashboardActivityFeedEvent {
   const Load();
 }
 
-class Reload extends DashboardActivityFeedEvent {
-  const Reload();
+class LoadMore extends DashboardActivityFeedEvent {
+  const LoadMore();
 }
+
+// class Reload extends DashboardActivityFeedEvent {
+//   const Reload();
+// }
 
 class ForceLoad extends DashboardActivityFeedEvent {
   const ForceLoad();
