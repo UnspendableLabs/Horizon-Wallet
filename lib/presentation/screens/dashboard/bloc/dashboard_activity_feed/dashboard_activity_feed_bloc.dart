@@ -59,6 +59,8 @@ class DashboardActivityFeedBloc
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
+          mostRecentRemoteHash:
+              remoteTransactions.isNotEmpty ? remoteTransactions[0].hash : null,
           newTransactionCount: currentState.newTransactionCount,
           transactions: [
             ...currentState.transactions,
@@ -90,8 +92,7 @@ class DashboardActivityFeedBloc
       DateTime? mostRecentBlocktime;
       // get most recent confirmed tx
 
-
-      print( "accountUuid $accountUuid ");
+      print("accountUuid $accountUuid ");
       final (confirmed, _) = await transactionRepository.getByAccount(
           accountUuid: accountUuid, limit: 1, unconfirmed: false);
 
@@ -131,6 +132,8 @@ class DashboardActivityFeedBloc
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
           newTransactionCount: 0,
+          mostRecentRemoteHash:
+              remoteTransactions.isNotEmpty ? remoteTransactions[0].hash : null,
           transactions: [
             ...localDisplayTransactions,
             ...remoteDisplayTransactions
