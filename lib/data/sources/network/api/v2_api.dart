@@ -13,9 +13,14 @@ class Response<T> {
   final int? resultCount;
   final String? error;
 
-  Response({required this.result, required this.error, this.nextCursor, this.resultCount});
+  Response(
+      {required this.result,
+      required this.error,
+      this.nextCursor,
+      this.resultCount});
 
-  factory Response.fromJson(Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
+  factory Response.fromJson(
+          Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
       _$ResponseFromJson(json, fromJsonT);
 }
 
@@ -72,26 +77,31 @@ class Transaction {
       required this.data,
       required this.supported});
 
-  factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
+  factory Transaction.fromJson(Map<String, dynamic> json) =>
+      _$TransactionFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Balance {
   final String address;
   final double quantity;
-  final String asset;
+  final String? asset;
+  final String? quantityNormalized;
 
   const Balance({
     required this.address,
     required this.quantity,
-    required this.asset,
+    this.asset,
+    this.quantityNormalized,
   });
 
-  factory Balance.fromJson(Map<String, dynamic> json) => _$BalanceFromJson(json);
+  factory Balance.fromJson(Map<String, dynamic> json) =>
+      _$BalanceFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class BalanceVerbose extends Balance {
+  @override
   final String quantityNormalized;
   final AssetInfo assetInfo;
 
@@ -102,7 +112,25 @@ class BalanceVerbose extends Balance {
       required this.assetInfo,
       required this.quantityNormalized});
 
-  factory BalanceVerbose.fromJson(Map<String, dynamic> json) => _$BalanceVerboseFromJson(json);
+  factory BalanceVerbose.fromJson(Map<String, dynamic> json) =>
+      _$BalanceVerboseFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MultiAddressBalance {
+  final String asset;
+  final int total;
+  final List<Balance> addresses;
+  final AssetInfo assetInfo;
+  final String totalNormalized;
+  MultiAddressBalance(
+      {required this.asset,
+      required this.total,
+      required this.addresses,
+      required this.assetInfo,
+      required this.totalNormalized});
+  factory MultiAddressBalance.fromJson(Map<String, dynamic> json) =>
+      _$MultiAddressBalanceFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -130,7 +158,8 @@ class EventCount {
     required this.eventCount,
   });
 
-  factory EventCount.fromJson(Map<String, dynamic> json) => _$EventCountFromJson(json);
+  factory EventCount.fromJson(Map<String, dynamic> json) =>
+      _$EventCountFromJson(json);
 }
 
 // {
@@ -180,7 +209,8 @@ class AssetInfo {
     required this.description,
     required this.divisible,
   });
-  factory AssetInfo.fromJson(Map<String, dynamic> json) => _$AssetInfoFromJson(json);
+  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
+      _$AssetInfoFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -266,7 +296,8 @@ class Expiration {
     required this.type,
     required this.objectId,
   });
-  factory Expiration.fromJson(Map<String, dynamic> json) => _$ExpirationFromJson(json);
+  factory Expiration.fromJson(Map<String, dynamic> json) =>
+      _$ExpirationFromJson(json);
 }
 
 // {
@@ -342,7 +373,8 @@ class Destruction {
     required this.quantityNormalized,
   });
 
-  factory Destruction.fromJson(Map<String, dynamic> json) => _$DestructionFromJson(json);
+  factory Destruction.fromJson(Map<String, dynamic> json) =>
+      _$DestructionFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -389,7 +421,8 @@ class Issuance {
     required this.reset,
   });
 
-  factory Issuance.fromJson(Map<String, dynamic> json) => _$IssuanceFromJson(json);
+  factory Issuance.fromJson(Map<String, dynamic> json) =>
+      _$IssuanceFromJson(json);
 }
 
 @JsonSerializable()
@@ -404,7 +437,8 @@ class ComposeIssuance {
     required this.name,
   });
 
-  factory ComposeIssuance.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceFromJson(json);
+  factory ComposeIssuance.fromJson(Map<String, dynamic> json) =>
+      _$ComposeIssuanceFromJson(json);
 }
 
 @JsonSerializable()
@@ -427,7 +461,8 @@ class ComposeIssuanceParams {
     this.transferDestination,
   });
 
-  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) => _$ComposeIssuanceParamsFromJson(json);
+  factory ComposeIssuanceParams.fromJson(Map<String, dynamic> json) =>
+      _$ComposeIssuanceParamsFromJson(json);
 }
 
 // Send
@@ -558,7 +593,8 @@ class Dispenser {
     required this.escrowQuantityNormalized,
   });
 
-  factory Dispenser.fromJson(Map<String, dynamic> json) => _$DispenserFromJson(json);
+  factory Dispenser.fromJson(Map<String, dynamic> json) =>
+      _$DispenserFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -589,7 +625,8 @@ class Dispense {
     required this.assetInfo,
   });
 
-  factory Dispense.fromJson(Map<String, dynamic> json) => _$DispenseFromJson(json);
+  factory Dispense.fromJson(Map<String, dynamic> json) =>
+      _$DispenseFromJson(json);
 }
 
 // Sweep
@@ -663,7 +700,8 @@ class SendTxParams {
     required this.memoIsHex,
     required this.useEnhancedSend,
   });
-  factory SendTxParams.fromJson(Map<String, dynamic> json) => _$SendTxParamsFromJson(json);
+  factory SendTxParams.fromJson(Map<String, dynamic> json) =>
+      _$SendTxParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -807,8 +845,8 @@ abstract class V2Api {
   ]);
 
   @GET("/addresses/balances?verbose=true")
-  Future<Response<List<BalanceVerbose>>> getBalancesByAddressesVerbose(
-    @Query("addresses") List<String> addresses, [
+  Future<Response<List<MultiAddressBalance>>> getBalancesByAddressesVerbose(
+    @Query("addresses") String addresses, [
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
   ]);

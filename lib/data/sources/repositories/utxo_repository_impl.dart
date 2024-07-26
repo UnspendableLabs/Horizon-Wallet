@@ -38,7 +38,8 @@ class UtxoRepositoryImpl implements UtxoRepository {
     int? cursor;
 
     do {
-      final response = await api.getUnspentUTXOsByAddresses(addresses, unconfirmed, verbose, limit, cursor);
+      final response = await api.getUnspentUTXOsByAddresses(
+          addresses, unconfirmed, verbose, limit, cursor);
       for (UTXO a in response.result ?? []) {
         utxos.add(Utxo(
             vout: a.vout,

@@ -132,99 +132,101 @@ class AddressActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width /
-                2.3, // Adjust width to take up half of the row
-            child: SizedBox(
-              height: 75,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 4.0, 8.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          double buttonWidth = (constraints.maxWidth - 16) /
+              2; // Adjust width to take up half of the row minus padding
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: buttonWidth,
+                height: 75,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4.0, 4.0, 4.0, 4.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
                     ),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: ComposeIssuancePage(),
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
                               ),
-                            ),
-                          );
-                        });
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add),
-                      SizedBox(width: 8.0),
-                      Text("ISSUE"),
-                    ],
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: ComposeIssuancePage(),
+                                ),
+                              ),
+                            );
+                          });
+                    },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add),
+                        SizedBox(width: 8.0),
+                        Text("ISSUE"),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width /
-                2.3, // Adjust width to take up half of the row
-            child: SizedBox(
-              height: 75,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(4.0, 8.0, 16.0, 8.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+              SizedBox(
+                width: buttonWidth,
+                height: 75,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4.0, 4.0, 4.0, 4.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
                     ),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              height: MediaQuery.of(context).size.height * 0.75,
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: ComposeSendPage(),
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
                               ),
-                            ),
-                          );
-                        });
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.send),
-                      SizedBox(width: 8.0),
-                      Text("SEND"),
-                    ],
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.75,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: ComposeSendPage(),
+                                ),
+                              ),
+                            );
+                          });
+                    },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.send),
+                        SizedBox(width: 8.0),
+                        Text("SEND"),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     ]);
   }

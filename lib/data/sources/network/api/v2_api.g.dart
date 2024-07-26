@@ -96,20 +96,22 @@ Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
 Balance _$BalanceFromJson(Map<String, dynamic> json) => Balance(
       address: json['address'] as String,
       quantity: (json['quantity'] as num).toDouble(),
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
+      quantityNormalized: json['quantity_normalized'] as String?,
     );
 
 Map<String, dynamic> _$BalanceToJson(Balance instance) => <String, dynamic>{
       'address': instance.address,
       'quantity': instance.quantity,
       'asset': instance.asset,
+      'quantity_normalized': instance.quantityNormalized,
     };
 
 BalanceVerbose _$BalanceVerboseFromJson(Map<String, dynamic> json) =>
     BalanceVerbose(
       address: json['address'] as String,
       quantity: (json['quantity'] as num).toDouble(),
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
@@ -121,6 +123,27 @@ Map<String, dynamic> _$BalanceVerboseToJson(BalanceVerbose instance) =>
       'asset': instance.asset,
       'quantity_normalized': instance.quantityNormalized,
       'asset_info': instance.assetInfo,
+    };
+
+MultiAddressBalance _$MultiAddressBalanceFromJson(Map<String, dynamic> json) =>
+    MultiAddressBalance(
+      asset: json['asset'] as String,
+      total: (json['total'] as num).toInt(),
+      addresses: (json['addresses'] as List<dynamic>)
+          .map((e) => Balance.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      totalNormalized: json['total_normalized'] as String,
+    );
+
+Map<String, dynamic> _$MultiAddressBalanceToJson(
+        MultiAddressBalance instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'total': instance.total,
+      'addresses': instance.addresses,
+      'asset_info': instance.assetInfo,
+      'total_normalized': instance.totalNormalized,
     };
 
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
@@ -701,8 +724,8 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<List<BalanceVerbose>>> getBalancesByAddressesVerbose(
-    List<String> addresses, [
+  Future<Response<List<MultiAddressBalance>>> getBalancesByAddressesVerbose(
+    String addresses, [
     int? cursor,
     int? limit,
   ]) async {
@@ -716,7 +739,7 @@ class _V2Api implements V2Api {
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<BalanceVerbose>>>(Options(
+        _setStreamType<Response<List<MultiAddressBalance>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -732,12 +755,12 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final _value = Response<List<BalanceVerbose>>.fromJson(
+    final _value = Response<List<MultiAddressBalance>>.fromJson(
       _result.data!,
       (json) => json is List<dynamic>
           ? json
-              .map<BalanceVerbose>(
-                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+              .map<MultiAddressBalance>((i) =>
+                  MultiAddressBalance.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );
