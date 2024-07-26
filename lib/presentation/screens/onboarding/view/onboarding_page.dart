@@ -18,7 +18,12 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Horizon')),
+      appBar: AppBar(
+        title: const Text(
+          'Horizon',
+          style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -22,6 +22,7 @@ import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
+import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/view/shell.dart';
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
@@ -40,7 +41,7 @@ class LoadingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(),
-              Text('loading...'),
+              Text('Loading...'),
             ],
           ),
         ),
@@ -213,6 +214,16 @@ class MyApp extends StatelessWidget {
 
   // Define light and dark themes
   final ThemeData lightTheme = ThemeData(
+    // define a color scheme so it doesn't display flutter default purples
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.white,
+      brightness: Brightness.light,
+      primary: const Color.fromRGBO(68, 69, 99, 1),
+      onPrimary: Colors.white,
+      onSurface: const Color.fromRGBO(68, 69, 99, 1),
+      secondary: const Color.fromRGBO(227, 237, 254, 1),
+      onSecondary: const Color.fromRGBO(68, 121, 252, 1),
+    ),
     brightness: Brightness.light,
     scaffoldBackgroundColor: const Color.fromRGBO(246, 247, 250, 1),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
@@ -227,6 +238,20 @@ class MyApp extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color.fromRGBO(227, 237, 254, 1),
         foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(68, 121, 252, 1),
+        foregroundColor: const Color.fromRGBO(227, 237, 254, 1),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
+        side: const BorderSide(
+          color: Color.fromRGBO(68, 121, 252, 1),
+        ),
       ),
     ),
     listTileTheme: const ListTileThemeData(
@@ -252,9 +277,24 @@ class MyApp extends StatelessWidget {
         },
       ),
     ),
+    cardTheme: CardTheme(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
+      ),
+    ),
   );
 
   final ThemeData darkTheme = ThemeData(
+    // define a color scheme so it doesn't display flutter default purples
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color.fromRGBO(35, 35, 58, 1),
+      brightness: Brightness.dark,
+      primary: const Color.fromRGBO(255, 255, 255, 1),
+      onPrimary: const Color.fromRGBO(25, 25, 39, 1),
+      onSurface: const Color.fromRGBO(255, 255, 255, 1),
+      secondary: const Color.fromRGBO(227, 237, 254, 1),
+      onSecondary: const Color.fromRGBO(68, 121, 252, 1),
+    ),
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color.fromRGBO(35, 35, 58, 1),
     primaryColor: Colors.white,
@@ -267,8 +307,22 @@ class MyApp extends StatelessWidget {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(35, 35, 59, 1),
+        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
         backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
         foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+        side: const BorderSide(
+          color: Color.fromRGBO(146, 209, 253, 1),
+        ),
       ),
     ),
     listTileTheme: const ListTileThemeData(
@@ -295,6 +349,11 @@ class MyApp extends StatelessWidget {
         },
       ),
     ),
+    cardTheme: CardTheme(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
+      ),
+    ),
   );
 
   @override
@@ -317,19 +376,26 @@ class MyApp extends StatelessWidget {
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(),
         ),
+        BlocProvider<ThemeBloc>(
+          create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),
+        ),
       ],
       child: BlocListener<ShellStateCubit, ShellState>(
         listener: (context, state) {
           AppRouter.router.refresh();
         },
-        child: MaterialApp.router(
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: ThemeMode
-              .light, // Automatically switch between light and dark themes
-          routeInformationParser: AppRouter.router.routeInformationParser,
-          routerDelegate: AppRouter.router.routerDelegate,
-          routeInformationProvider: AppRouter.router.routeInformationProvider,
+        child: BlocBuilder<ThemeBloc, ThemeMode>(
+          builder: (context, themeMode) {
+            return MaterialApp.router(
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: themeMode,
+              routeInformationParser: AppRouter.router.routeInformationParser,
+              routerDelegate: AppRouter.router.routerDelegate,
+              routeInformationProvider:
+                  AppRouter.router.routeInformationProvider,
+            );
+          },
         ),
       ),
     );

@@ -14,4 +14,9 @@ class MnemonicServiceImpl implements MnemonicService {
   bool validateMnemonic(String mnemonic) {
     return bip39Service.validateMnemonic(mnemonic);
   }
+
+  @override
+  String mnemonicToEntropy(String mnemonic) {
+    return bip39Service.mnemonicToEntropy(mnemonic);
+  }
 }

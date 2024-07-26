@@ -48,7 +48,12 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
       child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
           builder: (context, state) {
         return Scaffold(
-            appBar: AppBar(title: const Text('Horizon')),
+            appBar: AppBar(
+              title: const Text(
+                'Horizon',
+                style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+              ),
+            ),
             body: switch (state.createState) {
               CreateStateNotAsked => const Mnemonic(),
               CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
@@ -92,9 +97,11 @@ class PasswordPrompt extends StatelessWidget {
         children: [
           const Row(children: [
             Text('Password', style: TextStyle(fontSize: 16)),
+            SizedBox(width: 4),
             Tooltip(
-              message: 'Password to encrypt your wallet',
-              child: Icon(Icons.info, size: 16),
+              message:
+                  'This password will be used to locally encrypt your wallet',
+              child: Icon(Icons.info, size: 12),
             ),
           ]),
           Expanded(
@@ -141,14 +148,12 @@ class PasswordPrompt extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             final shell = context.read<ShellStateCubit>();
                             shell.onOnboarding();
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                            foregroundColor: Colors.white,
+                          style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -158,22 +163,25 @@ class PasswordPrompt extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             if (_passwordController.text == '' ||
                                 _passwordConfirmationController.text == '') {
                               context.read<OnboardingCreateBloc>().add(
                                   PasswordError(
                                       error: 'Password cannot be empty'));
+                            } else if (_passwordController.text !=
+                                _passwordConfirmationController.text) {
+                              context.read<OnboardingCreateBloc>().add(
+                                  PasswordError(
+                                      error: 'Passwords do not match'));
                             } else {
                               context
                                   .read<OnboardingCreateBloc>()
                                   .add(CreateWallet());
                             }
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
+                          style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -238,14 +246,12 @@ class _MnemonicState extends State<Mnemonic> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () {
                           final shell = context.read<ShellStateCubit>();
                           shell.onOnboarding();
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
-                          foregroundColor: Colors.white,
+                        style: FilledButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -255,15 +261,13 @@ class _MnemonicState extends State<Mnemonic> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () {
                           context
                               .read<OnboardingCreateBloc>()
                               .add(UnconfirmMnemonic());
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
+                        style: FilledButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -367,13 +371,11 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () => context
                         .read<OnboardingCreateBloc>()
                         .add(GoBackToMnemonic()),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -383,15 +385,15 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () {
-                      context
-                          .read<OnboardingCreateBloc>()
-                          .add(ConfirmMnemonic());
+                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
+                          mnemonic: controllers
+                              .map((controller) => controller.text)
+                              .join(' ')
+                              .trim()));
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),

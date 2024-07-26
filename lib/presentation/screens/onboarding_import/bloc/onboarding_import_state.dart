@@ -12,16 +12,12 @@ class OnboardingImportState with _$OnboardingImportState {
     String? password,
     String? passwordError,
     @Default("") String mnemonic,
+    @Default("") String? mnemonicError,
     @Default(ImportFormat.segwit) importFormat,
     @Default(GetAddressesStateNotAsked) getAddressesState,
     @Default({}) Map<Address, bool> isCheckedMap,
     @Default(ImportStateNotAsked) importState,
   }) = _OnboardingImportState;
-  // String mnmeonic = "";
-  // ImportFormat importFormat = ImportFormat.segwit;
-  // GetAddressesState getAddressesState = GetAddressesStateNotAsked();
-  // Map<Address, bool> isCheckedMap = {};
-  // ImportState importState = ImportStateNotAsked();
 }
 
 abstract class GetAddressesState {}

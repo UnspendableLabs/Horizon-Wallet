@@ -13,6 +13,8 @@ import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart'
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 const double _bottomPaddingForButton = 150.0;
@@ -303,6 +305,12 @@ class Shell extends StatelessWidget {
             : null,
         actions: [
           IconButton(
+            icon: const Icon(Icons.brightness_6),
+            onPressed: () {
+              context.read<ThemeBloc>().add(ThemeEvent.toggle);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
               context.go('/settings');
@@ -317,9 +325,9 @@ class Shell extends StatelessWidget {
               child: Scaffold(
                   body: shell.state.when(
             initial: () => const Text(
-                "loading..."), // TODO: all of this is smell.  should only handle success branch
+                "Loading..."), // TODO: all of this is smell.  should only handle success branch
             onboarding: (_) => const Text("onboarding"),
-            loading: () => const Text("loading..."),
+            loading: () => const Text("Loading..."),
             error: (e) => const Text("error"),
             success: (shell) {
               return BlocProvider<AddressesBloc>(

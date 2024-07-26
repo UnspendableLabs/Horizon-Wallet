@@ -100,21 +100,23 @@ class _DashboardPage_State extends State<_DashboardPage> {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(30.0),
             ),
-            child: Column(
-              children: [
-                AddressActions(
-                  isDarkTheme: isDarkTheme,
-                ),
-                BlocProvider(
-                  create: (context) =>
-                      BalancesBloc(accountUuid: widget.accountUuid),
-                  child: BalancesDisplay(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  AddressActions(
                     isDarkTheme: isDarkTheme,
-                    addresses: addresses,
-                    accountUuid: widget.accountUuid,
                   ),
-                ),
-              ],
+                  BlocProvider(
+                    create: (context) =>
+                        BalancesBloc(accountUuid: widget.accountUuid),
+                    child: BalancesDisplay(
+                      isDarkTheme: isDarkTheme,
+                      addresses: addresses,
+                      accountUuid: widget.accountUuid,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -129,22 +131,20 @@ class AddressActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor = isDarkTheme
-        ? const Color.fromRGBO(35, 35, 58, 1)
-        : const Color.fromRGBO(246, 247, 250, 1);
-
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8.0, 8.0, 4.0, 8.0),
-              child: SizedBox(
-                height: 75,
+          SizedBox(
+            width: MediaQuery.of(context).size.width /
+                2.3, // Adjust width to take up half of the row
+            child: SizedBox(
+              height: 75,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 4.0, 8.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    backgroundColor: backgroundColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -172,25 +172,23 @@ class AddressActions extends StatelessWidget {
                     children: [
                       Icon(Icons.add),
                       SizedBox(width: 8.0),
-                      Text(
-                        "ISSUE",
-                        style: TextStyle(fontSize: 16.0),
-                      ),
+                      Text("ISSUE"),
                     ],
                   ),
                 ),
               ),
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(4.0, 8.0, 8.0, 8.0),
-              child: SizedBox(
-                height: 75,
+          SizedBox(
+            width: MediaQuery.of(context).size.width /
+                2.3, // Adjust width to take up half of the row
+            child: SizedBox(
+              height: 75,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4.0, 8.0, 16.0, 8.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    backgroundColor: backgroundColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -218,11 +216,8 @@ class AddressActions extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.send),
-                      SizedBox(width: 8.0), // Space between icon and text
-                      Text(
-                        "SEND",
-                        style: TextStyle(fontSize: 16.0),
-                      ),
+                      SizedBox(width: 8.0),
+                      Text("SEND"),
                     ],
                   ),
                 ),
@@ -317,7 +312,7 @@ class _BalancesState extends State<Balances> {
         : const Color.fromRGBO(246, 247, 250, 1);
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 16.0),
       child: Container(
         height: height,
         decoration: BoxDecoration(

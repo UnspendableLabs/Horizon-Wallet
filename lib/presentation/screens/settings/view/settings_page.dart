@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_event.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_state.dart';
@@ -70,8 +77,8 @@ class _PasswordPromptState extends State<PasswordPrompt> {
             ),
 
             const SizedBox(height: 16.0), // Spacing between inputs
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
+            FilledButton(
+              style: FilledButton.styleFrom(
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                 minimumSize:
@@ -163,113 +170,190 @@ class SettingsPage extends StatelessWidget {
               )));
     }
 
-    return BlocConsumer<PasswordPromptBloc, PasswordPromptState>(
-        listener: (context, state) {
-      state.whenOrNull(error: (msg) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(msg),
-        ));
-      }, success: (password, gapLimit) async {
-        context.read<AddressesBloc>().add(Update(
-            accountUuid: account.uuid, gapLimit: gapLimit, password: password));
+    return BlocProvider(
+        create: (context) => LogoutBloc(
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              accountRepository: GetIt.I.get<AccountRepository>(),
+              addressRepository: GetIt.I.get<AddressRepository>(),
+              cacheProvider: GetIt.I.get<CacheProvider>(),
+            ),
+        child: BlocConsumer<PasswordPromptBloc, PasswordPromptState>(
+            listener: (context, state) {
+          state.whenOrNull(error: (msg) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(msg),
+            ));
+          }, success: (password, gapLimit) async {
+            context.read<AddressesBloc>().add(Update(
+                accountUuid: account.uuid,
+                gapLimit: gapLimit,
+                password: password));
 
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Success"),
-        ));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Success"),
+            ));
 
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        Navigator.of(context).pop();
-      }, initial: (maybeGapLimit) {
-        if (maybeGapLimit != null) {
-          // TODO put in account settings repository
-          Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit,
-              notify: true);
-        }
-      }, prompt: (gapLimit) {
-        WoltModalSheet.show<void>(
-          context: context,
-          onModalDismissedWithBarrierTap: () {
-            context
-                .read<PasswordPromptBloc>()
-                .add(Reset(gapLimit: initialGapLimit));
+            await Future.delayed(const Duration(milliseconds: 500));
 
             Navigator.of(context).pop();
-          },
-          pageListBuilder: (modalSheetContext) {
-            final textTheme = Theme.of(context).textTheme;
-            return [passwordPrompt(modalSheetContext, textTheme, gapLimit)];
-          },
-          modalTypeBuilder: (context) {
-            final size = MediaQuery.sizeOf(context).width;
-            if (size < 768.0) {
-              return WoltModalType.bottomSheet;
-            } else {
-              return WoltModalType.dialog;
+          }, initial: (maybeGapLimit) {
+            if (maybeGapLimit != null) {
+              // TODO put in account settings repository
+              Settings.setValue('${account.uuid}:gap-limit', maybeGapLimit,
+                  notify: true);
             }
-          },
-        );
-      });
-    }, builder: (context, state) {
-      return Column(
-        children: [
-          Container(
-            child: Expanded(
-              child: SettingsScreen(
-                hasAppBar: false,
-                key: Key(account.uuid),
-                children: [
-                  SettingsGroup(title: "Address Settings", children: [
-                    SliderSettingsTile(
-                      title: 'Gap Limit',
-                      leading: const Icon(Icons.numbers),
-                      settingKey: '${account.uuid}:gap-limit',
-                      defaultValue: 10,
-                      min: 1,
-                      max: 50,
-                      step: 1,
-                      // leading: Icon(Icons.volume_up),
-                      decimalPrecision: 0,
-                      onChange: (value) {
-                        context
-                            .read<PasswordPromptBloc>()
-                            .add(Show(initialGapLimit: initialGapLimit));
-                        // context.read<AddressesBloc>().add(Generate(
-                        //       accountUuid: account.uuid,
-                        //       gapLimit: value.toInt(),
-                        //     ));
-                      },
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height - 220,
-            child: BlocBuilder<AddressesBloc, AddressesState>(
-              builder: (context, state) {
-                return state.when(
-                  initial: () => const Text("initial"),
-                  loading: () => const Text("loading"),
-                  error: (error) => Text("Error: $error"),
-                  // success: (addresses) => Text("length ${addresses.length}")
+          }, prompt: (gapLimit) {
+            WoltModalSheet.show<void>(
+              context: context,
+              onModalDismissedWithBarrierTap: () {
+                context
+                    .read<PasswordPromptBloc>()
+                    .add(Reset(gapLimit: initialGapLimit));
 
-                  success: (addresses) => ListView.builder(
-                    itemCount: addresses.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                        title: SelectableText(addresses[index].address),
-                        subtitle: Text(addresses[index].index.toString()),
-                      );
-                    },
-                  ),
-                );
+                Navigator.of(context).pop();
               },
-            ),
-          ),
-        ],
-      );
-    });
+              pageListBuilder: (modalSheetContext) {
+                final textTheme = Theme.of(context).textTheme;
+                return [passwordPrompt(modalSheetContext, textTheme, gapLimit)];
+              },
+              modalTypeBuilder: (context) {
+                final size = MediaQuery.sizeOf(context).width;
+                if (size < 768.0) {
+                  return WoltModalType.bottomSheet;
+                } else {
+                  return WoltModalType.dialog;
+                }
+              },
+            );
+          });
+        }, builder: (context, state) {
+          return Column(
+            children: [
+              Container(
+                child: Expanded(
+                  child: SettingsScreen(
+                    hasAppBar: false,
+                    key: Key(account.uuid),
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 16.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Address Settings',
+                                  ),
+                                  BlocListener<LogoutBloc, LogoutState>(
+                                    listener: (context, state) {
+                                      if (state.logoutState is LoggedOut) {
+                                        final shell =
+                                            context.read<ShellStateCubit>();
+                                        shell.onOnboarding();
+                                      }
+                                    },
+                                    child: FilledButton(
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) {
+                                            return BlocProvider.value(
+                                              value:
+                                                  BlocProvider.of<LogoutBloc>(
+                                                      context),
+                                              child: AlertDialog(
+                                                title: const Text(
+                                                    'Confirm Logout'),
+                                                content: Text(
+                                                  'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .primary),
+                                                ),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      GoRouter.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      context
+                                                          .read<LogoutBloc>()
+                                                          .add(LogoutEvent());
+                                                    },
+                                                    child: const Text('Logout'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      child: const Text('Logout'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SliderSettingsTile(
+                              title: 'Gap Limit',
+                              leading: const Icon(Icons.numbers),
+                              settingKey: '${account.uuid}:gap-limit',
+                              defaultValue: 10,
+                              min: 1,
+                              max: 50,
+                              step: 1,
+                              decimalPrecision: 0,
+                              onChange: (value) {
+                                context.read<PasswordPromptBloc>().add(
+                                    Show(initialGapLimit: initialGapLimit));
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height - 220,
+                child: BlocBuilder<AddressesBloc, AddressesState>(
+                  builder: (context, state) {
+                    return state.when(
+                      initial: () => const Text("initial"),
+                      loading: () => const Text("loading"),
+                      error: (error) => Text("Error: $error"),
+                      // success: (addresses) => Text("length ${addresses.length}")
+
+                      success: (addresses) => ListView.builder(
+                        itemCount: addresses.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            title: SelectableText(addresses[index].address),
+                            subtitle: Text(addresses[index].index.toString()),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        }));
   }
 }

@@ -54,7 +54,11 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
       child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
           builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Horizon')),
+          appBar: AppBar(
+              title: const Text(
+            'Horizon',
+            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+          )),
           body: Column(
             children: [
               Flexible(
@@ -64,7 +68,9 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                             MediaQuery.of(context).size.width > 600
                                 ? 16.0
                                 : 8.0),
-                        child: const SeedInputFields(),
+                        child: SeedInputFields(
+                          mnemonicErrorState: state.mnemonicError,
+                        ),
                       )
                     : PasswordPrompt(
                         passwordController: _passwordController,
@@ -104,9 +110,11 @@ class PasswordPrompt extends StatelessWidget {
         children: [
           const Row(children: [
             Text('Password', style: TextStyle(fontSize: 16)),
+            SizedBox(width: 4),
             Tooltip(
-              message: 'Password to encrypt your wallet',
-              child: Icon(Icons.info, size: 16),
+              message:
+                  'This password will be used to locally encrypt your wallet.',
+              child: Icon(Icons.info, size: 12),
             ),
           ]),
           Expanded(
@@ -163,15 +171,13 @@ class PasswordPrompt extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             final shell = context.read<ShellStateCubit>();
 
                             shell.onOnboarding();
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                            foregroundColor: Colors.white,
+                          style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -181,27 +187,30 @@ class PasswordPrompt extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: ElevatedButton(
+                        child: FilledButton(
                           onPressed: () {
                             if (_passwordController.text == '' ||
                                 _passwordConfirmationController.text == '') {
                               context.read<OnboardingImportBloc>().add(
                                   PasswordError(
                                       error: 'Password cannot be empty'));
+                            } else if (_passwordController.text !=
+                                _passwordConfirmationController.text) {
+                              context.read<OnboardingImportBloc>().add(
+                                  PasswordError(
+                                      error: 'Passwords do not match'));
                             } else {
                               context
                                   .read<OnboardingImportBloc>()
                                   .add(ImportWallet());
                             }
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
+                          style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
-                          child: const Text('Submit'),
+                          child: const Text('Import Wallet'),
                         ),
                       ),
                     ],
@@ -217,7 +226,8 @@ class PasswordPrompt extends StatelessWidget {
 }
 
 class SeedInputFields extends StatefulWidget {
-  const SeedInputFields({super.key});
+  final String? mnemonicErrorState;
+  const SeedInputFields({super.key, required this.mnemonicErrorState});
   @override
   State<SeedInputFields> createState() => _SeedInputFieldsState();
 }
@@ -282,6 +292,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                       );
                     }),
                   ),
+                  widget.mnemonicErrorState != null
+                      ? Text(widget.mnemonicErrorState!)
+                      : const Text(""),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: DecoratedBox(
@@ -327,14 +340,12 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () {
                       final shell = context.read<ShellStateCubit>();
                       shell.onOnboarding();
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -344,7 +355,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () {
                       context.read<OnboardingImportBloc>().add(MnemonicSubmit(
                             mnemonic: controllers
@@ -354,9 +365,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                             importFormat: selectedFormat!,
                           ));
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
