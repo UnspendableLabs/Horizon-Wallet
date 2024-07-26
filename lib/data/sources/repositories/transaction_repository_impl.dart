@@ -66,7 +66,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
         addresses.map((address) => address.address).join(',');
 
     final response = await api.getTransactionsByAddressesVerbose(
-        addressesParam, cursor, unconfirmed);
+      addressesParam,
+      cursor,
+      limit,
+      unconfirmed
+    );
 
     if (response.error != null) {
       throw Exception("Failed to get transactions by account: $accountUuid");
