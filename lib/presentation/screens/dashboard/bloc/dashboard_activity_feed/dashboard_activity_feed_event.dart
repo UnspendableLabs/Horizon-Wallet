@@ -15,18 +15,39 @@ class StopPolling extends DashboardActivityFeedEvent {
   const StopPolling();
 }
 
+/* 
+*   Used when
+*
+*   1) initial load 
+*   2) user submits a new transaction
+*   3) user pulls to refresh
+*
+*/
 class Load extends DashboardActivityFeedEvent {
   const Load();
 }
+
+/* 
+*   Used when
+*
+*   1) user scrolls to the bottom of the list
+*
+*   note: is append only
+*/
 
 class LoadMore extends DashboardActivityFeedEvent {
   const LoadMore();
 }
 
-// class Reload extends DashboardActivityFeedEvent {
-//   const Reload();
-// }
-
-class ForceLoad extends DashboardActivityFeedEvent {
-  const ForceLoad();
+/* 
+*   Used when
+*
+*   1) bloc polls for new data 
+*
+*   note: displays "N more transactions" at top of feed
+*
+*/
+class LoadQuiet extends DashboardActivityFeedEvent {
+  const LoadQuiet();
 }
+

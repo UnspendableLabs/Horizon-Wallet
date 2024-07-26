@@ -21,14 +21,16 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
   final List<DisplayTransaction> transactions;
   final int newTransactionCount;
   final int? nextCursor;
+  final String? mostRecentRemoteHash;
 
   const DashboardActivityFeedStateCompleteOk(
-      {required this.transactions, required this.newTransactionCount, required this.nextCursor});
-
+      {required this.transactions,
+      required this.newTransactionCount,
+      required this.nextCursor,
+      required this.mostRecentRemoteHash});
 
   @override
-  List<Object> get props => [ transactions, newTransactionCount];
-
+  List<Object> get props => [transactions, newTransactionCount];
 }
 
 class DashboardActivityFeedStateCompleteError

@@ -266,7 +266,10 @@ void main() {
               transactionRepository: mockTransactionRepository);
         },
         seed: () => const DashboardActivityFeedStateCompleteOk(
-            transactions: [], newTransactionCount: 0, nextCursor: null),
+            transactions: [],
+            newTransactionCount: 0,
+            nextCursor: null,
+            mostRecentRemoteHash: null),
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
               const DashboardActivityFeedStateReloadingOk(
@@ -416,6 +419,7 @@ void main() {
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
+                mostRecentRemoteHash: "0004",
               ),
             ]);
 
@@ -479,6 +483,7 @@ void main() {
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
+                mostRecentRemoteHash: "0002",
               ),
             ]);
 
@@ -541,13 +546,16 @@ void main() {
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
+                mostRecentRemoteHash: "0005"
               ),
             ]);
   });
 
   // Load more appends transactions to the end of the list.  it does not
   // add any transactions to the beginning of the list
-  group("load more", () {
+  group("LoadQuiet", () {});
+
+  group("LoadMore", () {
     late List<MockTransactionInfo> mockedLocal;
     late List<MockTransactionInfo> mockedRemote;
     late List<MockTransactionInfo> mockedRemote2;
@@ -615,6 +623,8 @@ void main() {
               ],
               newTransactionCount: 0,
               nextCursor: 4,
+              mostRecentRemoteHash: "0002",
+                          
             ),
         act: (bloc) => bloc..add(const LoadMore()),
         expect: () => [
@@ -636,6 +646,7 @@ void main() {
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
+                mostRecentRemoteHash: "0004",
               ),
             ]);
   });
