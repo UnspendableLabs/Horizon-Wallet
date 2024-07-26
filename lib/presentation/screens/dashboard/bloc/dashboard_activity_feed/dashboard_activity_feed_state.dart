@@ -20,12 +20,15 @@ class DashboardActivityFeedStateLoading extends DashboardActivityFeedState {}
 class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
   final List<DisplayTransaction> transactions;
   final int newTransactionCount;
+  final int? nextCursor;
 
   const DashboardActivityFeedStateCompleteOk(
-      {required this.transactions, required this.newTransactionCount});
+      {required this.transactions, required this.newTransactionCount, required this.nextCursor});
+
 
   @override
-  List<Object> get props => [transactions, newTransactionCount];
+  List<Object> get props => [ transactions, newTransactionCount];
+
 }
 
 class DashboardActivityFeedStateCompleteError
