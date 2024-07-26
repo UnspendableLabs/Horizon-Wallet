@@ -9,9 +9,7 @@ import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/address.dart';
-
-
-
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 
 enum SendSide { source, destination }
 
@@ -28,7 +26,6 @@ Decimal satoshisToBtc(int satoshis) {
   // Round to 8 decimal places
   return btcValue.toDecimal().round(scale: 8);
 }
-
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;
@@ -79,8 +76,9 @@ class ActivityFeedListItem extends StatelessWidget {
       return _buildEventTitle(item.event!);
     } else if (item.info != null) {
       return _buildTransactionInfoTitle(item.info!);
+    } else if (item.bitcoinTx != null) {
+      return _buildBitcoinTxTitle(item.bitcoinTx!);
     } else {
-      print("this case");
       return const Text('No details available');
     }
   }
@@ -93,6 +91,19 @@ class ActivityFeedListItem extends StatelessWidget {
     }
   }
 
+  Widget _buildBitcoinTxTitle(BitcoinTx tx) {
+    final addresses_ = addresses.map((a) => a.address).toList();
+
+    return switch (tx.getTransactionType(addresses_)) {
+      TransactionType.sender =>
+        Text("bitcoin tx Send ${tx.getAmountSent(addresses_)} BTC"),
+      TransactionType.recipient =>
+        Text("bitcoin tx Receive ${tx.getAmountReceived(addresses_)} BTC"),
+      TransactionType.neither =>
+        throw Exception('Invariant: account neither sender or receiver')
+    };
+  }
+
   Widget _buildEventTitle(Event event) {
     return switch (event) {
       VerboseDebitEvent(params: var params) =>
@@ -102,13 +113,13 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
         Text(
-            "Sent ${params.quantityNormalized} ${params.asset} to ${params.destination}"),
+            "Send ${params.quantityNormalized} ${params.asset} to ${params.destination}"),
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
         Text(
-            "Received ${params.quantityNormalized} ${params.asset} from ${params.source}"),
+            "Receive ${params.quantityNormalized} ${params.asset} from ${params.source}"),
       VerboseAssetIssuanceEvent(params: var params) =>
-        Text("Issued ${params.quantityNormalized} ${params.asset}"),
+        Text("Issue ${params.quantityNormalized} ${params.asset}"),
       _ =>
         Text('Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -127,9 +138,10 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoIssuanceVerbose(
         unpackedData: var unpackedData,
       ) =>
-        Text("Issued ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+        Text("Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       // btc send
-      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+      TransactionInfoVerbose(btcAmount: var btcAmount)
+          when btcAmount != null && btcAmount > 0 =>
         Text("Send ${satoshisToBtc(btcAmount)} BTC to ${info.destination}"),
       _ => Text(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
@@ -188,6 +200,8 @@ class ActivityFeedListItem extends StatelessWidget {
       return _getEventTrailing(item.event!.state);
     } else if (item.info != null) {
       return _getTransactionTrailing(item.info!.domain);
+    } else if (item.bitcoinTx != null) {
+      return _getBitcoinTxTrailing(item.bitcoinTx!);
     } else {
       return const Icon(Icons.error);
     }
@@ -199,7 +213,8 @@ class ActivityFeedListItem extends StatelessWidget {
     } else if (item.info != null) {
       return _buildTransactionInfoLeading(item.info!);
     } else {
-      throw Exception('Invariant: Item must have either event or info');
+      return Icon(Icons.error);
+      // throw Exception('Invariant: Item must have either event or info');
     }
   }
 
@@ -227,7 +242,7 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Icon _getEventTrailing(EventState state) => switch (state) {
-        EventStateLocal() => const Icon(Icons.schedule, color: Colors.orange),
+        // EventStateLocal() => const Icon(Icons.schedule, color: Colors.orange),
         EventStateMempool() => const Icon(Icons.pending, color: Colors.blue),
         EventStateConfirmed() =>
           const Icon(Icons.check_circle, color: Colors.green),
@@ -241,6 +256,14 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.pending, color: Colors.blue),
       TransactionInfoDomainConfirmed() =>
         const Icon(Icons.check_circle, color: Colors.green),
+    };
+  }
+
+  Icon _getBitcoinTxTrailing(BitcoinTx btx) {
+    return switch (btx.status) {
+      Status(confirmed: var confirmed) when !confirmed =>
+        const Icon(Icons.pending, color: Colors.blue),
+      _ => const Icon(Icons.check_circle, color: Colors.green),
     };
   }
 }
