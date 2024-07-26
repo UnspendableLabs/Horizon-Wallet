@@ -5,7 +5,7 @@ abstract class DashboardActivityFeedState extends Equatable {
   const DashboardActivityFeedState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class DashboardActivityFeedStateInitial extends DashboardActivityFeedState {}
@@ -30,7 +30,7 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
       required this.mostRecentRemoteHash});
 
   @override
-  List<Object> get props => [transactions, newTransactionCount];
+  List<Object?> get props => [transactions, newTransactionCount, nextCursor, mostRecentRemoteHash ];
 }
 
 class DashboardActivityFeedStateCompleteError

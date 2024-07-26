@@ -26,7 +26,89 @@ class DashboardActivityFeedBloc
     on<StopPolling>(_onStopPolling);
     on<Load>(_onLoad);
     on<LoadMore>(_onLoadMore);
+    on<LoadQuiet>(_onLoadQuiet);
     // on<Reload>(_onReload);
+  }
+
+  void _onLoadQuiet(
+      LoadQuiet event, Emitter<DashboardActivityFeedState> emit) async {
+    // just do a standard load if we are in any state other than complete ok
+    if (state is! DashboardActivityFeedStateCompleteOk) {
+      add(const Load());
+      return;
+    }
+
+    final currentState = state as DashboardActivityFeedStateCompleteOk;
+
+    final nextState = DashboardActivityFeedStateReloadingOk(
+      transactions: currentState.transactions,
+      newTransactionCount: 0,
+    );
+
+    emit(nextState);
+
+    try {
+      // get most recent confirmed tx
+
+      String? mostRecentRemoteHash = currentState.mostRecentRemoteHash;
+
+      // no transactions found on initial load
+      if (mostRecentRemoteHash == null) {
+        // get highest confirmed
+        final (_, _, resultCount) = await transactionRepository.getByAccount(
+            accountUuid: accountUuid, limit: 1, unconfirmed: true);
+
+        emit(DashboardActivityFeedStateCompleteOk(
+            nextCursor: null,
+            newTransactionCount: resultCount ?? 0,
+            mostRecentRemoteHash: null,
+            transactions: const []));
+
+        return;
+      } else {
+        bool found = false;
+        int newTransactionCount = 0;
+        int? nextCursor;
+
+        while (!found) {
+          final (remoteTransactions, nextCursor_, _) =
+              await transactionRepository.getByAccount(
+                  accountUuid: accountUuid, limit: pageSize, unconfirmed: true, cursor: nextCursor );
+          // iterate all remote transactions
+          for (final tx in remoteTransactions) {
+            if (tx.hash != mostRecentRemoteHash) {
+              newTransactionCount += 1;
+            } else {
+              found = true;
+              break;
+            }
+          }
+
+          // if we don't have a cursor, and we haven't
+          // found a match, break... but this shouldn't
+          // happen i don't think
+          if (nextCursor == null) {
+            break;
+          } else {
+            nextCursor = nextCursor;
+          }
+        }
+
+        // we only update new transaction count 
+        // ( i.e. UI stays the same save for banner)
+        // that shows current number of news transactions
+        // that can be loaded with a click 
+        emit(DashboardActivityFeedStateCompleteOk(
+            nextCursor: currentState.nextCursor,
+            newTransactionCount: newTransactionCount,
+            mostRecentRemoteHash: currentState.mostRecentRemoteHash,
+            transactions: currentState.transactions ));
+
+      }
+    } catch (e) {
+      rethrow;
+      emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
+    }
   }
 
   void _onLoadMore(
@@ -45,7 +127,7 @@ class DashboardActivityFeedBloc
 
     try {
       // we don't care about local transactions, just load remote if we have a cursor
-      final (remoteTransactions, nextCursor) =
+      final (remoteTransactions, nextCursor, _) =
           await transactionRepository.getByAccount(
               accountUuid: accountUuid,
               cursor: currentState.nextCursor,
@@ -92,8 +174,7 @@ class DashboardActivityFeedBloc
       DateTime? mostRecentBlocktime;
       // get most recent confirmed tx
 
-      print("accountUuid $accountUuid ");
-      final (confirmed, _) = await transactionRepository.getByAccount(
+      final (confirmed, _, _) = await transactionRepository.getByAccount(
           accountUuid: accountUuid, limit: 1, unconfirmed: false);
 
       if (confirmed.isNotEmpty) {
@@ -104,8 +185,6 @@ class DashboardActivityFeedBloc
 
           mostRecentBlocktime =
               DateTime.fromMillisecondsSinceEpoch(blocktime * 1000);
-        } else {
-          print(transaction.domain);
         }
       }
 
@@ -114,7 +193,7 @@ class DashboardActivityFeedBloc
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository.getAllByAccount(accountUuid);
 
-      final (remoteTransactions, nextCursor) = await transactionRepository
+      final (remoteTransactions, nextCursor, _) = await transactionRepository
           .getByAccount(accountUuid: accountUuid, unconfirmed: true);
 
       final remoteHashes =
