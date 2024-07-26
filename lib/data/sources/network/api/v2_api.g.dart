@@ -13,8 +13,8 @@ Response<T> _$ResponseFromJson<T>(
     Response<T>(
       result: _$nullableGenericFromJson(json['result'], fromJsonT),
       error: json['error'] as String?,
-      nextCursor: (json['nextCursor'] as num?)?.toInt(),
-      resultCount: (json['resultCount'] as num?)?.toInt(),
+      nextCursor: (json['next_cursor'] as num?)?.toInt(),
+      resultCount: (json['result_count'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$ResponseToJson<T>(
@@ -23,8 +23,8 @@ Map<String, dynamic> _$ResponseToJson<T>(
 ) =>
     <String, dynamic>{
       'result': _$nullableGenericToJson(instance.result, toJsonT),
-      'nextCursor': instance.nextCursor,
-      'resultCount': instance.resultCount,
+      'next_cursor': instance.nextCursor,
+      'result_count': instance.resultCount,
       'error': instance.error,
     };
 
@@ -1598,6 +1598,7 @@ class _V2Api implements V2Api {
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
       r'cursor': cursor,
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
