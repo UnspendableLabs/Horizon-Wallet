@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
@@ -12,6 +14,8 @@ import 'package:horizon/presentation/screens/compose_send/view/compose_send_page
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -114,6 +118,17 @@ class _DashboardPage_State extends State<_DashboardPage> {
                       addresses: addresses,
                       accountUuid: widget.accountUuid,
                     ),
+                  ),
+                  BlocProvider(
+                    create: (context) => DashboardActivityFeedBloc(
+                      accountUuid: widget.accountUuid,
+                      transactionRepository:
+                          GetIt.I.get<TransactionRepository>(),
+                      transactionLocalRepository:
+                          GetIt.I.get<TransactionLocalRepository>(),
+                      pageSize: 10,
+                    ),
+                    child: DashboardActivityFeedScreen(),
                   ),
                 ],
               ),
