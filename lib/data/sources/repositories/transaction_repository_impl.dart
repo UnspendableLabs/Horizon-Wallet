@@ -54,7 +54,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<(List<TransactionInfo>, int? nextCursor)> getByAccount({
+  Future<(List<TransactionInfo>, int? nextCursor, int? resultCount )> getByAccount({
     required String accountUuid,
     int? cursor,
     int? limit,
@@ -96,6 +96,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     int? nextCursor = response.nextCursor;
 
-    return (transactions, nextCursor);
+    return (transactions, nextCursor, response.resultCount  );
   }
 }
