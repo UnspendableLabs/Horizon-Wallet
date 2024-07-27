@@ -72,12 +72,12 @@ class BalanceRepositoryImpl implements BalanceRepository {
     do {
       final response = await api.getBalancesByAddressesVerbose(
           addresses.join(','), cursor, limit);
-      for (MultiAddressBalance a in response.result ?? []) {
-        for (var balance in a.addresses) {
+      for (MultiAddressBalanceVerbose a in response.result ?? []) {
+        for (MultiBalanceVerbose balance in a.addresses) {
           balances.add(b.Balance(
               address: balance.address,
-              quantity: balance.quantity as int,
-              quantityNormalized: balance.quantityNormalized!,
+              quantity: balance.quantity,
+              quantityNormalized: balance.quantityNormalized,
               asset: a.asset,
               assetInfo: ai.AssetInfo(
                 assetLongname: a.assetInfo.assetLongname,

@@ -85,14 +85,12 @@ class Transaction {
 class Balance {
   final String address;
   final double quantity;
-  final String? asset;
-  final String? quantityNormalized;
+  final String asset;
 
   const Balance({
     required this.address,
     required this.quantity,
-    this.asset,
-    this.quantityNormalized,
+    required this.asset,
   });
 
   factory Balance.fromJson(Map<String, dynamic> json) =>
@@ -117,20 +115,55 @@ class BalanceVerbose extends Balance {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class MultiBalance {
+  final String address;
+  final int quantity;
+  MultiBalance({required this.address, required this.quantity});
+
+  factory MultiBalance.fromJson(Map<String, dynamic> json) =>
+      _$MultiBalanceFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MultiBalanceVerbose {
+  final String address;
+  final int quantity;
+  final String quantityNormalized;
+  MultiBalanceVerbose(
+      {required this.address,
+      required this.quantity,
+      required this.quantityNormalized});
+
+  factory MultiBalanceVerbose.fromJson(Map<String, dynamic> json) =>
+      _$MultiBalanceVerboseFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MultiAddressBalance {
   final String asset;
   final int total;
-  final List<Balance> addresses;
+  final List<MultiBalance> addresses;
+  MultiAddressBalance(
+      {required this.asset, required this.total, required this.addresses});
+  factory MultiAddressBalance.fromJson(Map<String, dynamic> json) =>
+      _$MultiAddressBalanceFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MultiAddressBalanceVerbose {
+  final String asset;
+  final int total;
+  final List<MultiBalanceVerbose> addresses;
   final AssetInfo assetInfo;
   final String totalNormalized;
-  MultiAddressBalance(
+  MultiAddressBalanceVerbose(
       {required this.asset,
       required this.total,
       required this.addresses,
       required this.assetInfo,
       required this.totalNormalized});
-  factory MultiAddressBalance.fromJson(Map<String, dynamic> json) =>
-      _$MultiAddressBalanceFromJson(json);
+  factory MultiAddressBalanceVerbose.fromJson(Map<String, dynamic> json) =>
+      _$MultiAddressBalanceVerboseFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -844,8 +877,16 @@ abstract class V2Api {
     @Query("limit") int? limit,
   ]);
 
+  @GET("/addresses/balances")
+  Future<Response<List<MultiAddressBalance>>> getBalancesByAddresses(
+    @Query("addresses") String addresses, [
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+  ]);
+
   @GET("/addresses/balances?verbose=true")
-  Future<Response<List<MultiAddressBalance>>> getBalancesByAddressesVerbose(
+  Future<Response<List<MultiAddressBalanceVerbose>>>
+      getBalancesByAddressesVerbose(
     @Query("addresses") String addresses, [
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
