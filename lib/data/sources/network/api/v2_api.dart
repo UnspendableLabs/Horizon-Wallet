@@ -1158,7 +1158,7 @@ abstract class V2Api {
 
   @GET("/bitcoin/addresses/utxos")
   Future<Response<List<UTXO>>> getUnspentUTXOsByAddresses(
-    @Query("addresses") List<String> addresses, [
+    @Query("addresses") String addresses, [
     @Query("unconfirmed") bool? unconfirmed,
     @Query("verbose") bool? verbose,
     @Query("limit") int? limit,

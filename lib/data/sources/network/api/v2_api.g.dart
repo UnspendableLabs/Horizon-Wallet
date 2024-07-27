@@ -1600,7 +1600,7 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<List<UTXO>>> getUnspentUTXOsByAddresses(
-    List<String> addresses, [
+    String addresses, [
     bool? unconfirmed,
     bool? verbose,
     int? limit,
