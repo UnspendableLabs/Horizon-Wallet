@@ -4,6 +4,8 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
+import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;
@@ -28,19 +30,70 @@ class NewTransactionsBanner extends StatelessWidget {
   }
 }
 
-class TransactionListItem extends StatelessWidget {
-  final ActivityFeedItem transaction;
-  const TransactionListItem({super.key, required this.transaction});
+class ActivityFeedListItem extends StatelessWidget {
+  final ActivityFeedItem item;
+
+  const ActivityFeedListItem({Key? key, required this.item}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(transaction.hash),
-      subtitle: Text(transaction.info
-          .toString()), // You may want to customize this based on your TransactionInfo structure
+      title: Text(item.hash),
+      subtitle: _buildSubtitle(),
+      trailing: _buildTrailingIcon(),
       onTap: () {
-// Handle transaction tap
+        // Handle item tap
+        // You might want to navigate to a detail page here
       },
     );
+  }
+
+  Widget _buildSubtitle() {
+    if (item.event != null) {
+      return _buildEventSubtitle(item.event!);
+    } else if (item.info != null) {
+      return _buildTransactionInfoSubtitle(item.info!);
+    } else {
+      return const Text('No details available');
+    }
+  }
+
+  Widget _buildEventSubtitle(Event event) {
+    // Customize this based on your Event structure
+    return Text('Event: ${event.event} - State: ${event.state}');
+  }
+
+  Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
+    // Customize this based on your TransactionInfo structure
+    return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
+  }
+
+  Widget _buildTrailingIcon() {
+    if (item.event != null) {
+      return _getEventStateIcon(item.event!.state);
+    } else if (item.info != null) {
+      return _getTransactionStateIcon(item.info!.domain);
+    } else {
+      return const Icon(Icons.error);
+    }
+  }
+
+  Icon _getEventStateIcon(EventState state) => switch (state) {
+        EventStateLocal() => const Icon(Icons.schedule, color: Colors.orange),
+        EventStateMempool() => const Icon(Icons.pending, color: Colors.blue),
+        EventStateConfirmed() =>
+          const Icon(Icons.check_circle, color: Colors.green),
+      };
+
+  Icon _getTransactionStateIcon(TransactionInfoDomain domain) {
+    return switch (domain) {
+      TransactionInfoDomainLocal() =>
+        const Icon(Icons.schedule, color: Colors.orange),
+      TransactionInfoDomainMempool() =>
+        const Icon(Icons.pending, color: Colors.blue),
+      TransactionInfoDomainConfirmed() =>
+        const Icon(Icons.check_circle, color: Colors.green),
+    };
   }
 }
 
@@ -92,8 +145,7 @@ class _DashboardActivityFeedScreenState
                 itemCount: transactions.length + 1,
                 itemBuilder: (context, index) {
                   if (index < transactions.length) {
-                    return TransactionListItem(
-                        transaction: transactions[index]);
+                    return ActivityFeedListItem(item: transactions[index]);
                   } else if (index == transactions.length) {
                     return state is DashboardActivityFeedStateReloadingOk
                         ? const Center(child: CircularProgressIndicator())

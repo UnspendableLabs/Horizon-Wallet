@@ -1,6 +1,6 @@
 import "package:equatable/equatable.dart";
 
-class EventState {}
+sealed class EventState {}
 
 class EventStateLocal extends EventState {
   final String raw;

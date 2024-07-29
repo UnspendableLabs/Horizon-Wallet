@@ -27,18 +27,17 @@ class EventMapper {
         return CreditEventMapper.toDomain(apiEvent as api.CreditEvent);
       case 'DEBIT':
         return DebitEventMapper.toDomain(apiEvent as api.DebitEvent);
-      case 'NEW_TRANSACTION':
-        return NewTransactionEventMapper.toDomain(
-            apiEvent as api.NewTransactionEvent);
-      // case 'ASSET_ISSUANCE':
-      //   return AssetIssuanceEventMapper.toDomain(apiEvent as api.AssetIssuanceEvent);
+      // case 'NEW_TRANSACTION':
+      //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
+      // case 'ASSET_ISSUANCE': return AssetIssuanceEventMapper.toDomain(apiEvent as api.AssetIssuanceEvent);
       default:
         // Return a generic Event for unknown types
+
         return Event(
           state: StateMapper.get(apiEvent),
           eventIndex: apiEvent.eventIndex,
           event: apiEvent.event,
-          txHash: apiEvent.txHash,
+          txHash: apiEvent.txHash!, // all of the events we care about have tx hash,
           blockIndex: apiEvent.blockIndex,
           confirmed: apiEvent.confirmed,
         );
@@ -58,9 +57,9 @@ class VerboseEventMapper {
       case 'DEBIT':
         return VerboseDebitEventMapper.toDomain(
             apiEvent as api.VerboseDebitEvent);
-      case 'NEW_TRANSACTION':
-        return VerboseNewTransactionEventMapper.toDomain(
-            apiEvent as api.VerboseNewTransactionEvent);
+      // case 'NEW_TRANSACTION':
+      //   return VerboseNewTransactionEventMapper.toDomain(
+      //       apiEvent as api.VerboseNewTransactionEvent);
       // case 'ASSET_ISSUANCE':
       //   return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as ApiVerboseAssetIssuanceEvent);
       default:
@@ -69,7 +68,7 @@ class VerboseEventMapper {
           state: StateMapper.getVerbose(apiEvent),
           eventIndex: apiEvent.eventIndex,
           event: apiEvent.event,
-          txHash: apiEvent.txHash,
+          txHash: apiEvent.txHash!,
           blockIndex: apiEvent.blockIndex,
           confirmed: apiEvent.confirmed,
           blockTime: apiEvent.blockTime,
@@ -84,7 +83,7 @@ class EnhancedSendEventMapper {
       state: StateMapper.get(apiEvent),
       event: "ENHANCED_SEND",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
+      txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
       confirmed: apiEvent.confirmed,
       params: EnhancedSendParamsMapper.toDomain(apiEvent.params),
@@ -115,7 +114,7 @@ class VerboseEnhancedSendEventMapper {
       state: StateMapper.getVerbose(apiEvent),
       event: "ENHANCED_SEND",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
+      txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
       confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
@@ -150,7 +149,7 @@ class CreditEventMapper {
       state: StateMapper.get(apiEvent),
       event: "CREDIT",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
+      txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
       confirmed: apiEvent.confirmed,
       params: CreditParamsMapper.toDomain(apiEvent.params),
@@ -178,7 +177,7 @@ class VerboseCreditEventMapper {
       state: StateMapper.getVerbose(apiEvent),
       event: "CREDIT",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
+      txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
       confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
@@ -210,7 +209,7 @@ class DebitEventMapper {
       state: StateMapper.get(apiEvent),
       event: "DEBIT",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
+      txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
       confirmed: apiEvent.confirmed,
       params: DebitParamsMapper.toDomain(apiEvent.params),
@@ -238,7 +237,7 @@ class VerboseDebitEventMapper {
       state: StateMapper.getVerbose(apiEvent),
       event: "DEBIT",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
+      txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
       confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
@@ -264,36 +263,36 @@ class VerboseDebitParamsMapper {
   }
 }
 
-class NewTransactionEventMapper {
-  static NewTransactionEvent toDomain(api.NewTransactionEvent apiEvent) {
-    return NewTransactionEvent(
-      state: StateMapper.get(apiEvent),
-      event: "NEW_TRANSACTION",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
-      blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
-      params: NewTransactionParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class NewTransactionParamsMapper {
-  static NewTransactionParams toDomain(api.NewTransactionParams apiParams) {
-    return NewTransactionParams(
-      blockHash: apiParams.blockHash,
-      blockIndex: apiParams.blockIndex,
-      blockTime: apiParams.blockTime,
-      btcAmount: apiParams.btcAmount,
-      data: apiParams.data,
-      destination: apiParams.destination,
-      fee: apiParams.fee,
-      source: apiParams.source,
-      txHash: apiParams.txHash,
-      txIndex: apiParams.txIndex,
-    );
-  }
-}
+// class NewTransactionEventMapper {
+//   static NewTransactionEvent toDomain(api.NewTransactionEvent apiEvent) {
+//     return NewTransactionEvent(
+//       state: StateMapper.get(apiEvent),
+//       event: "NEW_TRANSACTION",
+//       eventIndex: apiEvent.eventIndex,
+//       txHash: apiEvent.txHash,
+//       blockIndex: apiEvent.blockIndex,
+//       confirmed: apiEvent.confirmed,
+//       params: NewTransactionParamsMapper.toDomain(apiEvent.params),
+//     );
+//   }
+// }
+//
+// class NewTransactionParamsMapper {
+//   static NewTransactionParams toDomain(api.NewTransactionParams apiParams) {
+//     return NewTransactionParams(
+//       blockHash: apiParams.blockHash,
+//       blockIndex: apiParams.blockIndex,
+//       blockTime: apiParams.blockTime,
+//       btcAmount: apiParams.btcAmount,
+//       data: apiParams.data,
+//       destination: apiParams.destination,
+//       fee: apiParams.fee,
+//       source: apiParams.source,
+//       txHash: apiParams.txHash,
+//       txIndex: apiParams.txIndex,
+//     );
+//   }
+// }
 
 class VerboseNewTransactionEventMapper {
   static VerboseNewTransactionEvent toDomain(
@@ -302,7 +301,7 @@ class VerboseNewTransactionEventMapper {
       state: StateMapper.getVerbose(apiEvent),
       event: "NEW_TRANSACTION",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash,
+      txHash: apiEvent.txHash ?? "",
       blockIndex: apiEvent.blockIndex,
       confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
@@ -356,9 +355,12 @@ class EventsRepositoryImpl implements EventsRepository {
 
     int? nextCursor = response.nextCursor;
 
-    List<Event> events = response.result!.map((event) {
-      return EventMapper.toDomain(event);
-    }).toList();
+    List<Event> events = response.result!
+        .where((event) => event.event == 'ENHANCED_SEND')
+        .map((event) {
+          return EventMapper.toDomain(event);
+        })
+        .toList();
 
     return (events, nextCursor, response.resultCount);
   }
@@ -378,13 +380,13 @@ class EventsRepositoryImpl implements EventsRepository {
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
-    }
-
-    int? nextCursor = response.nextCursor;
-
-    List<VerboseEvent> events = response.result!.map((event) {
-      return VerboseEventMapper.toDomain(event);
-    }).toList();
+    } int? nextCursor = response.nextCursor;
+    List<VerboseEvent> events = response.result!
+        .where((event) => event.event == 'ENHANCED_SEND')
+        .map((event) {
+          return VerboseEventMapper.toDomain(event);
+        })
+        .toList();
 
     return (events, nextCursor, response.resultCount);
   }

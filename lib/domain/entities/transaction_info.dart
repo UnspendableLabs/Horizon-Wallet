@@ -1,6 +1,7 @@
 import "transaction_unpacked.dart";
+import "package:equatable/equatable.dart";
 
-abstract class TransactionInfoDomain {}
+sealed class TransactionInfoDomain {}
 
 class TransactionInfoDomainLocal extends TransactionInfoDomain {
   final String raw;
@@ -19,7 +20,7 @@ class TransactionInfoDomainConfirmed extends TransactionInfoDomain {
   });
 }
 
-class TransactionInfo {
+class TransactionInfo extends Equatable {
   final String hash;
   final String source;
   final String? destination;
@@ -39,4 +40,8 @@ class TransactionInfo {
       required this.data,
       required this.unpackedData,
       required this.domain});
+
+  @override
+  List<Object?> get props =>
+      [hash, source, destination, btcAmount, fee, data, unpackedData, domain];
 }

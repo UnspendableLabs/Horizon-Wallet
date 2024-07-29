@@ -3,21 +3,21 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'v2_api.g.dart';
-
-class Verbose {
-  const Verbose();
-}
-
-// Custom interceptor
-class VerboseInterceptor extends Interceptor {
-  @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    if (options.extra['verbose'] == true) {
-      options.queryParameters['verbose'] = 'true';
-    }
-    super.onRequest(options, handler);
-  }
-}
+//
+// class Verbose {
+//   const Verbose();
+// }
+//
+// // Custom interceptor
+// class VerboseInterceptor extends Interceptor {
+//   @override
+//   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+//     if (options.extra['verbose'] == true) {
+//       options.queryParameters['verbose'] = 'true';
+//     }
+//     super.onRequest(options, handler);
+//   }
+// }
 
 // Domain
 
@@ -213,7 +213,7 @@ class MultiAddressBalanceVerbose {
 class Event {
   final int eventIndex;
   final String event;
-  final String txHash;
+  final String? txHash;
   final int? blockIndex;
   final bool confirmed;
 
@@ -1539,8 +1539,8 @@ abstract class V2Api {
     @Query("limit") int? limit,
   ]);
 
-  @Verbose()
-  @GET("/addresses/transactions")
+  // @Verbose()
+  @GET("/addresses/transactions?verbose=true")
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
     @Query("addresses") String addresses, [
     @Query("cursor") int? cursor,
@@ -1556,8 +1556,8 @@ abstract class V2Api {
     @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
-  @Verbose()
-  @GET("/addresses/events")
+  // @Verbose()
+  @GET("/addresses/events?verbose=true")
   Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
     @Query("addresses") String addresses, [
     @Query("cursor") int? cursor,
