@@ -21,7 +21,8 @@ class VerboseInterceptor extends Interceptor {
 
 // Domain
 
-@JsonSerializable(genericArgumentFactories: true, fieldRename: FieldRename.snake )
+@JsonSerializable(
+    genericArgumentFactories: true, fieldRename: FieldRename.snake)
 class Response<T> {
   final T? result;
   final int? nextCursor;
@@ -212,15 +213,424 @@ class MultiAddressBalanceVerbose {
 class Event {
   final int eventIndex;
   final String event;
-  final dynamic params; // TODO: refine
+  final String txHash;
+  final int? blockIndex;
+  final bool confirmed;
 
   const Event({
     required this.eventIndex,
     required this.event,
+    required this.txHash,
+    this.blockIndex,
+    required this.confirmed,
+  });
+
+  factory Event.fromJson(Map<String, dynamic> json) {
+    final eventType = json['event'] as String;
+    switch (eventType) {
+      case 'ENHANCED_SEND':
+        return EnhancedSendEvent.fromJson(json);
+      case 'CREDIT':
+        return CreditEvent.fromJson(json);
+      case 'DEBIT':
+        return DebitEvent.fromJson(json);
+      case 'NEW_TRANSACTION':
+        return NewTransactionEvent.fromJson(json);
+      default:
+        return _$EventFromJson(json);
+    }
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class EnhancedSendParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final String? memo;
+  final int quantity;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+
+  EnhancedSendParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    this.memo,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory EnhancedSendParams.fromJson(Map<String, dynamic> json) =>
+      _$EnhancedSendParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CreditParams {
+  final String address;
+  final String asset;
+  final int blockIndex;
+  final String callingFunction;
+  final String event;
+  final int quantity;
+  final int txIndex;
+
+  CreditParams({
+    required this.address,
+    required this.asset,
+    required this.blockIndex,
+    required this.callingFunction,
+    required this.event,
+    required this.quantity,
+    required this.txIndex,
+  });
+
+  factory CreditParams.fromJson(Map<String, dynamic> json) =>
+      _$CreditParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DebitParams {
+  final String action;
+  final String address;
+  final String asset;
+  final int blockIndex;
+  final String event;
+  final int quantity;
+  final int txIndex;
+
+  DebitParams({
+    required this.action,
+    required this.address,
+    required this.asset,
+    required this.blockIndex,
+    required this.event,
+    required this.quantity,
+    required this.txIndex,
+  });
+
+  factory DebitParams.fromJson(Map<String, dynamic> json) =>
+      _$DebitParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class NewTransactionParams {
+  final String blockHash;
+  final int blockIndex;
+  final int blockTime;
+  final int btcAmount;
+  final String data;
+  final String destination;
+  final int fee;
+  final String source;
+  final String txHash;
+  final int txIndex;
+
+  NewTransactionParams({
+    required this.blockHash,
+    required this.blockIndex,
+    required this.blockTime,
+    required this.btcAmount,
+    required this.data,
+    required this.destination,
+    required this.fee,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory NewTransactionParams.fromJson(Map<String, dynamic> json) =>
+      _$NewTransactionParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class EnhancedSendEvent extends Event {
+  final EnhancedSendParams params;
+
+  EnhancedSendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
     required this.params,
   });
 
-  factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
+  factory EnhancedSendEvent.fromJson(Map<String, dynamic> json) =>
+      _$EnhancedSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CreditEvent extends Event {
+  final CreditParams params;
+
+  CreditEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required this.params,
+  });
+
+  factory CreditEvent.fromJson(Map<String, dynamic> json) =>
+      _$CreditEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DebitEvent extends Event {
+  final DebitParams params;
+
+  DebitEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required this.params,
+  });
+
+  factory DebitEvent.fromJson(Map<String, dynamic> json) =>
+      _$DebitEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class NewTransactionEvent extends Event {
+  final NewTransactionParams params;
+
+  NewTransactionEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required this.params,
+  });
+
+  factory NewTransactionEvent.fromJson(Map<String, dynamic> json) =>
+      _$NewTransactionEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseEnhancedSendParams extends EnhancedSendParams {
+  final int blockTime;
+  final AssetInfo assetInfo;
+  final String quantityNormalized;
+
+  VerboseEnhancedSendParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    super.memo,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory VerboseEnhancedSendParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseEnhancedSendParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseCreditParams extends CreditParams {
+  final int blockTime;
+  final AssetInfo assetInfo;
+  final String quantityNormalized;
+
+  VerboseCreditParams({
+    required super.address,
+    required super.asset,
+    required super.blockIndex,
+    required super.callingFunction,
+    required super.event,
+    required super.quantity,
+    required super.txIndex,
+    required this.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory VerboseCreditParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseCreditParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDebitParams extends DebitParams {
+  final int blockTime;
+  final AssetInfo assetInfo;
+  final String quantityNormalized;
+
+  VerboseDebitParams({
+    required super.action,
+    required super.address,
+    required super.asset,
+    required super.blockIndex,
+    required super.event,
+    required super.quantity,
+    required super.txIndex,
+    required this.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory VerboseDebitParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDebitParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseNewTransactionParams extends NewTransactionParams {
+  final Map<String, dynamic> unpackedData;
+  final String btcAmountNormalized;
+
+  VerboseNewTransactionParams({
+    required super.blockHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required super.btcAmount,
+    required super.data,
+    required super.destination,
+    required super.fee,
+    required super.source,
+    required super.txHash,
+    required super.txIndex,
+    required this.unpackedData,
+    required this.btcAmountNormalized,
+  });
+
+  factory VerboseNewTransactionParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseNewTransactionParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetInfo {
+  final bool divisible;
+  final String? assetLongname;
+  final String description;
+  final bool locked;
+  final String? issuer;
+
+  AssetInfo({
+    required this.divisible,
+    this.assetLongname,
+    required this.description,
+    required this.locked,
+    this.issuer,
+  });
+
+  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
+      _$AssetInfoFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseEvent extends Event {
+  final int blockTime;
+
+  VerboseEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required this.blockTime,
+  });
+
+  factory VerboseEvent.fromJson(Map<String, dynamic> json) {
+    final eventType = json['event'] as String;
+    switch (eventType) {
+      case 'ENHANCED_SEND':
+        return VerboseEnhancedSendEvent.fromJson(json);
+      case 'CREDIT':
+        return VerboseCreditEvent.fromJson(json);
+      case 'DEBIT':
+        return VerboseDebitEvent.fromJson(json);
+      case 'NEW_TRANSACTION':
+        return VerboseNewTransactionEvent.fromJson(json);
+      default:
+        return _$VerboseEventFromJson(json);
+    }
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseEnhancedSendEvent extends VerboseEvent {
+  final VerboseEnhancedSendParams params;
+
+  VerboseEnhancedSendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseEnhancedSendEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseEnhancedSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseCreditEvent extends VerboseEvent {
+  final VerboseCreditParams params;
+
+  VerboseCreditEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseCreditEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseCreditEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDebitEvent extends VerboseEvent {
+  final VerboseDebitParams params;
+
+  VerboseDebitEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseDebitEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDebitEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseNewTransactionEvent extends VerboseEvent {
+  final VerboseNewTransactionParams params;
+
+  VerboseNewTransactionEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseNewTransactionEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseNewTransactionEventFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -274,19 +684,19 @@ class Asset {
   factory Asset.fromJson(Map<String, dynamic> json) => _$AssetFromJson(json);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AssetInfo {
-  final String? assetLongname;
-  final String description;
-  final bool divisible;
-  const AssetInfo({
-    required this.assetLongname,
-    required this.description,
-    required this.divisible,
-  });
-  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
-      _$AssetInfoFromJson(json);
-}
+// @JsonSerializable(fieldRename: FieldRename.snake)
+// class AssetInfo {
+//   final String? assetLongname;
+//   final String description;
+//   final bool divisible;
+//   const AssetInfo({
+//     required this.assetLongname,
+//     required this.description,
+//     required this.divisible,
+//   });
+//   factory AssetInfo.fromJson(Map<String, dynamic> json) =>
+//       _$AssetInfoFromJson(json);
+// }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Credit {
@@ -1130,13 +1540,34 @@ abstract class V2Api {
   ]);
 
   @Verbose()
-  @GET("/addresses/transactions?verbose=true")
+  @GET("/addresses/transactions")
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
     @Query("addresses") String addresses, [
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
+  
+  @GET("/addresses/events")
+  Future<Response<List<Event>>> getEventsByAddresses(
+    @Query("addresses") String addresses, [
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+  ]);
+
+
+  @Verbose()
+  @GET("/addresses/events")
+  Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
+    @Query("addresses") String addresses, [
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+  ]);
+
+
+
 
   // {
   //        "result": {

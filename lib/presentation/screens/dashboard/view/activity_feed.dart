@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart';
-import 'package:horizon/domain/entities/display_transaction.dart';
+import 'package:horizon/domain/entities/activity_feed_item.dart';
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;
@@ -30,7 +30,7 @@ class NewTransactionsBanner extends StatelessWidget {
 }
 
 class TransactionListItem extends StatelessWidget {
-  final DisplayTransaction transaction;
+  final ActivityFeedItem transaction;
   const TransactionListItem({Key? key, required this.transaction})
       : super(key: key);
   @override
@@ -81,7 +81,7 @@ class _DashboardActivityFeedScreenState
         } else if (state is DashboardActivityFeedStateCompleteOk ||
             state is DashboardActivityFeedStateReloadingOk) {
           final transactions =
-              (state as dynamic).transactions as List<DisplayTransaction>;
+              (state as dynamic).transactions as List<ActivityFeedItem>;
           final newTransactionCount =
               (state as dynamic).newTransactionCount as int;
           return Column(

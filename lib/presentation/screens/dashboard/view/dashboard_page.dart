@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
@@ -133,14 +134,14 @@ class _DashboardPage_State extends State<_DashboardPage> {
                     BlocProvider(
                       create: (context) => DashboardActivityFeedBloc(
                         accountUuid: widget.accountUuid,
-                        transactionRepository:
-                            GetIt.I.get<TransactionRepository>(),
+                        eventsRepository: GetIt.I.get<EventsRepository>(),
+                        addressRepository: GetIt.I.get<AddressRepository>(),
                         transactionLocalRepository:
                             GetIt.I.get<TransactionLocalRepository>(),
                         pageSize: 10,
                       ),
                       child: DashboardActivityFeedScreen(),
-                    ),
+                    )
                   ],
                 ),
               ),
