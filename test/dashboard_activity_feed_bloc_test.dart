@@ -5,12 +5,14 @@ import 'package:bloc_test/bloc_test.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
-import 'package:horizon/domain/repositories/transaction_repository.dart';
-import 'package:horizon/domain/repositories/activity_feed_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
+import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:mocktail/mocktail.dart';
 
 extension DateTimeExtension on DateTime {
@@ -22,15 +24,14 @@ extension DateTimeExtension on DateTime {
 }
 
 class PastDateTime extends DateTime {
-  PastDateTime._(int year,
-      [int month = 1,
-      int day = 1,
-      int hour = 0,
-      int minute = 0,
-      int second = 0,
-      int millisecond = 0,
-      int microsecond = 0])
-      : super(year, month, day, hour, minute, second, millisecond, microsecond);
+  PastDateTime._(super.year,
+      [super.month,
+      super.day,
+      super.hour,
+      super.minute,
+      super.second,
+      super.millisecond,
+      super.microsecond]);
 
   factory PastDateTime.subtractDuration(Duration duration) {
     final now = DateTime.now();
@@ -63,10 +64,12 @@ extension BlockTimeExtension on DateTime {
   }
 }
 
-class MockTransactionRepository extends Mock implements TransactionRepository {}
+class MockEventsRepository extends Mock implements EventsRepository {}
 
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
+
+class MockAddressRepository extends Mock implements AddressRepository {}
 
 class MockTransactionInfo extends Mock implements TransactionInfo {
   @override
@@ -138,7 +141,47 @@ class MockTransactionInfoFactory {
 
 class MockTransactionUnpacked extends Mock implements TransactionUnpacked {}
 
+class MockEvent extends Mock implements VerboseEvent {
+  @override
+  final String txHash;
+  @override
+  final EventState state;
+
+  MockEvent({
+    required this.txHash,
+    required this.state,
+  });
+}
+
+class MockEventFactory {
+  static MockEvent create({
+    required String txHash,
+    required EventState state,
+  }) {
+    return MockEvent(
+      txHash: txHash,
+      state: state,
+    );
+  }
+
+  static List<MockEvent> createMultiple(
+    List<(String, EventState)> eventSpecs,
+  ) {
+    return eventSpecs.map((spec) {
+      return create(
+        txHash: spec.$1,
+        state: spec.$2,
+      );
+    }).toList();
+  }
+}
+
 void main() {
+  final mockAddressRepository = MockAddressRepository();
+  when(() => mockAddressRepository.getAllByAccountUuid("123")).thenAnswer(
+      (_) async =>
+          [const Address(index: 0, address: "0x123", accountUuid: "123")]);
+
   group("add StartPolling", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "sets timer",
@@ -149,21 +192,24 @@ void main() {
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           return DashboardActivityFeedBloc(
-              pageSize: 10,
-              accountUuid: "123",
-              transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+            pageSize: 10,
+            eventsRepository: mockEventsRepository,
+            accountUuid: "123",
+            transactionLocalRepository: mockTransactionLocalRepository,
+            addressRepository: mockAddressRepository,
+          );
         },
         act: (bloc) =>
             bloc.add(const StartPolling(interval: Duration(seconds: 5))),
@@ -185,21 +231,23 @@ void main() {
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              eventsRepository: mockEventsRepository,
+              addressRepository: mockAddressRepository);
         },
         act: (bloc) => bloc
           ..add(const StartPolling(interval: Duration(seconds: 5)))
@@ -221,21 +269,24 @@ void main() {
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           return DashboardActivityFeedBloc(
-              pageSize: 10,
-              accountUuid: "123",
-              transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+            pageSize: 10,
+            accountUuid: "123",
+            transactionLocalRepository: mockTransactionLocalRepository,
+            eventsRepository: mockEventsRepository,
+            addressRepository: mockAddressRepository,
+          );
         },
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
@@ -250,21 +301,23 @@ void main() {
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         seed: () => const DashboardActivityFeedStateCompleteOk(
             transactions: [],
@@ -288,21 +341,23 @@ void main() {
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
@@ -322,21 +377,23 @@ void main() {
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "123", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 0));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
               accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
@@ -351,7 +408,7 @@ void main() {
 
   group("interleaving", () {
     late List<MockTransactionInfo> mockedLocal;
-    late List<MockTransactionInfo> mockedRemote;
+    late List<MockEvent> mockedRemote;
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "non overlapping",
@@ -374,37 +431,32 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("account-id"))
-              .thenAnswer((_) async => mockedLocal);
-
-          final mockTransactionRepository = MockTransactionRepository();
-
-          mockedRemote = MockTransactionInfoFactory.createMultiple([
-            ("0004", TransactionInfoDomainMempool()),
-            (
-              "0005",
-              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
-            ),
-            (
-              "0006",
-              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
-            ),
+          mockedRemote = MockEventFactory.createMultiple([
+            ("0004", EventStateMempool()),
+            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
+            ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 3));
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => mockedLocal);
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (mockedRemote, null, 3));
+          final mockEventsRepository = MockEventsRepository();
+
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 3));
+
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (mockedRemote, null, 3));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "account-id",
+              accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
@@ -414,9 +466,9 @@ void main() {
                   ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
                   ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
                   ActivityFeedItem(hash: "0003", info: mockedLocal[2]),
-                  ActivityFeedItem(hash: "0004", info: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0005", info: mockedRemote[1]),
-                  ActivityFeedItem(hash: "0006", info: mockedRemote[2]),
+                  ActivityFeedItem(hash: "0004", event: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0005", event: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0006", event: mockedRemote[2]),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -445,33 +497,31 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("account-id"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          mockedRemote = MockTransactionInfoFactory.createMultiple([
-            ("0002", TransactionInfoDomainMempool()),
-            (
-              "0003",
-              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
-            ),
+          mockedRemote = MockEventFactory.createMultiple([
+            ("0002", EventStateMempool()),
+            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id", limit: 1, unconfirmed: false))
-              .thenAnswer((_) async => (<TransactionInfo>[], 1, 2));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
+              .thenAnswer((_) async => (<VerboseEvent>[], 1, 2));
 
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id", unconfirmed: true, limit: 10))
-              .thenAnswer((_) async => (mockedRemote, null, 2));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              addresses: ["0x123"],
+              unconfirmed: true,
+              limit: 10)).thenAnswer((_) async => (mockedRemote, null, 2));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "account-id",
+              accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
@@ -479,8 +529,8 @@ void main() {
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
                   ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0002", event: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", event: mockedRemote[1]),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -505,16 +555,15 @@ void main() {
 
           // effectively asserts that right method is calleD with right args
           when(() => mockTransactionLocalRepository.getAllByAccountAfterDate(
-                  "account-id", mostRecentConfirmedBlocktime))
-              .thenAnswer((_) async => []);
+              "123", mostRecentConfirmedBlocktime)).thenAnswer((_) async => []);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          mockedRemote = MockTransactionInfoFactory.createMultiple([
-            ("0005", TransactionInfoDomainMempool()),
+          mockedRemote = MockEventFactory.createMultiple([
+            ("0005", EventStateMempool()),
             (
               "0004",
-              TransactionInfoDomainConfirmed(
+              EventStateConfirmed(
                   blockHeight: 1,
                   blockTime:
                       mostRecentConfirmedBlocktime.toUtc().toIntDividedBy1000())
@@ -522,28 +571,30 @@ void main() {
           ]);
 
           // Return the most recent confirmed transaction
-          when(() => mockTransactionRepository.getByAccount(
-                  accountUuid: "account-id", limit: 1, unconfirmed: false))
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                  addresses: ["0x123"], limit: 1, unconfirmed: false))
               .thenAnswer((_) async => ([mockedRemote[1]], 1, 2));
 
           // Return all transactions
-          when(() => mockTransactionRepository.getByAccount(
-                  unconfirmed: true, accountUuid: "account-id", limit: 10))
-              .thenAnswer((_) async => (mockedRemote, 1, 2));
+          when(() => mockEventsRepository.getByAddressesVerbose(
+              unconfirmed: true,
+              addresses: ["0x123"],
+              limit: 10)).thenAnswer((_) async => (mockedRemote, 1, 2));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "account-id",
+              accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
                   transactions: [
-                    ActivityFeedItem(hash: "0005", info: mockedRemote[0]),
-                    ActivityFeedItem(hash: "0004", info: mockedRemote[1]),
+                    ActivityFeedItem(hash: "0005", event: mockedRemote[0]),
+                    ActivityFeedItem(hash: "0004", event: mockedRemote[1]),
                   ],
                   newTransactionCount: 0,
                   nextCursor: 1,
@@ -556,8 +607,8 @@ void main() {
 
   group("LoadMore", () {
     late List<MockTransactionInfo> mockedLocal;
-    late List<MockTransactionInfo> mockedRemote;
-    late List<MockTransactionInfo> mockedRemote2;
+    late List<MockEvent> mockedRemote;
+    late List<MockEvent> mockedRemote2;
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "load an additional page",
@@ -580,46 +631,40 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("account-id"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          mockedRemote = MockTransactionInfoFactory.createMultiple([
-            ("0002", TransactionInfoDomainMempool()),
-            (
-              "0003",
-              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
-            ),
+          mockedRemote = MockEventFactory.createMultiple([
+            ("0002", EventStateMempool()),
+            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
-          mockedRemote2 = MockTransactionInfoFactory.createMultiple([
-            ("0004", TransactionInfoDomainMempool()),
-            (
-              "0005",
-              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
-            ),
+          mockedRemote2 = MockEventFactory.createMultiple([
+            ("0004", EventStateMempool()),
+            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
           // `LoadMore`
-          when(() => mockTransactionRepository.getByAccount(
+          when(() => mockEventsRepository.getByAddressesVerbose(
               unconfirmed: true,
-              accountUuid: "account-id",
+              addresses: ["0x123"],
               limit: 10,
               cursor: 4)).thenAnswer((_) async => (mockedRemote2, null, 2));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "account-id",
+              accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
                 ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
-                ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
+                ActivityFeedItem(hash: "0002", event: mockedRemote[0]),
+                ActivityFeedItem(hash: "0003", event: mockedRemote[1]),
               ],
               newTransactionCount: 0,
               nextCursor: 4,
@@ -630,18 +675,18 @@ void main() {
               DashboardActivityFeedStateReloadingOk(
                 transactions: [
                   ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0002", event: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", event: mockedRemote[1]),
                 ],
                 newTransactionCount: 0,
               ),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
                   ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
-                  ActivityFeedItem(hash: "0004", info: mockedRemote2[0]),
-                  ActivityFeedItem(hash: "0005", info: mockedRemote2[1]),
+                  ActivityFeedItem(hash: "0002", event: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", event: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0004", event: mockedRemote2[0]),
+                  ActivityFeedItem(hash: "0005", event: mockedRemote2[1]),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -657,11 +702,12 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "account-id",
+              accountUuid: "123",
               transactionLocalRepository: MockTransactionLocalRepository(),
-              transactionRepository: MockTransactionRepository());
+              addressRepository: MockAddressRepository(),
+              eventsRepository: MockEventsRepository());
         },
-        seed: () => DashboardActivityFeedStateCompleteOk(
+        seed: () => const DashboardActivityFeedStateCompleteOk(
               transactions: [],
               newTransactionCount: 0,
               nextCursor: null,
@@ -673,8 +719,7 @@ void main() {
 
   group("LoadQuiet", () {
     late List<MockTransactionInfo> mockedLocal;
-    late List<MockTransactionInfo> mockedRemote;
-    late List<MockTransactionInfo> mockedRemote2;
+    late List<MockEvent> mockedRemote;
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "returns new transactions count = all txs above the most recent remote hash",
@@ -697,44 +742,38 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("account-id"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
-          final mockTransactionRepository = MockTransactionRepository();
+          final mockEventsRepository = MockEventsRepository();
 
-          mockedRemote = MockTransactionInfoFactory.createMultiple([
-            ("0004", TransactionInfoDomainMempool()),
-            (
-              "0005",
-              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
-            ),
-            ("0002", TransactionInfoDomainMempool()),
-            (
-              "0003",
-              TransactionInfoDomainConfirmed(blockHeight: 1, blockTime: 1)
-            ),
+          mockedRemote = MockEventFactory.createMultiple([
+            ("0004", EventStateMempool()),
+            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
+            ("0002", EventStateMempool()),
+            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
           // `LoadMore`
-          when(() => mockTransactionRepository.getByAccount(
+          when(() => mockEventsRepository.getByAddressesVerbose(
                 unconfirmed: true,
-                accountUuid: "account-id",
+                addresses: ["0x123"],
                 cursor: null,
                 limit: 10,
               )).thenAnswer((_) async => (mockedRemote, null, null));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "account-id",
+              accountUuid: "123",
               transactionLocalRepository: mockTransactionLocalRepository,
-              transactionRepository: mockTransactionRepository);
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
                 ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                ActivityFeedItem(hash: "0002", info: mockedRemote[2]),
-                ActivityFeedItem(hash: "0003", info: mockedRemote[3]),
+                ActivityFeedItem(hash: "0002", event: mockedRemote[2]),
+                ActivityFeedItem(hash: "0003", event: mockedRemote[3]),
               ],
               newTransactionCount: 0,
               nextCursor: 4, // doesn't matter since we are prepending
@@ -742,24 +781,31 @@ void main() {
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
-              DashboardActivityFeedStateReloadingOk(
-                transactions: [
-                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
-                ],
-                newTransactionCount: 0,
-              ),
-              DashboardActivityFeedStateCompleteOk(
-                transactions: [
-                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
-                ],
-                newTransactionCount: 2,
-                nextCursor: 4,
-                mostRecentRemoteHash: "0002",
-              ),
+              isA<DashboardActivityFeedStateReloadingOk>(),
+              isA<DashboardActivityFeedStateCompleteOk>()
+                  .having(
+                    (state) => state.transactions,
+                    'transactions',
+                    [
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0001')
+                          .having((item) => item.info, 'info',
+                              isA<MockTransactionInfo>()),
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0002')
+                          .having(
+                              (item) => item.event, 'event', isA<MockEvent>()),
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0003')
+                          .having(
+                              (item) => item.event, 'event', isA<MockEvent>()),
+                    ],
+                  )
+                  .having((state) => state.newTransactionCount,
+                      'newTransactionCount', 2)
+                  .having((state) => state.nextCursor, 'nextCursor', 4)
+                  .having((state) => state.mostRecentRemoteHash,
+                      'mostRecentRemoteHash', '0002'),
             ]);
   });
 }

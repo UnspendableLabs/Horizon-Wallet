@@ -1,11 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/data/sources/local/db.dart';
-import 'package:horizon/domain/entities/transaction_info.dart';
 import 'dart:async';
 
 import "dashboard_activity_feed_event.dart";
 import "dashboard_activity_feed_state.dart";
-import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -154,7 +151,7 @@ class DashboardActivityFeedBloc
       List<String> addresses = addresses_.map((a) => a.address).toList();
 
       final (remoteEvents, nextCursor, _) =
-          await eventsRepository.getByAddresses(
+          await eventsRepository.getByAddressesVerbose(
               addresses: addresses,
               cursor: currentState.nextCursor,
               limit: pageSize,
@@ -205,7 +202,7 @@ class DashboardActivityFeedBloc
 
       List<String> addresses = addresses_.map((a) => a.address).toList();
 
-      final (confirmed, _, _) = await eventsRepository.getByAddresses(
+      final (confirmed, _, _) = await eventsRepository.getByAddressesVerbose(
           addresses: addresses, limit: 1, unconfirmed: false);
 
       if (confirmed.isNotEmpty) {
@@ -224,7 +221,7 @@ class DashboardActivityFeedBloc
           : await transactionLocalRepository.getAllByAccount(accountUuid);
 
       final (remoteEvents, nextCursor, _) =
-          await eventsRepository.getByAddresses(
+          await eventsRepository.getByAddressesVerbose(
               addresses: addresses, limit: pageSize, unconfirmed: true);
 
       final remoteHashes =

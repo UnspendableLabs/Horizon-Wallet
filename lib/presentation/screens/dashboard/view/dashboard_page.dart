@@ -122,17 +122,14 @@ class _DashboardPage_State extends State<_DashboardPage> {
                   ),
                   BlocProvider(
                     create: (context) => DashboardActivityFeedBloc(
-                     
                       accountUuid: widget.accountUuid,
-                      eventsRepository: 
-                          GetIt.I.get<EventsRepository>(),
-                      addressRepository: 
-                          GetIt.I.get<AddressRepository>(),
+                      eventsRepository: GetIt.I.get<EventsRepository>(),
+                      addressRepository: GetIt.I.get<AddressRepository>(),
                       transactionLocalRepository:
                           GetIt.I.get<TransactionLocalRepository>(),
                       pageSize: 10,
                     ),
-                    child: DashboardActivityFeedScreen(),
+                    child: const DashboardActivityFeedScreen(),
                   ),
                 ],
               ),

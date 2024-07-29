@@ -1547,7 +1547,7 @@ abstract class V2Api {
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
-  
+
   @GET("/addresses/events")
   Future<Response<List<Event>>> getEventsByAddresses(
     @Query("addresses") String addresses, [
@@ -1555,7 +1555,6 @@ abstract class V2Api {
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
-
 
   @Verbose()
   @GET("/addresses/events")
@@ -1565,9 +1564,6 @@ abstract class V2Api {
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
-
-
-
 
   // {
   //        "result": {

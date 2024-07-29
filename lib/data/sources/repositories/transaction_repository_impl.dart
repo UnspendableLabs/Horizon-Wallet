@@ -54,7 +54,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<(List<TransactionInfo>, int? nextCursor, int? resultCount )> getByAccount({
+  Future<(List<TransactionInfo>, int? nextCursor, int? resultCount)>
+      getByAccount({
     required String accountUuid,
     int? cursor,
     int? limit,
@@ -62,17 +63,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
 
-
     final addressesParam =
         addresses.map((address) => address.address).join(',');
 
-
     final response = await api.getTransactionsByAddressesVerbose(
-      addressesParam,
-      cursor,
-      limit,
-      unconfirmed
-    );
+        addressesParam, cursor, limit, unconfirmed);
 
     if (response.error != null) {
       throw Exception("Failed to get transactions by account: $accountUuid");
@@ -98,6 +93,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     int? nextCursor = response.nextCursor;
 
-    return (transactions, nextCursor, response.resultCount  );
+    return (transactions, nextCursor, response.resultCount);
   }
 }

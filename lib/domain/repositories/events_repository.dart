@@ -6,10 +6,10 @@ abstract class EventsRepository {
       int? limit,
       int? cursor,
       bool? unconfirmed = false});
-  Future<(List<VerboseEvent>, int? nextCursor, int? resultCount)> getByAddressesVerbose(
-      {required List<String> addresses,
-      int? limit,
-      int? cursor,
-      bool? unconfirmed = false});
-
+  Future<(List<VerboseEvent>, int? nextCursor, int? resultCount)>
+      getByAddressesVerbose(
+          {required List<String> addresses,
+          int? limit,
+          int? cursor,
+          bool? unconfirmed = false});
 }
