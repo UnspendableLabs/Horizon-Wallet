@@ -228,7 +228,7 @@ Map<String, dynamic> _$MultiAddressBalanceVerboseToJson(
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
     );
@@ -343,7 +343,7 @@ EnhancedSendEvent _$EnhancedSendEventFromJson(Map<String, dynamic> json) =>
     EnhancedSendEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       params:
@@ -363,7 +363,7 @@ Map<String, dynamic> _$EnhancedSendEventToJson(EnhancedSendEvent instance) =>
 CreditEvent _$CreditEventFromJson(Map<String, dynamic> json) => CreditEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       params: CreditParams.fromJson(json['params'] as Map<String, dynamic>),
@@ -382,7 +382,7 @@ Map<String, dynamic> _$CreditEventToJson(CreditEvent instance) =>
 DebitEvent _$DebitEventFromJson(Map<String, dynamic> json) => DebitEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       params: DebitParams.fromJson(json['params'] as Map<String, dynamic>),
@@ -402,7 +402,7 @@ NewTransactionEvent _$NewTransactionEventFromJson(Map<String, dynamic> json) =>
     NewTransactionEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       params:
@@ -564,7 +564,7 @@ Map<String, dynamic> _$AssetInfoToJson(AssetInfo instance) => <String, dynamic>{
 VerboseEvent _$VerboseEventFromJson(Map<String, dynamic> json) => VerboseEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
@@ -585,7 +585,7 @@ VerboseEnhancedSendEvent _$VerboseEnhancedSendEventFromJson(
     VerboseEnhancedSendEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
@@ -609,7 +609,7 @@ VerboseCreditEvent _$VerboseCreditEventFromJson(Map<String, dynamic> json) =>
     VerboseCreditEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
@@ -632,7 +632,7 @@ VerboseDebitEvent _$VerboseDebitEventFromJson(Map<String, dynamic> json) =>
     VerboseDebitEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
@@ -656,7 +656,7 @@ VerboseNewTransactionEvent _$VerboseNewTransactionEventFromJson(
     VerboseNewTransactionEvent(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      txHash: json['tx_hash'] as String,
+      txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
@@ -2041,7 +2041,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/addresses/transactions',
+              '/addresses/transactions?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -2132,7 +2132,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/addresses/events',
+              '/addresses/events?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )
