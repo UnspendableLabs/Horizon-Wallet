@@ -5,11 +5,15 @@ abstract class EventsRepository {
       {required List<String> addresses,
       int? limit,
       int? cursor,
-      bool? unconfirmed = false});
+      bool? unconfirmed = false,
+      List<String>? whitelist,
+      });
   Future<(List<VerboseEvent>, int? nextCursor, int? resultCount)>
       getByAddressesVerbose(
           {required List<String> addresses,
           int? limit,
           int? cursor,
-          bool? unconfirmed = false});
+          bool? unconfirmed = false,
+      List<String>? whitelist,
+          });
 }

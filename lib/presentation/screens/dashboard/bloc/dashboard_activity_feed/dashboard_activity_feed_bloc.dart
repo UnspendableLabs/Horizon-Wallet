@@ -9,6 +9,11 @@ import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
+final DEFAULT_WHITELIST = [
+  "CREDIT",
+  "DEBIT",
+];
+
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
   Timer? timer;
@@ -66,7 +71,10 @@ class DashboardActivityFeedBloc
 
         final (_, _, resultCount) =
             await eventsRepository.getByAddressesVerbose(
-                addresses: addresses, limit: 1, unconfirmed: true);
+                addresses: addresses,
+                limit: 1,
+                unconfirmed: true,
+                whitelist: DEFAULT_WHITELIST);
 
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: null,
@@ -86,7 +94,10 @@ class DashboardActivityFeedBloc
                   addresses: addresses,
                   limit: pageSize,
                   unconfirmed: true,
-                  cursor: nextCursor);
+                  cursor: nextCursor,
+                  whitelist: DEFAULT_WHITELIST);
+
+          print("remote events: $remoteEvents");
           // iterate all remote transactions
           for (final event in remoteEvents) {
             if (event.txHash != mostRecentRemoteHash) {
@@ -155,7 +166,8 @@ class DashboardActivityFeedBloc
               addresses: addresses,
               cursor: currentState.nextCursor,
               limit: pageSize,
-              unconfirmed: true);
+              unconfirmed: true,
+              whitelist: DEFAULT_WHITELIST);
 
       // appent new transactions to existing transactions
 
@@ -203,7 +215,10 @@ class DashboardActivityFeedBloc
       List<String> addresses = addresses_.map((a) => a.address).toList();
 
       final (confirmed, _, _) = await eventsRepository.getByAddressesVerbose(
-          addresses: addresses, limit: 1, unconfirmed: false);
+          addresses: addresses,
+          limit: 10,
+          unconfirmed: false,
+          whitelist: DEFAULT_WHITELIST);
 
       if (confirmed.isNotEmpty) {
         final event = confirmed[0];
@@ -222,7 +237,10 @@ class DashboardActivityFeedBloc
 
       final (remoteEvents, nextCursor, _) =
           await eventsRepository.getByAddressesVerbose(
-              addresses: addresses, limit: pageSize, unconfirmed: true);
+              addresses: addresses,
+              limit: pageSize,
+              unconfirmed: true,
+              whitelist: DEFAULT_WHITELIST);
 
       final remoteHashes =
           Set<String>.from(remoteEvents.map((event) => event.txHash));
