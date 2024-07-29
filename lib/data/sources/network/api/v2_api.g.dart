@@ -228,12 +228,451 @@ Map<String, dynamic> _$MultiAddressBalanceVerboseToJson(
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
-      params: json['params'],
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
     );
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'event_index': instance.eventIndex,
       'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+    };
+
+EnhancedSendParams _$EnhancedSendParamsFromJson(Map<String, dynamic> json) =>
+    EnhancedSendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      memo: json['memo'] as String?,
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$EnhancedSendParamsToJson(EnhancedSendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'memo': instance.memo,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+CreditParams _$CreditParamsFromJson(Map<String, dynamic> json) => CreditParams(
+      address: json['address'] as String,
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      callingFunction: json['calling_function'] as String,
+      event: json['event'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$CreditParamsToJson(CreditParams instance) =>
+    <String, dynamic>{
+      'address': instance.address,
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'calling_function': instance.callingFunction,
+      'event': instance.event,
+      'quantity': instance.quantity,
+      'tx_index': instance.txIndex,
+    };
+
+DebitParams _$DebitParamsFromJson(Map<String, dynamic> json) => DebitParams(
+      action: json['action'] as String,
+      address: json['address'] as String,
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      event: json['event'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$DebitParamsToJson(DebitParams instance) =>
+    <String, dynamic>{
+      'action': instance.action,
+      'address': instance.address,
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'event': instance.event,
+      'quantity': instance.quantity,
+      'tx_index': instance.txIndex,
+    };
+
+NewTransactionParams _$NewTransactionParamsFromJson(
+        Map<String, dynamic> json) =>
+    NewTransactionParams(
+      blockHash: json['block_hash'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      btcAmount: (json['btc_amount'] as num).toInt(),
+      data: json['data'] as String,
+      destination: json['destination'] as String,
+      fee: (json['fee'] as num).toInt(),
+      source: json['source'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$NewTransactionParamsToJson(
+        NewTransactionParams instance) =>
+    <String, dynamic>{
+      'block_hash': instance.blockHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'btc_amount': instance.btcAmount,
+      'data': instance.data,
+      'destination': instance.destination,
+      'fee': instance.fee,
+      'source': instance.source,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+EnhancedSendEvent _$EnhancedSendEventFromJson(Map<String, dynamic> json) =>
+    EnhancedSendEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      params:
+          EnhancedSendParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$EnhancedSendEventToJson(EnhancedSendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'params': instance.params,
+    };
+
+CreditEvent _$CreditEventFromJson(Map<String, dynamic> json) => CreditEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      params: CreditParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$CreditEventToJson(CreditEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'params': instance.params,
+    };
+
+DebitEvent _$DebitEventFromJson(Map<String, dynamic> json) => DebitEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      params: DebitParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DebitEventToJson(DebitEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'params': instance.params,
+    };
+
+NewTransactionEvent _$NewTransactionEventFromJson(Map<String, dynamic> json) =>
+    NewTransactionEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      params:
+          NewTransactionParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$NewTransactionEventToJson(
+        NewTransactionEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'params': instance.params,
+    };
+
+VerboseEnhancedSendParams _$VerboseEnhancedSendParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseEnhancedSendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      memo: json['memo'] as String?,
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseEnhancedSendParamsToJson(
+        VerboseEnhancedSendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'memo': instance.memo,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
+VerboseCreditParams _$VerboseCreditParamsFromJson(Map<String, dynamic> json) =>
+    VerboseCreditParams(
+      address: json['address'] as String,
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      callingFunction: json['calling_function'] as String,
+      event: json['event'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseCreditParamsToJson(
+        VerboseCreditParams instance) =>
+    <String, dynamic>{
+      'address': instance.address,
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'calling_function': instance.callingFunction,
+      'event': instance.event,
+      'quantity': instance.quantity,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
+VerboseDebitParams _$VerboseDebitParamsFromJson(Map<String, dynamic> json) =>
+    VerboseDebitParams(
+      action: json['action'] as String,
+      address: json['address'] as String,
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      event: json['event'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseDebitParamsToJson(VerboseDebitParams instance) =>
+    <String, dynamic>{
+      'action': instance.action,
+      'address': instance.address,
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'event': instance.event,
+      'quantity': instance.quantity,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
+VerboseNewTransactionParams _$VerboseNewTransactionParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseNewTransactionParams(
+      blockHash: json['block_hash'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      btcAmount: (json['btc_amount'] as num).toInt(),
+      data: json['data'] as String,
+      destination: json['destination'] as String,
+      fee: (json['fee'] as num).toInt(),
+      source: json['source'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      unpackedData: json['unpacked_data'] as Map<String, dynamic>,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseNewTransactionParamsToJson(
+        VerboseNewTransactionParams instance) =>
+    <String, dynamic>{
+      'block_hash': instance.blockHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'btc_amount': instance.btcAmount,
+      'data': instance.data,
+      'destination': instance.destination,
+      'fee': instance.fee,
+      'source': instance.source,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'unpacked_data': instance.unpackedData,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+    };
+
+AssetInfo _$AssetInfoFromJson(Map<String, dynamic> json) => AssetInfo(
+      divisible: json['divisible'] as bool,
+      assetLongname: json['asset_longname'] as String?,
+      description: json['description'] as String,
+      locked: json['locked'] as bool,
+      issuer: json['issuer'] as String?,
+    );
+
+Map<String, dynamic> _$AssetInfoToJson(AssetInfo instance) => <String, dynamic>{
+      'divisible': instance.divisible,
+      'asset_longname': instance.assetLongname,
+      'description': instance.description,
+      'locked': instance.locked,
+      'issuer': instance.issuer,
+    };
+
+VerboseEvent _$VerboseEventFromJson(Map<String, dynamic> json) => VerboseEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$VerboseEventToJson(VerboseEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'block_time': instance.blockTime,
+    };
+
+VerboseEnhancedSendEvent _$VerboseEnhancedSendEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseEnhancedSendEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      blockTime: (json['block_time'] as num).toInt(),
+      params: VerboseEnhancedSendParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseEnhancedSendEventToJson(
+        VerboseEnhancedSendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseCreditEvent _$VerboseCreditEventFromJson(Map<String, dynamic> json) =>
+    VerboseCreditEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      blockTime: (json['block_time'] as num).toInt(),
+      params:
+          VerboseCreditParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseCreditEventToJson(VerboseCreditEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseDebitEvent _$VerboseDebitEventFromJson(Map<String, dynamic> json) =>
+    VerboseDebitEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      blockTime: (json['block_time'] as num).toInt(),
+      params:
+          VerboseDebitParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDebitEventToJson(VerboseDebitEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseNewTransactionEvent _$VerboseNewTransactionEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseNewTransactionEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      blockTime: (json['block_time'] as num).toInt(),
+      params: VerboseNewTransactionParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseNewTransactionEventToJson(
+        VerboseNewTransactionEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'block_time': instance.blockTime,
       'params': instance.params,
     };
 
@@ -264,18 +703,6 @@ Map<String, dynamic> _$AssetToJson(Asset instance) => <String, dynamic>{
       'issuer': instance.issuer,
       'divisible': instance.divisible,
       'locked': instance.locked,
-    };
-
-AssetInfo _$AssetInfoFromJson(Map<String, dynamic> json) => AssetInfo(
-      assetLongname: json['asset_longname'] as String?,
-      description: json['description'] as String,
-      divisible: json['divisible'] as bool,
-    );
-
-Map<String, dynamic> _$AssetInfoToJson(AssetInfo instance) => <String, dynamic>{
-      'asset_longname': instance.assetLongname,
-      'description': instance.description,
-      'divisible': instance.divisible,
     };
 
 Credit _$CreditFromJson(Map<String, dynamic> json) => Credit(
@@ -1614,7 +2041,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/addresses/transactions?verbose=true',
+              '/addresses/transactions',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -1629,6 +2056,97 @@ class _V2Api implements V2Api {
           ? json
               .map<TransactionVerbose>(
                   (i) => TransactionVerbose.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<Event>>> getEventsByAddresses(
+    String addresses, [
+    int? cursor,
+    int? limit,
+    bool? showUnconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'cursor': cursor,
+      r'limit': limit,
+      r'show_unconfirmed': showUnconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Event>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/events',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<Event>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Event>((i) => Event.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
+    String addresses, [
+    int? cursor,
+    int? limit,
+    bool? showUnconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'cursor': cursor,
+      r'limit': limit,
+      r'show_unconfirmed': showUnconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<VerboseEvent>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/events',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<VerboseEvent>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<VerboseEvent>(
+                  (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );

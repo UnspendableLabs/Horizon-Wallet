@@ -1,5 +1,5 @@
 import "package:equatable/equatable.dart";
-import "package:horizon/domain/entities/display_transaction.dart";
+import "package:horizon/domain/entities/activity_feed_item.dart";
 
 abstract class DashboardActivityFeedState extends Equatable {
   const DashboardActivityFeedState();
@@ -18,7 +18,7 @@ class DashboardActivityFeedStateLoading extends DashboardActivityFeedState {}
 // of the possible states as classes that extend DashboardActivityFeedState
 
 class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
-  final List<DisplayTransaction> transactions;
+  final List<ActivityFeedItem> transactions;
   final int newTransactionCount;
   final int? nextCursor;
   final String? mostRecentRemoteHash;
@@ -42,13 +42,13 @@ class DashboardActivityFeedStateCompleteError
 }
 
 class DashboardActivityFeedStateReloadingOk extends DashboardActivityFeedState {
-  final List<DisplayTransaction> transactions;
+  final List<ActivityFeedItem> transactions;
   final int newTransactionCount;
 
   const DashboardActivityFeedStateReloadingOk(
       {required this.transactions, required this.newTransactionCount});
 
-  copyWith({List<DisplayTransaction>? transactions, int? newTransactionCount}) {
+  copyWith({List<ActivityFeedItem>? transactions, int? newTransactionCount}) {
     return DashboardActivityFeedStateReloadingOk(
         transactions: transactions ?? this.transactions,
         newTransactionCount: newTransactionCount ?? this.newTransactionCount);

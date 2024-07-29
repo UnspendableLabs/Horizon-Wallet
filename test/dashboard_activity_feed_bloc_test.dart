@@ -6,10 +6,11 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/repositories/activity_feed_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
-import 'package:horizon/domain/entities/display_transaction.dart';
+import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:mocktail/mocktail.dart';
 
 extension DateTimeExtension on DateTime {
@@ -410,12 +411,12 @@ void main() {
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                  DisplayTransaction(hash: "0002", info: mockedLocal[1]),
-                  DisplayTransaction(hash: "0003", info: mockedLocal[2]),
-                  DisplayTransaction(hash: "0004", info: mockedRemote[0]),
-                  DisplayTransaction(hash: "0005", info: mockedRemote[1]),
-                  DisplayTransaction(hash: "0006", info: mockedRemote[2]),
+                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                  ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
+                  ActivityFeedItem(hash: "0003", info: mockedLocal[2]),
+                  ActivityFeedItem(hash: "0004", info: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0005", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0006", info: mockedRemote[2]),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -477,9 +478,9 @@ void main() {
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                  DisplayTransaction(hash: "0002", info: mockedRemote[0]),
-                  DisplayTransaction(hash: "0003", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -541,8 +542,8 @@ void main() {
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
                   transactions: [
-                    DisplayTransaction(hash: "0005", info: mockedRemote[0]),
-                    DisplayTransaction(hash: "0004", info: mockedRemote[1]),
+                    ActivityFeedItem(hash: "0005", info: mockedRemote[0]),
+                    ActivityFeedItem(hash: "0004", info: mockedRemote[1]),
                   ],
                   newTransactionCount: 0,
                   nextCursor: 1,
@@ -616,9 +617,9 @@ void main() {
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
-                DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                DisplayTransaction(hash: "0002", info: mockedRemote[0]),
-                DisplayTransaction(hash: "0003", info: mockedRemote[1]),
+                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
+                ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
               ],
               newTransactionCount: 0,
               nextCursor: 4,
@@ -628,19 +629,19 @@ void main() {
         expect: () => [
               DashboardActivityFeedStateReloadingOk(
                 transactions: [
-                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                  DisplayTransaction(hash: "0002", info: mockedRemote[0]),
-                  DisplayTransaction(hash: "0003", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
                 ],
                 newTransactionCount: 0,
               ),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                  DisplayTransaction(hash: "0002", info: mockedRemote[0]),
-                  DisplayTransaction(hash: "0003", info: mockedRemote[1]),
-                  DisplayTransaction(hash: "0004", info: mockedRemote2[0]),
-                  DisplayTransaction(hash: "0005", info: mockedRemote2[1]),
+                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0004", info: mockedRemote2[0]),
+                  ActivityFeedItem(hash: "0005", info: mockedRemote2[1]),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -731,9 +732,9 @@ void main() {
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
-                DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                DisplayTransaction(hash: "0002", info: mockedRemote[2]),
-                DisplayTransaction(hash: "0003", info: mockedRemote[3]),
+                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(hash: "0002", info: mockedRemote[2]),
+                ActivityFeedItem(hash: "0003", info: mockedRemote[3]),
               ],
               newTransactionCount: 0,
               nextCursor: 4, // doesn't matter since we are prepending
@@ -743,17 +744,17 @@ void main() {
         expect: () => [
               DashboardActivityFeedStateReloadingOk(
                 transactions: [
-                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                  DisplayTransaction(hash: "0002", info: mockedRemote[0]),
-                  DisplayTransaction(hash: "0003", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
                 ],
                 newTransactionCount: 0,
               ),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  DisplayTransaction(hash: "0001", info: mockedLocal[0]),
-                  DisplayTransaction(hash: "0002", info: mockedRemote[0]),
-                  DisplayTransaction(hash: "0003", info: mockedRemote[1]),
+                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                  ActivityFeedItem(hash: "0002", info: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0003", info: mockedRemote[1]),
                 ],
                 newTransactionCount: 2,
                 nextCursor: 4,

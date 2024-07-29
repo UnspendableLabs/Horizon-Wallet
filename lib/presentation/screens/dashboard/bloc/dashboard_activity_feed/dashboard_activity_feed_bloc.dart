@@ -1,26 +1,32 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/data/sources/local/db.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'dart:async';
 
 import "dashboard_activity_feed_event.dart";
 import "dashboard_activity_feed_state.dart";
 import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/entities/display_transaction.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/domain/entities/activity_feed_item.dart';
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
   Timer? timer;
   String accountUuid;
   int pageSize;
-  TransactionRepository transactionRepository;
   TransactionLocalRepository transactionLocalRepository;
+  EventsRepository eventsRepository;
+  AddressRepository addressRepository;
 
   DashboardActivityFeedBloc(
       {required this.accountUuid,
-      required this.transactionRepository,
+      required this.eventsRepository,
       required this.pageSize,
-      required this.transactionLocalRepository})
+      required this.transactionLocalRepository,
+      required this.addressRepository})
       : super(DashboardActivityFeedStateInitial()) {
     on<StartPolling>(_onStartPolling);
     on<StopPolling>(_onStopPolling);
@@ -52,11 +58,18 @@ class DashboardActivityFeedBloc
 
       String? mostRecentRemoteHash = currentState.mostRecentRemoteHash;
 
+      final addresses_ =
+          await addressRepository.getAllByAccountUuid(accountUuid);
+
+      List<String> addresses = addresses_.map((a) => a.address).toList();
+
       // no transactions found on initial load
       if (mostRecentRemoteHash == null) {
         // get highest confirmed
-        final (_, _, resultCount) = await transactionRepository.getByAccount(
-            accountUuid: accountUuid, limit: 1, unconfirmed: true);
+
+        final (_, _, resultCount) =
+            await eventsRepository.getByAddressesVerbose(
+                addresses: addresses, limit: 1, unconfirmed: true);
 
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: null,
@@ -71,15 +84,15 @@ class DashboardActivityFeedBloc
         int? nextCursor;
 
         while (!found) {
-          final (remoteTransactions, nextCursor_, _) =
-              await transactionRepository.getByAccount(
-                  accountUuid: accountUuid,
+          final (remoteEvents, nextCursor_, _) =
+              await eventsRepository.getByAddressesVerbose(
+                  addresses: addresses,
                   limit: pageSize,
                   unconfirmed: true,
                   cursor: nextCursor);
           // iterate all remote transactions
-          for (final tx in remoteTransactions) {
-            if (tx.hash != mostRecentRemoteHash) {
+          for (final event in remoteEvents) {
+            if (event.txHash != mostRecentRemoteHash) {
               newTransactionCount += 1;
             } else {
               found = true;
@@ -120,14 +133,12 @@ class DashboardActivityFeedBloc
       return;
     }
 
-
     final currentState = state as DashboardActivityFeedStateCompleteOk;
 
     // we are at the end of the list
-    if ( currentState.nextCursor == null  ) {
+    if (currentState.nextCursor == null) {
       return;
     }
-
 
     emit(DashboardActivityFeedStateReloadingOk(
       transactions: currentState.transactions,
@@ -136,23 +147,29 @@ class DashboardActivityFeedBloc
 
     try {
       // we don't care about local transactions, just load remote if we have a cursor
-      final (remoteTransactions, nextCursor, _) =
-          await transactionRepository.getByAccount(
-              accountUuid: accountUuid,
+
+      final addresses_ =
+          await addressRepository.getAllByAccountUuid(accountUuid);
+
+      List<String> addresses = addresses_.map((a) => a.address).toList();
+
+      final (remoteEvents, nextCursor, _) =
+          await eventsRepository.getByAddresses(
+              addresses: addresses,
               cursor: currentState.nextCursor,
               limit: pageSize,
               unconfirmed: true);
 
       // appent new transactions to existing transactions
 
-      final remoteDisplayTransactions = remoteTransactions
-          .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
+      final remoteDisplayTransactions = remoteEvents
+          .map((tx) => ActivityFeedItem(hash: tx.txHash, event: tx))
           .toList();
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
           mostRecentRemoteHash:
-              remoteTransactions.isNotEmpty ? remoteTransactions[0].hash : null,
+              remoteEvents.isNotEmpty ? remoteEvents[0].txHash : null,
           newTransactionCount: currentState.newTransactionCount,
           transactions: [
             ...currentState.transactions,
@@ -183,16 +200,18 @@ class DashboardActivityFeedBloc
     try {
       DateTime? mostRecentBlocktime;
       // get most recent confirmed tx
+      final addresses_ =
+          await addressRepository.getAllByAccountUuid(accountUuid);
 
+      List<String> addresses = addresses_.map((a) => a.address).toList();
 
-      final (confirmed, _, _) = await transactionRepository.getByAccount(
-          accountUuid: accountUuid, limit: 1, unconfirmed: false);
+      final (confirmed, _, _) = await eventsRepository.getByAddresses(
+          addresses: addresses, limit: 1, unconfirmed: false);
 
       if (confirmed.isNotEmpty) {
-        final transaction = confirmed[0];
-        if (transaction.domain is TransactionInfoDomainConfirmed) {
-          int blocktime =
-              (transaction.domain as TransactionInfoDomainConfirmed).blockTime;
+        final event = confirmed[0];
+        if (event.state is EventStateConfirmed) {
+          int blocktime = (event.state as EventStateConfirmed).blockTime!;
 
           mostRecentBlocktime =
               DateTime.fromMillisecondsSinceEpoch(blocktime * 1000);
@@ -204,29 +223,27 @@ class DashboardActivityFeedBloc
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository.getAllByAccount(accountUuid);
 
-
-      final (remoteTransactions, nextCursor, _) = await transactionRepository
-          .getByAccount(accountUuid: accountUuid, limit: pageSize, unconfirmed: true);
+      final (remoteEvents, nextCursor, _) =
+          await eventsRepository.getByAddresses(
+              addresses: addresses, limit: pageSize, unconfirmed: true);
 
       final remoteHashes =
-          Set<String>.from(remoteTransactions.map((tx) => tx.hash));
+          Set<String>.from(remoteEvents.map((event) => event.txHash));
 
       final localDisplayTransactions = localTransactions
           .where((tx) => !remoteHashes.contains(tx.hash))
-          .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
+          .map((tx) => ActivityFeedItem(hash: tx.hash, info: tx))
           .toList();
 
-      final remoteDisplayTransactions = remoteTransactions
-          .map((tx) => DisplayTransaction(hash: tx.hash, info: tx))
+      final remoteDisplayTransactions = remoteEvents
+          .map((event) => ActivityFeedItem(hash: event.txHash, event: event))
           .toList();
-
-
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
           newTransactionCount: 0,
           mostRecentRemoteHash:
-              remoteTransactions.isNotEmpty ? remoteTransactions[0].hash : null,
+              remoteEvents.isNotEmpty ? remoteEvents[0].txHash : null,
           transactions: [
             ...localDisplayTransactions,
             ...remoteDisplayTransactions
