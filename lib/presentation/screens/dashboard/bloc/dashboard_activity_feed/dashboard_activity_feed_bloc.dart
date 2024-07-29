@@ -255,7 +255,7 @@ class DashboardActivityFeedBloc
       StartPolling event, Emitter<DashboardActivityFeedState> emit) {
     timer?.cancel();
     timer = Timer.periodic(event.interval, (_) {
-      add(const Load());
+      add(const LoadQuiet());
     });
     add(const Load());
   }
