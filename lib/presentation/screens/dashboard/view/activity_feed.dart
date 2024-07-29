@@ -7,8 +7,7 @@ import 'package:horizon/domain/entities/activity_feed_item.dart';
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;
-  const NewTransactionsBanner({Key? key, required this.count})
-      : super(key: key);
+  const NewTransactionsBanner({super.key, required this.count});
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -31,8 +30,7 @@ class NewTransactionsBanner extends StatelessWidget {
 
 class TransactionListItem extends StatelessWidget {
   final ActivityFeedItem transaction;
-  const TransactionListItem({Key? key, required this.transaction})
-      : super(key: key);
+  const TransactionListItem({super.key, required this.transaction});
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -47,7 +45,7 @@ class TransactionListItem extends StatelessWidget {
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
-  const DashboardActivityFeedScreen({Key? key}) : super(key: key);
+  const DashboardActivityFeedScreen({super.key});
   @override
   _DashboardActivityFeedScreenState createState() =>
       _DashboardActivityFeedScreenState();

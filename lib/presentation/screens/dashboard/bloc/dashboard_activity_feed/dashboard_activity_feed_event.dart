@@ -50,4 +50,3 @@ class LoadMore extends DashboardActivityFeedEvent {
 class LoadQuiet extends DashboardActivityFeedEvent {
   const LoadQuiet();
 }
-

@@ -1,3 +1,5 @@
+import "package:equatable/equatable.dart";
+
 class EventState {}
 
 class EventStateLocal extends EventState {
@@ -17,8 +19,6 @@ class EventStateConfirmed extends EventState {
   });
 }
 
-
-
 //
 // class Event {
 //   String hash;
@@ -28,7 +28,7 @@ class EventStateConfirmed extends EventState {
 //
 // }
 
-class Event {
+class Event extends Equatable {
   final EventState state;
 
   final int eventIndex;
@@ -45,12 +45,16 @@ class Event {
     this.blockIndex,
     required this.confirmed,
   });
+
+  @override
+  List<Object?> get props =>
+      [state, eventIndex, event, txHash, blockIndex, confirmed];
 }
 
 class VerboseEvent extends Event {
   final int blockTime;
 
-  VerboseEvent({
+  const VerboseEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -59,6 +63,17 @@ class VerboseEvent extends Event {
     required super.confirmed,
     required this.blockTime,
   });
+
+  @override
+  List<Object?> get props => [
+        super.state,
+        super.eventIndex,
+        super.event,
+        super.txHash,
+        super.blockIndex,
+        super.confirmed,
+        blockTime
+      ];
 }
 
 class EnhancedSendParams {
@@ -88,7 +103,7 @@ class EnhancedSendParams {
 class EnhancedSendEvent extends Event {
   final EnhancedSendParams params;
 
-  EnhancedSendEvent({
+  const EnhancedSendEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -123,7 +138,7 @@ class VerboseEnhancedSendParams extends EnhancedSendParams {
 class VerboseEnhancedSendEvent extends VerboseEvent {
   final VerboseEnhancedSendParams params;
 
-  VerboseEnhancedSendEvent({
+  const VerboseEnhancedSendEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -177,7 +192,7 @@ class VerboseCreditParams extends CreditParams {
 class CreditEvent extends Event {
   final CreditParams params;
 
-  CreditEvent({
+  const CreditEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -191,7 +206,7 @@ class CreditEvent extends Event {
 class VerboseCreditEvent extends VerboseEvent {
   final VerboseCreditParams params;
 
-  VerboseCreditEvent({
+  const VerboseCreditEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -245,7 +260,7 @@ class VerboseDebitParams extends DebitParams {
 class DebitEvent extends Event {
   final DebitParams params;
 
-  DebitEvent({
+  const DebitEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -259,7 +274,7 @@ class DebitEvent extends Event {
 class VerboseDebitEvent extends VerboseEvent {
   final VerboseDebitParams params;
 
-  VerboseDebitEvent({
+  const VerboseDebitEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -300,7 +315,7 @@ class NewTransactionParams {
 class NewTransactionEvent extends Event {
   final NewTransactionParams params;
 
-  NewTransactionEvent({
+  const NewTransactionEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
@@ -334,7 +349,7 @@ class VerboseNewTransactionParams extends NewTransactionParams {
 class VerboseNewTransactionEvent extends VerboseEvent {
   final VerboseNewTransactionParams params;
 
-  VerboseNewTransactionEvent({
+  const VerboseNewTransactionEvent({
     required super.state,
     required super.eventIndex,
     required super.event,

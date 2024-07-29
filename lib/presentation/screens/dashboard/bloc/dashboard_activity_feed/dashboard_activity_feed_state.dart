@@ -30,7 +30,12 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
       required this.mostRecentRemoteHash});
 
   @override
-  List<Object?> get props => [transactions, newTransactionCount, nextCursor, mostRecentRemoteHash ];
+  List<Object?> get props => [
+        List<Object?>.from(transactions),
+        newTransactionCount,
+        nextCursor,
+        mostRecentRemoteHash
+      ];
 }
 
 class DashboardActivityFeedStateCompleteError
@@ -53,8 +58,11 @@ class DashboardActivityFeedStateReloadingOk extends DashboardActivityFeedState {
         transactions: transactions ?? this.transactions,
         newTransactionCount: newTransactionCount ?? this.newTransactionCount);
   }
-}
 
+  @override
+  List<Object> get props =>
+      [List<Object>.from(transactions), newTransactionCount];
+}
 class DashboardActivityFeedStateReloadingError
     extends DashboardActivityFeedState {
   final String error;

@@ -143,7 +143,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                       child: DashboardActivityFeedScreen(),
                     )
                   ],
-                ),
+               ),
               ),
             ),
           ),
