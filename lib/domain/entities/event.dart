@@ -2,11 +2,11 @@ import "package:equatable/equatable.dart";
 
 sealed class EventState {}
 
-class EventStateLocal extends EventState {
-  final String raw;
-  final DateTime submittedAt;
-  EventStateLocal({required this.raw, required this.submittedAt});
-}
+// class EventStateLocal extends EventState {
+//   final String raw;
+//   final DateTime submittedAt;
+//   EventStateLocal({required this.raw, required this.submittedAt});
+// }
 
 class EventStateMempool extends EventState {}
 

@@ -335,7 +335,6 @@ class AssetIssuanceParamsMapper {
 class VerboseAssetIssuanceEventMapper {
   static VerboseAssetIssuanceEvent toDomain(
       api.VerboseAssetIssuanceEvent apiEvent) {
-
     final x = VerboseAssetIssuanceEvent(
       state: StateMapper.getVerbose(apiEvent),
       event: "ASSET_ISSUANCE",
@@ -483,6 +482,20 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   @override
+  Future<List<Event>> getAllByAddresses({
+    required List<String> addresses,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  }) async {
+    final futures = addresses.map(
+        (address) => _getAllEventsForAddress(address, unconfirmed, whitelist));
+
+    final results = await Future.wait(futures);
+
+    return results.expand((events) => events).toList();
+  }
+
+  @override
   Future<(List<VerboseEvent>, int? nextCursor, int? resultCount)>
       getByAddressesVerbose({
     required List<String> addresses,
@@ -507,5 +520,71 @@ class EventsRepositoryImpl implements EventsRepository {
     }).toList();
 
     return (events, nextCursor, response.resultCount);
+  }
+
+  @override
+  Future<List<VerboseEvent>> getAllByAddressesVerbose({
+    required List<String> addresses,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  }) async {
+    final futures = addresses.map((address) =>
+        _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
+
+    final results = await Future.wait(futures);
+
+    return results.expand((events) => events).toList();
+  }
+
+  Future<List<Event>> _getAllEventsForAddress(
+      String address, bool? unconfirmed, List<String>? whitelist) async {
+    final allEvents = <Event>[];
+    int? cursor;
+    bool hasMore = true;
+
+    while (hasMore) {
+      final (events, nextCursor, _) = await getByAddresses(
+        addresses: [address],
+        cursor: cursor,
+        unconfirmed: unconfirmed,
+        whitelist: whitelist,
+      );
+
+      allEvents.addAll(events);
+
+      if (nextCursor == null) {
+        hasMore = false;
+      } else {
+        cursor = nextCursor;
+      }
+    }
+
+    return allEvents;
+  }
+
+  Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
+      String address, bool? unconfirmed, List<String>? whitelist) async {
+    final allEvents = <VerboseEvent>[];
+    int? cursor;
+    bool hasMore = true;
+
+    while (hasMore) {
+      final (events, nextCursor, _) = await getByAddressesVerbose(
+        addresses: [address],
+        cursor: cursor,
+        unconfirmed: unconfirmed,
+        whitelist: whitelist,
+      );
+
+      allEvents.addAll(events);
+
+      if (nextCursor == null) {
+        hasMore = false;
+      } else {
+        cursor = nextCursor;
+      }
+    }
+
+    return allEvents;
   }
 }
