@@ -123,6 +123,71 @@ Map<String, dynamic> _$BalanceVerboseToJson(BalanceVerbose instance) =>
       'asset_info': instance.assetInfo,
     };
 
+MultiBalance _$MultiBalanceFromJson(Map<String, dynamic> json) => MultiBalance(
+      address: json['address'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$MultiBalanceToJson(MultiBalance instance) =>
+    <String, dynamic>{
+      'address': instance.address,
+      'quantity': instance.quantity,
+    };
+
+MultiBalanceVerbose _$MultiBalanceVerboseFromJson(Map<String, dynamic> json) =>
+    MultiBalanceVerbose(
+      address: json['address'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$MultiBalanceVerboseToJson(
+        MultiBalanceVerbose instance) =>
+    <String, dynamic>{
+      'address': instance.address,
+      'quantity': instance.quantity,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
+MultiAddressBalance _$MultiAddressBalanceFromJson(Map<String, dynamic> json) =>
+    MultiAddressBalance(
+      asset: json['asset'] as String,
+      total: (json['total'] as num).toInt(),
+      addresses: (json['addresses'] as List<dynamic>)
+          .map((e) => MultiBalance.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$MultiAddressBalanceToJson(
+        MultiAddressBalance instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'total': instance.total,
+      'addresses': instance.addresses,
+    };
+
+MultiAddressBalanceVerbose _$MultiAddressBalanceVerboseFromJson(
+        Map<String, dynamic> json) =>
+    MultiAddressBalanceVerbose(
+      asset: json['asset'] as String,
+      total: (json['total'] as num).toInt(),
+      addresses: (json['addresses'] as List<dynamic>)
+          .map((e) => MultiBalanceVerbose.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      totalNormalized: json['total_normalized'] as String,
+    );
+
+Map<String, dynamic> _$MultiAddressBalanceVerboseToJson(
+        MultiAddressBalanceVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'total': instance.total,
+      'addresses': instance.addresses,
+      'asset_info': instance.assetInfo,
+      'total_normalized': instance.totalNormalized,
+    };
+
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
       eventIndex: (json['event_index'] as num).toInt(),
       event: json['event'] as String,
@@ -552,6 +617,7 @@ UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       confirmations: (json['confirmations'] as num).toInt(),
       amount: (json['amount'] as num).toDouble(),
       txid: json['txid'] as String,
+      address: json['address'] as String?,
     );
 
 Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
@@ -561,6 +627,7 @@ Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
       'confirmations': instance.confirmations,
       'amount': instance.amount,
       'txid': instance.txid,
+      'address': instance.address,
     };
 
 // **************************************************************************
@@ -692,6 +759,96 @@ class _V2Api implements V2Api {
           ? json
               .map<BalanceVerbose>(
                   (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<MultiAddressBalance>>> getBalancesByAddresses(
+    String addresses, [
+    int? cursor,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'cursor': cursor,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<MultiAddressBalance>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/balances',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<MultiAddressBalance>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<MultiAddressBalance>((i) =>
+                  MultiAddressBalance.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<MultiAddressBalanceVerbose>>>
+      getBalancesByAddressesVerbose(
+    String addresses, [
+    int? cursor,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'cursor': cursor,
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<MultiAddressBalanceVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/balances?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<MultiAddressBalanceVerbose>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<MultiAddressBalanceVerbose>((i) =>
+                  MultiAddressBalanceVerbose.fromJson(
+                      i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );
@@ -1422,6 +1579,53 @@ class _V2Api implements V2Api {
             .compose(
               _dio.options,
               '/bitcoin/addresses/${address}/utxos',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<UTXO>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<UTXO>>> getUnspentUTXOsByAddresses(
+    String addresses, [
+    bool? unconfirmed,
+    bool? verbose,
+    int? limit,
+    int? cursor,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'unconfirmed': unconfirmed,
+      r'verbose': verbose,
+      r'limit': limit,
+      r'cursor': cursor,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<UTXO>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/addresses/utxos',
               queryParameters: queryParameters,
               data: _data,
             )

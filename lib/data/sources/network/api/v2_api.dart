@@ -99,6 +99,7 @@ class Balance {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class BalanceVerbose extends Balance {
+  @override
   final String quantityNormalized;
   final AssetInfo assetInfo;
 
@@ -111,6 +112,58 @@ class BalanceVerbose extends Balance {
 
   factory BalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$BalanceVerboseFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MultiBalance {
+  final String address;
+  final int quantity;
+  MultiBalance({required this.address, required this.quantity});
+
+  factory MultiBalance.fromJson(Map<String, dynamic> json) =>
+      _$MultiBalanceFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MultiBalanceVerbose {
+  final String address;
+  final int quantity;
+  final String quantityNormalized;
+  MultiBalanceVerbose(
+      {required this.address,
+      required this.quantity,
+      required this.quantityNormalized});
+
+  factory MultiBalanceVerbose.fromJson(Map<String, dynamic> json) =>
+      _$MultiBalanceVerboseFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MultiAddressBalance {
+  final String asset;
+  final int total;
+  final List<MultiBalance> addresses;
+  MultiAddressBalance(
+      {required this.asset, required this.total, required this.addresses});
+  factory MultiAddressBalance.fromJson(Map<String, dynamic> json) =>
+      _$MultiAddressBalanceFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MultiAddressBalanceVerbose {
+  final String asset;
+  final int total;
+  final List<MultiBalanceVerbose> addresses;
+  final AssetInfo assetInfo;
+  final String totalNormalized;
+  MultiAddressBalanceVerbose(
+      {required this.asset,
+      required this.total,
+      required this.addresses,
+      required this.assetInfo,
+      required this.totalNormalized});
+  factory MultiAddressBalanceVerbose.fromJson(Map<String, dynamic> json) =>
+      _$MultiAddressBalanceVerboseFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -783,6 +836,7 @@ class UTXO {
   final int confirmations;
   final double amount;
   final String txid;
+  final String? address;
 
   const UTXO({
     required this.vout,
@@ -791,6 +845,7 @@ class UTXO {
     required this.confirmations,
     required this.amount,
     required this.txid,
+    this.address,
   });
 
   factory UTXO.fromJson(Map<String, dynamic> json) => _$UTXOFromJson(json);
@@ -818,6 +873,21 @@ abstract class V2Api {
   @GET("/addresses/{address}/balances?verbose=true")
   Future<Response<List<BalanceVerbose>>> getBalancesByAddressVerbose(
     @Path("address") String address, [
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/balances")
+  Future<Response<List<MultiAddressBalance>>> getBalancesByAddresses(
+    @Query("addresses") String addresses, [
+    @Query("cursor") int? cursor,
+    @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/balances?verbose=true")
+  Future<Response<List<MultiAddressBalanceVerbose>>>
+      getBalancesByAddressesVerbose(
+    @Query("addresses") String addresses, [
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
   ]);
@@ -1084,6 +1154,15 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
     @Query("unspent_tx_hash") String? unspentTxHash,
     @Query("verbose") bool? verbose,
+  ]);
+
+  @GET("/bitcoin/addresses/utxos")
+  Future<Response<List<UTXO>>> getUnspentUTXOsByAddresses(
+    @Query("addresses") String addresses, [
+    @Query("unconfirmed") bool? unconfirmed,
+    @Query("verbose") bool? verbose,
+    @Query("limit") int? limit,
+    @Query("cursor") int? cursor,
   ]);
 
   //     PubKeyHash To Pubkey

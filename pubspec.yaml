@@ -65,6 +65,7 @@ dependencies:
   crypto: ^3.0.3
   qr_flutter: ^4.1.0
   decimal: ^2.3.3
+  collection: ^1.18.0
 
 
 dev_dependencies:

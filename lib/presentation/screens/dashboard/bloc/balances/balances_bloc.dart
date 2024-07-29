@@ -109,7 +109,9 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
           aggregateAndSortBalancesByAsset(balances);
 
       emit(BalancesState.complete(Result.ok(balances, aggregated)));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print(e.toString());
+      print(stackTrace.toString());
       emit(BalancesState.complete(Result.error(e.toString())));
     }
   }
