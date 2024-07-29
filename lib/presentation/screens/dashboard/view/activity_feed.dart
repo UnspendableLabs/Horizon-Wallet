@@ -122,7 +122,10 @@ class _DashboardActivityFeedScreenState
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+    return BlocConsumer<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+      listener: (context, state) {
+        print('DashboardActivityFeedBloc state changed: $state');
+      },
       builder: (context, state) {
         if (state is DashboardActivityFeedStateInitial ||
             state is DashboardActivityFeedStateLoading) {

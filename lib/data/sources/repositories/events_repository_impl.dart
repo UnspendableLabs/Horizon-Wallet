@@ -343,6 +343,7 @@ class EventsRepositoryImpl implements EventsRepository {
     int? cursor,
     int? limit,
     bool? unconfirmed = false,
+    List<String>? whitelist,
   }) async {
     final addressesParam = addresses.join(',');
 
@@ -356,7 +357,7 @@ class EventsRepositoryImpl implements EventsRepository {
     int? nextCursor = response.nextCursor;
 
     List<Event> events = response.result!
-        .where((event) => event.event == 'ENHANCED_SEND')
+        .where((event) => whitelist == null || whitelist.contains(event.event))
         .map((event) {
           return EventMapper.toDomain(event);
         })
@@ -372,6 +373,7 @@ class EventsRepositoryImpl implements EventsRepository {
     int? cursor,
     int? limit,
     bool? unconfirmed = false,
+    List<String>? whitelist,
   }) async {
     final addressesParam = addresses.join(',');
 
@@ -382,7 +384,7 @@ class EventsRepositoryImpl implements EventsRepository {
       throw Exception("Error getting events by addresses: ${response.error}");
     } int? nextCursor = response.nextCursor;
     List<VerboseEvent> events = response.result!
-        .where((event) => event.event == 'ENHANCED_SEND')
+        .where((event) => whitelist == null || whitelist.contains(event.event))
         .map((event) {
           return VerboseEventMapper.toDomain(event);
         })
