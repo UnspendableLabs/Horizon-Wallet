@@ -1251,10 +1251,11 @@ class Unpack {
 class Info {
   final String source;
   final String? destination;
-  final int btcAmount;
-  final int fee;
+  final int? btcAmount;
+  final int? fee;
   final String data;
-  final Unpack unpackedData;
+  final Unpack? unpackedData;
+  final Map<String, dynamic>? decodedTx;
 
   const Info({
     required this.source,
@@ -1263,6 +1264,7 @@ class Info {
     required this.fee,
     required this.data,
     required this.unpackedData,
+    required this.decodedTx
   });
 
   factory Info.fromJson(Map<String, dynamic> json) => _$InfoFromJson(json);

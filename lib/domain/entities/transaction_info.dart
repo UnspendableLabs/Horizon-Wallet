@@ -41,6 +41,28 @@ class TransactionInfo extends Equatable {
       required this.unpackedData,
       required this.domain});
 
+  TransactionInfo copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    TransactionUnpacked? unpackedData,
+  }) {
+    return TransactionInfo(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      unpackedData: unpackedData ?? this.unpackedData,
+    );
+  }
+
   @override
   List<Object?> get props =>
       [hash, source, destination, btcAmount, fee, data, unpackedData, domain];
