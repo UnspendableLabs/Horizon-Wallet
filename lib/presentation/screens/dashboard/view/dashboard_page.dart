@@ -571,33 +571,36 @@ class _BalancesState extends State<Balances> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-              child: Container(child: _balanceList(result, widget.isDarkTheme)),
-            ),
+              child: Container(child: _balanceList(result, widget.isDarkTheme))),
             if (_isExpanded)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: FractionallySizedBox(
-                    widthFactor: 0.5,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
+              Builder(
+                builder: (context) {
+                  return Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FractionallySizedBox(
+                        widthFactor: 0.5,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isExpanded = false;
+                            });
+                          },
+                          child: const Text("Collapse"),
                         ),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isExpanded = false;
-                        });
-                      },
-                      child: const Text("Collapse"),
                     ),
-                  ),
-                ),
+                  );
+                }
               ),
           ],
         ),
