@@ -9,11 +9,7 @@ import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
-final DEFAULT_WHITELIST = [
-  "CREDIT",
-  "DEBIT",
-  "ASSET_ISSUANCE"
-];
+final DEFAULT_WHITELIST = ["CREDIT", "DEBIT", "ASSET_ISSUANCE"];
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
@@ -177,7 +173,7 @@ class DashboardActivityFeedBloc
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
-          mostRecentRemoteHash: currentState.mostRecentRemoteHash, 
+          mostRecentRemoteHash: currentState.mostRecentRemoteHash,
           newTransactionCount: currentState.newTransactionCount,
           transactions: [
             ...currentState.transactions,
@@ -233,8 +229,6 @@ class DashboardActivityFeedBloc
           ? await transactionLocalRepository.getAllByAccountAfterDate(
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository.getAllByAccount(accountUuid);
-
-
 
       final (remoteEvents, nextCursor, _) =
           await eventsRepository.getByAddressesVerbose(

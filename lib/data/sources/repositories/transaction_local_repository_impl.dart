@@ -80,7 +80,6 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
     final transactions = await transactionDao.getAllBySourcesAfterDate(
         addresses.map((e) => e.address).toList(), date);
 
-
     return transactions.map((tx) {
       return TransactionInfo(
         domain: TransactionInfoDomainLocal(
