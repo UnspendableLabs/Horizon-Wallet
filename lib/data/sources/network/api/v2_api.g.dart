@@ -420,6 +420,151 @@ Map<String, dynamic> _$NewTransactionEventToJson(
       'params': instance.params,
     };
 
+AssetIssuanceParams _$AssetIssuanceParamsFromJson(Map<String, dynamic> json) =>
+    AssetIssuanceParams(
+      asset: json['asset'] as String,
+      assetLongname: json['asset_longname'] as String?,
+      blockIndex: (json['block_index'] as num).toInt(),
+      callDate: (json['call_date'] as num).toInt(),
+      callPrice: (json['call_price'] as num).toInt(),
+      callable: json['callable'] as bool,
+      description: json['description'] as String,
+      divisible: json['divisible'] as bool,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      issuer: json['issuer'] as String,
+      locked: json['locked'] as bool,
+      quantity: (json['quantity'] as num).toInt(),
+      reset: json['reset'] as bool,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      transfer: json['transfer'] as bool,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$AssetIssuanceParamsToJson(
+        AssetIssuanceParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'asset_longname': instance.assetLongname,
+      'block_index': instance.blockIndex,
+      'call_date': instance.callDate,
+      'call_price': instance.callPrice,
+      'callable': instance.callable,
+      'description': instance.description,
+      'divisible': instance.divisible,
+      'fee_paid': instance.feePaid,
+      'issuer': instance.issuer,
+      'locked': instance.locked,
+      'quantity': instance.quantity,
+      'reset': instance.reset,
+      'source': instance.source,
+      'status': instance.status,
+      'transfer': instance.transfer,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetIssuanceParams(
+      asset: json['asset'] as String,
+      assetLongname: json['asset_longname'] as String?,
+      blockIndex: (json['block_index'] as num).toInt(),
+      callDate: (json['call_date'] as num).toInt(),
+      callPrice: (json['call_price'] as num).toInt(),
+      callable: json['callable'] as bool,
+      description: json['description'] as String,
+      divisible: json['divisible'] as bool,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      issuer: json['issuer'] as String,
+      locked: json['locked'] as bool,
+      quantity: (json['quantity'] as num).toInt(),
+      reset: json['reset'] as bool,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      transfer: json['transfer'] as bool,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseAssetIssuanceParamsToJson(
+        VerboseAssetIssuanceParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'asset_longname': instance.assetLongname,
+      'block_index': instance.blockIndex,
+      'call_date': instance.callDate,
+      'call_price': instance.callPrice,
+      'callable': instance.callable,
+      'description': instance.description,
+      'divisible': instance.divisible,
+      'fee_paid': instance.feePaid,
+      'issuer': instance.issuer,
+      'locked': instance.locked,
+      'quantity': instance.quantity,
+      'reset': instance.reset,
+      'source': instance.source,
+      'status': instance.status,
+      'transfer': instance.transfer,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
+AssetIssuanceEvent _$AssetIssuanceEventFromJson(Map<String, dynamic> json) =>
+    AssetIssuanceEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool,
+      params:
+          AssetIssuanceParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetIssuanceEventToJson(AssetIssuanceEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'params': instance.params,
+    };
+
+VerboseAssetIssuanceEvent _$VerboseAssetIssuanceEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetIssuanceEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      confirmed: json['confirmed'] as bool,
+      params: VerboseAssetIssuanceParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseAssetIssuanceEventToJson(
+        VerboseAssetIssuanceEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'confirmed': instance.confirmed,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
 VerboseEnhancedSendParams _$VerboseEnhancedSendParamsFromJson(
         Map<String, dynamic> json) =>
     VerboseEnhancedSendParams(

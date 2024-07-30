@@ -81,12 +81,8 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
     final transactions = await transactionDao.getAllBySourcesAfterDate(
         addresses.map((e) => e.address).toList(), date);
 
-    print("getAllByAccountAfterDate $transactions");
-    print("address $addresses");
-    print("date $date");
 
     return transactions.map((tx) {
-      print("tx $tx");
       return TransactionInfo(
         domain: TransactionInfoDomainLocal(
             raw: tx.raw, submittedAt: tx.submittedAt),

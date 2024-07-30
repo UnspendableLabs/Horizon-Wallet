@@ -38,15 +38,42 @@ class ActivityFeedListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(item.hash),
+      title: _buildTitle(),
       subtitle: _buildSubtitle(),
-      trailing: _buildTrailingIcon(),
+      leading: _buildLeadingIcon(),
+      trailing: _buildTrailing(),
       onTap: () {
         // Handle item tap
         // You might want to navigate to a detail page here
       },
     );
   }
+
+  Widget _buildTitle() {
+    if (item.event != null) {
+      return _buildEventTitle(item.event!);
+    } else if (item.info != null) {
+      return _buildTransactionInfoTitle(item.info!);
+    } else {
+      return const Text('No details available');
+    }
+  }
+
+  Widget _buildEventTitle(Event event) {
+    return switch (event) {
+      VerboseDebitEvent(params: var params) => Text("Send ${params.quantityNormalized} ${params.asset}"),
+      VerboseCreditEvent(params: var params) =>  Text("Receive ${params.quantityNormalized} ${params.asset}"),
+      VerboseAssetIssuanceEvent(params: var params) => Text("Issued ${params.quantityNormalized} ${params.asset}"),
+      _ => Text('Invariant: title unsupported event type: ${event.runtimeType}'),
+    };
+  }
+
+  Widget _buildTransactionInfoTitle(TransactionInfo info) {
+    // Customize this based on your TransactionInfo structure
+    return Text(info.hash);
+    // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
+  }
+
 
   Widget _buildSubtitle() {
     if (item.event != null) {
@@ -59,33 +86,60 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildEventSubtitle(Event event) {
-    // Customize this based on your Event structure
-    return Text('Event: ${event.event} - State: ${event.state}');
+    return switch (event) {
+      VerboseDebitEvent(txHash: var hash ) => Text(hash),
+      VerboseCreditEvent(txHash: var hash) => Text(hash),
+      VerboseAssetIssuanceEvent(txHash: var hash) => Text(hash),
+      _ => Text('Invariant: title unsupported event type: ${event.runtimeType}'),
+    };
+
+    // // Customize this based on your Event structure
+    // return Text("${event.event} ${event.txHash}");
+    // // return Text('Event: ${event.event} - State: ${event.state}');
   }
 
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
     // Customize this based on your TransactionInfo structure
-    return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
+    return Text(info.hash);
+    // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
   }
 
-  Widget _buildTrailingIcon() {
+  Widget _buildTrailing() {
     if (item.event != null) {
-      return _getEventStateIcon(item.event!.state);
+      return _getEventTrailing(item.event!.state);
     } else if (item.info != null) {
-      return _getTransactionStateIcon(item.info!.domain);
+      return _getTransactionTrailing(item.info!.domain);
     } else {
       return const Icon(Icons.error);
     }
   }
 
-  Icon _getEventStateIcon(EventState state) => switch (state) {
+  Widget _buildLeadingIcon() {
+    if (item.event != null) {
+      return _getEventLeadingIcon(item.event!);
+    } else if (item.info != null) {
+      return const Icon(Icons.info);
+    } else {
+      throw Exception('Invariant: Item must have either event or info');
+    }
+  }
+
+  Icon _getEventLeadingIcon(Event event) {
+    return switch (event.event) {
+      "CREDIT" => const Icon(Icons.arrow_forward, color: Colors.green),
+      "DEBIT" => const Icon(Icons.arrow_back, color: Colors.red),
+      _ => const Icon(Icons.error),
+    };
+  }
+
+  Icon _getEventTrailing(EventState state) => switch (state) {
         EventStateLocal() => const Icon(Icons.schedule, color: Colors.orange),
         EventStateMempool() => const Icon(Icons.pending, color: Colors.blue),
         EventStateConfirmed() =>
           const Icon(Icons.check_circle, color: Colors.green),
       };
 
-  Icon _getTransactionStateIcon(TransactionInfoDomain domain) {
+  Icon _getTransactionTrailing(TransactionInfoDomain domain) {
     return switch (domain) {
       TransactionInfoDomainLocal() =>
         const Icon(Icons.schedule, color: Colors.orange),
@@ -124,7 +178,7 @@ class _DashboardActivityFeedScreenState
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardActivityFeedBloc, DashboardActivityFeedState>(
       listener: (context, state) {
-        print('DashboardActivityFeedBloc state changed: $state');
+        // print('DashboardActivityFeedBloc state changed: $state');
       },
       builder: (context, state) {
         if (state is DashboardActivityFeedStateInitial ||

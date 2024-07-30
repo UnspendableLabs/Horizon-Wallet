@@ -360,3 +360,98 @@ class VerboseNewTransactionEvent extends VerboseEvent {
     required this.params,
   });
 }
+
+class AssetIssuanceParams {
+  final String asset;
+  final String? assetLongname;
+  final int? blockIndex;
+  final int callDate;
+  final int callPrice;
+  final bool callable;
+  final String description;
+  final bool divisible;
+  final int feePaid;
+  final String issuer;
+  final bool locked;
+  final int quantity;
+  final bool reset;
+  final String source;
+  final String status;
+  final bool transfer;
+  final String txHash;
+  final int txIndex;
+
+  AssetIssuanceParams({
+    required this.asset,
+    this.assetLongname,
+    this.blockIndex,
+    required this.callDate,
+    required this.callPrice,
+    required this.callable,
+    required this.description,
+    required this.divisible,
+    required this.feePaid,
+    required this.issuer,
+    required this.locked,
+    required this.quantity,
+    required this.reset,
+    required this.source,
+    required this.status,
+    required this.transfer,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class AssetIssuanceEvent extends Event {
+  final AssetIssuanceParams params;
+
+  const AssetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required this.params,
+  });
+}
+
+class VerboseAssetIssuanceParams extends AssetIssuanceParams {
+  final int blockTime;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+  VerboseAssetIssuanceParams({
+    required super.asset,
+    required super.assetLongname,
+    required super.callDate,
+    required super.callPrice,
+    required super.callable,
+    required super.description,
+    required super.divisible,
+    required super.feePaid,
+    required super.issuer,
+    required super.locked,
+    required super.quantity,
+    required super.reset,
+    required super.source,
+    required super.status,
+    required super.transfer,
+    required super.txHash,
+    required super.txIndex,
+    required this.blockTime,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+}
+
+class VerboseAssetIssuanceEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+  const VerboseAssetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed, required super.blockTime, required this.params, });
+}

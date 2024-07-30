@@ -12,6 +12,7 @@ import 'package:horizon/domain/entities/activity_feed_item.dart';
 final DEFAULT_WHITELIST = [
   "CREDIT",
   "DEBIT",
+  "ASSET_ISSUANCE"
 ];
 
 class DashboardActivityFeedBloc
@@ -97,7 +98,6 @@ class DashboardActivityFeedBloc
                   cursor: nextCursor,
                   whitelist: DEFAULT_WHITELIST);
 
-          print("remote events: $remoteEvents");
           // iterate all remote transactions
           for (final event in remoteEvents) {
             if (event.txHash != mostRecentRemoteHash) {
@@ -234,9 +234,6 @@ class DashboardActivityFeedBloc
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository.getAllByAccount(accountUuid);
 
-
-      print("localTransactions $localTransactions");
-      print("localTransactions $mostRecentBlocktime");
 
 
       final (remoteEvents, nextCursor, _) =
