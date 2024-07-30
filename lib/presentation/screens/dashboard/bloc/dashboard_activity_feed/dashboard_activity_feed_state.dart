@@ -63,6 +63,7 @@ class DashboardActivityFeedStateReloadingOk extends DashboardActivityFeedState {
   List<Object> get props =>
       [List<Object>.from(transactions), newTransactionCount];
 }
+
 class DashboardActivityFeedStateReloadingError
     extends DashboardActivityFeedState {
   final String error;

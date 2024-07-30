@@ -61,10 +61,14 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildEventTitle(Event event) {
     return switch (event) {
-      VerboseDebitEvent(params: var params) => Text("Send ${params.quantityNormalized} ${params.asset}"),
-      VerboseCreditEvent(params: var params) =>  Text("Receive ${params.quantityNormalized} ${params.asset}"),
-      VerboseAssetIssuanceEvent(params: var params) => Text("Issued ${params.quantityNormalized} ${params.asset}"),
-      _ => Text('Invariant: title unsupported event type: ${event.runtimeType}'),
+      VerboseDebitEvent(params: var params) =>
+        Text("Send ${params.quantityNormalized} ${params.asset}"),
+      VerboseCreditEvent(params: var params) =>
+        Text("Receive ${params.quantityNormalized} ${params.asset}"),
+      VerboseAssetIssuanceEvent(params: var params) =>
+        Text("Issued ${params.quantityNormalized} ${params.asset}"),
+      _ =>
+        Text('Invariant: title unsupported event type: ${event.runtimeType}'),
     };
   }
 
@@ -73,7 +77,6 @@ class ActivityFeedListItem extends StatelessWidget {
     return Text(info.hash);
     // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
   }
-
 
   Widget _buildSubtitle() {
     if (item.event != null) {
@@ -87,10 +90,11 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildEventSubtitle(Event event) {
     return switch (event) {
-      VerboseDebitEvent(txHash: var hash ) => Text(hash),
+      VerboseDebitEvent(txHash: var hash) => Text(hash),
       VerboseCreditEvent(txHash: var hash) => Text(hash),
       VerboseAssetIssuanceEvent(txHash: var hash) => Text(hash),
-      _ => Text('Invariant: title unsupported event type: ${event.runtimeType}'),
+      _ =>
+        Text('Invariant: title unsupported event type: ${event.runtimeType}'),
     };
 
     // // Customize this based on your Event structure

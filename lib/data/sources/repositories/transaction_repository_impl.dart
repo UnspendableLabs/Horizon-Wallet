@@ -48,8 +48,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       btcAmount: info.btcAmount,
       fee: info.fee,
       data: info.data,
-      unpackedData: unpacked != null ?  TransactionUnpacked(
-          messageType: unpacked.messageType, messageData: unpacked.messageData) : null,
+      unpackedData: unpacked != null
+          ? TransactionUnpacked(
+              messageType: unpacked.messageType,
+              messageData: unpacked.messageData)
+          : null,
     );
   }
 

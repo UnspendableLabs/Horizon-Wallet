@@ -453,5 +453,8 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed, required super.blockTime, required this.params, });
+    required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
 }
