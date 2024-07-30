@@ -94,7 +94,7 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseCreditEvent(txHash: var hash) => Text(hash),
       VerboseAssetIssuanceEvent(txHash: var hash) => Text(hash),
       _ =>
-        Text('Invariant: title unsupported event type: ${event.runtimeType}'),
+        Text('Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
 
     // // Customize this based on your Event structure
