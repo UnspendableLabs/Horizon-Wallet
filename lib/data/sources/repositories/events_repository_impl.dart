@@ -67,7 +67,7 @@ class VerboseEventMapper {
       //       apiEvent as api.VerboseAssetIssuanceEvent);
       case 'ASSET_ISSUANCE':
         if (apiEvent is api.VerboseAssetIssuanceEvent) {
-          return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as api.VerboseAssetIssuanceEvent);
+          return VerboseAssetIssuanceEventMapper.toDomain(apiEvent);
         } else {
           print(
               "Warning: Expected VerboseAssetIssuanceEvent but got ${apiEvent.runtimeType}");

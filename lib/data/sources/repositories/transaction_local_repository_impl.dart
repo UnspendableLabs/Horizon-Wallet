@@ -2,7 +2,6 @@ import "dart:convert";
 
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";

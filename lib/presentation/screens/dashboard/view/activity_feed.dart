@@ -33,7 +33,7 @@ class NewTransactionsBanner extends StatelessWidget {
 class ActivityFeedListItem extends StatelessWidget {
   final ActivityFeedItem item;
 
-  const ActivityFeedListItem({Key? key, required this.item}) : super(key: key);
+  const ActivityFeedListItem({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
