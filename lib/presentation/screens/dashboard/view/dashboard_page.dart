@@ -148,101 +148,99 @@ class AddressActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      LayoutBuilder(
-        builder: (context, constraints) {
-          double buttonWidth = (constraints.maxWidth - 16) /
-              2; // Adjust width to take up half of the row minus padding
-
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: buttonWidth,
-                height: 75,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 4.0, 4.0, 4.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          SizedBox(
+            width: MediaQuery.of(context).size.width /
+                2.3, // Adjust width to take up half of the row
+            child: SizedBox(
+              height: 75,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 4.0, 8.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
                     ),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.5,
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: ComposeIssuancePage(),
                               ),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: ComposeIssuancePage(),
-                                ),
-                              ),
-                            );
-                          });
-                    },
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add),
-                        SizedBox(width: 8.0),
-                        Text("ISSUE"),
-                      ],
-                    ),
+                            ),
+                          );
+                        });
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add),
+                      SizedBox(width: 8.0),
+                      Text("ISSUE"),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(
-                width: buttonWidth,
-                height: 75,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 4.0, 4.0, 4.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
+            ),
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width /
+                2.3, // Adjust width to take up half of the row
+            child: SizedBox(
+              height: 75,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4.0, 8.0, 16.0, 8.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
                     ),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.5,
+                              height: MediaQuery.of(context).size.height * 0.75,
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: ComposeSendPage(),
                               ),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.75,
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: ComposeSendPage(),
-                                ),
-                              ),
-                            );
-                          });
-                    },
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.send),
-                        SizedBox(width: 8.0),
-                        Text("SEND"),
-                      ],
-                    ),
+                            ),
+                          );
+                        });
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.send),
+                      SizedBox(width: 8.0),
+                      Text("SEND"),
+                    ],
                   ),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     ]);
   }
@@ -332,7 +330,7 @@ class _BalancesState extends State<Balances> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 16.0),
       child: Container(
-        height: height,
+        // height: height,
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(30.0),
@@ -378,7 +376,7 @@ class _BalancesState extends State<Balances> {
                 ],
               ),
             ),
-            Expanded(child: _balanceList(result)),
+            Container(child: _balanceList(result)),
             if (_isExpanded)
               Positioned(
                 bottom: 0,
@@ -454,7 +452,10 @@ class _BalancesState extends State<Balances> {
         if (balanceWidgets.length > 6 && !_isExpanded) {
           return Column(
             children: [
-              ...balanceWidgets.take(6),
+              ListView(
+                shrinkWrap: true,
+                children: balanceWidgets.take(6).toList(),
+              ),
               FractionallySizedBox(
                 widthFactor: 0.5,
                 child: ElevatedButton(
@@ -476,6 +477,7 @@ class _BalancesState extends State<Balances> {
           );
         } else {
           return ListView(
+            shrinkWrap: true,
             children: balanceWidgets,
           );
         }
