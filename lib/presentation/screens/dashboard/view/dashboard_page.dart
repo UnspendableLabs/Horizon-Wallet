@@ -127,7 +127,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                       addressRepository: GetIt.I.get<AddressRepository>(),
                       transactionLocalRepository:
                           GetIt.I.get<TransactionLocalRepository>(),
-                      pageSize: 10,
+                      pageSize: 50,
                     ),
                     child: const DashboardActivityFeedScreen(),
                   ),

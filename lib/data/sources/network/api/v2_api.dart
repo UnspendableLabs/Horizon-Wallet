@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -236,11 +237,41 @@ class Event {
         return DebitEvent.fromJson(json);
       case 'NEW_TRANSACTION':
         return NewTransactionEvent.fromJson(json);
+      case 'ASSET_ISSUANCE':
+        return AssetIssuanceEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
   }
 }
+
+// {
+//    "event_index": 5348402,
+//    "event": "ASSET_ISSUANCE",
+//    "params": {
+//      "asset": "A12445442962327434604",
+//      "asset_longname": null,
+//      "block_index": 2867711,
+//      "call_date": 0,
+//      "call_price": 0,
+//      "callable": false,
+//      "description": "",
+//      "divisible": true,
+//      "fee_paid": 0,
+//      "issuer": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
+//      "locked": false,
+//      "quantity": 10,
+//      "reset": false,
+//      "source": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
+//      "status": "valid",
+//      "transfer": false,
+//      "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
+//      "tx_index": 37585
+//    },
+//    "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
+//    "block_index": 2867711,
+//    "confirmed": true
+//  },
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class EnhancedSendParams {
@@ -415,6 +446,182 @@ class NewTransactionEvent extends Event {
   factory NewTransactionEvent.fromJson(Map<String, dynamic> json) =>
       _$NewTransactionEventFromJson(json);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetIssuanceParams {
+  final String asset;
+  final String? assetLongname;
+  final int blockIndex;
+  final int callDate;
+  final int callPrice;
+  final bool callable;
+  final String description;
+  final bool divisible;
+  final int feePaid;
+  final String issuer;
+  final bool locked;
+  final int quantity;
+  final bool reset;
+  final String source;
+  final String status;
+  final bool transfer;
+  final String txHash;
+  final int txIndex;
+
+  AssetIssuanceParams({
+    required this.asset,
+    this.assetLongname,
+    required this.blockIndex,
+    required this.callDate,
+    required this.callPrice,
+    required this.callable,
+    required this.description,
+    required this.divisible,
+    required this.feePaid,
+    required this.issuer,
+    required this.locked,
+    required this.quantity,
+    required this.reset,
+    required this.source,
+    required this.status,
+    required this.transfer,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory AssetIssuanceParams.fromJson(Map<String, dynamic> json) =>
+      _$AssetIssuanceParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetIssuanceParams extends AssetIssuanceParams {
+  final int blockTime;
+  final AssetInfo assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseAssetIssuanceParams({
+    required super.asset,
+    super.assetLongname,
+    required super.blockIndex,
+    required super.callDate,
+    required super.callPrice,
+    required super.callable,
+    required super.description,
+    required super.divisible,
+    required super.feePaid,
+    required super.issuer,
+    required super.locked,
+    required super.quantity,
+    required super.reset,
+    required super.source,
+    required super.status,
+    required super.transfer,
+    required super.txHash,
+    required super.txIndex,
+    required this.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseAssetIssuanceParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetIssuanceParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetIssuanceEvent extends Event {
+  final AssetIssuanceParams params;
+
+  AssetIssuanceEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.confirmed,
+    required this.params,
+  });
+
+  factory AssetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
+      _$AssetIssuanceEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetIssuanceEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+
+  VerboseAssetIssuanceEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required super.confirmed,
+    required this.params,
+  });
+
+  factory VerboseAssetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetIssuanceEventFromJson(json);
+}
+//
+//  "event_index": 5348402,
+//   "event": "ASSET_ISSUANCE",
+//   "params": {
+//     "asset": "A12445442962327434604",
+//     "asset_longname": null,
+//     "block_index": 2867711,
+//     "call_date": 0,
+//     "call_price": 0,
+//     "callable": false,
+//     "description": "",
+//     "divisible": true,
+//     "fee_paid": 0,
+//     "issuer": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
+//     "locked": false,
+//     "quantity": 10,
+//     "reset": false,
+//     "source": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
+//     "status": "valid",
+//     "transfer": false,
+//     "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
+//     "tx_index": 37585,
+//     "block_time": 1720808130,
+//     "quantity_normalized": "0.00000010",
+//     "fee_paid_normalized": "0.00000000"
+//   },
+//   "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
+//   "block_index": 2867711,
+//   "confirmed": true,
+//   "block_time": 1720808130
+// }
+
+// {
+//       "event_index": 5348402,
+//       "event": "ASSET_ISSUANCE",
+//       "params": {
+//         "asset": "A12445442962327434604",
+//         "asset_longname": null,
+//         "block_index": 2867711,
+//         "call_date": 0,
+//         "call_price": 0,
+//         "callable": false,
+//         "description": "",
+//         "divisible": true,
+//         "fee_paid": 0,
+//         "issuer": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
+//         "locked": false,
+//         "quantity": 10,
+//         "reset": false,
+//         "source": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
+//         "status": "valid",
+//         "transfer": false,
+//         "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
+//         "tx_index": 37585
+//       },
+//       "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
+//       "block_index": 2867711,
+//       "confirmed": true
+//     },
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseEnhancedSendParams extends EnhancedSendParams {
@@ -1257,15 +1464,14 @@ class Info {
   final Unpack? unpackedData;
   final Map<String, dynamic>? decodedTx;
 
-  const Info({
-    required this.source,
-    required this.destination,
-    required this.btcAmount,
-    required this.fee,
-    required this.data,
-    required this.unpackedData,
-    required this.decodedTx
-  });
+  const Info(
+      {required this.source,
+      required this.destination,
+      required this.btcAmount,
+      required this.fee,
+      required this.data,
+      required this.unpackedData,
+      required this.decodedTx});
 
   factory Info.fromJson(Map<String, dynamic> json) => _$InfoFromJson(json);
 

@@ -27,6 +27,10 @@ class EventMapper {
         return CreditEventMapper.toDomain(apiEvent as api.CreditEvent);
       case 'DEBIT':
         return DebitEventMapper.toDomain(apiEvent as api.DebitEvent);
+      case 'ASSET_ISSUANCE':
+        return AssetIssuanceEventMapper.toDomain(
+            apiEvent as api.AssetIssuanceEvent);
+
       // case 'NEW_TRANSACTION':
       //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
       // case 'ASSET_ISSUANCE': return AssetIssuanceEventMapper.toDomain(apiEvent as api.AssetIssuanceEvent);
@@ -37,7 +41,8 @@ class EventMapper {
           state: StateMapper.get(apiEvent),
           eventIndex: apiEvent.eventIndex,
           event: apiEvent.event,
-          txHash: apiEvent.txHash!, // all of the events we care about have tx hash,
+          txHash:
+              apiEvent.txHash!, // all of the events we care about have tx hash,
           blockIndex: apiEvent.blockIndex,
           confirmed: apiEvent.confirmed,
         );
@@ -57,12 +62,37 @@ class VerboseEventMapper {
       case 'DEBIT':
         return VerboseDebitEventMapper.toDomain(
             apiEvent as api.VerboseDebitEvent);
+      // case 'ASSET_ISSUANCE':
+      //   return VerboseAssetIssuanceEventMapper.toDomain(
+      //       apiEvent as api.VerboseAssetIssuanceEvent);
+      case 'ASSET_ISSUANCE':
+        if (apiEvent is api.VerboseAssetIssuanceEvent) {
+          return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as api.VerboseAssetIssuanceEvent);
+        } else {
+          print(
+              "Warning: Expected VerboseAssetIssuanceEvent but got ${apiEvent.runtimeType}");
+
+          // Handle this case, perhaps by returning a generic VerboseEvent
+          return VerboseEvent(
+            state: StateMapper.getVerbose(apiEvent),
+            eventIndex: apiEvent.eventIndex,
+            event: apiEvent.event,
+            txHash: apiEvent.txHash!,
+            blockIndex: apiEvent.blockIndex,
+            confirmed: apiEvent.confirmed,
+            blockTime: apiEvent.blockTime,
+          );
+        }
+      // case 'ASSET_ISSUANCE':
+      //   return VerboseAssetIssuanceEventMapper.toDomain(
+      //       apiEvent as api.VerboseAssetIssuanceEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);
       // case 'ASSET_ISSUANCE':
       //   return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as ApiVerboseAssetIssuanceEvent);
       default:
+        throw Exception('Invariant: unsupported event type: ${apiEvent.event}');
         // Return a generic VerboseEvent for unknown types
         return VerboseEvent(
           state: StateMapper.getVerbose(apiEvent),
@@ -263,6 +293,97 @@ class VerboseDebitParamsMapper {
   }
 }
 
+class AssetIssuanceEventMapper {
+  static AssetIssuanceEvent toDomain(api.AssetIssuanceEvent apiEvent) {
+    return AssetIssuanceEvent(
+      state: StateMapper.get(apiEvent),
+      event: "ASSET_ISSUANCE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      confirmed: apiEvent.confirmed,
+      params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class AssetIssuanceParamsMapper {
+  static AssetIssuanceParams toDomain(api.AssetIssuanceParams apiParams) {
+    return AssetIssuanceParams(
+      asset: apiParams.asset,
+      assetLongname: apiParams.assetLongname,
+      blockIndex: apiParams.blockIndex,
+      callDate: apiParams.callDate,
+      callPrice: apiParams.callPrice,
+      callable: apiParams.callable,
+      description: apiParams.description,
+      divisible: apiParams.divisible,
+      feePaid: apiParams.feePaid,
+      issuer: apiParams.issuer,
+      locked: apiParams.locked,
+      quantity: apiParams.quantity,
+      reset: apiParams.reset,
+      source: apiParams.source,
+      status: apiParams.status,
+      transfer: apiParams.transfer,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+    );
+  }
+}
+
+class VerboseAssetIssuanceEventMapper {
+  static VerboseAssetIssuanceEvent toDomain(
+      api.VerboseAssetIssuanceEvent apiEvent) {
+    print("\n\n\n");
+    print("apiEvent $apiEvent");
+
+    final x = VerboseAssetIssuanceEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "ASSET_ISSUANCE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      confirmed: apiEvent.confirmed,
+      blockTime: apiEvent.blockTime,
+      params: VerboseAssetIssuanceParamsMapper.toDomain(apiEvent.params),
+    );
+
+    print("x: $x");
+
+    return x;
+  }
+}
+
+class VerboseAssetIssuanceParamsMapper {
+  static VerboseAssetIssuanceParams toDomain(
+      api.VerboseAssetIssuanceParams apiParams) {
+    return VerboseAssetIssuanceParams(
+      asset: apiParams.asset,
+      assetLongname: apiParams.assetLongname,
+      // blockIndex: apiParams.blockIndex,
+      callDate: apiParams.callDate,
+      callPrice: apiParams.callPrice,
+      callable: apiParams.callable,
+      description: apiParams.description,
+      divisible: apiParams.divisible,
+      feePaid: apiParams.feePaid,
+      issuer: apiParams.issuer,
+      locked: apiParams.locked,
+      quantity: apiParams.quantity,
+      reset: apiParams.reset,
+      source: apiParams.source,
+      status: apiParams.status,
+      transfer: apiParams.transfer,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      blockTime: apiParams.blockTime,
+      quantityNormalized: apiParams.quantityNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
 // class NewTransactionEventMapper {
 //   static NewTransactionEvent toDomain(api.NewTransactionEvent apiEvent) {
 //     return NewTransactionEvent(
@@ -359,9 +480,8 @@ class EventsRepositoryImpl implements EventsRepository {
     List<Event> events = response.result!
         .where((event) => whitelist == null || whitelist.contains(event.event))
         .map((event) {
-          return EventMapper.toDomain(event);
-        })
-        .toList();
+      return EventMapper.toDomain(event);
+    }).toList();
 
     return (events, nextCursor, response.resultCount);
   }
@@ -382,13 +502,13 @@ class EventsRepositoryImpl implements EventsRepository {
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
-    } int? nextCursor = response.nextCursor;
+    }
+    int? nextCursor = response.nextCursor;
     List<VerboseEvent> events = response.result!
         .where((event) => whitelist == null || whitelist.contains(event.event))
         .map((event) {
-          return VerboseEventMapper.toDomain(event);
-        })
-        .toList();
+      return VerboseEventMapper.toDomain(event);
+    }).toList();
 
     return (events, nextCursor, response.resultCount);
   }

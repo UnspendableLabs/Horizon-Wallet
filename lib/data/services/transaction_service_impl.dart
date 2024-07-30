@@ -19,7 +19,6 @@ class TransactionServiceImpl implements TransactionService {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
-    print("Transaction: $transaction");
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
