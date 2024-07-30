@@ -260,7 +260,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                   fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
-                    ],
+                   ],
                   ),
                 ),
               ),
