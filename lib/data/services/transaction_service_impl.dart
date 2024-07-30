@@ -19,6 +19,8 @@ class TransactionServiceImpl implements TransactionService {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
+    print("Transaction: $transaction");
+
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
     Buffer privKeyJS =
@@ -56,6 +58,7 @@ class TransactionServiceImpl implements TransactionService {
           input.script = script.output;
         }
       } else {
+
         // TODO: handle errors in UI
         throw Exception('Invariant: No utxo found for txHash: $txHash');
       }

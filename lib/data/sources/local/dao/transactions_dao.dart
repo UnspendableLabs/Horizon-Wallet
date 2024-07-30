@@ -28,6 +28,19 @@ class TransactionsDao extends DatabaseAccessor<DB> with _$TransactionsDaoMixin {
             final matchesSources = row.source.isIn(sources);
             final matchesDate = row.submittedAt.isBiggerOrEqualValue(date);
 
+            print("data: ${row.submittedAt} date: $date");
+            print("matchesSources: $matchesSources matchesDate: $matchesDate");
+
+  
+            print('Transaction Details:');
+            print('  Row submitted at: ${row.submittedAt}');
+            print('  Comparison date: $date');
+            print('  Matches sources: $matchesSources');
+            print('  Matches or after date: $matchesDate');
+            print('  Sources: $sources');
+            print('  Row source: ${row.source}');
+            print('---');
+
             return matchesSources & matchesDate;
           }))
         .get();

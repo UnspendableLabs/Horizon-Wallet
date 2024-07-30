@@ -25,10 +25,12 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       throw Exception("Cannot save transaction that was not created locally");
     }
 
-    Map<String, dynamic> unpackedJson = {
-      "messageType": transactionInfo.unpackedData.messageType,
-      "messageData": transactionInfo.unpackedData.messageData,
-    };
+    Map<String, dynamic>? unpackedJson = transactionInfo.unpackedData == null
+        ? null
+        : {
+            "messageType": transactionInfo.unpackedData!.messageType,
+            "messageData": transactionInfo.unpackedData!.messageData,
+          };
 
     TransactionModel tx = TransactionModel(
       hash: transactionInfo.hash,
@@ -61,10 +63,13 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
               btcAmount: tx.btcAmount,
               fee: tx.fee,
               data: tx.data,
-              unpackedData: TransactionUnpacked(
-                  messageType: "",
-                  messageData: Map<String, dynamic>.from(jsonDecode(tx
-                      .unpackedData))), // TODO: this is a little broken, lift up message type
+              unpackedData: null,
+              // unpackedData: tx.unpackedData != null
+              //     ? TransactionUnpacked(
+              //         messageType: "",
+              //         messageData: Map<String, dynamic>.from(
+              //             jsonDecode(tx.unpackedData!)))
+              //     : null, // TODO: this is a little broken, lift up message type
             ))
         .toList();
   }
@@ -76,21 +81,29 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
     final transactions = await transactionDao.getAllBySourcesAfterDate(
         addresses.map((e) => e.address).toList(), date);
 
-    return transactions
-        .map((tx) => TransactionInfo(
-              domain: TransactionInfoDomainLocal(
-                  raw: tx.raw, submittedAt: tx.submittedAt),
-              hash: tx.hash,
-              source: tx.source,
-              destination: tx.destination,
-              btcAmount: tx.btcAmount,
-              fee: tx.fee,
-              data: tx.data,
-              unpackedData: TransactionUnpacked(
-                  messageType: "",
-                  messageData: Map<String, dynamic>.from(jsonDecode(tx
-                      .unpackedData))), // TODO: this is a little broken, lift up message type
-            ))
-        .toList();
+    print("getAllByAccountAfterDate $transactions");
+    print("address $addresses");
+    print("date $date");
+
+    return transactions.map((tx) {
+      print("tx $tx");
+      return TransactionInfo(
+        domain: TransactionInfoDomainLocal(
+            raw: tx.raw, submittedAt: tx.submittedAt),
+        hash: tx.hash,
+        source: tx.source,
+        destination: tx.destination,
+        btcAmount: tx.btcAmount,
+        fee: tx.fee,
+        data: tx.data,
+        unpackedData: null,
+        // unpackedData: tx.unpackedData != null
+        //     ? TransactionUnpacked(
+        //         messageType: "",
+        //         messageData:
+        //             Map<String, dynamic>.from(jsonDecode(tx.unpackedData!)))
+        //     : null, // TODO: this is a little broken, lift up message type
+      );
+    }).toList();
   }
 }
