@@ -177,8 +177,7 @@ class DashboardActivityFeedBloc
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: nextCursor,
-          mostRecentRemoteHash:
-              remoteEvents.isNotEmpty ? remoteEvents[0].txHash : null,
+          mostRecentRemoteHash: currentState.mostRecentRemoteHash, 
           newTransactionCount: currentState.newTransactionCount,
           transactions: [
             ...currentState.transactions,

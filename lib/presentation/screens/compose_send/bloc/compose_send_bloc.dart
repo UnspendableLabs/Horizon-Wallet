@@ -115,7 +115,11 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-        await transactionLocalRepository.insert(txInfo);
+        
+
+        await transactionLocalRepository.insert(txInfo.copyWith(hash: txHash));
+
+
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
       } catch (error) {

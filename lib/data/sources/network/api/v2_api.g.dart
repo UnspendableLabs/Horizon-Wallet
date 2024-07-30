@@ -1058,11 +1058,13 @@ Map<String, dynamic> _$UnpackToJson(Unpack instance) => <String, dynamic>{
 Info _$InfoFromJson(Map<String, dynamic> json) => Info(
       source: json['source'] as String,
       destination: json['destination'] as String?,
-      btcAmount: (json['btc_amount'] as num).toInt(),
-      fee: (json['fee'] as num).toInt(),
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      unpackedData:
-          Unpack.fromJson(json['unpacked_data'] as Map<String, dynamic>),
+      unpackedData: json['unpacked_data'] == null
+          ? null
+          : Unpack.fromJson(json['unpacked_data'] as Map<String, dynamic>),
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$InfoToJson(Info instance) => <String, dynamic>{
@@ -1071,7 +1073,8 @@ Map<String, dynamic> _$InfoToJson(Info instance) => <String, dynamic>{
       'btc_amount': instance.btcAmount,
       'fee': instance.fee,
       'data': instance.data,
-      'unpacked_data': instance.unpackedData.toJson(),
+      'unpacked_data': instance.unpackedData?.toJson(),
+      'decoded_tx': instance.decodedTx,
     };
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
