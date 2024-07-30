@@ -234,6 +234,11 @@ class DashboardActivityFeedBloc
               accountUuid, mostRecentBlocktime)
           : await transactionLocalRepository.getAllByAccount(accountUuid);
 
+
+      print("localTransactions $localTransactions");
+      print("localTransactions $mostRecentBlocktime");
+
+
       final (remoteEvents, nextCursor, _) =
           await eventsRepository.getByAddressesVerbose(
               addresses: addresses,

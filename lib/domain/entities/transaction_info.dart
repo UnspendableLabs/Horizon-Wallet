@@ -24,12 +24,12 @@ class TransactionInfo extends Equatable {
   final String hash;
   final String source;
   final String? destination;
-  final int btcAmount;
-  final int fee;
+  final int? btcAmount;
+  final int? fee;
   final String data;
   final TransactionInfoDomain domain;
 
-  final TransactionUnpacked unpackedData;
+  final TransactionUnpacked? unpackedData;
 
   const TransactionInfo(
       {required this.hash,

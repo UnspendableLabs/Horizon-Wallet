@@ -93,6 +93,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
+        print("utxoMap $utxoMap");
+
         Address? address = await addressRepository.getAddress(source);
         Account? account =
             await accountRepository.getAccountByUuid(address!.accountUuid);
@@ -115,11 +117,14 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-        
-
-        await transactionLocalRepository.insert(txInfo.copyWith(hash: txHash));
-
-
+        // for now we don't track btc sends
+        if (asset.toLowerCase() != 'btc') {
+          await transactionLocalRepository.insert(txInfo.copyWith(
+              hash: txHash,
+              source:
+                  source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
+              ));
+        }
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
       } catch (error) {

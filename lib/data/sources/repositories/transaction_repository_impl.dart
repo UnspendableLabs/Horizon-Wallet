@@ -37,7 +37,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     Info info = response.result!;
 
-    Unpack unpacked = info.unpackedData!;
+    Unpack? unpacked = info.unpackedData;
 
     // TODO: domain isn't being properly set here
     return TransactionInfo(
@@ -45,11 +45,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       domain: TransactionInfoDomainLocal(raw: raw, submittedAt: DateTime.now()),
       source: info.source,
       destination: info.destination,
-      btcAmount: info.btcAmount!,
-      fee: info.fee!,
+      btcAmount: info.btcAmount,
+      fee: info.fee,
       data: info.data,
-      unpackedData: TransactionUnpacked(
-          messageType: unpacked.messageType, messageData: unpacked.messageData),
+      unpackedData: unpacked != null ?  TransactionUnpacked(
+          messageType: unpacked.messageType, messageData: unpacked.messageData) : null,
     );
   }
 
