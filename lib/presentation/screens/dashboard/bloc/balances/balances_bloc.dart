@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -87,6 +89,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   }
 
   Future<void> _onFetch(event, emit) async {
+    print('FETCHING');
     // emit loading if initial
     // emit reloading if complete
 
@@ -110,6 +113,12 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
       emit(BalancesState.complete(Result.ok(balances, aggregated)));
     } catch (e, stackTrace) {
+      if (e is DioException) {
+        debugger(when: true);
+        print('DioException');
+        print(e.response?.data);
+      }
+      print('ERROR!!!!!!!!!!!!!!!');
       print(e.toString());
       print(stackTrace.toString());
       emit(BalancesState.complete(Result.error(e.toString())));

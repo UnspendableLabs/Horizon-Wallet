@@ -1,3 +1,5 @@
+import 'package:horizon/common/constants.dart';
+
 abstract class AccountFormEvent {}
 
 class Submit extends AccountFormEvent {
@@ -7,6 +9,7 @@ class Submit extends AccountFormEvent {
   final String accountIndex;
   final String walletUuid;
   final String password;
+  final ImportFormat importFormat;
 
   Submit({
     required this.name,
@@ -15,5 +18,6 @@ class Submit extends AccountFormEvent {
     required this.accountIndex,
     required this.walletUuid,
     required this.password,
+    required this.importFormat,
   });
 }
