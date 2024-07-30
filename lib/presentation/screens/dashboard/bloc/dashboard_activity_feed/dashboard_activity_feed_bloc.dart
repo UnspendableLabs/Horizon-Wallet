@@ -48,12 +48,12 @@ class DashboardActivityFeedBloc
 
     final currentState = state as DashboardActivityFeedStateCompleteOk;
 
-    final nextState = DashboardActivityFeedStateReloadingOk(
-      transactions: currentState.transactions,
-      newTransactionCount: 0,
-    );
-
-    emit(nextState);
+    // final nextState = DashboardActivityFeedStateReloadingOk(
+    //   transactions: currentState.transactions,
+    //   newTransactionCount: 0,
+    // );
+    //
+    // emit(nextState);
 
     try {
       // get most recent confirmed tx
