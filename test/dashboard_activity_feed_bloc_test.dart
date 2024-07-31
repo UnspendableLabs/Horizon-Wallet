@@ -18,6 +18,7 @@ import 'package:mocktail/mocktail.dart';
 final DEFAULT_WHITELIST = [
   "CREDIT",
   "DEBIT",
+  "ASSET_ISSUANCE",
 ];
 
 extension DateTimeExtension on DateTime {
@@ -187,7 +188,7 @@ void main() {
       (_) async =>
           [const Address(index: 0, address: "0x123", accountUuid: "123")]);
 
-  group("add StartPolling", () {
+  group("StartPolling", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "sets timer",
         build: () {
@@ -231,7 +232,7 @@ void main() {
         });
   });
 
-  group("add StartPolling, add StopPolliong", () {
+  group("StopPolling", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "clears timer",
         build: () {
@@ -274,7 +275,7 @@ void main() {
         });
   });
 
-  group("add Load", () {
+  group("Load", () {
     blocTest("emits loading state when load event is added",
         build: () {
           final mockTransactionLocalRepository =
@@ -433,14 +434,12 @@ void main() {
               ),
               isA<DashboardActivityFeedState>()
             ]);
-  });
 
-  group("interleaving", () {
     late List<MockTransactionInfo> mockedLocal;
     late List<MockEvent> mockedRemote;
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
-        "non overlapping",
+        "interleaving non overlapping",
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
@@ -575,11 +574,6 @@ void main() {
               ),
             ]);
 
-    // we need to query confirmed transactiuns to get account tx
-    // with most recent blocktime.
-    // then we need to filter out local transactions that are older
-    // easiest way is to query local db submittedAd > most recent blocktime
-
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "first remote, newer than local",
         build: () {
@@ -641,11 +635,7 @@ void main() {
                   nextCursor: 1,
                   mostRecentRemoteHash: "0005"),
             ]);
-  });
-
-  // Load more appends transactions to the end of the list.  it does not
-  // add any transactions to the beginning of the list
-
+  }); // Load more appends transactions to the end of the list.  it does not add any transactions to the beginning of the list
   group("LoadMore", () {
     late List<MockTransactionInfo> mockedLocal;
     late List<MockEvent> mockedRemote;
@@ -762,6 +752,7 @@ void main() {
   group("LoadQuiet", () {
     late List<MockTransactionInfo> mockedLocal;
     late List<MockEvent> mockedRemote;
+    late List<MockEvent> mockedRemote2;
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "returns new transactions count = all txs above the most recent remote hash",
@@ -846,6 +837,153 @@ void main() {
                   )
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 2)
+                  .having((state) => state.nextCursor, 'nextCursor', 4)
+                  .having((state) => state.mostRecentRemoteHash,
+                      'mostRecentRemoteHash', '0002'),
+            ]);
+
+    blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+        "replaces local with remote ",
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+
+          mockedLocal = MockTransactionInfoFactory.createMultiple([
+            (
+              "0001",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
+          ]);
+
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => mockedLocal);
+
+          final mockEventsRepository = MockEventsRepository();
+
+          mockedRemote = MockEventFactory.createMultiple([
+            ("0001", EventStateMempool()),
+            (
+              "0002",
+              EventStateConfirmed(
+                  blockHeight: 1,
+                  blockTime: DateTime.now().toIntDividedBy1000())
+            ),
+          ]);
+
+          // `LoadMore`
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                unconfirmed: true,
+                addresses: ["0x123"],
+                cursor: null,
+                limit: 10,
+                whitelist: DEFAULT_WHITELIST,
+              )).thenAnswer((_) async => (mockedRemote, null, null));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
+        },
+        seed: () => DashboardActivityFeedStateCompleteOk(
+              transactions: [
+                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(hash: "0002", event: mockedRemote[1]),
+              ],
+              newTransactionCount: 0,
+              nextCursor: 4,
+              mostRecentRemoteHash: "0002",
+            ),
+        act: (bloc) => bloc..add(const LoadQuiet()),
+        expect: () => [
+              // isA<DashboardActivityFeedStateReloadingOk>(),
+              isA<DashboardActivityFeedStateCompleteOk>()
+                  .having(
+                    (state) => state.transactions,
+                    'transactions',
+                    [
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0001')
+                          .having(
+                              (item) => item.event, 'event', isA<MockEvent>()),
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0002')
+                          .having(
+                              (item) => item.event, 'event', isA<MockEvent>()),
+                    ],
+                  )
+                  .having((state) => state.newTransactionCount,
+                      'newTransactionCount', 0)
+                  .having((state) => state.nextCursor, 'nextCursor', 4)
+                  .having((state) => state.mostRecentRemoteHash,
+                      'mostRecentRemoteHash', '0002'),
+            ]);
+    blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+        "replaces mempool with confirmed ",
+        build: () {
+          final mockTransactionLocalRepository =
+              MockTransactionLocalRepository();
+
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+              .thenAnswer((_) async => []);
+
+          final mockEventsRepository = MockEventsRepository();
+
+          // mockedRemote = MockEventFactory.createMultiple([
+          //   ("0001", EventStateMempool()),
+          // ]);
+
+          mockedRemote = MockEventFactory.createMultiple([
+            (
+              "0001",
+              EventStateConfirmed(
+                  blockHeight: 1,
+                  blockTime: DateTime.now().toIntDividedBy1000())
+            ),
+          ]);
+
+          when(() => mockEventsRepository.getByAddressesVerbose(
+                unconfirmed: true,
+                addresses: ["0x123"],
+                cursor: null,
+                limit: 10,
+                whitelist: DEFAULT_WHITELIST,
+              )).thenAnswer((_) async => (mockedRemote, null, null));
+
+          return DashboardActivityFeedBloc(
+              pageSize: 10,
+              accountUuid: "123",
+              transactionLocalRepository: mockTransactionLocalRepository,
+              addressRepository: mockAddressRepository,
+              eventsRepository: mockEventsRepository);
+        },
+        seed: () => DashboardActivityFeedStateCompleteOk(
+              transactions: [
+                ActivityFeedItem(hash: "0001", event: mockedRemote[0]),
+              ],
+              newTransactionCount: 0,
+              nextCursor: 4,
+              mostRecentRemoteHash: "0002",
+            ),
+        act: (bloc) => bloc..add(const LoadQuiet()),
+        expect: () => [
+              // isA<DashboardActivityFeedStateReloadingOk>(),
+              isA<DashboardActivityFeedStateCompleteOk>()
+                  .having(
+                    (state) => state.transactions,
+                    'transactions',
+                    [
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0001')
+                          .having(
+                              (item) => item.event, 'event', isA<MockEvent>())
+                          .having(
+                              (item) => item.event!.state, 'state', isA<EventStateConfirmed>()),
+                    ],
+                  )
+                  .having((state) => state.newTransactionCount,
+                      'newTransactionCount', 0)
                   .having((state) => state.nextCursor, 'nextCursor', 4)
                   .having((state) => state.mostRecentRemoteHash,
                       'mostRecentRemoteHash', '0002'),

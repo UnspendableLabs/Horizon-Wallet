@@ -142,6 +142,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                       ),
                       child: DashboardActivityFeedScreen(),
                     )
+
                   ],
                 ),
               ),
@@ -322,9 +323,12 @@ class AccountSelectionButton extends StatelessWidget {
 
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+
   const AddressActions({
     super.key,
     required this.isDarkTheme,
+    required this.dashboardActivityFeedBloc,
   });
 
   @override
@@ -394,6 +398,8 @@ class AddressActions extends StatelessWidget {
                               title: "Compose Send",
                               body: ComposeSendPage(
                                 isDarkMode: isDarkTheme,
+                                  dashboardActivityFeedBloc:
+                                      dashboardActivityFeedBloc,
                               ),
                             );
                           });

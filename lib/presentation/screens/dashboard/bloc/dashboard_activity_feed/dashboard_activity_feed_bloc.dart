@@ -84,9 +84,10 @@ class DashboardActivityFeedBloc
         bool found = false;
         int newTransactionCount = 0;
         int? nextCursor;
+        List<Event> remoteEvents = [];
 
         while (!found) {
-          final (remoteEvents, nextCursor_, _) =
+          final (remoteEvents_, nextCursor_, _) =
               await eventsRepository.getByAddressesVerbose(
                   addresses: addresses,
                   limit: pageSize,
@@ -94,8 +95,9 @@ class DashboardActivityFeedBloc
                   cursor: nextCursor,
                   whitelist: DEFAULT_WHITELIST);
 
+          remoteEvents = [...remoteEvents, ...remoteEvents_];
           // iterate all remote transactions
-          for (final event in remoteEvents) {
+          for (final event in remoteEvents_) {
             if (event.txHash != mostRecentRemoteHash) {
               newTransactionCount += 1;
             } else {
@@ -114,6 +116,40 @@ class DashboardActivityFeedBloc
           }
         }
 
+        // final localTransactions =
+        //     await transactionLocalRepository.getAllByAccount(accountUuid);
+        //
+        // final localTransactionsHashes =
+        //     Set<String>.from(localTransactions.map((tx) => tx.hash));
+        //
+        final remoteMap = Map<String, Event>.fromIterable(remoteEvents,
+            key: (e) => e.txHash, value: (e) => e);
+        //
+        // for (final event in remoteEvents) {
+        //   // if at most recent remote hash, break;
+        //   if (event.txHash == mostRecentRemoteHash) {
+        //     break;
+        //   }
+        //
+        //   if (localTransactionsHashes.contains(event.txHash)) {
+        //     newTransactionCount -= 1;
+        //   }
+        // }
+
+        List<ActivityFeedItem> nextList = currentState.transactions.map(
+          (tx) {
+            // if we have a remote representation of a
+            if (tx.info != null && remoteMap.containsKey(tx.hash)) {
+              newTransactionCount -= 1;
+              print("tx ${tx}");
+              print("event ${remoteMap[tx.hash]}");
+              return ActivityFeedItem(hash: tx.hash, event: remoteMap[tx.hash]);
+            } else {
+              return tx;
+            }
+          },
+        ).toList();
+
         // we only update new transaction count
         // ( i.e. UI stays the same save for banner)
         // that shows current number of news transactions
@@ -122,7 +158,7 @@ class DashboardActivityFeedBloc
             nextCursor: currentState.nextCursor,
             newTransactionCount: newTransactionCount,
             mostRecentRemoteHash: currentState.mostRecentRemoteHash,
-            transactions: currentState.transactions));
+            transactions: nextList));
       }
     } catch (e) {
       rethrow;
@@ -241,7 +277,7 @@ class DashboardActivityFeedBloc
           Set<String>.from(remoteEvents.map((event) => event.txHash));
 
       final localDisplayTransactions = localTransactions
-          // .where((tx) => !remoteHashes.contains(tx.hash))
+          .where((tx) => !remoteHashes.contains(tx.hash))
           .map((tx) => ActivityFeedItem(hash: tx.hash, info: tx))
           .toList();
 
