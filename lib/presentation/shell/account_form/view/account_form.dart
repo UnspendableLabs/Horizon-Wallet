@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-
 import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
 final validAccount = RegExp(r"^\d\'$");
@@ -32,23 +32,43 @@ class _AddAccountFormState extends State<AddAccountForm> {
     // TODO: the fact that we have to do all these paranoid checks
     // is a smell.
 
-    Account? account = shell.state.maybeWhen(
-        success: (state) => state.accounts
-            .firstWhere((account) => account.uuid == state.currentAccountUuid),
-        orElse: () => null);
-
-    if (account == null) {
-      throw Exception("invariant: account is null");
-    }
-
     List<Account>? accounts = shell.state
         .maybeWhen(success: (state) => state.accounts, orElse: () => null);
 
     if (accounts == null) {
       throw Exception("invariant: accounts are null");
     }
-    purposeController.text = account.purpose;
-    coinTypeController.text = account.coinType;
+
+    Account? currentHighestIndexAccount = shell.state.maybeWhen(
+        success: (state) {
+          // Find the account with the highest hardened account index
+          Account? highestAccount;
+          int maxIndex = -1;
+
+          for (var account in state.accounts) {
+            int currentIndex =
+                int.parse(account.accountIndex.replaceAll("'", ""));
+            if (currentIndex > maxIndex) {
+              maxIndex = currentIndex;
+              highestAccount = account;
+            }
+          }
+          return highestAccount;
+        },
+        orElse: () => null);
+
+    if (currentHighestIndexAccount == null) {
+      throw Exception("invariant: account is null");
+    }
+
+    int newAccountIndex =
+        int.parse(currentHighestIndexAccount.accountIndex.replaceAll("'", "")) +
+            1;
+
+    String newAccountPath = currentHighestIndexAccount.importFormat ==
+            ImportFormat.segwit
+        ? "m/${currentHighestIndexAccount.purpose}/${currentHighestIndexAccount.coinType}/$newAccountIndex'/"
+        : "m/$newAccountIndex'/";
 
     return BlocConsumer<AccountFormBloc, RemoteDataState<Account>>(
         listener: (context, state) {
@@ -69,76 +89,37 @@ class _AddAccountFormState extends State<AddAccountForm> {
         Navigator.of(context).pop();
       });
     }, builder: (context, state) {
+      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
       return Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             TextFormField(
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+              controller: TextEditingController(text: newAccountPath),
+              decoration: InputDecoration(
+                  labelText: "Account Path:",
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  labelStyle: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black)),
+              enabled: false, // This makes the input field disabled
+            ),
+            const SizedBox(height: 16.0), // Spacing between inputs
+            TextFormField(
               controller: nameController,
               decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Name",
                   floatingLabelBehavior: FloatingLabelBehavior.always),
-              // validator: (String? value) {
-              //   if (value == null || value.isEmpty) {
-              //     return 'Please enter some text';
-              //   }
-              //   return null;
-              // },
-            ),
-            const SizedBox(height: 16.0), // Spacing between inputs
-            TextFormField(
-              controller: purposeController,
-              readOnly: true,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Purpose",
-                  floatingLabelBehavior: FloatingLabelBehavior
-                      .always), // validator: (String? value) { if (value == null || value.isEmpty) { return 'Please enter some text'; }
-              //   return null;
-              // },
-            ),
-            const SizedBox(height: 16.0), // Spacing between inputs
-            TextFormField(
-              controller: coinTypeController,
-              readOnly: true,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Coin',
-                  floatingLabelBehavior: FloatingLabelBehavior.always),
-              // validator: (String? value) {
-              //   if (value == null || value.isEmpty) {
-              //     return 'Please enter some text';
-              //   }
-              //   return null;
-              // },
-            ),
-            const SizedBox(height: 16.0), // Spacing between inputs
-            TextFormField(
-              controller: accountIndexController,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Account Index',
-                  floatingLabelBehavior: FloatingLabelBehavior.always),
               validator: (String? value) {
-                // parse int
-                bool isValidAccount = validAccount.hasMatch(value ?? "");
-
-                if (!isValidAccount) {
-                  return 'Please enter a valid account ([0-9]\')';
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name for your account';
                 }
-
-                bool accountExists =
-                    accounts.any((account) => account.accountIndex == value);
-
-                if (accountExists) {
-                  return 'Account already exists';
-                }
-
                 return null;
               },
             ),
+
             const SizedBox(height: 16.0), // Spacing between inputs
             TextFormField(
               controller: passwordController,
@@ -176,21 +157,21 @@ class _AddAccountFormState extends State<AddAccountForm> {
                   // get name field from form
 
                   String name = nameController.text;
-                  String purpose = purposeController.text;
-                  String coinType = coinTypeController.text;
-                  String accountIndex = accountIndexController.text;
-                  String walletUuid = account.walletUuid;
+                  String purpose = currentHighestIndexAccount.purpose;
+                  String coinType = currentHighestIndexAccount.coinType;
+                  String accountIndex = "$newAccountIndex";
+                  String walletUuid = currentHighestIndexAccount.walletUuid;
                   String password = passwordController.text;
 
                   context.read<AccountFormBloc>().add(Submit(
                       name: name,
                       purpose: purpose,
                       coinType: coinType,
-                      accountIndex: accountIndex,
+                      accountIndex: "$accountIndex'",
                       walletUuid: walletUuid,
-                      password: password));
-
-                  // Process data.
+                      password: password,
+                      importFormat: currentHighestIndexAccount.importFormat));
+                  Navigator.of(context).pop();
                 }
               },
               child: state == const RemoteDataState.loading()

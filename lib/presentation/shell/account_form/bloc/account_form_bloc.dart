@@ -1,18 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/uuid.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/common/uuid.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/address.dart';
 
 class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
   final accountRepository = GetIt.I<AccountRepository>();
@@ -50,19 +50,35 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
           purpose: event.purpose,
           coinType: event.coinType,
           accountIndex: event.accountIndex,
-          importFormat: ImportFormat.segwit, // TODO
+          importFormat: event.importFormat,
         );
 
-        List<Address> addresses = await addressService.deriveAddressSegwitRange(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account.uuid,
-            purpose: account.purpose,
-            coin: account.coinType,
-            account: account.accountIndex,
-            change: '0',
-            start: 0,
-            end: 9);
+        List<Address> addresses = [];
+
+        switch (event.importFormat) {
+          case ImportFormat.segwit:
+            addresses = await addressService.deriveAddressSegwitRange(
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                purpose: account.purpose,
+                coin: account.coinType,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
+          case ImportFormat.freewalletBech32:
+            addresses = await addressService.deriveAddressFreewalletBech32Range(
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                purpose: account.purpose,
+                coin: account.coinType,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
+        }
 
         await accountRepository.insert(account);
 
