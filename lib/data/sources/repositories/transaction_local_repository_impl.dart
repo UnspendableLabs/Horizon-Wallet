@@ -2,10 +2,40 @@ import "dart:convert";
 
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
+import 'package:horizon/domain/entities/transaction_unpacked.dart'
+    as unpacked_domain;
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
+import "package:horizon/data/models/unpacked.dart" as unpacked_model;
+
+class UnpackedMapper {
+  static unpacked_domain.TransactionUnpacked toDomain(
+      unpacked_model.TransactionUnpacked u) {
+    switch (u.messageType) {
+      case "enhanced_send":
+        return EnhancedSendUnpackedMapper.toDomain(
+            u as unpacked_model.EnhancedSendUnpacked);
+      default:
+        return unpacked_domain.TransactionUnpacked(
+          messageType: u.messageType,
+        );
+    }
+  }
+}
+
+class EnhancedSendUnpackedMapper {
+  static unpacked_domain.EnhancedSendUnpacked toDomain(
+      unpacked_model.EnhancedSendUnpacked u) {
+    return unpacked_domain.EnhancedSendUnpacked(
+      asset: u.asset,
+      quantity: u.quantity,
+      address: u.address,
+      memo: u.memo,
+    );
+  }
+}
 
 class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   final V2Api api;
@@ -24,12 +54,12 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       throw Exception("Cannot save transaction that was not created locally");
     }
 
-    Map<String, dynamic>? unpackedJson = transactionInfo.unpackedData == null
+    unpacked_domain.TransactionUnpacked? unpacked =
+        transactionInfo.unpackedData;
+
+    Map<String, dynamic>? json = unpacked == null
         ? null
-        : {
-            "messageType": transactionInfo.unpackedData!.messageType,
-            "messageData": transactionInfo.unpackedData!.messageData,
-          };
+        : unpacked_model.TransactionUnpacked.fromDomain(unpacked).toJson();
 
     TransactionModel tx = TransactionModel(
       hash: transactionInfo.hash,
@@ -39,7 +69,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       btcAmount: transactionInfo.btcAmount,
       fee: transactionInfo.fee,
       data: transactionInfo.data,
-      unpackedData: jsonEncode(unpackedJson),
+      unpackedData: jsonEncode(json),
       submittedAt: DateTime.now(),
     );
 
@@ -54,21 +84,24 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
 
     return transactions
         .map((tx) => TransactionInfo(
-              domain: TransactionInfoDomainLocal(
-                  raw: tx.raw, submittedAt: tx.submittedAt),
-              hash: tx.hash,
-              source: tx.source,
-              destination: tx.destination,
-              btcAmount: tx.btcAmount,
-              fee: tx.fee,
-              data: tx.data,
-              unpackedData: null,
-              // unpackedData: tx.unpackedData != null
-              //     ? TransactionUnpacked(
-              //         messageType: "",
-              //         messageData: Map<String, dynamic>.from(
-              //             jsonDecode(tx.unpackedData!)))
-              //     : null, // TODO: this is a little broken, lift up message type
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            unpackedData: UnpackedMapper.toDomain(
+                unpacked_model.TransactionUnpacked.fromJson(
+                    jsonDecode(tx.unpackedData!)))
+
+            // unpackedData: tx.unpackedData != null
+            //     ? TransactionUnpacked(
+            //         messageType: "",
+            //         messageData: Map<String, dynamic>.from(
+            //             jsonDecode(tx.unpackedData!)))
+            //     : null, // TODO: this is a little broken, lift up message type
             ))
         .toList();
   }
@@ -82,22 +115,24 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
 
     return transactions.map((tx) {
       return TransactionInfo(
-        domain: TransactionInfoDomainLocal(
-            raw: tx.raw, submittedAt: tx.submittedAt),
-        hash: tx.hash,
-        source: tx.source,
-        destination: tx.destination,
-        btcAmount: tx.btcAmount,
-        fee: tx.fee,
-        data: tx.data,
-        unpackedData: null,
-        // unpackedData: tx.unpackedData != null
-        //     ? TransactionUnpacked(
-        //         messageType: "",
-        //         messageData:
-        //             Map<String, dynamic>.from(jsonDecode(tx.unpackedData!)))
-        //     : null, // TODO: this is a little broken, lift up message type
-      );
+          domain: TransactionInfoDomainLocal(
+              raw: tx.raw, submittedAt: tx.submittedAt),
+          hash: tx.hash,
+          source: tx.source,
+          destination: tx.destination,
+          btcAmount: tx.btcAmount,
+          fee: tx.fee,
+          data: tx.data,
+          unpackedData: UnpackedMapper.toDomain(
+              unpacked_model.TransactionUnpacked.fromJson(
+                  jsonDecode(tx.unpackedData!)))
+          // unpackedData: tx.unpackedData != null
+          //     ? TransactionUnpacked(
+          //         messageType: "",
+          //         messageData:
+          //             Map<String, dynamic>.from(jsonDecode(tx.unpackedData!)))
+          //     : null, // TODO: this is a little broken, lift up message type
+          );
     }).toList();
   }
 }

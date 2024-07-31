@@ -3,6 +3,35 @@ import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import "package:horizon/data/models/unpacked.dart" as unpacked_model;
+
+// TODO: move to shared
+class UnpackedMapper {
+  static TransactionUnpacked toDomain(unpacked_model.TransactionUnpacked u) {
+    print("u ${u}");
+    print("u.messageType ${u.messageType}");
+    switch (u.messageType) {
+      case "enhanced_send":
+        return EnhancedSendUnpackedMapper.toDomain(
+            u as unpacked_model.EnhancedSendUnpacked);
+      default:
+        return TransactionUnpacked(
+          messageType: u.messageType,
+        );
+    }
+  }
+}
+
+class EnhancedSendUnpackedMapper {
+  static EnhancedSendUnpacked toDomain(unpacked_model.EnhancedSendUnpacked u) {
+    return EnhancedSendUnpacked(
+      asset: u.asset,
+      quantity: u.quantity,
+      address: u.address,
+      memo: u.memo,
+    );
+  }
+}
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final V2Api api;
@@ -19,12 +48,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
       throw Exception("Failed to unpack transaction: $hex");
     }
 
-    Unpack unpacked = response.result!;
+    Map<String, dynamic> unpacked = response.result!.toJson();
 
-    return TransactionUnpacked(
-      messageType: unpacked.messageType,
-      messageData: unpacked.toJson(),
-    );
+    return UnpackedMapper.toDomain(
+        unpacked_model.TransactionUnpacked.fromJson(unpacked));
   }
 
   @override
@@ -37,7 +64,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     Info info = response.result!;
 
-    Unpack? unpacked = info.unpackedData;
+    print("info.unpackedData ${info.unpackedData!.toJson()}");
+
+    TransactionUnpacked unpacked = UnpackedMapper.toDomain(
+        unpacked_model.TransactionUnpacked.fromJson(
+            info.unpackedData!.toJson()));
 
     // TODO: domain isn't being properly set here
     return TransactionInfo(
@@ -48,11 +79,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       btcAmount: info.btcAmount,
       fee: info.fee,
       data: info.data,
-      unpackedData: unpacked != null
-          ? TransactionUnpacked(
-              messageType: unpacked.messageType,
-              messageData: unpacked.messageData)
-          : null,
+      unpackedData: unpacked,
     );
   }
 
@@ -77,21 +104,23 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     List<TransactionInfo> transactions = response.result!.map((tx) {
+      Map<String, dynamic> json = tx.unpackedData.toJson();
+
+      TransactionUnpacked unpacked = UnpackedMapper.toDomain(
+          unpacked_model.TransactionUnpacked.fromJson(json));
+
       return TransactionInfo(
-        hash: tx.txHash,
-        domain: tx.confirmed
-            ? TransactionInfoDomainConfirmed(
-                blockHeight: tx.blockIndex!, blockTime: tx.blockTime!)
-            : TransactionInfoDomainMempool(),
-        source: tx.source,
-        destination: tx.destination,
-        btcAmount: tx.btcAmount,
-        fee: tx.fee,
-        data: tx.data,
-        unpackedData: TransactionUnpacked(
-            messageType: tx.unpackedData.messageType,
-            messageData: tx.unpackedData.messageData),
-      );
+          hash: tx.txHash,
+          domain: tx.confirmed
+              ? TransactionInfoDomainConfirmed(
+                  blockHeight: tx.blockIndex!, blockTime: tx.blockTime!)
+              : TransactionInfoDomainMempool(),
+          source: tx.source,
+          destination: tx.destination,
+          btcAmount: tx.btcAmount,
+          fee: tx.fee,
+          data: tx.data,
+          unpackedData: unpacked);
     }).toList();
 
     int? nextCursor = response.nextCursor;

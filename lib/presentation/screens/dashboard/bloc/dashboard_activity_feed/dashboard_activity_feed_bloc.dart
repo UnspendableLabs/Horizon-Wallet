@@ -241,7 +241,7 @@ class DashboardActivityFeedBloc
           Set<String>.from(remoteEvents.map((event) => event.txHash));
 
       final localDisplayTransactions = localTransactions
-          .where((tx) => !remoteHashes.contains(tx.hash))
+          // .where((tx) => !remoteHashes.contains(tx.hash))
           .map((tx) => ActivityFeedItem(hash: tx.hash, info: tx))
           .toList();
 

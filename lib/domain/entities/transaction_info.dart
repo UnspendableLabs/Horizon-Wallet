@@ -67,3 +67,7 @@ class TransactionInfo extends Equatable {
   List<Object?> get props =>
       [hash, source, destination, btcAmount, fee, data, unpackedData, domain];
 }
+
+
+
+
