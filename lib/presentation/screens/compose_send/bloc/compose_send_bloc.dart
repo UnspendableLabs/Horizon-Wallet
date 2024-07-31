@@ -115,6 +115,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
+        print("tsInfo ${txInfo.unpackedData.toString()}");
+
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
         // for now we don't track btc sends

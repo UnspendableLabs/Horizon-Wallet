@@ -6,6 +6,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
+import 'package:horizon/domain/entities/transaction_unpacked.dart';
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;
@@ -55,6 +56,7 @@ class ActivityFeedListItem extends StatelessWidget {
     } else if (item.info != null) {
       return _buildTransactionInfoTitle(item.info!);
     } else {
+      print("this case");
       return const Text('No details available');
     }
   }
@@ -73,10 +75,22 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
-    // Customize this based on your TransactionInfo structure
-    return Text(info.hash);
-    // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
+    print("info ${info.unpackedData}");
+    return switch (info.unpackedData) {
+      null => Text(info.hash),
+      EnhancedSendUnpacked(
+        asset: var asset,
+        quantity: var quantity,
+        address: var address
+      ) =>
+        Text("Send $quantity $asset to $address"),
+      _ => Text(
+          'Invariant: title unsupported unpackedData type: ${info.unpackedData!.runtimeType}'),
+    };
   }
+
+  // return Text(info.hash);
+  // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
 
   Widget _buildSubtitle() {
     if (item.event != null) {
@@ -93,8 +107,8 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseDebitEvent(txHash: var hash) => Text(hash),
       VerboseCreditEvent(txHash: var hash) => Text(hash),
       VerboseAssetIssuanceEvent(txHash: var hash) => Text(hash),
-      _ =>
-        Text('Invariant: subtitle unsupported event type: ${event.runtimeType}'),
+      _ => Text(
+          'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
 
     // // Customize this based on your Event structure
