@@ -919,20 +919,92 @@ void main() {
                   .having((state) => state.mostRecentRemoteHash,
                       'mostRecentRemoteHash', '0002'),
             ]);
+    // blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+    //     "replaces mempool with confirmed ",
+    //     build: () {
+    //       final mockTransactionLocalRepository =
+    //           MockTransactionLocalRepository();
+    //
+    //       when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+    //           .thenAnswer((_) async => []);
+    //
+    //       final mockEventsRepository = MockEventsRepository();
+    //
+    //       // mockedRemote = MockEventFactory.createMultiple([
+    //       //   ("0001", EventStateMempool()),
+    //       // ]);
+    //
+    //       mockedRemote = MockEventFactory.createMultiple([
+    //         (
+    //           "0001",
+    //           EventStateConfirmed(
+    //               blockHeight: 1,
+    //               blockTime: DateTime.now().toIntDividedBy1000())
+    //         ),
+    //       ]);
+    //
+    //       when(() => mockEventsRepository.getByAddressesVerbose(
+    //             unconfirmed: true,
+    //             addresses: ["0x123"],
+    //             cursor: null,
+    //             limit: 10,
+    //             whitelist: DEFAULT_WHITELIST,
+    //           )).thenAnswer((_) async => (mockedRemote, null, null));
+    //
+    //       return DashboardActivityFeedBloc(
+    //           pageSize: 10,
+    //           accountUuid: "123",
+    //           transactionLocalRepository: mockTransactionLocalRepository,
+    //           addressRepository: mockAddressRepository,
+    //           eventsRepository: mockEventsRepository);
+    //     },
+    //     seed: () => DashboardActivityFeedStateCompleteOk(
+    //           transactions: [
+    //             ActivityFeedItem(hash: "0001", event: mockedRemote[0]),
+    //           ],
+    //           newTransactionCount: 0,
+    //           nextCursor: 4,
+    //           mostRecentRemoteHash: "0002",
+    //         ),
+    //     act: (bloc) => bloc..add(const LoadQuiet()),
+    //     expect: () => [
+    //           // isA<DashboardActivityFeedStateReloadingOk>(),
+    //           isA<DashboardActivityFeedStateCompleteOk>()
+    //               .having(
+    //                 (state) => state.transactions,
+    //                 'transactions',
+    //                 [
+    //                   isA<ActivityFeedItem>()
+    //                       .having((item) => item.hash, 'hash', '0001')
+    //                       .having(
+    //                           (item) => item.event, 'event', isA<MockEvent>())
+    //                       .having((item) => item.event!.state, 'state',
+    //                           isA<EventStateConfirmed>()),
+    //                 ],
+    //               )
+    //               .having((state) => state.newTransactionCount, 'newTransactionCount', 0) .having((state) => state.nextCursor, 'nextCursor', 4) .having((state) => state.mostRecentRemoteHash, 'mostRecentRemoteHash', '0002'), ]);
+
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
-        "replaces mempool with confirmed ",
+        "replaces 2 local with remote ",
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
+          mockedLocal = MockTransactionInfoFactory.createMultiple([
+            (
+              "0001",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
+            (
+              "0002",
+              TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
+            ),
+          ]);
+
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
-              .thenAnswer((_) async => []);
+              .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
-
-          // mockedRemote = MockEventFactory.createMultiple([
-          //   ("0001", EventStateMempool()),
-          // ]);
 
           mockedRemote = MockEventFactory.createMultiple([
             (
@@ -941,8 +1013,21 @@ void main() {
                   blockHeight: 1,
                   blockTime: DateTime.now().toIntDividedBy1000())
             ),
+            (
+              "0002",
+              EventStateConfirmed(
+                  blockHeight: 1,
+                  blockTime: DateTime.now().toIntDividedBy1000())
+            ),
+            (
+              "0003",
+              EventStateConfirmed(
+                  blockHeight: 1,
+                  blockTime: DateTime.now().toIntDividedBy1000())
+            ),
           ]);
 
+          // `LoadMore`
           when(() => mockEventsRepository.getByAddressesVerbose(
                 unconfirmed: true,
                 addresses: ["0x123"],
@@ -960,11 +1045,13 @@ void main() {
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
-                ActivityFeedItem(hash: "0001", event: mockedRemote[0]),
+                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
+                ActivityFeedItem(hash: "0003", event: mockedRemote[2]),
               ],
               newTransactionCount: 0,
               nextCursor: 4,
-              mostRecentRemoteHash: "0002",
+              mostRecentRemoteHash: "0003",
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
@@ -978,15 +1065,27 @@ void main() {
                           .having((item) => item.hash, 'hash', '0001')
                           .having(
                               (item) => item.event, 'event', isA<MockEvent>())
+                          .having((item) => item.event!.state, 'state',
+                              isA<EventStateConfirmed>()),
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0002')
                           .having(
-                              (item) => item.event!.state, 'state', isA<EventStateConfirmed>()),
+                              (item) => item.event, 'event', isA<MockEvent>())
+                          .having((item) => item.event!.state, 'state',
+                              isA<EventStateConfirmed>()),
+                      isA<ActivityFeedItem>()
+                          .having((item) => item.hash, 'hash', '0003')
+                          .having(
+                              (item) => item.event, 'event', isA<MockEvent>())
+                          .having((item) => item.event!.state, 'state',
+                              isA<EventStateConfirmed>()),
                     ],
                   )
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 0)
                   .having((state) => state.nextCursor, 'nextCursor', 4)
                   .having((state) => state.mostRecentRemoteHash,
-                      'mostRecentRemoteHash', '0002'),
+                      'mostRecentRemoteHash', '0001'),
             ]);
   });
 }
