@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
+import 'dart:math';
 
 import "dashboard_activity_feed_event.dart";
 import "dashboard_activity_feed_state.dart";
@@ -34,9 +35,7 @@ class DashboardActivityFeedBloc
     on<LoadQuiet>(_onLoadQuiet);
     // on<Reload>(_onReload);
   }
-
-  void _onLoadQuiet(
-      LoadQuiet event, Emitter<DashboardActivityFeedState> emit) async {
+void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) async {
     // just do a standard load if we are in any state other than complete ok
     if (state is! DashboardActivityFeedStateCompleteOk) {
       add(const Load());
@@ -99,6 +98,8 @@ class DashboardActivityFeedBloc
           // iterate all remote transactions
           for (final event in remoteEvents_) {
             if (event.txHash != mostRecentRemoteHash) {
+              print("event.txHash $currentState");
+              print("mostRecentRemoteHash $mostRecentRemoteHash");
               newTransactionCount += 1;
             } else {
               found = true;
@@ -136,13 +137,15 @@ class DashboardActivityFeedBloc
         //   }
         // }
 
+        String? replacedHash = null;
         List<ActivityFeedItem> nextList = currentState.transactions.map(
           (tx) {
             // if we have a remote representation of a
             if (tx.info != null && remoteMap.containsKey(tx.hash)) {
               newTransactionCount -= 1;
-              print("tx ${tx}");
-              print("event ${remoteMap[tx.hash]}");
+              if ( replacedHash == null) {
+                replacedHash = tx.hash;
+              }
               return ActivityFeedItem(hash: tx.hash, event: remoteMap[tx.hash]);
             } else {
               return tx;
@@ -154,10 +157,15 @@ class DashboardActivityFeedBloc
         // ( i.e. UI stays the same save for banner)
         // that shows current number of news transactions
         // that can be loaded with a click
+
+        
+
+        final nextNewTransactionCount = max(0,newTransactionCount);
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: currentState.nextCursor,
-            newTransactionCount: newTransactionCount,
-            mostRecentRemoteHash: currentState.mostRecentRemoteHash,
+            newTransactionCount: nextNewTransactionCount,
+            // mostRecentRemoteHash: nextNewTransactionCount == 0 ? nextList[0].hash : currentState.mostRecentRemoteHash,
+            mostRecentRemoteHash: replacedHash ?? currentState.mostRecentRemoteHash,
             transactions: nextList));
       }
     } catch (e) {
