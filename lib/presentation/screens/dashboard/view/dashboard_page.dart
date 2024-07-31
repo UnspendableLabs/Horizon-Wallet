@@ -335,6 +335,39 @@ class AccountSelectionButton extends StatelessWidget {
               ],
             ),
           ),
+          child: Builder(builder: (context) {
+            final dashboardActivityFeedBloc =
+                BlocProvider.of<DashboardActivityFeedBloc>(context);
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      AddressActions(
+                        isDarkTheme: isDarkTheme,
+                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      ),
+                      BlocProvider(
+                        create: (context) =>
+                            BalancesBloc(accountUuid: widget.accountUuid),
+                        child: BalancesDisplay(
+                          isDarkTheme: isDarkTheme,
+                          addresses: addresses,
+                          accountUuid: widget.accountUuid,
+                        ),
+                      ),
+                      const DashboardActivityFeedScreen(),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
         ),
       ),
     );
@@ -398,9 +431,12 @@ class AddressAction extends StatelessWidget {
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+<<<<<<< HEAD
   final List<Address> addresses;
   final String accountUuid;
 
+=======
+>>>>>>> 22bfcf3 (wip)
   const AddressActions({
     super.key,
     required this.isDarkTheme,

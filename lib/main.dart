@@ -179,6 +179,7 @@ class AppRouter {
               //         return const ComposeSendPage();
               //       })
               // ]),
+<<<<<<< HEAD
               // StatefulShellBranch(routes: [
               //   GoRoute(
               //     path: "/compose/issuance",
@@ -186,6 +187,16 @@ class AppRouter {
               //       return const ComposeIssuancePage();
               //     },
               // ]),
+=======
+              StatefulShellBranch(routes: [
+                GoRoute(
+                  path: "/compose/issuance",
+                  builder: (context, state) {
+                    return const ComposeIssuancePage();
+                  },
+                ),
+              ]),
+>>>>>>> 6d5c5ce (wip)
               StatefulShellBranch(
                 routes: [
                   GoRoute(
