@@ -98,43 +98,48 @@ class _DashboardPage_State extends State<_DashboardPage> {
         initial: () => const Text("initial"),
         loading: () => const CircularProgressIndicator(),
         error: (error) => Text("Error: $error"),
-        success: (addresses) => Padding(
-          padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(30.0),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  AddressActions(
-                    isDarkTheme: isDarkTheme,
-                  ),
-                  BlocProvider(
-                    create: (context) =>
-                        BalancesBloc(accountUuid: widget.accountUuid),
-                    child: BalancesDisplay(
-                      isDarkTheme: isDarkTheme,
-                      addresses: addresses,
-                      accountUuid: widget.accountUuid,
-                    ),
-                  ),
-                  BlocProvider(
-                    create: (context) => DashboardActivityFeedBloc(
-                      accountUuid: widget.accountUuid,
-                      eventsRepository: GetIt.I.get<EventsRepository>(),
-                      addressRepository: GetIt.I.get<AddressRepository>(),
-                      transactionLocalRepository:
-                          GetIt.I.get<TransactionLocalRepository>(),
-                      pageSize: 50,
-                    ),
-                    child: const DashboardActivityFeedScreen(),
-                  ),
-                ],
-              ),
-            ),
+        success: (addresses) => BlocProvider(
+          create: (context) => DashboardActivityFeedBloc(
+            accountUuid: widget.accountUuid,
+            eventsRepository: GetIt.I.get<EventsRepository>(),
+            addressRepository: GetIt.I.get<AddressRepository>(),
+            transactionLocalRepository:
+                GetIt.I.get<TransactionLocalRepository>(),
+            pageSize: 50,
           ),
+          child: Builder(builder: (context) {
+            final dashboardActivityFeedBloc =
+                BlocProvider.of<DashboardActivityFeedBloc>(context);
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      AddressActions(
+                        isDarkTheme: isDarkTheme,
+                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      ),
+                      BlocProvider(
+                        create: (context) =>
+                            BalancesBloc(accountUuid: widget.accountUuid),
+                        child: BalancesDisplay(
+                          isDarkTheme: isDarkTheme,
+                          addresses: addresses,
+                          accountUuid: widget.accountUuid,
+                        ),
+                      ),
+                      const DashboardActivityFeedScreen(),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
         ),
       );
     });
@@ -143,7 +148,12 @@ class _DashboardPage_State extends State<_DashboardPage> {
 
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
-  const AddressActions({super.key, required this.isDarkTheme});
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  const AddressActions({
+    super.key,
+    required this.isDarkTheme,
+    required this.dashboardActivityFeedBloc,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -220,9 +230,12 @@ class AddressActions extends StatelessWidget {
                             child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.5,
                               height: MediaQuery.of(context).size.height * 0.75,
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: ComposeSendPage(),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: ComposeSendPage(
+                                  dashboardActivityFeedBloc:
+                                      dashboardActivityFeedBloc,
+                                ),
                               ),
                             ),
                           );

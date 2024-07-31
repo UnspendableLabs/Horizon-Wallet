@@ -9,9 +9,14 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 
 class ComposeSendPage extends StatelessWidget {
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+
   const ComposeSendPage({
+    required this.dashboardActivityFeedBloc,
     super.key,
   });
 
@@ -23,7 +28,9 @@ class ComposeSendPage extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeSendBloc()
           ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
-        child: const _ComposeSendPage_(),
+        child: _ComposeSendPage_(
+          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+        ),
       ),
       orElse: () => const SizedBox.shrink(),
     );
@@ -31,7 +38,8 @@ class ComposeSendPage extends StatelessWidget {
 }
 
 class _ComposeSendPage_ extends StatefulWidget {
-  const _ComposeSendPage_();
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  const _ComposeSendPage_({required this.dashboardActivityFeedBloc, super.key});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
@@ -150,10 +158,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           listener: (context, state) {
         state.submitState.maybeWhen(
             success: (txHash, sourceAddress) {
+              // 0) reload activity feed
+              widget.dashboardActivityFeedBloc
+                  .add(const Load()); // show "N more transactions".
+
               // 1) close modal
               Navigator.of(context).pop();
               // 2) show snackbar with copy tx action
-
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   duration: const Duration(seconds: 5),
                   action: SnackBarAction(

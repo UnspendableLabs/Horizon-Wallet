@@ -107,13 +107,13 @@ class AppRouter {
                   )
                 ],
               ),
-              StatefulShellBranch(routes: [
-                GoRoute(
-                    path: "/compose/send",
-                    builder: (context, state) {
-                      return const ComposeSendPage();
-                    })
-              ]),
+              // StatefulShellBranch(routes: [
+              //   GoRoute(
+              //       path: "/compose/send",
+              //       builder: (context, state) {
+              //         return const ComposeSendPage();
+              //       })
+              // ]),
               StatefulShellBranch(routes: [
                 GoRoute(
                   path: "/compose/issuance",
