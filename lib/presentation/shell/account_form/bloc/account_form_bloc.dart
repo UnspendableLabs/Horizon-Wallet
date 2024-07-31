@@ -42,12 +42,6 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
         if (wallet.publicKey != compareWallet.publicKey) {
           throw Exception("invalid password");
         }
-        print('event.name: ${event.name}');
-        print('event.walletUuid: ${event.walletUuid}');
-        print('event.purpose: ${event.purpose}');
-        print('event.coinType: ${event.coinType}');
-        print('event.accountIndex: ${event.accountIndex}');
-        print('event.importFormat: ${event.importFormat}');
 
         final account = Account(
           name: event.name,

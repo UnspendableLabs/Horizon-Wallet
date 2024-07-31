@@ -112,65 +112,14 @@ class _AddAccountFormState extends State<AddAccountForm> {
                   border: OutlineInputBorder(),
                   labelText: "Name",
                   floatingLabelBehavior: FloatingLabelBehavior.always),
-              // validator: (String? value) {
-              //   if (value == null || value.isEmpty) {
-              //     return 'Please enter some text';
-              //   }
-              //   return null;
-              // },
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name for your account';
+                }
+                return null;
+              },
             ),
-            // const SizedBox(height: 16.0), // Spacing between inputs
-            // TextFormField(
-            //   controller: purposeController,
-            //   readOnly: true,
-            //   decoration: const InputDecoration(
-            //       border: OutlineInputBorder(),
-            //       labelText: "Purpose",
-            //       floatingLabelBehavior: FloatingLabelBehavior
-            //           .always), // validator: (String? value) { if (value == null || value.isEmpty) { return 'Please enter some text'; }
-            //   //   return null;
-            //   // },
-            // ),
-            // const SizedBox(height: 16.0), // Spacing between inputs
-            // TextFormField(
-            //   controller: coinTypeController,
-            //   readOnly: true,
-            //   decoration: const InputDecoration(
-            //       border: OutlineInputBorder(),
-            //       labelText: 'Coin',
-            //       floatingLabelBehavior: FloatingLabelBehavior.always),
-            //   // validator: (String? value) {
-            //   //   if (value == null || value.isEmpty) {
-            //   //     return 'Please enter some text';
-            //   //   }
-            //   //   return null;
-            //   // },
-            // ),
-            // const SizedBox(height: 16.0), // Spacing between inputs
-            // TextFormField(
-            //   controller: accountIndexController,
-            //   decoration: const InputDecoration(
-            //       border: OutlineInputBorder(),
-            //       labelText: 'Account Index',
-            //       floatingLabelBehavior: FloatingLabelBehavior.always),
-            //   validator: (String? value) {
-            //     // parse int
-            //     bool isValidAccount = validAccount.hasMatch(value ?? "");
 
-            //     if (!isValidAccount) {
-            //       return 'Please enter a valid account ([0-9]\')';
-            //     }
-
-            //     bool accountExists =
-            //         accounts.any((account) => account.accountIndex == value);
-
-            //     if (accountExists) {
-            //       return 'Account already exists';
-            //     }
-
-            //     return null;
-            //   },
-            // ),
             const SizedBox(height: 16.0), // Spacing between inputs
             TextFormField(
               controller: passwordController,
