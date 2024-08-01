@@ -10,7 +10,8 @@ import "package:horizon/remote_data_bloc/remote_data_state.dart";
 final validAccount = RegExp(r"^\d\'$");
 
 class AddAccountForm extends StatefulWidget {
-  const AddAccountForm({super.key});
+  final BuildContext? modalSheetContext;
+  const AddAccountForm({super.key, this.modalSheetContext});
 
   @override
   State<AddAccountForm> createState() => _AddAccountFormState();
@@ -85,8 +86,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
         ));
 
         await Future.delayed(const Duration(milliseconds: 500));
-
-        Navigator.of(context).pop();
       });
     }, builder: (context, state) {
       final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -172,6 +171,11 @@ class _AddAccountFormState extends State<AddAccountForm> {
                       password: password,
                       importFormat: currentHighestIndexAccount.importFormat));
                   Navigator.of(context).pop();
+                  // return to dashboard if modalSheetContext is not null
+                  // this will be the case on smaller screens to close the wolt bottom sheet
+                  if (widget.modalSheetContext != null) {
+                    Navigator.of(widget.modalSheetContext!).pop();
+                  }
                 }
               },
               child: state == const RemoteDataState.loading()

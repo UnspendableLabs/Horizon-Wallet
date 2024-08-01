@@ -59,7 +59,6 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    // Define background colors based on theme
     final backgroundColor =
         isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
@@ -103,54 +102,56 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      ListView.builder(
-                        shrinkWrap:
-                            true, // Ensures the ListView takes only the necessary space
-                        itemCount: state.accounts.length,
-                        itemBuilder: (context, index) {
-                          final account = state.accounts[index];
-                          return Column(
-                            children: [
-                              ListTile(
-                                title: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                          Icons.account_balance_wallet_rounded),
-                                      const SizedBox(width: 8.0),
-                                      Text(account.name),
-                                    ],
+                      Expanded(
+                        child: ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          itemCount: state.accounts.length,
+                          itemBuilder: (context, index) {
+                            final account = state.accounts[index];
+                            return Column(
+                              children: [
+                                ListTile(
+                                  title: Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons
+                                            .account_balance_wallet_rounded),
+                                        const SizedBox(width: 8.0),
+                                        Text(account.name),
+                                      ],
+                                    ),
                                   ),
+                                  hoverColor:
+                                      Colors.transparent, // No hover effect
+                                  selected:
+                                      account.uuid == state.currentAccountUuid,
+                                  onTap: () {
+                                    setState(() => selectedAccount = account);
+                                    context
+                                        .read<ShellStateCubit>()
+                                        .onAccountChanged(account);
+                                    GoRouter.of(context).go('/dashboard');
+                                  },
                                 ),
-                                hoverColor:
-                                    Colors.transparent, // No hover effect
-                                selected:
-                                    account.uuid == state.currentAccountUuid,
-                                onTap: () {
-                                  setState(() => selectedAccount = account);
-                                  context
-                                      .read<ShellStateCubit>()
-                                      .onAccountChanged(account);
-                                  GoRouter.of(context).go('/dashboard');
-                                },
-                              ),
-                              if (index !=
-                                  state.accounts.length -
-                                      1) // Avoid underline for the last element
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0),
-                                  child: Divider(
-                                    color: Colors.grey.shade300,
-                                    thickness: 1.0,
+                                if (index !=
+                                    state.accounts.length -
+                                        1) // Avoid underline for the last element
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    child: Divider(
+                                      color: Colors.grey.shade300,
+                                      thickness: 1.0,
+                                    ),
                                   ),
-                                ),
-                            ],
-                          );
-                        },
+                              ],
+                            );
+                          },
+                        ),
                       ),
                       SizedBox(
                         width: double.infinity,
@@ -184,7 +185,6 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                           child: const Text("Add Account"),
                         ),
                       ),
-                      const Spacer(), // Pushes the text to the bottom
                       const Padding(
                         padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
                         child: Text(
@@ -215,10 +215,33 @@ class Shell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
+  SliverWoltModalSheetPage page1(
+    BuildContext modalSheetContext,
+    TextTheme textTheme,
+  ) {
+    return WoltModalSheetPage(
+      isTopBarLayerAlwaysVisible: true,
+      topBarTitle: Text('Add an account', style: textTheme.titleSmall),
+      trailingNavBarWidget: IconButton(
+        padding: const EdgeInsets.all(_pagePadding),
+        icon: const Icon(Icons.close),
+        onPressed: Navigator.of(modalSheetContext).pop,
+      ),
+      child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            _pagePadding,
+            _pagePadding,
+            _pagePadding,
+            _bottomPaddingForButton,
+          ),
+          child: AddAccountForm(modalSheetContext: modalSheetContext)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final shell = context.read<ShellStateCubit>();
+    final shell = context.watch<ShellStateCubit>();
 
     void showAccountList(BuildContext context) {
       final textTheme = Theme.of(context).textTheme;
@@ -239,24 +262,62 @@ class Shell extends StatelessWidget {
                 ),
                 child: SizedBox(
                   height: 400, // Set a fixed height for the ListView
-                  child: ListView.builder(
-                    itemCount: state.accounts.length,
-                    itemBuilder: (context, index) {
-                      final account = state.accounts[index];
-                      final isSelected =
-                          account.uuid == state.currentAccountUuid;
-                      return ListTile(
-                        title: Text(account.name),
-                        selected: isSelected,
-                        onTap: () {
-                          context
-                              .read<ShellStateCubit>()
-                              .onAccountChanged(account);
-                          Navigator.of(modalSheetContext).pop();
-                          GoRouter.of(context).go('/dashboard');
-                        },
-                      );
-                    },
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: state.accounts.length,
+                          itemBuilder: (context, index) {
+                            final account = state.accounts[index];
+                            final isSelected =
+                                account.uuid == state.currentAccountUuid;
+                            return ListTile(
+                              title: Text(account.name),
+                              selected: isSelected,
+                              onTap: () {
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAccountChanged(account);
+                                Navigator.of(modalSheetContext).pop();
+                                GoRouter.of(context).go('/dashboard');
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            elevation: 0, // No shadow
+                          ),
+                          onPressed: () {
+                            WoltModalSheet.show<void>(
+                              context: context,
+                              pageListBuilder: (modalSheetContext) {
+                                final textTheme = Theme.of(context).textTheme;
+                                return [page1(modalSheetContext, textTheme)];
+                              },
+                              onModalDismissedWithBarrierTap: () {
+                                print("dismissed with barrier tap");
+                              },
+                              modalTypeBuilder: (context) {
+                                final size = MediaQuery.of(context).size.width;
+                                if (size < 768.0) {
+                                  return WoltModalType.bottomSheet;
+                                } else {
+                                  return WoltModalType.dialog;
+                                }
+                              },
+                            );
+                          },
+                          child: const Text("Add Account"),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
