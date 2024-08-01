@@ -241,7 +241,7 @@ class Shell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final shell = context.watch<ShellStateCubit>();
+    final shell = context.read<ShellStateCubit>();
 
     void showAccountList(BuildContext context) {
       final textTheme = Theme.of(context).textTheme;
