@@ -68,6 +68,20 @@ class TransactionInfo extends Equatable {
       [hash, source, destination, btcAmount, fee, data, unpackedData, domain];
 }
 
+class TransactionInfoVerbose extends TransactionInfo {
+  final String btcAmountNormalized;
 
-
-
+  const TransactionInfoVerbose({
+    required this.btcAmountNormalized,
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required super.unpackedData,
+  });
+  @override
+  List<Object?> get props => [btcAmountNormalized, ...super.props];
+}

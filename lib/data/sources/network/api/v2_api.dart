@@ -100,7 +100,7 @@ class Transaction {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class TransactionVerbose extends Transaction {
-  final Unpack unpackedData;
+  final TransactionUnpacked unpackedData;
   final String btcAmountNormalized;
 
   const TransactionVerbose(
@@ -500,7 +500,9 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
   final String quantityNormalized;
   final String feePaidNormalized;
 
-  VerboseAssetIssuanceParams({ required super.asset, super.assetLongname, // required super.blockIndex, required super.callDate, required super.callPrice, required super.callable, required super.description,
+  VerboseAssetIssuanceParams({
+    required super.asset,
+    super.assetLongname, // required super.blockIndex, required super.callDate, required super.callPrice, required super.callable, required super.description,
     // required super.divisible,
     // required super.feePaid,
     // required super.issuer,
@@ -711,7 +713,7 @@ class VerboseNewTransactionParams extends NewTransactionParams {
       _$VerboseNewTransactionParamsFromJson(json);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
 class AssetInfo {
   final bool divisible;
   final String? assetLongname;
@@ -729,6 +731,10 @@ class AssetInfo {
 
   factory AssetInfo.fromJson(Map<String, dynamic> json) =>
       _$AssetInfoFromJson(json);
+
+
+  Map<String, dynamic> toJson() => _$AssetInfoToJson(this);
+
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1407,20 +1413,188 @@ class SendTx {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class Unpack {
-  final String messageType;
-  final int messageTypeId;
-  final Map<String, dynamic> messageData;
+class SendTxParamsVerbose extends SendTxParams {
+  final AssetInfo assetInfo;
+  final String quantityNormalized;
 
-  const Unpack({
-    required this.messageType,
-    required this.messageTypeId,
-    required this.messageData,
+  const SendTxParamsVerbose({
+    required super.source,
+    required super.destination,
+    required super.asset,
+    required super.quantity,
+    super.memo,
+    required super.memoIsHex,
+    required super.useEnhancedSend,
+    required this.assetInfo,
+    required this.quantityNormalized,
   });
 
-  factory Unpack.fromJson(Map<String, dynamic> json) => _$UnpackFromJson(json);
+  factory SendTxParamsVerbose.fromJson(Map<String, dynamic> json) =>
+      _$SendTxParamsVerboseFromJson(json);
 
-  Map<String, dynamic> toJson() => _$UnpackToJson(this);
+  // @override
+  // Map<String, dynamic> toJson() => _$SendTxParamsVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SendTxVerbose extends SendTx {
+  @override
+  final SendTxParamsVerbose params;
+
+  const SendTxVerbose({
+    required this.params,
+    required super.rawtransaction,
+    required super.name,
+  }) : super(params: params);
+
+  factory SendTxVerbose.fromJson(Map<String, dynamic> json) =>
+      _$SendTxVerboseFromJson(json);
+
+  // @override
+  // Map<String, dynamic> toJson() => _$SendTxVerboseToJson(this);
+}
+
+// @JsonSerializable(fieldRename: FieldRename.snake)
+// class Unpack {
+//   final String messageType;
+//   final int messageTypeId;
+//   final Map<String, dynamic> messageData;
+//
+//   const Unpack({
+//     required this.messageType,
+//     required this.messageTypeId,
+//     required this.messageData,
+//   });
+//
+//   factory Unpack.fromJson(Map<String, dynamic> json) => _$UnpackFromJson(json);
+//
+//   Map<String, dynamic> toJson() => _$UnpackToJson(this);
+// }
+
+class TransactionUnpacked {
+  final String messageType;
+
+  const TransactionUnpacked({required this.messageType});
+
+  factory TransactionUnpacked.fromJson(Map<String, dynamic> json) {
+    final messageType = json["message_type"];
+    switch (messageType) {
+      case "enhanced_send":
+        return EnhancedSendUnpacked.fromJson(json);
+      default:
+        return TransactionUnpacked(
+          messageType: json["message_type"],
+        );
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": messageType,
+    };
+  }
+}
+
+class EnhancedSendUnpacked extends TransactionUnpacked {
+  final String asset;
+  final int quantity;
+  final String address;
+  final String? memo;
+  EnhancedSendUnpacked(
+      {required this.asset,
+      required this.quantity,
+      required this.address,
+      required this.memo})
+      : super(
+          messageType: "enhanced_send",
+        );
+
+  factory EnhancedSendUnpacked.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return EnhancedSendUnpacked(
+        asset: messageData["asset"],
+        quantity: messageData["quantity"],
+        address: messageData["address"],
+        memo: messageData["memo"]);
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "enhanced_send",
+      "message_data": {
+        "asset": asset,
+        "quantity": quantity,
+        "address": address,
+        "memo": memo,
+      }
+    };
+  }
+}
+
+class TransactionUnpackedVerbose extends TransactionUnpacked {
+  const TransactionUnpackedVerbose({required String messageType})
+      : super(messageType: messageType);
+
+  factory TransactionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageType = json["message_type"];
+    switch (messageType) {
+      case "enhanced_send":
+        return EnhancedSendUnpackedVerbose.fromJson(json);
+      default:
+        return TransactionUnpackedVerbose(
+          messageType: json["message_type"],
+        );
+    }
+  }
+}
+
+class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final int quantity;
+  final String address;
+  final String? memo;
+  final AssetInfo assetInfo;
+  final String quantityNormalized;
+
+  EnhancedSendUnpackedVerbose({
+    required super.messageType,
+    required this.asset,
+    required this.quantity,
+    required this.address,
+    this.memo,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory EnhancedSendUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return EnhancedSendUnpackedVerbose(
+        messageType: json["message_type"],
+        asset: messageData["asset"],
+        quantity: messageData["quantity"],
+        address: messageData["address"],
+        memo: messageData["memo"],
+        assetInfo: AssetInfo.fromJson(messageData["asset_info"]),
+        quantityNormalized: messageData["quantity_normalized"]);
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "enhanced_send",
+      "message_data": {
+        "asset": asset,
+        "quantity": quantity,
+        "address": address,
+        "memo": memo,
+        "asset_info": assetInfo.toJson(),
+        "quantity_normalized": quantityNormalized,
+      }
+    };
+  }
 }
 
 //
@@ -1441,7 +1615,7 @@ class Unpack {
 //             "divisible": false,
 //             "lock": false,
 //             "reset": false,
-//             "callable": false,
+//             "callable": false,jjjjjjjjjjjjjjjjjjjjjjjjjj
 //             "call_date": 0,
 //             "call_price": 0.0,
 //             "description": "UNNEGOTIABLE WE MUST BECOME UNNEGOTIABLE WE ARE",
@@ -1449,29 +1623,174 @@ class Unpack {
 //         }
 //     }
 // }
-@JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Info {
   final String source;
   final String? destination;
   final int? btcAmount;
   final int? fee;
   final String data;
-  final Unpack? unpackedData;
   final Map<String, dynamic>? decodedTx;
+  // final TransactionUnpacked? unpackedData;
 
-  const Info(
-      {required this.source,
-      required this.destination,
-      required this.btcAmount,
-      required this.fee,
-      required this.data,
-      required this.unpackedData,
-      required this.decodedTx});
+  const Info({
+    required this.source,
+    required this.destination,
+    required this.btcAmount,
+    required this.fee,
+    required this.data,
+    required this.decodedTx,
+    // required this.unpackedData,
+  });
 
-  factory Info.fromJson(Map<String, dynamic> json) => _$InfoFromJson(json);
+  factory Info.fromJson(Map<String, dynamic> json) {
+    final base = _$InfoFromJson(json);
+
+    final unpackedData = json["unpacked_data"];
+
+    if (unpackedData == null) {
+      return base;
+    }
+
+    final messageType = unpackedData["message_type"];
+
+    switch (messageType) {
+      case "enhanced_send":
+        return EnhancedSendInfo.fromJson(json);
+      default:
+        return base;
+    }
+  }
 
   // TODO: this doesnt actually show all the send data
-  Map<String, dynamic> toJson() => _$InfoToJson(this);
+  Map<String, dynamic> toJson() => 
+  _$InfoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class EnhancedSendInfoUnpackedData {
+  final String asset;
+  final int quantity;
+  final String address;
+  final String? memo;
+
+  const EnhancedSendInfoUnpackedData({
+    required this.asset,
+    required this.quantity,
+    required this.address,
+    this.memo,
+  });
+
+  factory EnhancedSendInfoUnpackedData.fromJson(Map<String, dynamic> json) =>
+      _$EnhancedSendInfoUnpackedDataFromJson(json);
+
+
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class EnhancedSendInfo extends Info {
+  final EnhancedSendUnpacked unpackedData;
+
+  EnhancedSendInfo({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required this.unpackedData,
+  });
+
+  factory EnhancedSendInfo.fromJson(Map<String, dynamic> json) =>
+      _$EnhancedSendInfoFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class InfoVerbose extends Info {
+  final String btcAmountNormalized;
+
+  const InfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    // super.unpackedData,
+    required this.btcAmountNormalized,
+  });
+
+  factory InfoVerbose.fromJson(Map<String, dynamic> json) {
+    final base = _$InfoVerboseFromJson(json);
+
+    final unpackedData = json["unpacked_data"];
+
+    if (unpackedData == null) {
+      return base;
+    }
+
+    final messageType = unpackedData["message_type"];
+
+    switch (messageType) {
+      case "enhanced_send":
+        return EnhancedSendInfoVerbose.fromJson(json);
+      default:
+        return base;
+    }
+
+      
+
+
+  }
+
+  @override
+  Map<String, dynamic> toJson() => _$InfoVerboseToJson(this);
+
+}
+
+// @JsonSerializable(fieldRename: FieldRename.snake)
+// class EnhancedSendInfoUnpackedDataVerbose extends EnhancedSendInfoUnpackedData {
+//   final AssetInfo assetInfo;
+//   final String quantityNormalized;
+//
+//   const EnhancedSendInfoUnpackedDataVerbose({
+//     required super.asset,
+//     required super.quantity,
+//     required super.address,
+//     super.memo,
+//     required this.assetInfo,
+//     required this.quantityNormalized,
+//   });
+//
+//   factory EnhancedSendInfoUnpackedDataVerbose.fromJson(
+//           Map<String, dynamic> json) =>
+//       _$EnhancedSendInfoUnpackedDataVerboseFromJson(json);
+// }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class EnhancedSendInfoVerbose extends InfoVerbose {
+  final EnhancedSendUnpackedVerbose unpackedData;
+
+  const EnhancedSendInfoVerbose({
+    required super.source,
+
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory EnhancedSendInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$EnhancedSendInfoVerboseFromJson(json);
+
+
+  @override
+  Map<String, dynamic> toJson() => _$EnhancedSendInfoVerboseToJson(this);
+
+
 }
 
 // {
@@ -1653,11 +1972,27 @@ abstract class V2Api {
     // @Query("verbose") bool verbose,
   );
 
+  @GET("/transactions/info?verbose=true")
+  Future<Response<InfoVerbose>> getTransactionInfoVerbose(
+    @Query("rawtransaction") String rawtransaction,
+    // TODO: add these back and make optional
+    // @Query("block_index") int blockIndex,
+    // @Query("verbose") bool verbose,
+  );
+
   //     Unpack
 // https://api.counterparty.io/transactions/unpack{?datahex}{&block_index}{&verbose}
 
   @GET("/transactions/unpack")
-  Future<Response<Unpack>> unpackTransaction(
+  Future<Response<TransactionUnpacked>> unpackTransaction(
+    @Query("datahex") String datahex,
+    // TODO: add these back and make optional
+    // @Query("block_index") int blockIndex,
+    // @Query("verbose") bool verbose,
+  );
+
+  @GET("/transactions/unpack?verbose=true")
+  Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
     @Query("datahex") String datahex,
     // TODO: add these back and make optional
     // @Query("block_index") int blockIndex,
@@ -1700,6 +2035,17 @@ abstract class V2Api {
 // TODO add all query params
   @GET("/addresses/{address}/compose/send")
   Future<Response<SendTx>> composeSend(
+    @Path("address") String address,
+    @Query("destination") String destination,
+    @Query("asset") String asset,
+    @Query("quantity") int quantity, [
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("fee") int? fee,
+  ]);
+
+// TODO add all query params
+  @GET("/addresses/{address}/compose/send?verbose=true")
+  Future<Response<SendTxVerbose>> composeSendVerbose(
     @Path("address") String address,
     @Query("destination") String destination,
     @Query("asset") String asset,

@@ -107,8 +107,8 @@ TransactionVerbose _$TransactionVerboseFromJson(Map<String, dynamic> json) =>
       data: json['data'] as String,
       supported: json['supported'] as bool,
       confirmed: json['confirmed'] as bool,
-      unpackedData:
-          Unpack.fromJson(json['unpacked_data'] as Map<String, dynamic>),
+      unpackedData: TransactionUnpacked.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
       btcAmountNormalized: json['btc_amount_normalized'] as String,
     );
 
@@ -1130,16 +1130,46 @@ Map<String, dynamic> _$SendTxToJson(SendTx instance) => <String, dynamic>{
       'name': instance.name,
     };
 
-Unpack _$UnpackFromJson(Map<String, dynamic> json) => Unpack(
-      messageType: json['message_type'] as String,
-      messageTypeId: (json['message_type_id'] as num).toInt(),
-      messageData: json['message_data'] as Map<String, dynamic>,
+SendTxParamsVerbose _$SendTxParamsVerboseFromJson(Map<String, dynamic> json) =>
+    SendTxParamsVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String,
+      asset: json['asset'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      memo: json['memo'] as String?,
+      memoIsHex: json['memo_is_hex'] as bool,
+      useEnhancedSend: json['use_enhanced_send'] as bool,
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
     );
 
-Map<String, dynamic> _$UnpackToJson(Unpack instance) => <String, dynamic>{
-      'message_type': instance.messageType,
-      'message_type_id': instance.messageTypeId,
-      'message_data': instance.messageData,
+Map<String, dynamic> _$SendTxParamsVerboseToJson(
+        SendTxParamsVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'asset': instance.asset,
+      'quantity': instance.quantity,
+      'memo': instance.memo,
+      'memo_is_hex': instance.memoIsHex,
+      'use_enhanced_send': instance.useEnhancedSend,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
+SendTxVerbose _$SendTxVerboseFromJson(Map<String, dynamic> json) =>
+    SendTxVerbose(
+      params:
+          SendTxParamsVerbose.fromJson(json['params'] as Map<String, dynamic>),
+      rawtransaction: json['rawtransaction'] as String,
+      name: json['name'] as String,
+    );
+
+Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
+    <String, dynamic>{
+      'rawtransaction': instance.rawtransaction,
+      'name': instance.name,
+      'params': instance.params,
     };
 
 Info _$InfoFromJson(Map<String, dynamic> json) => Info(
@@ -1148,9 +1178,6 @@ Info _$InfoFromJson(Map<String, dynamic> json) => Info(
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      unpackedData: json['unpacked_data'] == null
-          ? null
-          : Unpack.fromJson(json['unpacked_data'] as Map<String, dynamic>),
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
     );
 
@@ -1160,8 +1187,96 @@ Map<String, dynamic> _$InfoToJson(Info instance) => <String, dynamic>{
       'btc_amount': instance.btcAmount,
       'fee': instance.fee,
       'data': instance.data,
-      'unpacked_data': instance.unpackedData?.toJson(),
       'decoded_tx': instance.decodedTx,
+    };
+
+EnhancedSendInfoUnpackedData _$EnhancedSendInfoUnpackedDataFromJson(
+        Map<String, dynamic> json) =>
+    EnhancedSendInfoUnpackedData(
+      asset: json['asset'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      address: json['address'] as String,
+      memo: json['memo'] as String?,
+    );
+
+Map<String, dynamic> _$EnhancedSendInfoUnpackedDataToJson(
+        EnhancedSendInfoUnpackedData instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'quantity': instance.quantity,
+      'address': instance.address,
+      'memo': instance.memo,
+    };
+
+EnhancedSendInfo _$EnhancedSendInfoFromJson(Map<String, dynamic> json) =>
+    EnhancedSendInfo(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      unpackedData: EnhancedSendUnpacked.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$EnhancedSendInfoToJson(EnhancedSendInfo instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'unpacked_data': instance.unpackedData,
+    };
+
+InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) => InfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+    );
+
+Map<String, dynamic> _$InfoVerboseToJson(InfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+    };
+
+EnhancedSendInfoVerbose _$EnhancedSendInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    EnhancedSendInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      unpackedData: EnhancedSendUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$EnhancedSendInfoVerboseToJson(
+        EnhancedSendInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
     };
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
@@ -1855,13 +1970,47 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<Unpack>> unpackTransaction(String datahex) async {
+  Future<Response<InfoVerbose>> getTransactionInfoVerbose(
+      String rawtransaction) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'rawtransaction': rawtransaction
+    };
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<InfoVerbose>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/transactions/info?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<InfoVerbose>.fromJson(
+      _result.data!,
+      (json) => InfoVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<TransactionUnpacked>> unpackTransaction(
+      String datahex) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'datahex': datahex};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<Unpack>>(Options(
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<TransactionUnpacked>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -1877,9 +2026,41 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final _value = Response<Unpack>.fromJson(
+    final _value = Response<TransactionUnpacked>.fromJson(
       _result.data!,
-      (json) => Unpack.fromJson(json as Map<String, dynamic>),
+      (json) => TransactionUnpacked.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
+      String datahex) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'datahex': datahex};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<TransactionUnpackedVerbose>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/transactions/unpack?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<TransactionUnpackedVerbose>.fromJson(
+      _result.data!,
+      (json) =>
+          TransactionUnpackedVerbose.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }
@@ -1924,6 +2105,50 @@ class _V2Api implements V2Api {
     final _value = Response<SendTx>.fromJson(
       _result.data!,
       (json) => SendTx.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<SendTxVerbose>> composeSendVerbose(
+    String address,
+    String destination,
+    String asset,
+    int quantity, [
+    bool? allowUnconfirmedInputs,
+    int? fee,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destination': destination,
+      r'asset': asset,
+      r'quantity': quantity,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'fee': fee,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<SendTxVerbose>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/send?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<SendTxVerbose>.fromJson(
+      _result.data!,
+      (json) => SendTxVerbose.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

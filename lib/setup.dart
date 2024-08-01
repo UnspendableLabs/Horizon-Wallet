@@ -90,7 +90,7 @@ Future<void> setup() async {
 
   injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
     addressRepository: GetIt.I.get<AddressRepository>(),
-    api: GetIt.I.get<V2Api>(),
+    api_: GetIt.I.get<V2Api>(),
   ));
 
   injector.registerSingleton<TransactionLocalRepository>(

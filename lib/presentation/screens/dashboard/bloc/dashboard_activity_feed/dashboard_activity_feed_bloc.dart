@@ -123,8 +123,7 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
         // final localTransactionsHashes =
         //     Set<String>.from(localTransactions.map((tx) => tx.hash));
         //
-        final remoteMap = Map<String, Event>.fromIterable(remoteEvents,
-            key: (e) => e.txHash, value: (e) => e);
+        final remoteMap = { for (var e in remoteEvents) e.txHash : e };
         //
         // for (final event in remoteEvents) {
         //   // if at most recent remote hash, break;
@@ -137,15 +136,13 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
         //   }
         // }
 
-        String? replacedHash = null;
+        String? replacedHash;
         List<ActivityFeedItem> nextList = currentState.transactions.map(
           (tx) {
             // if we have a remote representation of a
             if (tx.info != null && remoteMap.containsKey(tx.hash)) {
               newTransactionCount -= 1;
-              if ( replacedHash == null) {
-                replacedHash = tx.hash;
-              }
+              replacedHash ??= tx.hash;
               return ActivityFeedItem(hash: tx.hash, event: remoteMap[tx.hash]);
             } else {
               return tx;
