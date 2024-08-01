@@ -59,6 +59,65 @@ class EnhancedSendUnpackedVerboseMapper {
   }
 }
 
+class InfoMapper {
+  static TransactionInfo toDomain(api.Info info) {
+    return switch (info) {
+      api.EnhancedSendInfo(unpackedData: var u) => TransactionInfoEnhancedSend(
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: EnhancedSendUnpackedMapper.toDomain(u),
+        ),
+      _ => TransactionInfo(
+          hash: "",
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+        )
+    };
+  }
+}
+
+class InfoVerboseMapper {
+  static TransactionInfoVerbose toDomain(api.InfoVerbose info) {
+    return switch (info) {
+      api.EnhancedSendInfoVerbose(unpackedData: var u) =>
+        TransactionInfoEnhancedSendVerbose(
+          btcAmountNormalized: info.btcAmountNormalized,
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(u),
+        ),
+      _ => TransactionInfoVerbose(
+          btcAmountNormalized: info.btcAmountNormalized,
+          hash: "",
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+        )
+    };
+  }
+}
+
 class TransactionRepositoryImpl implements TransactionRepository {
   final api.V2Api api_;
   final AddressRepository addressRepository;
@@ -91,7 +150,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   @override
   Future<TransactionInfo> getInfo(String raw) async {
-
     final response = await api_.getTransactionInfo(raw);
 
     if (response.result == null) {
@@ -100,59 +158,25 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     api.Info info = response.result!;
 
-
-    return TransactionInfo(
-      hash: "", // TODO: shouldn't be empty string
-      domain: TransactionInfoDomainLocal(raw: raw, submittedAt: DateTime.now()),
-      source: info.source,
-      destination: info.destination,
-      btcAmount: info.btcAmount,
-      fee: info.fee,
-      data: info.data,
-      unpackedData: switch (info) {
-        api.EnhancedSendInfo(unpackedData: var u) =>
-          EnhancedSendUnpackedMapper.toDomain(u),
-        _ => null,
-      },
-    );
+    return InfoMapper.toDomain(info);
   }
 
   @override
   Future<TransactionInfoVerbose> getInfoVerbose(String raw) async {
-
-    print("getInfoVerbose");
-
     final response = await api_.getTransactionInfoVerbose(raw);
 
     if (response.result == null) {
       throw Exception("Failed to get transaction info: $raw");
     }
-    
+
     api.InfoVerbose info = response.result!;
 
-    print("getInfoVerbose: ${info.toJson()}");
-
-    return TransactionInfoVerbose(
-      btcAmountNormalized: info.btcAmountNormalized,
-      hash: "", // TODO: shouldn't be empty string
-      domain: TransactionInfoDomainLocal(raw: raw, submittedAt: DateTime.now()),
-      source: info.source,
-      destination: info.destination,
-      btcAmount: info.btcAmount,
-      fee: info.fee,
-      data: info.data,
-      unpackedData: switch (info) {
-        api.EnhancedSendInfoVerbose(unpackedData: var u) =>
-          EnhancedSendUnpackedVerboseMapper.toDomain(u),
-        _ => null,
-      },
-    );
-
+    return InfoVerboseMapper.toDomain(info);
   }
 
   @override
-  Future<(List<TransactionInfo>, int? nextCursor, int? resultCount)>
-      getByAccount({
+  Future<(List<TransactionInfoVerbose>, int? nextCursor, int? resultCount)>
+      getByAccountVerbose({
     required String accountUuid,
     int? cursor,
     int? limit,
@@ -170,25 +194,40 @@ class TransactionRepositoryImpl implements TransactionRepository {
       throw Exception("Failed to get transactions by account: $accountUuid");
     }
 
-    List<TransactionInfo> transactions = response.result!.map((tx) {
-      TransactionUnpacked unpacked = UnpackedMapper.toDomain(tx.unpackedData);
+    List<TransactionInfoVerbose> transactions = response.result!.map((tx) {
+      final messageType = tx.unpackedData.messageType;
 
-      return TransactionInfo(
-          hash: tx.txHash,
-          domain: tx.confirmed
-              ? TransactionInfoDomainConfirmed(
-                  blockHeight: tx.blockIndex!, blockTime: tx.blockTime!)
-              : TransactionInfoDomainMempool(),
-          source: tx.source,
-          destination: tx.destination,
-          btcAmount: tx.btcAmount,
-          fee: tx.fee,
-          data: tx.data,
-          unpackedData: unpacked);
+      return switch (messageType) {
+        "enhanced_send" => TransactionInfoEnhancedSendVerbose(
+            btcAmountNormalized: tx.btcAmountNormalized,
+            hash: tx.txHash,
+            domain: tx.confirmed
+                ? TransactionInfoDomainConfirmed(
+                    blockHeight: tx.blockIndex!, blockTime: tx.blockTime!)
+                : TransactionInfoDomainMempool(),
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(
+                tx.unpackedData as api.EnhancedSendUnpackedVerbose)),
+        _ => TransactionInfoVerbose(
+            btcAmountNormalized: tx.btcAmountNormalized,
+            hash: tx.txHash,
+            domain: tx.confirmed
+                ? TransactionInfoDomainConfirmed(
+                    blockHeight: tx.blockIndex!, blockTime: tx.blockTime!)
+                : TransactionInfoDomainMempool(),
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+          ),
+      };
     }).toList();
-
     int? nextCursor = response.nextCursor;
-
     return (transactions, nextCursor, response.resultCount);
   }
 }

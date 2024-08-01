@@ -75,17 +75,17 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
-    print("info ${info.unpackedData}");
-    return switch (info.unpackedData) {
-      null => Text(info.hash),
-      EnhancedSendUnpacked(
-        asset: var asset,
-        quantity: var quantity,
-        address: var address
+    return switch (info) {
+      TransactionInfoEnhancedSendVerbose(
+        unpackedData: var unpackedData,
+        // asset: var asset,
+        // address: var address,
+        // quantityNormalized: var quantityNormalized,
       ) =>
-        Text("Send $quantity $asset to $address"),
+        Text(
+            "Send ${unpackedData.quantityNormalized} ${unpackedData.asset} to ${unpackedData.address}"),
       _ => Text(
-          'Invariant: title unsupported unpackedData type: ${info.unpackedData!.runtimeType}'),
+          'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
   }
 

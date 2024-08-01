@@ -1539,6 +1539,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
 
   factory TransactionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
     final messageType = json["message_type"];
+    print("messageType in fromJson $messageType");
+    print("json $json");
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedVerbose.fromJson(json);
@@ -1555,7 +1557,7 @@ class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
   final int quantity;
   final String address;
   final String? memo;
-  final AssetInfo assetInfo;
+  // final AssetInfo assetInfo;
   final String quantityNormalized;
 
   EnhancedSendUnpackedVerbose({
@@ -1564,7 +1566,7 @@ class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
     required this.quantity,
     required this.address,
     this.memo,
-    required this.assetInfo,
+    // required this.assetInfo,
     required this.quantityNormalized,
   });
 
@@ -1577,7 +1579,7 @@ class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
         quantity: messageData["quantity"],
         address: messageData["address"],
         memo: messageData["memo"],
-        assetInfo: AssetInfo.fromJson(messageData["asset_info"]),
+        // assetInfo: AssetInfo.fromJson(messageData["asset_info"]),
         quantityNormalized: messageData["quantity_normalized"]);
   }
 
@@ -1590,7 +1592,7 @@ class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
         "quantity": quantity,
         "address": address,
         "memo": memo,
-        "asset_info": assetInfo.toJson(),
+        // "asset_info": assetInfo.toJson(),
         "quantity_normalized": quantityNormalized,
       }
     };

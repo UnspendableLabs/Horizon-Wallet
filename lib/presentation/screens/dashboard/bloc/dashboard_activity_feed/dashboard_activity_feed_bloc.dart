@@ -267,9 +267,9 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
       }
 
       final localTransactions = mostRecentBlocktime != null
-          ? await transactionLocalRepository.getAllByAccountAfterDate(
+          ? await transactionLocalRepository.getAllByAccountAfterDateVerbose(
               accountUuid, mostRecentBlocktime)
-          : await transactionLocalRepository.getAllByAccount(accountUuid);
+          : await transactionLocalRepository.getAllByAccountVerbose(accountUuid);
 
       final (remoteEvents, nextCursor, _) =
           await eventsRepository.getByAddressesVerbose(

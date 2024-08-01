@@ -49,7 +49,14 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             await addressRepository.getAllByAccountUuid(event.accountUuid);
 
         List<Balance> balances =
-            await balanceRepository.getBalancesForAddress(addresses[0].address); emit(ComposeSendState( addressesState: AddressesState.success(addresses), balancesState: BalancesState.success(balances), submitState: const SubmitState.initial())); } catch (e) { emit(ComposeSendState( addressesState: AddressesState.error(e.toString()),
+            await balanceRepository.getBalancesForAddress(addresses[0].address);
+        emit(ComposeSendState(
+            addressesState: AddressesState.success(addresses),
+            balancesState: BalancesState.success(balances),
+            submitState: const SubmitState.initial()));
+      } catch (e) {
+        emit(ComposeSendState(
+            addressesState: AddressesState.error(e.toString()),
             balancesState: BalancesState.error(e.toString()),
             submitState: const SubmitState.initial()));
       }
@@ -106,16 +113,15 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         String txHex = await transactionService.signTransaction(
             rawTx.hex, addressPrivKey, source, utxoMap);
 
-        TransactionInfoVerbose txInfo = await transactionRepository.getInfoVerbose(txHex);
+        TransactionInfoVerbose txInfo =
+            await transactionRepository.getInfoVerbose(txHex);
 
-        print("txInfo $txInfo");
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-
         // for now we don't track btc sends
         if (asset.toLowerCase() != 'btc') {
-          await transactionLocalRepository.insert(txInfo.copyWith(
+          await transactionLocalRepository.insertVerbose(txInfo.copyWith(
               hash: txHash,
               source:
                   source // TODO: set this manually as a tmp hack because it can be undefined with btc sends

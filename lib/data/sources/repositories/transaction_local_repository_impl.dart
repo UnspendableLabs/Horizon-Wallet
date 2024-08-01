@@ -1,24 +1,22 @@
 import "dart:convert";
 
-import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/transaction_unpacked.dart'
-    as unpacked_domain;
+import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
-import "package:horizon/data/models/unpacked.dart" as unpacked_model;
+import "package:horizon/data/models/transaction_unpacked.dart";
 
 class UnpackedMapper {
-  static unpacked_domain.TransactionUnpacked toDomain(
-      unpacked_model.TransactionUnpacked u) {
+  static TransactionUnpacked toDomain(api.TransactionUnpacked u) {
     switch (u.messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedMapper.toDomain(
-            u as unpacked_model.EnhancedSendUnpacked);
+            u as api.EnhancedSendUnpacked);
       default:
-        return unpacked_domain.TransactionUnpacked(
+        return TransactionUnpacked(
           messageType: u.messageType,
         );
     }
@@ -26,9 +24,8 @@ class UnpackedMapper {
 }
 
 class EnhancedSendUnpackedMapper {
-  static unpacked_domain.EnhancedSendUnpacked toDomain(
-      unpacked_model.EnhancedSendUnpacked u) {
-    return unpacked_domain.EnhancedSendUnpacked(
+  static EnhancedSendUnpacked toDomain(api.EnhancedSendUnpacked u) {
+    return EnhancedSendUnpacked(
       asset: u.asset,
       quantity: u.quantity,
       address: u.address,
@@ -37,29 +34,68 @@ class EnhancedSendUnpackedMapper {
   }
 }
 
+class UnpackedVerboseMapper {
+  static TransactionUnpackedVerbose toDomain(api.TransactionUnpackedVerbose u) {
+    switch (u.messageType) {
+      case "enhanced_send":
+        return EnhancedSendUnpackedVerboseMapper.toDomain(
+            u as api.EnhancedSendUnpackedVerbose);
+      default:
+        return TransactionUnpackedVerbose(
+          messageType: u.messageType,
+          // btcAmountNormalized: u.btcAmountNormalized,
+        );
+    }
+  }
+}
+
+class EnhancedSendUnpackedVerboseMapper {
+  static EnhancedSendUnpackedVerbose toDomain(
+      api.EnhancedSendUnpackedVerbose u) {
+    return EnhancedSendUnpackedVerbose(
+      asset: u.asset,
+      quantity: u.quantity,
+      address: u.address,
+      memo: u.memo,
+      quantityNormalized: u.quantityNormalized,
+    );
+  }
+}
+
 class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
-  final V2Api api;
+  final api.V2Api api_;
   final TransactionsDao transactionDao;
   final AddressRepository addressRepository;
 
   TransactionLocalRepositoryImpl(
-      {required this.api,
+      {required this.api_,
       required this.transactionDao,
       required this.addressRepository});
 
   @override
-  Future<void> insert(TransactionInfo transactionInfo) async {
-    // can only save transactions createk locally
+  Future<void> insertVerbose(TransactionInfoVerbose transactionInfo) async {
+    // can only save transactions created locally
     if (transactionInfo.domain.runtimeType != TransactionInfoDomainLocal) {
       throw Exception("Cannot save transaction that was not created locally");
     }
 
-    unpacked_domain.TransactionUnpacked? unpacked =
-        transactionInfo.unpackedData;
-
-    Map<String, dynamic>? json = unpacked == null
-        ? null
-        : unpacked_model.TransactionUnpacked.fromDomain(unpacked).toJson();
+    String? unpacked = switch (transactionInfo) {
+      TransactionInfoEnhancedSendVerbose(
+        unpackedData: EnhancedSendUnpackedVerbose unpacked
+      ) =>
+        // TODO: don't do this manually
+        jsonEncode({
+          "message_type": "enhanced_send",
+          "message_data": {
+            "asset": unpacked.asset,
+            "quantity": unpacked.quantity,
+            "address": unpacked.address,
+            "memo": unpacked.memo,
+            "quantity_normalized": unpacked.quantityNormalized,
+          }
+        }),
+      _ => null
+    };
 
     TransactionModel tx = TransactionModel(
       hash: transactionInfo.hash,
@@ -69,7 +105,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       btcAmount: transactionInfo.btcAmount,
       fee: transactionInfo.fee,
       data: transactionInfo.data,
-      unpackedData: jsonEncode(json),
+      unpackedData: unpacked,
       submittedAt: DateTime.now(),
     );
 
@@ -77,62 +113,89 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   }
 
   @override
-  Future<List<TransactionInfo>> getAllByAccount(String accountUuid) async {
+  Future<List<TransactionInfoVerbose>> getAllByAccountVerbose(
+      String accountUuid) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
     final transactions = await transactionDao
         .getAllBySources(addresses.map((e) => e.address).toList());
 
-    return transactions
-        .map((tx) => TransactionInfo(
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
+    return transactions.map((tx) {
+      api.TransactionUnpackedVerbose? unpacked_ = tx.unpackedData != null
+          ? api.TransactionUnpackedVerbose.fromJson(
+              jsonDecode(tx.unpackedData!))
+          : null;
+
+      TransactionUnpackedVerbose? unpacked =
+          unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
+
+      return switch (unpacked) {
+        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+            btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
             destination: tx.destination,
             btcAmount: tx.btcAmount,
             fee: tx.fee,
             data: tx.data,
-            unpackedData: UnpackedMapper.toDomain(
-                unpacked_model.TransactionUnpacked.fromJson(
-                    jsonDecode(tx.unpackedData!)))
-
-            // unpackedData: tx.unpackedData != null
-            //     ? TransactionUnpacked(
-            //         messageType: "",
-            //         messageData: Map<String, dynamic>.from(
-            //             jsonDecode(tx.unpackedData!)))
-            //     : null, // TODO: this is a little broken, lift up message type
-            ))
-        .toList();
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        _ => TransactionInfoVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+          )
+      };
+    }).toList();
   }
 
   @override
-  Future<List<TransactionInfo>> getAllByAccountAfterDate(
+  Future<List<TransactionInfoVerbose>> getAllByAccountAfterDateVerbose(
       String accountUuid, DateTime date) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
     final transactions = await transactionDao.getAllBySourcesAfterDate(
         addresses.map((e) => e.address).toList(), date);
 
     return transactions.map((tx) {
-      return TransactionInfo(
-          domain: TransactionInfoDomainLocal(
-              raw: tx.raw, submittedAt: tx.submittedAt),
-          hash: tx.hash,
-          source: tx.source,
-          destination: tx.destination,
-          btcAmount: tx.btcAmount,
-          fee: tx.fee,
-          data: tx.data,
-          unpackedData: UnpackedMapper.toDomain(
-              unpacked_model.TransactionUnpacked.fromJson(
-                  jsonDecode(tx.unpackedData!)))
-          // unpackedData: tx.unpackedData != null
-          //     ? TransactionUnpacked(
-          //         messageType: "",
-          //         messageData:
-          //             Map<String, dynamic>.from(jsonDecode(tx.unpackedData!)))
-          //     : null, // TODO: this is a little broken, lift up message type
-          );
+      // TODO: refactor
+      api.TransactionUnpackedVerbose? unpacked_ = tx.unpackedData != null
+          ? api.TransactionUnpackedVerbose.fromJson(
+              jsonDecode(tx.unpackedData!))
+          : null;
+
+      TransactionUnpackedVerbose? unpacked =
+          unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
+
+      return switch (unpacked) {
+        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        _ => TransactionInfoVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+          )
+      };
     }).toList();
   }
 }

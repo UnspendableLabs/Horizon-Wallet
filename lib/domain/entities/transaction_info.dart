@@ -29,7 +29,7 @@ class TransactionInfo extends Equatable {
   final String data;
   final TransactionInfoDomain domain;
 
-  final TransactionUnpacked? unpackedData;
+  // final TransactionUnpacked? unpackedData;
 
   const TransactionInfo(
       {required this.hash,
@@ -38,7 +38,7 @@ class TransactionInfo extends Equatable {
       required this.btcAmount,
       required this.fee,
       required this.data,
-      required this.unpackedData,
+      // required this.unpackedData,
       required this.domain});
 
   TransactionInfo copyWith({
@@ -49,7 +49,7 @@ class TransactionInfo extends Equatable {
     int? fee,
     String? data,
     TransactionInfoDomain? domain,
-    TransactionUnpacked? unpackedData,
+    // TransactionUnpacked? unpackedData,
   }) {
     return TransactionInfo(
       hash: hash ?? this.hash,
@@ -59,20 +59,19 @@ class TransactionInfo extends Equatable {
       fee: fee ?? this.fee,
       data: data ?? this.data,
       domain: domain ?? this.domain,
-      unpackedData: unpackedData ?? this.unpackedData,
+      // unpackedData: unpackedData ?? this.unpackedData,
     );
   }
 
   @override
   List<Object?> get props =>
-      [hash, source, destination, btcAmount, fee, data, unpackedData, domain];
+      [hash, source, destination, btcAmount, fee, data, domain];
 }
 
 class TransactionInfoVerbose extends TransactionInfo {
   final String btcAmountNormalized;
 
   const TransactionInfoVerbose({
-    required this.btcAmountNormalized,
     required super.hash,
     required super.source,
     required super.destination,
@@ -80,8 +79,123 @@ class TransactionInfoVerbose extends TransactionInfo {
     required super.fee,
     required super.data,
     required super.domain,
-    required super.unpackedData,
+    required this.btcAmountNormalized,
+    // required super.unpackedData,
   });
   @override
   List<Object?> get props => [btcAmountNormalized, ...super.props];
+
+  @override
+  TransactionInfoVerbose copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    String? btcAmountNormalized,
+    // TransactionUnpacked? unpackedData,
+  }) {
+    return TransactionInfoVerbose(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+      // unpackedData: unpackedData ?? this.unpackedData,
+    );
+  }
+}
+
+class TransactionInfoEnhancedSend extends TransactionInfo {
+  final EnhancedSendUnpacked unpackedData;
+
+  const TransactionInfoEnhancedSend({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required this.unpackedData,
+    // required super.unpackedData,
+  });
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+
+  @override
+  TransactionInfoEnhancedSend copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    String? btcAmountNormalized,
+    EnhancedSendUnpacked? unpackedData, // TODO: shouldn't be optinal
+    // TransactionUnpacked? unpackedData,
+  }) {
+    return TransactionInfoEnhancedSend(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      unpackedData: unpackedData ?? this.unpackedData,
+      // unpackedData: unpackedData ?? this.unpackedData,
+    );
+  }
+}
+
+class TransactionInfoEnhancedSendVerbose extends TransactionInfoVerbose {
+  final EnhancedSendUnpackedVerbose unpackedData;
+  const TransactionInfoEnhancedSendVerbose({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+    // required super.unpackedData,
+  });
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+
+  @override
+  TransactionInfoEnhancedSendVerbose copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    String? btcAmountNormalized,
+    EnhancedSendUnpackedVerbose? unpackedData,
+    // TransactionUnpacked? unpackedData,
+  }) {
+    return TransactionInfoEnhancedSendVerbose(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+      unpackedData: unpackedData ?? this.unpackedData,
+      // unpackedData: unpackedData ?? this.unpackedData,
+    );
+  }
 }
