@@ -78,6 +78,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
                 change: '0',
                 start: 0,
                 end: 9);
+          default:
+            throw Exception("invalid import format");
         }
 
         await accountRepository.insert(account);
