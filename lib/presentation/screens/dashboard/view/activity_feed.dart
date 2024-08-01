@@ -146,6 +146,7 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (event.event) {
       "CREDIT" => const Icon(Icons.arrow_forward, color: Colors.green),
       "DEBIT" => const Icon(Icons.arrow_back, color: Colors.red),
+      "ASSET_ISSUANCE" => const Icon(Icons.toll, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
