@@ -28,3 +28,35 @@ class EnhancedSendUnpacked extends TransactionUnpacked {
   @override
   List<Object?> get props => [messageType, asset, quantity, address, memo];
 }
+
+class TransactionUnpackedVerbose extends TransactionUnpacked {
+  // final String btcAmountNormalized;
+  const TransactionUnpackedVerbose({
+    // required this.btcAmountNormalized,
+    required super.messageType,
+  });
+  @override
+  List<Object?> get props => [
+        messageType,
+      ];
+}
+
+class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final int quantity;
+  final String address;
+  final String? memo;
+  final String quantityNormalized;
+  const EnhancedSendUnpackedVerbose({
+    required this.asset,
+    required this.quantity,
+    required this.address,
+    this.memo,
+    required this.quantityNormalized,
+  }) : super(
+          messageType: "enhanced_send",
+        );
+  @override
+  List<Object?> get props =>
+      [messageType, asset, quantity, address, memo, quantityNormalized];
+}

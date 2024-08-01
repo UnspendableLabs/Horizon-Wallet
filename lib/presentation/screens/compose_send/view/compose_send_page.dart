@@ -39,7 +39,7 @@ class ComposeSendPage extends StatelessWidget {
 
 class _ComposeSendPage_ extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  const _ComposeSendPage_({required this.dashboardActivityFeedBloc, super.key});
+  const _ComposeSendPage_({required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
