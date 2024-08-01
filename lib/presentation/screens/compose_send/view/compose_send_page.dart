@@ -151,7 +151,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(
         listener: (context, state) {
       state.submitState.maybeWhen(
@@ -204,33 +203,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       context
                           .read<ComposeSendBloc>()
                           .add(FetchBalances(address: a!));
-=======
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => GoRouter.of(context).pop(),
-        ),
-        title: const Text('Compose Send', style: TextStyle(fontSize: 20.0)),
-      ),
-      body: BlocConsumer<ComposeSendBloc, ComposeSendState>(
-          listener: (context, state) {
-        state.submitState.maybeWhen(
-            success: (txHash, sourceAddress) {
-              // 0) reload activity feed
-              widget.dashboardActivityFeedBloc
-                  .add(const Load()); // show "N more transactions".
-
-              // 1) close modal
-              Navigator.of(context).pop();
-              // 2) show snackbar with copy tx action
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  duration: const Duration(seconds: 5),
-                  action: SnackBarAction(
-                    label: 'Copy',
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: txHash));
->>>>>>> 6d5c5ce (wip)
                     },
                     items: addresses.map<DropdownMenuItem<String>>((address) {
                       return buildDropdownMenuItem(
