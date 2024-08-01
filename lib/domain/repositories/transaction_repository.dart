@@ -8,7 +8,12 @@ abstract class TransactionRepository {
   Future<TransactionUnpackedVerbose> unpackVerbose(String raw);
   Future<TransactionInfo> getInfo(String raw);
   Future<TransactionInfoVerbose> getInfoVerbose(String raw);
-  Future<(List<TransactionInfo>, int? nextCursor, int? total)> getByAccount(
+  // Future<(List<TransactionInfo>, int? nextCursor, int? total)> getByAccount(
+  //     {required String accountUuid,
+  //     int? limit,
+  //     int? cursor,
+  //     bool? unconfirmed = false});
+  Future<(List<TransactionInfoVerbose>, int? nextCursor, int? total)> getByAccountVerbose(
       {required String accountUuid,
       int? limit,
       int? cursor,

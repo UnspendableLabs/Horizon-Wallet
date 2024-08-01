@@ -1,8 +1,8 @@
 import 'package:horizon/domain/entities/transaction_info.dart';
 
 abstract class TransactionLocalRepository {
-  Future<void> insert(TransactionInfo transactionInfo);
-  Future<List<TransactionInfo>> getAllByAccount(String account);
-  Future<List<TransactionInfo>> getAllByAccountAfterDate(
+  Future<void> insertVerbose(TransactionInfoVerbose transactionInfo);
+  Future<List<TransactionInfoVerbose>> getAllByAccountVerbose(String account);
+  Future<List<TransactionInfoVerbose>> getAllByAccountAfterDateVerbose(
       String account, DateTime date);
 }

@@ -127,9 +127,9 @@ class ComposeIssuanceBloc
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-        TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
+        TransactionInfoVerbose txInfo = await transactionRepository.getInfoVerbose(txHex);
 
-        await transactionLocalRepository.insert(txInfo);
+        await transactionLocalRepository.insertVerbose(txInfo);
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {
