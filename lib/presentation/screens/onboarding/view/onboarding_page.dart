@@ -21,7 +21,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDarkMode ? const Color.fromRGBO(24, 24, 47, 1) : const Color.fromRGBO(224, 239, 255, 1);
     final darkBackgroundColor = isDarkMode ? const Color.fromRGBO(30, 30, 56, 1) : const Color.fromRGBO(0, 92, 193, 1);
-    final lightBackgroundColor = isDarkMode ? const Color.fromRGBO(18, 18, 35, 1) : const Color.fromRGBO(0, 92, 193, 1);
+    final lightBackgroundColor = isDarkMode ? const Color.fromRGBO(18, 18, 35, 1) : Colors.white;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -31,9 +31,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
             return Row(
               children: [
                 Expanded(
-                  flex: 2,
+                  flex: 4,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 2, 8),
+                    padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -70,7 +70,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 40,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
@@ -84,9 +84,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 Expanded(
-                  flex: 1,
+                  flex: 3,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(2, 8, 8, 8),
+                    padding: const EdgeInsets.fromLTRB(4, 12, 12, 12),
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -97,20 +97,53 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            OutlinedButton(
-                              onPressed: () {
-                                final shell = context.read<ShellStateCubit>();
-                                shell.onOnboardingCreate();
-                              },
-                              child: const Text('Create a new wallet'),
+                            SizedBox(
+                              width: 250,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: darkBackgroundColor, // Background color
+                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500), // Text style
+                                ),
+                                onPressed: () {
+                                  final shell = context.read<ShellStateCubit>();
+                                  shell.onOnboardingCreate();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'CREATE A NEW WALLET',
+                                    style:
+                                        TextStyle(color: isDarkMode ? const Color.fromRGBO(108, 210, 255, 1) : Colors.white),
+                                  ),
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 20),
-                            OutlinedButton(
-                              onPressed: () {
-                                final shell = context.read<ShellStateCubit>();
-                                shell.onOnboardingImport();
-                              },
-                              child: const Text('Import existing'),
+                            SizedBox(
+                              width: 250,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  overlayColor: Colors.transparent,
+                                  elevation: 0,
+                                  backgroundColor: isDarkMode ? Colors.transparent : backgroundColor,
+                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                                  textStyle: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ), // Text style
+                                ),
+                                onPressed: () {
+                                  final shell = context.read<ShellStateCubit>();
+                                  shell.onOnboardingImport();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text('IMPORT EXISTING',
+                                      style: TextStyle(color: isDarkMode ? Colors.grey[500] : Colors.black)),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -122,56 +155,99 @@ class OnboardingScreenState extends State<OnboardingScreen> {
             );
           } else {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    'logo-black.svg',
-                    width: 45,
-                    height: 45,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0), // Added padding
+                child: Container(
+                  padding: const EdgeInsets.all(8.0), // Added padding
+                  decoration: BoxDecoration(
+                    color: darkBackgroundColor, // Set darkBackgroundColor
+                    borderRadius: BorderRadius.circular(30.0),
                   ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Horizon',
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SvgPicture.asset(
-                    'logo-3d.svg',
-                    width: 200,
-                    height: 200,
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: lightBackgroundColor,
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    child: Column(
-                      children: [
-                        OutlinedButton(
-                          onPressed: () {
-                            final shell = context.read<ShellStateCubit>();
-                            shell.onOnboardingCreate();
-                          },
-                          child: const Text('Create a new wallet'),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        height: 200,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'logo-white.svg',
+                              width: 48,
+                              height: 48,
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              'Horizon',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 20),
-                        OutlinedButton(
-                          onPressed: () {
-                            final shell = context.read<ShellStateCubit>();
-                            shell.onOnboardingImport();
-                          },
-                          child: const Text('Import existing'),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30.0),
                         ),
-                      ],
-                    ),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: isDarkMode ? const Color.fromRGBO(32, 42, 67, 1) : lightBackgroundColor,
+                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                ),
+                                onPressed: () {
+                                  final shell = context.read<ShellStateCubit>();
+                                  shell.onOnboardingCreate();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'CREATE A NEW WALLET',
+                                    style:
+                                        TextStyle(color: isDarkMode ? const Color.fromRGBO(108, 210, 255, 1) : Colors.black),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: 250,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  overlayColor: Colors.transparent,
+                                  elevation: 0,
+                                  backgroundColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                ),
+                                onPressed: () {
+                                  final shell = context.read<ShellStateCubit>();
+                                  shell.onOnboardingImport();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'IMPORT EXISTING',
+                                    style: TextStyle(color: isDarkMode ? Colors.grey[500] : Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             );
           }
