@@ -60,7 +60,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SvgPicture.asset(
-                                    'logo-white.svg',
+                                    'assets/logo-white.svg',
                                     width: 48,
                                     height: 48,
                                   ),
@@ -172,7 +172,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SvgPicture.asset(
-                              'logo-white.svg',
+                              'assets/logo-white.svg',
                               width: 48,
                               height: 48,
                             ),
