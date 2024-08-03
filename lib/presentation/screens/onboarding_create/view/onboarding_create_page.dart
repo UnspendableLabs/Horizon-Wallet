@@ -292,7 +292,7 @@ class PasswordPrompt extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
-                            'LOGIN',
+                            'CREATE WALLET',
                             style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
                           ),
                         ),
