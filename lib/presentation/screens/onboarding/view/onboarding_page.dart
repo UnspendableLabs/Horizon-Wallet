@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:horizon/presentation/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -19,12 +20,18 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDarkMode ? const Color.fromRGBO(24, 24, 47, 1) : const Color.fromRGBO(224, 239, 255, 1);
-    final darkBackgroundColor = isDarkMode ? const Color.fromRGBO(30, 30, 56, 1) : const Color.fromRGBO(0, 92, 193, 1);
-    final lightBackgroundColor = isDarkMode ? const Color.fromRGBO(18, 18, 35, 1) : Colors.white;
+    final backdropBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : lightBlueLightThemeBackgroundColor;
+    final leftSideBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : royalBlueLightThemeBackgroundColor;
+    final rightSideBackgroundColor = isDarkMode
+        ? darkNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: backdropBackgroundColor,
       body: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth > 768) {
@@ -37,14 +44,14 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: darkBackgroundColor,
+                        color: leftSideBackgroundColor,
                         gradient: isDarkMode
                             ? RadialGradient(
                                 center: Alignment.topRight,
                                 radius: 1.0,
                                 colors: [
-                                  Color.fromARGB(255, 48, 60, 97),
-                                  darkBackgroundColor,
+                                  blueDarkThemeGradiantColor,
+                                  leftSideBackgroundColor,
                                 ],
                               )
                             : null,
@@ -68,7 +75,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   const Text(
                                     'Horizon',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: mainTextWhite,
                                       fontSize: 40,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -90,7 +97,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: lightBackgroundColor,
+                        color: rightSideBackgroundColor,
                         borderRadius: BorderRadius.circular(30.0),
                       ),
                       child: Center(
@@ -102,9 +109,15 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   elevation: 0,
-                                  backgroundColor: darkBackgroundColor, // Background color
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
-                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500), // Text style
+                                  backgroundColor:
+                                      leftSideBackgroundColor, // Background color
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 16), // Button size
+                                  textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight:
+                                          FontWeight.w500), // Text style
                                 ),
                                 onPressed: () {
                                   final shell = context.read<ShellStateCubit>();
@@ -114,8 +127,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
                                     'CREATE A NEW WALLET',
-                                    style:
-                                        TextStyle(color: isDarkMode ? const Color.fromRGBO(108, 210, 255, 1) : Colors.white),
+                                    style: TextStyle(
+                                        color: isDarkMode
+                                            ? neonBlueDarkThemeButtonTextColor
+                                            : mainTextWhite),
                                   ),
                                 ),
                               ),
@@ -125,11 +140,15 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               width: 250,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  overlayColor: Colors.transparent,
+                                  overlayColor: noBackgroundColor,
                                   elevation: 0,
-                                  backgroundColor: isDarkMode ? Colors.transparent : backgroundColor,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
-                                  textStyle: TextStyle(
+                                  backgroundColor: isDarkMode
+                                      ? noBackgroundColor
+                                      : backdropBackgroundColor,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 16), // Button size
+                                  textStyle: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                   ), // Text style
@@ -141,7 +160,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text('LOGIN TO EXISTING WALLET',
-                                      style: TextStyle(color: isDarkMode ? Colors.grey[500] : Colors.black)),
+                                      style: TextStyle(
+                                          color: isDarkMode
+                                              ? greyDarkThemeButtonText
+                                              : mainTextBlack)),
                                 ),
                               ),
                             ),
@@ -160,7 +182,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
-                    color: darkBackgroundColor,
+                    color: leftSideBackgroundColor,
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                   child: Column(
@@ -180,7 +202,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                             const Text(
                               'Horizon',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: mainTextWhite,
                                 fontSize: 40,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -189,7 +211,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 40),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
@@ -200,9 +223,14 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   elevation: 0,
-                                  backgroundColor: isDarkMode ? const Color.fromRGBO(32, 42, 67, 1) : lightBackgroundColor,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                  backgroundColor: isDarkMode
+                                      ? navyDarkThemeButtonColor
+                                      : whiteLightThemeButtonColor,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32, vertical: 16),
+                                  textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500),
                                 ),
                                 onPressed: () {
                                   final shell = context.read<ShellStateCubit>();
@@ -212,8 +240,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
                                     'CREATE A NEW WALLET',
-                                    style:
-                                        TextStyle(color: isDarkMode ? const Color.fromRGBO(108, 210, 255, 1) : Colors.black),
+                                    style: TextStyle(
+                                        color: isDarkMode
+                                            ? neonBlueDarkThemeButtonTextColor
+                                            : mainTextBlack),
                                   ),
                                 ),
                               ),
@@ -226,8 +256,11 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   overlayColor: Colors.transparent,
                                   elevation: 0,
                                   backgroundColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32, vertical: 16),
+                                  textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500),
                                 ),
                                 onPressed: () {
                                   final shell = context.read<ShellStateCubit>();
@@ -237,7 +270,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
                                     'IMPORT EXISTING',
-                                    style: TextStyle(color: isDarkMode ? Colors.grey[500] : Colors.white),
+                                    style: TextStyle(
+                                        color: isDarkMode
+                                            ? greyDarkThemeButtonText
+                                            : mainTextWhite),
                                   ),
                                 ),
                               ),
