@@ -64,31 +64,37 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingCreateScreen(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: const OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
+              child:
+                  const OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder: (BuildContext context, GoRouterState state, navigationShell) {
+            builder:
+                (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -211,7 +217,9 @@ class MyApp extends StatelessWidget {
   final ThemeData lightTheme = ThemeData(
     // define a color scheme so it doesn't display flutter default purples
     brightness: Brightness.light,
-    appBarTheme: const AppBarTheme(backgroundColor: whiteLightThemeBackgroundColor, scrolledUnderElevation: 0.0),
+    appBarTheme: const AppBarTheme(
+        backgroundColor: whiteLightThemeBackgroundColor,
+        scrolledUnderElevation: 0.0),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(227, 237, 254, 1),
@@ -267,7 +275,7 @@ class MyApp extends StatelessWidget {
   final ThemeData darkTheme = ThemeData(
     // define a color scheme so it doesn't display flutter default purples
     brightness: Brightness.dark,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: lightNavyDarkThemeBackgroundColor,
       scrolledUnderElevation: 0.0,
     ),
@@ -311,7 +319,8 @@ class MyApp extends StatelessWidget {
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(146, 209, 254, 1); // Color when selected
+            return const Color.fromRGBO(
+                146, 209, 254, 1); // Color when selected
           }
           return null; // Use default color when not selected
         },
@@ -360,7 +369,8 @@ class MyApp extends StatelessWidget {
               themeMode: ThemeMode.dark,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,
-              routeInformationProvider: AppRouter.router.routeInformationProvider,
+              routeInformationProvider:
+                  AppRouter.router.routeInformationProvider,
             );
           },
         ),
