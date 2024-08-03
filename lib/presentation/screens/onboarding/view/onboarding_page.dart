@@ -43,7 +43,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 center: Alignment.topRight,
                                 radius: 1.0,
                                 colors: [
-                                  const Color.fromRGBO(35, 45, 77, 1),
+                                  Color.fromARGB(255, 48, 60, 97),
                                   darkBackgroundColor,
                                 ],
                               )
@@ -140,7 +140,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text('IMPORT EXISTING',
+                                  child: Text('LOGIN TO EXISTING WALLET',
                                       style: TextStyle(color: isDarkMode ? Colors.grey[500] : Colors.black)),
                                 ),
                               ),
@@ -156,11 +156,11 @@ class OnboardingScreenState extends State<OnboardingScreen> {
           } else {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(8.0), // Added padding
+                padding: const EdgeInsets.all(8.0),
                 child: Container(
-                  padding: const EdgeInsets.all(8.0), // Added padding
+                  padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
-                    color: darkBackgroundColor, // Set darkBackgroundColor
+                    color: darkBackgroundColor,
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                   child: Column(

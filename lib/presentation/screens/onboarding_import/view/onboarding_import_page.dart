@@ -12,9 +12,7 @@ class OnboardingImportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (context) => OnboardingImportBloc(),
-        child: const OnboardingImportPage_());
+    return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
   }
 }
 
@@ -25,14 +23,10 @@ class OnboardingImportPage_ extends StatefulWidget {
 }
 
 class _OnboardingImportPageState extends State<OnboardingImportPage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
-  final TextEditingController _seedPhraseController =
-      TextEditingController(text: "");
-  final TextEditingController _importFormat =
-      TextEditingController(text: ImportFormat.segwit.name);
+  final TextEditingController _passwordController = TextEditingController(text: "");
+  final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
+  final TextEditingController _seedPhraseController = TextEditingController(text: "");
+  final TextEditingController _importFormat = TextEditingController(text: ImportFormat.segwit.name);
 
   @override
   dispose() {
@@ -51,8 +45,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
           shell.initialize();
         }
       },
-      child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
-          builder: (context, state) {
+      child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
               title: const Text(
@@ -64,18 +57,14 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
               Flexible(
                 child: state.importState == ImportStateNotAsked
                     ? Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.width > 600
-                                ? 16.0
-                                : 8.0),
+                        padding: EdgeInsets.all(MediaQuery.of(context).size.width > 600 ? 16.0 : 8.0),
                         child: SeedInputFields(
                           mnemonicErrorState: state.mnemonicError,
                         ),
                       )
                     : PasswordPrompt(
                         passwordController: _passwordController,
-                        passwordConfirmationController:
-                            _passwordConfirmationController,
+                        passwordConfirmationController: _passwordConfirmationController,
                         state: state,
                       ),
               ),
@@ -112,8 +101,7 @@ class PasswordPrompt extends StatelessWidget {
             Text('Password', style: TextStyle(fontSize: 16)),
             SizedBox(width: 4),
             Tooltip(
-              message:
-                  'This password will be used to locally encrypt your wallet.',
+              message: 'This password will be used to locally encrypt your wallet.',
               child: Icon(Icons.info, size: 12),
             ),
           ]),
@@ -121,19 +109,15 @@ class PasswordPrompt extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                    constraints: const BoxConstraints(
-                        minHeight: 48,
-                        minWidth: double
-                            .infinity), // Minimum height for the TextField
+                    constraints:
+                        const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                     child: TextField(
                       obscureText: true,
                       enableSuggestions: false,
                       autocorrect: false,
                       controller: _passwordController,
                       onChanged: (value) {
-                        context
-                            .read<OnboardingImportBloc>()
-                            .add(PasswordChanged(password: value));
+                        context.read<OnboardingImportBloc>().add(PasswordChanged(password: value));
                       },
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
@@ -142,19 +126,15 @@ class PasswordPrompt extends StatelessWidget {
                     )),
                 const SizedBox(height: 16),
                 Container(
-                  constraints: const BoxConstraints(
-                      minHeight: 48,
-                      minWidth:
-                          double.infinity), // Minimum height for the TextField
+                  constraints:
+                      const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                   child: TextField(
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
                     controller: _passwordConfirmationController,
                     onChanged: (value) {
-                      context.read<OnboardingImportBloc>().add(
-                          PasswordConfirmationChanged(
-                              passwordConfirmation: value));
+                      context.read<OnboardingImportBloc>().add(PasswordConfirmationChanged(passwordConfirmation: value));
                     },
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
@@ -162,9 +142,7 @@ class PasswordPrompt extends StatelessWidget {
                     ),
                   ),
                 ),
-                _state.passwordError != null
-                    ? Text(_state.passwordError!)
-                    : const Text(""),
+                _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -189,20 +167,12 @@ class PasswordPrompt extends StatelessWidget {
                       Expanded(
                         child: FilledButton(
                           onPressed: () {
-                            if (_passwordController.text == '' ||
-                                _passwordConfirmationController.text == '') {
-                              context.read<OnboardingImportBloc>().add(
-                                  PasswordError(
-                                      error: 'Password cannot be empty'));
-                            } else if (_passwordController.text !=
-                                _passwordConfirmationController.text) {
-                              context.read<OnboardingImportBloc>().add(
-                                  PasswordError(
-                                      error: 'Passwords do not match'));
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else if (_passwordController.text != _passwordConfirmationController.text) {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Passwords do not match'));
                             } else {
-                              context
-                                  .read<OnboardingImportBloc>()
-                                  .add(ImportWallet());
+                              context.read<OnboardingImportBloc>().add(ImportWallet());
                             }
                           },
                           style: FilledButton.styleFrom(
@@ -233,8 +203,7 @@ class SeedInputFields extends StatefulWidget {
 }
 
 class _SeedInputFieldsState extends State<SeedInputFields> {
-  List<TextEditingController> controllers =
-      List.generate(12, (_) => TextEditingController());
+  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   String? selectedFormat = ImportFormat.segwit.name;
 
@@ -251,6 +220,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+
     return Scaffold(
       body: Column(
         children: [
@@ -260,41 +231,66 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(3, (columnIndex) {
-                      return Expanded(
-                        child: Column(
-                          children: List.generate(4, (rowIndex) {
-                            int index = columnIndex * 4 + rowIndex;
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  Text("${index + 1}. ",
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: controllers[index],
-                                      focusNode: focusNodes[index],
-                                      onChanged: (value) =>
-                                          handleInput(value, index),
-                                      decoration: InputDecoration(
-                                        labelText: 'Word ${index + 1}',
-                                        border: const OutlineInputBorder(),
-                                      ),
+                    children: isSmallScreen
+                        ? [
+                            Expanded(
+                              child: Column(
+                                children: List.generate(12, (index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        Text("${index + 1}. ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Expanded(
+                                          child: TextField(
+                                            controller: controllers[index],
+                                            focusNode: focusNodes[index],
+                                            onChanged: (value) => handleInput(value, index),
+                                            onEditingComplete: () => handleTabNavigation(index),
+                                            decoration: InputDecoration(
+                                              labelText: 'Word ${index + 1}',
+                                              border: const OutlineInputBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                  );
+                                }),
+                              ),
+                            ),
+                          ]
+                        : List.generate(2, (columnIndex) {
+                            return Expanded(
+                              child: Column(
+                                children: List.generate(6, (rowIndex) {
+                                  int index = columnIndex * 6 + rowIndex;
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        Text("${index + 1}. ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Expanded(
+                                          child: TextField(
+                                            controller: controllers[index],
+                                            focusNode: focusNodes[index],
+                                            onChanged: (value) => handleInput(value, index),
+                                            onEditingComplete: () => handleTabNavigation(index),
+                                            decoration: InputDecoration(
+                                              labelText: 'Word ${index + 1}',
+                                              border: const OutlineInputBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
                               ),
                             );
                           }),
-                        ),
-                      );
-                    }),
                   ),
-                  widget.mnemonicErrorState != null
-                      ? Text(widget.mnemonicErrorState!)
-                      : const Text(""),
+                  widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: DecoratedBox(
@@ -312,8 +308,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                               setState(() {
                                 selectedFormat = newValue;
                               });
-                              context.read<OnboardingImportBloc>().add(
-                                  ImportFormatChanged(importFormat: newValue!));
+                              context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
                             },
                             items: [
                               DropdownMenuItem<String>(
@@ -322,8 +317,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                               ),
                               DropdownMenuItem<String>(
                                 value: ImportFormat.freewalletBech32.name,
-                                child: Text(
-                                    ImportFormat.freewalletBech32.description),
+                                child: Text(ImportFormat.freewalletBech32.description),
                               ),
                             ],
                           ),
@@ -358,10 +352,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                   child: FilledButton(
                     onPressed: () {
                       context.read<OnboardingImportBloc>().add(MnemonicSubmit(
-                            mnemonic: controllers
-                                .map((controller) => controller.text)
-                                .join(' ')
-                                .trim(),
+                            mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
                             importFormat: selectedFormat!,
                           ));
                     },
@@ -394,12 +385,18 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     updateMnemonic();
   }
 
+  void handleTabNavigation(int index) {
+    int nextIndex = index + 1;
+    if (nextIndex < 12) {
+      FocusScope.of(context).requestFocus(focusNodes[nextIndex]);
+    } else {
+      FocusScope.of(context).unfocus();
+    }
+  }
+
   void updateMnemonic() {
-    String mnemonic =
-        controllers.map((controller) => controller.text).join(' ').trim();
-    context
-        .read<OnboardingImportBloc>()
-        .add(MnemonicChanged(mnemonic: mnemonic));
+    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
+    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: mnemonic));
   }
 }
 
@@ -432,9 +429,7 @@ class SeedPrompt extends StatelessWidget {
                 TextField(
                   controller: _seedPhraseController,
                   onChanged: (value) {
-                    context
-                        .read<OnboardingImportBloc>()
-                        .add(MnemonicChanged(mnemonic: value));
+                    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: value));
                   },
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -447,9 +442,7 @@ class SeedPrompt extends StatelessWidget {
                     DropdownMenu<String>(
                       label: const Text("Import format"),
                       onSelected: (newValue) {
-                        context
-                            .read<OnboardingImportBloc>()
-                            .add(ImportFormatChanged(importFormat: newValue!));
+                        context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
                       },
                       initialSelection: ImportFormat.segwit.name,
                       dropdownMenuEntries: [
@@ -471,9 +464,7 @@ class SeedPrompt extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ])),
-              _state.importState is ImportStateError
-                  ? Text(_state.importState.message)
-                  : const Text(""),
+              _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
               Row(children: [
                 // TODO: figure out how to disable a button
                 ElevatedButton(
@@ -483,9 +474,7 @@ class SeedPrompt extends StatelessWidget {
                   child: const Text('Import Addresses'),
                 ),
               ]),
-              _state.importState is ImportStateLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("")
+              _state.importState is ImportStateLoading ? const CircularProgressIndicator() : const Text("")
             ],
           )),
     );
