@@ -19,6 +19,13 @@ final greyDarkThemeButtonText = Colors.grey[500];
 const navyDarkThemeButtonColor = Color.fromRGBO(32, 42, 67, 1);
 const whiteLightThemeButtonColor = Color.fromRGBO(255, 255, 255, 1);
 
+// Input colors
+const darkThemeInputColor = Color.fromRGBO(46, 46, 75, 1);
+const darkThemeInputLabelColor = Color.fromRGBO(90, 89, 110, 1);
+
+const lightThemeInputColor = Color.fromRGBO(242, 245, 249, 1);
+const lightThemeInputLabelColor = Color.fromRGBO(157, 159, 177, 1);
+
 // In-app Colors
 const blueDarkThemeGradiantColor = Color.fromARGB(255, 48, 60, 97);
 const noBackgroundColor = Colors.transparent;

@@ -11,6 +11,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/colors.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
@@ -63,37 +64,31 @@ class AppRouter {
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
               child: const OnboardingCreateScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPage(), // TODO: be consistent with screen / page
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
+              child: const OnboardingImportPage(), // TODO: be consistent with screen / page
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
-            builder:
-                (BuildContext context, GoRouterState state, navigationShell) {
+            builder: (BuildContext context, GoRouterState state, navigationShell) {
               return Shell(navigationShell);
             },
             branches: [
@@ -215,17 +210,8 @@ class MyApp extends StatelessWidget {
   // Define light and dark themes
   final ThemeData lightTheme = ThemeData(
     // define a color scheme so it doesn't display flutter default purples
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.white,
-      brightness: Brightness.light,
-      primary: const Color.fromRGBO(68, 69, 99, 1),
-      onPrimary: Colors.white,
-      onSurface: const Color.fromRGBO(68, 69, 99, 1),
-      secondary: const Color.fromRGBO(227, 237, 254, 1),
-      onSecondary: const Color.fromRGBO(68, 121, 252, 1),
-    ),
     brightness: Brightness.light,
-    scaffoldBackgroundColor: const Color.fromRGBO(246, 247, 250, 1),
+    appBarTheme: const AppBarTheme(backgroundColor: whiteLightThemeBackgroundColor, scrolledUnderElevation: 0.0),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(227, 237, 254, 1),
@@ -258,12 +244,6 @@ class MyApp extends StatelessWidget {
         iconColor: Color.fromRGBO(106, 106, 134, 1),
         textColor: Color.fromRGBO(106, 106, 134, 1),
         selectedColor: Color.fromRGBO(68, 121, 252, 1)),
-    appBarTheme: const AppBarTheme(
-      color: Color.fromRGBO(246, 247, 250, 1),
-      titleTextStyle: TextStyle(
-        color: Color.fromRGBO(68, 69, 99, 1),
-      ),
-    ),
     dialogTheme: const DialogTheme(
       backgroundColor: Color.fromRGBO(246, 247, 250, 1),
     ),
@@ -286,17 +266,11 @@ class MyApp extends StatelessWidget {
 
   final ThemeData darkTheme = ThemeData(
     // define a color scheme so it doesn't display flutter default purples
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color.fromRGBO(35, 35, 58, 1),
-      brightness: Brightness.dark,
-      primary: const Color.fromRGBO(255, 255, 255, 1),
-      onPrimary: const Color.fromRGBO(25, 25, 39, 1),
-      onSurface: const Color.fromRGBO(255, 255, 255, 1),
-      secondary: const Color.fromRGBO(227, 237, 254, 1),
-      onSecondary: const Color.fromRGBO(68, 121, 252, 1),
-    ),
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: const Color.fromRGBO(35, 35, 58, 1),
+    appBarTheme: AppBarTheme(
+      backgroundColor: lightNavyDarkThemeBackgroundColor,
+      scrolledUnderElevation: 0.0,
+    ),
     primaryColor: Colors.white,
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(25, 25, 39, 1),
@@ -329,12 +303,7 @@ class MyApp extends StatelessWidget {
         iconColor: Color.fromRGBO(183, 183, 188, 1),
         textColor: Color.fromRGBO(183, 183, 188, 1),
         selectedColor: Color.fromRGBO(146, 209, 254, 1)),
-    appBarTheme: const AppBarTheme(
-      color: Color.fromRGBO(35, 35, 58, 1),
-      titleTextStyle: TextStyle(
-        color: Colors.white,
-      ),
-    ),
+
     dialogTheme: const DialogTheme(
       backgroundColor: Color.fromRGBO(35, 35, 58, 1),
     ),
@@ -342,8 +311,7 @@ class MyApp extends StatelessWidget {
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(
-                146, 209, 254, 1); // Color when selected
+            return const Color.fromRGBO(146, 209, 254, 1); // Color when selected
           }
           return null; // Use default color when not selected
         },
@@ -389,11 +357,10 @@ class MyApp extends StatelessWidget {
             return MaterialApp.router(
               theme: lightTheme,
               darkTheme: darkTheme,
-              themeMode: ThemeMode.light,
+              themeMode: ThemeMode.dark,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,
-              routeInformationProvider:
-                  AppRouter.router.routeInformationProvider,
+              routeInformationProvider: AppRouter.router.routeInformationProvider,
             );
           },
         ),

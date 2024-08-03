@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/colors.dart';
@@ -13,9 +14,7 @@ class OnboardingImportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (context) => OnboardingImportBloc(),
-        child: const OnboardingImportPage_());
+    return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
   }
 }
 
@@ -26,14 +25,10 @@ class OnboardingImportPage_ extends StatefulWidget {
 }
 
 class _OnboardingImportPageState extends State<OnboardingImportPage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
-  final TextEditingController _seedPhraseController =
-      TextEditingController(text: "");
-  final TextEditingController _importFormat =
-      TextEditingController(text: ImportFormat.segwit.name);
+  final TextEditingController _passwordController = TextEditingController(text: "");
+  final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
+  final TextEditingController _seedPhraseController = TextEditingController(text: "");
+  final TextEditingController _importFormat = TextEditingController(text: ImportFormat.segwit.name);
 
   @override
   dispose() {
@@ -53,12 +48,8 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
             vertical: screenSize.height / 16,
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : lightBlueLightThemeBackgroundColor;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+    final backdropBackgroundColor = isDarkMode ? mediumNavyDarkThemeBackgroundColor : lightBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
 
     return Container(
       decoration: BoxDecoration(
@@ -72,8 +63,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
         ),
         padding: const EdgeInsets.all(12),
         child: Scaffold(
-          backgroundColor:
-              Colors.transparent, // Make Scaffold background transparent
+          backgroundColor: scaffoldBackgroundColor,
           body: BlocListener<OnboardingImportBloc, OnboardingImportState>(
             listener: (context, state) async {
               if (state.importState is ImportStateSuccess) {
@@ -82,22 +72,37 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                 shell.initialize();
               }
             },
-            child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
-                builder: (context, state) {
+            child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
               return Container(
                 decoration: BoxDecoration(
                   color: scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Scaffold(
-                  backgroundColor: Colors
-                      .transparent, // Make inner Scaffold background transparent
+                  backgroundColor: scaffoldBackgroundColor,
                   appBar: AppBar(
                     backgroundColor: scaffoldBackgroundColor,
-                    title: const Text(
-                      'Horizon',
-                      style:
-                          TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        isDarkMode
+                            ? SvgPicture.asset(
+                                'assets/logo-white.svg',
+                                width: 48,
+                                height: 48,
+                              )
+                            : SvgPicture.asset(
+                                'assets/logo-black.svg',
+                                width: 48,
+                                height: 48,
+                              ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Horizon',
+                          style: TextStyle(
+                              fontSize: 34, fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                        ),
+                      ],
                     ),
                   ),
                   body: Column(
@@ -109,8 +114,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                               )
                             : PasswordPrompt(
                                 passwordController: _passwordController,
-                                passwordConfirmationController:
-                                    _passwordConfirmationController,
+                                passwordConfirmationController: _passwordConfirmationController,
                                 state: state,
                               ),
                       ),
@@ -151,8 +155,7 @@ class PasswordPrompt extends StatelessWidget {
             Text('Password', style: TextStyle(fontSize: 16)),
             SizedBox(width: 4),
             Tooltip(
-              message:
-                  'This password will be used to locally encrypt your wallet.',
+              message: 'This password will be used to locally encrypt your wallet.',
               child: Icon(Icons.info, size: 12),
             ),
           ]),
@@ -160,19 +163,15 @@ class PasswordPrompt extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                    constraints: const BoxConstraints(
-                        minHeight: 48,
-                        minWidth: double
-                            .infinity), // Minimum height for the TextField
+                    constraints:
+                        const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                     child: TextField(
                       obscureText: true,
                       enableSuggestions: false,
                       autocorrect: false,
                       controller: _passwordController,
                       onChanged: (value) {
-                        context
-                            .read<OnboardingImportBloc>()
-                            .add(PasswordChanged(password: value));
+                        context.read<OnboardingImportBloc>().add(PasswordChanged(password: value));
                       },
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
@@ -181,19 +180,15 @@ class PasswordPrompt extends StatelessWidget {
                     )),
                 const SizedBox(height: 16),
                 Container(
-                  constraints: const BoxConstraints(
-                      minHeight: 48,
-                      minWidth:
-                          double.infinity), // Minimum height for the TextField
+                  constraints:
+                      const BoxConstraints(minHeight: 48, minWidth: double.infinity), // Minimum height for the TextField
                   child: TextField(
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
                     controller: _passwordConfirmationController,
                     onChanged: (value) {
-                      context.read<OnboardingImportBloc>().add(
-                          PasswordConfirmationChanged(
-                              passwordConfirmation: value));
+                      context.read<OnboardingImportBloc>().add(PasswordConfirmationChanged(passwordConfirmation: value));
                     },
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
@@ -201,9 +196,7 @@ class PasswordPrompt extends StatelessWidget {
                     ),
                   ),
                 ),
-                _state.passwordError != null
-                    ? Text(_state.passwordError!)
-                    : const Text(""),
+                _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -228,20 +221,12 @@ class PasswordPrompt extends StatelessWidget {
                       Expanded(
                         child: FilledButton(
                           onPressed: () {
-                            if (_passwordController.text == '' ||
-                                _passwordConfirmationController.text == '') {
-                              context.read<OnboardingImportBloc>().add(
-                                  PasswordError(
-                                      error: 'Password cannot be empty'));
-                            } else if (_passwordController.text !=
-                                _passwordConfirmationController.text) {
-                              context.read<OnboardingImportBloc>().add(
-                                  PasswordError(
-                                      error: 'Passwords do not match'));
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else if (_passwordController.text != _passwordConfirmationController.text) {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Passwords do not match'));
                             } else {
-                              context
-                                  .read<OnboardingImportBloc>()
-                                  .add(ImportWallet());
+                              context.read<OnboardingImportBloc>().add(ImportWallet());
                             }
                           },
                           style: FilledButton.styleFrom(
@@ -272,8 +257,7 @@ class SeedInputFields extends StatefulWidget {
 }
 
 class _SeedInputFieldsState extends State<SeedInputFields> {
-  List<TextEditingController> controllers =
-      List.generate(12, (_) => TextEditingController());
+  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   String? selectedFormat = ImportFormat.segwit.name;
 
@@ -292,9 +276,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
+    final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
+    final continueButtonBackgroundColor =
+        isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -302,204 +287,242 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         children: [
           SizedBox(height: isSmallScreen ? 16 : 20),
           Expanded(
-            child: SingleChildScrollView(
-              child: SizedBox(
-                height: isSmallScreen
-                    ? null
-                    : 600, // Greater height for larger screens
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: isSmallScreen
-                          ? [
-                              Expanded(
-                                child: Column(
-                                  children: List.generate(12, (index) {
-                                    return Padding(
-                                      padding: const EdgeInsets.all(
-                                          12.0), // More whitespace between individual inputs
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width:
-                                                24, // Fixed width for alignment
-                                            child: Text(
-                                              "${index + 1}. ",
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                              textAlign: TextAlign
-                                                  .right, // Align text to the right
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                              width:
-                                                  4), // Space between number and input
-                                          Expanded(
-                                            child: TextField(
-                                              controller: controllers[index],
-                                              focusNode: focusNodes[index],
-                                              onChanged: (value) =>
-                                                  handleInput(value, index),
-                                              onEditingComplete: () =>
-                                                  handleTabNavigation(index),
-                                              decoration: InputDecoration(
-                                                filled: true,
-                                                fillColor: Colors.grey[300],
-                                                labelText: 'Word ${index + 1}',
-                                                border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0), // Rounded borders
-                                                  borderSide: BorderSide.none,
-                                                ),
-                                              ),
-                                              style: const TextStyle(
-                                                  fontSize:
-                                                      16), // Slightly taller inputs
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              ),
-                            ]
-                          : List.generate(2, (columnIndex) {
-                              return Expanded(
-                                child: Column(
-                                  children: List.generate(6, (rowIndex) {
-                                    int index = columnIndex * 6 + rowIndex;
-                                    return Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 24,
-                                            child: Text(
-                                              "${index + 1}. ",
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: TextField(
-                                              controller: controllers[index],
-                                              focusNode: focusNodes[index],
-                                              onChanged: (value) =>
-                                                  handleInput(value, index),
-                                              onEditingComplete: () =>
-                                                  handleTabNavigation(index),
-                                              decoration: InputDecoration(
-                                                filled: true,
-                                                fillColor: Colors.grey[300],
-                                                labelText: 'Word ${index + 1}',
-                                                border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                  borderSide: BorderSide.none,
-                                                ),
-                                              ),
-                                              style:
-                                                  const TextStyle(fontSize: 16),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              );
-                            }),
-                    ),
-                    widget.mnemonicErrorState != null
-                        ? Text(widget.mnemonicErrorState!)
-                        : const Text(""),
-                  ],
-                ),
-              ),
-            ),
+            child: isSmallScreen
+                ? SingleChildScrollView(
+                    child: buildInputFields(isSmallScreen, isDarkMode),
+                  )
+                : buildInputFields(isSmallScreen, isDarkMode),
           ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: selectedFormat,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedFormat = newValue;
-                    });
-                    context
-                        .read<OnboardingImportBloc>()
-                        .add(ImportFormatChanged(importFormat: newValue!));
-                  },
-                  items: [
-                    DropdownMenuItem<String>(
-                      value: ImportFormat.segwit.name,
-                      child: Text(ImportFormat.segwit.description),
-                    ),
-                    DropdownMenuItem<String>(
-                      value: ImportFormat.freewalletBech32.name,
-                      child: Text(ImportFormat.freewalletBech32.description),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          if (isSmallScreen) const SizedBox(height: 16),
+          buildDropdownButton(isDarkMode),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 35),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                FilledButton(
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    overlayColor: noBackgroundColor,
+                    elevation: 0,
+                    backgroundColor: cancelButtonBackgroundColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ), // Text style
+                  ),
                   onPressed: () {
                     final shell = context.read<ShellStateCubit>();
                     shell.onOnboarding();
                   },
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('CANCEL', style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
                   ),
-                  child: const Text('Cancel', style: TextStyle(fontSize: 14)),
                 ),
-                FilledButton(
-                  onPressed: () {
-                    context.read<OnboardingImportBloc>().add(MnemonicSubmit(
-                          mnemonic: controllers
-                              .map((controller) => controller.text)
-                              .join(' ')
-                              .trim(),
-                          importFormat: selectedFormat!,
-                        ));
-                  },
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                SizedBox(
+                  width: 250,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: continueButtonBackgroundColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500), // Text style
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
+                    onPressed: () {
+                      context.read<OnboardingImportBloc>().add(MnemonicSubmit(
+                            mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
+                            importFormat: selectedFormat!,
+                          ));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'CONTINUE',
+                        style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                      ),
+                    ),
                   ),
-                  child: const Text('Continue', style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (isSmallScreen) {
+          return Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: List.generate(12, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(12.0), // More whitespace between individual inputs
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 24, // Fixed width for alignment
+                                child: Text(
+                                  "${index + 1}. ",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                                  textAlign: TextAlign.right, // Align text to the right
+                                ),
+                              ),
+                              const SizedBox(width: 4), // Space between number and input
+                              Expanded(
+                                child: TextField(
+                                  controller: controllers[index],
+                                  focusNode: focusNodes[index],
+                                  onChanged: (value) => handleInput(value, index),
+                                  onEditingComplete: () => handleTabNavigation(index),
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                                    labelText: 'Word ${index + 1}',
+                                    labelStyle: TextStyle(
+                                        fontWeight: FontWeight.normal, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0), // Rounded borders
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                  style: const TextStyle(fontSize: 16), // Slightly taller inputs
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+              widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+            ],
+          );
+        } else {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(2, (columnIndex) {
+                        return Expanded(
+                          child: Column(
+                            children: List.generate(6, (rowIndex) {
+                              int index = columnIndex * 6 + rowIndex;
+                              return Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 12, 12, 12),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 24,
+                                      child: Text(
+                                        "${index + 1}. ",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.normal,
+                                            color: isDarkMode ? mainTextWhite : mainTextBlack),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: controllers[index],
+                                        focusNode: focusNodes[index],
+                                        onChanged: (value) => handleInput(value, index),
+                                        onEditingComplete: () => handleTabNavigation(index),
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                                          labelText: 'Word ${index + 1}',
+                                          labelStyle: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                        ),
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ),
+                        );
+                      }),
+                    ),
+                    widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget buildDropdownButton(bool isDarkMode) {
+    final dropdownBackgroundColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 12, 0),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: dropdownBackgroundColor,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: selectedFormat,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedFormat = newValue;
+                });
+                context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
+              },
+              dropdownColor: dropdownBackgroundColor,
+              items: [
+                _buildDropdownMenuItem(ImportFormat.segwit.name, ImportFormat.segwit.description, dropdownBackgroundColor),
+                _buildDropdownMenuItem(
+                    ImportFormat.freewalletBech32.name, ImportFormat.freewalletBech32.description, dropdownBackgroundColor),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  DropdownMenuItem<String> _buildDropdownMenuItem(String value, String description, Color backgroundColor) {
+    return DropdownMenuItem<String>(
+      value: value,
+      child: MouseRegion(
+        onEnter: (_) {},
+        onExit: (_) {},
+        onHover: (_) {},
+        child: Text(description, style: TextStyle(fontWeight: FontWeight.normal)),
       ),
     );
   }
@@ -527,11 +550,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   }
 
   void updateMnemonic() {
-    String mnemonic =
-        controllers.map((controller) => controller.text).join(' ').trim();
-    context
-        .read<OnboardingImportBloc>()
-        .add(MnemonicChanged(mnemonic: mnemonic));
+    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
+    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: mnemonic));
   }
 }
 
@@ -564,9 +584,7 @@ class SeedPrompt extends StatelessWidget {
                 TextField(
                   controller: _seedPhraseController,
                   onChanged: (value) {
-                    context
-                        .read<OnboardingImportBloc>()
-                        .add(MnemonicChanged(mnemonic: value));
+                    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: value));
                   },
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -579,9 +597,7 @@ class SeedPrompt extends StatelessWidget {
                     DropdownMenu<String>(
                       label: const Text("Import format"),
                       onSelected: (newValue) {
-                        context
-                            .read<OnboardingImportBloc>()
-                            .add(ImportFormatChanged(importFormat: newValue!));
+                        context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
                       },
                       initialSelection: ImportFormat.segwit.name,
                       dropdownMenuEntries: [
@@ -603,9 +619,7 @@ class SeedPrompt extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ])),
-              _state.importState is ImportStateError
-                  ? Text(_state.importState.message)
-                  : const Text(""),
+              _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
               Row(children: [
                 // TODO: figure out how to disable a button
                 ElevatedButton(
@@ -615,9 +629,7 @@ class SeedPrompt extends StatelessWidget {
                   child: const Text('Import Addresses'),
                 ),
               ]),
-              _state.importState is ImportStateLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("")
+              _state.importState is ImportStateLoading ? const CircularProgressIndicator() : const Text("")
             ],
           )),
     );
