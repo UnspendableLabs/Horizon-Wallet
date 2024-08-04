@@ -173,7 +173,7 @@ class PasswordPrompt extends StatelessWidget {
               Container(
                 constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 3),
                 child: const Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                  'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
                   style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),

@@ -157,6 +157,7 @@ class PasswordPrompt extends StatelessWidget {
     final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
     final continueButtonBackgroundColor =
         isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -178,7 +179,7 @@ class PasswordPrompt extends StatelessWidget {
               Container(
                 constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 3),
                 child: const Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                  'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
                   style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
@@ -241,59 +242,64 @@ class PasswordPrompt extends StatelessWidget {
               ),
               _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
               const Spacer(),
+              if (isSmallScreen) const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      width: 150,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          overlayColor: noBackgroundColor,
-                          elevation: 0,
-                          backgroundColor: cancelButtonBackgroundColor,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
-                          textStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ), // Text style
-                        ),
-                        onPressed: () {
-                          final shell = context.read<ShellStateCubit>();
-                          shell.onOnboarding();
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child:
-                              Text('CANCEL', style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                    Flexible(
+                      child: SizedBox(
+                        width: isSmallScreen ? double.infinity : 150,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            overlayColor: noBackgroundColor,
+                            elevation: 0,
+                            backgroundColor: cancelButtonBackgroundColor,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ), // Text style
+                          ),
+                          onPressed: () {
+                            final shell = context.read<ShellStateCubit>();
+                            shell.onOnboarding();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('CANCEL',
+                                style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    SizedBox(
-                      width: 150,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: continueButtonBackgroundColor,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500), // Text style
-                        ),
-                        onPressed: () {
-                          if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
-                            context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Password cannot be empty'));
-                          } else if (_passwordController.text != _passwordConfirmationController.text) {
-                            context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Passwords do not match'));
-                          } else {
-                            context.read<OnboardingCreateBloc>().add(CreateWallet());
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'CREATE WALLET',
-                            style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                    Flexible(
+                      child: SizedBox(
+                        width: isSmallScreen ? double.infinity : 250,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: continueButtonBackgroundColor,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                          ),
+                          onPressed: () {
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else if (_passwordController.text != _passwordConfirmationController.text) {
+                              context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Passwords do not match'));
+                            } else {
+                              context.read<OnboardingCreateBloc>().add(CreateWallet());
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'CONTINUE',
+                              style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                            ),
                           ),
                         ),
                       ),
@@ -325,66 +331,135 @@ class _MnemonicState extends State<Mnemonic> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
+    final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
+    final continueButtonBackgroundColor =
+        isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
-        return Container(
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          child: Column(
-            children: [
-              if (state.mnemonicState is GenerateMnemonicStateLoading)
-                const CircularProgressIndicator()
-              else if (state.mnemonicState is GenerateMnemonicStateGenerated)
-                SelectableText(
-                  state.mnemonicState.mnemonic,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
+        return Scaffold(
+          backgroundColor: scaffoldBackgroundColor,
+          body: Center(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (state.mnemonicState is GenerateMnemonicStateLoading)
+                    const CircularProgressIndicator()
+                  else if (state.mnemonicState is GenerateMnemonicStateGenerated)
+                    Expanded(
+                      child: Container(
+                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 2),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 20),
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: SvgPicture.asset(
+                                color: onboardingQuoteDarkThemeColor,
+                                'assets/open-quote.svg',
+                                width: 48,
+                                height: 48,
+                              ),
+                            ),
+                            SelectableText(
+                              textAlign: TextAlign.center,
+                              state.mnemonicState.mnemonic,
+                              style: TextStyle(
+                                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                                fontWeight: FontWeight.bold,
+                                fontSize: isSmallScreen ? 35 : 45,
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: SvgPicture.asset(
+                                color: onboardingQuoteDarkThemeColor,
+                                'assets/closed-quote.svg',
+                                width: 48,
+                                height: 48,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              textAlign: TextAlign.center,
+                              'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w300,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: SizedBox(
+                            width: isSmallScreen ? double.infinity : 150,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                overlayColor: noBackgroundColor,
+                                elevation: 0,
+                                backgroundColor: cancelButtonBackgroundColor,
+                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                                textStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ), // Text style
+                              ),
+                              onPressed: () {
+                                final shell = context.read<ShellStateCubit>();
+                                shell.onOnboarding();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('CANCEL',
+                                    style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: SizedBox(
+                            width: isSmallScreen ? double.infinity : 250,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: continueButtonBackgroundColor,
+                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                              ),
+                              onPressed: () {
+                                context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'CONTINUE',
+                                  style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              const Text(
-                'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
-                style: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  fontSize: 16,
-                ),
+                ],
               ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () {
-                          final shell = context.read<ShellStateCubit>();
-                          shell.onOnboarding();
-                        },
-                        style: FilledButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () {
-                          context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
-                        },
-                        style: FilledButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text('Continue'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -445,7 +520,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
           ),
           if (isSmallScreen) const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 30),
+            padding: const EdgeInsets.all(8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
