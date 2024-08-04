@@ -12,7 +12,9 @@ class OnboardingCreateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OnboardingCreateBloc(), child: const OnboardingCreatePage_());
+    return BlocProvider(
+        create: (context) => OnboardingCreateBloc(),
+        child: const OnboardingCreatePage_());
   }
 }
 
@@ -23,8 +25,10 @@ class OnboardingCreatePage_ extends StatefulWidget {
 }
 
 class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
-  final TextEditingController _passwordController = TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
+  final TextEditingController _passwordController =
+      TextEditingController(text: "");
+  final TextEditingController _passwordConfirmationController =
+      TextEditingController(text: "");
 
   @override
   dispose() {
@@ -44,8 +48,12 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
             vertical: screenSize.height / 16,
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode ? mediumNavyDarkThemeBackgroundColor : lightBlueLightThemeBackgroundColor;
-    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
+    final backdropBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : lightBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
 
     return Container(
       decoration: BoxDecoration(
@@ -68,7 +76,8 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                 shell.initialize();
               }
             },
-            child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(builder: (context, state) {
+            child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+                builder: (context, state) {
               return Container(
                 decoration: BoxDecoration(
                   color: scaffoldBackgroundColor,
@@ -96,7 +105,10 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                         Text(
                           'Horizon',
                           style: TextStyle(
-                              fontSize: 34, fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  isDarkMode ? mainTextWhite : mainTextBlack),
                         ),
                       ],
                     ),
@@ -104,16 +116,19 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                   body: Column(
                     children: [
                       Flexible(
-                        child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(builder: (context, state) {
+                        child: BlocBuilder<OnboardingCreateBloc,
+                            OnboardingCreateState>(builder: (context, state) {
                           return Scaffold(
                             body: switch (state.createState) {
                               CreateStateNotAsked => const Mnemonic(),
-                              CreateStateMnemonicUnconfirmed => ConfirmSeedInputFields(
+                              CreateStateMnemonicUnconfirmed =>
+                                ConfirmSeedInputFields(
                                   mnemonicErrorState: state.mnemonicError,
                                 ),
                               CreateStateMnemonicConfirmed => PasswordPrompt(
                                   passwordController: _passwordController,
-                                  passwordConfirmationController: _passwordConfirmationController,
+                                  passwordConfirmationController:
+                                      _passwordConfirmationController,
                                   state: state,
                                 ),
                               Object() => const Text(''),
@@ -152,11 +167,16 @@ class PasswordPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
-    final inputBackgroundColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-    final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
+    final inputBackgroundColor =
+        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
+    final cancelButtonBackgroundColor =
+        isDarkMode ? noBackgroundColor : lightThemeInputColor;
+    final continueButtonBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : royalBlueLightThemeBackgroundColor;
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
@@ -171,13 +191,16 @@ class PasswordPrompt extends StatelessWidget {
               const Spacer(),
               Text(
                 'Please create a password',
-                style:
-                    TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? mainTextWhite : mainTextBlack),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Container(
-                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 3),
+                constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width / 3),
                 child: const Text(
                   'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
                   style: TextStyle(fontSize: 16),
@@ -186,7 +209,8 @@ class PasswordPrompt extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               Container(
-                constraints: const BoxConstraints(minHeight: 48, minWidth: double.infinity),
+                constraints: const BoxConstraints(
+                    minHeight: 48, minWidth: double.infinity),
                 child: Center(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
@@ -196,13 +220,18 @@ class PasswordPrompt extends StatelessWidget {
                       autocorrect: false,
                       controller: _passwordController,
                       onChanged: (value) {
-                        context.read<OnboardingCreateBloc>().add(PasswordChanged(password: value));
+                        context
+                            .read<OnboardingCreateBloc>()
+                            .add(PasswordChanged(password: value));
                       },
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: inputBackgroundColor,
                         labelText: 'Password',
-                        labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                        labelStyle: TextStyle(
+                            color: isDarkMode
+                                ? darkThemeInputLabelColor
+                                : lightThemeInputLabelColor),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
@@ -214,7 +243,8 @@ class PasswordPrompt extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Container(
-                constraints: const BoxConstraints(minHeight: 48, minWidth: double.infinity),
+                constraints: const BoxConstraints(
+                    minHeight: 48, minWidth: double.infinity),
                 child: Center(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
@@ -224,13 +254,18 @@ class PasswordPrompt extends StatelessWidget {
                       autocorrect: false,
                       controller: _passwordConfirmationController,
                       onChanged: (value) {
-                        context.read<OnboardingCreateBloc>().add(PasswordConfirmationChanged(passwordConfirmation: value));
+                        context.read<OnboardingCreateBloc>().add(
+                            PasswordConfirmationChanged(
+                                passwordConfirmation: value));
                       },
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: inputBackgroundColor,
                         labelText: 'Confirm Password',
-                        labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                        labelStyle: TextStyle(
+                            color: isDarkMode
+                                ? darkThemeInputLabelColor
+                                : lightThemeInputLabelColor),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
@@ -240,7 +275,9 @@ class PasswordPrompt extends StatelessWidget {
                   ),
                 ),
               ),
-              _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
+              _state.passwordError != null
+                  ? Text(_state.passwordError!)
+                  : const Text(""),
               const Spacer(),
               if (isSmallScreen) const SizedBox(height: 16),
               Padding(
@@ -256,7 +293,8 @@ class PasswordPrompt extends StatelessWidget {
                             overlayColor: noBackgroundColor,
                             elevation: 0,
                             backgroundColor: cancelButtonBackgroundColor,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16), // Button size
                             textStyle: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -269,7 +307,10 @@ class PasswordPrompt extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text('CANCEL',
-                                style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                                style: TextStyle(
+                                    color: isDarkMode
+                                        ? greyDarkThemeButtonText
+                                        : mainTextBlack)),
                           ),
                         ),
                       ),
@@ -282,23 +323,36 @@ class PasswordPrompt extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: continueButtonBackgroundColor,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16),
+                            textStyle: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                           onPressed: () {
-                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
-                              context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Password cannot be empty'));
-                            } else if (_passwordController.text != _passwordConfirmationController.text) {
-                              context.read<OnboardingCreateBloc>().add(PasswordError(error: 'Passwords do not match'));
+                            if (_passwordController.text == '' ||
+                                _passwordConfirmationController.text == '') {
+                              context.read<OnboardingCreateBloc>().add(
+                                  PasswordError(
+                                      error: 'Password cannot be empty'));
+                            } else if (_passwordController.text !=
+                                _passwordConfirmationController.text) {
+                              context.read<OnboardingCreateBloc>().add(
+                                  PasswordError(
+                                      error: 'Passwords do not match'));
                             } else {
-                              context.read<OnboardingCreateBloc>().add(CreateWallet());
+                              context
+                                  .read<OnboardingCreateBloc>()
+                                  .add(CreateWallet());
                             }
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               'CONTINUE',
-                              style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                              style: TextStyle(
+                                  color: isDarkMode
+                                      ? neonBlueDarkThemeButtonTextColor
+                                      : mainTextWhite),
                             ),
                           ),
                         ),
@@ -332,10 +386,14 @@ class _MnemonicState extends State<Mnemonic> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
-    final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
+    final cancelButtonBackgroundColor =
+        isDarkMode ? noBackgroundColor : lightThemeInputColor;
+    final continueButtonBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : royalBlueLightThemeBackgroundColor;
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
@@ -350,10 +408,12 @@ class _MnemonicState extends State<Mnemonic> {
                 children: [
                   if (state.mnemonicState is GenerateMnemonicStateLoading)
                     const CircularProgressIndicator()
-                  else if (state.mnemonicState is GenerateMnemonicStateGenerated)
+                  else if (state.mnemonicState
+                      is GenerateMnemonicStateGenerated)
                     Expanded(
                       child: Container(
-                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 2),
+                        constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width / 2),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -372,7 +432,8 @@ class _MnemonicState extends State<Mnemonic> {
                               textAlign: TextAlign.center,
                               state.mnemonicState.mnemonic,
                               style: TextStyle(
-                                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                                color:
+                                    isDarkMode ? mainTextWhite : mainTextBlack,
                                 fontWeight: FontWeight.bold,
                                 fontSize: isSmallScreen ? 35 : 45,
                               ),
@@ -412,7 +473,9 @@ class _MnemonicState extends State<Mnemonic> {
                                 overlayColor: noBackgroundColor,
                                 elevation: 0,
                                 backgroundColor: cancelButtonBackgroundColor,
-                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16), // Button size
                                 textStyle: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -425,7 +488,10 @@ class _MnemonicState extends State<Mnemonic> {
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text('CANCEL',
-                                    style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                                    style: TextStyle(
+                                        color: isDarkMode
+                                            ? greyDarkThemeButtonText
+                                            : mainTextBlack)),
                               ),
                             ),
                           ),
@@ -438,17 +504,24 @@ class _MnemonicState extends State<Mnemonic> {
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
                                 backgroundColor: continueButtonBackgroundColor,
-                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32, vertical: 16),
+                                textStyle: const TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.w500),
                               ),
                               onPressed: () {
-                                context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
+                                context
+                                    .read<OnboardingCreateBloc>()
+                                    .add(UnconfirmMnemonic());
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
                                   'CONTINUE',
-                                  style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                                  style: TextStyle(
+                                      color: isDarkMode
+                                          ? neonBlueDarkThemeButtonTextColor
+                                          : mainTextWhite),
                                 ),
                               ),
                             ),
@@ -475,7 +548,8 @@ class ConfirmSeedInputFields extends StatefulWidget {
 }
 
 class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
-  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
+  List<TextEditingController> controllers =
+      List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
 
   @override
@@ -493,10 +567,14 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
-    final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
+    final cancelButtonBackgroundColor =
+        isDarkMode ? noBackgroundColor : lightThemeInputColor;
+    final continueButtonBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : royalBlueLightThemeBackgroundColor;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -508,7 +586,10 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
             child: Text(
               textAlign: TextAlign.center,
               'Please confirm your seed phrase',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600, color: isDarkMode ? mainTextWhite : mainTextBlack),
+              style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? mainTextWhite : mainTextBlack),
             ),
           ),
           Expanded(
@@ -529,18 +610,25 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     overlayColor: noBackgroundColor,
                     elevation: 0,
                     backgroundColor: cancelButtonBackgroundColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16), // Button size
                     textStyle: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ), // Text style
                   ),
                   onPressed: () {
-                    context.read<OnboardingCreateBloc>().add(GoBackToMnemonic());
+                    context
+                        .read<OnboardingCreateBloc>()
+                        .add(GoBackToMnemonic());
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('BACK', style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                    child: Text('BACK',
+                        style: TextStyle(
+                            color: isDarkMode
+                                ? greyDarkThemeButtonText
+                                : mainTextBlack)),
                   ),
                 ),
                 SizedBox(
@@ -549,19 +637,27 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: continueButtonBackgroundColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 16),
+                      textStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                     onPressed: () {
                       context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
-                            mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
+                            mnemonic: controllers
+                                .map((controller) => controller.text)
+                                .join(' ')
+                                .trim(),
                           ));
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
                         'CONTINUE',
-                        style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                        style: TextStyle(
+                            color: isDarkMode
+                                ? neonBlueDarkThemeButtonTextColor
+                                : mainTextWhite),
                       ),
                     ),
                   ),
@@ -595,7 +691,10 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                 child: Text(
                                   "${index + 1}. ",
                                   style: TextStyle(
-                                      fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack),
                                   textAlign: TextAlign.right,
                                 ),
                               ),
@@ -604,15 +703,21 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                 child: TextField(
                                   controller: controllers[index],
                                   focusNode: focusNodes[index],
-                                  onChanged: (value) => handleInput(value, index),
-                                  onEditingComplete: () => handleTabNavigation(index),
+                                  onChanged: (value) =>
+                                      handleInput(value, index),
+                                  onEditingComplete: () =>
+                                      handleTabNavigation(index),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                                    fillColor: isDarkMode
+                                        ? darkThemeInputColor
+                                        : lightThemeInputColor,
                                     labelText: 'Word ${index + 1}',
                                     labelStyle: TextStyle(
                                         fontWeight: FontWeight.normal,
-                                        color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                                        color: isDarkMode
+                                            ? darkThemeInputLabelColor
+                                            : lightThemeInputLabelColor),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8.0),
                                       borderSide: BorderSide.none,
@@ -629,7 +734,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                   ),
                 ],
               ),
-              widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+              widget.mnemonicErrorState != null
+                  ? Text(widget.mnemonicErrorState!)
+                  : const Text(""),
             ],
           );
         } else {
@@ -658,7 +765,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                         "${index + 1}. ",
                                         style: TextStyle(
                                             fontWeight: FontWeight.normal,
-                                            color: isDarkMode ? mainTextWhite : mainTextBlack),
+                                            color: isDarkMode
+                                                ? mainTextWhite
+                                                : mainTextBlack),
                                         textAlign: TextAlign.right,
                                       ),
                                     ),
@@ -667,17 +776,24 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                       child: TextField(
                                         controller: controllers[index],
                                         focusNode: focusNodes[index],
-                                        onChanged: (value) => handleInput(value, index),
-                                        onEditingComplete: () => handleTabNavigation(index),
+                                        onChanged: (value) =>
+                                            handleInput(value, index),
+                                        onEditingComplete: () =>
+                                            handleTabNavigation(index),
                                         decoration: InputDecoration(
                                           filled: true,
-                                          fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                                          fillColor: isDarkMode
+                                              ? darkThemeInputColor
+                                              : lightThemeInputColor,
                                           labelText: 'Word ${index + 1}',
                                           labelStyle: TextStyle(
                                               fontWeight: FontWeight.normal,
-                                              color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                                              color: isDarkMode
+                                                  ? darkThemeInputLabelColor
+                                                  : lightThemeInputLabelColor),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
                                             borderSide: BorderSide.none,
                                           ),
                                         ),
@@ -692,7 +808,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                         );
                       }),
                     ),
-                    widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+                    widget.mnemonicErrorState != null
+                        ? Text(widget.mnemonicErrorState!)
+                        : const Text(""),
                   ],
                 ),
               ),
@@ -726,7 +844,10 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   }
 
   void updateMnemonic() {
-    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
-    context.read<OnboardingCreateBloc>().add(ConfirmMnemonicChanged(mnemonic: mnemonic));
+    String mnemonic =
+        controllers.map((controller) => controller.text).join(' ').trim();
+    context
+        .read<OnboardingCreateBloc>()
+        .add(ConfirmMnemonicChanged(mnemonic: mnemonic));
   }
 }

@@ -14,7 +14,9 @@ class OnboardingImportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context) => OnboardingImportBloc(), child: const OnboardingImportPage_());
+    return BlocProvider(
+        create: (context) => OnboardingImportBloc(),
+        child: const OnboardingImportPage_());
   }
 }
 
@@ -25,10 +27,14 @@ class OnboardingImportPage_ extends StatefulWidget {
 }
 
 class _OnboardingImportPageState extends State<OnboardingImportPage_> {
-  final TextEditingController _passwordController = TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController = TextEditingController(text: "");
-  final TextEditingController _seedPhraseController = TextEditingController(text: "");
-  final TextEditingController _importFormat = TextEditingController(text: ImportFormat.segwit.name);
+  final TextEditingController _passwordController =
+      TextEditingController(text: "");
+  final TextEditingController _passwordConfirmationController =
+      TextEditingController(text: "");
+  final TextEditingController _seedPhraseController =
+      TextEditingController(text: "");
+  final TextEditingController _importFormat =
+      TextEditingController(text: ImportFormat.segwit.name);
 
   @override
   dispose() {
@@ -48,8 +54,12 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
             vertical: screenSize.height / 16,
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode ? mediumNavyDarkThemeBackgroundColor : lightBlueLightThemeBackgroundColor;
-    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
+    final backdropBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : lightBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
 
     return Container(
       decoration: BoxDecoration(
@@ -72,7 +82,8 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                 shell.initialize();
               }
             },
-            child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(builder: (context, state) {
+            child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
+                builder: (context, state) {
               return Container(
                 decoration: BoxDecoration(
                   color: scaffoldBackgroundColor,
@@ -100,7 +111,10 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                         Text(
                           'Horizon',
                           style: TextStyle(
-                              fontSize: 34, fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  isDarkMode ? mainTextWhite : mainTextBlack),
                         ),
                       ],
                     ),
@@ -114,7 +128,8 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                               )
                             : PasswordPrompt(
                                 passwordController: _passwordController,
-                                passwordConfirmationController: _passwordConfirmationController,
+                                passwordConfirmationController:
+                                    _passwordConfirmationController,
                                 state: state,
                               ),
                       ),
@@ -147,11 +162,16 @@ class PasswordPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
-    final inputBackgroundColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-    final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
+    final inputBackgroundColor =
+        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
+    final cancelButtonBackgroundColor =
+        isDarkMode ? noBackgroundColor : lightThemeInputColor;
+    final continueButtonBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : royalBlueLightThemeBackgroundColor;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -165,13 +185,16 @@ class PasswordPrompt extends StatelessWidget {
               const Spacer(),
               Text(
                 'Please create a password',
-                style:
-                    TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? mainTextWhite : mainTextBlack),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Container(
-                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 3),
+                constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width / 3),
                 child: const Text(
                   'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
                   style: TextStyle(fontSize: 16),
@@ -180,7 +203,8 @@ class PasswordPrompt extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               Container(
-                constraints: const BoxConstraints(minHeight: 48, minWidth: double.infinity),
+                constraints: const BoxConstraints(
+                    minHeight: 48, minWidth: double.infinity),
                 child: Center(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
@@ -190,13 +214,18 @@ class PasswordPrompt extends StatelessWidget {
                       autocorrect: false,
                       controller: _passwordController,
                       onChanged: (value) {
-                        context.read<OnboardingImportBloc>().add(PasswordChanged(password: value));
+                        context
+                            .read<OnboardingImportBloc>()
+                            .add(PasswordChanged(password: value));
                       },
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: inputBackgroundColor,
                         labelText: 'Password',
-                        labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                        labelStyle: TextStyle(
+                            color: isDarkMode
+                                ? darkThemeInputLabelColor
+                                : lightThemeInputLabelColor),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
@@ -208,7 +237,8 @@ class PasswordPrompt extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Container(
-                constraints: const BoxConstraints(minHeight: 48, minWidth: double.infinity),
+                constraints: const BoxConstraints(
+                    minHeight: 48, minWidth: double.infinity),
                 child: Center(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
@@ -218,13 +248,18 @@ class PasswordPrompt extends StatelessWidget {
                       autocorrect: false,
                       controller: _passwordConfirmationController,
                       onChanged: (value) {
-                        context.read<OnboardingImportBloc>().add(PasswordConfirmationChanged(passwordConfirmation: value));
+                        context.read<OnboardingImportBloc>().add(
+                            PasswordConfirmationChanged(
+                                passwordConfirmation: value));
                       },
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: inputBackgroundColor,
                         labelText: 'Confirm Password',
-                        labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                        labelStyle: TextStyle(
+                            color: isDarkMode
+                                ? darkThemeInputLabelColor
+                                : lightThemeInputLabelColor),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
@@ -234,7 +269,9 @@ class PasswordPrompt extends StatelessWidget {
                   ),
                 ),
               ),
-              _state.passwordError != null ? Text(_state.passwordError!) : const Text(""),
+              _state.passwordError != null
+                  ? Text(_state.passwordError!)
+                  : const Text(""),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -248,7 +285,8 @@ class PasswordPrompt extends StatelessWidget {
                           overlayColor: noBackgroundColor,
                           elevation: 0,
                           backgroundColor: cancelButtonBackgroundColor,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 16), // Button size
                           textStyle: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -260,8 +298,11 @@ class PasswordPrompt extends StatelessWidget {
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child:
-                              Text('CANCEL', style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                          child: Text('CANCEL',
+                              style: TextStyle(
+                                  color: isDarkMode
+                                      ? greyDarkThemeButtonText
+                                      : mainTextBlack)),
                         ),
                       ),
                     ),
@@ -272,23 +313,36 @@ class PasswordPrompt extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           backgroundColor: continueButtonBackgroundColor,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500), // Text style
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 16), // Button size
+                          textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500), // Text style
                         ),
                         onPressed: () {
-                          if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
-                            context.read<OnboardingImportBloc>().add(PasswordError(error: 'Password cannot be empty'));
-                          } else if (_passwordController.text != _passwordConfirmationController.text) {
-                            context.read<OnboardingImportBloc>().add(PasswordError(error: 'Passwords do not match'));
+                          if (_passwordController.text == '' ||
+                              _passwordConfirmationController.text == '') {
+                            context.read<OnboardingImportBloc>().add(
+                                PasswordError(
+                                    error: 'Password cannot be empty'));
+                          } else if (_passwordController.text !=
+                              _passwordConfirmationController.text) {
+                            context.read<OnboardingImportBloc>().add(
+                                PasswordError(error: 'Passwords do not match'));
                           } else {
-                            context.read<OnboardingImportBloc>().add(ImportWallet());
+                            context
+                                .read<OnboardingImportBloc>()
+                                .add(ImportWallet());
                           }
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
                             'LOGIN',
-                            style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                            style: TextStyle(
+                                color: isDarkMode
+                                    ? neonBlueDarkThemeButtonTextColor
+                                    : mainTextWhite),
                           ),
                         ),
                       ),
@@ -312,7 +366,8 @@ class SeedInputFields extends StatefulWidget {
 }
 
 class _SeedInputFieldsState extends State<SeedInputFields> {
-  List<TextEditingController> controllers = List.generate(12, (_) => TextEditingController());
+  List<TextEditingController> controllers =
+      List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   String? selectedFormat = ImportFormat.segwit.name;
 
@@ -331,10 +386,14 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode ? lightNavyDarkThemeBackgroundColor : whiteLightThemeBackgroundColor;
-    final cancelButtonBackgroundColor = isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkThemeBackgroundColor : royalBlueLightThemeBackgroundColor;
+    final scaffoldBackgroundColor = isDarkMode
+        ? lightNavyDarkThemeBackgroundColor
+        : whiteLightThemeBackgroundColor;
+    final cancelButtonBackgroundColor =
+        isDarkMode ? noBackgroundColor : lightThemeInputColor;
+    final continueButtonBackgroundColor = isDarkMode
+        ? mediumNavyDarkThemeBackgroundColor
+        : royalBlueLightThemeBackgroundColor;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -360,7 +419,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     overlayColor: noBackgroundColor,
                     elevation: 0,
                     backgroundColor: cancelButtonBackgroundColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16), // Button size
                     textStyle: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -372,7 +432,11 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('CANCEL', style: TextStyle(color: isDarkMode ? greyDarkThemeButtonText : mainTextBlack)),
+                    child: Text('CANCEL',
+                        style: TextStyle(
+                            color: isDarkMode
+                                ? greyDarkThemeButtonText
+                                : mainTextBlack)),
                   ),
                 ),
                 SizedBox(
@@ -381,12 +445,17 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: continueButtonBackgroundColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 16),
+                      textStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                     onPressed: () {
                       context.read<OnboardingImportBloc>().add(MnemonicSubmit(
-                            mnemonic: controllers.map((controller) => controller.text).join(' ').trim(),
+                            mnemonic: controllers
+                                .map((controller) => controller.text)
+                                .join(' ')
+                                .trim(),
                             importFormat: selectedFormat!,
                           ));
                     },
@@ -394,7 +463,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
                         'CONTINUE',
-                        style: TextStyle(color: isDarkMode ? neonBlueDarkThemeButtonTextColor : mainTextWhite),
+                        style: TextStyle(
+                            color: isDarkMode
+                                ? neonBlueDarkThemeButtonTextColor
+                                : mainTextWhite),
                       ),
                     ),
                   ),
@@ -428,7 +500,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                 child: Text(
                                   "${index + 1}. ",
                                   style: TextStyle(
-                                      fontWeight: FontWeight.bold, color: isDarkMode ? mainTextWhite : mainTextBlack),
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack),
                                   textAlign: TextAlign.right,
                                 ),
                               ),
@@ -437,15 +512,21 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                 child: TextField(
                                   controller: controllers[index],
                                   focusNode: focusNodes[index],
-                                  onChanged: (value) => handleInput(value, index),
-                                  onEditingComplete: () => handleTabNavigation(index),
+                                  onChanged: (value) =>
+                                      handleInput(value, index),
+                                  onEditingComplete: () =>
+                                      handleTabNavigation(index),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                                    fillColor: isDarkMode
+                                        ? darkThemeInputColor
+                                        : lightThemeInputColor,
                                     labelText: 'Word ${index + 1}',
                                     labelStyle: TextStyle(
                                         fontWeight: FontWeight.normal,
-                                        color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                                        color: isDarkMode
+                                            ? darkThemeInputLabelColor
+                                            : lightThemeInputLabelColor),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8.0),
                                       borderSide: BorderSide.none,
@@ -462,7 +543,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                   ),
                 ],
               ),
-              widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+              widget.mnemonicErrorState != null
+                  ? Text(widget.mnemonicErrorState!)
+                  : const Text(""),
             ],
           );
         } else {
@@ -491,7 +574,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                         "${index + 1}. ",
                                         style: TextStyle(
                                             fontWeight: FontWeight.normal,
-                                            color: isDarkMode ? mainTextWhite : mainTextBlack),
+                                            color: isDarkMode
+                                                ? mainTextWhite
+                                                : mainTextBlack),
                                         textAlign: TextAlign.right,
                                       ),
                                     ),
@@ -500,17 +585,24 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                       child: TextField(
                                         controller: controllers[index],
                                         focusNode: focusNodes[index],
-                                        onChanged: (value) => handleInput(value, index),
-                                        onEditingComplete: () => handleTabNavigation(index),
+                                        onChanged: (value) =>
+                                            handleInput(value, index),
+                                        onEditingComplete: () =>
+                                            handleTabNavigation(index),
                                         decoration: InputDecoration(
                                           filled: true,
-                                          fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                                          fillColor: isDarkMode
+                                              ? darkThemeInputColor
+                                              : lightThemeInputColor,
                                           labelText: 'Word ${index + 1}',
                                           labelStyle: TextStyle(
                                               fontWeight: FontWeight.normal,
-                                              color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                                              color: isDarkMode
+                                                  ? darkThemeInputLabelColor
+                                                  : lightThemeInputLabelColor),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
                                             borderSide: BorderSide.none,
                                           ),
                                         ),
@@ -525,7 +617,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         );
                       }),
                     ),
-                    widget.mnemonicErrorState != null ? Text(widget.mnemonicErrorState!) : const Text(""),
+                    widget.mnemonicErrorState != null
+                        ? Text(widget.mnemonicErrorState!)
+                        : const Text(""),
                   ],
                 ),
               ),
@@ -537,7 +631,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   }
 
   Widget buildDropdownButton(bool isDarkMode) {
-    final dropdownBackgroundColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
+    final dropdownBackgroundColor =
+        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 12, 0),
@@ -548,7 +643,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         ),
         child: DropdownButtonHideUnderline(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
             child: DropdownButton<String>(
               isExpanded: true,
               value: selectedFormat,
@@ -556,13 +652,18 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 setState(() {
                   selectedFormat = newValue;
                 });
-                context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
+                context
+                    .read<OnboardingImportBloc>()
+                    .add(ImportFormatChanged(importFormat: newValue!));
               },
               dropdownColor: dropdownBackgroundColor,
               items: [
-                _buildDropdownMenuItem(ImportFormat.segwit.name, ImportFormat.segwit.description, dropdownBackgroundColor),
+                _buildDropdownMenuItem(ImportFormat.segwit.name,
+                    ImportFormat.segwit.description, dropdownBackgroundColor),
                 _buildDropdownMenuItem(
-                    ImportFormat.freewalletBech32.name, ImportFormat.freewalletBech32.description, dropdownBackgroundColor),
+                    ImportFormat.freewalletBech32.name,
+                    ImportFormat.freewalletBech32.description,
+                    dropdownBackgroundColor),
               ],
             ),
           ),
@@ -571,14 +672,16 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     );
   }
 
-  DropdownMenuItem<String> _buildDropdownMenuItem(String value, String description, Color backgroundColor) {
+  DropdownMenuItem<String> _buildDropdownMenuItem(
+      String value, String description, Color backgroundColor) {
     return DropdownMenuItem<String>(
       value: value,
       child: MouseRegion(
         onEnter: (_) {},
         onExit: (_) {},
         onHover: (_) {},
-        child: Text(description, style: const TextStyle(fontWeight: FontWeight.normal)),
+        child: Text(description,
+            style: const TextStyle(fontWeight: FontWeight.normal)),
       ),
     );
   }
@@ -606,8 +709,11 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   }
 
   void updateMnemonic() {
-    String mnemonic = controllers.map((controller) => controller.text).join(' ').trim();
-    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: mnemonic));
+    String mnemonic =
+        controllers.map((controller) => controller.text).join(' ').trim();
+    context
+        .read<OnboardingImportBloc>()
+        .add(MnemonicChanged(mnemonic: mnemonic));
   }
 }
 
@@ -640,7 +746,9 @@ class SeedPrompt extends StatelessWidget {
                 TextField(
                   controller: _seedPhraseController,
                   onChanged: (value) {
-                    context.read<OnboardingImportBloc>().add(MnemonicChanged(mnemonic: value));
+                    context
+                        .read<OnboardingImportBloc>()
+                        .add(MnemonicChanged(mnemonic: value));
                   },
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -653,7 +761,9 @@ class SeedPrompt extends StatelessWidget {
                     DropdownMenu<String>(
                       label: const Text("Import format"),
                       onSelected: (newValue) {
-                        context.read<OnboardingImportBloc>().add(ImportFormatChanged(importFormat: newValue!));
+                        context
+                            .read<OnboardingImportBloc>()
+                            .add(ImportFormatChanged(importFormat: newValue!));
                       },
                       initialSelection: ImportFormat.segwit.name,
                       dropdownMenuEntries: [
@@ -675,7 +785,9 @@ class SeedPrompt extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ])),
-              _state.importState is ImportStateError ? Text(_state.importState.message) : const Text(""),
+              _state.importState is ImportStateError
+                  ? Text(_state.importState.message)
+                  : const Text(""),
               Row(children: [
                 // TODO: figure out how to disable a button
                 ElevatedButton(
@@ -685,7 +797,9 @@ class SeedPrompt extends StatelessWidget {
                   child: const Text('Import Addresses'),
                 ),
               ]),
-              _state.importState is ImportStateLoading ? const CircularProgressIndicator() : const Text("")
+              _state.importState is ImportStateLoading
+                  ? const CircularProgressIndicator()
+                  : const Text("")
             ],
           )),
     );
