@@ -66,6 +66,7 @@ dependencies:
   qr_flutter: ^4.1.0
   decimal: ^2.3.3
   collection: ^1.18.0
+  flutter_svg: ^1.0.0
 
 
 dev_dependencies:
@@ -99,7 +100,12 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/logo-black.svg
+    - assets/logo-white.svg
+    - assets/open-quote.svg
+    - assets/closed-quote.svg
+
   #   - .env
 
 
