@@ -129,10 +129,13 @@ class ComposeIssuanceBloc
 
         TransactionInfoVerbose txInfo = await transactionRepository.getInfoVerbose(txHex);
 
-        await transactionLocalRepository.insertVerbose(txInfo);
+        await transactionLocalRepository.insertVerbose(txInfo.copyWith(
+            hash: txHash,
+        ));
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {
+        rethrow;
         if (error is DioException) {
           emit(state.copyWith(
               submitState: SubmitState.error(

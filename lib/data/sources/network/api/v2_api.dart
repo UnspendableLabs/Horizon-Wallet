@@ -732,9 +732,7 @@ class AssetInfo {
   factory AssetInfo.fromJson(Map<String, dynamic> json) =>
       _$AssetInfoFromJson(json);
 
-
   Map<String, dynamic> toJson() => _$AssetInfoToJson(this);
-
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1539,8 +1537,6 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
 
   factory TransactionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
     final messageType = json["message_type"];
-    print("messageType in fromJson $messageType");
-    print("json $json");
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedVerbose.fromJson(json);
@@ -1659,14 +1655,15 @@ class Info {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendInfo.fromJson(json);
+      case "issuance":
+        return IssuanceInfo.fromJson(json);
       default:
         return base;
     }
   }
 
   // TODO: this doesnt actually show all the send data
-  Map<String, dynamic> toJson() => 
-  _$InfoToJson(this);
+  Map<String, dynamic> toJson() => _$InfoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1685,8 +1682,6 @@ class EnhancedSendInfoUnpackedData {
 
   factory EnhancedSendInfoUnpackedData.fromJson(Map<String, dynamic> json) =>
       _$EnhancedSendInfoUnpackedDataFromJson(json);
-
-
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1705,6 +1700,55 @@ class EnhancedSendInfo extends Info {
 
   factory EnhancedSendInfo.fromJson(Map<String, dynamic> json) =>
       _$EnhancedSendInfoFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class IssuanceUnpacked {
+  final String assetId;
+  final String asset;
+  final String? subassetLongname;
+  final int quantity;
+  final bool divisible;
+  final bool lock;
+  final bool reset;
+  final bool callable;
+  final int callDate;
+  final double callPrice;
+  final String description;
+  final String status;
+  const IssuanceUnpacked({
+    required this.assetId,
+    required this.asset,
+    this.subassetLongname,
+    required this.quantity,
+    required this.divisible,
+    required this.lock,
+    required this.reset,
+    required this.callable,
+    required this.callDate,
+    required this.callPrice,
+    required this.description,
+    required this.status,
+  });
+  factory IssuanceUnpacked.fromJson(Map<String, dynamic> json) =>
+      _$IssuanceUnpackedFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class IssuanceInfo extends Info {
+  final IssuanceUnpacked unpackedData;
+  IssuanceInfo({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    // super.unpackedData,
+    required this.unpackedData,
+  });
+  factory IssuanceInfo.fromJson(Map<String, dynamic> json) =>
+      _$IssuanceInfoFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1736,18 +1780,15 @@ class InfoVerbose extends Info {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendInfoVerbose.fromJson(json);
+      case "issuance":
+        return IssuanceInfoVerbose.fromJson(json);
       default:
         return base;
     }
-
-      
-
-
   }
 
   @override
   Map<String, dynamic> toJson() => _$InfoVerboseToJson(this);
-
 }
 
 // @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1775,7 +1816,6 @@ class EnhancedSendInfoVerbose extends InfoVerbose {
 
   const EnhancedSendInfoVerbose({
     required super.source,
-
     super.destination,
     super.btcAmount,
     super.fee,
@@ -1788,11 +1828,51 @@ class EnhancedSendInfoVerbose extends InfoVerbose {
   factory EnhancedSendInfoVerbose.fromJson(Map<String, dynamic> json) =>
       _$EnhancedSendInfoVerboseFromJson(json);
 
-
   @override
   Map<String, dynamic> toJson() => _$EnhancedSendInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class IssuanceUnpackedVerbose extends IssuanceUnpacked {
+  // TODO: should eventually include normalized
+  const IssuanceUnpackedVerbose({
+    required super.assetId,
+    required super.asset,
+    super.subassetLongname,
+    required super.quantity,
+    required super.divisible,
+    required super.lock,
+    required super.reset,
+    required super.callable,
+    required super.callDate,
+    required super.callPrice,
+    required super.description,
+    required super.status,
+  });
 
 
+  factory IssuanceUnpackedVerbose.fromJson(Map<String, dynamic> json) =>
+      _$IssuanceUnpackedVerboseFromJson(json);
+
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class IssuanceInfoVerbose extends InfoVerbose {
+  final IssuanceUnpackedVerbose unpackedData;
+  const IssuanceInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+  factory IssuanceInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$IssuanceInfoVerboseFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$IssuanceInfoVerboseToJson(this);
 }
 
 // {

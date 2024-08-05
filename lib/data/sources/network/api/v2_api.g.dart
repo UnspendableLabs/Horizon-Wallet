@@ -1231,6 +1231,60 @@ Map<String, dynamic> _$EnhancedSendInfoToJson(EnhancedSendInfo instance) =>
       'unpacked_data': instance.unpackedData,
     };
 
+IssuanceUnpacked _$IssuanceUnpackedFromJson(Map<String, dynamic> json) =>
+    IssuanceUnpacked(
+      assetId: json['asset_id'] as String,
+      asset: json['asset'] as String,
+      subassetLongname: json['subasset_longname'] as String?,
+      quantity: (json['quantity'] as num).toInt(),
+      divisible: json['divisible'] as bool,
+      lock: json['lock'] as bool,
+      reset: json['reset'] as bool,
+      callable: json['callable'] as bool,
+      callDate: (json['call_date'] as num).toInt(),
+      callPrice: (json['call_price'] as num).toDouble(),
+      description: json['description'] as String,
+      status: json['status'] as String,
+    );
+
+Map<String, dynamic> _$IssuanceUnpackedToJson(IssuanceUnpacked instance) =>
+    <String, dynamic>{
+      'asset_id': instance.assetId,
+      'asset': instance.asset,
+      'subasset_longname': instance.subassetLongname,
+      'quantity': instance.quantity,
+      'divisible': instance.divisible,
+      'lock': instance.lock,
+      'reset': instance.reset,
+      'callable': instance.callable,
+      'call_date': instance.callDate,
+      'call_price': instance.callPrice,
+      'description': instance.description,
+      'status': instance.status,
+    };
+
+IssuanceInfo _$IssuanceInfoFromJson(Map<String, dynamic> json) => IssuanceInfo(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      unpackedData: IssuanceUnpacked.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$IssuanceInfoToJson(IssuanceInfo instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'unpacked_data': instance.unpackedData,
+    };
+
 InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) => InfoVerbose(
       source: json['source'] as String,
       destination: json['destination'] as String?,
@@ -1268,6 +1322,66 @@ EnhancedSendInfoVerbose _$EnhancedSendInfoVerboseFromJson(
 
 Map<String, dynamic> _$EnhancedSendInfoVerboseToJson(
         EnhancedSendInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+IssuanceUnpackedVerbose _$IssuanceUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    IssuanceUnpackedVerbose(
+      assetId: json['asset_id'] as String,
+      asset: json['asset'] as String,
+      subassetLongname: json['subasset_longname'] as String?,
+      quantity: (json['quantity'] as num).toInt(),
+      divisible: json['divisible'] as bool,
+      lock: json['lock'] as bool,
+      reset: json['reset'] as bool,
+      callable: json['callable'] as bool,
+      callDate: (json['call_date'] as num).toInt(),
+      callPrice: (json['call_price'] as num).toDouble(),
+      description: json['description'] as String,
+      status: json['status'] as String,
+    );
+
+Map<String, dynamic> _$IssuanceUnpackedVerboseToJson(
+        IssuanceUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'asset_id': instance.assetId,
+      'asset': instance.asset,
+      'subasset_longname': instance.subassetLongname,
+      'quantity': instance.quantity,
+      'divisible': instance.divisible,
+      'lock': instance.lock,
+      'reset': instance.reset,
+      'callable': instance.callable,
+      'call_date': instance.callDate,
+      'call_price': instance.callPrice,
+      'description': instance.description,
+      'status': instance.status,
+    };
+
+IssuanceInfoVerbose _$IssuanceInfoVerboseFromJson(Map<String, dynamic> json) =>
+    IssuanceInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      unpackedData: IssuanceUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$IssuanceInfoVerboseToJson(
+        IssuanceInfoVerbose instance) =>
     <String, dynamic>{
       'source': instance.source,
       'destination': instance.destination,
