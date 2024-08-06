@@ -16,8 +16,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:mocktail/mocktail.dart';
 
 final DEFAULT_WHITELIST = [
-  "CREDIT",
-  "DEBIT",
+  "ENHANCED_SEND",
   "ASSET_ISSUANCE",
 ];
 
@@ -77,7 +76,7 @@ class MockTransactionLocalRepository extends Mock
 
 class MockAddressRepository extends Mock implements AddressRepository {}
 
-class MockTransactionInfo extends Mock implements TransactionInfo {
+class MockTransactionInfo extends Mock implements TransactionInfoVerbose {
   @override
   final String hash;
   @override
@@ -195,7 +194,7 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -238,7 +237,7 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -280,7 +279,7 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -316,7 +315,7 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -360,7 +359,7 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -400,7 +399,7 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -465,7 +464,7 @@ void main() {
             ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -529,7 +528,7 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -585,7 +584,7 @@ void main() {
               MockTransactionLocalRepository();
 
           // effectively asserts that right method is calleD with right args
-          when(() => mockTransactionLocalRepository.getAllByAccountAfterDate(
+          when(() => mockTransactionLocalRepository.getAllByAccountAfterDateVerbose(
               "123", mostRecentConfirmedBlocktime)).thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -662,7 +661,7 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -775,7 +774,7 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -855,7 +854,7 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -917,72 +916,8 @@ void main() {
                       'newTransactionCount', 0)
                   .having((state) => state.nextCursor, 'nextCursor', 4)
                   .having((state) => state.mostRecentRemoteHash,
-                      'mostRecentRemoteHash', '0002'),
+                      'mostRecentRemoteHash', '0001'),
             ]);
-    // blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
-    //     "replaces mempool with confirmed ",
-    //     build: () {
-    //       final mockTransactionLocalRepository =
-    //           MockTransactionLocalRepository();
-    //
-    //       when(() => mockTransactionLocalRepository.getAllByAccount("123"))
-    //           .thenAnswer((_) async => []);
-    //
-    //       final mockEventsRepository = MockEventsRepository();
-    //
-    //       // mockedRemote = MockEventFactory.createMultiple([
-    //       //   ("0001", EventStateMempool()),
-    //       // ]);
-    //
-    //       mockedRemote = MockEventFactory.createMultiple([
-    //         (
-    //           "0001",
-    //           EventStateConfirmed(
-    //               blockHeight: 1,
-    //               blockTime: DateTime.now().toIntDividedBy1000())
-    //         ),
-    //       ]);
-    //
-    //       when(() => mockEventsRepository.getByAddressesVerbose(
-    //             unconfirmed: true,
-    //             addresses: ["0x123"],
-    //             cursor: null,
-    //             limit: 10,
-    //             whitelist: DEFAULT_WHITELIST,
-    //           )).thenAnswer((_) async => (mockedRemote, null, null));
-    //
-    //       return DashboardActivityFeedBloc(
-    //           pageSize: 10,
-    //           accountUuid: "123",
-    //           transactionLocalRepository: mockTransactionLocalRepository,
-    //           addressRepository: mockAddressRepository,
-    //           eventsRepository: mockEventsRepository);
-    //     },
-    //     seed: () => DashboardActivityFeedStateCompleteOk(
-    //           transactions: [
-    //             ActivityFeedItem(hash: "0001", event: mockedRemote[0]),
-    //           ],
-    //           newTransactionCount: 0,
-    //           nextCursor: 4,
-    //           mostRecentRemoteHash: "0002",
-    //         ),
-    //     act: (bloc) => bloc..add(const LoadQuiet()),
-    //     expect: () => [
-    //           // isA<DashboardActivityFeedStateReloadingOk>(),
-    //           isA<DashboardActivityFeedStateCompleteOk>()
-    //               .having(
-    //                 (state) => state.transactions,
-    //                 'transactions',
-    //                 [
-    //                   isA<ActivityFeedItem>()
-    //                       .having((item) => item.hash, 'hash', '0001')
-    //                       .having(
-    //                           (item) => item.event, 'event', isA<MockEvent>())
-    //                       .having((item) => item.event!.state, 'state',
-    //                           isA<EventStateConfirmed>()),
-    //                 ],
-    //               )
-    //               .having((state) => state.newTransactionCount, 'newTransactionCount', 0) .having((state) => state.nextCursor, 'nextCursor', 4) .having((state) => state.mostRecentRemoteHash, 'mostRecentRemoteHash', '0002'), ]);
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "replaces 2 local with remote ",
@@ -1001,7 +936,7 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
