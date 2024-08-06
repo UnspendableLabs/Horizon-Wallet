@@ -1,6 +1,7 @@
 import "dart:convert";
 
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
+import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
@@ -40,6 +41,9 @@ class UnpackedVerboseMapper {
       case "enhanced_send":
         return EnhancedSendUnpackedVerboseMapper.toDomain(
             u as api.EnhancedSendUnpackedVerbose);
+      case "issuance":
+        return IssuanceUnpackedVerboseMapper.toDomain(
+            u as api.IssuanceUnpackedVerbose);
       default:
         return TransactionUnpackedVerbose(
           messageType: u.messageType,
@@ -79,6 +83,8 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       throw Exception("Cannot save transaction that was not created locally");
     }
 
+    print("transactionInfo abou to be asved: $transactionInfo");
+
     String? unpacked = switch (transactionInfo) {
       TransactionInfoEnhancedSendVerbose(
         unpackedData: EnhancedSendUnpackedVerbose unpacked
@@ -91,6 +97,27 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "quantity": unpacked.quantity,
             "address": unpacked.address,
             "memo": unpacked.memo,
+            "quantity_normalized": unpacked.quantityNormalized,
+          }
+        }),
+      TransactionInfoIssuanceVerbose(
+        unpackedData: IssuanceUnpackedVerbose unpacked
+      ) =>
+        jsonEncode({
+          "message_type": "issuance",
+          "message_data": {
+            "asset_id": unpacked.assetId,
+            "asset": unpacked.asset,
+            "subasset_longname": unpacked.subassetLongname,
+            "quantity": unpacked.quantity,
+            "divisible": unpacked.divisible,
+            "lock": unpacked.lock,
+            "reset": unpacked.reset,
+            "callable": unpacked.callable,
+            "call_date": unpacked.callDate,
+            "call_price": unpacked.callPrice,
+            "description": unpacked.description,
+            "status": unpacked.status,
             "quantity_normalized": unpacked.quantityNormalized,
           }
         }),
@@ -174,6 +201,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
 
       return switch (unpacked) {
         EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

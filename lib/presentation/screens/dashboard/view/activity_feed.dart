@@ -84,6 +84,11 @@ class ActivityFeedListItem extends StatelessWidget {
       ) =>
         Text(
             "Send ${unpackedData.quantityNormalized} ${unpackedData.asset} to ${unpackedData.address}"),
+      TransactionInfoIssuanceVerbose(
+
+        unpackedData: var unpackedData,
+      ) => Text(
+          "Issued ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       _ => Text(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };

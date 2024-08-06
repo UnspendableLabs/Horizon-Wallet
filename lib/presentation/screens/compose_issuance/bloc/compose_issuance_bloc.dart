@@ -129,6 +129,9 @@ class ComposeIssuanceBloc
 
         TransactionInfoVerbose txInfo = await transactionRepository.getInfoVerbose(txHex);
 
+        print("in compose_issuance_bloc $txInfo");
+
+
         await transactionLocalRepository.insertVerbose(txInfo.copyWith(
             hash: txHash,
         ));

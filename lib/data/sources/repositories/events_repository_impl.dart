@@ -335,8 +335,6 @@ class AssetIssuanceParamsMapper {
 class VerboseAssetIssuanceEventMapper {
   static VerboseAssetIssuanceEvent toDomain(
       api.VerboseAssetIssuanceEvent apiEvent) {
-    print("\n\n\n");
-    print("apiEvent $apiEvent");
 
     final x = VerboseAssetIssuanceEvent(
       state: StateMapper.getVerbose(apiEvent),
@@ -348,8 +346,6 @@ class VerboseAssetIssuanceEventMapper {
       blockTime: apiEvent.blockTime,
       params: VerboseAssetIssuanceParamsMapper.toDomain(apiEvent.params),
     );
-
-    print("x: $x");
 
     return x;
   }

@@ -1233,7 +1233,7 @@ Map<String, dynamic> _$EnhancedSendInfoToJson(EnhancedSendInfo instance) =>
 
 IssuanceUnpacked _$IssuanceUnpackedFromJson(Map<String, dynamic> json) =>
     IssuanceUnpacked(
-      assetId: json['asset_id'] as String,
+      assetId: (json['asset_id'] as num).toInt(),
       asset: json['asset'] as String,
       subassetLongname: json['subasset_longname'] as String?,
       quantity: (json['quantity'] as num).toInt(),
@@ -1336,7 +1336,7 @@ Map<String, dynamic> _$EnhancedSendInfoVerboseToJson(
 IssuanceUnpackedVerbose _$IssuanceUnpackedVerboseFromJson(
         Map<String, dynamic> json) =>
     IssuanceUnpackedVerbose(
-      assetId: json['asset_id'] as String,
+      assetId: (json['asset_id'] as num).toInt(),
       asset: json['asset'] as String,
       subassetLongname: json['subasset_longname'] as String?,
       quantity: (json['quantity'] as num).toInt(),
@@ -1348,6 +1348,7 @@ IssuanceUnpackedVerbose _$IssuanceUnpackedVerboseFromJson(
       callPrice: (json['call_price'] as num).toDouble(),
       description: json['description'] as String,
       status: json['status'] as String,
+      quantityNormalized: json['quantity_normalized'] as String,
     );
 
 Map<String, dynamic> _$IssuanceUnpackedVerboseToJson(
@@ -1365,6 +1366,7 @@ Map<String, dynamic> _$IssuanceUnpackedVerboseToJson(
       'call_price': instance.callPrice,
       'description': instance.description,
       'status': instance.status,
+      'quantity_normalized': instance.quantityNormalized,
     };
 
 IssuanceInfoVerbose _$IssuanceInfoVerboseFromJson(Map<String, dynamic> json) =>
@@ -1424,7 +1426,7 @@ class _V2Api implements V2Api {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://dev.counterparty.io:14000/v2';
+    baseUrl ??= 'http://localhost:24000/v2';
   }
 
   final Dio _dio;

@@ -359,6 +359,8 @@ class AddressActions extends StatelessWidget {
                               title: "Compose Issuance",
                               body: ComposeIssuancePage(
                                 isDarkMode: isDarkTheme,
+                                  dashboardActivityFeedBloc:
+                                      dashboardActivityFeedBloc,
                               ),
                             );
                           });
@@ -397,8 +399,7 @@ class AddressActions extends StatelessWidget {
                             return HorizonDialog(
                               title: "Compose Send",
                               body: ComposeSendPage(
-                                isDarkMode: isDarkTheme,
-                                  dashboardActivityFeedBloc:
+                                dashboardActivityFeedBloc:
                                       dashboardActivityFeedBloc,
                               ),
                             );

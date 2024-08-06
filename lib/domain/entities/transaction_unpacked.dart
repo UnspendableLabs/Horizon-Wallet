@@ -60,3 +60,98 @@ class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
   List<Object?> get props =>
       [messageType, asset, quantity, address, memo, quantityNormalized];
 }
+
+class IssuanceUnpacked extends TransactionUnpacked {
+  final int assetId;
+  final String asset;
+  final String? subassetLongname;
+  final int quantity;
+  final bool divisible;
+  final bool lock;
+  final bool reset;
+  final bool callable;
+  final int callDate;
+  final double callPrice;
+  final String description;
+  final String status;
+
+  const IssuanceUnpacked(
+      {required this.assetId,
+      required this.asset,
+      this.subassetLongname,
+      required this.quantity,
+      required this.divisible,
+      required this.lock,
+      required this.reset,
+      required this.callable,
+      required this.callDate,
+      required this.callPrice,
+      required this.description,
+      required this.status})
+      : super(messageType: "issuance");
+
+  @override
+  List<Object?> get props => [
+        assetId,
+        asset,
+        subassetLongname,
+        quantity,
+        divisible,
+        lock,
+        reset,
+        callable,
+        callDate,
+        callPrice,
+        description,
+        status
+      ];
+}
+
+class IssuanceUnpackedVerbose extends TransactionUnpackedVerbose {
+  final int assetId;
+  final String asset;
+  final String? subassetLongname;
+  final int quantity;
+  final bool divisible;
+  final bool lock;
+  final bool reset;
+  final bool callable;
+  final int callDate;
+  final double callPrice;
+  final String description;
+  final String status;
+  final String quantityNormalized;
+
+  const IssuanceUnpackedVerbose(
+      {required this.assetId,
+      required this.asset,
+      this.subassetLongname,
+      required this.quantity,
+      required this.divisible,
+      required this.lock,
+      required this.reset,
+      required this.callable,
+      required this.callDate,
+      required this.callPrice,
+      required this.description,
+      required this.status,
+      required this.quantityNormalized})
+      : super(messageType: "issuance");
+
+  @override
+  List<Object?> get props => [
+        assetId,
+        asset,
+        subassetLongname,
+        quantity,
+        divisible,
+        lock,
+        reset,
+        callable,
+        callDate,
+        callPrice,
+        description,
+        status,
+        quantityNormalized
+      ];
+}
