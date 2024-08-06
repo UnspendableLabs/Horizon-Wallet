@@ -361,7 +361,9 @@ class AccountSelectionButton extends StatelessWidget {
                           accountUuid: widget.accountUuid,
                         ),
                       ),
-                      const DashboardActivityFeedScreen(),
+                      DashboardActivityFeedScreen(
+                        addresses: addresses,
+                      ),
                     ],
                   ),
                 ),
