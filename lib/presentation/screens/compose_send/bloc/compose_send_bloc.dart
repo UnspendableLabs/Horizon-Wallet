@@ -113,14 +113,13 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         String txHex = await transactionService.signTransaction(
             rawTx.hex, addressPrivKey, source, utxoMap);
 
-        TransactionInfoVerbose txInfo =
-            await transactionRepository.getInfoVerbose(txHex);
-
-
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
         // for now we don't track btc sends
         if (asset.toLowerCase() != 'btc') {
+          TransactionInfoVerbose txInfo =
+              await transactionRepository.getInfoVerbose(txHex);
+
           await transactionLocalRepository.insertVerbose(txInfo.copyWith(
               hash: txHash,
               source:
