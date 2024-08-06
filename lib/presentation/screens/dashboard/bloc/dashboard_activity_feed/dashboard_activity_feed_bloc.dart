@@ -10,7 +10,7 @@ import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
-final DEFAULT_WHITELIST = ["CREDIT", "DEBIT", "ASSET_ISSUANCE"];
+final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE"];
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
@@ -35,7 +35,8 @@ class DashboardActivityFeedBloc
     on<LoadQuiet>(_onLoadQuiet);
     // on<Reload>(_onReload);
   }
-void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) async {
+  void _onLoadQuiet(
+      LoadQuiet event, Emitter<DashboardActivityFeedState> emit) async {
     // just do a standard load if we are in any state other than complete ok
     if (state is! DashboardActivityFeedStateCompleteOk) {
       add(const Load());
@@ -81,9 +82,7 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
         return;
       } else {
         bool found = false;
-        int newTransactionCount = 0;
-        int? nextCursor;
-        List<Event> remoteEvents = [];
+        int newTransactionCount = 0; int? nextCursor; List<Event> remoteEvents = [];
 
         while (!found) {
           final (remoteEvents_, nextCursor_, _) =
@@ -97,7 +96,10 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
           remoteEvents = [...remoteEvents, ...remoteEvents_];
           // iterate all remote transactions
           for (final event in remoteEvents_) {
-            if (event.txHash != mostRecentRemoteHash) {
+            if (event.txHash != mostRecentRemoteHash 
+              // &&
+              //   event.txHash != currentState.transactions[0].hash
+                ) {
               print("event.txHash $currentState");
               print("mostRecentRemoteHash $mostRecentRemoteHash");
               newTransactionCount += 1;
@@ -123,7 +125,7 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
         // final localTransactionsHashes =
         //     Set<String>.from(localTransactions.map((tx) => tx.hash));
         //
-        final remoteMap = { for (var e in remoteEvents) e.txHash : e };
+        final remoteMap = {for (var e in remoteEvents) e.txHash: e};
         //
         // for (final event in remoteEvents) {
         //   // if at most recent remote hash, break;
@@ -155,14 +157,13 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
         // that shows current number of news transactions
         // that can be loaded with a click
 
-        
-
-        final nextNewTransactionCount = max(0,newTransactionCount);
+        final nextNewTransactionCount = max(0, newTransactionCount);
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: currentState.nextCursor,
             newTransactionCount: nextNewTransactionCount,
             // mostRecentRemoteHash: nextNewTransactionCount == 0 ? nextList[0].hash : currentState.mostRecentRemoteHash,
-            mostRecentRemoteHash: replacedHash ?? currentState.mostRecentRemoteHash,
+            mostRecentRemoteHash:
+                replacedHash ?? currentState.mostRecentRemoteHash,
             transactions: nextList));
       }
     } catch (e) {
@@ -269,7 +270,8 @@ void _onLoadQuiet( LoadQuiet event, Emitter<DashboardActivityFeedState> emit) as
       final localTransactions = mostRecentBlocktime != null
           ? await transactionLocalRepository.getAllByAccountAfterDateVerbose(
               accountUuid, mostRecentBlocktime)
-          : await transactionLocalRepository.getAllByAccountVerbose(accountUuid);
+          : await transactionLocalRepository
+              .getAllByAccountVerbose(accountUuid);
 
       final (remoteEvents, nextCursor, _) =
           await eventsRepository.getByAddressesVerbose(

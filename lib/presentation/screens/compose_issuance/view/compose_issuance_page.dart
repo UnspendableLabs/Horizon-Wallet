@@ -97,7 +97,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
             widget.dashboardActivityFeedBloc
                 .add(const Load()); // show "N more transactions".
 
-            // Navigator.of(context).pop();
           },
           error: (msg) => ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(msg))),

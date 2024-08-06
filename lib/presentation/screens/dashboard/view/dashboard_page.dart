@@ -133,7 +133,9 @@ class _DashboardPage_State extends State<_DashboardPage> {
                           accountUuid: widget.accountUuid,
                         ),
                       ),
-                      const DashboardActivityFeedScreen(),
+                      DashboardActivityFeedScreen(
+                        addresses: addresses,
+                      ),
                     ],
                   ),
                 ),

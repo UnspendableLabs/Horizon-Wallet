@@ -7,6 +7,9 @@ import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
+import 'package:horizon/domain/entities/address.dart';
+
+enum SendSide { source, destination }
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;
@@ -33,8 +36,10 @@ class NewTransactionsBanner extends StatelessWidget {
 
 class ActivityFeedListItem extends StatelessWidget {
   final ActivityFeedItem item;
+  final List<Address> addresses;
 
-  const ActivityFeedListItem({super.key, required this.item});
+  const ActivityFeedListItem(
+      {super.key, required this.item, required this.addresses});
 
   @override
   Widget build(BuildContext context) {
@@ -61,12 +66,28 @@ class ActivityFeedListItem extends StatelessWidget {
     }
   }
 
+  SendSide _getSendSide(String address) {
+    if (addresses.any((a) => a.address == address)) {
+      return SendSide.source;
+    } else {
+      return SendSide.destination;
+    }
+  }
+
   Widget _buildEventTitle(Event event) {
     return switch (event) {
       VerboseDebitEvent(params: var params) =>
         Text("Send ${params.quantityNormalized} ${params.asset}"),
       VerboseCreditEvent(params: var params) =>
         Text("Receive ${params.quantityNormalized} ${params.asset}"),
+      VerboseEnhancedSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        Text(
+            "Sent ${params.quantityNormalized} ${params.asset} to ${params.destination}"),
+      VerboseEnhancedSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        Text(
+            "Received ${params.quantityNormalized} ${params.asset} from ${params.source}"),
       VerboseAssetIssuanceEvent(params: var params) =>
         Text("Issued ${params.quantityNormalized} ${params.asset}"),
       _ =>
@@ -85,10 +106,9 @@ class ActivityFeedListItem extends StatelessWidget {
         Text(
             "Send ${unpackedData.quantityNormalized} ${unpackedData.asset} to ${unpackedData.address}"),
       TransactionInfoIssuanceVerbose(
-
         unpackedData: var unpackedData,
-      ) => Text(
-          "Issued ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      ) =>
+        Text("Issued ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       _ => Text(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -148,12 +168,26 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Icon _getEventLeadingIcon(Event event) {
-    return switch (event.event) {
-      "CREDIT" => const Icon(Icons.arrow_forward, color: Colors.green),
-      "DEBIT" => const Icon(Icons.arrow_back, color: Colors.red),
-      "ASSET_ISSUANCE" => const Icon(Icons.toll, color: Colors.grey),
+    return switch (event) {
+      VerboseEnhancedSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        const Icon(Icons.arrow_back, color: Colors.red),
+      VerboseEnhancedSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        const Icon(Icons.arrow_forward, color: Colors.green),
+      VerboseAssetIssuanceEvent(params: var params) =>
+        const Icon(Icons.toll, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
+
+    // return switch (event.event) {
+    //   "CREDIT" => const Icon(Icons.arrow_forward, color: Colors.green),
+    //   "DEBIT" => const Icon(Icons.arrow_back, color: Colors.red),
+    //   "ASSET_ISSUANCE" => const Icon(Icons.toll, color: Colors.grey),
+    //   "ENHANCED_SEND" when event is  => const Icon(Icons.toll, color: Colors.grey),
+    //
+    //   _ => const Icon(Icons.error),
+    // };
   }
 
   Icon _getEventTrailing(EventState state) => switch (state) {
@@ -176,7 +210,10 @@ class ActivityFeedListItem extends StatelessWidget {
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
-  const DashboardActivityFeedScreen({super.key});
+  final List<Address> addresses;
+
+  const DashboardActivityFeedScreen({super.key, required this.addresses});
+
   @override
   _DashboardActivityFeedScreenState createState() =>
       _DashboardActivityFeedScreenState();
@@ -226,7 +263,10 @@ class _DashboardActivityFeedScreenState
                 itemCount: transactions.length + 1,
                 itemBuilder: (context, index) {
                   if (index < transactions.length) {
-                    return ActivityFeedListItem(item: transactions[index]);
+                    return ActivityFeedListItem(
+                      item: transactions[index],
+                      addresses: widget.addresses,
+                    );
                   } else if (index == transactions.length) {
                     return state is DashboardActivityFeedStateReloadingOk
                         ? const Center(child: CircularProgressIndicator())
