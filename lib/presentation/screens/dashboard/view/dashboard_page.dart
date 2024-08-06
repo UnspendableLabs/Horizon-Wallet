@@ -431,12 +431,9 @@ class AddressAction extends StatelessWidget {
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-<<<<<<< HEAD
   final List<Address> addresses;
   final String accountUuid;
 
-=======
->>>>>>> 22bfcf3 (wip)
   const AddressActions({
     super.key,
     required this.isDarkTheme,
