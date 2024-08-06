@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -9,8 +10,14 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+
 class ComposeIssuancePage extends StatelessWidget {
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+
   const ComposeIssuancePage({
+    required this.dashboardActivityFeedBloc,
     super.key,
   });
 
@@ -22,7 +29,9 @@ class ComposeIssuancePage extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeIssuanceBloc()
           ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
-        child: const _ComposeIssuancePage_(),
+        child: _ComposeIssuancePage_(
+          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+        ),
       ),
       orElse: () => const SizedBox.shrink(),
     );
@@ -30,7 +39,8 @@ class ComposeIssuancePage extends StatelessWidget {
 }
 
 class _ComposeIssuancePage_ extends StatefulWidget {
-  const _ComposeIssuancePage_();
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  const _ComposeIssuancePage_({required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
@@ -66,8 +76,29 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
       body: BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
           listener: (context, state) {
         state.submitState.when(
-          success: (transactionHex) => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(transactionHex))),
+          success: (txHash) {
+            // 0) reload activity feed
+            widget.dashboardActivityFeedBloc
+                .add(const Load()); // show "N more transactions".
+
+            // 1) close modal
+            Navigator.of(context).pop();
+            // 2) show snackbar with copy tx action
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: 'Copy',
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: txHash));
+                  },
+                ),
+                content: Text(txHash),
+                behavior: SnackBarBehavior.floating));
+            widget.dashboardActivityFeedBloc
+                .add(const Load()); // show "N more transactions".
+
+            // Navigator.of(context).pop();
+          },
           error: (msg) => ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(msg))),
           loading: () => ScaffoldMessenger.of(context)

@@ -185,9 +185,12 @@ class AddressActions extends StatelessWidget {
                             ),
                             child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.5,
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: ComposeIssuancePage(),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: ComposeIssuancePage(
+                                  dashboardActivityFeedBloc:
+                                      dashboardActivityFeedBloc,
+                                ),
                               ),
                             ),
                           );

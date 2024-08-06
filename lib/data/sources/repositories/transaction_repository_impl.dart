@@ -12,6 +12,8 @@ class UnpackedMapper {
       case "enhanced_send":
         return EnhancedSendUnpackedMapper.toDomain(
             u as api.EnhancedSendUnpacked);
+      case "issuance":
+        return IssuanceUnpackedMapper.toDomain(u as api.IssuanceUnpacked);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -31,12 +33,35 @@ class EnhancedSendUnpackedMapper {
   }
 }
 
+class IssuanceUnpackedMapper {
+  static IssuanceUnpacked toDomain(api.IssuanceUnpacked u) {
+    return IssuanceUnpacked(
+      assetId: u.assetId,
+      asset: u.asset,
+      subassetLongname: u.subassetLongname,
+      quantity: u.quantity,
+      divisible: u.divisible,
+      lock: u.lock,
+      reset: u.reset,
+      callable: u.callable,
+      callDate: u.callDate,
+      callPrice: u.callPrice,
+      description: u.description,
+      status: u.status,
+    );
+  }
+}
+
 class UnpackedVerboseMapper {
   static TransactionUnpackedVerbose toDomain(api.TransactionUnpackedVerbose u) {
     switch (u.messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedVerboseMapper.toDomain(
             u as api.EnhancedSendUnpackedVerbose);
+
+      case "issuance":
+        return IssuanceUnpackedVerboseMapper.toDomain(
+            u as api.IssuanceUnpackedVerbose);
       default:
         return TransactionUnpackedVerbose(
           messageType: u.messageType,
@@ -59,6 +84,26 @@ class EnhancedSendUnpackedVerboseMapper {
   }
 }
 
+class IssuanceUnpackedVerboseMapper {
+  static IssuanceUnpackedVerbose toDomain(api.IssuanceUnpackedVerbose u) {
+    return IssuanceUnpackedVerbose(
+      assetId: u.assetId,
+      asset: u.asset,
+      subassetLongname: u.subassetLongname,
+      quantity: u.quantity,
+      divisible: u.divisible,
+      lock: u.lock,
+      reset: u.reset,
+      callable: u.callable,
+      callDate: u.callDate,
+      callPrice: u.callPrice,
+      description: u.description,
+      status: u.status,
+      quantityNormalized: u.quantityNormalized,
+    );
+  }
+}
+
 class InfoMapper {
   static TransactionInfo toDomain(api.Info info) {
     return switch (info) {
@@ -73,6 +118,16 @@ class InfoMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: EnhancedSendUnpackedMapper.toDomain(u),
         ),
+      api.IssuanceInfo(unpackedData: var u) => TransactionInfoIssuance(
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: IssuanceUnpackedMapper.toDomain(u)),
       _ => TransactionInfo(
           hash: "",
           domain: TransactionInfoDomainLocal(
@@ -102,6 +157,19 @@ class InfoVerboseMapper {
           domain: TransactionInfoDomainLocal(
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(u),
+        ),
+      api.IssuanceInfoVerbose(unpackedData: var u) =>
+        TransactionInfoIssuanceVerbose(
+          btcAmountNormalized: info.btcAmountNormalized,
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: IssuanceUnpackedVerboseMapper.toDomain(u),
         ),
       _ => TransactionInfoVerbose(
           btcAmountNormalized: info.btcAmountNormalized,

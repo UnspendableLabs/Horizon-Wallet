@@ -1479,6 +1479,8 @@ class TransactionUnpacked {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendUnpacked.fromJson(json);
+      case "issuance":
+        return IssuanceUnpacked.fromJson(json);
       default:
         return TransactionUnpacked(
           messageType: json["message_type"],
@@ -1540,6 +1542,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedVerbose.fromJson(json);
+      case "issuance":
+        return IssuanceUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -1703,8 +1707,8 @@ class EnhancedSendInfo extends Info {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class IssuanceUnpacked {
-  final String assetId;
+class IssuanceUnpacked extends TransactionUnpacked {
+  final int assetId;
   final String asset;
   final String? subassetLongname;
   final int quantity;
@@ -1729,9 +1733,26 @@ class IssuanceUnpacked {
     required this.callPrice,
     required this.description,
     required this.status,
-  });
-  factory IssuanceUnpacked.fromJson(Map<String, dynamic> json) =>
-      _$IssuanceUnpackedFromJson(json);
+  }) : super(messageType: "issuance");
+
+  factory IssuanceUnpacked.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return IssuanceUnpacked(
+      assetId: messageData["asset_id"],
+      asset: messageData["asset"],
+      subassetLongname: messageData["subasset_longname"],
+      quantity: messageData["quantity"],
+      divisible: messageData["divisible"],
+      lock: messageData["lock"],
+      reset: messageData["reset"],
+      callable: messageData["callable"],
+      callDate: messageData["call_date"],
+      callPrice: messageData["call_price"],
+      description: messageData["description"],
+      status: messageData["status"],
+    );
+  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1833,27 +1854,58 @@ class EnhancedSendInfoVerbose extends InfoVerbose {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class IssuanceUnpackedVerbose extends IssuanceUnpacked {
+class IssuanceUnpackedVerbose extends TransactionUnpackedVerbose {
   // TODO: should eventually include normalized
-  const IssuanceUnpackedVerbose({
-    required super.assetId,
-    required super.asset,
-    super.subassetLongname,
-    required super.quantity,
-    required super.divisible,
-    required super.lock,
-    required super.reset,
-    required super.callable,
-    required super.callDate,
-    required super.callPrice,
-    required super.description,
-    required super.status,
-  });
 
+  final int assetId;
+  final String asset;
+  final String? subassetLongname;
+  final int quantity;
+  final bool divisible;
+  final bool lock;
+  final bool reset;
+  final bool callable;
+  final int callDate;
+  final double callPrice;
+  final String description;
+  final String status;
 
-  factory IssuanceUnpackedVerbose.fromJson(Map<String, dynamic> json) =>
-      _$IssuanceUnpackedVerboseFromJson(json);
+  final String quantityNormalized;
 
+  const IssuanceUnpackedVerbose(
+      {required this.assetId,
+      required this.asset,
+      this.subassetLongname,
+      required this.quantity,
+      required this.divisible,
+      required this.lock,
+      required this.reset,
+      required this.callable,
+      required this.callDate,
+      required this.callPrice,
+      required this.description,
+      required this.status,
+      required this.quantityNormalized})
+      : super(messageType: "issuance");
+
+  factory IssuanceUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return IssuanceUnpackedVerbose(
+        assetId: messageData["asset_id"],
+        asset: messageData["asset"],
+        subassetLongname: messageData["subasset_longname"],
+        quantity: messageData["quantity"],
+        divisible: messageData["divisible"],
+        lock: messageData["lock"],
+        reset: messageData["reset"],
+        callable: messageData["callable"],
+        callDate: messageData["call_date"],
+        callPrice: messageData["call_price"],
+        description: messageData["description"],
+        status: messageData["status"],
+        quantityNormalized: messageData["quantity_normalized"]);
+  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1909,7 +1961,8 @@ class UTXO {
 
 // TODO: inject baseURL ( or make dynamic)
 // @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
-@RestApi(baseUrl: "https://dev.counterparty.io:14000/v2")
+// @RestApi(baseUrl: "https://dev.counterparty.io:14000/v2")
+@RestApi(baseUrl: "http://localhost:24000/v2")
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 
