@@ -114,6 +114,17 @@ class ActivityFeedListItem extends StatelessWidget {
     };
   }
 
+  Icon _buildTransactionInfoLeading(TransactionInfo info) {
+    return switch (info) {
+      // local can only ever be a send
+      TransactionInfoEnhancedSendVerbose() =>
+        const Icon(Icons.arrow_back, color: Colors.grey),
+      TransactionInfoIssuanceVerbose() =>
+        const Icon(Icons.toll, color: Colors.grey),
+      _ => const Icon(Icons.error),
+    };
+  }
+
   // return Text(info.hash);
   // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
 
@@ -161,7 +172,7 @@ class ActivityFeedListItem extends StatelessWidget {
     if (item.event != null) {
       return _getEventLeadingIcon(item.event!);
     } else if (item.info != null) {
-      return const Icon(Icons.info);
+      return _buildTransactionInfoLeading(item.info!);
     } else {
       throw Exception('Invariant: Item must have either event or info');
     }
