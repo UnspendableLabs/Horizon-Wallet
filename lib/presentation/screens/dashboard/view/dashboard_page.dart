@@ -240,6 +240,12 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                   fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
+<<<<<<< HEAD
+=======
+                      DashboardActivityFeedScreen(
+                        addresses: addresses,
+                      ),
+>>>>>>> 19717fd (render enhanced_send event instead of credit, debit in feed)
                     ],
                   ),
                 ),
