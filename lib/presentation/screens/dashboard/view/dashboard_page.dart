@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
@@ -160,105 +160,111 @@ class AddressActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width /
-                2.3, // Adjust width to take up half of the row
-            child: SizedBox(
-              height: 75,
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 4.0, 8.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: SizedBox(
+                  height: 65,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.0),
+                      ),
                     ),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: ComposeIssuancePage(
-                                  dashboardActivityFeedBloc:
-                                      dashboardActivityFeedBloc,
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
+                              ),
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: ComposeIssuancePage(
+                                    dashboardActivityFeedBloc:
+                                        dashboardActivityFeedBloc,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        });
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add),
-                      SizedBox(width: 8.0),
-                      Text("ISSUE"),
-                    ],
+                            );
+                          });
+                    },
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add),
+                          SizedBox(width: 8.0),
+                          Text("ISSUE"),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width /
-                2.3, // Adjust width to take up half of the row
-            child: SizedBox(
-              height: 75,
+            Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(4.0, 8.0, 16.0, 8.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: SizedBox(
+                  height: 65,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.0),
+                      ),
                     ),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              height: MediaQuery.of(context).size.height * 0.75,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: ComposeSendPage(
-                                  dashboardActivityFeedBloc:
-                                      dashboardActivityFeedBloc,
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
+                              ),
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.75,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: ComposeSendPage(
+                                    dashboardActivityFeedBloc:
+                                        dashboardActivityFeedBloc,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        });
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.send),
-                      SizedBox(width: 8.0),
-                      Text("SEND"),
-                    ],
+                            );
+                          });
+                    },
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.send),
+                          SizedBox(width: 8.0),
+                          Text("SEND"),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ]);
   }

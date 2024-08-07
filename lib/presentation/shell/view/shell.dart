@@ -47,7 +47,8 @@ class AccountListView extends StatelessWidget {
 class ResponsiveAccountSidebar extends StatefulWidget {
   const ResponsiveAccountSidebar({super.key});
   @override
-  State<ResponsiveAccountSidebar> createState() => _ResponsiveAccountSidebarState();
+  State<ResponsiveAccountSidebar> createState() =>
+      _ResponsiveAccountSidebarState();
 }
 
 class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
@@ -60,7 +61,8 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    final backgroundColor = isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
+    final backgroundColor =
+        isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
     SliverWoltModalSheetPage page1(
       BuildContext modalSheetContext,
@@ -112,27 +114,37 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                               children: [
                                 ListTile(
                                   title: Padding(
-                                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 8, 0, 8),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        const Icon(Icons.account_balance_wallet_rounded),
+                                        const Icon(Icons
+                                            .account_balance_wallet_rounded),
                                         const SizedBox(width: 8.0),
                                         Text(account.name),
                                       ],
                                     ),
                                   ),
-                                  hoverColor: Colors.transparent, // No hover effect
-                                  selected: account.uuid == state.currentAccountUuid,
+                                  hoverColor:
+                                      Colors.transparent, // No hover effect
+                                  selected:
+                                      account.uuid == state.currentAccountUuid,
                                   onTap: () {
                                     setState(() => selectedAccount = account);
-                                    context.read<ShellStateCubit>().onAccountChanged(account);
+                                    context
+                                        .read<ShellStateCubit>()
+                                        .onAccountChanged(account);
                                     GoRouter.of(context).go('/dashboard');
                                   },
                                 ),
-                                if (index != state.accounts.length - 1) // Avoid underline for the last element
+                                if (index !=
+                                    state.accounts.length -
+                                        1) // Avoid underline for the last element
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
                                     child: Divider(
                                       color: Colors.grey.shade300,
                                       thickness: 1.0,
@@ -180,7 +192,8 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                         child: Text(
                           "POWERED BY\nUNSPENDABLE LABS",
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 10.0, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -200,15 +213,9 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
 }
 
 class Shell extends StatelessWidget {
-  Shell(this.navigationShell, {super.key});
+  const Shell(this.navigationShell, {super.key});
 
   final StatefulNavigationShell navigationShell;
-
-  final BoxDecoration iconDecoration = BoxDecoration(
-    shape: BoxShape.circle,
-    color: Colors.transparent,
-    border: Border.all(color: Colors.grey.withOpacity(0.5)),
-  );
 
   SliverWoltModalSheetPage page1(
     BuildContext modalSheetContext,
@@ -249,7 +256,8 @@ class Shell extends StatelessWidget {
             shell.state.maybeWhen(
               success: (state) => WoltModalSheetPage(
                 isTopBarLayerAlwaysVisible: true,
-                topBarTitle: Text('Select an account', style: textTheme.titleSmall),
+                topBarTitle:
+                    Text('Select an account', style: textTheme.titleSmall),
                 trailingNavBarWidget: IconButton(
                   padding: const EdgeInsets.all(_pagePadding),
                   icon: const Icon(Icons.close),
@@ -264,12 +272,15 @@ class Shell extends StatelessWidget {
                           itemCount: state.accounts.length,
                           itemBuilder: (context, index) {
                             final account = state.accounts[index];
-                            final isSelected = account.uuid == state.currentAccountUuid;
+                            final isSelected =
+                                account.uuid == state.currentAccountUuid;
                             return ListTile(
                               title: Text(account.name),
                               selected: isSelected,
                               onTap: () {
-                                context.read<ShellStateCubit>().onAccountChanged(account);
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAccountChanged(account);
                                 Navigator.of(modalSheetContext).pop();
                                 GoRouter.of(context).go('/dashboard');
                               },
@@ -331,8 +342,12 @@ class Shell extends StatelessWidget {
       );
     }
 
-    final backgroundColor = isDarkTheme ? lightNavyDarkThemeBackgroundColor : greyLightThemeBackgroundColor;
-    final selectedColor = isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightThemeBackgroundColor;
+    final backgroundColor = isDarkTheme
+        ? lightNavyDarkThemeBackgroundColor
+        : greyLightThemeBackgroundColor;
+    final selectedColor = isDarkTheme
+        ? blueDarkThemeGradiantColor
+        : royalBlueLightThemeBackgroundColor;
     final unselectedColor = isDarkTheme ? greyDarkThemeButtonText : Colors.grey;
 
     return Container(
@@ -356,7 +371,9 @@ class Shell extends StatelessWidget {
           title: LayoutBuilder(
             builder: (context, constraints) {
               return Row(
-                mainAxisAlignment: screenWidth > 768 ? MainAxisAlignment.start : MainAxisAlignment.center,
+                mainAxisAlignment: screenWidth > 768
+                    ? MainAxisAlignment.start
+                    : MainAxisAlignment.center,
                 children: [
                   isDarkTheme
                       ? SvgPicture.asset(
@@ -370,7 +387,7 @@ class Shell extends StatelessWidget {
                           height: 35,
                         ),
                   const SizedBox(width: 8),
-                  Text('Horizon',
+                  const Text('Horizon',
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w600,
@@ -382,16 +399,22 @@ class Shell extends StatelessWidget {
           leading: screenWidth < 768.0
               ? IconButton(
                   icon: Icon(Icons.account_balance_wallet_rounded,
-                      color: isDarkTheme ? neonBlueDarkThemeButtonTextColor : royalBlueLightThemeBackgroundColor),
+                      color: isDarkTheme
+                          ? neonBlueDarkThemeButtonTextColor
+                          : royalBlueLightThemeBackgroundColor),
                   onPressed: () => showAccountList(context),
                 )
               : null,
           actions: [
             Container(
-              width: 80, // Increased width to accommodate both icons
+              width: 80,
               height: 40,
               decoration: BoxDecoration(
                 color: backgroundColor,
+                border: Border.all(
+                    color: isDarkTheme
+                        ? darkNavyDarkThemeBackgroundColor
+                        : Colors.grey[300]!),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -436,9 +459,11 @@ class Shell extends StatelessWidget {
                           color: isDarkTheme ? selectedColor : backgroundColor,
                         ),
                         child: Icon(
-                          Icons.nightlight_round,
+                          Icons.dark_mode,
                           size: 20,
-                          color: isDarkTheme ? Colors.white : unselectedColor,
+                          color: isDarkTheme
+                              ? neonBlueDarkThemeButtonTextColor
+                              : unselectedColor,
                         ),
                       ),
                     ),
@@ -450,10 +475,18 @@ class Shell extends StatelessWidget {
             Container(
               width: 40,
               height: 40,
-              decoration: iconDecoration,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isDarkTheme
+                    ? darkNavyDarkThemeBackgroundColor
+                    : lightBlueLightThemeBackgroundColor,
+              ),
               child: IconButton(
                 icon: Icon(Icons.settings,
-                    size: 15, color: isDarkTheme ? greyDarkThemeButtonText : royalBlueLightThemeBackgroundColor),
+                    size: 15,
+                    color: isDarkTheme
+                        ? Colors.grey
+                        : royalBlueLightThemeBackgroundColor),
                 onPressed: () {
                   context.go('/settings');
                 },
@@ -469,8 +502,8 @@ class Shell extends StatelessWidget {
                 child: Scaffold(
                     backgroundColor: noBackgroundColor,
                     body: shell.state.when(
-                      initial: () =>
-                          const Text("Loading..."), // TODO: all of this is smell.  should only handle success branch
+                      initial: () => const Text(
+                          "Loading..."), // TODO: all of this is smell.  should only handle success branch
                       onboarding: (_) => const Text("onboarding"),
                       loading: () => const Text("Loading..."),
                       error: (e) => const Text("error"),
@@ -480,11 +513,15 @@ class Shell extends StatelessWidget {
                             child: navigationShell,
                             create: (_) => AddressesBloc(
                                   walletRepository: GetIt.I<WalletRepository>(),
-                                  accountRepository: GetIt.I<AccountRepository>(),
+                                  accountRepository:
+                                      GetIt.I<AccountRepository>(),
                                   addressService: GetIt.I<AddressService>(),
-                                  addressRepository: GetIt.I<AddressRepository>(),
-                                  encryptionService: GetIt.I<EncryptionService>(),
-                                )..add(GetAll(accountUuid: shell.currentAccountUuid)));
+                                  addressRepository:
+                                      GetIt.I<AddressRepository>(),
+                                  encryptionService:
+                                      GetIt.I<EncryptionService>(),
+                                )..add(GetAll(
+                                    accountUuid: shell.currentAccountUuid)));
                       },
                     )))
           ]),
