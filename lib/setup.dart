@@ -49,6 +49,9 @@ import 'package:horizon/data/sources/repositories/transaction_local_repository_i
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/data/sources/repositories/events_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -106,4 +109,12 @@ Future<void> setup() async {
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
+
+  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
+      esploraApi: EsploraApi(
+          dio: Dio(BaseOptions(
+    baseUrl: "127.0.0.1:3002",
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  )))));
 }
