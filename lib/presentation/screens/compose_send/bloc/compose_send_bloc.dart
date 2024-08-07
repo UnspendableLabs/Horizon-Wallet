@@ -1,4 +1,7 @@
+import 'dart:js_interop';
+
 import 'package:dio/dio.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -7,10 +10,12 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
@@ -36,6 +41,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
   final addressService = GetIt.I.get<AddressService>();
   final transactionRepository = GetIt.I.get<TransactionRepository>();
   final transactionLocalRepository = GetIt.I.get<TransactionLocalRepository>();
+  final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   ComposeSendBloc() : super(const ComposeSendState()) {
     on<FetchFormData>((event, emit) async {
@@ -125,6 +131,37 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
               source:
                   source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
               ));
+        } else {
+          // TODO: this is a bit of a hack
+          transactionLocalRepository.insertVerbose(TransactionInfoVerbose(
+            hash: txHash,
+            source: source,
+            destination: destination,
+            btcAmount: quantity,
+            domain: TransactionInfoDomainLocal(
+                raw: txHex, submittedAt: DateTime.now()),
+            btcAmountNormalized: quantity.toString(), //TODO: this is temporary
+            fee: 0, // dummy values
+            data: "",
+          ));
+
+          // final txEither = await bitcoinRepository.getTransaction(txHash);
+
+          // txEither.match((l) {
+          //   print("error: ${l.message}");
+          // }, (r) {
+          //   final tx = r as BitcoinTx;
+          //
+          //   print("bitcontx cool: ${tx}");
+          //
+          //   // transactionLocalRepository.insert(tx.copyWith(
+          //   //     source: source,
+          //   //     destination: destination,
+          //   //     asset: asset,
+          //   //     quantity: quantity,
+          //   //     fee: rawTx.fee,
+          //   //     txHash: txHash));
+          // });
         }
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));

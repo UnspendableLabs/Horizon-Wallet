@@ -66,24 +66,25 @@ class DashboardActivityFeedBloc
       if (mostRecentRemoteHash == null) {
         // get highest confirmed
 
-        final ( events, _, resultCount) =
+        final (events, _, resultCount) =
             await eventsRepository.getByAddressesVerbose(
                 addresses: addresses,
                 limit: 1,
                 unconfirmed: true,
                 whitelist: DEFAULT_WHITELIST);
 
-
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: null,
             newTransactionCount: events.length,
             mostRecentRemoteHash: null,
-            transactions: const []));
+            transactions: currentState.transactions)); // might have sme locally;
 
         return;
       } else {
         bool found = false;
-        int newTransactionCount = 0; int? nextCursor; List<Event> remoteEvents = [];
+        int newTransactionCount = 0;
+        int? nextCursor;
+        List<Event> remoteEvents = [];
 
         while (!found) {
           final (remoteEvents_, nextCursor_, _) =
@@ -97,9 +98,9 @@ class DashboardActivityFeedBloc
           remoteEvents = [...remoteEvents, ...remoteEvents_];
           // iterate all remote transactions
           for (final event in remoteEvents_) {
-            if (event.txHash != mostRecentRemoteHash 
-              // &&
-              //   event.txHash != currentState.transactions[0].hash
+            if (event.txHash != mostRecentRemoteHash
+                // &&
+                //   event.txHash != currentState.transactions[0].hash
                 ) {
               print("event.txHash $currentState");
               print("mostRecentRemoteHash $mostRecentRemoteHash");

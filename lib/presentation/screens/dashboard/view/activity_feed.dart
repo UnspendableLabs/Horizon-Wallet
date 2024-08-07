@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "package:decimal/decimal.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
@@ -9,7 +10,25 @@ import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/address.dart';
 
+
+
+
 enum SendSide { source, destination }
+
+// TODO: move to some util file
+Decimal satoshisToBtc(int satoshis) {
+  // No need to check for null as int cannot be null in non-nullable Dart
+
+  // Conversion factor
+  final Decimal btcFactor = Decimal.fromInt(100000000);
+
+  // Perform conversion
+  final btcValue = Decimal.fromInt(satoshis) / btcFactor;
+
+  // Round to 8 decimal places
+  return btcValue.toDecimal().round(scale: 8);
+}
+
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;
@@ -109,6 +128,9 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var unpackedData,
       ) =>
         Text("Issued ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      // btc send
+      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+        Text("Send ${satoshisToBtc(btcAmount)} BTC to ${info.destination}"),
       _ => Text(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -121,6 +143,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.arrow_back, color: Colors.grey),
       TransactionInfoIssuanceVerbose() =>
         const Icon(Icons.toll, color: Colors.grey),
+      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+        const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

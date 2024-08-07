@@ -79,6 +79,7 @@ class EsploraApi {
   }
 
   Never _handleDioException(DioException e) {
+    throw e;
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.sendTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
