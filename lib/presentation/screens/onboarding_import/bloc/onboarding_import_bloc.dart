@@ -110,7 +110,7 @@ class OnboardingImportBloc
 
             //m/84'/1'/0'/0
             Account account0 = Account(
-              name: 'Account #0',
+              name: 'ACCOUNT 0',
               walletUuid: wallet.uuid,
               purpose: '84\'',
               coinType: '${_getCoinType()}\'',

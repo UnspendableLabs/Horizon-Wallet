@@ -20,15 +20,12 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : lightBlueLightThemeBackgroundColor;
-    final leftSideBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : royalBlueLightThemeBackgroundColor;
-    final rightSideBackgroundColor = isDarkMode
-        ? darkNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+    final backdropBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
+    final leftSideBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : royalBlueLightTheme;
+    final rightSideBackgroundColor =
+        isDarkMode ? darkNavyDarkTheme : whiteLightTheme;
 
     return Scaffold(
       backgroundColor: backdropBackgroundColor,
@@ -129,7 +126,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     'CREATE A NEW WALLET',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? neonBlueDarkThemeButtonTextColor
+                                            ? neonBlueDarkTheme
                                             : mainTextWhite),
                                   ),
                                 ),
@@ -162,7 +159,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   child: Text('LOGIN TO EXISTING WALLET',
                                       style: TextStyle(
                                           color: isDarkMode
-                                              ? greyDarkThemeButtonText
+                                              ? greyDarkTheme
                                               : mainTextBlack)),
                                 ),
                               ),
@@ -224,8 +221,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 style: ElevatedButton.styleFrom(
                                   elevation: 0,
                                   backgroundColor: isDarkMode
-                                      ? navyDarkThemeButtonColor
-                                      : whiteLightThemeButtonColor,
+                                      ? navyDarkTheme
+                                      : whiteLightTheme,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 32, vertical: 16),
                                   textStyle: const TextStyle(
@@ -242,7 +239,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     'CREATE A NEW WALLET',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? neonBlueDarkThemeButtonTextColor
+                                            ? neonBlueDarkTheme
                                             : mainTextBlack),
                                   ),
                                 ),
@@ -272,7 +269,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     'IMPORT EXISTING',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? greyDarkThemeButtonText
+                                            ? greyDarkTheme
                                             : mainTextWhite),
                                   ),
                                 ),

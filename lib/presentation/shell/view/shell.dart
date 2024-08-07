@@ -92,9 +92,9 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
       return Row(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
+            padding: const EdgeInsets.fromLTRB(8, 16, 4, 16),
             child: Container(
-              width: 175,
+              width: 200,
               decoration: BoxDecoration(
                 color: backgroundColor,
                 borderRadius: BorderRadius.circular(30.0),
@@ -105,54 +105,68 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          itemCount: state.accounts.length,
-                          itemBuilder: (context, index) {
-                            final account = state.accounts[index];
-                            return Column(
-                              children: [
-                                ListTile(
-                                  title: Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons
-                                            .account_balance_wallet_rounded),
-                                        const SizedBox(width: 8.0),
-                                        Text(account.name),
-                                      ],
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            itemCount: state.accounts.length,
+                            itemBuilder: (context, index) {
+                              final account = state.accounts[index];
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    title: Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                      child: Row(
+                                        children: [
+                                          const SizedBox(
+                                              width:
+                                                  16.0), // Add some left padding
+                                          const Icon(Icons
+                                              .account_balance_wallet_rounded),
+                                          const SizedBox(width: 16.0),
+                                          Expanded(
+                                            child: Text(
+                                              account.name,
+                                              textAlign: TextAlign.left,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
+                                    hoverColor:
+                                        Colors.transparent, // No hover effect
+                                    selected: account.uuid ==
+                                        state.currentAccountUuid,
+                                    onTap: () {
+                                      setState(() => selectedAccount = account);
+                                      context
+                                          .read<ShellStateCubit>()
+                                          .onAccountChanged(account);
+                                      GoRouter.of(context).go('/dashboard');
+                                    },
                                   ),
-                                  hoverColor:
-                                      Colors.transparent, // No hover effect
-                                  selected:
-                                      account.uuid == state.currentAccountUuid,
-                                  onTap: () {
-                                    setState(() => selectedAccount = account);
-                                    context
-                                        .read<ShellStateCubit>()
-                                        .onAccountChanged(account);
-                                    GoRouter.of(context).go('/dashboard');
-                                  },
-                                ),
-                                if (index !=
-                                    state.accounts.length -
-                                        1) // Avoid underline for the last element
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0),
-                                    child: Divider(
-                                      color: Colors.grey.shade300,
-                                      thickness: 1.0,
+                                  if (index !=
+                                      state.accounts.length -
+                                          1) // Avoid underline for the last element
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4.0),
+                                      child: Divider(
+                                        color: isDarkTheme
+                                            ? greyDarkThemeUnderlineColor
+                                            : greyLightThemeUnderlineColor,
+                                        thickness: 1.0,
+                                      ),
                                     ),
-                                  ),
-                              ],
-                            );
-                          },
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -342,13 +356,10 @@ class Shell extends StatelessWidget {
       );
     }
 
-    final backgroundColor = isDarkTheme
-        ? lightNavyDarkThemeBackgroundColor
-        : greyLightThemeBackgroundColor;
-    final selectedColor = isDarkTheme
-        ? blueDarkThemeGradiantColor
-        : royalBlueLightThemeBackgroundColor;
-    final unselectedColor = isDarkTheme ? greyDarkThemeButtonText : Colors.grey;
+    final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+    final selectedColor =
+        isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
+    final unselectedColor = isDarkTheme ? greyDarkTheme : Colors.grey;
 
     return Container(
       decoration: BoxDecoration(
@@ -400,8 +411,8 @@ class Shell extends StatelessWidget {
               ? IconButton(
                   icon: Icon(Icons.account_balance_wallet_rounded,
                       color: isDarkTheme
-                          ? neonBlueDarkThemeButtonTextColor
-                          : royalBlueLightThemeBackgroundColor),
+                          ? neonBlueDarkTheme
+                          : royalBlueLightTheme),
                   onPressed: () => showAccountList(context),
                 )
               : null,
@@ -412,9 +423,7 @@ class Shell extends StatelessWidget {
               decoration: BoxDecoration(
                 color: backgroundColor,
                 border: Border.all(
-                    color: isDarkTheme
-                        ? darkNavyDarkThemeBackgroundColor
-                        : Colors.grey[300]!),
+                    color: isDarkTheme ? darkNavyDarkTheme : Colors.grey[300]!),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -461,9 +470,8 @@ class Shell extends StatelessWidget {
                         child: Icon(
                           Icons.dark_mode,
                           size: 20,
-                          color: isDarkTheme
-                              ? neonBlueDarkThemeButtonTextColor
-                              : unselectedColor,
+                          color:
+                              isDarkTheme ? neonBlueDarkTheme : unselectedColor,
                         ),
                       ),
                     ),
@@ -477,16 +485,12 @@ class Shell extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isDarkTheme
-                    ? darkNavyDarkThemeBackgroundColor
-                    : lightBlueLightThemeBackgroundColor,
+                color: isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
               ),
               child: IconButton(
                 icon: Icon(Icons.settings,
                     size: 15,
-                    color: isDarkTheme
-                        ? Colors.grey
-                        : royalBlueLightThemeBackgroundColor),
+                    color: isDarkTheme ? Colors.grey : royalBlueLightTheme),
                 onPressed: () {
                   context.go('/settings');
                 },

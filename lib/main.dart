@@ -79,17 +79,16 @@ Future<void> setupRegtestWallet() async {
       importFormat: ImportFormat.segwit,
     );
 
-    List<Address> addresses =
-        await addressService.deriveAddressSegwitRange(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account.uuid,
-            purpose: account.purpose,
-            coin: account.coinType,
-            account: account.accountIndex,
-            change: '0',
-            start: 0,
-            end: 9);
+    List<Address> addresses = await addressService.deriveAddressSegwitRange(
+        privKey: decryptedPrivKey,
+        chainCodeHex: wallet.chainCodeHex,
+        accountUuid: account.uuid,
+        purpose: account.purpose,
+        coin: account.coinType,
+        account: account.accountIndex,
+        change: '0',
+        start: 0,
+        end: 9);
 
     await walletRepository.insert(wallet);
     await accountRepository.insert(account);
@@ -286,8 +285,7 @@ class MyApp extends StatelessWidget {
     // define a color scheme so it doesn't display flutter default purples
     brightness: Brightness.light,
     appBarTheme: const AppBarTheme(
-        backgroundColor: whiteLightThemeBackgroundColor,
-        scrolledUnderElevation: 0.0),
+        backgroundColor: whiteLightTheme, scrolledUnderElevation: 0.0),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(227, 237, 254, 1),
@@ -344,7 +342,7 @@ class MyApp extends StatelessWidget {
     // define a color scheme so it doesn't display flutter default purples
     brightness: Brightness.dark,
     appBarTheme: const AppBarTheme(
-      backgroundColor: lightNavyDarkThemeBackgroundColor,
+      backgroundColor: lightNavyDarkTheme,
       scrolledUnderElevation: 0.0,
     ),
     primaryColor: Colors.white,
