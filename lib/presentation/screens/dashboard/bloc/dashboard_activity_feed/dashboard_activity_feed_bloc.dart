@@ -66,16 +66,17 @@ class DashboardActivityFeedBloc
       if (mostRecentRemoteHash == null) {
         // get highest confirmed
 
-        final (_, _, resultCount) =
+        final ( events, _, resultCount) =
             await eventsRepository.getByAddressesVerbose(
                 addresses: addresses,
                 limit: 1,
                 unconfirmed: true,
                 whitelist: DEFAULT_WHITELIST);
 
+
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: null,
-            newTransactionCount: resultCount ?? 0,
+            newTransactionCount: events.length,
             mostRecentRemoteHash: null,
             transactions: const []));
 
