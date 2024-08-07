@@ -113,7 +113,7 @@ Future<void> setup() async {
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
       esploraApi: EsploraApi(
           dio: Dio(BaseOptions(
-    baseUrl: "127.0.0.1:3002",
+    baseUrl: "http://127.0.0.1:3002",
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
   )))));
