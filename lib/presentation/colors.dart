@@ -8,6 +8,7 @@ const darkNavyDarkThemeBackgroundColor = Color.fromRGBO(18, 18, 35, 1);
 const lightBlueLightThemeBackgroundColor = Color.fromRGBO(224, 239, 255, 1);
 const royalBlueLightThemeBackgroundColor = Color.fromRGBO(0, 92, 193, 1);
 const whiteLightThemeBackgroundColor = Color.fromRGBO(255, 255, 255, 1);
+const greyLightThemeBackgroundColor = Color.fromRGBO(246, 247, 250, 1);
 
 // Text Colors
 const mainTextWhite = Color.fromRGBO(255, 255, 255, 1);
