@@ -68,6 +68,7 @@ dependencies:
   collection: ^1.18.0
   flutter_svg: ^1.0.0
   mocktail: ^1.0.4
+  fpdart: ^1.1.0
 
 
 dev_dependencies:
