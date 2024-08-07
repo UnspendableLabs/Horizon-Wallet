@@ -8,6 +8,7 @@ import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
@@ -260,7 +261,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                   fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
-                   ],
+                    ],
                   ),
                 ),
               ),
@@ -335,41 +336,6 @@ class AccountSelectionButton extends StatelessWidget {
               ],
             ),
           ),
-          child: Builder(builder: (context) {
-            final dashboardActivityFeedBloc =
-                BlocProvider.of<DashboardActivityFeedBloc>(context);
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: backgroundColor,
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      AddressActions(
-                        isDarkTheme: isDarkTheme,
-                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                      ),
-                      BlocProvider(
-                        create: (context) =>
-                            BalancesBloc(accountUuid: widget.accountUuid),
-                        child: BalancesDisplay(
-                          isDarkTheme: isDarkTheme,
-                          addresses: addresses,
-                          accountUuid: widget.accountUuid,
-                        ),
-                      ),
-                      DashboardActivityFeedScreen(
-                        addresses: addresses,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
         ),
       ),
     );
@@ -605,38 +571,37 @@ class _BalancesState extends State<Balances> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-              child: Container(child: _balanceList(result, widget.isDarkTheme))),
+                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+                child:
+                    Container(child: _balanceList(result, widget.isDarkTheme))),
             if (_isExpanded)
-              Builder(
-                builder: (context) {
-                  return Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FractionallySizedBox(
-                        widthFactor: 0.5,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
+              Builder(builder: (context) {
+                return Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FractionallySizedBox(
+                      widthFactor: 0.5,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _isExpanded = false;
-                            });
-                          },
-                          child: const Text("Collapse"),
                         ),
+                        onPressed: () {
+                          setState(() {
+                            _isExpanded = false;
+                          });
+                        },
+                        child: const Text("Collapse"),
                       ),
                     ),
-                  );
-                }
-              ),
+                  ),
+                );
+              }),
           ],
         ),
       ),

@@ -3,6 +3,7 @@
 A bip39 wallet for XCP and bitcoin. Supports importing from Freewallet and Counterwallet.
 
 ## Prerequisites
+
 - Flutter SDK https://docs.flutter.dev/get-started/install
 - Dart SDK https://dart.dev/get-dart
 - Chrome or Chromium browser
@@ -12,40 +13,38 @@ A bip39 wallet for XCP and bitcoin. Supports importing from Freewallet and Count
 To run locally on the web:
 
 1. Install dependencies:
-`flutter pub get`
+   `flutter pub get`
 
 2. Add a .env file to the root of the application which includes:
+
 ```
 TEST=false
 ```
+
 to run in testnet mode, set TEST=true
 
 3. Much of the web app relies on code generation. To generate the necessary code, run:
-`flutter pub run build_runner build`
+   `flutter pub run build_runner build`
 
 4. Run the app
 
-    - To run the application as a web app:
-            `flutter run -d Chrome`
+   - To run the application as a web app:
+     `flutter run -d Chrome`
 
+   - To run the application as a chrome extension:
+     a. build the application
+     `flutter build web --web-renderer html --csp`
 
-    - To run the application as a chrome extension:
-        a. build the application
-            `flutter build web --web-renderer html --csp`
+     b. open your Chrome browser and navigate to chrome://extensions
 
+     c. enable Developer mode on the top right corner of the extensions page
 
-        b. open your Chrome browser and navigate to chrome://extensions
+     d. click the "Load unpacked" button
 
-        c. enable Developer mode on the top right corner of the extensions page
+     e. Select the `<flutter_project_dir>/build/web` folder.
 
-        d. click the "Load unpacked" button
-
-        e.  Select the `<flutter_project_dir>/build/web` folder.
-
-    - To use a Chrome substitute (such as Chromium), export the following from your shell env:
-    `export CHROME_EXECUTABLE=$(which chromium)`
-
-
+   - To use a Chrome substitute (such as Chromium), export the following from your shell env:
+     `export CHROME_EXECUTABLE=$(which chromium)`
 
 ### gen drift schema
 
@@ -55,3 +54,6 @@ to run in testnet mode, set TEST=true
 
 ❯ dart run drift_dev schema steps drift_schemas/ lib/data/sources/local/schema_versions.dart
 
+### notes
+
+- esplora api only returns 50 txs in mempool with no addresses
