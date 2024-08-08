@@ -252,7 +252,7 @@ void main() {
 
     await setup();
 
-    await setupRegtestWallet();
+    // await setupRegtestWallet();
 
     await initSettings();
 

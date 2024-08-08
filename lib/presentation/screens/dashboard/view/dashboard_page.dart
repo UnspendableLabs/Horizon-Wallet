@@ -18,6 +18,8 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
+import 'package:horizon/presentation/screens/dashboard/view/generic_dialog.dart';
+import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -157,8 +159,32 @@ class _DashboardPage_State extends State<_DashboardPage> {
 
   void showAccountList(BuildContext context) {
     const double _pagePadding = 16.0;
+    const double _bottomPaddingForButton = 150.0;
 
     final textTheme = Theme.of(context).textTheme;
+
+    SliverWoltModalSheetPage page1(
+      BuildContext modalSheetContext,
+      TextTheme textTheme,
+    ) {
+      return WoltModalSheetPage(
+        isTopBarLayerAlwaysVisible: true,
+        topBarTitle: Text('Add an account', style: textTheme.titleSmall),
+        trailingNavBarWidget: IconButton(
+          padding: const EdgeInsets.all(_pagePadding),
+          icon: const Icon(Icons.close),
+          onPressed: Navigator.of(modalSheetContext).pop,
+        ),
+        child: const Padding(
+            padding: EdgeInsets.fromLTRB(
+              _pagePadding,
+              _pagePadding,
+              _pagePadding,
+              _bottomPaddingForButton,
+            ),
+            child: AddAccountForm()),
+      );
+    }
 
     WoltModalSheet.show<void>(
       context: context,
@@ -209,7 +235,19 @@ class _DashboardPage_State extends State<_DashboardPage> {
                               elevation: 0,
                             ),
                             onPressed: () {
-                              // Implement add account functionality
+                              WoltModalSheet.show<void>(
+                                context: context,
+                                pageListBuilder: (modalSheetContext) {
+                                  final textTheme = Theme.of(context).textTheme;
+                                  return [page1(modalSheetContext, textTheme)];
+                                },
+                                onModalDismissedWithBarrierTap: () {
+                                  print("dismissed with barrier tap");
+                                },
+                                modalTypeBuilder: (context) {
+                                  return WoltModalType.bottomSheet;
+                                },
+                              );
                             },
                             child: const Text("Add Account"),
                           ),
@@ -329,21 +367,28 @@ class AddressActions extends StatelessWidget {
                       showDialog(
                           context: context,
                           builder: (context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: ComposeIssuancePage(
-                                    dashboardActivityFeedBloc:
-                                        dashboardActivityFeedBloc,
-                                  ),
-                                ),
+                            return GenericDialog(
+                              title: "ISSUE",
+                              body: ComposeIssuancePage(
+                                dashboardActivityFeedBloc:
+                                    dashboardActivityFeedBloc,
                               ),
                             );
+                            // return Dialog(
+                            //   shape: RoundedRectangleBorder(
+                            //     borderRadius: BorderRadius.circular(30.0),
+                            //   ),
+                            //   child: SizedBox(
+                            //     width: MediaQuery.of(context).size.width * 0.5,
+                            //     child: Padding(
+                            //       padding: const EdgeInsets.all(16.0),
+                            //       child: ComposeIssuancePage(
+                            //         dashboardActivityFeedBloc:
+                            //             dashboardActivityFeedBloc,
+                            //       ),
+                            //     ),
+                            //   ),
+                            // );
                           });
                     },
                     child: const FittedBox(

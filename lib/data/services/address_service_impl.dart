@@ -183,16 +183,13 @@ class AddressServiceImpl extends AddressService {
         .toList();
     words.insert(0, 0);
     return bech32.encode(
-        ecpair.regtest.bech32, words.map((el) => el.toJS).toList().toJS);
+        _getNetwork().bech32, words.map((el) => el.toJS).toList().toJS);
   }
 
   _getNetwork() {
-
     bool isTestnet =
         const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
 
-    print(ecpair.regtest.jsify());
-
-    return isTestnet ? ecpair.regtest : ecpair.bitcoin;
+    return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
 }
