@@ -9,13 +9,16 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
-import 'package:horizon/presentation/screens/dashboard/view/generic_dialog.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeIssuancePage extends StatelessWidget {
+  final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
   const ComposeIssuancePage({
+    required this.isDarkMode,
     required this.dashboardActivityFeedBloc,
     super.key,
   });
@@ -26,8 +29,10 @@ class ComposeIssuancePage extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeIssuanceBloc()..add(FetchFormData(accountUuid: state.currentAccountUuid)),
+        create: (context) => ComposeIssuanceBloc()
+          ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
         child: _ComposeIssuancePage_(
+          isDarkMode: isDarkMode,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -37,8 +42,10 @@ class ComposeIssuancePage extends StatelessWidget {
 }
 
 class _ComposeIssuancePage_ extends StatefulWidget {
+  final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  const _ComposeIssuancePage_({required this.dashboardActivityFeedBloc});
+  const _ComposeIssuancePage_(
+      {required this.isDarkMode, required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
@@ -63,11 +70,13 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(listener: (context, state) {
+    return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
+        listener: (context, state) {
       state.submitState.when(
         success: (txHash) {
           // 0) reload activity feed
-          widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
+          widget.dashboardActivityFeedBloc
+              .add(const Load()); // show "N more transactions".
 
           // 1) close modal
           Navigator.of(context).pop();
@@ -82,10 +91,13 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               ),
               content: Text(txHash),
               behavior: SnackBarBehavior.floating));
-          widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
+          widget.dashboardActivityFeedBloc
+              .add(const Load()); // show "N more transactions".
         },
-        error: (msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))),
-        loading: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Loading"))),
+        error: (msg) => ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg))),
+        loading: () => ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Loading"))),
         initial: () => const Text(''),
       );
     }, builder: (context, state) {
@@ -99,10 +111,15 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
             loading: () => const SizedBox.shrink(),
             error: (e) => Text(e),
             success: (balances) {
-              bool hasXCPBalance = balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP');
-              Balance? xcpBalance = hasXCPBalance ? balances.firstWhere((element) => element.asset == 'XCP') : null;
-              bool isNamedAssetEnabled = xcpBalance != null && xcpBalance.quantity >= 50000000;
-              String quantity = xcpBalance != null ? xcpBalance.quantityNormalized : '0';
+              bool hasXCPBalance = balances.isNotEmpty &&
+                  balances.any((balance) => balance.asset == 'XCP');
+              Balance? xcpBalance = hasXCPBalance
+                  ? balances.firstWhere((element) => element.asset == 'XCP')
+                  : null;
+              bool isNamedAssetEnabled =
+                  xcpBalance != null && xcpBalance.quantity >= 50000000;
+              String quantity =
+                  xcpBalance != null ? xcpBalance.quantityNormalized : '0';
 
               return Form(
                 key: _formKey,
@@ -111,36 +128,33 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      DropdownMenu<String>(
-                          expandedInsets: const EdgeInsets.all(0),
-                          initialSelection: fromAddress ?? addresses[0].address,
-                          controller: fromAddressController,
-                          requestFocusOnTap: true,
-                          label: const Text('Address'),
-                          onSelected: (String? a) {
-                            setState(() {
-                              fromAddress = a!;
-                            });
-                            context.read<ComposeIssuanceBloc>().add(FetchBalances(address: a!));
-                          },
-                          dropdownMenuEntries: addresses.map<DropdownMenuEntry<String>>((address) {
-                            return DropdownMenuEntry<String>(
-                              value: address.address,
-                              label: address.address,
-                            );
-                          }).toList()),
+                      HorizonDropdownMenu(
+                        isDarkMode: widget.isDarkMode,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            fromAddress = newValue;
+                          });
+                        },
+                        items:
+                            addresses.map<DropdownMenuEntry<String>>((address) {
+                          return buildDropdownMenuItem(
+                              address.address, address.address);
+                        }).toList(),
+                      ),
                       const SizedBox(height: 16.0),
                       TextFormField(
                         controller: nameController,
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: "Token name",
-                            floatingLabelBehavior: FloatingLabelBehavior.always),
+                            floatingLabelBehavior:
+                                FloatingLabelBehavior.always),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a name for your asset';
                           }
-                          if (!isNamedAssetEnabled && !RegExp(r'^A\d+$').hasMatch(value)) {
+                          if (!isNamedAssetEnabled &&
+                              !RegExp(r'^A\d+$').hasMatch(value)) {
                             return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
                           }
                           return null;
@@ -154,7 +168,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           labelText: 'Quantity',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a quantity';
@@ -180,7 +195,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: "Password",
-                            floatingLabelBehavior: FloatingLabelBehavior.always),
+                            floatingLabelBehavior:
+                                FloatingLabelBehavior.always),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your password';
@@ -201,12 +217,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   });
                                 },
                               ),
-                              const Text('Divisible', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text('Divisible',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
                           const Row(
                             children: [
-                              SizedBox(width: 30.0), // Width of the checkbox and some padding
+                              SizedBox(
+                                  width:
+                                      30.0), // Width of the checkbox and some padding
                               Expanded(
                                 child: Text(
                                   'Whether this asset is divisible or not. Defaults to true.',
@@ -224,12 +244,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   });
                                 },
                               ),
-                              const Text('Lock', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text('Lock',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
                           const Row(
                             children: [
-                              SizedBox(width: 30.0), // Width of the checkbox and some padding
+                              SizedBox(
+                                  width:
+                                      30.0), // Width of the checkbox and some padding
                               Expanded(
                                 child: Text(
                                   'Whether this issuance should lock supply of this asset forever. Defaults to false.',
@@ -248,12 +272,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   });
                                 },
                               ),
-                              const Text('Reset', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text('Reset',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
                           const Row(
                             children: [
-                              SizedBox(width: 30.0), // Width of the checkbox and some padding
+                              SizedBox(
+                                  width:
+                                      30.0), // Width of the checkbox and some padding
                               Expanded(
                                 child: Text(
                                   'Wether this issuance should reset any existing supply. Defaults to false.',
@@ -263,14 +291,17 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           ),
                         ],
                       ),
-                      DialogSubmitButton(
+                      HorizonDialogSubmitButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            context.read<ComposeIssuanceBloc>().add(CreateIssuanceEvent(
+                            context
+                                .read<ComposeIssuanceBloc>()
+                                .add(CreateIssuanceEvent(
                                   sourceAddress: fromAddressController.text,
                                   password: passwordController.text,
                                   name: nameController.text,
-                                  quantity: double.parse(quantityController.text),
+                                  quantity:
+                                      double.parse(quantityController.text),
                                   description: descriptionController.text,
                                   divisible: isDivisible,
                                   lock: isLocked,

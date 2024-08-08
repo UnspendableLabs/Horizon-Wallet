@@ -18,7 +18,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
-import 'package:horizon/presentation/screens/dashboard/view/generic_dialog.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -367,28 +367,14 @@ class AddressActions extends StatelessWidget {
                       showDialog(
                           context: context,
                           builder: (context) {
-                            return GenericDialog(
-                              title: "ISSUE",
+                            return HorizonDialog(
+                              title: "Compose Issuance",
                               body: ComposeIssuancePage(
+                                isDarkMode: isDarkTheme,
                                 dashboardActivityFeedBloc:
                                     dashboardActivityFeedBloc,
                               ),
                             );
-                            // return Dialog(
-                            //   shape: RoundedRectangleBorder(
-                            //     borderRadius: BorderRadius.circular(30.0),
-                            //   ),
-                            //   child: SizedBox(
-                            //     width: MediaQuery.of(context).size.width * 0.5,
-                            //     child: Padding(
-                            //       padding: const EdgeInsets.all(16.0),
-                            //       child: ComposeIssuancePage(
-                            //         dashboardActivityFeedBloc:
-                            //             dashboardActivityFeedBloc,
-                            //       ),
-                            //     ),
-                            //   ),
-                            // );
                           });
                     },
                     child: const FittedBox(

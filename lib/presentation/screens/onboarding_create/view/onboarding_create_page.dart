@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:horizon/presentation/colors.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingCreateScreen extends StatelessWidget {
@@ -210,29 +211,18 @@ class PasswordPrompt extends StatelessWidget {
                 child: Center(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
-                    child: TextField(
+                    child: HorizonTextField(
+                      isDarkMode: isDarkMode,
+                      label: 'Password',
+                      controller: _passwordController,
                       obscureText: true,
                       enableSuggestions: false,
                       autocorrect: false,
-                      controller: _passwordController,
                       onChanged: (value) {
                         context
                             .read<OnboardingCreateBloc>()
                             .add(PasswordChanged(password: value));
                       },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: inputBackgroundColor,
-                        labelText: 'Password',
-                        labelStyle: TextStyle(
-                            color: isDarkMode
-                                ? darkThemeInputLabelColor
-                                : lightThemeInputLabelColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
                     ),
                   ),
                 ),
@@ -244,29 +234,18 @@ class PasswordPrompt extends StatelessWidget {
                 child: Center(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
-                    child: TextField(
+                    child: HorizonTextField(
+                      isDarkMode: isDarkMode,
+                      label: 'Confirm Password',
+                      controller: _passwordConfirmationController,
                       obscureText: true,
                       enableSuggestions: false,
                       autocorrect: false,
-                      controller: _passwordConfirmationController,
                       onChanged: (value) {
                         context.read<OnboardingCreateBloc>().add(
                             PasswordConfirmationChanged(
                                 passwordConfirmation: value));
                       },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: inputBackgroundColor,
-                        labelText: 'Confirm Password',
-                        labelStyle: TextStyle(
-                            color: isDarkMode
-                                ? darkThemeInputLabelColor
-                                : lightThemeInputLabelColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
                     ),
                   ),
                 ),
@@ -688,32 +667,14 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Expanded(
-                                child: TextField(
-                                  controller: controllers[index],
-                                  focusNode: focusNodes[index],
-                                  onChanged: (value) =>
-                                      handleInput(value, index),
-                                  onEditingComplete: () =>
-                                      handleTabNavigation(index),
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: isDarkMode
-                                        ? darkThemeInputColor
-                                        : lightThemeInputColor,
-                                    labelText: 'Word ${index + 1}',
-                                    labelStyle: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        color: isDarkMode
-                                            ? darkThemeInputLabelColor
-                                            : lightThemeInputLabelColor),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                  style: const TextStyle(fontSize: 16),
-                                ),
+                              HorizonTextField(
+                                isDarkMode: isDarkMode,
+                                label: 'Word ${index + 1}',
+                                controller: controllers[index],
+                                focusNode: focusNodes[index],
+                                onChanged: (value) => handleInput(value, index),
+                                onEditingComplete: () =>
+                                    handleTabNavigation(index),
                               ),
                             ],
                           ),
@@ -761,34 +722,16 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                       ),
                                     ),
                                     const SizedBox(width: 4),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: controllers[index],
-                                        focusNode: focusNodes[index],
-                                        onChanged: (value) =>
-                                            handleInput(value, index),
-                                        onEditingComplete: () =>
-                                            handleTabNavigation(index),
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor: isDarkMode
-                                              ? darkThemeInputColor
-                                              : lightThemeInputColor,
-                                          labelText: 'Word ${index + 1}',
-                                          labelStyle: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: isDarkMode
-                                                  ? darkThemeInputLabelColor
-                                                  : lightThemeInputLabelColor),
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                        ),
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                    ),
+                                    HorizonTextField(
+                                      isDarkMode: isDarkMode,
+                                      label: 'Word ${index + 1}',
+                                      controller: controllers[index],
+                                      focusNode: focusNodes[index],
+                                      onChanged: (value) =>
+                                          handleInput(value, index),
+                                      onEditingComplete: () =>
+                                          handleTabNavigation(index),
+                                    )
                                   ],
                                 ),
                               );

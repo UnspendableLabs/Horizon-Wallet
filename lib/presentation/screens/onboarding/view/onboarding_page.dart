@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:horizon/presentation/colors.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingScreen extends StatefulWidget {

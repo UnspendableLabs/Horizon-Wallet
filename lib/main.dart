@@ -19,13 +19,13 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
 import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
@@ -315,7 +315,7 @@ class MyApp extends StatelessWidget {
         textColor: elevatedButtonForegroundLightTheme,
         selectedColor: royalBlueLightTheme),
     dialogTheme: const DialogTheme(
-      backgroundColor: Color.fromRGBO(246, 247, 250, 1),
+      backgroundColor: dialogBackgroundColorLightTheme,
     ),
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith<Color?>(
@@ -328,10 +328,13 @@ class MyApp extends StatelessWidget {
       ),
     ),
     cardTheme: CardTheme(
+      color: lightThemeInputColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
       ),
     ),
+    canvasColor: lightThemeInputColor,
+    cardColor: lightThemeInputColor,
   );
 
   final ThemeData darkTheme = ThemeData(
@@ -375,7 +378,7 @@ class MyApp extends StatelessWidget {
         selectedColor: neonBlueDarkTheme),
 
     dialogTheme: const DialogTheme(
-      backgroundColor: Color.fromRGBO(35, 35, 58, 1),
+      backgroundColor: dialogBackgroundColorDarkTheme,
     ),
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith<Color?>(
@@ -389,10 +392,13 @@ class MyApp extends StatelessWidget {
       ),
     ),
     cardTheme: CardTheme(
+      color: darkThemeInputColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
       ),
     ),
+    canvasColor: darkThemeInputColor,
+    cardColor: darkThemeInputColor,
   );
 
   @override

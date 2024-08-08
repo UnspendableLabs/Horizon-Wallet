@@ -10,7 +10,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/presentation/colors.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';

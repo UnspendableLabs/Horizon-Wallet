@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/colors.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 
-class GenericDialog extends StatelessWidget {
+class HorizonDialog extends StatelessWidget {
   final String title;
   final Widget body;
 
-  const GenericDialog({
+  const HorizonDialog({
     super.key,
     required this.title,
     required this.body,
@@ -23,36 +23,38 @@ class GenericDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Title and back button
-              Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleLarge,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    Align(
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              // Separator
               _buildSeparator(isDarkTheme),
-              // Body
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: body,
               ),
-              // Separator
             ],
           ),
         ),
@@ -61,10 +63,10 @@ class GenericDialog extends StatelessWidget {
   }
 }
 
-class DialogSubmitButton extends StatelessWidget {
+class HorizonDialogSubmitButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const DialogSubmitButton({
+  const HorizonDialogSubmitButton({
     super.key,
     required this.onPressed,
   });
