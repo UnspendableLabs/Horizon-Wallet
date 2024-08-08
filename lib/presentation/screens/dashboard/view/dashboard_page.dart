@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -19,6 +20,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 String balancesStateToString(BalancesState state) {
   return state.when(
@@ -87,6 +89,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     // Define background colors based on theme
     Color backgroundColor =
@@ -120,6 +123,11 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
+                      if (screenWidth < 768)
+                        AccountSelectionButton(
+                          isDarkTheme: isDarkTheme,
+                          onPressed: () => showAccountList(context),
+                        ),
                       AddressActions(
                         isDarkTheme: isDarkTheme,
                         dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -145,6 +153,146 @@ class _DashboardPage_State extends State<_DashboardPage> {
         ),
       );
     });
+  }
+
+  void showAccountList(BuildContext context) {
+    const double _pagePadding = 16.0;
+
+    final textTheme = Theme.of(context).textTheme;
+
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          context.read<ShellStateCubit>().state.maybeWhen(
+                success: (state) => WoltModalSheetPage(
+                  isTopBarLayerAlwaysVisible: true,
+                  topBarTitle:
+                      Text('Select an account', style: textTheme.titleSmall),
+                  trailingNavBarWidget: IconButton(
+                    padding: const EdgeInsets.all(_pagePadding),
+                    icon: const Icon(Icons.close),
+                    onPressed: Navigator.of(modalSheetContext).pop,
+                  ),
+                  child: SizedBox(
+                    height: 400,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: state.accounts.length,
+                            itemBuilder: (context, index) {
+                              final account = state.accounts[index];
+                              final isSelected =
+                                  account.uuid == state.currentAccountUuid;
+                              return ListTile(
+                                title: Text(account.name),
+                                selected: isSelected,
+                                onTap: () {
+                                  context
+                                      .read<ShellStateCubit>()
+                                      .onAccountChanged(account);
+                                  Navigator.of(modalSheetContext).pop();
+                                  GoRouter.of(context).go('/dashboard');
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              // Implement add account functionality
+                            },
+                            child: const Text("Add Account"),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                orElse: () => SliverWoltModalSheetPage(),
+              ),
+        ];
+      },
+      onModalDismissedWithBarrierTap: () {
+        print("dismissed with barrier tap");
+      },
+      modalTypeBuilder: (context) {
+        final size = MediaQuery.of(context).size.width;
+        if (size < 768.0) {
+          return WoltModalType.bottomSheet;
+        } else {
+          return WoltModalType.dialog;
+        }
+      },
+    );
+  }
+}
+
+class AccountSelectionButton extends StatelessWidget {
+  final bool isDarkTheme;
+  final VoidCallback onPressed;
+
+  const AccountSelectionButton({
+    Key? key,
+    required this.isDarkTheme,
+    required this.onPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 70),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+          ),
+          onPressed: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_rounded,
+                ),
+                const SizedBox(width: 16.0),
+                Text(
+                  context.read<ShellStateCubit>().state.maybeWhen(
+                        success: (state) => state.accounts
+                            .firstWhere((account) =>
+                                account.uuid == state.currentAccountUuid)
+                            .name,
+                        orElse: () => "Select Account",
+                      ),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.arrow_drop_down,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -1,26 +1,25 @@
 import 'dart:async';
-import 'dart:io' show Platform;
-import 'package:horizon/common/uuid.dart';
-import 'package:horizon/common/constants.dart';
 
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/data/sources/local/db_manager.dart';
-
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/data/services/regtest_utils.dart';
-
+import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/colors.dart';
-import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
@@ -34,9 +33,6 @@ import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/view/shell.dart';
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/address.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -296,8 +292,8 @@ class MyApp extends StatelessWidget {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(227, 237, 254, 1),
-        foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
+        backgroundColor: elevatedButtonBackgroundLightTheme,
+        foregroundColor: elevatedButtonForegroundLightTheme,
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -315,9 +311,9 @@ class MyApp extends StatelessWidget {
       ),
     ),
     listTileTheme: const ListTileThemeData(
-        iconColor: Color.fromRGBO(106, 106, 134, 1),
-        textColor: Color.fromRGBO(106, 106, 134, 1),
-        selectedColor: Color.fromRGBO(68, 121, 252, 1)),
+        iconColor: elevatedButtonForegroundLightTheme,
+        textColor: elevatedButtonForegroundLightTheme,
+        selectedColor: royalBlueLightTheme),
     dialogTheme: const DialogTheme(
       backgroundColor: Color.fromRGBO(246, 247, 250, 1),
     ),
@@ -355,8 +351,8 @@ class MyApp extends StatelessWidget {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(35, 35, 59, 1),
-        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+        backgroundColor: elevatedButtonBackgroundDarkTheme,
+        foregroundColor: elevatedButtonForegroundDarkTheme,
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -374,9 +370,9 @@ class MyApp extends StatelessWidget {
       ),
     ),
     listTileTheme: const ListTileThemeData(
-        iconColor: Color.fromRGBO(183, 183, 188, 1),
-        textColor: Color.fromRGBO(183, 183, 188, 1),
-        selectedColor: Color.fromRGBO(146, 209, 254, 1)),
+        iconColor: elevatedButtonForegroundDarkTheme,
+        textColor: elevatedButtonForegroundDarkTheme,
+        selectedColor: neonBlueDarkTheme),
 
     dialogTheme: const DialogTheme(
       backgroundColor: Color.fromRGBO(35, 35, 58, 1),

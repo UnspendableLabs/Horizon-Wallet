@@ -6,7 +6,7 @@ const lightNavyDarkTheme = Color.fromRGBO(30, 30, 56, 1);
 const darkNavyDarkTheme = Color.fromRGBO(18, 18, 35, 1);
 
 const lightBlueLightTheme = Color.fromRGBO(224, 239, 255, 1);
-const royalBlueLightTheme = Color.fromRGBO(0, 92, 193, 1);
+const royalBlueLightTheme = Color.fromRGBO(0, 122, 255, 1);
 const whiteLightTheme = Color.fromRGBO(255, 255, 255, 1);
 const greyLightTheme = Color.fromRGBO(246, 247, 250, 1);
 
@@ -18,6 +18,12 @@ final greyDarkTheme = Colors.grey[500];
 
 // Common Button and input Colors
 const navyDarkTheme = Color.fromRGBO(32, 42, 67, 1);
+
+const elevatedButtonBackgroundDarkTheme = Color.fromRGBO(35, 35, 59, 1);
+const elevatedButtonForegroundDarkTheme = Color.fromRGBO(183, 183, 188, 1);
+
+const elevatedButtonBackgroundLightTheme = Color.fromRGBO(224, 239, 255, 1);
+const elevatedButtonForegroundLightTheme = Color.fromRGBO(106, 106, 134, 1);
 
 // Input colors
 const darkThemeInputColor = Color.fromRGBO(46, 46, 75, 1);
