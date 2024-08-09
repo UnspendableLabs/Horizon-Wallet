@@ -315,15 +315,18 @@ class MyApp extends StatelessWidget {
         textColor: elevatedButtonForegroundLightTheme,
         selectedColor: royalBlueLightTheme),
     dialogTheme: const DialogTheme(
+      contentTextStyle: TextStyle(color: mainTextBlack),
       backgroundColor: dialogBackgroundColorLightTheme,
     ),
     checkboxTheme: CheckboxThemeData(
+      side: BorderSide.none,
+      checkColor: WidgetStateProperty.all(royalBlueLightTheme),
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(68, 121, 252, 1); // Color when selected
+            return lightThemeInputColor; // Color when selected
           }
-          return null; // Use default color when not selected
+          return lightThemeInputColor; // Use default color when not selected
         },
       ),
     ),
@@ -360,8 +363,8 @@ class MyApp extends StatelessWidget {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
-        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+        backgroundColor: filledButtonBackgroundDarkTheme,
+        foregroundColor: neonBlueDarkTheme,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -378,16 +381,18 @@ class MyApp extends StatelessWidget {
         selectedColor: neonBlueDarkTheme),
 
     dialogTheme: const DialogTheme(
+      contentTextStyle: TextStyle(color: mainTextWhite),
       backgroundColor: dialogBackgroundColorDarkTheme,
     ),
     checkboxTheme: CheckboxThemeData(
+      side: BorderSide.none,
+      checkColor: WidgetStateProperty.all(neonBlueDarkTheme),
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(
-                146, 209, 254, 1); // Color when selected
+            return filledButtonBackgroundDarkTheme; // Color when selected
           }
-          return null; // Use default color when not selected
+          return filledButtonBackgroundDarkTheme; // Use default color when not selected
         },
       ),
     ),

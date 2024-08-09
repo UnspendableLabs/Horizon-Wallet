@@ -30,7 +30,7 @@ class HorizonDialog extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+                        padding: const EdgeInsets.only(top: 15.0, left: 10.0),
                         child: IconButton(
                           icon: const Icon(Icons.arrow_back),
                           onPressed: () => Navigator.of(context).pop(),
@@ -40,10 +40,11 @@ class HorizonDialog extends StatelessWidget {
                     Align(
                       alignment: Alignment.center,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        padding: const EdgeInsets.only(top: 20.0),
                         child: Text(
                           title,
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: TextStyle(
+                              color: isDarkTheme ? mainTextWhite : mainTextBlack, fontSize: 25, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -81,9 +82,9 @@ class HorizonDialogSubmitButton extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 16.0),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
+            constraints: const BoxConstraints(maxWidth: 350),
             child: SizedBox(
-              height: 50,
+              height: 45,
               width: double.infinity,
               child: FilledButton(
                 onPressed: onPressed,

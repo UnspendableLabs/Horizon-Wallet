@@ -10,14 +10,14 @@ class HorizonDropdownMenu extends StatelessWidget {
   final String? selectedValue;
 
   const HorizonDropdownMenu({
-    Key? key,
+    super.key,
     required this.isDarkMode,
     required this.items,
     required this.onChanged,
     this.label,
     this.controller,
     this.selectedValue,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +26,7 @@ class HorizonDropdownMenu extends StatelessWidget {
     return InputDecorator(
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
         floatingLabelBehavior: FloatingLabelBehavior.auto,
         filled: true,
         fillColor: dropdownBackgroundColor,

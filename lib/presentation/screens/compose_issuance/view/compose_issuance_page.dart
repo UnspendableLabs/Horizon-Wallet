@@ -9,8 +9,10 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeIssuancePage extends StatelessWidget {
@@ -130,25 +132,24 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                     children: <Widget>[
                       HorizonDropdownMenu(
                         isDarkMode: widget.isDarkMode,
+                        label: 'Source Address',
                         onChanged: (String? newValue) {
                           setState(() {
                             fromAddress = newValue;
                           });
                         },
                         items:
-                            addresses.map<DropdownMenuEntry<String>>((address) {
+                            addresses.map<DropdownMenuItem<String>>((address) {
                           return buildDropdownMenuItem(
                               address.address, address.address);
                         }).toList(),
                       ),
                       const SizedBox(height: 16.0),
-                      TextFormField(
+                      HorizoneTextFormField(
+                        isDarkMode: widget.isDarkMode,
                         controller: nameController,
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Token name",
-                            floatingLabelBehavior:
-                                FloatingLabelBehavior.always),
+                        label: "Token name",
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a name for your asset';
@@ -161,15 +162,17 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      TextFormField(
+                      HorizoneTextFormField(
+                        isDarkMode: widget.isDarkMode,
                         controller: quantityController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Quantity',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                        ),
+                        label: 'Quantity',
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
                         keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                            decimal: true, signed: false),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*')),
+                        ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a quantity';
@@ -178,25 +181,21 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      TextFormField(
+                      HorizoneTextFormField(
+                        isDarkMode: widget.isDarkMode,
                         controller: descriptionController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Description',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                        ),
+                        label: 'Description',
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
                       ),
                       const SizedBox(height: 16.0),
-                      TextFormField(
+                      HorizoneTextFormField(
+                        isDarkMode: widget.isDarkMode,
                         controller: passwordController,
+                        label: 'Password',
                         obscureText: true,
                         enableSuggestions: false,
                         autocorrect: false,
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Password",
-                            floatingLabelBehavior:
-                                FloatingLabelBehavior.always),
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your password';
@@ -217,9 +216,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   });
                                 },
                               ),
-                              const Text('Divisible',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Divisible',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: widget.isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack)),
                             ],
                           ),
                           const Row(
@@ -244,9 +246,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   });
                                 },
                               ),
-                              const Text('Lock',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Lock',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: widget.isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack)),
                             ],
                           ),
                           const Row(
@@ -272,9 +277,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   });
                                 },
                               ),
-                              const Text('Reset',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Lock',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: widget.isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack)),
                             ],
                           ),
                           const Row(

@@ -168,8 +168,6 @@ class PasswordPrompt extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final inputBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
     final continueButtonBackgroundColor =
@@ -205,49 +203,55 @@ class PasswordPrompt extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              Container(
-                constraints: const BoxConstraints(
-                    minHeight: 48, minWidth: double.infinity),
-                child: Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    child: HorizonTextField(
-                      isDarkMode: isDarkMode,
-                      label: 'Password',
-                      controller: _passwordController,
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      onChanged: (value) {
-                        context
-                            .read<OnboardingCreateBloc>()
-                            .add(PasswordChanged(password: value));
-                      },
+              Form(
+                child: Column(
+                  children: [
+                    Container(
+                      constraints: const BoxConstraints(
+                          minHeight: 48, minWidth: double.infinity),
+                      child: Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: HorizonTextField(
+                            isDarkMode: isDarkMode,
+                            label: 'Password',
+                            controller: _passwordController,
+                            obscureText: true,
+                            enableSuggestions: false,
+                            autocorrect: false,
+                            onChanged: (value) {
+                              context
+                                  .read<OnboardingCreateBloc>()
+                                  .add(PasswordChanged(password: value));
+                            },
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                constraints: const BoxConstraints(
-                    minHeight: 48, minWidth: double.infinity),
-                child: Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    child: HorizonTextField(
-                      isDarkMode: isDarkMode,
-                      label: 'Confirm Password',
-                      controller: _passwordConfirmationController,
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      onChanged: (value) {
-                        context.read<OnboardingCreateBloc>().add(
-                            PasswordConfirmationChanged(
-                                passwordConfirmation: value));
-                      },
+                    const SizedBox(height: 16),
+                    Container(
+                      constraints: const BoxConstraints(
+                          minHeight: 48, minWidth: double.infinity),
+                      child: Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: HorizonTextField(
+                            isDarkMode: isDarkMode,
+                            label: 'Confirm Password',
+                            controller: _passwordConfirmationController,
+                            obscureText: true,
+                            enableSuggestions: false,
+                            autocorrect: false,
+                            onChanged: (value) {
+                              context.read<OnboardingCreateBloc>().add(
+                                  PasswordConfirmationChanged(
+                                      passwordConfirmation: value));
+                            },
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
               _state.passwordError != null
