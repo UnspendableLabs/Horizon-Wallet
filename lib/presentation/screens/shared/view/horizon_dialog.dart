@@ -17,36 +17,42 @@ class HorizonDialog extends StatelessWidget {
 
     return Dialog(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 700, maxHeight: 700),
+        constraints: const BoxConstraints(maxWidth: 700, maxHeight: 750),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 15.0, left: 10.0),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.of(context).pop(),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 15.0, left: 10.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
                       ),
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                            color: isDarkTheme ? mainTextWhite : mainTextBlack, fontSize: 25, fontWeight: FontWeight.bold),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                              color:
+                                  isDarkTheme ? mainTextWhite : mainTextBlack,
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               _buildSeparator(isDarkTheme),
               Padding(
@@ -72,25 +78,28 @@ class HorizonDialogSubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildSeparator(isDarkTheme),
-        Padding(
-          padding: const EdgeInsets.only(top: 16.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 350),
-            child: SizedBox(
-              height: 45,
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: onPressed,
-                child: const Text('Submit'),
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildSeparator(isDarkTheme),
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 350),
+              child: SizedBox(
+                height: 45,
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: onPressed,
+                  child: const Text('Submit'),
+                ),
               ),
             ),
-          ),
-        )
-      ],
+          )
+        ],
+      ),
     );
   }
 }
@@ -99,7 +108,9 @@ Widget _buildSeparator(bool isDarkTheme) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 4.0),
     child: Divider(
-      color: isDarkTheme ? greyDarkThemeUnderlineColor : greyLightThemeUnderlineColor,
+      color: isDarkTheme
+          ? greyDarkThemeUnderlineColor
+          : greyLightThemeUnderlineColor,
       thickness: 1.0,
     ),
   );

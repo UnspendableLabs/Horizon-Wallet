@@ -45,9 +45,13 @@ class HorizonTextField extends StatelessWidget {
           filled: true,
           fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
           labelText: label,
-          floatingLabelBehavior: floatingLabelBehavior ?? FloatingLabelBehavior.never,
+          floatingLabelBehavior:
+              floatingLabelBehavior ?? FloatingLabelBehavior.never,
           labelStyle: TextStyle(
-              fontWeight: FontWeight.normal, color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+              fontWeight: FontWeight.normal,
+              color: isDarkMode
+                  ? darkThemeInputLabelColor
+                  : lightThemeInputLabelColor),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
             borderSide: BorderSide.none,
@@ -66,6 +70,7 @@ class HorizoneTextFormField extends StatelessWidget {
   final String? hint;
   final TextEditingController? controller;
   final FocusNode? focusNode;
+  final Widget? suffix;
   final void Function(String)? onChanged;
   final void Function()? onEditingComplete;
   final String? Function(String?)? validator;
@@ -84,6 +89,7 @@ class HorizoneTextFormField extends StatelessWidget {
     this.floatingLabelBehavior,
     this.controller,
     this.focusNode,
+    this.suffix,
     this.onChanged,
     this.onEditingComplete,
     this.validator,
@@ -113,9 +119,14 @@ class HorizoneTextFormField extends StatelessWidget {
         filled: true,
         fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
         labelText: label,
-        floatingLabelBehavior: floatingLabelBehavior ?? FloatingLabelBehavior.never,
+        floatingLabelBehavior:
+            floatingLabelBehavior ?? FloatingLabelBehavior.never,
         labelStyle: TextStyle(
-            fontWeight: FontWeight.normal, color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+            fontWeight: FontWeight.normal,
+            color: isDarkMode
+                ? darkThemeInputLabelColor
+                : lightThemeInputLabelColor),
+        suffix: suffix,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide.none,

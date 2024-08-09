@@ -408,21 +408,12 @@ class AddressActions extends StatelessWidget {
                       showDialog(
                           context: context,
                           builder: (context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.75,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: ComposeSendPage(
-                                    dashboardActivityFeedBloc:
-                                        dashboardActivityFeedBloc,
-                                  ),
-                                ),
+                            return HorizonDialog(
+                              title: "Compose Send",
+                              body: ComposeSendPage(
+                                isDarkMode: isDarkTheme,
+                                dashboardActivityFeedBloc:
+                                    dashboardActivityFeedBloc,
                               ),
                             );
                           });
