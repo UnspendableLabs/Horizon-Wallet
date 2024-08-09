@@ -147,9 +147,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       const SizedBox(height: 16.0),
                       HorizoneTextFormField(
                         isDarkMode: widget.isDarkMode,
-                        controller: nameController,
+                        controller: UpperCaseTextEditingController(),
                         label: "Token name",
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        textCapitalization: TextCapitalization.characters,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a name for your asset';
@@ -184,8 +185,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       HorizoneTextFormField(
                         isDarkMode: widget.isDarkMode,
                         controller: descriptionController,
-                        label: 'Description',
+                        label: 'Description (optional)',
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        validator: (value) {
+                          // Allow empty values
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16.0),
                       HorizoneTextFormField(
@@ -226,9 +231,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           ),
                           const Row(
                             children: [
-                              SizedBox(
-                                  width:
-                                      30.0), // Width of the checkbox and some padding
+                              SizedBox(width: 30.0),
                               Expanded(
                                 child: Text(
                                   'Whether this asset is divisible or not. Defaults to true.',
@@ -256,9 +259,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           ),
                           const Row(
                             children: [
-                              SizedBox(
-                                  width:
-                                      30.0), // Width of the checkbox and some padding
+                              SizedBox(width: 30.0),
                               Expanded(
                                 child: Text(
                                   'Whether this issuance should lock supply of this asset forever. Defaults to false.',
@@ -287,9 +288,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           ),
                           const Row(
                             children: [
-                              SizedBox(
-                                  width:
-                                      30.0), // Width of the checkbox and some padding
+                              SizedBox(width: 30.0),
                               Expanded(
                                 child: Text(
                                   'Wether this issuance should reset any existing supply. Defaults to false.',
@@ -327,5 +326,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
         },
       );
     });
+  }
+}
+
+class UpperCaseTextEditingController extends TextEditingController {
+  @override
+  set value(TextEditingValue newValue) {
+    super.value = newValue.copyWith(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+      composing: newValue.composing,
+    );
   }
 }

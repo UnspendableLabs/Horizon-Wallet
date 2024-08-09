@@ -305,7 +305,7 @@ class AccountSelectionButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Icon(
+                const Icon(
                   Icons.account_balance_wallet_rounded,
                 ),
                 const SizedBox(width: 16.0),
@@ -317,12 +317,12 @@ class AccountSelectionButton extends StatelessWidget {
                             .name,
                         orElse: () => "Select Account",
                       ),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Spacer(),
-                Icon(
+                const Icon(
                   Icons.arrow_drop_down,
                 ),
               ],

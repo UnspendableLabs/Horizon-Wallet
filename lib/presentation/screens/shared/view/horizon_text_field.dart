@@ -73,6 +73,7 @@ class HorizoneTextFormField extends StatelessWidget {
   final bool? enableSuggestions;
   final bool? autocorrect;
   final TextInputType? keyboardType;
+  final TextCapitalization? textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
 
   const HorizoneTextFormField({
@@ -90,6 +91,7 @@ class HorizoneTextFormField extends StatelessWidget {
     this.enableSuggestions,
     this.autocorrect,
     this.keyboardType,
+    this.textCapitalization,
     this.inputFormatters,
   });
 
@@ -105,6 +107,7 @@ class HorizoneTextFormField extends StatelessWidget {
       enableSuggestions: enableSuggestions ?? false,
       autocorrect: autocorrect ?? false,
       keyboardType: keyboardType,
+      textCapitalization: textCapitalization ?? TextCapitalization.none,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         filled: true,
