@@ -18,6 +18,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -549,18 +550,15 @@ class _BalancesState extends State<Balances> {
                       showDialog(
                         context: context,
                         builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.3,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: QRCodeDialog(
-                                    key: Key(widget.accountUuid),
-                                    addresses: addresses),
-                              ),
+                          return HorizonDialog(
+                            title: "Receive",
+                            titleAlign: Alignment.centerLeft,
+                            includeBackButton: false,
+                            includeCloseButton: true,
+                            body: QRCodeDialog(
+                              isDarkTheme: isDarkTheme,
+                              key: Key(widget.accountUuid),
+                              addresses: addresses,
                             ),
                           );
                         },
@@ -682,9 +680,11 @@ class _BalancesState extends State<Balances> {
 }
 
 class QRCodeDialog extends StatefulWidget {
+  final bool isDarkTheme;
   final List<Address> addresses;
 
-  const QRCodeDialog({super.key, required this.addresses});
+  const QRCodeDialog(
+      {super.key, required this.isDarkTheme, required this.addresses});
 
   @override
   _QRCodeDialogState createState() => _QRCodeDialogState();
@@ -701,75 +701,161 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Receive',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 8.0),
         QrImageView(
+          dataModuleStyle: QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme,
+          ),
+          eyeStyle: QrEyeStyle(
+              eyeShape: QrEyeShape.square,
+              color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme),
           data: _selectedAddress,
           version: QrVersions.auto,
-          size: 200.0,
+          size: 230.0,
         ),
         const SizedBox(height: 16.0),
+        Divider(
+          color: widget.isDarkTheme
+              ? greyDarkThemeUnderlineColor
+              : greyLightThemeUnderlineColor,
+          thickness: 1.0,
+        ),
         LayoutBuilder(
           builder: (context, constraints) {
-            double fontSize = constraints.maxWidth * 0.04;
-
-            return Row(
-              children: [
-                if (widget.addresses.length > 1)
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _selectedAddress,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedAddress = newValue!;
-                          });
-                        },
-                        items: widget.addresses
-                            .map<DropdownMenuItem<String>>((Address address) {
-                          return DropdownMenuItem<String>(
-                            value: address.address,
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                address.address,
-                                style: TextStyle(fontSize: fontSize),
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                width: 500,
+                decoration: BoxDecoration(
+                  color: widget.isDarkTheme
+                      ? darkNavyDarkTheme
+                      : noBackgroundColor,
+                  borderRadius: BorderRadius.circular(10.0),
+                  border: widget.isDarkTheme
+                      ? Border.all(color: noBackgroundColor)
+                      : Border.all(color: greyLightThemeUnderlineColor),
+                ),
+                child: Row(
+                  children: [
+                    if (widget.addresses.length > 1)
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              dropdownColor: widget.isDarkTheme
+                                  ? darkNavyDarkTheme
+                                  : whiteLightTheme,
+                              style: TextStyle(
+                                  color: widget.isDarkTheme
+                                      ? darkThemeInputLabelColor
+                                      : lightThemeInputLabelColor),
+                              isExpanded: true,
+                              value: _selectedAddress,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedAddress = newValue!;
+                                });
+                              },
+                              items: widget.addresses
+                                  .map<DropdownMenuItem<String>>(
+                                      (Address address) {
+                                return DropdownMenuItem<String>(
+                                  value: address.address,
+                                  child: Text(
+                                    address.address,
+                                    style: const TextStyle(
+                                        overflow: TextOverflow.ellipsis,
+                                        fontSize: 16.0),
+                                  ),
+                                );
+                              }).toList(),
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: SelectableText(
+                            _selectedAddress,
+                            style: const TextStyle(
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                      ),
+                    Container(
+                      padding: const EdgeInsets.all(2.0),
+                      child: screenWidth < 768.0
+                          ? ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: _selectedAddress));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Address copied to clipboard')),
+                                );
+                              },
+                              child: const Icon(Icons.copy),
+                            )
+                          : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: _selectedAddress));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Address copied to clipboard')),
+                                );
+                              },
+                              child: SizedBox(
+                                height: 32.0,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.copy,
+                                        size: 14.0,
+                                        color: widget.isDarkTheme
+                                            ? darkThemeInputLabelColor
+                                            : lightThemeInputLabelColor),
+                                    const SizedBox(width: 4.0, height: 16.0),
+                                    Text("COPY",
+                                        style: TextStyle(
+                                            fontSize: 14.0,
+                                            color: widget.isDarkTheme
+                                                ? darkThemeInputLabelColor
+                                                : lightThemeInputLabelColor)),
+                                  ],
+                                ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
                     ),
-                  )
-                else
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: SelectableText(
-                        _selectedAddress,
-                        style: TextStyle(fontSize: fontSize),
-                      ),
-                    ),
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.copy),
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: _selectedAddress));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Address copied to clipboard')),
-                    );
-                  },
+                  ],
                 ),
-              ],
+              ),
             );
           },
         ),

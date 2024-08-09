@@ -4,11 +4,17 @@ import 'package:horizon/presentation/screens/shared/colors.dart';
 class HorizonDialog extends StatelessWidget {
   final String title;
   final Widget body;
+  final bool? includeBackButton;
+  final bool? includeCloseButton;
+  final Alignment? titleAlign;
 
   const HorizonDialog({
     super.key,
     required this.title,
     required this.body,
+    this.includeBackButton = true,
+    this.includeCloseButton = false,
+    this.titleAlign,
   });
 
   @override
@@ -17,7 +23,7 @@ class HorizonDialog extends StatelessWidget {
 
     return Dialog(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 700, maxHeight: 750),
+        constraints: const BoxConstraints(maxWidth: 675, maxHeight: 750),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -27,20 +33,22 @@ class HorizonDialog extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Stack(
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15.0, left: 10.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: () => Navigator.of(context).pop(),
+                    if (includeBackButton == true)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 15.0, left: 10.0),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
                         ),
                       ),
-                    ),
                     Align(
-                      alignment: Alignment.center,
+                      alignment: titleAlign ?? Alignment.center,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
+                        padding:
+                            const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
                         child: Text(
                           title,
                           style: TextStyle(
@@ -51,6 +59,18 @@ class HorizonDialog extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (includeCloseButton == true)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.only(top: 15.0, right: 10.0),
+                          child: IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -106,7 +126,7 @@ class HorizonDialogSubmitButton extends StatelessWidget {
 
 Widget _buildSeparator(bool isDarkTheme) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+    padding: const EdgeInsets.all(0.0),
     child: Divider(
       color: isDarkTheme
           ? greyDarkThemeUnderlineColor

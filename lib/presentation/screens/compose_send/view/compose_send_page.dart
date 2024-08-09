@@ -223,7 +223,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     children: [
                       Expanded(
                           // TODO: make his type of input it's own component ( e.g. BalanceInput )
-
                           child: Builder(builder: (context) {
                         return state.balancesState.maybeWhen(orElse: () {
                           return HorizoneTextFormField(
@@ -299,26 +298,30 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                   return const AssetDropdownLoading();
                                 }
 
-                                return AssetDropdown(
-                                  isDarkMode: widget.isDarkMode,
-                                  asset: asset,
-                                  balances: balances,
-                                  controller: assetController,
-                                  onSelected: (String? value) {
-                                    Balance? balance =
-                                        _getBalanceForSelectedAsset(
-                                            balances, value!);
+                                return SizedBox(
+                                  height:
+                                      48.0, // Match the height of the TextFormField
+                                  child: AssetDropdown(
+                                    isDarkMode: widget.isDarkMode,
+                                    asset: asset,
+                                    balances: balances,
+                                    controller: assetController,
+                                    onSelected: (String? value) {
+                                      Balance? balance =
+                                          _getBalanceForSelectedAsset(
+                                              balances, value!);
 
-                                    if (balance == null) {
-                                      throw Exception(
-                                          "invariant: No balance found for asset");
-                                    }
+                                      if (balance == null) {
+                                        throw Exception(
+                                            "invariant: No balance found for asset");
+                                      }
 
-                                    setState(() {
-                                      asset = value;
-                                      balance_ = balance;
-                                    });
-                                  },
+                                      setState(() {
+                                        asset = value;
+                                        balance_ = balance;
+                                      });
+                                    },
+                                  ),
                                 );
                               });
                         }),
