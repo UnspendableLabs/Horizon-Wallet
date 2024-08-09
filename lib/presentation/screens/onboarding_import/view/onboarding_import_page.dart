@@ -76,6 +76,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
           backgroundColor: scaffoldBackgroundColor,
           body: BlocListener<OnboardingImportBloc, OnboardingImportState>(
             listener: (context, state) async {
+              print('State: ${state.importState}');
               if (state.importState is ImportStateSuccess) {
                 final shell = context.read<ShellStateCubit>();
                 // reload shell to trigger redirect
@@ -164,179 +165,179 @@ class PasswordPrompt extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final inputBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
     final continueButtonBackgroundColor =
         isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Form(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(),
-                Text(
-                  'Please create a password',
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? mainTextWhite : mainTextBlack),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Spacer(),
+              Text(
+                'Please create a password',
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? mainTextWhite : mainTextBlack),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Container(
+                constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width / 3),
+                child: const Text(
+                  'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
+                  style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
-                Container(
-                  constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width / 3),
-                  child: const Text(
-                    'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  constraints: const BoxConstraints(
-                      minHeight: 48, minWidth: double.infinity),
-                  child: Center(
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 3,
-                      child: HorizonTextField(
-                        isDarkMode: isDarkMode,
-                        label: 'Password',
-                        controller: _passwordController,
-                        obscureText: true,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        onChanged: (value) {
-                          context
-                              .read<OnboardingImportBloc>()
-                              .add(PasswordChanged(password: value));
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  constraints: const BoxConstraints(
-                      minHeight: 48, minWidth: double.infinity),
-                  child: Center(
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 3,
-                      child: HorizonTextField(
-                        isDarkMode: isDarkMode,
-                        label: 'Confirm Password',
-                        controller: _passwordConfirmationController,
-                        obscureText: true,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        onChanged: (value) {
-                          context.read<OnboardingImportBloc>().add(
-                              PasswordConfirmationChanged(
-                                  passwordConfirmation: value));
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                _state.importState is ImportStateError
-                    ? Text(_state.importState.message)
-                    : const SizedBox.shrink(),
-                _state.passwordError != null
-                    ? Text(_state.passwordError!)
-                    : const SizedBox.shrink(),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
+              ),
+              const SizedBox(height: 32),
+              Form(
+                child: Column(
+                  children: [
+                    Container(
+                      constraints: const BoxConstraints(
+                          minHeight: 48, minWidth: double.infinity),
+                      child: Center(
                         child: SizedBox(
-                          width: 150,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              overlayColor: noBackgroundColor,
-                              elevation: 0,
-                              backgroundColor: cancelButtonBackgroundColor,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 32, vertical: 16), // Button size
-                              textStyle: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ), // Text style
-                            ),
-                            onPressed: () {
-                              final shell = context.read<ShellStateCubit>();
-                              shell.onOnboarding();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text('CANCEL',
-                                  style: TextStyle(
-                                      color: isDarkMode
-                                          ? greyDarkTheme
-                                          : mainTextBlack)),
+                          height: 150,
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                HorizonTextField(
+                                  isDarkMode: isDarkMode,
+                                  label: 'Password',
+                                  controller: _passwordController,
+                                  obscureText: true,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
+                                  onChanged: (value) {
+                                    context
+                                        .read<OnboardingImportBloc>()
+                                        .add(PasswordChanged(password: value));
+                                  },
+                                ),
+                                HorizonTextField(
+                                  isDarkMode: isDarkMode,
+                                  label: 'Confirm Password',
+                                  controller: _passwordConfirmationController,
+                                  obscureText: true,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
+                                  onChanged: (value) {
+                                    context.read<OnboardingImportBloc>().add(
+                                        PasswordConfirmationChanged(
+                                            passwordConfirmation: value));
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: continueButtonBackgroundColor,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 32, vertical: 16), // Button size
-                              textStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500), // Text style
-                            ),
-                            onPressed: () {
-                              if (_passwordController.text == '' ||
-                                  _passwordConfirmationController.text == '') {
-                                context.read<OnboardingImportBloc>().add(
-                                    PasswordError(
-                                        error: 'Password cannot be empty'));
-                              } else if (_passwordController.text !=
-                                  _passwordConfirmationController.text) {
-                                context.read<OnboardingImportBloc>().add(
-                                    PasswordError(
-                                        error: 'Passwords do not match'));
-                              } else {
-                                context
-                                    .read<OnboardingImportBloc>()
-                                    .add(ImportWallet());
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'LOGIN',
+                    ),
+                  ],
+                ),
+              ),
+              _state.passwordError != null
+                  ? Text(_state.passwordError!)
+                  : const Text(""),
+              const Spacer(),
+              if (isSmallScreen) const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: SizedBox(
+                        width: isSmallScreen ? double.infinity : 150,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            overlayColor: noBackgroundColor,
+                            elevation: 0,
+                            backgroundColor: cancelButtonBackgroundColor,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16), // Button size
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ), // Text style
+                          ),
+                          onPressed: () {
+                            final shell = context.read<ShellStateCubit>();
+                            shell.onOnboarding();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('CANCEL',
                                 style: TextStyle(
                                     color: isDarkMode
-                                        ? neonBlueDarkTheme
-                                        : mainTextWhite),
-                              ),
+                                        ? greyDarkTheme
+                                        : mainTextBlack)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: SizedBox(
+                        width: isSmallScreen ? double.infinity : 250,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: continueButtonBackgroundColor,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16),
+                            textStyle: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w500),
+                          ),
+                          onPressed: () {
+                            if (_passwordController.text == '' ||
+                                _passwordConfirmationController.text == '') {
+                              context.read<OnboardingImportBloc>().add(
+                                  PasswordError(
+                                      error: 'Password cannot be empty'));
+                            } else if (_passwordController.text !=
+                                _passwordConfirmationController.text) {
+                              context.read<OnboardingImportBloc>().add(
+                                  PasswordError(
+                                      error: 'Passwords do not match'));
+                            } else {
+                              print('Importing wallet');
+                              context
+                                  .read<OnboardingImportBloc>()
+                                  .add(ImportWallet());
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'LOGIN',
+                              style: TextStyle(
+                                  color: isDarkMode
+                                      ? neonBlueDarkTheme
+                                      : mainTextWhite),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

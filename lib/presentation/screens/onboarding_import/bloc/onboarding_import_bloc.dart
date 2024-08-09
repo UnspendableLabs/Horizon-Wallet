@@ -99,6 +99,7 @@ class OnboardingImportBloc
     });
 
     on<ImportWallet>((event, emit) async {
+      print('Importing wallet bloc');
       emit(state.copyWith(importState: ImportStateLoading()));
       try {
         switch (state.importFormat) {
@@ -107,7 +108,7 @@ class OnboardingImportBloc
                 await walletService.deriveRoot(state.mnemonic, state.password!);
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
-
+            print('Decrypted priv key: $decryptedPrivKey');
             //m/84'/1'/0'/0
             Account account0 = Account(
               name: 'ACCOUNT 0',
@@ -118,6 +119,7 @@ class OnboardingImportBloc
               uuid: uuid.v4(),
               importFormat: ImportFormat.segwit,
             );
+            print('Account 0: $account0');
 
             List<Address> addresses =
                 await addressService.deriveAddressSegwitRange(

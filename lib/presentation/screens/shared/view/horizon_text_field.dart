@@ -32,6 +32,7 @@ class HorizonTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // the use of Expanded here requires this text field to be a child of a column, row,  or flex widget
     return Expanded(
       child: TextField(
         controller: controller,
