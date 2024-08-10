@@ -116,7 +116,7 @@ class AppRouter {
               //   GoRoute(
               //     path: "/compose/issuance",
               //     builder: (context, state) {
-              //       return const ComposeIssuancePage(isDarkMode: false);
+              //       return const ComposeIssuancePage();
               //     },
               //   ),
               // ]),
