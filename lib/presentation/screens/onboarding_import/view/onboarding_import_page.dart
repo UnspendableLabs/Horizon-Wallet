@@ -304,33 +304,23 @@ class PasswordPrompt extends StatelessWidget {
                                 fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                           onPressed: () {
-                            if (_passwordController.text == '' ||
-                                _passwordConfirmationController.text == '') {
-                              context.read<OnboardingImportBloc>().add(
-                                  PasswordError(
-                                      error: 'Password cannot be empty'));
-                            } else if (_passwordController.text !=
-                                _passwordConfirmationController.text) {
-                              context.read<OnboardingImportBloc>().add(
-                                  PasswordError(
-                                      error: 'Passwords do not match'));
+                            if (_passwordController.text == '' || _passwordConfirmationController.text == '') {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Password cannot be empty'));
+                            } else if (_passwordController.text != _passwordConfirmationController.text) {
+                              context.read<OnboardingImportBloc>().add(PasswordError(error: 'Passwords do not match'));
                             } else {
-                              print('Importing wallet');
-                              context
-                                  .read<OnboardingImportBloc>()
-                                  .add(ImportWallet());
+                              context.read<OnboardingImportBloc>().add(ImportWallet());
                             }
                           },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'LOGIN',
-                              style: TextStyle(
-                                  color: isDarkMode
-                                      ? neonBlueDarkTheme
-                                      : mainTextWhite),
-                            ),
-                          ),
+                          child: _state.importState is ImportStateLoading
+                              ? const CircularProgressIndicator()
+                              : Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'LOGIN',
+                                    style: TextStyle(color: isDarkMode ? neonBlueDarkTheme : mainTextWhite),
+                                  ),
+                                ),
                         ),
                       ),
                     ),
