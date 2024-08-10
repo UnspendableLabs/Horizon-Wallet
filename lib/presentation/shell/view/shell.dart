@@ -60,7 +60,6 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
     final shell = context.watch<ShellStateCubit>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     final backgroundColor =
         isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
@@ -258,6 +257,8 @@ class Shell extends StatelessWidget {
     final selectedColor =
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? greyDarkTheme : Colors.grey;
+
+    print('IN THE SHELL: ${shell.state}');
 
     return Container(
       decoration: BoxDecoration(

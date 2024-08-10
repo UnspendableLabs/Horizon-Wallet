@@ -15,6 +15,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       : super(const ShellState.initial());
 
   void initialize() async {
+    print('initializing');
     emit(const ShellState.loading());
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
@@ -26,7 +27,7 @@ class ShellStateCubit extends Cubit<ShellState> {
 
       List<Account> accounts =
           await accountRepository.getAccountsByWalletUuid(wallet.uuid);
-
+      print('EMITTING SHELL STATE SUCCESS');
       emit(ShellState.success(ShellStateSuccess(
           redirect: true,
           wallet: wallet,
