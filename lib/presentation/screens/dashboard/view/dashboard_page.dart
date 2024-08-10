@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
@@ -12,8 +13,12 @@ import 'package:horizon/presentation/screens/compose_send/view/compose_send_page
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
+import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 String balancesStateToString(BalancesState state) {
   return state.when(
@@ -82,151 +87,327 @@ class _DashboardPage_State extends State<_DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     // Define background colors based on theme
     Color backgroundColor =
         isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
     return BlocBuilder<AddressesBloc, AddressesState>(
-        builder: (context, state) {
-      return state.when(
-        initial: () => const Text("initial"),
-        loading: () => const CircularProgressIndicator(),
-        error: (error) => Text("Error: $error"),
-        success: (addresses) => Padding(
-          padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(30.0),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  AddressActions(
-                    isDarkTheme: isDarkTheme,
-                  ),
-                  BlocProvider(
-                    create: (context) =>
-                        BalancesBloc(accountUuid: widget.accountUuid),
-                    child: BalancesDisplay(
+      builder: (context, state) {
+        return state.when(
+          initial: () => const Text("initial"),
+          loading: () => const CircularProgressIndicator(),
+          error: (error) => Text("Error: $error"),
+          success: (addresses) => Padding(
+            padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    if (screenWidth < 768)
+                      AccountSelectionButton(
+                        isDarkTheme: isDarkTheme,
+                        onPressed: () => showAccountList(context),
+                      ),
+                    AddressActions(
                       isDarkTheme: isDarkTheme,
-                      addresses: addresses,
-                      accountUuid: widget.accountUuid,
                     ),
-                  ),
-                ],
+                    BlocProvider(
+                      create: (context) =>
+                          BalancesBloc(accountUuid: widget.accountUuid),
+                      child: BalancesDisplay(
+                        isDarkTheme: isDarkTheme,
+                        addresses: addresses,
+                        accountUuid: widget.accountUuid,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+void showAccountList(BuildContext context) {
+  const double pagePadding = 16.0;
+  const double bottomPaddingForButton = 150.0;
+
+  final textTheme = Theme.of(context).textTheme;
+
+  SliverWoltModalSheetPage page1(
+    BuildContext modalSheetContext,
+    TextTheme textTheme,
+  ) {
+    return WoltModalSheetPage(
+      isTopBarLayerAlwaysVisible: true,
+      topBarTitle: Text('Add an account', style: textTheme.titleSmall),
+      trailingNavBarWidget: IconButton(
+        padding: const EdgeInsets.all(pagePadding),
+        icon: const Icon(Icons.close),
+        onPressed: Navigator.of(modalSheetContext).pop,
+      ),
+      child: const Padding(
+          padding: EdgeInsets.fromLTRB(
+            pagePadding,
+            pagePadding,
+            pagePadding,
+            bottomPaddingForButton,
+          ),
+          child: AddAccountForm()),
+    );
+  }
+
+  WoltModalSheet.show<void>(
+    context: context,
+    pageListBuilder: (modalSheetContext) {
+      return [
+        context.read<ShellStateCubit>().state.maybeWhen(
+              success: (state) => WoltModalSheetPage(
+                isTopBarLayerAlwaysVisible: true,
+                topBarTitle:
+                    Text('Select an account', style: textTheme.titleSmall),
+                trailingNavBarWidget: IconButton(
+                  padding: const EdgeInsets.all(pagePadding),
+                  icon: const Icon(Icons.close),
+                  onPressed: Navigator.of(modalSheetContext).pop,
+                ),
+                child: SizedBox(
+                  height: 400,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: state.accounts.length,
+                          itemBuilder: (context, index) {
+                            final account = state.accounts[index];
+                            final isSelected =
+                                account.uuid == state.currentAccountUuid;
+                            return ListTile(
+                              title: Text(account.name),
+                              selected: isSelected,
+                              onTap: () {
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAccountChanged(account);
+                                Navigator.of(modalSheetContext).pop();
+                                GoRouter.of(context).go('/dashboard');
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            WoltModalSheet.show<void>(
+                              context: context,
+                              pageListBuilder: (modalSheetContext) {
+                                final textTheme = Theme.of(context).textTheme;
+                                return [page1(modalSheetContext, textTheme)];
+                              },
+                              onModalDismissedWithBarrierTap: () {
+                                print("dismissed with barrier tap");
+                              },
+                              modalTypeBuilder: (context) {
+                                return WoltModalType.bottomSheet;
+                              },
+                            );
+                          },
+                          child: const Text("Add Account"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              orElse: () => SliverWoltModalSheetPage(),
+            ),
+      ];
+    },
+    onModalDismissedWithBarrierTap: () {
+      print("dismissed with barrier tap");
+    },
+    modalTypeBuilder: (context) {
+      final size = MediaQuery.of(context).size.width;
+      if (size < 768.0) {
+        return WoltModalType.bottomSheet;
+      } else {
+        return WoltModalType.dialog;
+      }
+    },
+  );
+}
+
+class AccountSelectionButton extends StatelessWidget {
+  final bool isDarkTheme;
+  final VoidCallback onPressed;
+
+  const AccountSelectionButton({
+    super.key,
+    required this.isDarkTheme,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 70),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+          ),
+          onPressed: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.account_balance_wallet_rounded,
+                ),
+                const SizedBox(width: 16.0),
+                Text(
+                  context.read<ShellStateCubit>().state.maybeWhen(
+                        success: (state) => state.accounts
+                            .firstWhere((account) =>
+                                account.uuid == state.currentAccountUuid)
+                            .name,
+                        orElse: () => "Select Account",
+                      ),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                const Icon(
+                  Icons.arrow_drop_down,
+                ),
+              ],
+            ),
+          ),
         ),
-      );
-    });
+      ),
+    );
   }
 }
 
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
-  const AddressActions({super.key, required this.isDarkTheme});
+  const AddressActions({
+    super.key,
+    required this.isDarkTheme,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      LayoutBuilder(
-        builder: (context, constraints) {
-          double buttonWidth = (constraints.maxWidth - 16) /
-              2; // Adjust width to take up half of the row minus padding
-
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: buttonWidth,
-                height: 75,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 4.0, 4.0, 4.0),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: SizedBox(
+                  height: 65,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
+                        borderRadius: BorderRadius.circular(24.0),
                       ),
                     ),
                     onPressed: () {
                       showDialog(
                           context: context,
                           builder: (context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: ComposeIssuancePage(),
-                                ),
+                            return HorizonDialog(
+                              title: "Compose Issuance",
+                              body: ComposeIssuancePage(
+                                isDarkMode: isDarkTheme,
                               ),
                             );
                           });
                     },
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add),
-                        SizedBox(width: 8.0),
-                        Text("ISSUE"),
-                      ],
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add),
+                          SizedBox(width: 8.0),
+                          Text("ISSUE"),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(
-                width: buttonWidth,
-                height: 75,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 4.0, 4.0, 4.0),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: SizedBox(
+                  height: 65,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
+                        borderRadius: BorderRadius.circular(24.0),
                       ),
                     ),
                     onPressed: () {
                       showDialog(
                           context: context,
                           builder: (context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.75,
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: ComposeSendPage(),
-                                ),
+                            return HorizonDialog(
+                              title: "Compose Send",
+                              body: ComposeSendPage(
+                                isDarkMode: isDarkTheme,
                               ),
                             );
                           });
                     },
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.send),
-                        SizedBox(width: 8.0),
-                        Text("SEND"),
-                      ],
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.send),
+                          SizedBox(width: 8.0),
+                          Text("SEND"),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     ]);
   }
@@ -316,7 +497,7 @@ class _BalancesState extends State<Balances> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 16.0),
       child: Container(
-        height: height,
+        // height: height,
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(30.0),
@@ -341,18 +522,15 @@ class _BalancesState extends State<Balances> {
                       showDialog(
                         context: context,
                         builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.3,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: QRCodeDialog(
-                                    key: Key(widget.accountUuid),
-                                    addresses: addresses),
-                              ),
+                          return HorizonDialog(
+                            title: "Receive",
+                            titleAlign: Alignment.centerLeft,
+                            includeBackButton: false,
+                            includeCloseButton: true,
+                            body: QRCodeDialog(
+                              isDarkTheme: isDarkTheme,
+                              key: Key(widget.accountUuid),
+                              addresses: addresses,
                             ),
                           );
                         },
@@ -362,7 +540,7 @@ class _BalancesState extends State<Balances> {
                 ],
               ),
             ),
-            Expanded(child: _balanceList(result)),
+            Container(child: _balanceList(result)),
             if (_isExpanded)
               Positioned(
                 bottom: 0,
@@ -438,7 +616,10 @@ class _BalancesState extends State<Balances> {
         if (balanceWidgets.length > 6 && !_isExpanded) {
           return Column(
             children: [
-              ...balanceWidgets.take(6),
+              ListView(
+                shrinkWrap: true,
+                children: balanceWidgets.take(6).toList(),
+              ),
               FractionallySizedBox(
                 widthFactor: 0.5,
                 child: ElevatedButton(
@@ -460,6 +641,7 @@ class _BalancesState extends State<Balances> {
           );
         } else {
           return ListView(
+            shrinkWrap: true,
             children: balanceWidgets,
           );
         }
@@ -470,9 +652,11 @@ class _BalancesState extends State<Balances> {
 }
 
 class QRCodeDialog extends StatefulWidget {
+  final bool isDarkTheme;
   final List<Address> addresses;
 
-  const QRCodeDialog({super.key, required this.addresses});
+  const QRCodeDialog(
+      {super.key, required this.isDarkTheme, required this.addresses});
 
   @override
   _QRCodeDialogState createState() => _QRCodeDialogState();
@@ -489,75 +673,161 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Receive',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 8.0),
         QrImageView(
+          dataModuleStyle: QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme,
+          ),
+          eyeStyle: QrEyeStyle(
+              eyeShape: QrEyeShape.square,
+              color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme),
           data: _selectedAddress,
           version: QrVersions.auto,
-          size: 200.0,
+          size: 230.0,
         ),
         const SizedBox(height: 16.0),
+        Divider(
+          color: widget.isDarkTheme
+              ? greyDarkThemeUnderlineColor
+              : greyLightThemeUnderlineColor,
+          thickness: 1.0,
+        ),
         LayoutBuilder(
           builder: (context, constraints) {
-            double fontSize = constraints.maxWidth * 0.04;
-
-            return Row(
-              children: [
-                if (widget.addresses.length > 1)
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _selectedAddress,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedAddress = newValue!;
-                          });
-                        },
-                        items: widget.addresses
-                            .map<DropdownMenuItem<String>>((Address address) {
-                          return DropdownMenuItem<String>(
-                            value: address.address,
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                address.address,
-                                style: TextStyle(fontSize: fontSize),
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                width: 500,
+                decoration: BoxDecoration(
+                  color: widget.isDarkTheme
+                      ? darkNavyDarkTheme
+                      : noBackgroundColor,
+                  borderRadius: BorderRadius.circular(10.0),
+                  border: widget.isDarkTheme
+                      ? Border.all(color: noBackgroundColor)
+                      : Border.all(color: greyLightThemeUnderlineColor),
+                ),
+                child: Row(
+                  children: [
+                    if (widget.addresses.length > 1)
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              dropdownColor: widget.isDarkTheme
+                                  ? darkNavyDarkTheme
+                                  : whiteLightTheme,
+                              style: TextStyle(
+                                  color: widget.isDarkTheme
+                                      ? darkThemeInputLabelColor
+                                      : lightThemeInputLabelColor),
+                              isExpanded: true,
+                              value: _selectedAddress,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedAddress = newValue!;
+                                });
+                              },
+                              items: widget.addresses
+                                  .map<DropdownMenuItem<String>>(
+                                      (Address address) {
+                                return DropdownMenuItem<String>(
+                                  value: address.address,
+                                  child: Text(
+                                    address.address,
+                                    style: const TextStyle(
+                                        overflow: TextOverflow.ellipsis,
+                                        fontSize: 16.0),
+                                  ),
+                                );
+                              }).toList(),
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: SelectableText(
+                            _selectedAddress,
+                            style: const TextStyle(
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                      ),
+                    Container(
+                      padding: const EdgeInsets.all(2.0),
+                      child: screenWidth < 768.0
+                          ? ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: _selectedAddress));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Address copied to clipboard')),
+                                );
+                              },
+                              child: const Icon(Icons.copy),
+                            )
+                          : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: _selectedAddress));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Address copied to clipboard')),
+                                );
+                              },
+                              child: SizedBox(
+                                height: 32.0,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.copy,
+                                        size: 14.0,
+                                        color: widget.isDarkTheme
+                                            ? darkThemeInputLabelColor
+                                            : lightThemeInputLabelColor),
+                                    const SizedBox(width: 4.0, height: 16.0),
+                                    Text("COPY",
+                                        style: TextStyle(
+                                            fontSize: 14.0,
+                                            color: widget.isDarkTheme
+                                                ? darkThemeInputLabelColor
+                                                : lightThemeInputLabelColor)),
+                                  ],
+                                ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
                     ),
-                  )
-                else
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: SelectableText(
-                        _selectedAddress,
-                        style: TextStyle(fontSize: fontSize),
-                      ),
-                    ),
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.copy),
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: _selectedAddress));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Address copied to clipboard')),
-                    );
-                  },
+                  ],
                 ),
-              ],
+              ),
             );
           },
         ),

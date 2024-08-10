@@ -54,12 +54,10 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
             vertical: screenSize.height / 16,
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? mediumNavyDarkTheme
-        : lightBlueLightTheme;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkTheme
-        : whiteLightTheme;
+    final backdropBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
+    final scaffoldBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
 
     return Container(
       decoration: BoxDecoration(
@@ -162,16 +160,14 @@ class PasswordPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkTheme
-        : whiteLightTheme;
+    final scaffoldBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final inputBackgroundColor =
         isDarkMode ? darkThemeInputColor : lightThemeInputColor;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor = isDarkMode
-        ? mediumNavyDarkTheme
-        : royalBlueLightTheme;
+    final continueButtonBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -300,7 +296,9 @@ class PasswordPrompt extends StatelessWidget {
                           padding: const EdgeInsets.all(8.0),
                           child: Text('CANCEL',
                               style: TextStyle(
-                                  color: isDarkMode ? greyDarkTheme : mainTextBlack)),
+                                  color: isDarkMode
+                                      ? greyDarkTheme
+                                      : mainTextBlack)),
                         ),
                       ),
                     ),
@@ -384,14 +382,12 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkTheme
-        : whiteLightTheme;
+    final scaffoldBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor = isDarkMode
-        ? mediumNavyDarkTheme
-        : royalBlueLightTheme;
+    final continueButtonBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -432,9 +428,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text('CANCEL',
                         style: TextStyle(
-                            color: isDarkMode
-                                ? greyDarkTheme
-                                : mainTextBlack)),
+                            color: isDarkMode ? greyDarkTheme : mainTextBlack)),
                   ),
                 ),
                 SizedBox(
@@ -462,9 +456,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                       child: Text(
                         'CONTINUE',
                         style: TextStyle(
-                            color: isDarkMode
-                                ? neonBlueDarkTheme
-                                : mainTextWhite),
+                            color:
+                                isDarkMode ? neonBlueDarkTheme : mainTextWhite),
                       ),
                     ),
                   ),

@@ -21,16 +21,21 @@ class HorizonDropdownMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dropdownBackgroundColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
+    final dropdownBackgroundColor =
+        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
 
     return InputDecorator(
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+        labelStyle: TextStyle(
+            color: isDarkMode
+                ? darkThemeInputLabelColor
+                : lightThemeInputLabelColor),
         floatingLabelBehavior: FloatingLabelBehavior.auto,
         filled: true,
         fillColor: dropdownBackgroundColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Adjust padding here
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12.0, vertical: 8.0), // Adjust padding here
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide.none,
@@ -49,14 +54,16 @@ class HorizonDropdownMenu extends StatelessWidget {
   }
 }
 
-DropdownMenuItem<String> buildDropdownMenuItem(String value, String description) {
+DropdownMenuItem<String> buildDropdownMenuItem(
+    String value, String description) {
   return DropdownMenuItem<String>(
     value: value,
     child: MouseRegion(
       onEnter: (_) {},
       onExit: (_) {},
       onHover: (_) {},
-      child: Text(description, style: const TextStyle(fontWeight: FontWeight.normal)),
+      child: Text(description,
+          style: const TextStyle(fontWeight: FontWeight.normal)),
     ),
   );
 }

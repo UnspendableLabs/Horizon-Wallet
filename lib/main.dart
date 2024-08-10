@@ -11,8 +11,6 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
-import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
@@ -107,21 +105,21 @@ class AppRouter {
                   )
                 ],
               ),
-              StatefulShellBranch(routes: [
-                GoRoute(
-                    path: "/compose/send",
-                    builder: (context, state) {
-                      return const ComposeSendPage();
-                    })
-              ]),
-              StatefulShellBranch(routes: [
-                GoRoute(
-                  path: "/compose/issuance",
-                  builder: (context, state) {
-                    return const ComposeIssuancePage();
-                  },
-                ),
-              ]),
+              // StatefulShellBranch(routes: [
+              //   GoRoute(
+              //       path: "/compose/send",
+              //       builder: (context, state) {
+              //         return const ComposeSendPage();
+              //       })
+              // ]),
+              // StatefulShellBranch(routes: [
+              //   GoRoute(
+              //     path: "/compose/issuance",
+              //     builder: (context, state) {
+              //       return const ComposeIssuancePage(isDarkMode: false);
+              //     },
+              //   ),
+              // ]),
               StatefulShellBranch(
                 routes: [
                   GoRoute(
@@ -217,7 +215,8 @@ class MyApp extends StatelessWidget {
   final ThemeData lightTheme = ThemeData(
     // define a color scheme so it doesn't display flutter default purples
     brightness: Brightness.light,
-    appBarTheme: const AppBarTheme(backgroundColor: whiteLightTheme, scrolledUnderElevation: 0.0),
+    appBarTheme: const AppBarTheme(
+        backgroundColor: whiteLightTheme, scrolledUnderElevation: 0.0),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(227, 237, 254, 1),

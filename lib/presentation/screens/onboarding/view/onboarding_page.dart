@@ -20,15 +20,12 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? mediumNavyDarkTheme
-        : lightBlueLightTheme;
-    final leftSideBackgroundColor = isDarkMode
-        ? lightNavyDarkTheme
-        : royalBlueLightTheme;
-    final rightSideBackgroundColor = isDarkMode
-        ? darkNavyDarkTheme
-        : whiteLightTheme;
+    final backdropBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
+    final leftSideBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : royalBlueLightTheme;
+    final rightSideBackgroundColor =
+        isDarkMode ? darkNavyDarkTheme : whiteLightTheme;
 
     return Scaffold(
       backgroundColor: backdropBackgroundColor,
