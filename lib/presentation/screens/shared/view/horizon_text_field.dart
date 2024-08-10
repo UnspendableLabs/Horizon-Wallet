@@ -14,6 +14,7 @@ class HorizonTextField extends StatelessWidget {
   final bool? obscureText;
   final bool? enableSuggestions;
   final bool? autocorrect;
+  final bool? enabled;
 
   const HorizonTextField({
     super.key,
@@ -28,6 +29,7 @@ class HorizonTextField extends StatelessWidget {
     this.obscureText,
     this.enableSuggestions,
     this.autocorrect,
+    this.enabled,
   });
 
   @override
@@ -42,6 +44,7 @@ class HorizonTextField extends StatelessWidget {
         obscureText: obscureText ?? false,
         enableSuggestions: enableSuggestions ?? false,
         autocorrect: autocorrect ?? false,
+        enabled: enabled ?? true,
         decoration: InputDecoration(
           filled: true,
           fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
@@ -64,7 +67,7 @@ class HorizonTextField extends StatelessWidget {
   }
 }
 
-class HorizoneTextFormField extends StatelessWidget {
+class HorizonTextFormField extends StatelessWidget {
   final bool isDarkMode;
   final String? label;
   final FloatingLabelBehavior? floatingLabelBehavior;
@@ -81,8 +84,10 @@ class HorizoneTextFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextCapitalization? textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
+  final bool? enabled;
+  final Color? fillColor;
 
-  const HorizoneTextFormField({
+  const HorizonTextFormField({
     super.key,
     required this.isDarkMode,
     this.label,
@@ -100,6 +105,8 @@ class HorizoneTextFormField extends StatelessWidget {
     this.keyboardType,
     this.textCapitalization,
     this.inputFormatters,
+    this.enabled,
+    this.fillColor,
   });
 
   @override
@@ -107,6 +114,7 @@ class HorizoneTextFormField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
+      enabled: enabled ?? true,
       onChanged: onChanged,
       onEditingComplete: onEditingComplete,
       validator: validator,
@@ -118,7 +126,8 @@ class HorizoneTextFormField extends StatelessWidget {
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         filled: true,
-        fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+        fillColor: fillColor ??
+            (isDarkMode ? darkThemeInputColor : lightThemeInputColor),
         labelText: label,
         floatingLabelBehavior:
             floatingLabelBehavior ?? FloatingLabelBehavior.never,

@@ -2,10 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+
+SliverWoltModalSheetPage addAccountModal(
+  BuildContext modalSheetContext,
+  TextTheme textTheme,
+  bool isDarkTheme,
+) {
+  const double pagePadding = 16.0;
+
+  return WoltModalSheetPage(
+    backgroundColor: isDarkTheme
+        ? dialogBackgroundColorDarkTheme
+        : dialogBackgroundColorLightTheme,
+    isTopBarLayerAlwaysVisible: true,
+    topBarTitle: Text('Add an account',
+        style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            color: isDarkTheme ? mainTextWhite : mainTextBlack)),
+    trailingNavBarWidget: IconButton(
+      padding: const EdgeInsets.all(pagePadding),
+      icon: const Icon(Icons.close),
+      onPressed: Navigator.of(modalSheetContext).pop,
+    ),
+    child: const Padding(
+        padding: EdgeInsets.fromLTRB(
+          pagePadding,
+          50,
+          pagePadding,
+          pagePadding,
+        ),
+        child: AddAccountForm()),
+  );
+}
 
 final validAccount = RegExp(r"^\d\'$");
 
@@ -94,23 +130,20 @@ class _AddAccountFormState extends State<AddAccountForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            TextFormField(
-              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+            HorizonTextFormField(
+              fillColor: noBackgroundColor,
               controller: TextEditingController(text: newAccountPath),
-              decoration: InputDecoration(
-                  labelText: "Account Path:",
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                  labelStyle: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black)),
-              enabled: false, // This makes the input field disabled
+              isDarkMode: isDarkMode,
+              label: "Account Path:",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              enabled: false,
             ),
             const SizedBox(height: 16.0), // Spacing between inputs
-            TextFormField(
+            HorizonTextFormField(
               controller: nameController,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Name",
-                  floatingLabelBehavior: FloatingLabelBehavior.always),
+              isDarkMode: isDarkMode,
+              label: "Name:",
+              floatingLabelBehavior: FloatingLabelBehavior.auto,
               validator: (String? value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a name for your account';
@@ -120,15 +153,13 @@ class _AddAccountFormState extends State<AddAccountForm> {
             ),
 
             const SizedBox(height: 16.0), // Spacing between inputs
-            TextFormField(
+            HorizonTextFormField(
               controller: passwordController,
               obscureText: true,
               enableSuggestions: false,
               autocorrect: false,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Password',
-                  floatingLabelBehavior: FloatingLabelBehavior.always),
+              isDarkMode: isDarkMode,
+              label: 'Password',
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Required';
@@ -138,50 +169,76 @@ class _AddAccountFormState extends State<AddAccountForm> {
               },
             ),
             const SizedBox(height: 16.0), // Spacing between inputs
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize:
-                    const Size(120, 48), // Ensures button doesn't resize
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: Divider(
+                      color: isDarkMode
+                          ? greyDarkThemeUnderlineColor
+                          : greyLightThemeUnderlineColor,
+                      thickness: 1.0,
+                    ),
+                  ),
+                  Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 350),
+                        child: SizedBox(
+                          height: 45,
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: () {
+                              // Validate will return true if the form is valid, or false if
+                              // the form is invalid.
+                              if (_formKey.currentState!.validate()) {
+                                if (state == const RemoteDataState.loading()) {
+                                  return;
+                                }
+
+                                // get name field from form
+
+                                String name = nameController.text;
+                                String purpose =
+                                    currentHighestIndexAccount.purpose;
+                                String coinType =
+                                    currentHighestIndexAccount.coinType;
+                                String accountIndex = "$newAccountIndex";
+                                String walletUuid =
+                                    currentHighestIndexAccount.walletUuid;
+                                String password = passwordController.text;
+
+                                context.read<AccountFormBloc>().add(Submit(
+                                    name: name,
+                                    purpose: purpose,
+                                    coinType: coinType,
+                                    accountIndex: "$accountIndex'",
+                                    walletUuid: walletUuid,
+                                    password: password,
+                                    importFormat: currentHighestIndexAccount
+                                        .importFormat));
+                                Navigator.of(context).pop();
+                                // return to dashboard if modalSheetContext is not null
+                                // this will be the case on smaller screens to close the wolt bottom sheet
+                                if (widget.modalSheetContext != null) {
+                                  Navigator.of(widget.modalSheetContext!).pop();
+                                }
+                              }
+                            },
+                            child: state == const RemoteDataState.loading()
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator())
+                                : const Text('Submit'),
+                          ),
+                        ),
+                      ))
+                ],
               ),
-              onPressed: () {
-                // Validate will return true if the form is valid, or false if
-                // the form is invalid.
-                if (_formKey.currentState!.validate()) {
-                  if (state == const RemoteDataState.loading()) {
-                    return;
-                  }
-
-                  // get name field from form
-
-                  String name = nameController.text;
-                  String purpose = currentHighestIndexAccount.purpose;
-                  String coinType = currentHighestIndexAccount.coinType;
-                  String accountIndex = "$newAccountIndex";
-                  String walletUuid = currentHighestIndexAccount.walletUuid;
-                  String password = passwordController.text;
-
-                  context.read<AccountFormBloc>().add(Submit(
-                      name: name,
-                      purpose: purpose,
-                      coinType: coinType,
-                      accountIndex: "$accountIndex'",
-                      walletUuid: walletUuid,
-                      password: password,
-                      importFormat: currentHighestIndexAccount.importFormat));
-                  Navigator.of(context).pop();
-                  // return to dashboard if modalSheetContext is not null
-                  // this will be the case on smaller screens to close the wolt bottom sheet
-                  if (widget.modalSheetContext != null) {
-                    Navigator.of(widget.modalSheetContext!).pop();
-                  }
-                }
-              },
-              child: state == const RemoteDataState.loading()
-                  ? const SizedBox(
-                      width: 20, height: 20, child: CircularProgressIndicator())
-                  : const Text('Submit'),
             ),
           ],
         ),

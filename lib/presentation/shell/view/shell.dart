@@ -10,18 +10,14 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-
-const double _bottomPaddingForButton = 150.0;
-const double _buttonHeight = 56.0;
-const double _pagePadding = 16.0;
 
 class AccountListView extends StatelessWidget {
   const AccountListView({super.key});
@@ -63,35 +59,12 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
     final backgroundColor =
         isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
-    SliverWoltModalSheetPage page1(
-      BuildContext modalSheetContext,
-      TextTheme textTheme,
-    ) {
-      return WoltModalSheetPage(
-        isTopBarLayerAlwaysVisible: true,
-        topBarTitle: Text('Add an account', style: textTheme.titleSmall),
-        trailingNavBarWidget: IconButton(
-          padding: const EdgeInsets.all(_pagePadding),
-          icon: const Icon(Icons.close),
-          onPressed: Navigator.of(modalSheetContext).pop,
-        ),
-        child: const Padding(
-            padding: EdgeInsets.fromLTRB(
-              _pagePadding,
-              _pagePadding,
-              _pagePadding,
-              _bottomPaddingForButton,
-            ),
-            child: AddAccountForm()),
-      );
-    }
-
     if (screenWidth >= 768.0) {
       // Sidebar for wider screens
       return Row(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 16, 4, 16),
+            padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
             child: Container(
               width: 200,
               decoration: BoxDecoration(
@@ -182,7 +155,10 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                               context: context,
                               pageListBuilder: (modalSheetContext) {
                                 final textTheme = Theme.of(context).textTheme;
-                                return [page1(modalSheetContext, textTheme)];
+                                return [
+                                  addAccountModal(
+                                      modalSheetContext, textTheme, isDarkTheme)
+                                ];
                               },
                               onModalDismissedWithBarrierTap: () {
                                 print("dismissed with barrier tap");
@@ -225,29 +201,6 @@ class Shell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  SliverWoltModalSheetPage page1(
-    BuildContext modalSheetContext,
-    TextTheme textTheme,
-  ) {
-    return WoltModalSheetPage(
-      isTopBarLayerAlwaysVisible: true,
-      topBarTitle: Text('Add an account', style: textTheme.titleSmall),
-      trailingNavBarWidget: IconButton(
-        padding: const EdgeInsets.all(_pagePadding),
-        icon: const Icon(Icons.close),
-        onPressed: Navigator.of(modalSheetContext).pop,
-      ),
-      child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            _pagePadding,
-            _pagePadding,
-            _pagePadding,
-            _bottomPaddingForButton,
-          ),
-          child: AddAccountForm(modalSheetContext: modalSheetContext)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final shell = context.read<ShellStateCubit>();
@@ -257,8 +210,6 @@ class Shell extends StatelessWidget {
     final selectedColor =
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? greyDarkTheme : Colors.grey;
-
-    print('IN THE SHELL: ${shell.state}');
 
     return Container(
       decoration: BoxDecoration(

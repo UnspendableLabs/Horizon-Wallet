@@ -7,7 +7,6 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
-
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
@@ -137,7 +136,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         }).toList(),
                       ),
                       const SizedBox(height: 16.0),
-                      HorizoneTextFormField(
+                      HorizonTextFormField(
                         isDarkMode: widget.isDarkMode,
                         controller: UpperCaseTextEditingController(),
                         label: "Token name",
@@ -155,7 +154,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      HorizoneTextFormField(
+                      HorizonTextFormField(
                         isDarkMode: widget.isDarkMode,
                         controller: quantityController,
                         label: 'Quantity',
@@ -174,7 +173,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      HorizoneTextFormField(
+                      HorizonTextFormField(
                         isDarkMode: widget.isDarkMode,
                         controller: descriptionController,
                         label: 'Description (optional)',
@@ -185,7 +184,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      HorizoneTextFormField(
+                      HorizonTextFormField(
                         isDarkMode: widget.isDarkMode,
                         controller: passwordController,
                         label: 'Password',
@@ -270,7 +269,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                   });
                                 },
                               ),
-                              Text('Lock',
+                              Text('Reset',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: widget.isDarkMode
@@ -283,7 +282,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               SizedBox(width: 30.0),
                               Expanded(
                                 child: Text(
-                                  'Wether this issuance should reset any existing supply. Defaults to false.',
+                                  'Whether this issuance should reset any existing supply. Defaults to false.',
                                 ),
                               ),
                             ],

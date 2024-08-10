@@ -199,7 +199,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     }).toList(),
                   ),
                   const SizedBox(height: 16.0),
-                  HorizoneTextFormField(
+                  HorizonTextFormField(
                       isDarkMode: widget.isDarkMode,
                       controller: destinationAddressController,
                       label: "Destination",
@@ -217,7 +217,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           // TODO: make his type of input it's own component ( e.g. BalanceInput )
                           child: Builder(builder: (context) {
                         return state.balancesState.maybeWhen(orElse: () {
-                          return HorizoneTextFormField(
+                          return HorizonTextFormField(
                             isDarkMode: widget.isDarkMode,
                             controller: quantityController,
                             label: 'Quantity',
@@ -232,7 +232,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                             throw Exception("invariant: balance is null");
                           }
 
-                          return HorizoneTextFormField(
+                          return HorizonTextFormField(
                             isDarkMode: widget.isDarkMode,
                             controller: quantityController,
                             label: 'Quantity',
@@ -321,7 +321,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     ],
                   ),
                   const SizedBox(height: 16.0), // Spacing between inputs
-                  HorizoneTextFormField(
+                  HorizonTextFormField(
                     isDarkMode: widget.isDarkMode,
                     obscureText: true,
                     enableSuggestions: false,

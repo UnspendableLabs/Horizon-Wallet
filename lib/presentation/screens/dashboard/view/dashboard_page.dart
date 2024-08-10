@@ -112,7 +112,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                     if (screenWidth < 768)
                       AccountSelectionButton(
                         isDarkTheme: isDarkTheme,
-                        onPressed: () => showAccountList(context),
+                        onPressed: () => showAccountList(context, isDarkTheme),
                       ),
                     AddressActions(
                       isDarkTheme: isDarkTheme,
@@ -137,34 +137,10 @@ class _DashboardPage_State extends State<_DashboardPage> {
   }
 }
 
-void showAccountList(BuildContext context) {
+void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
-  const double bottomPaddingForButton = 150.0;
 
   final textTheme = Theme.of(context).textTheme;
-
-  SliverWoltModalSheetPage page1(
-    BuildContext modalSheetContext,
-    TextTheme textTheme,
-  ) {
-    return WoltModalSheetPage(
-      isTopBarLayerAlwaysVisible: true,
-      topBarTitle: Text('Add an account', style: textTheme.titleSmall),
-      trailingNavBarWidget: IconButton(
-        padding: const EdgeInsets.all(pagePadding),
-        icon: const Icon(Icons.close),
-        onPressed: Navigator.of(modalSheetContext).pop,
-      ),
-      child: const Padding(
-          padding: EdgeInsets.fromLTRB(
-            pagePadding,
-            pagePadding,
-            pagePadding,
-            bottomPaddingForButton,
-          ),
-          child: AddAccountForm()),
-    );
-  }
 
   WoltModalSheet.show<void>(
     context: context,
@@ -172,9 +148,15 @@ void showAccountList(BuildContext context) {
       return [
         context.read<ShellStateCubit>().state.maybeWhen(
               success: (state) => WoltModalSheetPage(
+                backgroundColor: isDarkTheme
+                    ? dialogBackgroundColorDarkTheme
+                    : dialogBackgroundColorLightTheme,
                 isTopBarLayerAlwaysVisible: true,
-                topBarTitle:
-                    Text('Select an account', style: textTheme.titleSmall),
+                topBarTitle: Text('Select an account',
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkTheme ? mainTextWhite : mainTextBlack)),
                 trailingNavBarWidget: IconButton(
                   padding: const EdgeInsets.all(pagePadding),
                   icon: const Icon(Icons.close),
@@ -209,6 +191,10 @@ void showAccountList(BuildContext context) {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 25.0),
+                            backgroundColor: isDarkTheme
+                                ? darkNavyDarkTheme
+                                : lightBlueLightTheme,
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.zero,
                             ),
@@ -219,7 +205,10 @@ void showAccountList(BuildContext context) {
                               context: context,
                               pageListBuilder: (modalSheetContext) {
                                 final textTheme = Theme.of(context).textTheme;
-                                return [page1(modalSheetContext, textTheme)];
+                                return [
+                                  addAccountModal(
+                                      modalSheetContext, textTheme, isDarkTheme)
+                                ];
                               },
                               onModalDismissedWithBarrierTap: () {
                                 print("dismissed with barrier tap");
@@ -229,7 +218,9 @@ void showAccountList(BuildContext context) {
                               },
                             );
                           },
-                          child: const Text("Add Account"),
+                          child: const Text("Add Account",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
@@ -540,7 +531,10 @@ class _BalancesState extends State<Balances> {
                 ],
               ),
             ),
-            Container(child: _balanceList(result)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+              child: Container(child: _balanceList(result, widget.isDarkTheme)),
+            ),
             if (_isExpanded)
               Positioned(
                 bottom: 0,
@@ -573,7 +567,7 @@ class _BalancesState extends State<Balances> {
     );
   }
 
-  Widget _balanceList(Result result) {
+  Widget _balanceList(Result result, bool isDarkMode) {
     return result.when(
       ok: (balances, aggregated) {
         if (balances.isEmpty) {
@@ -581,6 +575,7 @@ class _BalancesState extends State<Balances> {
         }
 
         final balanceWidgets = aggregated.entries.map((entry) {
+          final isLastEntry = entry.key == aggregated.entries.last.key;
           return Column(
             children: [
               Padding(
@@ -593,22 +588,26 @@ class _BalancesState extends State<Balances> {
                         children: [
                           TextSpan(
                             text: '${entry.key} ',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          TextSpan(
-                            text: entry.value.quantityNormalized,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode
+                                    ? greyDashboardTextDarkTheme
+                                    : greyDashboardTextLightTheme),
                           ),
                         ],
                       ),
                     ),
-                    const Text("\$ dollar placeholder"),
+                    Text(
+                      entry.value.quantityNormalized,
+                    ),
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Divider(),
-              ),
+              if (!isLastEntry)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Divider(),
+                ),
             ],
           );
         }).toList();

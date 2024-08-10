@@ -58,7 +58,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            HorizoneTextFormField(
+            HorizonTextFormField(
               isDarkMode: isDarkTheme,
               obscureText: true,
               enableSuggestions: false,
