@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:horizon/presentation/colors.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -21,14 +21,14 @@ class OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backdropBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : lightBlueLightThemeBackgroundColor;
+        ? mediumNavyDarkTheme
+        : lightBlueLightTheme;
     final leftSideBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : royalBlueLightThemeBackgroundColor;
+        ? lightNavyDarkTheme
+        : royalBlueLightTheme;
     final rightSideBackgroundColor = isDarkMode
-        ? darkNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+        ? darkNavyDarkTheme
+        : whiteLightTheme;
 
     return Scaffold(
       backgroundColor: backdropBackgroundColor,
@@ -129,7 +129,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     'CREATE A NEW WALLET',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? neonBlueDarkThemeButtonTextColor
+                                            ? neonBlueDarkTheme
                                             : mainTextWhite),
                                   ),
                                 ),
@@ -162,7 +162,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   child: Text('LOGIN TO EXISTING WALLET',
                                       style: TextStyle(
                                           color: isDarkMode
-                                              ? greyDarkThemeButtonText
+                                              ? greyDarkTheme
                                               : mainTextBlack)),
                                 ),
                               ),
@@ -224,8 +224,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 style: ElevatedButton.styleFrom(
                                   elevation: 0,
                                   backgroundColor: isDarkMode
-                                      ? navyDarkThemeButtonColor
-                                      : whiteLightThemeButtonColor,
+                                      ? navyDarkTheme
+                                      : whiteLightTheme,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 32, vertical: 16),
                                   textStyle: const TextStyle(
@@ -242,7 +242,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     'CREATE A NEW WALLET',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? neonBlueDarkThemeButtonTextColor
+                                            ? neonBlueDarkTheme
                                             : mainTextBlack),
                                   ),
                                 ),
@@ -272,7 +272,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     'IMPORT EXISTING',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? greyDarkThemeButtonText
+                                            ? greyDarkTheme
                                             : mainTextWhite),
                                   ),
                                 ),

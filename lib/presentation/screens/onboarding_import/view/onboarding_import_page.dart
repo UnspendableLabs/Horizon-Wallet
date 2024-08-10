@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/presentation/colors.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingImportPage extends StatelessWidget {
@@ -55,11 +55,11 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backdropBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : lightBlueLightThemeBackgroundColor;
+        ? mediumNavyDarkTheme
+        : lightBlueLightTheme;
     final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+        ? lightNavyDarkTheme
+        : whiteLightTheme;
 
     return Container(
       decoration: BoxDecoration(
@@ -163,15 +163,15 @@ class PasswordPrompt extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+        ? lightNavyDarkTheme
+        : whiteLightTheme;
     final inputBackgroundColor =
         isDarkMode ? darkThemeInputColor : lightThemeInputColor;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
     final continueButtonBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : royalBlueLightThemeBackgroundColor;
+        ? mediumNavyDarkTheme
+        : royalBlueLightTheme;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -300,9 +300,7 @@ class PasswordPrompt extends StatelessWidget {
                           padding: const EdgeInsets.all(8.0),
                           child: Text('CANCEL',
                               style: TextStyle(
-                                  color: isDarkMode
-                                      ? greyDarkThemeButtonText
-                                      : mainTextBlack)),
+                                  color: isDarkMode ? greyDarkTheme : mainTextBlack)),
                         ),
                       ),
                     ),
@@ -341,7 +339,7 @@ class PasswordPrompt extends StatelessWidget {
                             'LOGIN',
                             style: TextStyle(
                                 color: isDarkMode
-                                    ? neonBlueDarkThemeButtonTextColor
+                                    ? neonBlueDarkTheme
                                     : mainTextWhite),
                           ),
                         ),
@@ -387,13 +385,13 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+        ? lightNavyDarkTheme
+        : whiteLightTheme;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
     final continueButtonBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : royalBlueLightThemeBackgroundColor;
+        ? mediumNavyDarkTheme
+        : royalBlueLightTheme;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -435,7 +433,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     child: Text('CANCEL',
                         style: TextStyle(
                             color: isDarkMode
-                                ? greyDarkThemeButtonText
+                                ? greyDarkTheme
                                 : mainTextBlack)),
                   ),
                 ),
@@ -465,7 +463,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         'CONTINUE',
                         style: TextStyle(
                             color: isDarkMode
-                                ? neonBlueDarkThemeButtonTextColor
+                                ? neonBlueDarkTheme
                                 : mainTextWhite),
                       ),
                     ),

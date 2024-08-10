@@ -11,7 +11,6 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/colors.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
@@ -20,6 +19,7 @@ import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
 import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
@@ -217,9 +217,7 @@ class MyApp extends StatelessWidget {
   final ThemeData lightTheme = ThemeData(
     // define a color scheme so it doesn't display flutter default purples
     brightness: Brightness.light,
-    appBarTheme: const AppBarTheme(
-        backgroundColor: whiteLightThemeBackgroundColor,
-        scrolledUnderElevation: 0.0),
+    appBarTheme: const AppBarTheme(backgroundColor: whiteLightTheme, scrolledUnderElevation: 0.0),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(227, 237, 254, 1),
@@ -230,8 +228,8 @@ class MyApp extends StatelessWidget {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(227, 237, 254, 1),
-        foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
+        backgroundColor: elevatedButtonBackgroundLightTheme,
+        foregroundColor: elevatedButtonForegroundLightTheme,
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -249,34 +247,40 @@ class MyApp extends StatelessWidget {
       ),
     ),
     listTileTheme: const ListTileThemeData(
-        iconColor: Color.fromRGBO(106, 106, 134, 1),
-        textColor: Color.fromRGBO(106, 106, 134, 1),
-        selectedColor: Color.fromRGBO(68, 121, 252, 1)),
+        iconColor: elevatedButtonForegroundLightTheme,
+        textColor: elevatedButtonForegroundLightTheme,
+        selectedColor: royalBlueLightTheme),
     dialogTheme: const DialogTheme(
-      backgroundColor: Color.fromRGBO(246, 247, 250, 1),
+      contentTextStyle: TextStyle(color: mainTextBlack),
+      backgroundColor: dialogBackgroundColorLightTheme,
     ),
     checkboxTheme: CheckboxThemeData(
+      side: BorderSide.none,
+      checkColor: WidgetStateProperty.all(royalBlueLightTheme),
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(68, 121, 252, 1); // Color when selected
+            return lightThemeInputColor; // Color when selected
           }
-          return null; // Use default color when not selected
+          return lightThemeInputColor; // Use default color when not selected
         },
       ),
     ),
     cardTheme: CardTheme(
+      color: lightThemeInputColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
       ),
     ),
+    canvasColor: lightThemeInputColor,
+    cardColor: lightThemeInputColor,
   );
 
   final ThemeData darkTheme = ThemeData(
     // define a color scheme so it doesn't display flutter default purples
     brightness: Brightness.dark,
     appBarTheme: const AppBarTheme(
-      backgroundColor: lightNavyDarkThemeBackgroundColor,
+      backgroundColor: lightNavyDarkTheme,
       scrolledUnderElevation: 0.0,
     ),
     primaryColor: Colors.white,
@@ -289,14 +293,14 @@ class MyApp extends StatelessWidget {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(35, 35, 59, 1),
-        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+        backgroundColor: elevatedButtonBackgroundDarkTheme,
+        foregroundColor: elevatedButtonForegroundDarkTheme,
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(25, 25, 39, 1),
-        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
+        backgroundColor: filledButtonBackgroundDarkTheme,
+        foregroundColor: neonBlueDarkTheme,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -308,29 +312,34 @@ class MyApp extends StatelessWidget {
       ),
     ),
     listTileTheme: const ListTileThemeData(
-        iconColor: Color.fromRGBO(183, 183, 188, 1),
-        textColor: Color.fromRGBO(183, 183, 188, 1),
-        selectedColor: Color.fromRGBO(146, 209, 254, 1)),
+        iconColor: elevatedButtonForegroundDarkTheme,
+        textColor: elevatedButtonForegroundDarkTheme,
+        selectedColor: neonBlueDarkTheme),
 
     dialogTheme: const DialogTheme(
-      backgroundColor: Color.fromRGBO(35, 35, 58, 1),
+      contentTextStyle: TextStyle(color: mainTextWhite),
+      backgroundColor: dialogBackgroundColorDarkTheme,
     ),
     checkboxTheme: CheckboxThemeData(
+      side: BorderSide.none,
+      checkColor: WidgetStateProperty.all(neonBlueDarkTheme),
       fillColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
           if (states.contains(WidgetState.selected)) {
-            return const Color.fromRGBO(
-                146, 209, 254, 1); // Color when selected
+            return filledButtonBackgroundDarkTheme; // Color when selected
           }
-          return null; // Use default color when not selected
+          return filledButtonBackgroundDarkTheme; // Use default color when not selected
         },
       ),
     ),
     cardTheme: CardTheme(
+      color: darkThemeInputColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
       ),
     ),
+    canvasColor: darkThemeInputColor,
+    cardColor: darkThemeInputColor,
   );
 
   @override
