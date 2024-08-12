@@ -24,6 +24,7 @@ class AddressServiceImpl extends AddressService {
       required String account,
       required String change,
       required int index}) async {
+    print('deriving address');
     // final String basePath = 'm/84\'/1\'/0\'/0/';
     String path = 'm/$purpose/$coin/$account/$change/$index';
     final network = _getNetwork();
@@ -34,13 +35,15 @@ class AddressServiceImpl extends AddressService {
         Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
     Buffer chainCodeJs =
         Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    print('after buffer');
 
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
     bip32.BIP32Interface child = root.derivePath(path);
+    print('after derive root an child');
 
     String address = _bech32FromBip32(child);
-
+    print('address derived');
     return Address(
       address: address,
       accountUuid: accountUuid,
@@ -103,6 +106,8 @@ class AddressServiceImpl extends AddressService {
         (root as bip32.BIP32Interface).derivePath(path);
 
     String address = _bech32FromBip32(child);
+
+    print('address derived');
 
     return Address(
       address: address,
@@ -175,6 +180,7 @@ class AddressServiceImpl extends AddressService {
   }
 
   String _bech32FromBip32(bip32.BIP32Interface child) {
+    print('bech32FromBip32');
     List<int> identifier = child.identifier.toDart;
     List<int> words = bech32
         .toWords(identifier.map((el) => el.toJS).toList().toJS)
@@ -182,9 +188,10 @@ class AddressServiceImpl extends AddressService {
         .map((el) => el.toDartInt)
         .toList();
     words.insert(0, 0);
+    print('after words');
 
     final network = _getNetwork();
-
+    print('after network');
     return bech32.encode(
         network.bech32, words.map((el) => el.toJS).toList().toJS);
   }

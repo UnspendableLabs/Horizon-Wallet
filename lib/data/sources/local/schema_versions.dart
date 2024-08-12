@@ -80,6 +80,10 @@ final class Schema2 extends i0.VersionedSchema {
           _column_15,
           _column_16,
           _column_17,
+          _column_18,
+          _column_19,
+          _column_20,
+          _column_21,
         ],
         attachedDatabase: database,
       ),
@@ -174,33 +178,51 @@ class Shape3 extends i0.VersionedTable {
   Shape3({required super.source, required super.alias}) : super.aliased();
   i1.GeneratedColumn<String> get hash =>
       columnsByName['hash']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<DateTime> get submittedAt =>
-      columnsByName['submitted_at']! as i1.GeneratedColumn<DateTime>;
-  i1.GeneratedColumn<String> get hex =>
-      columnsByName['hex']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get raw =>
+      columnsByName['raw']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get source =>
       columnsByName['source']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get unpacked =>
-      columnsByName['unpacked']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get destination =>
+      columnsByName['destination']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get btcAmount =>
+      columnsByName['btc_amount']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get fee =>
+      columnsByName['fee']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get data =>
+      columnsByName['data']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get unpackedData =>
+      columnsByName['unpacked_data']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<DateTime> get submittedAt =>
+      columnsByName['submitted_at']! as i1.GeneratedColumn<DateTime>;
 }
 
 i1.GeneratedColumn<String> _column_13(String aliasedName) =>
     i1.GeneratedColumn<String>('hash', aliasedName, false,
         type: i1.DriftSqlType.string, $customConstraints: 'UNIQUE NOT NULL');
-i1.GeneratedColumn<DateTime> _column_14(String aliasedName) =>
-    i1.GeneratedColumn<DateTime>('submitted_at', aliasedName, false,
-        type: i1.DriftSqlType.dateTime);
+i1.GeneratedColumn<String> _column_14(String aliasedName) =>
+    i1.GeneratedColumn<String>('raw', aliasedName, false,
+        type: i1.DriftSqlType.string);
 i1.GeneratedColumn<String> _column_15(String aliasedName) =>
-    i1.GeneratedColumn<String>('hex', aliasedName, false,
+    i1.GeneratedColumn<String>('source', aliasedName, false,
         type: i1.DriftSqlType.string);
 i1.GeneratedColumn<String> _column_16(String aliasedName) =>
-    i1.GeneratedColumn<String>('source', aliasedName, false,
-        type: i1.DriftSqlType.string,
-        defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
-            'REFERENCES addresses (address)'));
-i1.GeneratedColumn<String> _column_17(String aliasedName) =>
-    i1.GeneratedColumn<String>('unpacked', aliasedName, false,
+    i1.GeneratedColumn<String>('destination', aliasedName, true,
         type: i1.DriftSqlType.string);
+i1.GeneratedColumn<int> _column_17(String aliasedName) =>
+    i1.GeneratedColumn<int>('btc_amount', aliasedName, true,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_18(String aliasedName) =>
+    i1.GeneratedColumn<int>('fee', aliasedName, true,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<String> _column_19(String aliasedName) =>
+    i1.GeneratedColumn<String>('data', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<String> _column_20(String aliasedName) =>
+    i1.GeneratedColumn<String>('unpacked_data', aliasedName, true,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<DateTime> _column_21(String aliasedName) =>
+    i1.GeneratedColumn<DateTime>('submitted_at', aliasedName, false,
+        type: i1.DriftSqlType.dateTime);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
 }) {

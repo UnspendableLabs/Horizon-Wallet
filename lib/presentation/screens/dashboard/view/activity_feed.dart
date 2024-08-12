@@ -10,9 +10,6 @@ import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/address.dart';
 
-
-
-
 enum SendSide { source, destination }
 
 // TODO: move to some util file
@@ -28,7 +25,6 @@ Decimal satoshisToBtc(int satoshis) {
   // Round to 8 decimal places
   return btcValue.toDecimal().round(scale: 8);
 }
-
 
 class NewTransactionsBanner extends StatelessWidget {
   final int count;

@@ -316,6 +316,7 @@ class PasswordPrompt extends StatelessWidget {
                               fontWeight: FontWeight.w500), // Text style
                         ),
                         onPressed: () {
+                          print('LOGIN PRESSED');
                           if (_passwordController.text == '' ||
                               _passwordConfirmationController.text == '') {
                             context.read<OnboardingImportBloc>().add(
@@ -326,6 +327,7 @@ class PasswordPrompt extends StatelessWidget {
                             context.read<OnboardingImportBloc>().add(
                                 PasswordError(error: 'Passwords do not match'));
                           } else {
+                            print('READING WALLET');
                             context
                                 .read<OnboardingImportBloc>()
                                 .add(ImportWallet());

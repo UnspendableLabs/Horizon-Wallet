@@ -335,7 +335,6 @@ class AssetIssuanceParamsMapper {
 class VerboseAssetIssuanceEventMapper {
   static VerboseAssetIssuanceEvent toDomain(
       api.VerboseAssetIssuanceEvent apiEvent) {
-
     final x = VerboseAssetIssuanceEvent(
       state: StateMapper.getVerbose(apiEvent),
       event: "ASSET_ISSUANCE",

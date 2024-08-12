@@ -99,10 +99,14 @@ class OnboardingImportBloc
     });
 
     on<ImportWallet>((event, emit) async {
+      print('EMIT LOADING STATE');
       emit(state.copyWith(importState: ImportStateLoading()));
+      print('LOAING STATE EMITTED');
       try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
+            print('IMPORT FORMAT: ${state.importFormat}');
+
             Wallet wallet =
                 await walletService.deriveRoot(state.mnemonic, state.password!);
             String decryptedPrivKey = await encryptionService.decrypt(
@@ -119,6 +123,8 @@ class OnboardingImportBloc
               importFormat: ImportFormat.segwit,
             );
 
+            print('before deriving address');
+
             List<Address> addresses =
                 await addressService.deriveAddressSegwitRange(
                     privKey: decryptedPrivKey,
@@ -129,11 +135,12 @@ class OnboardingImportBloc
                     account: account0.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 9);
-
+                    end: 1);
+            print('address derived!!!!');
             await walletRepository.insert(wallet);
             await accountRepository.insert(account0);
             await addressRepository.insertMany(addresses);
+            print('addresses inserted');
             break;
           case ImportFormat.freewalletBech32:
             Wallet wallet = await walletService.deriveRootFreewallet(
@@ -172,6 +179,7 @@ class OnboardingImportBloc
             throw UnimplementedError();
         }
 
+        print('emitting success');
         emit(state.copyWith(importState: ImportStateSuccess()));
         return;
       } catch (e) {

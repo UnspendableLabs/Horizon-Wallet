@@ -194,7 +194,8 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -237,7 +238,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -279,7 +281,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -315,7 +318,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -359,7 +363,8 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -399,7 +404,8 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
@@ -464,7 +470,8 @@ void main() {
             ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -528,7 +535,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -584,8 +592,10 @@ void main() {
               MockTransactionLocalRepository();
 
           // effectively asserts that right method is calleD with right args
-          when(() => mockTransactionLocalRepository.getAllByAccountAfterDateVerbose(
-              "123", mostRecentConfirmedBlocktime)).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository
+                  .getAllByAccountAfterDateVerbose(
+                      "123", mostRecentConfirmedBlocktime))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -661,7 +671,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -774,7 +785,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -854,7 +866,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -936,7 +949,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() =>
+                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();

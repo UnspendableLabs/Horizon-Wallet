@@ -77,7 +77,8 @@ class DashboardActivityFeedBloc
             nextCursor: null,
             newTransactionCount: events.length,
             mostRecentRemoteHash: null,
-            transactions: currentState.transactions)); // might have sme locally;
+            transactions:
+                currentState.transactions)); // might have sme locally;
 
         return;
       } else {

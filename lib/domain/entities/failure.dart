@@ -10,7 +10,7 @@ class NetworkFailure extends Failure {
 
 class ServerFailure extends Failure {
   final int? statusCode;
-  const ServerFailure({String? message,  this.statusCode})
+  const ServerFailure({String? message, this.statusCode})
       : super(message: message ?? 'Server Failure');
 }
 

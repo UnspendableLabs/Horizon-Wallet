@@ -28,20 +28,20 @@ class PrevoutModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'scriptpubkey': scriptpubkey,
-    'scriptpubkey_asm': scriptpubkeyAsm,
-    'scriptpubkey_type': scriptpubkeyType,
-    'scriptpubkey_address': scriptpubkeyAddress,
-    'value': value,
-  };
+        'scriptpubkey': scriptpubkey,
+        'scriptpubkey_asm': scriptpubkeyAsm,
+        'scriptpubkey_type': scriptpubkeyType,
+        'scriptpubkey_address': scriptpubkeyAddress,
+        'value': value,
+      };
 
   Prevout toDomain() => Prevout(
-    scriptpubkey: scriptpubkey,
-    scriptpubkeyAsm: scriptpubkeyAsm,
-    scriptpubkeyType: scriptpubkeyType,
-    scriptpubkeyAddress: scriptpubkeyAddress,
-    value: value,
-  );
+        scriptpubkey: scriptpubkey,
+        scriptpubkeyAsm: scriptpubkeyAsm,
+        scriptpubkeyType: scriptpubkeyType,
+        scriptpubkeyAddress: scriptpubkeyAddress,
+        value: value,
+      );
 }
 
 class VinModel {
@@ -79,26 +79,26 @@ class VinModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'txid': txid,
-    'vout': vout,
-    'prevout': prevout.toJson(),
-    'scriptsig': scriptsig,
-    'scriptsig_asm': scriptsigAsm,
-    'witness': witness,
-    'is_coinbase': isCoinbase,
-    'sequence': sequence,
-  };
+        'txid': txid,
+        'vout': vout,
+        'prevout': prevout.toJson(),
+        'scriptsig': scriptsig,
+        'scriptsig_asm': scriptsigAsm,
+        'witness': witness,
+        'is_coinbase': isCoinbase,
+        'sequence': sequence,
+      };
 
   Vin toDomain() => Vin(
-    txid: txid,
-    vout: vout,
-    prevout: prevout.toDomain(),
-    scriptsig: scriptsig,
-    scriptsigAsm: scriptsigAsm,
-    witness: witness,
-    isCoinbase: isCoinbase,
-    sequence: sequence,
-  );
+        txid: txid,
+        vout: vout,
+        prevout: prevout.toDomain(),
+        scriptsig: scriptsig,
+        scriptsigAsm: scriptsigAsm,
+        witness: witness,
+        isCoinbase: isCoinbase,
+        sequence: sequence,
+      );
 }
 
 class VoutModel {
@@ -127,20 +127,20 @@ class VoutModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'scriptpubkey': scriptpubkey,
-    'scriptpubkey_asm': scriptpubkeyAsm,
-    'scriptpubkey_type': scriptpubkeyType,
-    'scriptpubkey_address': scriptpubkeyAddress,
-    'value': value,
-  };
+        'scriptpubkey': scriptpubkey,
+        'scriptpubkey_asm': scriptpubkeyAsm,
+        'scriptpubkey_type': scriptpubkeyType,
+        'scriptpubkey_address': scriptpubkeyAddress,
+        'value': value,
+      };
 
   Vout toDomain() => Vout(
-    scriptpubkey: scriptpubkey,
-    scriptpubkeyAsm: scriptpubkeyAsm,
-    scriptpubkeyType: scriptpubkeyType,
-    scriptpubkeyAddress: scriptpubkeyAddress,
-    value: value,
-  );
+        scriptpubkey: scriptpubkey,
+        scriptpubkeyAsm: scriptpubkeyAsm,
+        scriptpubkeyType: scriptpubkeyType,
+        scriptpubkeyAddress: scriptpubkeyAddress,
+        value: value,
+      );
 }
 
 class StatusModel {
@@ -166,18 +166,18 @@ class StatusModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'confirmed': confirmed,
-    'block_height': blockHeight,
-    'block_hash': blockHash,
-    'block_time': blockTime,
-  };
+        'confirmed': confirmed,
+        'block_height': blockHeight,
+        'block_hash': blockHash,
+        'block_time': blockTime,
+      };
 
   Status toDomain() => Status(
-    confirmed: confirmed,
-    blockHeight: blockHeight,
-    blockHash: blockHash,
-    blockTime: blockTime,
-  );
+        confirmed: confirmed,
+        blockHeight: blockHeight,
+        blockHash: blockHash,
+        blockTime: blockTime,
+      );
 }
 
 class BitcoinTxModel {
@@ -208,8 +208,12 @@ class BitcoinTxModel {
       txid: json['txid'] as String,
       version: json['version'] as int,
       locktime: json['locktime'] as int,
-      vin: (json['vin'] as List).map((v) => VinModel.fromJson(v as Map<String, dynamic>)).toList(),
-      vout: (json['vout'] as List).map((v) => VoutModel.fromJson(v as Map<String, dynamic>)).toList(),
+      vin: (json['vin'] as List)
+          .map((v) => VinModel.fromJson(v as Map<String, dynamic>))
+          .toList(),
+      vout: (json['vout'] as List)
+          .map((v) => VoutModel.fromJson(v as Map<String, dynamic>))
+          .toList(),
       size: json['size'] as int,
       weight: json['weight'] as int,
       fee: json['fee'] as int,
@@ -218,26 +222,26 @@ class BitcoinTxModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'txid': txid,
-    'version': version,
-    'locktime': locktime,
-    'vin': vin.map((v) => v.toJson()).toList(),
-    'vout': vout.map((v) => v.toJson()).toList(),
-    'size': size,
-    'weight': weight,
-    'fee': fee,
-    'status': status.toJson(),
-  };
+        'txid': txid,
+        'version': version,
+        'locktime': locktime,
+        'vin': vin.map((v) => v.toJson()).toList(),
+        'vout': vout.map((v) => v.toJson()).toList(),
+        'size': size,
+        'weight': weight,
+        'fee': fee,
+        'status': status.toJson(),
+      };
 
   BitcoinTx toDomain() => BitcoinTx(
-    txid: txid,
-    version: version,
-    locktime: locktime,
-    vin: vin.map((v) => v.toDomain()).toList(),
-    vout: vout.map((v) => v.toDomain()).toList(),
-    size: size,
-    weight: weight,
-    fee: fee,
-    status: status.toDomain(),
-  );
+        txid: txid,
+        version: version,
+        locktime: locktime,
+        vin: vin.map((v) => v.toDomain()).toList(),
+        vout: vout.map((v) => v.toDomain()).toList(),
+        size: size,
+        weight: weight,
+        fee: fee,
+        status: status.toDomain(),
+      );
 }

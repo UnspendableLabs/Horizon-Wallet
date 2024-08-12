@@ -14,7 +14,6 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 
-
 class ComposeSendPage extends StatelessWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -22,7 +21,6 @@ class ComposeSendPage extends StatelessWidget {
   const ComposeSendPage({
     required this.isDarkMode,
     required this.dashboardActivityFeedBloc,
-
     super.key,
   });
 
@@ -47,11 +45,10 @@ class ComposeSendPage extends StatelessWidget {
 class _ComposeSendPage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  const _ComposeSendPage_({
-    required this.isDarkMode,
-  required this.dashboardActivityFeedBloc,
-  super.key
-  });
+  const _ComposeSendPage_(
+      {required this.isDarkMode,
+      required this.dashboardActivityFeedBloc,
+      super.key});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
@@ -159,8 +156,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       state.submitState.maybeWhen(
           success: (txHash, sourceAddress) {
             // 0) reload activity feed
-              widget.dashboardActivityFeedBloc
-                  .add(const Load()); // show "N more transactions".
+            widget.dashboardActivityFeedBloc
+                .add(const Load()); // show "N more transactions".
             // show "N more transactions".
 
             // 1) close modal
