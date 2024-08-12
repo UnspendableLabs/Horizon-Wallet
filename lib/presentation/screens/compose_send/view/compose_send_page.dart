@@ -14,7 +14,6 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 
-
 class ComposeSendPage extends StatelessWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -22,7 +21,6 @@ class ComposeSendPage extends StatelessWidget {
   const ComposeSendPage({
     required this.isDarkMode,
     required this.dashboardActivityFeedBloc,
-
     super.key,
   });
 
@@ -379,13 +377,18 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           quantity = (input).toBigInt().toInt();
                         }
 
+                        if (asset == null) {
+                          throw Exception("no asset");
+                        }
+
                         context.read<ComposeSendBloc>().add(
                             SendTransactionEvent(
-                                sourceAddress: fromAddressController.text,
+                                sourceAddress:
+                                    fromAddress ?? addresses[0].address,
                                 password: passwordController.text,
                                 destinationAddress:
                                     destinationAddressController.text,
-                                asset: assetController.text,
+                                asset: asset!,
                                 quantity: quantity));
                       }
                     },
