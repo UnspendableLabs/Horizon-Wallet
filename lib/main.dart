@@ -48,7 +48,7 @@ Future<void> setupRegtestWallet() async {
   print('regtestPrivateKey: $regtestPrivateKey');
   print("regtestPassword: $regtestPassword");
 
-  if (regtestPrivateKey != null && regtestPassword != null) {
+  if (regtestPrivateKey != "" && regtestPassword != "") {
     RegTestUtils regTestUtils = RegTestUtils();
     EncryptionService encryptionService = GetIt.I<EncryptionService>();
     AddressService addressService = GetIt.I<AddressService>();

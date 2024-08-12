@@ -104,50 +104,68 @@ class _DashboardPage_State extends State<_DashboardPage> {
           initial: () => const Text("initial"),
           loading: () => const CircularProgressIndicator(),
           error: (error) => Text("Error: $error"),
-          success: (addresses) => Padding(
-            padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-            child: Container(
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (screenWidth < 768)
-                      AccountSelectionButton(
-                        isDarkTheme: isDarkTheme,
-                        onPressed: () => showAccountList(context, isDarkTheme),
-                      ),
-                    AddressActions(
-                      isDarkTheme: isDarkTheme,
-                    ),
-                    BlocProvider(
-                      create: (context) =>
-                          BalancesBloc(accountUuid: widget.accountUuid),
-                      child: BalancesDisplay(
-                        isDarkTheme: isDarkTheme,
-                        addresses: addresses,
-                        accountUuid: widget.accountUuid,
-                      ),
-                    ),
-                    BlocProvider(
-                      create: (context) => DashboardActivityFeedBloc(
-                        accountUuid: widget.accountUuid,
-                        eventsRepository: GetIt.I.get<EventsRepository>(),
-                        addressRepository: GetIt.I.get<AddressRepository>(),
-                        transactionLocalRepository:
-                            GetIt.I.get<TransactionLocalRepository>(),
-                        pageSize: 10,
-                      ),
-                      child: DashboardActivityFeedScreen(),
-                    )
+          success: (addresses) => BlocProvider(
+              create: (context) => DashboardActivityFeedBloc(
+                    accountUuid: widget.accountUuid,
+                    eventsRepository: GetIt.I.get<EventsRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    transactionLocalRepository:
+                        GetIt.I.get<TransactionLocalRepository>(),
+                    pageSize: 10,
+                  ),
+              child: Builder(builder: (context) {
+                final dashboardActivityFeedBloc =
+                    BlocProvider.of<DashboardActivityFeedBloc>(context);
 
-                  ],
-                ),
-              ),
-            ),
-          ),
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          if (screenWidth < 768)
+                            AccountSelectionButton(
+                              isDarkTheme: isDarkTheme,
+                              onPressed: () =>
+                                  showAccountList(context, isDarkTheme),
+                            ),
+                          AddressActions(
+                            isDarkTheme: isDarkTheme,
+                            dashboardActivityFeedBloc:
+                                dashboardActivityFeedBloc,
+                          ),
+                          BlocProvider(
+                            create: (context) =>
+                                BalancesBloc(accountUuid: widget.accountUuid),
+                            child: BalancesDisplay(
+                              isDarkTheme: isDarkTheme,
+                              addresses: addresses,
+                              accountUuid: widget.accountUuid,
+                            ),
+                          ),
+                          BlocProvider(
+                            create: (context) => DashboardActivityFeedBloc(
+                              accountUuid: widget.accountUuid,
+                              eventsRepository: GetIt.I.get<EventsRepository>(),
+                              addressRepository:
+                                  GetIt.I.get<AddressRepository>(),
+                              transactionLocalRepository:
+                                  GetIt.I.get<TransactionLocalRepository>(),
+                              pageSize: 10,
+                            ),
+                            child: DashboardActivityFeedScreen(
+                                addresses: addresses),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              })),
         );
       },
     );
@@ -240,12 +258,6 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                   fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
-<<<<<<< HEAD
-=======
-                      DashboardActivityFeedScreen(
-                        addresses: addresses,
-                      ),
->>>>>>> 19717fd (render enhanced_send event instead of credit, debit in feed)
                     ],
                   ),
                 ),
@@ -365,8 +377,8 @@ class AddressActions extends StatelessWidget {
                               title: "Compose Issuance",
                               body: ComposeIssuancePage(
                                 isDarkMode: isDarkTheme,
-                                  dashboardActivityFeedBloc:
-                                      dashboardActivityFeedBloc,
+                                dashboardActivityFeedBloc:
+                                    dashboardActivityFeedBloc,
                               ),
                             );
                           });
@@ -405,8 +417,9 @@ class AddressActions extends StatelessWidget {
                             return HorizonDialog(
                               title: "Compose Send",
                               body: ComposeSendPage(
+                                isDarkMode: isDarkTheme,
                                 dashboardActivityFeedBloc:
-                                      dashboardActivityFeedBloc,
+                                    dashboardActivityFeedBloc,
                               ),
                             );
                           });

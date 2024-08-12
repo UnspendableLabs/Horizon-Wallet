@@ -73,7 +73,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
 
   @override
   Widget build(BuildContext context) {
-    BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
+    return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
         listener: (context, state) {
       state.submitState.when(
         success: (txHash) {
