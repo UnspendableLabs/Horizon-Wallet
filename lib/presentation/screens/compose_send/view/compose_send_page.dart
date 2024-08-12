@@ -47,11 +47,10 @@ class ComposeSendPage extends StatelessWidget {
 class _ComposeSendPage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  const _ComposeSendPage_({
-    required this.isDarkMode,
-  required this.dashboardActivityFeedBloc,
-  super.key
-  });
+  const _ComposeSendPage_(
+      {required this.isDarkMode,
+      required this.dashboardActivityFeedBloc,
+      super.key});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
@@ -159,8 +158,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       state.submitState.maybeWhen(
           success: (txHash, sourceAddress) {
             // 0) reload activity feed
-              widget.dashboardActivityFeedBloc
-                  .add(const Load()); // show "N more transactions".
+            widget.dashboardActivityFeedBloc
+                .add(const Load()); // show "N more transactions".
             // show "N more transactions".
 
             // 1) close modal
@@ -243,7 +242,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                   balances, assetController.text);
 
                           if (balance == null) {
-                            throw Exception("invariant: balance is null");
+                            return HorizonTextFormField(
+                              isDarkMode: widget.isDarkMode,
+                              enabled: false,
+                            );
                           }
 
                           return HorizonTextFormField(
@@ -301,7 +303,11 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                               orElse: () => const AssetDropdownLoading(),
                               success: (balances) {
                                 if (balances.isEmpty) {
-                                  return const AssetDropdownLoading();
+                                  return HorizonTextFormField(
+                                    isDarkMode: widget.isDarkMode,
+                                    enabled: false,
+                                    label: "No assets",
+                                  );
                                 }
 
                                 return SizedBox(
