@@ -177,6 +177,7 @@ class OnboardingImportBloc
         emit(state.copyWith(importState: ImportStateSuccess()));
         return;
       } catch (e) {
+        rethrow;
         print("error in block $e");
         emit(state.copyWith(
             importState: ImportStateError(message: e.toString())));
