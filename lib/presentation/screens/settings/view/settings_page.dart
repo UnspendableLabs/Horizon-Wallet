@@ -17,6 +17,8 @@ import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_event.dart';
 import 'package:horizon/presentation/screens/settings/bloc/password_prompt_state.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
@@ -38,19 +40,17 @@ class PasswordPrompt extends StatefulWidget {
 
 class _PasswordPromptState extends State<PasswordPrompt> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  // Create a text controller and use it to retrieve the current value
-  // of the TextField.
   final passwordController = TextEditingController();
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     passwordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return BlocBuilder<PasswordPromptBloc, PasswordPromptState>(
         builder: (context, state) {
       return Form(
@@ -58,15 +58,14 @@ class _PasswordPromptState extends State<PasswordPrompt> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            TextFormField(
+            HorizonTextFormField(
+              isDarkMode: isDarkTheme,
               obscureText: true,
               enableSuggestions: false,
               autocorrect: false,
               controller: passwordController,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Password",
-                  floatingLabelBehavior: FloatingLabelBehavior.always),
+              label: "Password",
+              floatingLabelBehavior: FloatingLabelBehavior.auto,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Required';
@@ -77,45 +76,65 @@ class _PasswordPromptState extends State<PasswordPrompt> {
             ),
 
             const SizedBox(height: 16.0), // Spacing between inputs
-            FilledButton(
-              style: FilledButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                minimumSize:
-                    const Size(120, 48), // Ensures button doesn't resize
-              ),
-              onPressed: () {
-                // Validate will return true if the form is valid, or false if
-                // the form is invalid.
-                if (_formKey.currentState!.validate()) {
-                  state.whenOrNull(validate: () {
-                    return;
-                  });
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: Divider(
+                      color: isDarkTheme
+                          ? greyDarkThemeUnderlineColor
+                          : greyLightThemeUnderlineColor,
+                      thickness: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 350),
+                      child: SizedBox(
+                        height: 45,
+                        width: double.infinity,
+                        child: FilledButton(
+                            onPressed: () {
+                              // Validate will return true if the form is valid, or false if
+                              // the form is invalid.
+                              if (_formKey.currentState!.validate()) {
+                                state.whenOrNull(validate: () {
+                                  return;
+                                });
 
-                  String password = passwordController.text;
+                                String password = passwordController.text;
 
-                  int gapLimit = widget.accountSettingsRepository
-                      .getGapLimit(widget.accountUuid);
+                                int gapLimit = widget.accountSettingsRepository
+                                    .getGapLimit(widget.accountUuid);
 
-                  context.read<PasswordPromptBloc>().add(Submit(
-                        password: password,
-                        gapLimit: gapLimit,
-                      ));
-
-                  // Process data.
-                }
-              },
-              child: state.maybeWhen(
-                validate: () => const SizedBox(
-                    width: 20, height: 20, child: CircularProgressIndicator()),
-                orElse: () => const Text('Submit'),
+                                context.read<PasswordPromptBloc>().add(Submit(
+                                      password: password,
+                                      gapLimit: gapLimit,
+                                    ));
+                                // Process data.
+                              }
+                            },
+                            child: state.maybeWhen(
+                              validate: () => const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator()),
+                              orElse: () => const Text('Submit'),
+                            )),
+                      ),
+                    ),
+                  )
+                ],
               ),
             ),
           ],
         ),
       );
     });
-    // Fill this out in the next step.
   }
 }
 
@@ -138,36 +157,60 @@ class SettingsPage extends StatelessWidget {
 
     final initialGapLimit =
         GetIt.I.get<AccountSettingsRepository>().getGapLimit(account.uuid);
-
     SliverWoltModalSheetPage passwordPrompt(
       BuildContext modalSheetContext,
       TextTheme textTheme,
       int gapLimit,
     ) {
+      final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
       return WoltModalSheetPage(
-          isTopBarLayerAlwaysVisible: true,
-          topBarTitle: Text('Enter password', style: textTheme.titleSmall),
-          trailingNavBarWidget: IconButton(
-            padding: const EdgeInsets.all(_pagePadding),
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              context
-                  .read<PasswordPromptBloc>()
-                  .add(Reset(gapLimit: initialGapLimit));
-
-              Navigator.of(modalSheetContext).pop();
-            },
-          ),
-          child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                _pagePadding,
-                _pagePadding,
-                _pagePadding,
-                _bottomPaddingForButton,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? dialogBackgroundColorDarkTheme
+            : dialogBackgroundColorLightTheme,
+        isTopBarLayerAlwaysVisible: true,
+        topBar: Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
+                  child: Text(
+                    'Enter password',
+                    style: TextStyle(
+                        color: isDarkTheme ? mainTextWhite : mainTextBlack,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 15.0, right: 10.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 675),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+                _pagePadding, 50, _pagePadding, _pagePadding),
+            child: Center(
               child: PasswordPrompt(
                 accountUuid: account.uuid,
-              )));
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return BlocProvider(
@@ -337,8 +380,6 @@ class SettingsPage extends StatelessWidget {
                       initial: () => const Text("initial"),
                       loading: () => const Text("loading"),
                       error: (error) => Text("Error: $error"),
-                      // success: (addresses) => Text("length ${addresses.length}")
-
                       success: (addresses) => ListView.builder(
                         itemCount: addresses.length,
                         itemBuilder: (BuildContext context, int index) {

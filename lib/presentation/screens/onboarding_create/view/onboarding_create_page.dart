@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:horizon/presentation/colors.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingCreateScreen extends StatelessWidget {
@@ -48,12 +48,10 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
             vertical: screenSize.height / 16,
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : lightBlueLightThemeBackgroundColor;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+    final backdropBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
+    final scaffoldBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
 
     return Container(
       decoration: BoxDecoration(
@@ -167,16 +165,12 @@ class PasswordPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
-    final inputBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
+    final scaffoldBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : royalBlueLightThemeBackgroundColor;
+    final continueButtonBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
@@ -226,7 +220,9 @@ class PasswordPrompt extends StatelessWidget {
                       },
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: inputBackgroundColor,
+                        fillColor: isDarkMode
+                            ? darkThemeInputColor
+                            : lightThemeInputColor,
                         labelText: 'Password',
                         labelStyle: TextStyle(
                             color: isDarkMode
@@ -260,7 +256,9 @@ class PasswordPrompt extends StatelessWidget {
                       },
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: inputBackgroundColor,
+                        fillColor: isDarkMode
+                            ? darkThemeInputColor
+                            : lightThemeInputColor,
                         labelText: 'Confirm Password',
                         labelStyle: TextStyle(
                             color: isDarkMode
@@ -309,7 +307,7 @@ class PasswordPrompt extends StatelessWidget {
                             child: Text('CANCEL',
                                 style: TextStyle(
                                     color: isDarkMode
-                                        ? greyDarkThemeButtonText
+                                        ? greyDarkTheme
                                         : mainTextBlack)),
                           ),
                         ),
@@ -351,7 +349,7 @@ class PasswordPrompt extends StatelessWidget {
                               'CONTINUE',
                               style: TextStyle(
                                   color: isDarkMode
-                                      ? neonBlueDarkThemeButtonTextColor
+                                      ? neonBlueDarkTheme
                                       : mainTextWhite),
                             ),
                           ),
@@ -386,14 +384,12 @@ class _MnemonicState extends State<Mnemonic> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+    final scaffoldBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : royalBlueLightThemeBackgroundColor;
+    final continueButtonBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
@@ -490,7 +486,7 @@ class _MnemonicState extends State<Mnemonic> {
                                 child: Text('CANCEL',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? greyDarkThemeButtonText
+                                            ? greyDarkTheme
                                             : mainTextBlack)),
                               ),
                             ),
@@ -520,7 +516,7 @@ class _MnemonicState extends State<Mnemonic> {
                                   'CONTINUE',
                                   style: TextStyle(
                                       color: isDarkMode
-                                          ? neonBlueDarkThemeButtonTextColor
+                                          ? neonBlueDarkTheme
                                           : mainTextWhite),
                                 ),
                               ),
@@ -567,14 +563,12 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor = isDarkMode
-        ? lightNavyDarkThemeBackgroundColor
-        : whiteLightThemeBackgroundColor;
+    final scaffoldBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final cancelButtonBackgroundColor =
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor = isDarkMode
-        ? mediumNavyDarkThemeBackgroundColor
-        : royalBlueLightThemeBackgroundColor;
+    final continueButtonBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -626,9 +620,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text('BACK',
                         style: TextStyle(
-                            color: isDarkMode
-                                ? greyDarkThemeButtonText
-                                : mainTextBlack)),
+                            color: isDarkMode ? greyDarkTheme : mainTextBlack)),
                   ),
                 ),
                 SizedBox(
@@ -655,9 +647,8 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                       child: Text(
                         'CONTINUE',
                         style: TextStyle(
-                            color: isDarkMode
-                                ? neonBlueDarkThemeButtonTextColor
-                                : mainTextWhite),
+                            color:
+                                isDarkMode ? neonBlueDarkTheme : mainTextWhite),
                       ),
                     ),
                   ),
