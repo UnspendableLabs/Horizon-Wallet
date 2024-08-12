@@ -18,7 +18,6 @@ import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/materialized_address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -27,7 +26,6 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/materialized_address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -41,11 +39,25 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
+import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
+
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/data/sources/repositories/transaction_local_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/data/sources/repositories/events_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
   injector.registerLazySingleton<Dio>(() => buildDioClient());
   injector.registerLazySingleton<V2Api>(() => V2Api(GetIt.I.get<Dio>()));
+  injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
   injector.registerSingleton<AddressTxRepository>(
       AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
@@ -69,13 +81,27 @@ Future<void> setup() async {
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
-  injector.registerSingleton<DatabaseManager>(DatabaseManager());
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<WalletRepository>(
       WalletRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<AddressRepository>(
       AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<EventsRepository>(
+      EventsRepositoryImpl(api_: GetIt.I.get<V2Api>()));
+
+  injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    api_: GetIt.I.get<V2Api>(),
+  ));
+
+  injector.registerSingleton<TransactionLocalRepository>(
+      TransactionLocalRepositoryImpl(
+          addressRepository: GetIt.I.get<AddressRepository>(),
+          api_: GetIt.I.get<V2Api>(),
+          transactionDao:
+              TransactionsDao(injector.get<DatabaseManager>().database)));
 
   injector.registerSingleton<CacheProvider>(HiveCache());
 
@@ -84,6 +110,11 @@ Future<void> setup() async {
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
 
-  injector.registerSingleton<MaterializedAddressRepository>(
-      MaterializedAddressRepositoryImpl());
+  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
+      esploraApi: EsploraApi(
+          dio: Dio(BaseOptions(
+    baseUrl: "http://127.0.0.1:3002",
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  )))));
 }

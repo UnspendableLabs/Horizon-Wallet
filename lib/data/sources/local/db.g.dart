@@ -748,7 +748,7 @@ class $AddressesTable extends Addresses
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {accountUuid, index};
+  Set<GeneratedColumn> get $primaryKey => {address};
   @override
   Address map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -913,15 +913,477 @@ class AddressesCompanion extends UpdateCompanion<Address> {
   }
 }
 
+class $TransactionsTable extends Transactions
+    with TableInfo<$TransactionsTable, Transaction> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
+  @override
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+      'hash', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
+  static const VerificationMeta _rawMeta = const VerificationMeta('raw');
+  @override
+  late final GeneratedColumn<String> raw = GeneratedColumn<String>(
+      'raw', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+      'source', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _destinationMeta =
+      const VerificationMeta('destination');
+  @override
+  late final GeneratedColumn<String> destination = GeneratedColumn<String>(
+      'destination', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _btcAmountMeta =
+      const VerificationMeta('btcAmount');
+  @override
+  late final GeneratedColumn<int> btcAmount = GeneratedColumn<int>(
+      'btc_amount', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _feeMeta = const VerificationMeta('fee');
+  @override
+  late final GeneratedColumn<int> fee = GeneratedColumn<int>(
+      'fee', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _dataMeta = const VerificationMeta('data');
+  @override
+  late final GeneratedColumn<String> data = GeneratedColumn<String>(
+      'data', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _unpackedDataMeta =
+      const VerificationMeta('unpackedData');
+  @override
+  late final GeneratedColumn<String> unpackedData = GeneratedColumn<String>(
+      'unpacked_data', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _submittedAtMeta =
+      const VerificationMeta('submittedAt');
+  @override
+  late final GeneratedColumn<DateTime> submittedAt = GeneratedColumn<DateTime>(
+      'submitted_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        hash,
+        raw,
+        source,
+        destination,
+        btcAmount,
+        fee,
+        data,
+        unpackedData,
+        submittedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transactions';
+  @override
+  VerificationContext validateIntegrity(Insertable<Transaction> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('hash')) {
+      context.handle(
+          _hashMeta, hash.isAcceptableOrUnknown(data['hash']!, _hashMeta));
+    } else if (isInserting) {
+      context.missing(_hashMeta);
+    }
+    if (data.containsKey('raw')) {
+      context.handle(
+          _rawMeta, raw.isAcceptableOrUnknown(data['raw']!, _rawMeta));
+    } else if (isInserting) {
+      context.missing(_rawMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(_sourceMeta,
+          source.isAcceptableOrUnknown(data['source']!, _sourceMeta));
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('destination')) {
+      context.handle(
+          _destinationMeta,
+          destination.isAcceptableOrUnknown(
+              data['destination']!, _destinationMeta));
+    }
+    if (data.containsKey('btc_amount')) {
+      context.handle(_btcAmountMeta,
+          btcAmount.isAcceptableOrUnknown(data['btc_amount']!, _btcAmountMeta));
+    }
+    if (data.containsKey('fee')) {
+      context.handle(
+          _feeMeta, fee.isAcceptableOrUnknown(data['fee']!, _feeMeta));
+    }
+    if (data.containsKey('data')) {
+      context.handle(
+          _dataMeta, this.data.isAcceptableOrUnknown(data['data']!, _dataMeta));
+    } else if (isInserting) {
+      context.missing(_dataMeta);
+    }
+    if (data.containsKey('unpacked_data')) {
+      context.handle(
+          _unpackedDataMeta,
+          unpackedData.isAcceptableOrUnknown(
+              data['unpacked_data']!, _unpackedDataMeta));
+    }
+    if (data.containsKey('submitted_at')) {
+      context.handle(
+          _submittedAtMeta,
+          submittedAt.isAcceptableOrUnknown(
+              data['submitted_at']!, _submittedAtMeta));
+    } else if (isInserting) {
+      context.missing(_submittedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {hash};
+  @override
+  Transaction map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Transaction(
+      hash: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}hash'])!,
+      raw: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}raw'])!,
+      source: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}source'])!,
+      destination: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}destination']),
+      btcAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}btc_amount']),
+      fee: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}fee']),
+      data: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}data'])!,
+      unpackedData: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}unpacked_data']),
+      submittedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}submitted_at'])!,
+    );
+  }
+
+  @override
+  $TransactionsTable createAlias(String alias) {
+    return $TransactionsTable(attachedDatabase, alias);
+  }
+}
+
+class Transaction extends DataClass implements Insertable<Transaction> {
+  final String hash;
+  final String raw;
+  final String source;
+  final String? destination;
+  final int? btcAmount;
+  final int? fee;
+  final String data;
+  final String? unpackedData;
+  final DateTime submittedAt;
+  const Transaction(
+      {required this.hash,
+      required this.raw,
+      required this.source,
+      this.destination,
+      this.btcAmount,
+      this.fee,
+      required this.data,
+      this.unpackedData,
+      required this.submittedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['hash'] = Variable<String>(hash);
+    map['raw'] = Variable<String>(raw);
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || destination != null) {
+      map['destination'] = Variable<String>(destination);
+    }
+    if (!nullToAbsent || btcAmount != null) {
+      map['btc_amount'] = Variable<int>(btcAmount);
+    }
+    if (!nullToAbsent || fee != null) {
+      map['fee'] = Variable<int>(fee);
+    }
+    map['data'] = Variable<String>(data);
+    if (!nullToAbsent || unpackedData != null) {
+      map['unpacked_data'] = Variable<String>(unpackedData);
+    }
+    map['submitted_at'] = Variable<DateTime>(submittedAt);
+    return map;
+  }
+
+  TransactionsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionsCompanion(
+      hash: Value(hash),
+      raw: Value(raw),
+      source: Value(source),
+      destination: destination == null && nullToAbsent
+          ? const Value.absent()
+          : Value(destination),
+      btcAmount: btcAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(btcAmount),
+      fee: fee == null && nullToAbsent ? const Value.absent() : Value(fee),
+      data: Value(data),
+      unpackedData: unpackedData == null && nullToAbsent
+          ? const Value.absent()
+          : Value(unpackedData),
+      submittedAt: Value(submittedAt),
+    );
+  }
+
+  factory Transaction.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Transaction(
+      hash: serializer.fromJson<String>(json['hash']),
+      raw: serializer.fromJson<String>(json['raw']),
+      source: serializer.fromJson<String>(json['source']),
+      destination: serializer.fromJson<String?>(json['destination']),
+      btcAmount: serializer.fromJson<int?>(json['btcAmount']),
+      fee: serializer.fromJson<int?>(json['fee']),
+      data: serializer.fromJson<String>(json['data']),
+      unpackedData: serializer.fromJson<String?>(json['unpackedData']),
+      submittedAt: serializer.fromJson<DateTime>(json['submittedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'hash': serializer.toJson<String>(hash),
+      'raw': serializer.toJson<String>(raw),
+      'source': serializer.toJson<String>(source),
+      'destination': serializer.toJson<String?>(destination),
+      'btcAmount': serializer.toJson<int?>(btcAmount),
+      'fee': serializer.toJson<int?>(fee),
+      'data': serializer.toJson<String>(data),
+      'unpackedData': serializer.toJson<String?>(unpackedData),
+      'submittedAt': serializer.toJson<DateTime>(submittedAt),
+    };
+  }
+
+  Transaction copyWith(
+          {String? hash,
+          String? raw,
+          String? source,
+          Value<String?> destination = const Value.absent(),
+          Value<int?> btcAmount = const Value.absent(),
+          Value<int?> fee = const Value.absent(),
+          String? data,
+          Value<String?> unpackedData = const Value.absent(),
+          DateTime? submittedAt}) =>
+      Transaction(
+        hash: hash ?? this.hash,
+        raw: raw ?? this.raw,
+        source: source ?? this.source,
+        destination: destination.present ? destination.value : this.destination,
+        btcAmount: btcAmount.present ? btcAmount.value : this.btcAmount,
+        fee: fee.present ? fee.value : this.fee,
+        data: data ?? this.data,
+        unpackedData:
+            unpackedData.present ? unpackedData.value : this.unpackedData,
+        submittedAt: submittedAt ?? this.submittedAt,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Transaction(')
+          ..write('hash: $hash, ')
+          ..write('raw: $raw, ')
+          ..write('source: $source, ')
+          ..write('destination: $destination, ')
+          ..write('btcAmount: $btcAmount, ')
+          ..write('fee: $fee, ')
+          ..write('data: $data, ')
+          ..write('unpackedData: $unpackedData, ')
+          ..write('submittedAt: $submittedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(hash, raw, source, destination, btcAmount,
+      fee, data, unpackedData, submittedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Transaction &&
+          other.hash == this.hash &&
+          other.raw == this.raw &&
+          other.source == this.source &&
+          other.destination == this.destination &&
+          other.btcAmount == this.btcAmount &&
+          other.fee == this.fee &&
+          other.data == this.data &&
+          other.unpackedData == this.unpackedData &&
+          other.submittedAt == this.submittedAt);
+}
+
+class TransactionsCompanion extends UpdateCompanion<Transaction> {
+  final Value<String> hash;
+  final Value<String> raw;
+  final Value<String> source;
+  final Value<String?> destination;
+  final Value<int?> btcAmount;
+  final Value<int?> fee;
+  final Value<String> data;
+  final Value<String?> unpackedData;
+  final Value<DateTime> submittedAt;
+  final Value<int> rowid;
+  const TransactionsCompanion({
+    this.hash = const Value.absent(),
+    this.raw = const Value.absent(),
+    this.source = const Value.absent(),
+    this.destination = const Value.absent(),
+    this.btcAmount = const Value.absent(),
+    this.fee = const Value.absent(),
+    this.data = const Value.absent(),
+    this.unpackedData = const Value.absent(),
+    this.submittedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransactionsCompanion.insert({
+    required String hash,
+    required String raw,
+    required String source,
+    this.destination = const Value.absent(),
+    this.btcAmount = const Value.absent(),
+    this.fee = const Value.absent(),
+    required String data,
+    this.unpackedData = const Value.absent(),
+    required DateTime submittedAt,
+    this.rowid = const Value.absent(),
+  })  : hash = Value(hash),
+        raw = Value(raw),
+        source = Value(source),
+        data = Value(data),
+        submittedAt = Value(submittedAt);
+  static Insertable<Transaction> custom({
+    Expression<String>? hash,
+    Expression<String>? raw,
+    Expression<String>? source,
+    Expression<String>? destination,
+    Expression<int>? btcAmount,
+    Expression<int>? fee,
+    Expression<String>? data,
+    Expression<String>? unpackedData,
+    Expression<DateTime>? submittedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (hash != null) 'hash': hash,
+      if (raw != null) 'raw': raw,
+      if (source != null) 'source': source,
+      if (destination != null) 'destination': destination,
+      if (btcAmount != null) 'btc_amount': btcAmount,
+      if (fee != null) 'fee': fee,
+      if (data != null) 'data': data,
+      if (unpackedData != null) 'unpacked_data': unpackedData,
+      if (submittedAt != null) 'submitted_at': submittedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransactionsCompanion copyWith(
+      {Value<String>? hash,
+      Value<String>? raw,
+      Value<String>? source,
+      Value<String?>? destination,
+      Value<int?>? btcAmount,
+      Value<int?>? fee,
+      Value<String>? data,
+      Value<String?>? unpackedData,
+      Value<DateTime>? submittedAt,
+      Value<int>? rowid}) {
+    return TransactionsCompanion(
+      hash: hash ?? this.hash,
+      raw: raw ?? this.raw,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      unpackedData: unpackedData ?? this.unpackedData,
+      submittedAt: submittedAt ?? this.submittedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
+    }
+    if (raw.present) {
+      map['raw'] = Variable<String>(raw.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (destination.present) {
+      map['destination'] = Variable<String>(destination.value);
+    }
+    if (btcAmount.present) {
+      map['btc_amount'] = Variable<int>(btcAmount.value);
+    }
+    if (fee.present) {
+      map['fee'] = Variable<int>(fee.value);
+    }
+    if (data.present) {
+      map['data'] = Variable<String>(data.value);
+    }
+    if (unpackedData.present) {
+      map['unpacked_data'] = Variable<String>(unpackedData.value);
+    }
+    if (submittedAt.present) {
+      map['submitted_at'] = Variable<DateTime>(submittedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionsCompanion(')
+          ..write('hash: $hash, ')
+          ..write('raw: $raw, ')
+          ..write('source: $source, ')
+          ..write('destination: $destination, ')
+          ..write('btcAmount: $btcAmount, ')
+          ..write('fee: $fee, ')
+          ..write('data: $data, ')
+          ..write('unpackedData: $unpackedData, ')
+          ..write('submittedAt: $submittedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $AddressesTable addresses = $AddressesTable(this);
+  late final $TransactionsTable transactions = $TransactionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [wallets, accounts, addresses];
+      [wallets, accounts, addresses, transactions];
 }

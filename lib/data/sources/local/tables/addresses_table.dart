@@ -12,5 +12,5 @@ class Addresses extends Table {
   IntColumn get index => integer()();
 
   @override
-  Set<Column> get primaryKey => {accountUuid, index};
+  Set<Column> get primaryKey => {address};
 }

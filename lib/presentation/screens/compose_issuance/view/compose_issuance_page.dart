@@ -13,11 +13,16 @@ import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.d
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+
 class ComposeIssuancePage extends StatelessWidget {
   final bool isDarkMode;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
   const ComposeIssuancePage({
     required this.isDarkMode,
+    required this.dashboardActivityFeedBloc,
     super.key,
   });
 
@@ -31,6 +36,7 @@ class ComposeIssuancePage extends StatelessWidget {
           ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
         child: _ComposeIssuancePage_(
           isDarkMode: isDarkMode,
+          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -40,7 +46,9 @@ class ComposeIssuancePage extends StatelessWidget {
 
 class _ComposeIssuancePage_ extends StatefulWidget {
   final bool isDarkMode;
-  const _ComposeIssuancePage_({required this.isDarkMode});
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  const _ComposeIssuancePage_(
+      {required this.isDarkMode, required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
@@ -70,7 +78,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
       state.submitState.when(
         success: (txHash) {
           // 0) reload activity feed
-          // show "N more transactions".
+          widget.dashboardActivityFeedBloc
+              .add(const Load()); // show "N more transactions".
 
           // 1) close modal
           Navigator.of(context).pop();
@@ -85,7 +94,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               ),
               content: Text(txHash),
               behavior: SnackBarBehavior.floating));
-          // show "N more transactions".
+          widget.dashboardActivityFeedBloc
+              .add(const Load()); // show "N more transactions".
+
+          // Navigator.of(context).pop();
         },
         error: (msg) => ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(msg))),
