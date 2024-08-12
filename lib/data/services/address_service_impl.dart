@@ -182,11 +182,8 @@ class AddressServiceImpl extends AddressService {
         .map((el) => el.toDartInt)
         .toList();
     words.insert(0, 0);
-
-    final network = _getNetwork();
-
     return bech32.encode(
-        network.bech32, words.map((el) => el.toJS).toList().toJS);
+        ecpair.testnet.bech32, words.map((el) => el.toJS).toList().toJS);
   }
 
   _getNetwork() {
