@@ -100,6 +100,7 @@ class OnboardingImportBloc
 
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
+      print("emit import state loading");
       try {
         switch (state.importFormat) {
           case ImportFormat.segwit:
@@ -175,6 +176,7 @@ class OnboardingImportBloc
         emit(state.copyWith(importState: ImportStateSuccess()));
         return;
       } catch (e) {
+        print("error in block $e");
         emit(state.copyWith(
             importState: ImportStateError(message: e.toString())));
         return;
