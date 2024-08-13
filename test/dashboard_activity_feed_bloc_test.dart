@@ -298,9 +298,9 @@ void main() {
               )).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              addresses: ["0x123"],
-              unconfirmed: true,
-              whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true,
+                whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
@@ -343,10 +343,10 @@ void main() {
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              whitelist: DEFAULT_WHITELIST,
-              addresses: ["0x123"],
-              unconfirmed: true,
-            )).thenAnswer((_) async => <VerboseEvent>[]);
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true,
+              )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -387,9 +387,9 @@ void main() {
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              addresses: ["0x123"],
-              whitelist: DEFAULT_WHITELIST,
-              unconfirmed: true,
+                addresses: ["0x123"],
+                whitelist: DEFAULT_WHITELIST,
+                unconfirmed: true,
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
@@ -423,10 +423,10 @@ void main() {
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              whitelist: DEFAULT_WHITELIST,
-              addresses: ["0x123"],
-              unconfirmed: true,
-          )).thenAnswer((_) async => <VerboseEvent>[]);
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true,
+              )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -440,7 +440,8 @@ void main() {
             transactions: [],
             newTransactionCount: 0,
             nextCursor: null,
-            mostRecentCounterpartyEventHash: null),
+            mostRecentCounterpartyEventHash: null,
+            mostRecentBitcoinTxHash: null),
         act: (bloc) => bloc.add(const Load()),
         expect: () => [
               const DashboardActivityFeedStateReloadingOk(
@@ -469,10 +470,10 @@ void main() {
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              whitelist: DEFAULT_WHITELIST,
-              addresses: ["0x123"],
-              unconfirmed: true,
-            )).thenAnswer((_) async => <VerboseEvent>[]);
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true,
+              )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -511,9 +512,9 @@ void main() {
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              whitelist: DEFAULT_WHITELIST,
-              addresses: ["0x123"],
-              unconfirmed: true,
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true,
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
@@ -578,10 +579,10 @@ void main() {
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 3));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              whitelist: DEFAULT_WHITELIST,
-              addresses: ["0x123"],
-              unconfirmed: true,
-            )).thenAnswer((_) async => mockedRemote);
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true,
+              )).thenAnswer((_) async => mockedRemote);
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -606,6 +607,7 @@ void main() {
                 newTransactionCount: 0,
                 nextCursor: null,
                 mostRecentCounterpartyEventHash: "0004",
+                mostRecentBitcoinTxHash: null,
               ),
             ]);
 
@@ -614,9 +616,6 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-
-
-
 
           mockedLocal = MockTransactionInfoFactory.createMultiple([
             (
@@ -652,18 +651,16 @@ void main() {
               .thenAnswer((_) async => (<VerboseEvent>[], 1, 2));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              whitelist: DEFAULT_WHITELIST,
-              addresses: ["0x123"],
-              unconfirmed: true,
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true,
               )).thenAnswer((_) async => mockedRemote);
-
 
           final mockBitcoinRepository = MockBitcoinRepository();
           when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
               .thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
               .thenAnswer((_) async => const Right([]));
-
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -685,6 +682,7 @@ void main() {
                 newTransactionCount: 0,
                 nextCursor: null,
                 mostRecentCounterpartyEventHash: "0002",
+                mostRecentBitcoinTxHash: null,
               ),
             ]);
 
@@ -705,7 +703,6 @@ void main() {
                   .getAllByAccountAfterDateVerbose(
                       "123", mostRecentConfirmedBlocktime))
               .thenAnswer((_) async => []);
-
 
           mockedRemote = MockEventFactory.createMultiple([
             ("0005", EventStateMempool()),
@@ -728,18 +725,16 @@ void main() {
 
           // Return all transactions
           when(() => mockEventsRepository.getAllByAddressesVerbose(
-              whitelist: DEFAULT_WHITELIST,
-              unconfirmed: true,
-              addresses: ["0x123"],
+                whitelist: DEFAULT_WHITELIST,
+                unconfirmed: true,
+                addresses: ["0x123"],
               )).thenAnswer((_) async => mockedRemote);
 
-            when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
-                .thenAnswer((_) async => const Right([]));
+          when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
+              .thenAnswer((_) async => const Right([]));
 
-            when(() => mockBitcoinRepository.getMempoolTransactions(any()))
-                .thenAnswer((_) async => const Right([]));
-
-
+          when(() => mockBitcoinRepository.getMempoolTransactions(any()))
+              .thenAnswer((_) async => const Right([]));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -753,13 +748,15 @@ void main() {
         expect: () => [
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
-                  transactions: [
-                    ActivityFeedItem(hash: "0005", event: mockedRemote[0]),
-                    ActivityFeedItem(hash: "0004", event: mockedRemote[1]),
-                  ],
-                  newTransactionCount: 0,
-                  nextCursor: null, //TODO: next cursor always null for now
-                  mostRecentCounterpartyEventHash: "0005"),
+                transactions: [
+                  ActivityFeedItem(hash: "0005", event: mockedRemote[0]),
+                  ActivityFeedItem(hash: "0004", event: mockedRemote[1]),
+                ],
+                newTransactionCount: 0,
+                nextCursor: null, //TODO: next cursor always null for now
+                mostRecentCounterpartyEventHash: "0005",
+                mostRecentBitcoinTxHash: null,
+              ),
             ]);
   }); // Load more appends transactions to the end of the list.  it does not add any transactions to the beginning of the list
   // group("LoadMore", () {
@@ -943,6 +940,7 @@ void main() {
               newTransactionCount: 0,
               nextCursor: 4, // doesn't matter since we are prepending
               mostRecentCounterpartyEventHash: "0002",
+              mostRecentBitcoinTxHash: null,
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
@@ -1027,6 +1025,7 @@ void main() {
               newTransactionCount: 0,
               nextCursor: 4,
               mostRecentCounterpartyEventHash: "0002",
+              mostRecentBitcoinTxHash: null,
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
@@ -1123,6 +1122,7 @@ void main() {
               newTransactionCount: 0,
               nextCursor: 4,
               mostRecentCounterpartyEventHash: "0003",
+              mostRecentBitcoinTxHash: null,
             ),
         act: (bloc) => bloc..add(const LoadQuiet()),
         expect: () => [
@@ -1204,10 +1204,9 @@ void main() {
                 .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
 
             when(() => mockEventsRepository.getAllByAddressesVerbose(
-                    whitelist: DEFAULT_WHITELIST,
-                    addresses: ["0x123"],
-                    unconfirmed: true))
-                .thenAnswer((_) async => <VerboseEvent>[]);
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                unconfirmed: true)).thenAnswer((_) async => <VerboseEvent>[]);
 
             return DashboardActivityFeedBloc(
                 pageSize: 10,
@@ -1228,6 +1227,7 @@ void main() {
                   newTransactionCount: 0,
                   nextCursor: null,
                   mostRecentCounterpartyEventHash: null,
+                  mostRecentBitcoinTxHash: "btx_1",
                 ),
               ]);
 
@@ -1267,11 +1267,10 @@ void main() {
                 .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
 
             when(() => mockEventsRepository.getAllByAddressesVerbose(
-                    whitelist: DEFAULT_WHITELIST,
-                    addresses: ["0x123"],
-                    // limit: 10,
-                    unconfirmed: true))
-                .thenAnswer((_) async => <VerboseEvent>[] );
+                whitelist: DEFAULT_WHITELIST,
+                addresses: ["0x123"],
+                // limit: 10,
+                unconfirmed: true)).thenAnswer((_) async => <VerboseEvent>[]);
 
             return DashboardActivityFeedBloc(
                 pageSize: 10,
@@ -1292,6 +1291,7 @@ void main() {
                   newTransactionCount: 0,
                   nextCursor: null,
                   mostRecentCounterpartyEventHash: null,
+                  mostRecentBitcoinTxHash: "btx_1",
                 ),
               ]);
     });

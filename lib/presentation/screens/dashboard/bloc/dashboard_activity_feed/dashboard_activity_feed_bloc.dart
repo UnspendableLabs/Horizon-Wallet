@@ -96,6 +96,7 @@ class DashboardActivityFeedBloc
             nextCursor: null,
             newTransactionCount: events.length,
             mostRecentCounterpartyEventHash: null,
+            mostRecentBitcoinTxHash: null,
             transactions:
                 currentState.transactions)); // might have sme locally;
 
@@ -189,6 +190,8 @@ class DashboardActivityFeedBloc
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: currentState.nextCursor,
             newTransactionCount: nextNewTransactionCount,
+            mostRecentBitcoinTxHash: null,
+
             // mostRecentCounterpartyEventHash: nextNewTransactionCount == 0 ? nextList[0].hash : currentState.mostRecentCounterpartyEventHash,
             mostRecentCounterpartyEventHash:
                 replacedHash ?? currentState.mostRecentCounterpartyEventHash,
@@ -408,6 +411,12 @@ class DashboardActivityFeedBloc
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: null,
           newTransactionCount: 0,
+          mostRecentBitcoinTxHash:
+              btcMempoolList.isNotEmpty // TODO: write test for this
+                  ? btcMempoolList[0].txid
+                  : btcConfirmedList.isNotEmpty
+                      ? btcConfirmedList[0].txid
+                      : null,
           mostRecentCounterpartyEventHash: counterpartyEvents.isNotEmpty
               ? counterpartyEvents[0].txHash
               : null,
