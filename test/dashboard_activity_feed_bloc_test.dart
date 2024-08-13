@@ -271,6 +271,9 @@ void main() {
 
   final defaultBitcoinRepository = MockBitcoinRepository();
 
+  when(() => defaultBitcoinRepository.getTransactions(any()))
+      .thenAnswer((_) async => const Right([]));
+
   when(() => defaultBitcoinRepository.getMempoolTransactions(any()))
       .thenAnswer((_) async => const Right([]));
 

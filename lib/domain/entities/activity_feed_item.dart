@@ -15,4 +15,22 @@ class ActivityFeedItem extends Equatable {
 
   @override
   List<Object?> get props => [hash, event, info, bitcoinTx];
+
+  int? getBlockIndex() => switch (this) {
+        ActivityFeedItem(event: Event(blockIndex: final index?)) => index,
+        ActivityFeedItem(
+          bitcoinTx: BitcoinTx(status: Status(blockHeight: final height?))
+        ) =>
+          height,
+        _ => null
+      };
+
+  bool isMempool() => switch (this) {
+        ActivityFeedItem(event: Event(state: EventStateMempool())) => true,
+        ActivityFeedItem(
+          bitcoinTx: BitcoinTx(status: Status(confirmed: false))
+        ) =>
+          true,
+        _ => false,
+      };
 }

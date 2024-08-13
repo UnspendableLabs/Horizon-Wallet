@@ -40,6 +40,15 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
           })
           .values
           .toList();
+      // Sort transactions by block height in descending order
+      uniqueTransactions.sort((a, b) {
+        // Assuming BitcoinTx has a blockHeight property
+        // Put unconfirmed transactions (null block height) at the beginning
+        // ( but they should all be confirmed )
+        if (a.status.blockHeight == null) return -1;
+        if (b.status.blockHeight == null) return 1;
+        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+      });
 
       return Right(uniqueTransactions);
     } on Failure catch (e) {
@@ -66,6 +75,16 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
           })
           .values
           .toList();
+
+      // Sort transactions by block height in descending order
+      uniqueTransactions.sort((a, b) {
+        // Assuming BitcoinTx has a blockHeight property
+        // Put unconfirmed transactions (null block height) at the beginning
+        // ( but they should all be confirmed )
+        if (a.status.blockHeight == null) return -1;
+        if (b.status.blockHeight == null) return 1;
+        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+      });
 
       return Right(uniqueTransactions);
     } on Failure catch (e) {
