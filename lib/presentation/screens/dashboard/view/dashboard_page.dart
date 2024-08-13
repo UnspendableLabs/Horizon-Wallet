@@ -5,9 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
@@ -16,11 +16,11 @@ import 'package:horizon/presentation/screens/compose_send/view/compose_send_page
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -137,6 +137,8 @@ class _DashboardPage_State extends State<_DashboardPage> {
                             isDarkTheme: isDarkTheme,
                             dashboardActivityFeedBloc:
                                 dashboardActivityFeedBloc,
+                            addresses: addresses,
+                            accountUuid: widget.accountUuid,
                           ),
                           BlocProvider(
                             create: (context) =>
@@ -339,14 +341,70 @@ class AccountSelectionButton extends StatelessWidget {
   }
 }
 
+class AddressAction extends StatelessWidget {
+  final HorizonDialog dialog;
+  final IconData icon;
+  final String text;
+
+  const AddressAction(
+      {super.key,
+      required this.dialog,
+      required this.icon,
+      required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: SizedBox(
+          height: 65,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24.0),
+              ),
+            ),
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return dialog;
+                  });
+            },
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 20.0),
+                  const SizedBox(width: 8.0),
+                  Text(text,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 17)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final List<Address> addresses;
+  final String accountUuid;
 
   const AddressActions({
     super.key,
     required this.isDarkTheme,
     required this.dashboardActivityFeedBloc,
+    required this.addresses,
+    required this.accountUuid,
   });
 
   @override
@@ -357,88 +415,45 @@ class AddressActions extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: SizedBox(
-                  height: 65,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24.0),
-                      ),
-                    ),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return HorizonDialog(
-                              title: "Compose Issuance",
-                              body: ComposeIssuancePage(
-                                isDarkMode: isDarkTheme,
-                                dashboardActivityFeedBloc:
-                                    dashboardActivityFeedBloc,
-                              ),
-                            );
-                          });
-                    },
-                    child: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.add),
-                          SizedBox(width: 8.0),
-                          Text("ISSUE"),
-                        ],
-                      ),
-                    ),
-                  ),
+            AddressAction(
+              dialog: HorizonDialog(
+                title: "Compose Issuance",
+                body: ComposeIssuancePage(
+                  isDarkMode: isDarkTheme,
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
+                includeBackButton: false,
+                includeCloseButton: true,
               ),
+              icon: Icons.add,
+              text: "ISSUE",
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: SizedBox(
-                  height: 65,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24.0),
-                      ),
-                    ),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return HorizonDialog(
-                              title: "Compose Send",
-                              body: ComposeSendPage(
-                                isDarkMode: isDarkTheme,
-                                dashboardActivityFeedBloc:
-                                    dashboardActivityFeedBloc,
-                              ),
-                            );
-                          });
-                    },
-                    child: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.send),
-                          SizedBox(width: 8.0),
-                          Text("SEND"),
-                        ],
-                      ),
-                    ),
-                  ),
+            AddressAction(
+              dialog: HorizonDialog(
+                title: "Compose Send",
+                body: ComposeSendPage(
+                  isDarkMode: isDarkTheme,
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
+                includeBackButton: false,
+                includeCloseButton: true,
               ),
+              icon: Icons.send,
+              text: "SEND",
             ),
+            AddressAction(
+                dialog: HorizonDialog(
+                  title: "Receive",
+                  body: QRCodeDialog(
+                    isDarkTheme: isDarkTheme,
+                    key: Key(accountUuid),
+                    addresses: addresses,
+                  ),
+                  includeBackButton: false,
+                  includeCloseButton: true,
+                ),
+                icon: Icons.qr_code,
+                text: "RECEIVE")
           ],
         ),
       ),
@@ -537,38 +552,17 @@ class _BalancesState extends State<Balances> {
         ),
         child: Column(
           children: [
-            Padding(
+            const Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Account Balances',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.qr_code),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return HorizonDialog(
-                            title: "Receive",
-                            titleAlign: Alignment.centerLeft,
-                            includeBackButton: false,
-                            includeCloseButton: true,
-                            body: QRCodeDialog(
-                              isDarkTheme: isDarkTheme,
-                              key: Key(widget.accountUuid),
-                              addresses: addresses,
-                            ),
-                          );
-                        },
-                      );
-                    },
                   ),
                 ],
               ),
