@@ -377,8 +377,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           quantity = (input).toBigInt().toInt();
                         }
 
+
                         if (asset == null) {
                           throw Exception("no asset");
+
                         }
 
                         context.read<ComposeSendBloc>().add(
