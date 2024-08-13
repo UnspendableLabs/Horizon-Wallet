@@ -332,7 +332,7 @@ class DashboardActivityFeedBloc
 
       final btcMempoolMap = {for (var tx in btcMempoolList) tx.txid: tx};
 
-      final btcConfirmedE = await bitcoinRepository.getTransactions(addresses);
+      final btcConfirmedE = await bitcoinRepository.getConfirmedTransactions(addresses);
 
       final btcConfirmedList =
           btcConfirmedE.getOrElse((left) => throw Exception(left));

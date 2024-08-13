@@ -110,6 +110,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                     accountUuid: widget.accountUuid,
                     eventsRepository: GetIt.I.get<EventsRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
+                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
                     transactionLocalRepository:
                         GetIt.I.get<TransactionLocalRepository>(),
                     pageSize: 10,
@@ -150,19 +151,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                               accountUuid: widget.accountUuid,
                             ),
                           ),
-                          BlocProvider(
-                            create: (context) => DashboardActivityFeedBloc(
-                              accountUuid: widget.accountUuid,
-                              eventsRepository: GetIt.I.get<EventsRepository>(),
-                              addressRepository:
-                                  GetIt.I.get<AddressRepository>(),
-                              transactionLocalRepository:
-                                  GetIt.I.get<TransactionLocalRepository>(),
-                              pageSize: 10,
-                            ),
-                            child: DashboardActivityFeedScreen(
-                                addresses: addresses),
-                          )
+                          DashboardActivityFeedScreen(addresses: addresses),
                         ],
                       ),
                     ),
