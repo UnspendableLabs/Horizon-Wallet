@@ -36,7 +36,7 @@ class DashboardActivityFeedBloc
     on<StartPolling>(_onStartPolling);
     on<StopPolling>(_onStopPolling);
     on<Load>(_onLoad);
-    on<LoadMore>(_onLoadMore);
+    // on<LoadMore>(_onLoadMore);
     on<LoadQuiet>(_onLoadQuiet);
     // on<Reload>(_onReload);
   }
@@ -188,61 +188,61 @@ class DashboardActivityFeedBloc
     }
   }
 
-  void _onLoadMore(
-      LoadMore event, Emitter<DashboardActivityFeedState> emit) async {
-    // can only call when stte is complete ok
-    if (state is! DashboardActivityFeedStateCompleteOk) {
-      return;
-    }
-
-    final currentState = state as DashboardActivityFeedStateCompleteOk;
-
-    // we are at the end of the list
-    if (currentState.nextCursor == null) {
-      return;
-    }
-
-    emit(DashboardActivityFeedStateReloadingOk(
-      transactions: currentState.transactions,
-      newTransactionCount: currentState.newTransactionCount,
-    ));
-
-    try {
-      // we don't care about local transactions, just load remote if we have a cursor
-
-      final addresses_ =
-          await addressRepository.getAllByAccountUuid(accountUuid);
-
-      List<String> addresses = addresses_.map((a) => a.address).toList();
-
-      final (remoteEvents, nextCursor, _) =
-          await eventsRepository.getByAddressesVerbose(
-              addresses: addresses,
-              cursor: currentState.nextCursor,
-              limit: pageSize,
-              unconfirmed: true,
-              whitelist: DEFAULT_WHITELIST);
-
-      // appent new transactions to existing transactions
-
-      final remoteDisplayTransactions = remoteEvents
-          .map((tx) => ActivityFeedItem(hash: tx.txHash, event: tx))
-          .toList();
-
-      emit(DashboardActivityFeedStateCompleteOk(
-          nextCursor: nextCursor,
-          mostRecentCounterpartyEventHash:
-              currentState.mostRecentCounterpartyEventHash,
-          newTransactionCount: currentState.newTransactionCount,
-          transactions: [
-            ...currentState.transactions,
-            ...remoteDisplayTransactions
-          ]));
-    } catch (e) {
-      rethrow;
-      emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
-    }
-  }
+  // void _onLoadMore(
+  //     LoadMore event, Emitter<DashboardActivityFeedState> emit) async {
+  //   // can only call when stte is complete ok
+  //   if (state is! DashboardActivityFeedStateCompleteOk) {
+  //     return;
+  //   }
+  //
+  //   final currentState = state as DashboardActivityFeedStateCompleteOk;
+  //
+  //   // we are at the end of the list
+  //   if (currentState.nextCursor == null) {
+  //     return;
+  //   }
+  //
+  //   emit(DashboardActivityFeedStateReloadingOk(
+  //     transactions: currentState.transactions,
+  //     newTransactionCount: currentState.newTransactionCount,
+  //   ));
+  //
+  //   try {
+  //     // we don't care about local transactions, just load remote if we have a cursor
+  //
+  //     final addresses_ =
+  //         await addressRepository.getAllByAccountUuid(accountUuid);
+  //
+  //     List<String> addresses = addresses_.map((a) => a.address).toList();
+  //
+  //     final (remoteEvents, nextCursor, _) =
+  //         await eventsRepository.getByAddressesVerbose(
+  //             addresses: addresses,
+  //             cursor: currentState.nextCursor,
+  //             limit: pageSize,
+  //             unconfirmed: true,
+  //             whitelist: DEFAULT_WHITELIST);
+  //
+  //     // appent new transactions to existing transactions
+  //
+  //     final remoteDisplayTransactions = remoteEvents
+  //         .map((tx) => ActivityFeedItem(hash: tx.txHash, event: tx))
+  //         .toList();
+  //
+  //     emit(DashboardActivityFeedStateCompleteOk(
+  //         nextCursor: nextCursor,
+  //         mostRecentCounterpartyEventHash:
+  //             currentState.mostRecentCounterpartyEventHash,
+  //         newTransactionCount: currentState.newTransactionCount,
+  //         transactions: [
+  //           ...currentState.transactions,
+  //           ...remoteDisplayTransactions
+  //         ]));
+  //   } catch (e) {
+  //     rethrow;
+  //     emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
+  //   }
+  // }
 
   void _onLoad(event, Emitter<DashboardActivityFeedState> emit) async {
     final nextState = switch (state) {
@@ -295,10 +295,10 @@ class DashboardActivityFeedBloc
 
       // get all counterparty events
 
-      final (counterpartyEvents, nextCursor, _) =
-          await eventsRepository.getByAddressesVerbose(
+      final counterpartyEvents =
+          await eventsRepository.getAllByAddressesVerbose(
               addresses: addresses,
-              limit: pageSize,
+              // limit: pageSize,
               unconfirmed: true,
               whitelist: DEFAULT_WHITELIST);
 
@@ -394,7 +394,7 @@ class DashboardActivityFeedBloc
       }
 
       emit(DashboardActivityFeedStateCompleteOk(
-          nextCursor: nextCursor,
+          nextCursor: null,
           newTransactionCount: 0,
           mostRecentCounterpartyEventHash: counterpartyEvents.isNotEmpty
               ? counterpartyEvents[0].txHash

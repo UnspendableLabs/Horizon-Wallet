@@ -334,14 +334,14 @@ class _DashboardActivityFeedScreenState
                   return null;
                 },
               ),
-              ElevatedButton(
-                onPressed: () {
-                  context
-                      .read<DashboardActivityFeedBloc>()
-                      .add(const LoadMore());
-                },
-                child: const Text("Load More"),
-              ),
+              // ElevatedButton(
+              //   onPressed: () {
+              //     context
+              //         .read<DashboardActivityFeedBloc>()
+              //         .add(const LoadMore());
+              //   },
+              //   child: const Text("Load More"),
+              // ),
             ],
           );
         }

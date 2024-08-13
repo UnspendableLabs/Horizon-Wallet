@@ -34,10 +34,10 @@ class Load extends DashboardActivityFeedEvent {
 *
 *   note: is append only
 */
-
-class LoadMore extends DashboardActivityFeedEvent {
-  const LoadMore();
-}
+//
+// class LoadMore extends DashboardActivityFeedEvent {
+//   const LoadMore();
+// }
 
 /* 
 *   Used when
