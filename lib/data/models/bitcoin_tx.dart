@@ -1,5 +1,6 @@
 // In data/models/bitcoin_tx_model.dart
 
+import 'package:decimal/decimal.dart';
 import '../../domain/entities/bitcoin_tx.dart';
 
 class PrevoutModel {
@@ -47,7 +48,7 @@ class PrevoutModel {
 class VinModel {
   final String txid;
   final int vout;
-  final PrevoutModel prevout;
+  final PrevoutModel? prevout;
   final String scriptsig;
   final String scriptsigAsm;
   final List<String> witness;
@@ -69,7 +70,7 @@ class VinModel {
     return VinModel(
       txid: json['txid'] as String,
       vout: json['vout'] as int,
-      prevout: PrevoutModel.fromJson(json['prevout'] as Map<String, dynamic>),
+      prevout: json["prevout"] != null ? PrevoutModel.fromJson(json['prevout'] as Map<String, dynamic>) : null,
       scriptsig: json['scriptsig'] as String,
       scriptsigAsm: json['scriptsig_asm'] as String,
       witness: List<String>.from(json['witness'] as List),
@@ -81,7 +82,7 @@ class VinModel {
   Map<String, dynamic> toJson() => {
     'txid': txid,
     'vout': vout,
-    'prevout': prevout.toJson(),
+    'prevout': prevout?.toJson(),
     'scriptsig': scriptsig,
     'scriptsig_asm': scriptsigAsm,
     'witness': witness,
@@ -92,7 +93,7 @@ class VinModel {
   Vin toDomain() => Vin(
     txid: txid,
     vout: vout,
-    prevout: prevout.toDomain(),
+    prevout: prevout?.toDomain(),
     scriptsig: scriptsig,
     scriptsigAsm: scriptsigAsm,
     witness: witness,

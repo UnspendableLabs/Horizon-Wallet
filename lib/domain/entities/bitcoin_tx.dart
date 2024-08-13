@@ -19,7 +19,7 @@ class Prevout {
 class Vin {
   final String txid;
   final int vout;
-  final Prevout prevout;
+  final Prevout? prevout;
   final String scriptsig;
   final String scriptsigAsm;
   final List<String> witness;
@@ -94,8 +94,9 @@ class BitcoinTx {
   });
 
   TransactionType getTransactionType(List<String> addresses) {
-    bool isSender = vin
-        .any((input) => addresses.contains(input.prevout.scriptpubkeyAddress));
+    bool isSender = vin.any((input) =>
+        input.prevout?.scriptpubkeyAddress != null &&
+        addresses.contains(input.prevout!.scriptpubkeyAddress));
     bool isRecipient =
         vout.any((output) => addresses.contains(output.scriptpubkeyAddress));
 
@@ -109,13 +110,16 @@ class BitcoinTx {
   }
 
   Decimal getAmountSent(List<String> addresses) {
-    // First, calculate the total input amount from the given addresses
-    Decimal totalInput = vin
-        .where((input) => addresses.contains(input.prevout.scriptpubkeyAddress))
-        .fold(Decimal.zero,
-            (sum, input) => sum + Decimal.fromInt(input.prevout.value));
+    // Calculate the total input amount from the given addresses
+    Decimal totalInput = vin.fold(Decimal.zero, (sum, input) {
+      if (input.prevout != null &&
+          addresses.contains(input.prevout!.scriptpubkeyAddress)) {
+        return sum + Decimal.fromInt(input.prevout!.value);
+      }
+      return sum;
+    });
 
-    // Then, calculate the amount that goes back to the same addresses (change)
+    // Calculate the amount that goes back to the same addresses (change)
     Decimal changeAmount = vout
         .where((output) => addresses.contains(output.scriptpubkeyAddress))
         .fold(
