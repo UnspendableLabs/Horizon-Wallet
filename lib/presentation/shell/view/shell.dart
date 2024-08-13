@@ -209,7 +209,7 @@ class Shell extends StatelessWidget {
     final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
     final selectedColor =
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
-    final unselectedColor = isDarkTheme ? greyDarkTheme : Colors.grey;
+    final unselectedColor = isDarkTheme ? mainTextGrey : Colors.grey;
 
     return Container(
       decoration: BoxDecoration(

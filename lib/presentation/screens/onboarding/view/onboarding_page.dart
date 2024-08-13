@@ -159,7 +159,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   child: Text('LOGIN TO EXISTING WALLET',
                                       style: TextStyle(
                                           color: isDarkMode
-                                              ? greyDarkTheme
+                                              ? mainTextGrey
                                               : mainTextBlack)),
                                 ),
                               ),
@@ -269,7 +269,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     'IMPORT EXISTING',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? greyDarkTheme
+                                            ? mainTextGrey
                                             : mainTextWhite),
                                   ),
                                 ),

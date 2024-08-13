@@ -297,7 +297,7 @@ class PasswordPrompt extends StatelessWidget {
                           child: Text('CANCEL',
                               style: TextStyle(
                                   color: isDarkMode
-                                      ? greyDarkTheme
+                                      ? mainTextGrey
                                       : mainTextBlack)),
                         ),
                       ),
@@ -428,7 +428,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text('CANCEL',
                         style: TextStyle(
-                            color: isDarkMode ? greyDarkTheme : mainTextBlack)),
+                            color: isDarkMode ? mainTextGrey : mainTextBlack)),
                   ),
                 ),
                 SizedBox(

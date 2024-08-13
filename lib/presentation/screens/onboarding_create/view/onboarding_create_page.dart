@@ -307,7 +307,7 @@ class PasswordPrompt extends StatelessWidget {
                             child: Text('CANCEL',
                                 style: TextStyle(
                                     color: isDarkMode
-                                        ? greyDarkTheme
+                                        ? mainTextGrey
                                         : mainTextBlack)),
                           ),
                         ),
@@ -486,7 +486,7 @@ class _MnemonicState extends State<Mnemonic> {
                                 child: Text('CANCEL',
                                     style: TextStyle(
                                         color: isDarkMode
-                                            ? greyDarkTheme
+                                            ? mainTextGrey
                                             : mainTextBlack)),
                               ),
                             ),
@@ -620,7 +620,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text('BACK',
                         style: TextStyle(
-                            color: isDarkMode ? greyDarkTheme : mainTextBlack)),
+                            color: isDarkMode ? mainTextGrey : mainTextBlack)),
                   ),
                 ),
                 SizedBox(
