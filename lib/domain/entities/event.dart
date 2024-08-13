@@ -35,7 +35,7 @@ class Event extends Equatable {
   final String event;
   final String txHash;
   final int? blockIndex;
-  final bool confirmed;
+  // final bool confirmed;
 
   const Event({
     required this.state,
@@ -43,12 +43,14 @@ class Event extends Equatable {
     required this.event,
     required this.txHash,
     this.blockIndex,
-    required this.confirmed,
+    // required this.confirmed,
   });
 
   @override
   List<Object?> get props =>
-      [state, eventIndex, event, txHash, blockIndex, confirmed];
+      [state, eventIndex, event, txHash, blockIndex,
+      // confirmed
+      ];
 }
 
 class VerboseEvent extends Event {
@@ -60,7 +62,7 @@ class VerboseEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.blockTime,
   });
 
@@ -71,7 +73,7 @@ class VerboseEvent extends Event {
         super.event,
         super.txHash,
         super.blockIndex,
-        super.confirmed,
+        // super.confirmed,
         blockTime
       ];
 }
@@ -109,7 +111,7 @@ class EnhancedSendEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 }
@@ -144,7 +146,7 @@ class VerboseEnhancedSendEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -198,7 +200,7 @@ class CreditEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 }
@@ -212,7 +214,7 @@ class VerboseCreditEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -266,7 +268,7 @@ class DebitEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 }
@@ -280,7 +282,7 @@ class VerboseDebitEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -321,7 +323,7 @@ class NewTransactionEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 }
@@ -355,7 +357,7 @@ class VerboseNewTransactionEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -412,7 +414,7 @@ class AssetIssuanceEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 }
@@ -453,7 +455,7 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });

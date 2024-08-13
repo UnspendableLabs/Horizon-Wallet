@@ -4,13 +4,13 @@ import 'package:horizon/domain/repositories/events_repository.dart';
 
 class StateMapper {
   static EventState get(api.Event apiEvent) {
-    return apiEvent.confirmed
+    return apiEvent.blockIndex != null
         ? EventStateConfirmed(blockHeight: apiEvent.blockIndex!)
         : EventStateMempool();
   }
 
   static EventState getVerbose(api.VerboseEvent apiEvent) {
-    return apiEvent.confirmed
+    return apiEvent.blockIndex != null
         ? EventStateConfirmed(
             blockHeight: apiEvent.blockIndex!, blockTime: apiEvent.blockTime)
         : EventStateMempool();
@@ -44,7 +44,7 @@ class EventMapper {
           txHash:
               apiEvent.txHash!, // all of the events we care about have tx hash,
           blockIndex: apiEvent.blockIndex,
-          confirmed: apiEvent.confirmed,
+          // confirmed: apiEvent.confirmed,
         );
     }
   }
@@ -79,7 +79,7 @@ class VerboseEventMapper {
             event: apiEvent.event,
             txHash: apiEvent.txHash!,
             blockIndex: apiEvent.blockIndex,
-            confirmed: apiEvent.confirmed,
+            // confirmed: apiEvent.confirmed,
             blockTime: apiEvent.blockTime,
           );
         }
@@ -93,16 +93,6 @@ class VerboseEventMapper {
       //   return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as ApiVerboseAssetIssuanceEvent);
       default:
         throw Exception('Invariant: unsupported event type: ${apiEvent.event}');
-        // Return a generic VerboseEvent for unknown types
-        return VerboseEvent(
-          state: StateMapper.getVerbose(apiEvent),
-          eventIndex: apiEvent.eventIndex,
-          event: apiEvent.event,
-          txHash: apiEvent.txHash!,
-          blockIndex: apiEvent.blockIndex,
-          confirmed: apiEvent.confirmed,
-          blockTime: apiEvent.blockTime,
-        );
     }
   }
 }
@@ -115,7 +105,7 @@ class EnhancedSendEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: EnhancedSendParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -146,7 +136,7 @@ class VerboseEnhancedSendEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseEnhancedSendParamsMapper.toDomain(apiEvent.params),
     );
@@ -181,7 +171,7 @@ class CreditEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: CreditParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -209,7 +199,7 @@ class VerboseCreditEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseCreditParamsMapper.toDomain(apiEvent.params),
     );
@@ -241,7 +231,7 @@ class DebitEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: DebitParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -269,7 +259,7 @@ class VerboseDebitEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseDebitParamsMapper.toDomain(apiEvent.params),
     );
@@ -301,7 +291,7 @@ class AssetIssuanceEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -341,7 +331,7 @@ class VerboseAssetIssuanceEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseAssetIssuanceParamsMapper.toDomain(apiEvent.params),
     );
@@ -419,7 +409,7 @@ class VerboseNewTransactionEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash ?? "",
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseNewTransactionParamsMapper.toDomain(apiEvent.params),
     );
