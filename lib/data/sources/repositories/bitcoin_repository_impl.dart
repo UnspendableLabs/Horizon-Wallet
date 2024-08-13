@@ -24,6 +24,32 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   }
 
   @override
+  Future<Either<Failure, List<BitcoinTx>>> getTransactions(
+      List<String> addresses) async {
+    try {
+      final allTransactions = await Future.wait(addresses.map(
+          (address) => _esploraApi.getTransactionsForAddress(address)));
+
+      final flattenedTransactions = allTransactions.expand((i) => i).toList();
+
+      final uniqueTransactions = flattenedTransactions
+          .fold<Map<String, BitcoinTx>>({}, (map, tx) {
+            map.putIfAbsent(tx.txid,
+                () => tx.toDomain()); // possible there could be collisions?
+            return map;
+          })
+          .values
+          .toList();
+
+      return Right(uniqueTransactions);
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<BitcoinTx>>> getMempoolTransactions(
       List<String> addresses) async {
     try {
@@ -110,6 +136,19 @@ class EsploraApi {
   final Dio _dio;
 
   EsploraApi({required Dio dio}) : _dio = dio;
+
+  Future<List<BitcoinTxModel>> getTransactionsForAddress(
+      String address) async {
+    try {
+      final response = await _dio.get('/address/$address/txs');
+      final List<dynamic> txList = response.data as List<dynamic>;
+      return txList
+          .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      _handleDioException(e);
+    }
+  }
 
   Future<List<BitcoinTxModel>> getMempoolTransactionsForAddress(
       String address) async {

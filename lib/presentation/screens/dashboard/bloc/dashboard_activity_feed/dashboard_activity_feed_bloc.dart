@@ -78,7 +78,19 @@ class DashboardActivityFeedBloc
                 unconfirmed: true,
                 whitelist: DEFAULT_WHITELIST);
 
-        // TODO: add mempool here
+        final btcE = await bitcoinRepository.getTransactions(addresses);
+
+        late final btcTransactions;
+        switch (btcE) {
+          case Left(value: final failure):
+            emit(DashboardActivityFeedStateCompleteError(
+                error: failure.message));
+            return;
+          case Right(value: final transactions_):
+            btcTransactions = transactions_;
+        }
+
+        // dedupe btc transactions and events by tx hash
 
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: null,
