@@ -453,8 +453,10 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     final addressesParam = addresses.join(',');
 
+    final whitelist_ = whitelist?.join(",");
+
     final response = await api_.getEventsByAddresses(
-        addressesParam, cursor, limit, unconfirmed);
+        addressesParam, cursor, limit, unconfirmed, whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
@@ -462,9 +464,7 @@ class EventsRepositoryImpl implements EventsRepository {
 
     int? nextCursor = response.nextCursor;
 
-    List<Event> events = response.result!
-        .where((event) => whitelist == null || whitelist.contains(event.event))
-        .map((event) {
+    List<Event> events = response.result!.map((event) {
       return EventMapper.toDomain(event);
     }).toList();
 
@@ -496,16 +496,16 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     final addressesParam = addresses.join(',');
 
+    final whitelist_ = whitelist?.join(",");
+
     final response = await api_.getEventsByAddressesVerbose(
-        addressesParam, cursor, limit, unconfirmed);
+        addressesParam, cursor, limit, unconfirmed, whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
     }
     int? nextCursor = response.nextCursor;
-    List<VerboseEvent> events = response.result!
-        .where((event) => whitelist == null || whitelist.contains(event.event))
-        .map((event) {
+    List<VerboseEvent> events = response.result!.map((event) {
       return VerboseEventMapper.toDomain(event);
     }).toList();
 
