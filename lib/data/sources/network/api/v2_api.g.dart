@@ -2475,6 +2475,7 @@ class _V2Api implements V2Api {
     int? cursor,
     int? limit,
     bool? showUnconfirmed,
+    String? eventName,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2482,6 +2483,7 @@ class _V2Api implements V2Api {
       r'cursor': cursor,
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
+      r'event_name': eventName,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -2520,6 +2522,7 @@ class _V2Api implements V2Api {
     int? cursor,
     int? limit,
     bool? showUnconfirmed,
+    String? eventName,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2527,6 +2530,7 @@ class _V2Api implements V2Api {
       r'cursor': cursor,
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
+      r'event_name': eventName,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

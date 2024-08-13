@@ -2238,6 +2238,7 @@ abstract class V2Api {
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("event_name") String? eventName,
   ]);
 
   // @Verbose()
@@ -2247,6 +2248,7 @@ abstract class V2Api {
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("event_name") String? eventName,
   ]);
 
   // {
