@@ -378,11 +378,13 @@ class AddressAction extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(icon, size: 20.0),
+                  Icon(icon, size: 20.0, color: mainTextGrey),
                   const SizedBox(width: 8.0),
                   Text(text,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 17)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: mainTextGrey)),
                 ],
               ),
             ),
