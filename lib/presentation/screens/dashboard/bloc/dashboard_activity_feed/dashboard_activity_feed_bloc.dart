@@ -391,7 +391,7 @@ class DashboardActivityFeedBloc
           await bitcoinRepository.getMempoolTransactions(addresses);
 
       final btcMempoolList = btcMempoolE
-          .getOrElse((left) => throw Exception(left))
+          .getOrElse((left) => [])
           .where(
             (tx) => !tx.isCounterpartyTx(addresses),
           )
@@ -403,7 +403,7 @@ class DashboardActivityFeedBloc
           await bitcoinRepository.getConfirmedTransactions(addresses);
 
       final btcConfirmedList = btcConfirmedE
-          .getOrElse((left) => throw Exception(left))
+          .getOrElse((left) => [])
           .where(
             (tx) => !tx.isCounterpartyTx(addresses),
           )
