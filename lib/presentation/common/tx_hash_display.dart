@@ -47,9 +47,9 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
           children: [
             TextSpan(
               text: shortenedHash,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
+              // style: const TextStyle(
+              //   // color: Colors.white,
+              // ),
             ),
           ],
         ),
