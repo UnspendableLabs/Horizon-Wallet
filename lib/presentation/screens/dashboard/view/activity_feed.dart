@@ -11,20 +11,13 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 
-
 import 'package:horizon/common/format.dart';
 
-enum SendSide { source, destination }
-
-// TODO: move to some util file
-
 class SendTitle extends StatelessWidget {
-  // final String destination;
   final String quantityNormalized;
   final String asset;
   const SendTitle({
     super.key,
-    // required this.destination,
     required this.quantityNormalized,
     required this.asset,
   });
@@ -36,12 +29,10 @@ class SendTitle extends StatelessWidget {
 }
 
 class ReceiveTitle extends StatelessWidget {
-  // final String source;
   final String quantityNormalized;
   final String asset;
   const ReceiveTitle({
     super.key,
-    // required this.source,
     required this.quantityNormalized,
     required this.asset,
   });
@@ -136,6 +127,8 @@ class NewTransactionsBanner extends StatelessWidget {
   }
 }
 
+enum SendSide { source, destination }
+
 class ActivityFeedListItem extends StatelessWidget {
   final ActivityFeedItem item;
   final List<Address> addresses;
@@ -150,10 +143,7 @@ class ActivityFeedListItem extends StatelessWidget {
       subtitle: _buildSubtitle(),
       leading: _buildLeadingIcon(),
       trailing: _buildTrailing(),
-      onTap: () {
-        // Handle item tap
-        // You might want to navigate to a detail page here
-      },
+      // onTap: () {},
     );
   }
 
@@ -182,45 +172,35 @@ class ActivityFeedListItem extends StatelessWidget {
 
     return switch (tx.getTransactionType(addresses_)) {
       TransactionType.sender => SendTitle(
-          // destination: tx.vout.first.scriptpubkeyAddress!,
           quantityNormalized: satoshisToBtc(tx.vout.first.value).toString(),
           asset: 'BTC',
         ),
       // TODO: assumes single party send?
       TransactionType.recipient => ReceiveTitle(
-          // source: tx.vin.first.prevout!.scriptpubkeyAddress!,
-          // source: " ",
           quantityNormalized: satoshisToBtc(tx.vout.first.value).toString(),
           asset: 'BTC',
         ),
       TransactionType.neither =>
-        throw Exception('Invariant: account neither sender or receiver')
+        const Text('Invariant: account neither sender or receiver')
     };
   }
 
   Widget _buildEventTitle(Event event) {
     return switch (event) {
-      // VerboseDebitEvent(params: var params) =>
-      //   Text("Send ${params.quantityNormalized} ${params.asset}"),
-      // VerboseCreditEvent(params: var params) =>
-      //   Text("Receive ${params.quantityNormalized} ${params.asset}"),
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
         SendTitle(
           quantityNormalized: params.quantityNormalized,
           asset: params.asset,
-          // destination: params.destination,
         ),
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
         ReceiveTitle(
           quantityNormalized: params.quantityNormalized,
           asset: params.asset,
-          // source: params.source,
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
         Text("Issue ${params.quantityNormalized} ${params.asset}"),
-      // TODO: log this
       _ =>
         Text('Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -230,12 +210,10 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (info) {
       TransactionInfoEnhancedSendVerbose(
         unpackedData: var unpackedData,
-        // asset: var asset,
-        // address: var address,
-        // quantityNormalized: var quantityNormalized,
       ) =>
-        Text(
-            "Send ${unpackedData.quantityNormalized} ${unpackedData.asset} to ${unpackedData.address}"),
+        SendTitle(
+            quantityNormalized: unpackedData.quantityNormalized,
+            asset: unpackedData.asset),
       TransactionInfoIssuanceVerbose(
         unpackedData: var unpackedData,
       ) =>
@@ -243,7 +221,10 @@ class ActivityFeedListItem extends StatelessWidget {
       // btc send
       TransactionInfoVerbose(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
-        Text("Send ${satoshisToBtc(btcAmount)} BTC to ${info.destination}"),
+        SendTitle(
+          quantityNormalized: satoshisToBtc(btcAmount).toString(),
+          asset: 'BTC',
+        ),
       _ => Text(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -262,9 +243,6 @@ class ActivityFeedListItem extends StatelessWidget {
     };
   }
 
-  // return Text(info.hash);
-  // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
-
   Widget _buildSubtitle() {
     if (item.event != null) {
       return _buildEventSubtitle(item.event!);
@@ -279,45 +257,21 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildEventSubtitle(Event event) {
     return switch (event) {
-      // VerboseDebitEvent(txHash: var hash) => TxHashDisplay(hash: hash),
-      // VerboseCreditEvent(txHash: var hash) => TxHashDisplay(hash: hash),
       VerboseAssetIssuanceEvent(txHash: var hash) => TxHashDisplay(hash: hash),
       VerboseEnhancedSendEvent(txHash: var hash) => TxHashDisplay(hash: hash),
       _ => Text(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
-
-    // // Customize this based on your Event structure
-    // return Text("${event.event} ${event.txHash}");
-    // // return Text('Event: ${event.event} - State: ${event.state}');
   }
 
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
-    // Customize this based on your TransactionInfo structure
     return TxHashDisplay(hash: info.hash);
-    // return Text('Amount: ${info.btcAmount}, Fee: ${info.fee}');
   }
 
   Widget _buildBitcoinTxSubtitle(BitcoinTx btx) {
-    // TODO:  switch on network
     return TxHashDisplay(
       hash: btx.txid,
     );
-
-    return switch (btx.status) {
-      Status(
-        blockHeight: var blockHeight,
-        blockHash: var blockHash,
-        confirmed: var confirmed,
-      )
-          when confirmed =>
-        Text('Block: $blockHeight, Hash: ${btx.txid}'),
-      Status(
-        blockHash: var blockHash,
-      ) =>
-        Text('Hash: ${btx.txid}'),
-    };
-    // show block index and tx hash
   }
 
   Widget _buildTrailing() {
@@ -339,7 +293,6 @@ class ActivityFeedListItem extends StatelessWidget {
       return _getTransactionInfoLeading(item.info!);
     } else {
       return _getBitcoinTxLeadingIcon(item.bitcoinTx!);
-      // throw Exception('Invariant: Item must have either event or info');
     }
   }
 
@@ -355,15 +308,6 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toll, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
-
-    // return switch (event.event) {
-    //   "CREDIT" => const Icon(Icons.arrow_forward, color: Colors.green),
-    //   "DEBIT" => const Icon(Icons.arrow_back, color: Colors.red),
-    //   "ASSET_ISSUANCE" => const Icon(Icons.toll, color: Colors.grey),
-    //   "ENHANCED_SEND" when event is  => const Icon(Icons.toll, color: Colors.grey),
-    //
-    //   _ => const Icon(Icons.error),
-    // };
   }
 
   Icon _getBitcoinTxLeadingIcon(BitcoinTx btx) {
@@ -380,7 +324,6 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _getEventTrailing(EventState state) => switch (state) {
-        // EventStateLocal() => const Icon(Icons.schedule, color: Colors.orange),
         EventStateMempool() =>
           const TransactionStatusPill(status: TransactionStatus.mempool),
         EventStateConfirmed(blockHeight: var blockHeight) =>
@@ -430,6 +373,8 @@ class _DashboardActivityFeedScreenState
     _bloc = context.read<DashboardActivityFeedBloc>();
 
     // Start polling after the first frame
+    // TODO: make this part of config?
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bloc?.add(const StartPolling(interval: Duration(seconds: 30)));
     });
@@ -482,14 +427,6 @@ class _DashboardActivityFeedScreenState
                   return null;
                 },
               ),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     context
-              //         .read<DashboardActivityFeedBloc>()
-              //         .add(const LoadMore());
-              //   },
-              //   child: const Text("Load More"),
-              // ),
             ],
           );
         }

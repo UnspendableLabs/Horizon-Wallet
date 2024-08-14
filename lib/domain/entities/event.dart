@@ -2,12 +2,6 @@ import "package:equatable/equatable.dart";
 
 sealed class EventState {}
 
-// class EventStateLocal extends EventState {
-//   final String raw;
-//   final DateTime submittedAt;
-//   EventStateLocal({required this.raw, required this.submittedAt});
-// }
-
 class EventStateMempool extends EventState {}
 
 class EventStateConfirmed extends EventState {
@@ -19,14 +13,6 @@ class EventStateConfirmed extends EventState {
   });
 }
 
-//
-// class Event {
-//   String hash;
-//   EventDomain domain;
-//
-//   Event({required this.hash, required this.domain});
-//
-// }
 
 class Event extends Equatable {
   final EventState state;
