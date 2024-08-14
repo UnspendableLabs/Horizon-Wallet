@@ -137,7 +137,7 @@ class BitcoinTx {
   }
 
   // TODO: this isn't necessarily a perfect heuristic
-  bool isCounterpartyTx() {
-    return vout.any((output) => output.scriptpubkeyType == "op_return");
+  bool isCounterpartyTx(List<String> addresses) {
+    return getAmountSent(addresses) == Decimal.zero;
   }
 }
