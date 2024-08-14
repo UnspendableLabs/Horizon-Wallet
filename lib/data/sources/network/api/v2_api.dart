@@ -1958,10 +1958,7 @@ class UTXO {
   factory UTXO.fromJson(Map<String, dynamic> json) => _$UTXOFromJson(json);
 }
 
-// TODO: inject baseURL ( or make dynamic)
-// @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
-// @RestApi(baseUrl: "https://dev.counterparty.io:14000/v2")
-@RestApi(baseUrl: "http://localhost:24000/v2")
+@RestApi()
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 

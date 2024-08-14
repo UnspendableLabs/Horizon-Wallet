@@ -43,11 +43,10 @@ Future<void> setupRegtestWallet() async {
   // read env for regtest private key
   const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
   const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
+  const network= String.fromEnvironment('NETWORK');
 
-  print('regtestPrivateKey: $regtestPrivateKey');
-  print("regtestPassword: $regtestPassword");
 
-  if (regtestPrivateKey != "" && regtestPassword != "") {
+  if (regtestPrivateKey != "" && regtestPassword != "" &&  network == "regtest") {
     RegTestUtils regTestUtils = RegTestUtils();
     EncryptionService encryptionService = GetIt.I<EncryptionService>();
     AddressService addressService = GetIt.I<AddressService>();

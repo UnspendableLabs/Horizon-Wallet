@@ -10,7 +10,6 @@ import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
-import 'package:horizon/data/sources/network/api/dio_client.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
@@ -52,11 +51,34 @@ import 'package:horizon/data/sources/repositories/events_repository_impl.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
+
+import 'package:horizon/js/ecpair.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
-  injector.registerLazySingleton<Dio>(() => buildDioClient());
-  injector.registerLazySingleton<V2Api>(() => V2Api(GetIt.I.get<Dio>()));
+  Config config = EnvironmentConfig();
+
+
+  injector.registerLazySingleton<Config>(() => config);
+
+
+
+  injector.registerLazySingleton<V2Api>(() => V2Api(Dio(BaseOptions(
+      baseUrl: config.counterpartyApiBase,
+      connectTimeout: const Duration(seconds: 5),
+      receiveTimeout: const Duration(seconds: 3)))));
+
+  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
+      esploraApi: EsploraApi(
+          dio: Dio(BaseOptions(
+    baseUrl: config.esploraBase,
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  )))));
+
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
   injector.registerSingleton<AddressTxRepository>(
@@ -73,10 +95,13 @@ Future<void> setup() async {
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
-  injector.registerSingleton<TransactionService>(TransactionServiceImpl());
+  injector.registerSingleton<TransactionService>(
+      TransactionServiceImpl(config: config));
   injector.registerSingleton<EncryptionService>(EncryptionServiceImpl());
-  injector.registerSingleton<WalletService>(WalletServiceImpl(injector()));
-  injector.registerSingleton<AddressService>(AddressServiceImpl());
+  injector
+      .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
+  injector
+      .registerSingleton<AddressService>(AddressServiceImpl(config: config));
   injector.registerSingleton<MnemonicService>(
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
@@ -109,12 +134,4 @@ Future<void> setup() async {
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
-
-  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-      esploraApi: EsploraApi(
-          dio: Dio(BaseOptions(
-    baseUrl: "http://127.0.0.1:3002",
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  )))));
 }

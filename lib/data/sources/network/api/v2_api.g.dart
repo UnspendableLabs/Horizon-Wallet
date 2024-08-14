@@ -1401,9 +1401,7 @@ class _V2Api implements V2Api {
   _V2Api(
     this._dio, {
     this.baseUrl,
-  }) {
-    baseUrl ??= 'http://localhost:24000/v2';
-  }
+  });
 
   final Dio _dio;
 

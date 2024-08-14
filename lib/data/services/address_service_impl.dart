@@ -9,11 +9,16 @@ import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 // TODO: implement some sort of cache
 
 class AddressServiceImpl extends AddressService {
+  final Config config;
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
+
+  AddressServiceImpl({required this.config});
+
   @override
   Future<Address> deriveAddressSegwit(
       {required String privKey,
@@ -183,15 +188,18 @@ class AddressServiceImpl extends AddressService {
         .toList();
     words.insert(0, 0);
     return bech32.encode(
-        ecpair.regtest.bech32, words.map((el) => el.toJS).toList().toJS);
+        _getNetworkBech32(), words.map((el) => el.toJS).toList().toJS);
   }
 
-  _getNetwork() {
-    bool isTestnet =
-        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
+  _getNetwork() => switch (config.network) {
+        Network.mainnet => ecpair.bitcoin,
+        Network.testnet => ecpair.testnet,
+        Network.regtest => ecpair.regtest,
+      };
 
-    print(ecpair.regtest.jsify());
-
-    return isTestnet ? ecpair.regtest : ecpair.bitcoin;
-  }
+  _getNetworkBech32() => switch (config.network) {
+        Network.mainnet => ecpair.bitcoin.bech32,
+        Network.testnet => ecpair.testnet.bech32,
+        Network.regtest => ecpair.regtest.bech32,
+      };
 }

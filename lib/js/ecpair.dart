@@ -28,7 +28,6 @@ external c.Network get bitcoin;
 @JS("networks.testnet")
 external c.Network get testnet;
 
-Map<String, dynamic> reg = {"becy32": "bcrt"};
 
 final regtest = ({
   "messagePrefix": '\x18Bitcoin Signed Message:\n',
