@@ -438,6 +438,18 @@ class DashboardActivityFeedBloc
         }
       }
 
+      confirmedActivityFeedItems.sort((a, b) {
+        final aIndex = a.getBlockIndex();
+        final bIndex = b.getBlockIndex();
+        return (bIndex ?? -1).compareTo(aIndex ?? -1);
+      });
+
+      final transactions = [
+        ...localActivityFeedItems,
+        ...mempoolActivityFeedItems,
+        ...confirmedActivityFeedItems,
+      ];
+
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: null,
           newTransactionCount: 0,
@@ -450,11 +462,7 @@ class DashboardActivityFeedBloc
           mostRecentCounterpartyEventHash: counterpartyEvents.isNotEmpty
               ? counterpartyEvents[0].txHash
               : null,
-          transactions: [
-            ...localActivityFeedItems,
-            ...mempoolActivityFeedItems,
-            ...confirmedActivityFeedItems, // ...remoteDisplayTransactions
-          ]));
+          transactions: transactions));
     } catch (e) {
       rethrow;
       emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
