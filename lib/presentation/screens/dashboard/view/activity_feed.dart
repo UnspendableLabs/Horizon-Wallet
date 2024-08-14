@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import "package:decimal/decimal.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
@@ -12,21 +11,12 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 
+
+import 'package:horizon/common/format.dart';
+
 enum SendSide { source, destination }
 
 // TODO: move to some util file
-Decimal satoshisToBtc(int satoshis) {
-  // No need to check for null as int cannot be null in non-nullable Dart
-
-  // Conversion factor
-  final Decimal btcFactor = Decimal.fromInt(100000000);
-
-  // Perform conversion
-  final btcValue = Decimal.fromInt(satoshis) / btcFactor;
-
-  // Round to 8 decimal places
-  return btcValue.toDecimal().round(scale: 8);
-}
 
 class SendTitle extends StatelessWidget {
   // final String destination;
