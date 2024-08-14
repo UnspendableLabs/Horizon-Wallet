@@ -75,7 +75,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
     });
 
     on<ConfirmTransactionEvent>((event, emit) async {
-      print('CONFIRM TRANSACTION EVENT');
       emit(state.copyWith(addressesState: AddressesState.confirmation(event)));
     });
 
