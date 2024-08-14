@@ -106,6 +106,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
           loading: () => const CircularProgressIndicator(),
           error: (error) => Text("Error: $error"),
           success: (addresses) => BlocProvider(
+              key: widget.key,
               create: (context) => DashboardActivityFeedBloc(
                     accountUuid: widget.accountUuid,
                     eventsRepository: GetIt.I.get<EventsRepository>(),
@@ -151,7 +152,9 @@ class _DashboardPage_State extends State<_DashboardPage> {
                               accountUuid: widget.accountUuid,
                             ),
                           ),
-                          DashboardActivityFeedScreen(addresses: addresses),
+                          DashboardActivityFeedScreen(
+                              key: Key(widget.accountUuid),
+                              addresses: addresses),
                         ],
                       ),
                     ),

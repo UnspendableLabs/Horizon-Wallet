@@ -433,17 +433,23 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 
 class _DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
+  DashboardActivityFeedBloc? _bloc;
+
   @override
   void initState() {
     super.initState();
-    context
-        .read<DashboardActivityFeedBloc>()
-        .add(const StartPolling(interval: Duration(seconds: 30)));
+    _bloc = context.read<DashboardActivityFeedBloc>();
+
+    // Start polling after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _bloc?.add(const StartPolling(interval: Duration(seconds: 30)));
+    });
   }
 
   @override
   void dispose() {
-    context.read<DashboardActivityFeedBloc>().add(const StopPolling());
+    // Use the saved reference to the bloc
+    _bloc?.add(const StopPolling());
     super.dispose();
   }
 
