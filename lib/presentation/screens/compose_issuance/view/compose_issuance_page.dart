@@ -312,8 +312,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             context
                                 .read<ComposeIssuanceBloc>()
                                 .add(CreateIssuanceEvent(
-                                  sourceAddress:
-                                      fromAddress ?? addresses[0].address,
+                                  sourceAddress: fromAddress!,
                                   password: passwordController.text,
                                   name: nameController.text,
                                   quantity:
