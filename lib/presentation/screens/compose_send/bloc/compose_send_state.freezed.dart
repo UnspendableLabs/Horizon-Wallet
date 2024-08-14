@@ -781,6 +781,8 @@ mixin _$AddressesState {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
+    required TResult Function(dynamic AddressStateSuccessUnconfirmed)
+        confirmation,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -789,6 +791,7 @@ mixin _$AddressesState {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
+    TResult? Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -797,6 +800,7 @@ mixin _$AddressesState {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
+    TResult Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -806,6 +810,7 @@ mixin _$AddressesState {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
+    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -814,6 +819,7 @@ mixin _$AddressesState {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
+    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -822,6 +828,7 @@ mixin _$AddressesState {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
+    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) =>
@@ -887,6 +894,8 @@ class _$AddressInitialImpl implements _AddressInitial {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
+    required TResult Function(dynamic AddressStateSuccessUnconfirmed)
+        confirmation,
     required TResult Function(String error) error,
   }) {
     return initial();
@@ -898,6 +907,7 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
+    TResult? Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult? Function(String error)? error,
   }) {
     return initial?.call();
@@ -909,6 +919,7 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
+    TResult Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -924,6 +935,7 @@ class _$AddressInitialImpl implements _AddressInitial {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
+    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return initial(this);
@@ -935,6 +947,7 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
+    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return initial?.call(this);
@@ -946,6 +959,7 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
+    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {
@@ -1001,6 +1015,8 @@ class _$AddressLoadingImpl implements _AddressLoading {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
+    required TResult Function(dynamic AddressStateSuccessUnconfirmed)
+        confirmation,
     required TResult Function(String error) error,
   }) {
     return loading();
@@ -1012,6 +1028,7 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
+    TResult? Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult? Function(String error)? error,
   }) {
     return loading?.call();
@@ -1023,6 +1040,7 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
+    TResult Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1038,6 +1056,7 @@ class _$AddressLoadingImpl implements _AddressLoading {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
+    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return loading(this);
@@ -1049,6 +1068,7 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
+    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return loading?.call(this);
@@ -1060,6 +1080,7 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
+    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {
@@ -1150,6 +1171,8 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
+    required TResult Function(dynamic AddressStateSuccessUnconfirmed)
+        confirmation,
     required TResult Function(String error) error,
   }) {
     return success(addresses);
@@ -1161,6 +1184,7 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
+    TResult? Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult? Function(String error)? error,
   }) {
     return success?.call(addresses);
@@ -1172,6 +1196,7 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
+    TResult Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1187,6 +1212,7 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
+    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return success(this);
@@ -1198,6 +1224,7 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
+    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return success?.call(this);
@@ -1209,6 +1236,7 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
+    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {
@@ -1226,6 +1254,162 @@ abstract class _AddressSuccess implements AddressesState {
   List<Address> get addresses;
   @JsonKey(ignore: true)
   _$$AddressSuccessImplCopyWith<_$AddressSuccessImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$AddressConfirmationImplCopyWith<$Res> {
+  factory _$$AddressConfirmationImplCopyWith(_$AddressConfirmationImpl value,
+          $Res Function(_$AddressConfirmationImpl) then) =
+      __$$AddressConfirmationImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({dynamic AddressStateSuccessUnconfirmed});
+}
+
+/// @nodoc
+class __$$AddressConfirmationImplCopyWithImpl<$Res>
+    extends _$AddressesStateCopyWithImpl<$Res, _$AddressConfirmationImpl>
+    implements _$$AddressConfirmationImplCopyWith<$Res> {
+  __$$AddressConfirmationImplCopyWithImpl(_$AddressConfirmationImpl _value,
+      $Res Function(_$AddressConfirmationImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? AddressStateSuccessUnconfirmed = freezed,
+  }) {
+    return _then(_$AddressConfirmationImpl(
+      freezed == AddressStateSuccessUnconfirmed
+          ? _value.AddressStateSuccessUnconfirmed!
+          : AddressStateSuccessUnconfirmed,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$AddressConfirmationImpl implements _AddressConfirmation {
+  const _$AddressConfirmationImpl(this.AddressStateSuccessUnconfirmed);
+
+  @override
+  final dynamic AddressStateSuccessUnconfirmed;
+
+  @override
+  String toString() {
+    return 'AddressesState.confirmation(AddressStateSuccessUnconfirmed: $AddressStateSuccessUnconfirmed)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AddressConfirmationImpl &&
+            const DeepCollectionEquality().equals(
+                other.AddressStateSuccessUnconfirmed,
+                AddressStateSuccessUnconfirmed));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType,
+      const DeepCollectionEquality().hash(AddressStateSuccessUnconfirmed));
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AddressConfirmationImplCopyWith<_$AddressConfirmationImpl> get copyWith =>
+      __$$AddressConfirmationImplCopyWithImpl<_$AddressConfirmationImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<Address> addresses) success,
+    required TResult Function(dynamic AddressStateSuccessUnconfirmed)
+        confirmation,
+    required TResult Function(String error) error,
+  }) {
+    return confirmation(AddressStateSuccessUnconfirmed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<Address> addresses)? success,
+    TResult? Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
+    TResult? Function(String error)? error,
+  }) {
+    return confirmation?.call(AddressStateSuccessUnconfirmed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<Address> addresses)? success,
+    TResult Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (confirmation != null) {
+      return confirmation(AddressStateSuccessUnconfirmed);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_AddressInitial value) initial,
+    required TResult Function(_AddressLoading value) loading,
+    required TResult Function(_AddressSuccess value) success,
+    required TResult Function(_AddressConfirmation value) confirmation,
+    required TResult Function(_AddressError value) error,
+  }) {
+    return confirmation(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_AddressInitial value)? initial,
+    TResult? Function(_AddressLoading value)? loading,
+    TResult? Function(_AddressSuccess value)? success,
+    TResult? Function(_AddressConfirmation value)? confirmation,
+    TResult? Function(_AddressError value)? error,
+  }) {
+    return confirmation?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_AddressInitial value)? initial,
+    TResult Function(_AddressLoading value)? loading,
+    TResult Function(_AddressSuccess value)? success,
+    TResult Function(_AddressConfirmation value)? confirmation,
+    TResult Function(_AddressError value)? error,
+    required TResult orElse(),
+  }) {
+    if (confirmation != null) {
+      return confirmation(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _AddressConfirmation implements AddressesState {
+  const factory _AddressConfirmation(
+      final dynamic AddressStateSuccessUnconfirmed) = _$AddressConfirmationImpl;
+
+  dynamic get AddressStateSuccessUnconfirmed;
+  @JsonKey(ignore: true)
+  _$$AddressConfirmationImplCopyWith<_$AddressConfirmationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1296,6 +1480,8 @@ class _$AddressErrorImpl implements _AddressError {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
+    required TResult Function(dynamic AddressStateSuccessUnconfirmed)
+        confirmation,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -1307,6 +1493,7 @@ class _$AddressErrorImpl implements _AddressError {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
+    TResult? Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -1318,6 +1505,7 @@ class _$AddressErrorImpl implements _AddressError {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
+    TResult Function(dynamic AddressStateSuccessUnconfirmed)? confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1333,6 +1521,7 @@ class _$AddressErrorImpl implements _AddressError {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
+    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return error(this);
@@ -1344,6 +1533,7 @@ class _$AddressErrorImpl implements _AddressError {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
+    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return error?.call(this);
@@ -1355,6 +1545,7 @@ class _$AddressErrorImpl implements _AddressError {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
+    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {

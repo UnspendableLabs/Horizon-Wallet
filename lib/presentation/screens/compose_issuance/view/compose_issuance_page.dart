@@ -57,7 +57,7 @@ class _ComposeIssuancePage_ extends StatefulWidget {
 class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
   final balanceRepository = GetIt.I.get<BalanceRepository>();
   final _formKey = GlobalKey<FormState>();
-  TextEditingController nameController = TextEditingController();
+  TextEditingController nameController = UpperCaseTextEditingController();
   TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
@@ -150,7 +150,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       const SizedBox(height: 16.0),
                       HorizonTextFormField(
                         isDarkMode: widget.isDarkMode,
-                        controller: UpperCaseTextEditingController(),
+                        controller: nameController,
                         label: "Token name",
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
                         textCapitalization: TextCapitalization.characters,
@@ -307,7 +307,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             context
                                 .read<ComposeIssuanceBloc>()
                                 .add(CreateIssuanceEvent(
-                                  sourceAddress: fromAddressController.text,
+                                  sourceAddress: fromAddress!,
                                   password: passwordController.text,
                                   name: nameController.text,
                                   quantity:

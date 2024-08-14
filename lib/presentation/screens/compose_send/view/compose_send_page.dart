@@ -7,12 +7,12 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 
 class ComposeSendPage extends StatelessWidget {
   final bool isDarkMode;
@@ -87,56 +87,6 @@ class AssetDropdownLoading extends StatelessWidget {
   }
 }
 
-class AssetDropdown extends StatefulWidget {
-  final String? asset;
-  final List<Balance> balances;
-  final TextEditingController controller;
-  final void Function(String?) onSelected;
-  final bool isDarkMode;
-
-  const AssetDropdown(
-      {super.key,
-      this.asset,
-      required this.balances,
-      required this.controller,
-      required this.onSelected,
-      required this.isDarkMode});
-
-  @override
-  State<AssetDropdown> createState() => _AssetDropdownState();
-}
-
-class _AssetDropdownState extends State<AssetDropdown> {
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.text = widget.asset ?? widget.balances[0].asset;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print(widget.balances);
-    return HorizonDropdownMenu(
-        isDarkMode: widget.isDarkMode,
-        controller: widget.controller,
-        label: 'Asset',
-        onChanged: widget.onSelected,
-        selectedValue: widget.asset ?? widget.balances[0].asset,
-        items: widget.balances.map<DropdownMenuItem<String>>((balance) {
-          return buildDropdownMenuItem(balance.asset, balance.asset);
-        }).toList());
-  }
-}
-
-_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
-  if (balances.isEmpty) {
-    return null;
-  }
-
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
-      balances[0];
-}
-
 class _ComposeSendPageState extends State<_ComposeSendPage_> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
@@ -153,6 +103,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(
         listener: (context, state) {
+      print('ARE WE IN SUBMIT STATE?');
+      print(state.submitState);
       state.submitState.maybeWhen(
           success: (txHash, sourceAddress) {
             // 0) reload activity feed
@@ -237,7 +189,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         }, success: (balances) {
                           Balance? balance = balance_ ??
                               _getBalanceForSelectedAsset(
-                                  balances, assetController.text);
+                                  balances, asset ?? balances[0].asset);
 
                           if (balance == null) {
                             return HorizonTextFormField(
@@ -307,6 +259,15 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                     label: "No assets",
                                   );
                                 }
+
+                                // Use a post-frame callback to set the asset state
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (asset == null) {
+                                    setState(() {
+                                      asset = balances[0].asset;
+                                    });
+                                  }
+                                });
 
                                 return SizedBox(
                                   height:
@@ -382,10 +343,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         }
 
                         context.read<ComposeSendBloc>().add(
-                            SendTransactionEvent(
+                            ConfirmTransactionEvent(
                                 sourceAddress:
                                     fromAddress ?? addresses[0].address,
-                                password: passwordController.text,
+                                // password: passwordController.text,
                                 destinationAddress:
                                     destinationAddressController.text,
                                 asset: asset!,
@@ -398,7 +359,60 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
             ),
           );
         },
+        confirmation: (unconfirmedSendState) {
+          return ;
+        },
       );
     });
   }
+}
+
+class AssetDropdown extends StatefulWidget {
+  final String? asset;
+  final List<Balance> balances;
+  final TextEditingController controller;
+  final void Function(String?) onSelected;
+  final bool isDarkMode;
+
+  const AssetDropdown(
+      {super.key,
+      this.asset,
+      required this.balances,
+      required this.controller,
+      required this.onSelected,
+      required this.isDarkMode});
+
+  @override
+  State<AssetDropdown> createState() => _AssetDropdownState();
+}
+
+class _AssetDropdownState extends State<AssetDropdown> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.text = widget.asset ?? widget.balances[0].asset;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print(widget.balances);
+    return HorizonDropdownMenu(
+        isDarkMode: widget.isDarkMode,
+        controller: widget.controller,
+        label: 'Asset',
+        onChanged: widget.onSelected,
+        selectedValue: widget.asset ?? widget.balances[0].asset,
+        items: widget.balances.map<DropdownMenuItem<String>>((balance) {
+          return buildDropdownMenuItem(balance.asset, balance.asset);
+        }).toList());
+  }
+}
+
+_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
+  if (balances.isEmpty) {
+    return null;
+  }
+
+  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
+      balances[0];
 }
