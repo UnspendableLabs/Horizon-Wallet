@@ -187,7 +187,6 @@ class AddressServiceImpl extends AddressService {
   }
 
   _getNetwork() {
-
     bool isTestnet =
         const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
 

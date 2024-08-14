@@ -27,8 +27,8 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   Future<Either<Failure, List<BitcoinTx>>> getTransactions(
       List<String> addresses) async {
     try {
-      final allTransactions = await Future.wait(addresses.map(
-          (address) => _esploraApi.getTransactionsForAddress(address)));
+      final allTransactions = await Future.wait(addresses
+          .map((address) => _esploraApi.getTransactionsForAddress(address)));
 
       final flattenedTransactions = allTransactions.expand((i) => i).toList();
 
@@ -94,7 +94,6 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
     }
   }
 
-
   @override
   Future<Either<Failure, List<BitcoinTx>>> getConfirmedTransactions(
       List<String> addresses) async {
@@ -156,8 +155,7 @@ class EsploraApi {
 
   EsploraApi({required Dio dio}) : _dio = dio;
 
-  Future<List<BitcoinTxModel>> getTransactionsForAddress(
-      String address) async {
+  Future<List<BitcoinTxModel>> getTransactionsForAddress(String address) async {
     try {
       final response = await _dio.get('/address/$address/txs');
       final List<dynamic> txList = response.data as List<dynamic>;

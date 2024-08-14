@@ -104,7 +104,4 @@ class WalletServiceImpl implements WalletService {
         const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
     return isTestnet ? ecpair.testnet : ecpair.bitcoin;
   }
-
-
-
 }

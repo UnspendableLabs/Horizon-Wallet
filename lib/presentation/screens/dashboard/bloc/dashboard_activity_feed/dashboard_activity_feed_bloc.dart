@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import "package:fpdart/src/either.dart";
 import 'dart:async';
 import 'dart:math';
 
@@ -65,8 +64,7 @@ class DashboardActivityFeedBloc
 
       String? mostRecentCounterpartyEventHash =
           currentState.mostRecentCounterpartyEventHash;
-      String? mostRecentBitcoinTxHash =
-          currentState.mostRecentBitcoinTxHash;
+      String? mostRecentBitcoinTxHash = currentState.mostRecentBitcoinTxHash;
 
       // 1) compute count of all counterparty events above last seen
       late List<VerboseEvent> newCounterpartyEvents = [];
@@ -124,7 +122,6 @@ class DashboardActivityFeedBloc
               (tx) => !tx.isCounterpartyTx(addresses),
             )
             .toList();
-
       } else {
         // 2b otherwise, bitcoin transactions are all above last seen
         final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
@@ -243,8 +240,7 @@ class DashboardActivityFeedBloc
         nextCursor: currentState.nextCursor,
         newTransactionCount: newTransactionCount,
         mostRecentBitcoinTxHash:
-            nextMostRecentBitcoinTxHash ??
-                currentState.mostRecentBitcoinTxHash,
+            nextMostRecentBitcoinTxHash ?? currentState.mostRecentBitcoinTxHash,
         mostRecentCounterpartyEventHash: nextMostRecentCounterpartyEventHash ??
             currentState.mostRecentCounterpartyEventHash,
         transactions: nextList,
@@ -253,7 +249,6 @@ class DashboardActivityFeedBloc
       emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
     }
   }
-
 
   // we just load everything for now
 
@@ -482,7 +477,6 @@ class DashboardActivityFeedBloc
         ...mempoolActivityFeedItems,
         ...confirmedActivityFeedItems,
       ];
-
 
       emit(DashboardActivityFeedStateCompleteOk(
           nextCursor: null,

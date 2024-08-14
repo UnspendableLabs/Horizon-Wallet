@@ -78,17 +78,16 @@ Future<void> setupRegtestWallet() async {
       importFormat: ImportFormat.segwit,
     );
 
-    List<Address> addresses =
-        await addressService.deriveAddressSegwitRange(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account.uuid,
-            purpose: account.purpose,
-            coin: account.coinType,
-            account: account.accountIndex,
-            change: '0',
-            start: 0,
-            end: 9);
+    List<Address> addresses = await addressService.deriveAddressSegwitRange(
+        privKey: decryptedPrivKey,
+        chainCodeHex: wallet.chainCodeHex,
+        accountUuid: account.uuid,
+        purpose: account.purpose,
+        coin: account.coinType,
+        account: account.accountIndex,
+        change: '0',
+        start: 0,
+        end: 9);
 
     await walletRepository.insert(wallet);
     await accountRepository.insert(account);

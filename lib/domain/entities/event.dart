@@ -47,9 +47,9 @@ class Event extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [state, eventIndex, event, txHash, blockIndex,
-      // confirmed
+  List<Object?> get props => [
+        state, eventIndex, event, txHash, blockIndex,
+        // confirmed
       ];
 }
 

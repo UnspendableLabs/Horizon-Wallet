@@ -55,7 +55,14 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             await addressRepository.getAllByAccountUuid(event.accountUuid);
 
         List<Balance> balances =
-            await balanceRepository.getBalancesForAddress(addresses[0].address); emit(ComposeSendState( addressesState: AddressesState.success(addresses), balancesState: BalancesState.success(balances), submitState: const SubmitState.initial())); } catch (e) { emit(ComposeSendState( addressesState: AddressesState.error(e.toString()),
+            await balanceRepository.getBalancesForAddress(addresses[0].address);
+        emit(ComposeSendState(
+            addressesState: AddressesState.success(addresses),
+            balancesState: BalancesState.success(balances),
+            submitState: const SubmitState.initial()));
+      } catch (e) {
+        emit(ComposeSendState(
+            addressesState: AddressesState.error(e.toString()),
             balancesState: BalancesState.error(e.toString()),
             submitState: const SubmitState.initial()));
       }
@@ -113,7 +120,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             rawTx.hex, addressPrivKey, source, utxoMap);
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
-
 
         // for now we don't track btc sends
         if (asset.toLowerCase() != 'btc') {

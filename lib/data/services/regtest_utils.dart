@@ -10,7 +10,6 @@ import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import "encryption_service_impl.dart";
 
 class RegTestUtils {
-
   EncryptionService encryptionService = EncryptionServiceImpl();
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);

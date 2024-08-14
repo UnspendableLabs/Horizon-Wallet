@@ -24,14 +24,13 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
   final String? mostRecentCounterpartyEventHash;
   final String? mostRecentBitcoinTxHash;
 
-
-  const DashboardActivityFeedStateCompleteOk(
-      {required this.transactions,
-      required this.newTransactionCount,
-      required this.nextCursor,
-      required this.mostRecentCounterpartyEventHash,
-      required this.mostRecentBitcoinTxHash,
-      });
+  const DashboardActivityFeedStateCompleteOk({
+    required this.transactions,
+    required this.newTransactionCount,
+    required this.nextCursor,
+    required this.mostRecentCounterpartyEventHash,
+    required this.mostRecentBitcoinTxHash,
+  });
 
   @override
   List<Object?> get props => [
