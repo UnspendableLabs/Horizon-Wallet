@@ -1,4 +1,3 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:decimal/decimal.dart';
 import 'package:test/test.dart';
 import 'dart:async';

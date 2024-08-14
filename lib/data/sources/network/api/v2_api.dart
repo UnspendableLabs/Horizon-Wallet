@@ -1534,8 +1534,7 @@ class EnhancedSendUnpacked extends TransactionUnpacked {
 }
 
 class TransactionUnpackedVerbose extends TransactionUnpacked {
-  const TransactionUnpackedVerbose({required String messageType})
-      : super(messageType: messageType);
+  const TransactionUnpackedVerbose({required super.messageType});
 
   factory TransactionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
     final messageType = json["message_type"];

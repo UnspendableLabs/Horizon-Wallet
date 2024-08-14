@@ -7,7 +7,6 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 
@@ -33,7 +32,7 @@ class SendTitle extends StatelessWidget {
   // final String destination;
   final String quantityNormalized;
   final String asset;
-  SendTitle({
+  const SendTitle({
     super.key,
     // required this.destination,
     required this.quantityNormalized,
@@ -50,7 +49,7 @@ class ReceiveTitle extends StatelessWidget {
   // final String source;
   final String quantityNormalized;
   final String asset;
-  ReceiveTitle({
+  const ReceiveTitle({
     super.key,
     // required this.source,
     required this.quantityNormalized,
@@ -74,15 +73,15 @@ class TransactionStatusPill extends StatelessWidget {
   final String? text;
 
   const TransactionStatusPill({
-    Key? key,
+    super.key,
     required this.status,
     this.text,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: _getBackgroundColor(),
         borderRadius: BorderRadius.circular(4),

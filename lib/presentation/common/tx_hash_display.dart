@@ -6,10 +6,10 @@ class TxHashDisplay extends StatefulWidget {
   final int displayLength;
 
   const TxHashDisplay({
-    Key? key,
+    super.key,
     required this.hash,
     this.displayLength = 5,
-  }) : super(key: key);
+  });
 
   @override
   _TxHashDisplayState createState() => _TxHashDisplayState();
@@ -28,7 +28,7 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
     setState(() {
       _copied = true;
     });
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() {
           _copied = false;
@@ -47,7 +47,7 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
           children: [
             TextSpan(
               text: shortenedHash,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
               ),
             ),

@@ -1,6 +1,5 @@
 // In data/models/bitcoin_tx_model.dart
 
-import 'package:decimal/decimal.dart';
 import '../../domain/entities/bitcoin_tx.dart';
 
 class PrevoutModel {

@@ -2,7 +2,6 @@
 library;
 
 import 'dart:js_interop';
-import 'dart:js';
 
 import 'package:horizon/js/buffer.dart';
 import "package:horizon/js/common.dart" as c;

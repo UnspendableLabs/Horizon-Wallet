@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/common/constants.dart';
 
