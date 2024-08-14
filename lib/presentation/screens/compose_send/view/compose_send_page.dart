@@ -46,8 +46,7 @@ class _ComposeSendPage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   const _ComposeSendPage_(
-      {required this.isDarkMode,
-      required this.dashboardActivityFeedBloc});
+      {required this.isDarkMode, required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();

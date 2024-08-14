@@ -13,7 +13,6 @@ class EventStateConfirmed extends EventState {
   });
 }
 
-
 class Event extends Equatable {
   final EventState state;
 
