@@ -324,40 +324,17 @@ class DashboardActivityFeedBloc
     emit(nextState);
 
     try {
-      DateTime? mostRecentBlocktime;
       // get most recent confirmed tx
       final addresses_ =
           await addressRepository.getAllByAccountUuid(accountUuid);
 
       List<String> addresses = addresses_.map((a) => a.address).toList();
 
-      // get most recent confirmed tx so we can query local txs above blocktime
-      final (confirmedCounterpartyEvents, _, _) =
-          await eventsRepository.getByAddressesVerbose(
-              addresses: addresses,
-              limit: 10,
-              unconfirmed: false,
-              whitelist: DEFAULT_WHITELIST);
-
-      if (confirmedCounterpartyEvents.isNotEmpty) {
-        final event = confirmedCounterpartyEvents[0];
-        if (event.state is EventStateConfirmed) {
-          int blocktime = (event.state as EventStateConfirmed).blockTime!;
-
-          mostRecentBlocktime =
-              DateTime.fromMillisecondsSinceEpoch(blocktime * 1000);
-        }
-      }
-
       // query local transactions above mose recent confirmed event
-      final localTransactions = mostRecentBlocktime != null
-          ? await transactionLocalRepository.getAllByAccountAfterDateVerbose(
-              accountUuid, mostRecentBlocktime)
-          : await transactionLocalRepository
-              .getAllByAccountVerbose(accountUuid);
+      final localTransactions =
+          await transactionLocalRepository.getAllByAccountVerbose(accountUuid);
 
       // get all counterparty events
-
       final counterpartyEvents =
           await eventsRepository.getAllByAddressesVerbose(
               addresses: addresses,
@@ -411,12 +388,6 @@ class DashboardActivityFeedBloc
 
       final btcConfirmedMap = {for (var tx in btcConfirmedList) tx.txid: tx};
 
-      // Local transactions are not seen in either the:
-      //    1) counterparty mempool
-      //    2) counterparty confirmed
-      //    3) btc mempool
-      //    4) btc confirmed
-
       List<ActivityFeedItem> localActivityFeedItems = localTransactions
           .where((tx) =>
               !counterpartyMempoolByHash.keys.contains(tx.hash) &&
@@ -447,21 +418,20 @@ class DashboardActivityFeedBloc
       // where there are conflicts and sorting by blockIndex
 
       List<ActivityFeedItem> confirmedActivityFeedItems = [];
-
-      for (final tx in btcConfirmedList) {
-        if (counterpartyConfirmedByHash.containsKey(tx.txid)) {
-          confirmedActivityFeedItems.add(ActivityFeedItem(
-              hash: tx.txid, event: counterpartyConfirmedByHash[tx.txid]));
-        } else {
+      final seenHashes = <String>{};
+      for (final event in counterpartyConfirmed) {
+        if (!seenHashes.contains(event.txHash)) {
           confirmedActivityFeedItems
-              .add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
+              .add(ActivityFeedItem(hash: event.txHash, event: event));
+          seenHashes.add(event.txHash);
         }
       }
 
-      for (final tx in counterpartyConfirmed) {
-        if (!btcConfirmedMap.containsKey(tx.txHash)) {
+      for (final btx in btcConfirmedList) {
+        if (!seenHashes.contains(btx.txid)) {
           confirmedActivityFeedItems
-              .add(ActivityFeedItem(hash: tx.txHash, event: tx));
+              .add(ActivityFeedItem(hash: btx.txid, bitcoinTx: btx));
+          seenHashes.add(btx.txid);
         }
       }
 
