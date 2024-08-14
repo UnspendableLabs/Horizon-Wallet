@@ -9,6 +9,7 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_even
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
@@ -30,9 +31,9 @@ class ComposeSendPage extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeSendBloc()
-          ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
+        create: (context) => ComposeSendBloc()..add(FetchFormData(accountUuid: state.currentAccountUuid)),
         child: _ComposeSendPage_(
+          accountUuid: state.currentAccountUuid,
           isDarkMode: isDarkMode,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
@@ -45,10 +46,9 @@ class ComposeSendPage extends StatelessWidget {
 class _ComposeSendPage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String accountUuid;
   const _ComposeSendPage_(
-      {required this.isDarkMode,
-      required this.dashboardActivityFeedBloc,
-      super.key});
+      {required this.isDarkMode, required this.dashboardActivityFeedBloc, required this.accountUuid, super.key});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
@@ -69,8 +69,7 @@ class AssetDropdownLoading extends StatelessWidget {
           initialSelection: "",
           // enabled: false,
           label: const Text('Asset'),
-          dropdownMenuEntries:
-              [const DropdownMenuEntry<String>(value: "", label: "")].toList()),
+          dropdownMenuEntries: [const DropdownMenuEntry<String>(value: "", label: "")].toList()),
       const Positioned(
         left: 12,
         top: 0,
@@ -101,15 +100,11 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ComposeSendBloc, ComposeSendState>(
-        listener: (context, state) {
-      print('ARE WE IN SUBMIT STATE?');
-      print(state.submitState);
+    return BlocConsumer<ComposeSendBloc, ComposeSendState>(listener: (context, state) {
       state.submitState.maybeWhen(
           success: (txHash, sourceAddress) {
             // 0) reload activity feed
-            widget.dashboardActivityFeedBloc
-                .add(const Load()); // show "N more transactions".
+            widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
             // show "N more transactions".
 
             // 1) close modal
@@ -123,11 +118,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     Clipboard.setData(ClipboardData(text: txHash));
                   },
                 ),
-                content: Text(txHash),
+                content: Text('Compose send success: $txHash'),
                 behavior: SnackBarBehavior.floating));
           },
-          error: (msg) => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(msg))),
+          error: (msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))),
           orElse: () => null);
     }, builder: (context, state) {
       return state.addressesState.when(
@@ -152,13 +146,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         balance_ = null;
                         fromAddress = a!;
                       });
-                      context
-                          .read<ComposeSendBloc>()
-                          .add(FetchBalances(address: a!));
+                      context.read<ComposeSendBloc>().add(FetchBalances(address: a!));
                     },
                     items: addresses.map<DropdownMenuItem<String>>((address) {
-                      return buildDropdownMenuItem(
-                          address.address, address.address);
+                      return buildDropdownMenuItem(address.address, address.address);
                     }).toList(),
                   ),
                   const SizedBox(height: 16.0),
@@ -187,9 +178,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                           );
                         }, success: (balances) {
-                          Balance? balance = balance_ ??
-                              _getBalanceForSelectedAsset(
-                                  balances, asset ?? balances[0].asset);
+                          Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
                           if (balance == null) {
                             return HorizonTextFormField(
@@ -208,8 +197,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
 
                             inputFormatters: <TextInputFormatter>[
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
+                              TextInputFormatter.withFunction((oldValue, newValue) {
                                 if (newValue.text.isEmpty) {
                                   return newValue;
                                 }
@@ -219,19 +207,16 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                 return oldValue;
                               }),
                               balance.assetInfo.divisible
-                                  ? FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*$'))
+                                  ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
                                   : FilteringTextInputFormatter.digitsOnly,
                             ], // Only
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter a quantity';
                               }
                               Decimal input = Decimal.parse(value);
-                              Decimal max =
-                                  Decimal.parse(balance.quantityNormalized);
+                              Decimal max = Decimal.parse(balance.quantityNormalized);
 
                               if (input > max) {
                                 return "quantity exceeds max";
@@ -270,21 +255,17 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                 });
 
                                 return SizedBox(
-                                  height:
-                                      48.0, // Match the height of the TextFormField
+                                  height: 48.0, // Match the height of the TextFormField
                                   child: AssetDropdown(
                                     isDarkMode: widget.isDarkMode,
                                     asset: asset,
                                     balances: balances,
                                     controller: assetController,
                                     onSelected: (String? value) {
-                                      Balance? balance =
-                                          _getBalanceForSelectedAsset(
-                                              balances, value!);
+                                      Balance? balance = _getBalanceForSelectedAsset(balances, value!);
 
                                       if (balance == null) {
-                                        throw Exception(
-                                            "invariant: No balance found for asset");
+                                        throw Exception("invariant: No balance found for asset");
                                       }
 
                                       setState(() {
@@ -299,22 +280,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16.0), // Spacing between inputs
-                  HorizonTextFormField(
-                    isDarkMode: widget.isDarkMode,
-                    obscureText: true,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    controller: passwordController,
-                    label: "Password",
-                    floatingLabelBehavior: FloatingLabelBehavior.auto,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                  ),
                   HorizonDialogSubmitButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
@@ -326,14 +291,11 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         int quantity;
 
                         if (balance == null) {
-                          throw Exception(
-                              "invariant: No balance found for asset");
+                          throw Exception("invariant: No balance found for asset");
                         }
 
                         if (balance.assetInfo.divisible) {
-                          quantity = (input * Decimal.fromInt(100000000))
-                              .toBigInt()
-                              .toInt();
+                          quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
                         } else {
                           quantity = (input).toBigInt().toInt();
                         }
@@ -342,15 +304,12 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           throw Exception("no asset");
                         }
 
-                        context.read<ComposeSendBloc>().add(
-                            ConfirmTransactionEvent(
-                                sourceAddress:
-                                    fromAddress ?? addresses[0].address,
-                                // password: passwordController.text,
-                                destinationAddress:
-                                    destinationAddressController.text,
-                                asset: asset!,
-                                quantity: quantity));
+                        context.read<ComposeSendBloc>().add(ConfirmTransactionEvent(
+                            sourceAddress: fromAddress ?? addresses[0].address,
+                            // password: passwordController.text,
+                            destinationAddress: destinationAddressController.text,
+                            asset: asset!,
+                            quantity: quantity));
                       }
                     },
                   ),
@@ -360,10 +319,77 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           );
         },
         confirmation: (unconfirmedSendState) {
-          return ;
+          return _buildConfirmationPage(context, unconfirmedSendState, widget.accountUuid);
         },
       );
     });
+  }
+
+  Widget _buildConfirmationPage(BuildContext context, ConfirmTransactionEvent unconfirmedSendState, String accountUuid) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('Source Address: ${unconfirmedSendState.sourceAddress}'),
+          Text('Destination Address: ${unconfirmedSendState.destinationAddress}'),
+          Text('Quantity: ${unconfirmedSendState.quantity}'),
+          Text('Asset: ${unconfirmedSendState.asset}'),
+          if (unconfirmedSendState.memo != null) Text('Memo: ${unconfirmedSendState.memo}'),
+          if (unconfirmedSendState.memoIsHex != null) Text('Memo is Hex: ${unconfirmedSendState.memoIsHex}'),
+          const SizedBox(height: 16.0),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: Divider(
+              color: isDarkTheme ? greyDarkThemeUnderlineColor : greyLightThemeUnderlineColor,
+              thickness: 1.0,
+            ),
+          ),
+          HorizonTextFormField(
+            isDarkMode: widget.isDarkMode,
+            obscureText: true,
+            enableSuggestions: false,
+            autocorrect: false,
+            controller: passwordController,
+            label: "Password",
+            floatingLabelBehavior: FloatingLabelBehavior.auto,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your password';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  context.read<ComposeSendBloc>().add(FetchFormData(accountUuid: accountUuid));
+                },
+                child: const Text('Back'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  context.read<ComposeSendBloc>().add(SendTransactionEvent(
+                        sourceAddress: unconfirmedSendState.sourceAddress,
+                        destinationAddress: unconfirmedSendState.destinationAddress,
+                        quantity: unconfirmedSendState.quantity,
+                        asset: unconfirmedSendState.asset,
+                        password: passwordController.text,
+                        memo: unconfirmedSendState.memo,
+                        memoIsHex: unconfirmedSendState.memoIsHex,
+                      ));
+                },
+                child: const Text('Submit'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -395,7 +421,6 @@ class _AssetDropdownState extends State<AssetDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.balances);
     return HorizonDropdownMenu(
         isDarkMode: widget.isDarkMode,
         controller: widget.controller,
@@ -413,6 +438,5 @@ _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
     return null;
   }
 
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
-      balances[0];
+  return balances.firstWhereOrNull((balance) => balance.asset == asset) ?? balances[0];
 }
