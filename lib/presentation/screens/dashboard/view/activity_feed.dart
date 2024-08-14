@@ -412,7 +412,7 @@ class _DashboardActivityFeedScreenState
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: transactions.length + 1,
+                itemCount: transactions.length,
                 itemBuilder: (context, index) {
                   if (index < transactions.length) {
                     return ActivityFeedListItem(
