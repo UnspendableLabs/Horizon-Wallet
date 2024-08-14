@@ -116,7 +116,7 @@ class DashboardActivityFeedBloc
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
         newBitcoinTransactions = bitcoinTxsE
-            .getOrElse((left) => [])
+            .getOrElse((left) => throw left)
             .where(
               (tx) => !tx.isCounterpartyTx(addresses),
             )
@@ -127,7 +127,7 @@ class DashboardActivityFeedBloc
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
-            .getOrElse((left) => [])
+            .getOrElse((left) => throw left)
             .where(
               (tx) => !tx.isCounterpartyTx(addresses),
             )
@@ -368,7 +368,7 @@ class DashboardActivityFeedBloc
           await bitcoinRepository.getMempoolTransactions(addresses);
 
       final btcMempoolList = btcMempoolE
-          .getOrElse((left) => [])
+          .getOrElse((left) => throw left)
           .where(
             (tx) => !tx.isCounterpartyTx(addresses),
           )
@@ -380,7 +380,7 @@ class DashboardActivityFeedBloc
           await bitcoinRepository.getConfirmedTransactions(addresses);
 
       final btcConfirmedList = btcConfirmedE
-          .getOrElse((left) => [])
+          .getOrElse((left) => throw left)
           .where(
             (tx) => !tx.isCounterpartyTx(addresses),
           )
