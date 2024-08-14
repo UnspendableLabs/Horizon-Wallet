@@ -50,7 +50,7 @@ class VinModel {
   final PrevoutModel? prevout;
   final String scriptsig;
   final String scriptsigAsm;
-  final List<String> witness;
+  final List<String>? witness;
   final bool isCoinbase;
   final int sequence;
 
@@ -74,7 +74,7 @@ class VinModel {
           : null,
       scriptsig: json['scriptsig'] as String,
       scriptsigAsm: json['scriptsig_asm'] as String,
-      witness: List<String>.from(json['witness'] as List),
+      witness: json["witness"] != null ? List<String>.from(json['witness'] as List) : null,
       isCoinbase: json['is_coinbase'] as bool,
       sequence: json['sequence'] as int,
     );

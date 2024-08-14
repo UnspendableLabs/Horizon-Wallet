@@ -22,7 +22,7 @@ class Vin {
   final Prevout? prevout;
   final String scriptsig;
   final String scriptsigAsm;
-  final List<String> witness;
+  final List<String>? witness;
   final bool isCoinbase;
   final int sequence;
 
