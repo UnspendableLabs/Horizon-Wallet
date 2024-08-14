@@ -705,8 +705,8 @@ void main() {
           final mockBitcoinRepository = MockBitcoinRepository();
           // effectively asserts that right method is calleD with right args
           when(() => mockTransactionLocalRepository
-                  .getAllByAccountAfterDateVerbose(
-                      "123", mostRecentConfirmedBlocktime))
+                  .getAllByAccountVerbose(
+                      "123"))
               .thenAnswer((_) async => []);
 
           mockedRemote = MockEventFactory.createMultiple([
