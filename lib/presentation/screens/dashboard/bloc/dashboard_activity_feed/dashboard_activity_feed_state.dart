@@ -30,7 +30,7 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
       required this.newTransactionCount,
       required this.nextCursor,
       required this.mostRecentCounterpartyEventHash,
-      required this.mostRecentBitcoinTxHash
+      required this.mostRecentBitcoinTxHash,
       });
 
   @override
