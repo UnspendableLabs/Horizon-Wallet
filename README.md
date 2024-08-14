@@ -28,8 +28,22 @@ to run in testnet mode, set TEST=true
 
 4. Run the app
 
-   - To run the application as a web app:
-     `flutter run -d Chrome`
+   - To run the application as a web app
+
+   ```
+   flutter run -d Chrome --dart-define=NETWORK=<mainnet|testnet>
+   ```
+
+   - Run in regtest
+
+   More details instructions [here](./regtest.md)
+
+
+   ```
+   flutter run -d Chrome --dart-define=REG_TEST_PK=<PK>  \
+                         --dart-define=REG_TEST_PASSWORD=<PW> \
+                         --dart-define=NETWORK=regtest
+   ```
 
    - To run the application as a chrome extension:
      a. build the application
