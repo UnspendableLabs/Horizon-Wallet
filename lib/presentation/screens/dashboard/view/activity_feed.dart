@@ -328,7 +328,8 @@ class ActivityFeedListItem extends StatelessWidget {
           const TransactionStatusPill(status: TransactionStatus.mempool),
         EventStateConfirmed(blockHeight: var blockHeight) =>
           TransactionStatusPill(
-              status: TransactionStatus.confirmed, text: "# $blockHeight"),
+              status: TransactionStatus.confirmed,
+              text: "#${numberWithCommas.format(blockHeight)}"),
       };
 
   Widget _getTransactionTrailing(TransactionInfoDomain domain) {
@@ -347,7 +348,8 @@ class ActivityFeedListItem extends StatelessWidget {
       Status(confirmed: var confirmed, blockHeight: var blockHeight)
           when confirmed =>
         TransactionStatusPill(
-            status: TransactionStatus.confirmed, text: "# $blockHeight"),
+            status: TransactionStatus.confirmed,
+            text: "#${numberWithCommas.format(blockHeight)}"),
       _ => const TransactionStatusPill(status: TransactionStatus.mempool),
     };
   }

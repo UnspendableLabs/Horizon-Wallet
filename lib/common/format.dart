@@ -1,4 +1,5 @@
 import "package:decimal/decimal.dart";
+import 'package:intl/intl.dart';
 
 Decimal satoshisToBtc(int satoshis) {
   // Conversion factor
@@ -10,3 +11,7 @@ Decimal satoshisToBtc(int satoshis) {
   // Round to 8 decimal places
   return btcValue.toDecimal().round(scale: 8);
 }
+
+
+final numberWithCommas = NumberFormat('#,###');
+
