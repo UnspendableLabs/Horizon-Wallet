@@ -82,7 +82,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
       final send = await composeRepository.composeSendVerbose(
           source, destination, asset, quantity, true, 2000); // TODO: don't hardcode fee
-      emit(state.copyWith(addressesState: AddressesState.confirmation(AddressStateSuccessUnconfirmed(composeSend: send))));
+      emit(state.copyWith(submitState: SubmitState.composing(SubmitStateComposingSend(composeSend: send))));
     });
 
     on<SendTransactionEvent>((event, emit) async {
@@ -94,11 +94,10 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final destination = sendParams.destination;
         final quantity = sendParams.quantity;
         final asset = sendParams.asset;
+        final rawTx = event.composeSend.rawtransaction;
         final password = event.password;
         // final memo = event.memo;
         // final memoIsHex = event.memoIsHex;
-
-        final rawTx = await composeRepository.composeSend(source, destination, asset, quantity, true, 2000);
 
         final utxoResponse = await utxoRepository.getUnspentForAddress(source, true);
 
@@ -119,7 +118,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             change: '0', // TODO make sure change is stored
             index: address.index);
 
-        String txHex = await transactionService.signTransaction(rawTx.hex, addressPrivKey, source, utxoMap);
+        String txHex = await transactionService.signTransaction(rawTx, addressPrivKey, source, utxoMap);
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 

@@ -27,8 +27,6 @@ class AddressesState with _$AddressesState {
   const factory AddressesState.initial() = _AddressInitial;
   const factory AddressesState.loading() = _AddressLoading;
   const factory AddressesState.success(List<Address> addresses) = _AddressSuccess;
-  const factory AddressesState.confirmation(AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed) =
-      _AddressConfirmation;
   const factory AddressesState.error(String error) = _AddressError;
 }
 
@@ -36,8 +34,14 @@ class AddressesState with _$AddressesState {
 class SubmitState with _$SubmitState {
   const factory SubmitState.initial() = _SubmitInitial;
   const factory SubmitState.loading() = _SubmitLoading;
+  const factory SubmitState.composing(SubmitStateComposingSend submitStateComposingSend) = _SubmitComposing;
   const factory SubmitState.success(String transactionHex, String sourceAddress) = _SubmitSuccess;
   const factory SubmitState.error(String error) = _SubmitError;
+}
+
+class SubmitStateComposingSend {
+  final ComposeSend composeSend;
+  SubmitStateComposingSend({required this.composeSend});
 }
 
 class AddressStateSuccess {}
@@ -45,11 +49,6 @@ class AddressStateSuccess {}
 class AddressStateSuccessInitial extends AddressStateSuccess {
   final List<Address> addresses;
   AddressStateSuccessInitial({required this.addresses});
-}
-
-class AddressStateSuccessUnconfirmed extends AddressStateSuccess {
-  final ComposeSend composeSend;
-  AddressStateSuccessUnconfirmed({required this.composeSend});
 }
 
 class AddressStateError extends AddressStateSuccess {
