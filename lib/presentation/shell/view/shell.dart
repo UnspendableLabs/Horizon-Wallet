@@ -377,7 +377,13 @@ class Shell extends StatelessWidget {
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    context .read<LogoutBloc>() .add(LogoutEvent()); }, child: const Text('Logout'),), ],
+                                    context
+                                        .read<LogoutBloc>()
+                                        .add(LogoutEvent());
+                                  },
+                                  child: const Text('Logout'),
+                                ),
+                              ],
                             ),
                           );
                         },

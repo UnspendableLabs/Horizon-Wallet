@@ -53,8 +53,7 @@ class ComposeIssuanceBloc
           submitState: SubmitState.initial()));
 
       try {
-
-        List<Address> addresses = [ event.currentAddress ];
+        List<Address> addresses = [event.currentAddress];
         List<Balance> balances =
             await balanceRepository.getBalancesForAddress(addresses[0].address);
         emit(ComposeIssuanceState(
@@ -106,7 +105,6 @@ class ComposeIssuanceBloc
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
-
 
         Address? address = await addressRepository.getAddress(source);
         Account? account =

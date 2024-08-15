@@ -165,22 +165,20 @@ class AppRouter {
                 navigatorKey: _sectionNavigatorKey,
                 routes: [
                   GoRoute(
-                    path: "/dashboard",
-                    builder: (context, state)  {
-                      final shell = context.watch<ShellStateCubit>();
+                      path: "/dashboard",
+                      builder: (context, state) {
+                        final shell = context.watch<ShellStateCubit>();
 
-                      // this technically isn't necessary, will always be
-                      // success
-                      return shell.state.maybeWhen(
-                        success: (state) {
-                          return DashboardPage(
-                            key: Key(state.currentAddress.address)
-                          );
-                        },
-                        orElse: () => const SizedBox.shrink(),
-                      );
-                    }
-                  )
+                        // this technically isn't necessary, will always be
+                        // success
+                        return shell.state.maybeWhen(
+                          success: (state) {
+                            return DashboardPage(
+                                key: Key(state.currentAddress.address));
+                          },
+                          orElse: () => const SizedBox.shrink(),
+                        );
+                      })
                 ],
               ),
               StatefulShellBranch(
@@ -419,10 +417,10 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
-            walletRepository: GetIt.I<WalletRepository>(),
-            accountRepository: GetIt.I<AccountRepository>(),
-            addressRepository: GetIt.I<AddressRepository>()
-          )..initialize(),
+              walletRepository: GetIt.I<WalletRepository>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>())
+            ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(),

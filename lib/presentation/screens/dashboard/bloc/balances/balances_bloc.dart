@@ -65,8 +65,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   Timer? _timer;
   Address currentAddress;
 
-
-  BalancesBloc({required this.currentAddress })
+  BalancesBloc({required this.currentAddress})
       : super(const BalancesState.initial()) {
     on<Start>(_onStart);
     on<Stop>(_onStop);
@@ -100,7 +99,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     );
 
     try {
-      final List<Address> addresses = [ currentAddress ];
+      final List<Address> addresses = [currentAddress];
 
       final List<Balance> balances = await balanceRepository
           .getBalancesForAddresses(addresses.map((a) => a.address).toList());

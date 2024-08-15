@@ -324,7 +324,7 @@ class DashboardActivityFeedBloc
 
     try {
       // get most recent confirmed tx
-      final addresses_ = [ currentAddress ];
+      final addresses_ = [currentAddress];
 
       List<String> addresses = addresses_.map((a) => a.address).toList();
 

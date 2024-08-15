@@ -96,7 +96,6 @@ class ShellStateCubit extends Cubit<ShellState> {
     emit(state_);
   }
 
-
   void onAddressChanged(Address address) {
     final state_ = state.when(
         initial: () => state,
@@ -107,7 +106,6 @@ class ShellStateCubit extends Cubit<ShellState> {
             ShellState.success(stateInner.copyWith(currentAddress: address)));
     emit(state_);
   }
-
 
   void refresh() async {
     try {

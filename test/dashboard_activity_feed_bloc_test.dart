@@ -575,9 +575,8 @@ void main() {
             ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1)),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAddressesVerbose(any()))
-              .thenAnswer((_) async => mockedLocal);
+          when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
+              any())).thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -642,9 +641,8 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAddressesVerbose(any()))
-              .thenAnswer((_) async => mockedLocal);
+          when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
+              any())).thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
 
