@@ -655,6 +655,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     ImportFormat.freewallet.name,
                     ImportFormat.freewallet.description,
                     dropdownBackgroundColor),
+                _buildDropdownMenuItem(
+                    ImportFormat.counterwallet.name,
+                    ImportFormat.counterwallet.description,
+                    dropdownBackgroundColor),
               ],
             ),
           ),
@@ -769,6 +773,10 @@ class SeedPrompt extends StatelessWidget {
                         DropdownMenuEntry<String>(
                           value: ImportFormat.freewallet.name,
                           label: ImportFormat.freewallet.description,
+                        ),
+                        DropdownMenuEntry<String>(
+                          value: ImportFormat.counterwallet.name,
+                          label: ImportFormat.counterwallet.description,
                         ),
                       ],
                     ),
