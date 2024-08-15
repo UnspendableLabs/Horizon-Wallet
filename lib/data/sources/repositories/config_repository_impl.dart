@@ -4,8 +4,8 @@ class EnvironmentConfig implements Config {
   @override
   Network get network {
     // default to testnet for now
-    final networkString =
-        const String.fromEnvironment('NETWORK', defaultValue: 'testnet');
+    const networkString =
+        String.fromEnvironment('NETWORK', defaultValue: 'testnet');
     return switch (networkString.toLowerCase()) {
       'testnet' => Network.testnet,
       'regtest' => Network.regtest,
