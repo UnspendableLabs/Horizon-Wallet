@@ -6,7 +6,11 @@ class HorizonCancelButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String? buttonText;
 
-  const HorizonCancelButton({super.key, required this.isDarkMode, required this.onPressed, this.buttonText});
+  const HorizonCancelButton(
+      {super.key,
+      required this.isDarkMode,
+      required this.onPressed,
+      this.buttonText});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +19,8 @@ class HorizonCancelButton extends StatelessWidget {
         overlayColor: noBackgroundColor,
         elevation: 0,
         backgroundColor: isDarkMode ? noBackgroundColor : lightThemeInputColor,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button size
+        padding: const EdgeInsets.symmetric(
+            horizontal: 32, vertical: 16), // Button size
         textStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
@@ -24,7 +29,8 @@ class HorizonCancelButton extends StatelessWidget {
       onPressed: onPressed,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Text(buttonText ?? 'CANCEL', style: TextStyle(color: isDarkMode ? mainTextGrey : mainTextBlack)),
+        child: Text(buttonText ?? 'CANCEL',
+            style: TextStyle(color: isDarkMode ? mainTextGrey : mainTextBlack)),
       ),
     );
   }

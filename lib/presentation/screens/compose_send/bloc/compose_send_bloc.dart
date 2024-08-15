@@ -49,7 +49,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
       try {
         List<Address> addresses = [event.currentAddress];
 
-        List<Balance> balances = await balanceRepository.getBalancesForAddress(addresses[0].address);
+        List<Balance> balances =
+            await balanceRepository.getBalancesForAddress(addresses[0].address);
         emit(ComposeSendState(
             addressesState: AddressesState.success(addresses),
             balancesState: BalancesState.success(balances),
@@ -65,7 +66,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
     on<FetchBalances>((event, emit) async {
       emit(state.copyWith(balancesState: const BalancesState.loading()));
       try {
-        List<Balance> balances = await balanceRepository.getBalancesForAddress(event.address);
+        List<Balance> balances =
+            await balanceRepository.getBalancesForAddress(event.address);
         emit(state.copyWith(balancesState: BalancesState.success(balances)));
       } catch (e) {
         emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
@@ -80,9 +82,11 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
       // final memo = event.memo;
       // final memoIsHex = event.memoIsHex;
 
-      final send = await composeRepository.composeSendVerbose(
-          source, destination, asset, quantity, true, 2000); // TODO: don't hardcode fee
-      emit(state.copyWith(submitState: SubmitState.composing(SubmitStateComposingSend(composeSend: send))));
+      final send = await composeRepository.composeSendVerbose(source,
+          destination, asset, quantity, true, 2000); // TODO: don't hardcode fee
+      emit(state.copyWith(
+          submitState: SubmitState.composing(
+              SubmitStateComposingSend(composeSend: send))));
     });
 
     on<SendTransactionEvent>((event, emit) async {
@@ -99,16 +103,19 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         // final memo = event.memo;
         // final memoIsHex = event.memoIsHex;
 
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source, true);
+        final utxoResponse =
+            await utxoRepository.getUnspentForAddress(source, true);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
         // print("utxoMap $utxoMap");
 
         Address? address = await addressRepository.getAddress(source);
-        Account? account = await accountRepository.getAccountByUuid(address!.accountUuid);
+        Account? account =
+            await accountRepository.getAccountByUuid(address!.accountUuid);
         Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
-        String decryptedRootPrivKey = await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+        String decryptedRootPrivKey =
+            await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
         String addressPrivKey = await addressService.deriveAddressPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: wallet.chainCodeHex,
@@ -118,17 +125,20 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             change: '0', // TODO make sure change is stored
             index: address.index);
 
-        String txHex = await transactionService.signTransaction(rawTx, addressPrivKey, source, utxoMap);
+        String txHex = await transactionService.signTransaction(
+            rawTx, addressPrivKey, source, utxoMap);
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
         // for now we don't track btc sends
         if (asset.toLowerCase() != 'btc') {
-          TransactionInfoVerbose txInfo = await transactionRepository.getInfoVerbose(txHex);
+          TransactionInfoVerbose txInfo =
+              await transactionRepository.getInfoVerbose(txHex);
 
           await transactionLocalRepository.insertVerbose(txInfo.copyWith(
               hash: txHash,
-              source: source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
+              source:
+                  source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
               ));
         } else {
           // TODO: this is a bit of a hack
@@ -137,7 +147,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             source: source,
             destination: destination,
             btcAmount: quantity,
-            domain: TransactionInfoDomainLocal(raw: txHex, submittedAt: DateTime.now()),
+            domain: TransactionInfoDomainLocal(
+                raw: txHex, submittedAt: DateTime.now()),
             btcAmountNormalized: quantity.toString(), //TODO: this is temporary
             fee: 0, // dummy values
             data: "",
@@ -167,9 +178,11 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         rethrow;
         if (error is DioException) {
           emit(state.copyWith(
-              submitState: SubmitState.error("${error.response!.data.keys.first} ${error.response!.data.values.first}")));
+              submitState: SubmitState.error(
+                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
         } else {
-          emit(state.copyWith(submitState: SubmitState.error(error.toString())));
+          emit(
+              state.copyWith(submitState: SubmitState.error(error.toString())));
         }
       }
     });
