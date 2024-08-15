@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_send.dart';
 
 part 'compose_send_state.freezed.dart';
 
@@ -9,7 +10,6 @@ class ComposeSendState with _$ComposeSendState {
   const factory ComposeSendState({
     @Default(AddressesState.initial()) addressesState,
     @Default(BalancesState.initial()) balancesState,
-
     @Default(SubmitState.initial()) submitState,
   }) = _ComposeSendState;
 }
@@ -27,7 +27,8 @@ class AddressesState with _$AddressesState {
   const factory AddressesState.initial() = _AddressInitial;
   const factory AddressesState.loading() = _AddressLoading;
   const factory AddressesState.success(List<Address> addresses) = _AddressSuccess;
-  const factory AddressesState.confirmation(AddressStateSuccessUnconfirmed) = _AddressConfirmation;
+  const factory AddressesState.confirmation(AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed) =
+      _AddressConfirmation;
   const factory AddressesState.error(String error) = _AddressError;
 }
 
@@ -47,22 +48,8 @@ class AddressStateSuccessInitial extends AddressStateSuccess {
 }
 
 class AddressStateSuccessUnconfirmed extends AddressStateSuccess {
-  final String sourceAddress;
-  final String destinationAddress;
-  final int quantity;
-  final String asset;
-  // final String password;
-  final String? memo;
-  final bool? memoIsHex;
-  AddressStateSuccessUnconfirmed({
-    required this.sourceAddress,
-    required this.destinationAddress,
-    required this.quantity,
-    required this.asset,
-    // required this.password,
-    this.memo,
-    this.memoIsHex,
-  });
+  final ComposeSend composeSend;
+  AddressStateSuccessUnconfirmed({required this.composeSend});
 }
 
 class AddressStateError extends AddressStateSuccess {

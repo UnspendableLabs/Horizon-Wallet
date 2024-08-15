@@ -10,6 +10,8 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_stat
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_cancel_button.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_continue_button.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
@@ -128,7 +130,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       return state.addressesState.when(
         initial: () => const SizedBox.shrink(),
         loading: () => const SizedBox.shrink(),
-        error: (e) => Text(e),
+        error: (e) => Text('Unable to compose send: $e'),
         success: (addresses) {
           return Form(
             key: _formKey,
@@ -165,7 +167,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         }
                         return null;
                       }),
-                  const SizedBox(height: 16.0), // Spacing between inputs
+                  const SizedBox(height: 16.0),
                   Row(
                     children: [
                       Expanded(
@@ -232,7 +234,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           );
                         });
                       })),
-                      const SizedBox(width: 16.0), // Spacing between inputs
+                      const SizedBox(width: 16.0),
                       Expanded(
                         child: Builder(builder: (context) {
                           return state.balancesState.maybeWhen(
@@ -256,7 +258,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                 });
 
                                 return SizedBox(
-                                  height: 48.0, // Match the height of the TextFormField
+                                  height: 48.0,
                                   child: AssetDropdown(
                                     isDarkMode: widget.isDarkMode,
                                     asset: asset,
@@ -307,10 +309,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
                         context.read<ComposeSendBloc>().add(ConfirmTransactionEvent(
                             sourceAddress: fromAddress ?? addresses[0].address,
-                            // password: passwordController.text,
                             destinationAddress: destinationAddressController.text,
                             asset: asset!,
-                            quantity: quantity));
+                            quantity: quantity,
+                            quantityDisplay: input.toString()));
                       }
                     },
                   ),
@@ -326,22 +328,71 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
     });
   }
 
-  Widget _buildConfirmationPage(BuildContext context, ConfirmTransactionEvent unconfirmedSendState, String accountUuid) {
+  Widget _buildConfirmationPage(
+      BuildContext context, AddressStateSuccessUnconfirmed unconfirmedSendState, String accountUuid) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final inputFillColor = isDarkTheme ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme;
+    final sendParams = unconfirmedSendState.composeSend.params;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Text('Source Address: ${unconfirmedSendState.sourceAddress}'),
-          Text('Destination Address: ${unconfirmedSendState.destinationAddress}'),
-          Text('Quantity: ${unconfirmedSendState.quantity}'),
-          Text('Asset: ${unconfirmedSendState.asset}'),
-          if (unconfirmedSendState.memo != null) Text('Memo: ${unconfirmedSendState.memo}'),
-          if (unconfirmedSendState.memoIsHex != null) Text('Memo is Hex: ${unconfirmedSendState.memoIsHex}'),
+          const Text(
+            'Please review your transaction details.',
+            style: TextStyle(fontSize: 16.0, color: mainTextWhite, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 16.0),
+          HorizonTextFormField(
+            isDarkMode: widget.isDarkMode,
+            label: "Source Address",
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            controller: TextEditingController(text: sendParams.source),
+            enabled: false,
+            fillColor: inputFillColor,
+            textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+          ),
+          const SizedBox(height: 16.0),
+          HorizonTextFormField(
+            isDarkMode: widget.isDarkMode,
+            label: "Destination Address",
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            controller: TextEditingController(text: sendParams.destination),
+            enabled: false,
+            fillColor: inputFillColor,
+            textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+          ),
+          const SizedBox(height: 16.0),
+          Row(
+            children: [
+              Expanded(
+                child: HorizonTextFormField(
+                  isDarkMode: widget.isDarkMode,
+                  label: "Quantity",
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  controller: TextEditingController(text: sendParams.quantityNormalized),
+                  enabled: false,
+                  fillColor: inputFillColor,
+                  textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+                ),
+              ),
+              const SizedBox(width: 16.0), // Spacing between inputs
+              Expanded(
+                child: HorizonTextFormField(
+                  isDarkMode: widget.isDarkMode,
+                  label: "Asset",
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  controller: TextEditingController(text: sendParams.asset),
+                  enabled: false,
+                  fillColor: inputFillColor,
+                  textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+                ),
+              ),
+            ],
+          ),
           Padding(
-            padding: const EdgeInsets.all(0.0),
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Divider(
               color: isDarkTheme ? greyDarkThemeUnderlineColor : greyLightThemeUnderlineColor,
               thickness: 1.0,
@@ -366,25 +417,20 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ElevatedButton(
+              HorizonCancelButton(
+                isDarkMode: widget.isDarkMode,
                 onPressed: () {
                   context.read<ComposeSendBloc>().add(FetchFormData(accountUuid: accountUuid));
                 },
-                child: const Text('Back'),
+                buttonText: 'BACK',
               ),
-              ElevatedButton(
+              HorizonContinueButton(
+                isDarkMode: widget.isDarkMode,
                 onPressed: () {
                   context.read<ComposeSendBloc>().add(SendTransactionEvent(
-                        sourceAddress: unconfirmedSendState.sourceAddress,
-                        destinationAddress: unconfirmedSendState.destinationAddress,
-                        quantity: unconfirmedSendState.quantity,
-                        asset: unconfirmedSendState.asset,
-                        password: passwordController.text,
-                        memo: unconfirmedSendState.memo,
-                        memoIsHex: unconfirmedSendState.memoIsHex,
-                      ));
+                      composeSend: unconfirmedSendState.composeSend, password: passwordController.text));
                 },
-                child: const Text('Submit'),
+                buttonText: 'SIGN AND BROADCAST',
               ),
             ],
           ),
