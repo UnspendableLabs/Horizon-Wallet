@@ -53,8 +53,8 @@ class ComposeIssuanceBloc
           submitState: SubmitState.initial()));
 
       try {
-        List<Address> addresses =
-            await addressRepository.getAllByAccountUuid(event.accountUuid);
+
+        List<Address> addresses = [ event.currentAddress ];
         List<Balance> balances =
             await balanceRepository.getBalancesForAddress(addresses[0].address);
         emit(ComposeIssuanceState(
@@ -107,6 +107,7 @@ class ComposeIssuanceBloc
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
+
         Address? address = await addressRepository.getAddress(source);
         Account? account =
             await accountRepository.getAccountByUuid(address!.accountUuid);
@@ -129,8 +130,6 @@ class ComposeIssuanceBloc
 
         TransactionInfoVerbose txInfo =
             await transactionRepository.getInfoVerbose(txHex);
-
-        print("in compose_issuance_bloc $txInfo");
 
         await transactionLocalRepository.insertVerbose(txInfo.copyWith(
           hash: txHash,

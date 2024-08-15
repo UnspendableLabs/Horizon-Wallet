@@ -63,9 +63,10 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       GetIt.I.get<AddressTxRepository>();
 
   Timer? _timer;
-  String accountUuid;
+  Address currentAddress;
 
-  BalancesBloc({required this.accountUuid})
+
+  BalancesBloc({required this.currentAddress })
       : super(const BalancesState.initial()) {
     on<Start>(_onStart);
     on<Stop>(_onStop);
@@ -75,10 +76,10 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   void _onStart(event, emit) {
     _timer?.cancel();
     _timer = Timer.periodic(event.pollingInterval, (timer) {
-      add(Fetch(accountUuid: accountUuid));
+      add(Fetch());
     });
     // Fetch immediately on start
-    add(Fetch(accountUuid: accountUuid));
+    add(Fetch());
   }
 
   void _onStop(event, emit) {
@@ -99,8 +100,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     );
 
     try {
-      final List<Address> addresses =
-          await addressRepository.getAllByAccountUuid(accountUuid);
+      final List<Address> addresses = [ currentAddress ];
 
       final List<Balance> balances = await balanceRepository
           .getBalancesForAddresses(addresses.map((a) => a.address).toList());

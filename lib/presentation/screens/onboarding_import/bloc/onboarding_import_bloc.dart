@@ -129,6 +129,7 @@ class OnboardingImportBloc
               change: '0',
               index: 0,
             );
+            
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account0);

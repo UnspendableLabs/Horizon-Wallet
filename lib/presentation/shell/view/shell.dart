@@ -17,6 +17,7 @@ import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
+import 'package:horizon/presentation/shell/view/address_dropdown.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
@@ -261,6 +262,17 @@ class Shell extends StatelessWidget {
             },
           ),
           actions: [
+            shell.state.maybeWhen(
+              success: (state) => state.addresses.length > 1
+                  ? AddressDropdown(
+                      isDarkTheme: isDarkTheme,
+                      addresses: state.addresses,
+                      onChange: shell.onAddressChanged,
+                    )
+                  : const SizedBox.shrink(),
+              orElse: () => const SizedBox.shrink(),
+            ),
+            const SizedBox(width: 8),
             Container(
               width: 80,
               height: 40,
@@ -365,13 +377,7 @@ class Shell extends StatelessWidget {
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    context
-                                        .read<LogoutBloc>()
-                                        .add(LogoutEvent());
-                                  },
-                                  child: const Text('Logout'),
-                                ),
-                              ],
+                                    context .read<LogoutBloc>() .add(LogoutEvent()); }, child: const Text('Logout'),), ],
                             ),
                           );
                         },
@@ -398,20 +404,9 @@ class Shell extends StatelessWidget {
                       loading: () => const Text("Loading..."),
                       error: (e) => const Text("error"),
                       success: (shell) {
-                        return BlocProvider<AddressesBloc>(
-                            key: Key(shell.currentAccountUuid),
-                            child: navigationShell,
-                            create: (_) => AddressesBloc(
-                                  walletRepository: GetIt.I<WalletRepository>(),
-                                  accountRepository:
-                                      GetIt.I<AccountRepository>(),
-                                  addressService: GetIt.I<AddressService>(),
-                                  addressRepository:
-                                      GetIt.I<AddressRepository>(),
-                                  encryptionService:
-                                      GetIt.I<EncryptionService>(),
-                                )..add(GetAll(
-                                    accountUuid: shell.currentAccountUuid)));
+                        return Builder(
+                          builder: (context) => navigationShell,
+                        );
                       },
                     )))
           ]),

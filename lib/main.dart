@@ -166,24 +166,23 @@ class AppRouter {
                 routes: [
                   GoRoute(
                     path: "/dashboard",
-                    builder: (context, state) => const DashboardPage(),
+                    builder: (context, state)  {
+                      final shell = context.watch<ShellStateCubit>();
+
+                      // this technically isn't necessary, will always be
+                      // success
+                      return shell.state.maybeWhen(
+                        success: (state) {
+                          return DashboardPage(
+                            key: Key(state.currentAddress.address)
+                          );
+                        },
+                        orElse: () => const SizedBox.shrink(),
+                      );
+                    }
                   )
                 ],
               ),
-              // StatefulShellBranch(routes: [
-              //   GoRoute(
-              //       path: "/compose/send",
-              //       builder: (context, state) {
-              //         return const ComposeSendPage();
-              //       })
-              // ]),
-              // StatefulShellBranch(routes: [
-              //   GoRoute(
-              //     path: "/compose/issuance",
-              //     builder: (context, state) {
-              //       return const ComposeIssuancePage();
-              //     },
-              // ]),
               StatefulShellBranch(
                 routes: [
                   GoRoute(

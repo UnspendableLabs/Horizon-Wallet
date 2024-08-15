@@ -57,22 +57,22 @@ class DashboardPage extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>().state;
 
     // we should only ever get to this page if shell is success
-
-    return shell.when(
-        initial: () => const Text("initial"),
-        onboarding: (_) => const Text("onboarding"),
-        loading: () => const CircularProgressIndicator(),
-        error: (error) => Text("Error: $error"),
+    return shell.maybeWhen(
         success: (data) => _DashboardPage(
-            key: Key(data.currentAccountUuid),
-            accountUuid: data.currentAccountUuid));
+              key: Key(data.currentAccountUuid),
+              accountUuid: data.currentAccountUuid,
+              currentAddress: data.currentAddress,
+            ),
+        orElse: () => const SizedBox.shrink());
   }
 }
 
 class _DashboardPage extends StatefulWidget {
   final String accountUuid;
+  final Address currentAddress;
 
-  const _DashboardPage({super.key, required this.accountUuid});
+  const _DashboardPage(
+      {super.key, required this.accountUuid, required this.currentAddress});
 
   @override
   _DashboardPage_State createState() => _DashboardPage_State();
@@ -84,10 +84,10 @@ class _DashboardPage_State extends State<_DashboardPage> {
   @override
   void initState() {
     super.initState();
-
-    context.read<AddressesBloc>().add(GetAll(
-          accountUuid: widget.accountUuid,
-        ));
+    //
+    // context.read<AddressesBloc>().add(GetAll(
+    //       accountUuid: widget.accountUuid,
+    //     ));
   }
 
   @override
@@ -99,71 +99,60 @@ class _DashboardPage_State extends State<_DashboardPage> {
     Color backgroundColor =
         isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
-    return BlocBuilder<AddressesBloc, AddressesState>(
-      builder: (context, state) {
-        return state.when(
-          initial: () => const Text("initial"),
-          loading: () => const CircularProgressIndicator(),
-          error: (error) => Text("Error: $error"),
-          success: (addresses) => BlocProvider(
-              key: widget.key,
-              create: (context) => DashboardActivityFeedBloc(
-                    accountUuid: widget.accountUuid,
-                    eventsRepository: GetIt.I.get<EventsRepository>(),
-                    addressRepository: GetIt.I.get<AddressRepository>(),
-                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-                    transactionLocalRepository:
-                        GetIt.I.get<TransactionLocalRepository>(),
-                    pageSize: 10,
-                  ),
-              child: Builder(builder: (context) {
-                final dashboardActivityFeedBloc =
-                    BlocProvider.of<DashboardActivityFeedBloc>(context);
+    return BlocProvider(
+        key: widget.key,
+        create: (context) => DashboardActivityFeedBloc(
+              currentAddress: widget.currentAddress,
+              eventsRepository: GetIt.I.get<EventsRepository>(),
+              addressRepository: GetIt.I.get<AddressRepository>(),
+              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+              transactionLocalRepository:
+                  GetIt.I.get<TransactionLocalRepository>(),
+              pageSize: 10,
+            ),
+        child: Builder(builder: (context) {
+          final dashboardActivityFeedBloc =
+              BlocProvider.of<DashboardActivityFeedBloc>(context);
 
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          if (screenWidth < 768)
-                            AccountSelectionButton(
-                              isDarkTheme: isDarkTheme,
-                              onPressed: () =>
-                                  showAccountList(context, isDarkTheme),
-                            ),
-                          AddressActions(
-                            isDarkTheme: isDarkTheme,
-                            dashboardActivityFeedBloc:
-                                dashboardActivityFeedBloc,
-                            addresses: addresses,
-                            accountUuid: widget.accountUuid,
-                          ),
-                          BlocProvider(
-                            create: (context) =>
-                                BalancesBloc(accountUuid: widget.accountUuid),
-                            child: BalancesDisplay(
-                              isDarkTheme: isDarkTheme,
-                              addresses: addresses,
-                              accountUuid: widget.accountUuid,
-                            ),
-                          ),
-                          DashboardActivityFeedScreen(
-                              key: Key(widget.accountUuid),
-                              addresses: addresses),
-                        ],
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    if (screenWidth < 768)
+                      AccountSelectionButton(
+                        isDarkTheme: isDarkTheme,
+                        onPressed: () => showAccountList(context, isDarkTheme),
+                      ),
+                    AddressActions(
+                        isDarkTheme: isDarkTheme,
+                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                        addresses: [widget.currentAddress],
+                        accountUuid: widget.accountUuid,
+                        currentAddress: widget.currentAddress),
+                    BlocProvider(
+                      create: (context) =>
+                          BalancesBloc(currentAddress: widget.currentAddress),
+                      child: BalancesDisplay(
+                        key: Key(widget.currentAddress.address),
+                        isDarkTheme: isDarkTheme,
+                        addresses: [widget.currentAddress],
+                        accountUuid: widget.accountUuid,
                       ),
                     ),
-                  ),
-                );
-              })),
-        );
-      },
-    );
+                    DashboardActivityFeedScreen(
+                        addresses: [widget.currentAddress]),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }));
   }
 }
 
@@ -393,14 +382,15 @@ class AddressActions extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final List<Address> addresses;
   final String accountUuid;
+  final Address currentAddress;
 
-  const AddressActions({
-    super.key,
-    required this.isDarkTheme,
-    required this.dashboardActivityFeedBloc,
-    required this.addresses,
-    required this.accountUuid,
-  });
+  const AddressActions(
+      {super.key,
+      required this.isDarkTheme,
+      required this.dashboardActivityFeedBloc,
+      required this.addresses,
+      required this.accountUuid,
+      required this.currentAddress});
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +431,6 @@ class AddressActions extends StatelessWidget {
                   title: "Receive",
                   body: QRCodeDialog(
                     isDarkTheme: isDarkTheme,
-                    key: Key(accountUuid),
                     addresses: addresses,
                   ),
                   includeBackButton: false,
@@ -491,7 +480,6 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
   @override
   Widget build(BuildContext context) {
     return Balances(
-        key: Key(widget.accountUuid),
         isDarkTheme: widget.isDarkTheme,
         addresses: widget.addresses,
         accountUuid: widget.accountUuid);

@@ -33,6 +33,11 @@ extension DateTimeExtension on DateTime {
   }
 }
 
+class AddressMock extends Mock implements Address {
+  @override
+  final address = "0x123";
+}
+
 class MockBitcoinTx extends Mock implements BitcoinTx {
   @override
   final String txid;
@@ -309,9 +314,9 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
+            currentAddress: AddressMock(),
             pageSize: 10,
             eventsRepository: mockEventsRepository,
-            accountUuid: "123",
             transactionLocalRepository: mockTransactionLocalRepository,
             addressRepository: mockAddressRepository,
             bitcoinRepository: defaultBitcoinRepository,
@@ -355,7 +360,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               eventsRepository: mockEventsRepository,
               addressRepository: mockAddressRepository,
@@ -399,7 +404,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               eventsRepository: mockEventsRepository,
               addressRepository: mockAddressRepository,
@@ -435,7 +440,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -482,7 +487,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -524,7 +529,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -571,7 +576,7 @@ void main() {
           ]);
 
           when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+                  mockTransactionLocalRepository.getAllByAddressesVerbose(any()))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -591,7 +596,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -638,7 +643,7 @@ void main() {
           ]);
 
           when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+                  mockTransactionLocalRepository.getAllByAddressesVerbose(any()))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -669,7 +674,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: mockBitcoinRepository,
@@ -704,9 +709,8 @@ void main() {
           final mockEventsRepository = MockEventsRepository();
           final mockBitcoinRepository = MockBitcoinRepository();
           // effectively asserts that right method is calleD with right args
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
-              .thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository
+              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
 
           mockedRemote = MockEventFactory.createMultiple([
             ("0005", EventStateMempool()),
@@ -742,7 +746,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: mockBitcoinRepository,
@@ -929,7 +933,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -1015,7 +1019,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -1111,7 +1115,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
-              accountUuid: "123",
+              currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -1183,8 +1187,8 @@ void main() {
                 TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
               ),
             ]);
-            when(() => mockTransactionLocalRepository.getAllByAccountVerbose(
-                "123")).thenAnswer((_) async => mockedLocal);
+            when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
+                any())).thenAnswer((_) async => mockedLocal);
 
             // btc mocks
             final mockBitcoinRepository = MockBitcoinRepository();
@@ -1214,7 +1218,7 @@ void main() {
 
             return DashboardActivityFeedBloc(
                 pageSize: 10,
-                accountUuid: "123",
+                currentAddress: AddressMock(),
                 transactionLocalRepository: mockTransactionLocalRepository,
                 addressRepository: mockAddressRepository,
                 bitcoinRepository: mockBitcoinRepository,
@@ -1247,8 +1251,8 @@ void main() {
                 TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
               ),
             ]);
-            when(() => mockTransactionLocalRepository.getAllByAccountVerbose(
-                "123")).thenAnswer((_) async => mockedLocal);
+            when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
+                any())).thenAnswer((_) async => mockedLocal);
 
             // btc mocks
             final mockBitcoinRepository = MockBitcoinRepository();
@@ -1278,7 +1282,7 @@ void main() {
 
             return DashboardActivityFeedBloc(
                 pageSize: 10,
-                accountUuid: "123",
+                currentAddress: AddressMock(),
                 transactionLocalRepository: mockTransactionLocalRepository,
                 addressRepository: mockAddressRepository,
                 bitcoinRepository: mockBitcoinRepository,

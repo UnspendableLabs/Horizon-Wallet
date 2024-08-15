@@ -1,4 +1,5 @@
 import "package:equatable/equatable.dart";
+import 'package:horizon/domain/entities/address.dart';
 
 abstract class DashboardActivityFeedEvent extends Equatable {
   const DashboardActivityFeedEvent();
