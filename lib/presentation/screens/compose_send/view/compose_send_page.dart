@@ -104,234 +104,229 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(listener: (context, state) {
       state.submitState.maybeWhen(
-          success: (txHash, sourceAddress) {
-            // 0) reload activity feed
-            widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
-            // show "N more transactions".
-
-            // 1) close modal
+          loading: () {
+            // close modal
             Navigator.of(context).pop();
-            // 2) show snackbar with copy tx action
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                duration: const Duration(seconds: 5),
-                action: SnackBarAction(
-                  label: 'Copy',
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: txHash));
-                  },
-                ),
-                content: Text('Compose send success: $txHash'),
-                behavior: SnackBarBehavior.floating));
           },
-          error: (msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))),
+          success: (txHash, sourceAddress) {
+            // reload activity feed
+            widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
+          },
           orElse: () => null);
     }, builder: (context, state) {
-      return state.addressesState.when(
-        initial: () => const SizedBox.shrink(),
-        loading: () => const SizedBox.shrink(),
-        error: (e) => Text('Unable to compose send: $e'),
-        success: (addresses) {
-          return Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  HorizonDropdownMenu(
-                    isDarkMode: widget.isDarkMode,
-                    selectedValue: fromAddress ?? addresses[0].address,
-                    controller: fromAddressController,
-                    label: 'Source Address',
-                    onChanged: (String? a) {
-                      setState(() {
-                        balance_ = null;
-                        fromAddress = a!;
-                      });
-                      context.read<ComposeSendBloc>().add(FetchBalances(address: a!));
-                    },
-                    items: addresses.map<DropdownMenuItem<String>>((address) {
-                      return buildDropdownMenuItem(address.address, address.address);
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonTextFormField(
+      return state.submitState.maybeWhen(
+        error: (msg) => Padding(padding: const EdgeInsets.all(8.0), child: Text('An error occurred: $msg')),
+        initial: () => state.addressesState.when(
+          initial: () => const SizedBox.shrink(),
+          loading: () => const SizedBox.shrink(),
+          error: (e) => const Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Error loading addresses'),
+          ),
+          success: (addresses) {
+            return Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    HorizonDropdownMenu(
                       isDarkMode: widget.isDarkMode,
-                      controller: destinationAddressController,
-                      label: "Destination",
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a destination address';
-                        }
-                        return null;
-                      }),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    children: [
-                      Expanded(
-                          // TODO: make his type of input it's own component ( e.g. BalanceInput )
-                          child: Builder(builder: (context) {
-                        return state.balancesState.maybeWhen(orElse: () {
-                          return HorizonTextFormField(
-                            isDarkMode: widget.isDarkMode,
-                            controller: quantityController,
-                            label: 'Quantity',
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                          );
-                        }, success: (balances) {
-                          Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
-
-                          if (balance == null) {
+                      selectedValue: fromAddress ?? addresses[0].address,
+                      controller: fromAddressController,
+                      label: 'Source Address',
+                      onChanged: (String? a) {
+                        setState(() {
+                          balance_ = null;
+                          fromAddress = a!;
+                        });
+                        context.read<ComposeSendBloc>().add(FetchBalances(address: a!));
+                      },
+                      items: addresses.map<DropdownMenuItem<String>>((address) {
+                        return buildDropdownMenuItem(address.address, address.address);
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16.0),
+                    HorizonTextFormField(
+                        isDarkMode: widget.isDarkMode,
+                        controller: destinationAddressController,
+                        label: "Destination",
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a destination address';
+                          }
+                          return null;
+                        }),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        Expanded(
+                            // TODO: make his type of input it's own component ( e.g. BalanceInput )
+                            child: Builder(builder: (context) {
+                          return state.balancesState.maybeWhen(orElse: () {
                             return HorizonTextFormField(
                               isDarkMode: widget.isDarkMode,
-                              enabled: false,
+                              controller: quantityController,
+                              label: 'Quantity',
+                              floatingLabelBehavior: FloatingLabelBehavior.always,
                             );
-                          }
+                          }, success: (balances) {
+                            Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
-                          return HorizonTextFormField(
-                            isDarkMode: widget.isDarkMode,
-                            controller: quantityController,
-                            label: 'Quantity',
-                            suffix: Builder(builder: (context) {
-                              return Text("${balance.quantityNormalized} max");
-                            }),
-                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                            if (balance == null) {
+                              return HorizonTextFormField(
+                                isDarkMode: widget.isDarkMode,
+                                enabled: false,
+                              );
+                            }
 
-                            inputFormatters: <TextInputFormatter>[
-                              TextInputFormatter.withFunction((oldValue, newValue) {
-                                if (newValue.text.isEmpty) {
-                                  return newValue;
-                                }
-                                if (double.tryParse(newValue.text) != null) {
-                                  return newValue;
-                                }
-                                return oldValue;
+                            return HorizonTextFormField(
+                              isDarkMode: widget.isDarkMode,
+                              controller: quantityController,
+                              label: 'Quantity',
+                              suffix: Builder(builder: (context) {
+                                return Text("${balance.quantityNormalized} max");
                               }),
-                              balance.assetInfo.divisible
-                                  ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
-                                  : FilteringTextInputFormatter.digitsOnly,
-                            ], // Only
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a quantity';
-                              }
-                              Decimal input = Decimal.parse(value);
-                              Decimal max = Decimal.parse(balance.quantityNormalized);
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
 
-                              if (input > max) {
-                                return "quantity exceeds max";
-                              }
+                              inputFormatters: <TextInputFormatter>[
+                                TextInputFormatter.withFunction((oldValue, newValue) {
+                                  if (newValue.text.isEmpty) {
+                                    return newValue;
+                                  }
+                                  if (double.tryParse(newValue.text) != null) {
+                                    return newValue;
+                                  }
+                                  return oldValue;
+                                }),
+                                balance.assetInfo.divisible
+                                    ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
+                                    : FilteringTextInputFormatter.digitsOnly,
+                              ], // Only
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a quantity';
+                                }
+                                Decimal input = Decimal.parse(value);
+                                Decimal max = Decimal.parse(balance.quantityNormalized);
 
-                              setState(() {
-                                balance_ = balance;
-                              });
-
-                              return null;
-                            },
-                          );
-                        });
-                      })),
-                      const SizedBox(width: 16.0),
-                      Expanded(
-                        child: Builder(builder: (context) {
-                          return state.balancesState.maybeWhen(
-                              orElse: () => const AssetDropdownLoading(),
-                              success: (balances) {
-                                if (balances.isEmpty) {
-                                  return HorizonTextFormField(
-                                    isDarkMode: widget.isDarkMode,
-                                    enabled: false,
-                                    label: "No assets",
-                                  );
+                                if (input > max) {
+                                  return "quantity exceeds max";
                                 }
 
-                                // Use a post-frame callback to set the asset state
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (asset == null) {
-                                    setState(() {
-                                      asset = balances[0].asset;
-                                    });
-                                  }
+                                setState(() {
+                                  balance_ = balance;
                                 });
 
-                                return SizedBox(
-                                  height: 48.0,
-                                  child: AssetDropdown(
-                                    isDarkMode: widget.isDarkMode,
-                                    asset: asset,
-                                    balances: balances,
-                                    controller: assetController,
-                                    onSelected: (String? value) {
-                                      Balance? balance = _getBalanceForSelectedAsset(balances, value!);
+                                return null;
+                              },
+                            );
+                          });
+                        })),
+                        const SizedBox(width: 16.0),
+                        Expanded(
+                          child: Builder(builder: (context) {
+                            return state.balancesState.maybeWhen(
+                                orElse: () => const AssetDropdownLoading(),
+                                success: (balances) {
+                                  if (balances.isEmpty) {
+                                    return HorizonTextFormField(
+                                      isDarkMode: widget.isDarkMode,
+                                      enabled: false,
+                                      label: "No assets",
+                                    );
+                                  }
 
-                                      if (balance == null) {
-                                        throw Exception("invariant: No balance found for asset");
-                                      }
-
+                                  // Use a post-frame callback to set the asset state
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (asset == null) {
                                       setState(() {
-                                        asset = value;
-                                        balance_ = balance;
+                                        asset = balances[0].asset;
                                       });
-                                    },
-                                  ),
-                                );
-                              });
-                        }),
-                      ),
-                    ],
-                  ),
-                  HorizonDialogSubmitButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        // TODO: wrap this in function and write some tests
-                        Decimal input = Decimal.parse(quantityController.text);
+                                    }
+                                  });
 
-                        Balance? balance = balance_;
+                                  return SizedBox(
+                                    height: 48.0,
+                                    child: AssetDropdown(
+                                      isDarkMode: widget.isDarkMode,
+                                      asset: asset,
+                                      balances: balances,
+                                      controller: assetController,
+                                      onSelected: (String? value) {
+                                        Balance? balance = _getBalanceForSelectedAsset(balances, value!);
 
-                        int quantity;
+                                        if (balance == null) {
+                                          throw Exception("invariant: No balance found for asset");
+                                        }
 
-                        if (balance == null) {
-                          throw Exception("invariant: No balance found for asset");
+                                        setState(() {
+                                          asset = value;
+                                          balance_ = balance;
+                                          quantityController.text = '';
+                                        });
+                                      },
+                                    ),
+                                  );
+                                });
+                          }),
+                        ),
+                      ],
+                    ),
+                    HorizonDialogSubmitButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          // TODO: wrap this in function and write some tests
+                          Decimal input = Decimal.parse(quantityController.text);
+
+                          Balance? balance = balance_;
+
+                          int quantity;
+
+                          if (balance == null) {
+                            throw Exception("invariant: No balance found for asset");
+                          }
+
+                          if (balance.assetInfo.divisible) {
+                            quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+                          } else {
+                            quantity = (input).toBigInt().toInt();
+                          }
+
+                          if (asset == null) {
+                            throw Exception("no asset");
+                          }
+
+                          context.read<ComposeSendBloc>().add(ConfirmTransactionEvent(
+                              sourceAddress: fromAddress ?? addresses[0].address,
+                              destinationAddress: destinationAddressController.text,
+                              asset: asset!,
+                              quantity: quantity,
+                              quantityDisplay: input.toString()));
                         }
-
-                        if (balance.assetInfo.divisible) {
-                          quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-                        } else {
-                          quantity = (input).toBigInt().toInt();
-                        }
-
-                        if (asset == null) {
-                          throw Exception("no asset");
-                        }
-
-                        context.read<ComposeSendBloc>().add(ConfirmTransactionEvent(
-                            sourceAddress: fromAddress ?? addresses[0].address,
-                            destinationAddress: destinationAddressController.text,
-                            asset: asset!,
-                            quantity: quantity,
-                            quantityDisplay: input.toString()));
-                      }
-                    },
-                  ),
-                ],
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
+            );
+          },
+        ),
+        composing: (composeSendState) {
+          return _buildConfirmationPage(context, composeSendState, widget.accountUuid);
         },
-        confirmation: (unconfirmedSendState) {
-          return _buildConfirmationPage(context, unconfirmedSendState, widget.accountUuid);
-        },
+        orElse: () => const SizedBox.shrink(),
       );
     });
   }
 
-  Widget _buildConfirmationPage(
-      BuildContext context, AddressStateSuccessUnconfirmed unconfirmedSendState, String accountUuid) {
+  Widget _buildConfirmationPage(BuildContext context, SubmitStateComposingSend composeSendState, String accountUuid) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final inputFillColor = isDarkTheme ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme;
-    final sendParams = unconfirmedSendState.composeSend.params;
+    final sendParams = composeSendState.composeSend.params;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -426,8 +421,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
               HorizonContinueButton(
                 isDarkMode: widget.isDarkMode,
                 onPressed: () {
-                  context.read<ComposeSendBloc>().add(SendTransactionEvent(
-                      composeSend: unconfirmedSendState.composeSend, password: passwordController.text));
+                  context.read<ComposeSendBloc>().add(
+                      SendTransactionEvent(composeSend: composeSendState.composeSend, password: passwordController.text));
                 },
                 buttonText: 'SIGN AND BROADCAST',
               ),

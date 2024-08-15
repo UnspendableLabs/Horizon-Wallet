@@ -781,9 +781,6 @@ mixin _$AddressesState {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
-    required TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)
-        confirmation,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -792,9 +789,6 @@ mixin _$AddressesState {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
-    TResult? Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -803,9 +797,6 @@ mixin _$AddressesState {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
-    TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -815,7 +806,6 @@ mixin _$AddressesState {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -824,7 +814,6 @@ mixin _$AddressesState {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -833,7 +822,6 @@ mixin _$AddressesState {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) =>
@@ -899,9 +887,6 @@ class _$AddressInitialImpl implements _AddressInitial {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
-    required TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)
-        confirmation,
     required TResult Function(String error) error,
   }) {
     return initial();
@@ -913,9 +898,6 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
-    TResult? Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult? Function(String error)? error,
   }) {
     return initial?.call();
@@ -927,9 +909,6 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
-    TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -945,7 +924,6 @@ class _$AddressInitialImpl implements _AddressInitial {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return initial(this);
@@ -957,7 +935,6 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return initial?.call(this);
@@ -969,7 +946,6 @@ class _$AddressInitialImpl implements _AddressInitial {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {
@@ -1025,9 +1001,6 @@ class _$AddressLoadingImpl implements _AddressLoading {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
-    required TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)
-        confirmation,
     required TResult Function(String error) error,
   }) {
     return loading();
@@ -1039,9 +1012,6 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
-    TResult? Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult? Function(String error)? error,
   }) {
     return loading?.call();
@@ -1053,9 +1023,6 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
-    TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1071,7 +1038,6 @@ class _$AddressLoadingImpl implements _AddressLoading {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return loading(this);
@@ -1083,7 +1049,6 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return loading?.call(this);
@@ -1095,7 +1060,6 @@ class _$AddressLoadingImpl implements _AddressLoading {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {
@@ -1186,9 +1150,6 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
-    required TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)
-        confirmation,
     required TResult Function(String error) error,
   }) {
     return success(addresses);
@@ -1200,9 +1161,6 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
-    TResult? Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult? Function(String error)? error,
   }) {
     return success?.call(addresses);
@@ -1214,9 +1172,6 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
-    TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1232,7 +1187,6 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return success(this);
@@ -1244,7 +1198,6 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return success?.call(this);
@@ -1256,7 +1209,6 @@ class _$AddressSuccessImpl implements _AddressSuccess {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {
@@ -1274,169 +1226,6 @@ abstract class _AddressSuccess implements AddressesState {
   List<Address> get addresses;
   @JsonKey(ignore: true)
   _$$AddressSuccessImplCopyWith<_$AddressSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$AddressConfirmationImplCopyWith<$Res> {
-  factory _$$AddressConfirmationImplCopyWith(_$AddressConfirmationImpl value,
-          $Res Function(_$AddressConfirmationImpl) then) =
-      __$$AddressConfirmationImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed});
-}
-
-/// @nodoc
-class __$$AddressConfirmationImplCopyWithImpl<$Res>
-    extends _$AddressesStateCopyWithImpl<$Res, _$AddressConfirmationImpl>
-    implements _$$AddressConfirmationImplCopyWith<$Res> {
-  __$$AddressConfirmationImplCopyWithImpl(_$AddressConfirmationImpl _value,
-      $Res Function(_$AddressConfirmationImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? addressStateSuccessUnconfirmed = null,
-  }) {
-    return _then(_$AddressConfirmationImpl(
-      null == addressStateSuccessUnconfirmed
-          ? _value.addressStateSuccessUnconfirmed
-          : addressStateSuccessUnconfirmed // ignore: cast_nullable_to_non_nullable
-              as AddressStateSuccessUnconfirmed,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$AddressConfirmationImpl implements _AddressConfirmation {
-  const _$AddressConfirmationImpl(this.addressStateSuccessUnconfirmed);
-
-  @override
-  final AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed;
-
-  @override
-  String toString() {
-    return 'AddressesState.confirmation(addressStateSuccessUnconfirmed: $addressStateSuccessUnconfirmed)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$AddressConfirmationImpl &&
-            (identical(other.addressStateSuccessUnconfirmed,
-                    addressStateSuccessUnconfirmed) ||
-                other.addressStateSuccessUnconfirmed ==
-                    addressStateSuccessUnconfirmed));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, addressStateSuccessUnconfirmed);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$AddressConfirmationImplCopyWith<_$AddressConfirmationImpl> get copyWith =>
-      __$$AddressConfirmationImplCopyWithImpl<_$AddressConfirmationImpl>(
-          this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Address> addresses) success,
-    required TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)
-        confirmation,
-    required TResult Function(String error) error,
-  }) {
-    return confirmation(addressStateSuccessUnconfirmed);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Address> addresses)? success,
-    TResult? Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
-    TResult? Function(String error)? error,
-  }) {
-    return confirmation?.call(addressStateSuccessUnconfirmed);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Address> addresses)? success,
-    TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (confirmation != null) {
-      return confirmation(addressStateSuccessUnconfirmed);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_AddressInitial value) initial,
-    required TResult Function(_AddressLoading value) loading,
-    required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressConfirmation value) confirmation,
-    required TResult Function(_AddressError value) error,
-  }) {
-    return confirmation(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_AddressInitial value)? initial,
-    TResult? Function(_AddressLoading value)? loading,
-    TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressConfirmation value)? confirmation,
-    TResult? Function(_AddressError value)? error,
-  }) {
-    return confirmation?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_AddressInitial value)? initial,
-    TResult Function(_AddressLoading value)? loading,
-    TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressConfirmation value)? confirmation,
-    TResult Function(_AddressError value)? error,
-    required TResult orElse(),
-  }) {
-    if (confirmation != null) {
-      return confirmation(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _AddressConfirmation implements AddressesState {
-  const factory _AddressConfirmation(
-          final AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed) =
-      _$AddressConfirmationImpl;
-
-  AddressStateSuccessUnconfirmed get addressStateSuccessUnconfirmed;
-  @JsonKey(ignore: true)
-  _$$AddressConfirmationImplCopyWith<_$AddressConfirmationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1507,9 +1296,6 @@ class _$AddressErrorImpl implements _AddressError {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(List<Address> addresses) success,
-    required TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)
-        confirmation,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -1521,9 +1307,6 @@ class _$AddressErrorImpl implements _AddressError {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(List<Address> addresses)? success,
-    TResult? Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -1535,9 +1318,6 @@ class _$AddressErrorImpl implements _AddressError {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(List<Address> addresses)? success,
-    TResult Function(
-            AddressStateSuccessUnconfirmed addressStateSuccessUnconfirmed)?
-        confirmation,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1553,7 +1333,6 @@ class _$AddressErrorImpl implements _AddressError {
     required TResult Function(_AddressInitial value) initial,
     required TResult Function(_AddressLoading value) loading,
     required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressConfirmation value) confirmation,
     required TResult Function(_AddressError value) error,
   }) {
     return error(this);
@@ -1565,7 +1344,6 @@ class _$AddressErrorImpl implements _AddressError {
     TResult? Function(_AddressInitial value)? initial,
     TResult? Function(_AddressLoading value)? loading,
     TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressConfirmation value)? confirmation,
     TResult? Function(_AddressError value)? error,
   }) {
     return error?.call(this);
@@ -1577,7 +1355,6 @@ class _$AddressErrorImpl implements _AddressError {
     TResult Function(_AddressInitial value)? initial,
     TResult Function(_AddressLoading value)? loading,
     TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressConfirmation value)? confirmation,
     TResult Function(_AddressError value)? error,
     required TResult orElse(),
   }) {
@@ -1603,6 +1380,8 @@ mixin _$SubmitState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(SubmitStateComposingSend submitStateComposingSend)
+        composing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1612,6 +1391,8 @@ mixin _$SubmitState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) =>
@@ -1620,6 +1401,8 @@ mixin _$SubmitState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1629,6 +1412,7 @@ mixin _$SubmitState {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) =>
@@ -1637,6 +1421,7 @@ mixin _$SubmitState {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) =>
@@ -1645,6 +1430,7 @@ mixin _$SubmitState {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1710,6 +1496,8 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(SubmitStateComposingSend submitStateComposingSend)
+        composing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1722,6 +1510,8 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1733,6 +1523,8 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1748,6 +1540,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1759,6 +1552,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1770,6 +1564,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1825,6 +1620,8 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(SubmitStateComposingSend submitStateComposingSend)
+        composing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1837,6 +1634,8 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1848,6 +1647,8 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1863,6 +1664,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1874,6 +1676,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1885,6 +1688,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1898,6 +1702,166 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
 
 abstract class _SubmitLoading implements SubmitState {
   const factory _SubmitLoading() = _$SubmitLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$SubmitComposingImplCopyWith<$Res> {
+  factory _$$SubmitComposingImplCopyWith(_$SubmitComposingImpl value,
+          $Res Function(_$SubmitComposingImpl) then) =
+      __$$SubmitComposingImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({SubmitStateComposingSend submitStateComposingSend});
+}
+
+/// @nodoc
+class __$$SubmitComposingImplCopyWithImpl<$Res>
+    extends _$SubmitStateCopyWithImpl<$Res, _$SubmitComposingImpl>
+    implements _$$SubmitComposingImplCopyWith<$Res> {
+  __$$SubmitComposingImplCopyWithImpl(
+      _$SubmitComposingImpl _value, $Res Function(_$SubmitComposingImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? submitStateComposingSend = null,
+  }) {
+    return _then(_$SubmitComposingImpl(
+      null == submitStateComposingSend
+          ? _value.submitStateComposingSend
+          : submitStateComposingSend // ignore: cast_nullable_to_non_nullable
+              as SubmitStateComposingSend,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$SubmitComposingImpl implements _SubmitComposing {
+  const _$SubmitComposingImpl(this.submitStateComposingSend);
+
+  @override
+  final SubmitStateComposingSend submitStateComposingSend;
+
+  @override
+  String toString() {
+    return 'SubmitState.composing(submitStateComposingSend: $submitStateComposingSend)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SubmitComposingImpl &&
+            (identical(
+                    other.submitStateComposingSend, submitStateComposingSend) ||
+                other.submitStateComposingSend == submitStateComposingSend));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, submitStateComposingSend);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SubmitComposingImplCopyWith<_$SubmitComposingImpl> get copyWith =>
+      __$$SubmitComposingImplCopyWithImpl<_$SubmitComposingImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(SubmitStateComposingSend submitStateComposingSend)
+        composing,
+    required TResult Function(String transactionHex, String sourceAddress)
+        success,
+    required TResult Function(String error) error,
+  }) {
+    return composing(submitStateComposingSend);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
+    TResult? Function(String transactionHex, String sourceAddress)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return composing?.call(submitStateComposingSend);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
+    TResult Function(String transactionHex, String sourceAddress)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (composing != null) {
+      return composing(submitStateComposingSend);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SubmitInitial value) initial,
+    required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitSuccess value) success,
+    required TResult Function(_SubmitError value) error,
+  }) {
+    return composing(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SubmitInitial value)? initial,
+    TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitSuccess value)? success,
+    TResult? Function(_SubmitError value)? error,
+  }) {
+    return composing?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SubmitInitial value)? initial,
+    TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitSuccess value)? success,
+    TResult Function(_SubmitError value)? error,
+    required TResult orElse(),
+  }) {
+    if (composing != null) {
+      return composing(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _SubmitComposing implements SubmitState {
+  const factory _SubmitComposing(
+          final SubmitStateComposingSend submitStateComposingSend) =
+      _$SubmitComposingImpl;
+
+  SubmitStateComposingSend get submitStateComposingSend;
+  @JsonKey(ignore: true)
+  _$$SubmitComposingImplCopyWith<_$SubmitComposingImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1976,6 +1940,8 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(SubmitStateComposingSend submitStateComposingSend)
+        composing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1988,6 +1954,8 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1999,6 +1967,8 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -2014,6 +1984,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -2025,6 +1996,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -2036,6 +2008,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -2125,6 +2098,8 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(SubmitStateComposingSend submitStateComposingSend)
+        composing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -2137,6 +2112,8 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -2148,6 +2125,8 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -2163,6 +2142,7 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -2174,6 +2154,7 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -2185,6 +2166,7 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
