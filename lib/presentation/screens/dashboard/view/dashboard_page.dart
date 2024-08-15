@@ -381,7 +381,7 @@ class AddressAction extends StatelessWidget {
                   Icon(icon, size: 20.0, color: mainTextGrey),
                   const SizedBox(width: 8.0),
                   Text(text,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
                           color: mainTextGrey)),
@@ -555,7 +555,7 @@ class _BalancesState extends State<Balances> {
         child: Column(
           children: [
             const Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

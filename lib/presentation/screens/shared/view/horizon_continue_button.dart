@@ -6,7 +6,11 @@ class HorizonContinueButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String? buttonText;
 
-  const HorizonContinueButton({super.key, required this.isDarkMode, required this.onPressed, this.buttonText});
+  const HorizonContinueButton(
+      {super.key,
+      required this.isDarkMode,
+      required this.onPressed,
+      this.buttonText});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,8 @@ class HorizonContinueButton extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Text(
           buttonText ?? 'CONTINUE',
-          style: TextStyle(color: isDarkMode ? neonBlueDarkTheme : mainTextWhite),
+          style:
+              TextStyle(color: isDarkMode ? neonBlueDarkTheme : mainTextWhite),
         ),
       ),
     );
