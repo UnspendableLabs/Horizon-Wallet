@@ -71,7 +71,7 @@ class OnboardingImportBloc
     on<ImportFormatChanged>((event, emit) async {
       ImportFormat importFormat = event.importFormat == "Segwit"
           ? ImportFormat.segwit
-          : ImportFormat.freewalletBech32;
+          : ImportFormat.freewallet;
       emit(state.copyWith(importFormat: importFormat));
     });
 
@@ -91,7 +91,7 @@ class OnboardingImportBloc
       }
       ImportFormat importFormat = event.importFormat == "Segwit"
           ? ImportFormat.segwit
-          : ImportFormat.freewalletBech32;
+          : ImportFormat.freewallet;
       emit(state.copyWith(
           importState: ImportStateMnemonicCollected(),
           importFormat: importFormat,
@@ -135,7 +135,7 @@ class OnboardingImportBloc
             await addressRepository.insert(address);
             break;
 
-          case ImportFormat.freewalletBech32:
+          case ImportFormat.freewallet:
             Wallet wallet = await walletService.deriveRootFreewallet(
                 state.mnemonic, state.password!);
 
@@ -149,7 +149,7 @@ class OnboardingImportBloc
                 coinType: _getCoinType(),
                 accountIndex: '0\'',
                 uuid: uuid.v4(),
-                importFormat: ImportFormat.freewalletBech32);
+                importFormat: ImportFormat.freewallet);
 
             List<Address> addresses =
                 await addressService.deriveAddressFreewalletBech32Range(

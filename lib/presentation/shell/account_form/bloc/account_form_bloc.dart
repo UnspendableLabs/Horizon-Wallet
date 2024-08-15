@@ -67,7 +67,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
                 change: '0',
                 start: 0,
                 end: 9);
-          case ImportFormat.freewalletBech32:
+          case ImportFormat.freewallet:
             addresses = await addressService.deriveAddressFreewalletBech32Range(
                 privKey: decryptedPrivKey,
                 chainCodeHex: wallet.chainCodeHex,

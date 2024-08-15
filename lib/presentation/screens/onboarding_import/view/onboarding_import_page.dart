@@ -652,8 +652,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 _buildDropdownMenuItem(ImportFormat.segwit.name,
                     ImportFormat.segwit.description, dropdownBackgroundColor),
                 _buildDropdownMenuItem(
-                    ImportFormat.freewalletBech32.name,
-                    ImportFormat.freewalletBech32.description,
+                    ImportFormat.freewallet.name,
+                    ImportFormat.freewallet.description,
                     dropdownBackgroundColor),
               ],
             ),
@@ -767,8 +767,8 @@ class SeedPrompt extends StatelessWidget {
                         //   label: ImportFormat.legacy.description,
                         // ),
                         DropdownMenuEntry<String>(
-                          value: ImportFormat.freewalletBech32.name,
-                          label: ImportFormat.freewalletBech32.description,
+                          value: ImportFormat.freewallet.name,
+                          label: ImportFormat.freewallet.description,
                         ),
                       ],
                     ),
