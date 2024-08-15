@@ -382,22 +382,6 @@ class Shell extends StatelessWidget {
                 ),
               ),
             ),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
-              ),
-              child: IconButton(
-                icon: Icon(Icons.settings,
-                    size: 15,
-                    color: isDarkTheme ? Colors.grey : royalBlueLightTheme),
-                onPressed: () {
-                  context.go('/settings');
-                },
-              ),
-            ),
             const SizedBox(width: 8),
           ],
         ),
