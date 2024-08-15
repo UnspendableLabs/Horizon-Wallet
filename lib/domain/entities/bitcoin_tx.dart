@@ -19,10 +19,10 @@ class Prevout {
 class Vin {
   final String txid;
   final int vout;
-  final Prevout prevout;
+  final Prevout? prevout;
   final String scriptsig;
   final String scriptsigAsm;
-  final List<String> witness;
+  final List<String>? witness;
   final bool isCoinbase;
   final int sequence;
 
@@ -68,6 +68,8 @@ class Status {
   });
 }
 
+enum TransactionType { sender, recipient, neither }
+
 class BitcoinTx {
   final String txid;
   final int version;
@@ -91,23 +93,51 @@ class BitcoinTx {
     required this.status,
   });
 
-  bool isSender(String address) {
-    return vin.any((input) => input.prevout.scriptpubkeyAddress == address);
+  TransactionType getTransactionType(List<String> addresses) {
+    bool isSender = vin.any((input) =>
+        input.prevout?.scriptpubkeyAddress != null &&
+        addresses.contains(input.prevout!.scriptpubkeyAddress));
+    bool isRecipient =
+        vout.any((output) => addresses.contains(output.scriptpubkeyAddress));
+
+    if (isSender) {
+      return TransactionType.sender;
+    } else if (isRecipient) {
+      return TransactionType.recipient;
+    } else {
+      return TransactionType.neither;
+    }
   }
 
-  bool isRecipient(String address) {
-    return vout.any((output) => output.scriptpubkeyAddress == address);
+  Decimal getAmountSent(List<String> addresses) {
+    // Calculate the total input amount from the given addresses
+    Decimal totalInput = vin.fold(Decimal.zero, (sum, input) {
+      if (input.prevout != null &&
+          addresses.contains(input.prevout!.scriptpubkeyAddress)) {
+        return sum + Decimal.fromInt(input.prevout!.value);
+      }
+      return sum;
+    });
+
+    // Calculate the amount that goes back to the same addresses (change)
+    Decimal changeAmount = vout
+        .where((output) => addresses.contains(output.scriptpubkeyAddress))
+        .fold(
+            Decimal.zero, (sum, output) => sum + Decimal.fromInt(output.value));
+
+    // The amount sent is the difference between total input and change
+    return totalInput - changeAmount - Decimal.fromInt(fee);
   }
 
-  Decimal getAmountSent(String address) {
-    return vin
-        .where((input) => input.prevout.scriptpubkeyAddress == address)
-        .fold(Decimal.zero,
-            (sum, input) => sum + Decimal.fromInt(input.prevout.value));
+  Decimal getAmountReceived(List<String> addresses) {
+    return vout
+        .where((output) => addresses.contains(output.scriptpubkeyAddress))
+        .fold(
+            Decimal.zero, (sum, output) => sum + Decimal.fromInt(output.value));
   }
 
-  Decimal getAmountReceived(String address) {
-    return vout.where((output) => output.scriptpubkeyAddress == address).fold(
-        Decimal.zero, (sum, output) => sum + Decimal.fromInt(output.value));
+  // TODO: this isn't necessarily a perfect heuristic
+  bool isCounterpartyTx(List<String> addresses) {
+    return getAmountSent(addresses) == Decimal.zero;
   }
 }

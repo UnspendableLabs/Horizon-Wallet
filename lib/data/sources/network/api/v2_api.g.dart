@@ -230,7 +230,6 @@ Event _$EventFromJson(Map<String, dynamic> json) => Event(
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
     );
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
@@ -238,7 +237,6 @@ Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
     };
 
 EnhancedSendParams _$EnhancedSendParamsFromJson(Map<String, dynamic> json) =>
@@ -345,7 +343,6 @@ EnhancedSendEvent _$EnhancedSendEventFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       params:
           EnhancedSendParams.fromJson(json['params'] as Map<String, dynamic>),
     );
@@ -356,7 +353,6 @@ Map<String, dynamic> _$EnhancedSendEventToJson(EnhancedSendEvent instance) =>
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'params': instance.params,
     };
 
@@ -365,7 +361,6 @@ CreditEvent _$CreditEventFromJson(Map<String, dynamic> json) => CreditEvent(
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       params: CreditParams.fromJson(json['params'] as Map<String, dynamic>),
     );
 
@@ -375,7 +370,6 @@ Map<String, dynamic> _$CreditEventToJson(CreditEvent instance) =>
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'params': instance.params,
     };
 
@@ -384,7 +378,6 @@ DebitEvent _$DebitEventFromJson(Map<String, dynamic> json) => DebitEvent(
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       params: DebitParams.fromJson(json['params'] as Map<String, dynamic>),
     );
 
@@ -394,7 +387,6 @@ Map<String, dynamic> _$DebitEventToJson(DebitEvent instance) =>
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'params': instance.params,
     };
 
@@ -404,7 +396,6 @@ NewTransactionEvent _$NewTransactionEventFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       params:
           NewTransactionParams.fromJson(json['params'] as Map<String, dynamic>),
     );
@@ -416,7 +407,6 @@ Map<String, dynamic> _$NewTransactionEventToJson(
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'params': instance.params,
     };
 
@@ -467,7 +457,6 @@ AssetIssuanceEvent _$AssetIssuanceEventFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       params:
           AssetIssuanceParams.fromJson(json['params'] as Map<String, dynamic>),
     );
@@ -478,7 +467,6 @@ Map<String, dynamic> _$AssetIssuanceEventToJson(AssetIssuanceEvent instance) =>
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'params': instance.params,
     };
 
@@ -490,7 +478,6 @@ VerboseAssetIssuanceEvent _$VerboseAssetIssuanceEventFromJson(
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       blockTime: (json['block_time'] as num).toInt(),
-      confirmed: json['confirmed'] as bool,
       params: VerboseAssetIssuanceParams.fromJson(
           json['params'] as Map<String, dynamic>),
     );
@@ -502,7 +489,6 @@ Map<String, dynamic> _$VerboseAssetIssuanceEventToJson(
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'block_time': instance.blockTime,
       'params': instance.params,
     };
@@ -653,7 +639,6 @@ VerboseEvent _$VerboseEventFromJson(Map<String, dynamic> json) => VerboseEvent(
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
     );
 
@@ -663,7 +648,6 @@ Map<String, dynamic> _$VerboseEventToJson(VerboseEvent instance) =>
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'block_time': instance.blockTime,
     };
 
@@ -674,7 +658,6 @@ VerboseEnhancedSendEvent _$VerboseEnhancedSendEventFromJson(
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
       params: VerboseEnhancedSendParams.fromJson(
           json['params'] as Map<String, dynamic>),
@@ -687,7 +670,6 @@ Map<String, dynamic> _$VerboseEnhancedSendEventToJson(
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'block_time': instance.blockTime,
       'params': instance.params,
     };
@@ -698,7 +680,6 @@ VerboseCreditEvent _$VerboseCreditEventFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
       params:
           VerboseCreditParams.fromJson(json['params'] as Map<String, dynamic>),
@@ -710,7 +691,6 @@ Map<String, dynamic> _$VerboseCreditEventToJson(VerboseCreditEvent instance) =>
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'block_time': instance.blockTime,
       'params': instance.params,
     };
@@ -721,7 +701,6 @@ VerboseDebitEvent _$VerboseDebitEventFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
       params:
           VerboseDebitParams.fromJson(json['params'] as Map<String, dynamic>),
@@ -733,7 +712,6 @@ Map<String, dynamic> _$VerboseDebitEventToJson(VerboseDebitEvent instance) =>
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'block_time': instance.blockTime,
       'params': instance.params,
     };
@@ -745,7 +723,6 @@ VerboseNewTransactionEvent _$VerboseNewTransactionEventFromJson(
       event: json['event'] as String,
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
-      confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num).toInt(),
       params: VerboseNewTransactionParams.fromJson(
           json['params'] as Map<String, dynamic>),
@@ -758,7 +735,6 @@ Map<String, dynamic> _$VerboseNewTransactionEventToJson(
       'event': instance.event,
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
-      'confirmed': instance.confirmed,
       'block_time': instance.blockTime,
       'params': instance.params,
     };
@@ -1425,9 +1401,7 @@ class _V2Api implements V2Api {
   _V2Api(
     this._dio, {
     this.baseUrl,
-  }) {
-    baseUrl ??= 'https://dev.counterparty.io:14000/v2';
-  }
+  });
 
   final Dio _dio;
 
@@ -2499,6 +2473,7 @@ class _V2Api implements V2Api {
     int? cursor,
     int? limit,
     bool? showUnconfirmed,
+    String? eventName,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2506,6 +2481,7 @@ class _V2Api implements V2Api {
       r'cursor': cursor,
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
+      r'event_name': eventName,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -2544,6 +2520,7 @@ class _V2Api implements V2Api {
     int? cursor,
     int? limit,
     bool? showUnconfirmed,
+    String? eventName,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2551,6 +2528,7 @@ class _V2Api implements V2Api {
       r'cursor': cursor,
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
+      r'event_name': eventName,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

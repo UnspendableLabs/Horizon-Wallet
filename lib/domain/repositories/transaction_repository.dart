@@ -13,9 +13,10 @@ abstract class TransactionRepository {
   //     int? limit,
   //     int? cursor,
   //     bool? unconfirmed = false});
-  Future<(List<TransactionInfoVerbose>, int? nextCursor, int? total)> getByAccountVerbose(
-      {required String accountUuid,
-      int? limit,
-      int? cursor,
-      bool? unconfirmed = false});
+  Future<(List<TransactionInfoVerbose>, int? nextCursor, int? total)>
+      getByAccountVerbose(
+          {required String accountUuid,
+          int? limit,
+          int? cursor,
+          bool? unconfirmed = false});
 }

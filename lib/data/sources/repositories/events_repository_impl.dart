@@ -4,13 +4,13 @@ import 'package:horizon/domain/repositories/events_repository.dart';
 
 class StateMapper {
   static EventState get(api.Event apiEvent) {
-    return apiEvent.confirmed
+    return apiEvent.blockIndex != null
         ? EventStateConfirmed(blockHeight: apiEvent.blockIndex!)
         : EventStateMempool();
   }
 
   static EventState getVerbose(api.VerboseEvent apiEvent) {
-    return apiEvent.confirmed
+    return apiEvent.blockIndex != null
         ? EventStateConfirmed(
             blockHeight: apiEvent.blockIndex!, blockTime: apiEvent.blockTime)
         : EventStateMempool();
@@ -44,7 +44,7 @@ class EventMapper {
           txHash:
               apiEvent.txHash!, // all of the events we care about have tx hash,
           blockIndex: apiEvent.blockIndex,
-          confirmed: apiEvent.confirmed,
+          // confirmed: apiEvent.confirmed,
         );
     }
   }
@@ -79,7 +79,7 @@ class VerboseEventMapper {
             event: apiEvent.event,
             txHash: apiEvent.txHash!,
             blockIndex: apiEvent.blockIndex,
-            confirmed: apiEvent.confirmed,
+            // confirmed: apiEvent.confirmed,
             blockTime: apiEvent.blockTime,
           );
         }
@@ -93,16 +93,6 @@ class VerboseEventMapper {
       //   return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as ApiVerboseAssetIssuanceEvent);
       default:
         throw Exception('Invariant: unsupported event type: ${apiEvent.event}');
-        // Return a generic VerboseEvent for unknown types
-        return VerboseEvent(
-          state: StateMapper.getVerbose(apiEvent),
-          eventIndex: apiEvent.eventIndex,
-          event: apiEvent.event,
-          txHash: apiEvent.txHash!,
-          blockIndex: apiEvent.blockIndex,
-          confirmed: apiEvent.confirmed,
-          blockTime: apiEvent.blockTime,
-        );
     }
   }
 }
@@ -115,7 +105,7 @@ class EnhancedSendEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: EnhancedSendParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -146,7 +136,7 @@ class VerboseEnhancedSendEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseEnhancedSendParamsMapper.toDomain(apiEvent.params),
     );
@@ -181,7 +171,7 @@ class CreditEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: CreditParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -209,7 +199,7 @@ class VerboseCreditEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseCreditParamsMapper.toDomain(apiEvent.params),
     );
@@ -241,7 +231,7 @@ class DebitEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: DebitParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -269,7 +259,7 @@ class VerboseDebitEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseDebitParamsMapper.toDomain(apiEvent.params),
     );
@@ -301,7 +291,7 @@ class AssetIssuanceEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
     );
   }
@@ -335,14 +325,13 @@ class AssetIssuanceParamsMapper {
 class VerboseAssetIssuanceEventMapper {
   static VerboseAssetIssuanceEvent toDomain(
       api.VerboseAssetIssuanceEvent apiEvent) {
-
     final x = VerboseAssetIssuanceEvent(
       state: StateMapper.getVerbose(apiEvent),
       event: "ASSET_ISSUANCE",
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseAssetIssuanceParamsMapper.toDomain(apiEvent.params),
     );
@@ -420,7 +409,7 @@ class VerboseNewTransactionEventMapper {
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash ?? "",
       blockIndex: apiEvent.blockIndex,
-      confirmed: apiEvent.confirmed,
+      // confirmed: apiEvent.confirmed,
       blockTime: apiEvent.blockTime,
       params: VerboseNewTransactionParamsMapper.toDomain(apiEvent.params),
     );
@@ -464,8 +453,10 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     final addressesParam = addresses.join(',');
 
+    final whitelist_ = whitelist?.join(",");
+
     final response = await api_.getEventsByAddresses(
-        addressesParam, cursor, limit, unconfirmed);
+        addressesParam, cursor, limit, unconfirmed, whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
@@ -473,13 +464,25 @@ class EventsRepositoryImpl implements EventsRepository {
 
     int? nextCursor = response.nextCursor;
 
-    List<Event> events = response.result!
-        .where((event) => whitelist == null || whitelist.contains(event.event))
-        .map((event) {
+    List<Event> events = response.result!.map((event) {
       return EventMapper.toDomain(event);
     }).toList();
 
     return (events, nextCursor, response.resultCount);
+  }
+
+  @override
+  Future<List<Event>> getAllByAddresses({
+    required List<String> addresses,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  }) async {
+    final futures = addresses.map(
+        (address) => _getAllEventsForAddress(address, unconfirmed, whitelist));
+
+    final results = await Future.wait(futures);
+
+    return results.expand((events) => events).toList();
   }
 
   @override
@@ -493,19 +496,85 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     final addressesParam = addresses.join(',');
 
+    final whitelist_ = whitelist?.join(",");
+
     final response = await api_.getEventsByAddressesVerbose(
-        addressesParam, cursor, limit, unconfirmed);
+        addressesParam, cursor, limit, unconfirmed, whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
     }
     int? nextCursor = response.nextCursor;
-    List<VerboseEvent> events = response.result!
-        .where((event) => whitelist == null || whitelist.contains(event.event))
-        .map((event) {
+    List<VerboseEvent> events = response.result!.map((event) {
       return VerboseEventMapper.toDomain(event);
     }).toList();
 
     return (events, nextCursor, response.resultCount);
+  }
+
+  @override
+  Future<List<VerboseEvent>> getAllByAddressesVerbose({
+    required List<String> addresses,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  }) async {
+    final futures = addresses.map((address) =>
+        _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
+
+    final results = await Future.wait(futures);
+
+    return results.expand((events) => events).toList();
+  }
+
+  Future<List<Event>> _getAllEventsForAddress(
+      String address, bool? unconfirmed, List<String>? whitelist) async {
+    final allEvents = <Event>[];
+    int? cursor;
+    bool hasMore = true;
+
+    while (hasMore) {
+      final (events, nextCursor, _) = await getByAddresses(
+        addresses: [address],
+        cursor: cursor,
+        unconfirmed: unconfirmed,
+        whitelist: whitelist,
+      );
+
+      allEvents.addAll(events);
+
+      if (nextCursor == null) {
+        hasMore = false;
+      } else {
+        cursor = nextCursor;
+      }
+    }
+
+    return allEvents;
+  }
+
+  Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
+      String address, bool? unconfirmed, List<String>? whitelist) async {
+    final allEvents = <VerboseEvent>[];
+    int? cursor;
+    bool hasMore = true;
+
+    while (hasMore) {
+      final (events, nextCursor, _) = await getByAddressesVerbose(
+        addresses: [address],
+        cursor: cursor,
+        unconfirmed: unconfirmed,
+        whitelist: whitelist,
+      );
+
+      allEvents.addAll(events);
+
+      if (nextCursor == null) {
+        hasMore = false;
+      } else {
+        cursor = nextCursor;
+      }
+    }
+
+    return allEvents;
   }
 }

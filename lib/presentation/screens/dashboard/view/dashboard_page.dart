@@ -8,6 +8,7 @@ import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
@@ -105,10 +106,12 @@ class _DashboardPage_State extends State<_DashboardPage> {
           loading: () => const CircularProgressIndicator(),
           error: (error) => Text("Error: $error"),
           success: (addresses) => BlocProvider(
+              key: widget.key,
               create: (context) => DashboardActivityFeedBloc(
                     accountUuid: widget.accountUuid,
                     eventsRepository: GetIt.I.get<EventsRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
+                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
                     transactionLocalRepository:
                         GetIt.I.get<TransactionLocalRepository>(),
                     pageSize: 10,
@@ -149,19 +152,9 @@ class _DashboardPage_State extends State<_DashboardPage> {
                               accountUuid: widget.accountUuid,
                             ),
                           ),
-                          BlocProvider(
-                            create: (context) => DashboardActivityFeedBloc(
-                              accountUuid: widget.accountUuid,
-                              eventsRepository: GetIt.I.get<EventsRepository>(),
-                              addressRepository:
-                                  GetIt.I.get<AddressRepository>(),
-                              transactionLocalRepository:
-                                  GetIt.I.get<TransactionLocalRepository>(),
-                              pageSize: 10,
-                            ),
-                            child: DashboardActivityFeedScreen(
-                                addresses: addresses),
-                          )
+                          DashboardActivityFeedScreen(
+                              key: Key(widget.accountUuid),
+                              addresses: addresses),
                         ],
                       ),
                     ),
@@ -381,7 +374,7 @@ class AddressAction extends StatelessWidget {
                   Icon(icon, size: 20.0, color: mainTextGrey),
                   const SizedBox(width: 8.0),
                   Text(text,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
                           color: mainTextGrey)),
@@ -555,7 +548,7 @@ class _BalancesState extends State<Balances> {
         child: Column(
           children: [
             const Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -570,35 +563,37 @@ class _BalancesState extends State<Balances> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-              child: Container(child: _balanceList(result, widget.isDarkTheme)),
-            ),
+                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+                child:
+                    Container(child: _balanceList(result, widget.isDarkTheme))),
             if (_isExpanded)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: FractionallySizedBox(
-                    widthFactor: 0.5,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
+              Builder(builder: (context) {
+                return Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FractionallySizedBox(
+                      widthFactor: 0.5,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
                         ),
+                        onPressed: () {
+                          setState(() {
+                            _isExpanded = false;
+                          });
+                        },
+                        child: const Text("Collapse"),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isExpanded = false;
-                        });
-                      },
-                      child: const Text("Collapse"),
                     ),
                   ),
-                ),
-              ),
+                );
+              }),
           ],
         ),
       ),

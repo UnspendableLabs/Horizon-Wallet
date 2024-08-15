@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:fpdart/src/either.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:horizon/data/models/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
@@ -16,6 +16,41 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
     try {
       final tx = await _esploraApi.getTransaction(txid);
       return Right(tx);
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<BitcoinTx>>> getTransactions(
+      List<String> addresses) async {
+    try {
+      final allTransactions = await Future.wait(addresses
+          .map((address) => _esploraApi.getTransactionsForAddress(address)));
+
+      final flattenedTransactions = allTransactions.expand((i) => i).toList();
+
+      final uniqueTransactions = flattenedTransactions
+          .fold<Map<String, BitcoinTx>>({}, (map, tx) {
+            map.putIfAbsent(tx.txid,
+                () => tx.toDomain()); // possible there could be collisions?
+            return map;
+          })
+          .values
+          .toList();
+      // Sort transactions by block height in descending order
+      uniqueTransactions.sort((a, b) {
+        // Assuming BitcoinTx has a blockHeight property
+        // Put unconfirmed transactions (null block height) at the beginning
+        // ( but they should all be confirmed )
+        if (a.status.blockHeight == null) return -1;
+        if (b.status.blockHeight == null) return 1;
+        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+      });
+
+      return Right(uniqueTransactions);
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {
@@ -41,12 +76,77 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
           .values
           .toList();
 
+      // Sort transactions by block height in descending order
+      uniqueTransactions.sort((a, b) {
+        // Assuming BitcoinTx has a blockHeight property
+        // Put unconfirmed transactions (null block height) at the beginning
+        // ( but they should all be confirmed )
+        if (a.status.blockHeight == null) return -1;
+        if (b.status.blockHeight == null) return 1;
+        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+      });
+
       return Right(uniqueTransactions);
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {
       return Left(UnexpectedFailure(message: e.toString()));
     }
+  }
+
+  @override
+  Future<Either<Failure, List<BitcoinTx>>> getConfirmedTransactions(
+      List<String> addresses) async {
+    try {
+      final allTransactions = await Future.wait(
+          addresses.map((address) => _fetchAllTransactionsForAddress(address)));
+
+      final uniqueTransactions = allTransactions
+          .expand((txList) => txList)
+          .fold<Map<String, BitcoinTx>>({}, (map, tx) {
+            map.putIfAbsent(tx.txid, () => tx);
+            return map;
+          })
+          .values
+          .toList();
+
+      // Sort transactions by block height in descending order
+      uniqueTransactions.sort((a, b) {
+        // Assuming BitcoinTx has a blockHeight property
+        // Put unconfirmed transactions (null block height) at the beginning
+        // ( but they should all be confirmed )
+        if (a.status.blockHeight == null) return -1;
+        if (b.status.blockHeight == null) return 1;
+        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+      });
+
+      return Right(uniqueTransactions);
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+  Future<List<BitcoinTx>> _fetchAllTransactionsForAddress(
+      String address) async {
+    final allTransactions = <BitcoinTx>[];
+    String? lastSeenTxid;
+    bool hasMore = true;
+
+    while (hasMore) {
+      final transactions = await _esploraApi.getConfirmedTransactionsForAddress(
+          address,
+          lastSeenTxid: lastSeenTxid);
+      if (transactions.isEmpty) {
+        hasMore = false;
+      } else {
+        allTransactions.addAll(transactions.map((tx) => tx.toDomain()));
+        lastSeenTxid = transactions.last.txid;
+      }
+    }
+
+    return allTransactions;
   }
 }
 
@@ -55,10 +155,40 @@ class EsploraApi {
 
   EsploraApi({required Dio dio}) : _dio = dio;
 
+  Future<List<BitcoinTxModel>> getTransactionsForAddress(String address) async {
+    try {
+      final response = await _dio.get('/address/$address/txs');
+      final List<dynamic> txList = response.data as List<dynamic>;
+      return txList
+          .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      _handleDioException(e);
+    }
+  }
+
   Future<List<BitcoinTxModel>> getMempoolTransactionsForAddress(
       String address) async {
     try {
       final response = await _dio.get('/address/$address/txs/mempool');
+      final List<dynamic> txList = response.data as List<dynamic>;
+      return txList
+          .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      _handleDioException(e);
+    }
+  }
+
+  Future<List<BitcoinTxModel>> getConfirmedTransactionsForAddress(
+      String address,
+      {String? lastSeenTxid}) async {
+    try {
+      String url = '/address/$address/txs/chain';
+      if (lastSeenTxid != null) {
+        url += '/$lastSeenTxid';
+      }
+      final response = await _dio.get(url);
       final List<dynamic> txList = response.data as List<dynamic>;
       return txList
           .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
@@ -79,7 +209,6 @@ class EsploraApi {
   }
 
   Never _handleDioException(DioException e) {
-    throw e;
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.sendTimeout ||
         e.type == DioExceptionType.receiveTimeout) {

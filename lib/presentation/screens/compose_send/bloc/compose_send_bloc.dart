@@ -1,7 +1,4 @@
-import 'dart:js_interop';
-
 import 'package:dio/dio.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -10,7 +7,6 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';

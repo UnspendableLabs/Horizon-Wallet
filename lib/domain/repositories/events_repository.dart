@@ -16,4 +16,16 @@ abstract class EventsRepository {
     bool? unconfirmed = false,
     List<String>? whitelist,
   });
+
+  Future<List<Event>> getAllByAddresses({
+    required List<String> addresses,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  });
+
+  Future<List<VerboseEvent>> getAllByAddressesVerbose({
+    required List<String> addresses,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  });
 }

@@ -8,10 +8,15 @@ import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 class TransactionServiceImpl implements TransactionService {
+  final Config config;
+
   ecpair.ECPairFactory ecpairFactory =
       ecpair.ECPairFactory(tinysecp256k1js.ecc);
+
+  TransactionServiceImpl({required this.config});
 
   @override
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
@@ -77,10 +82,9 @@ class TransactionServiceImpl implements TransactionService {
     return txHex;
   }
 
-  _getNetwork() {
-    // bool isTestnet = dotenv.get('TEST') == 'true';
-    bool isTestnet =
-        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
-    return isTestnet ? ecpair.testnet : ecpair.bitcoin;
-  }
+  _getNetwork() => switch (config.network) {
+        Network.mainnet => ecpair.bitcoin,
+        Network.testnet => ecpair.testnet,
+        Network.regtest => ecpair.regtest,
+      };
 }

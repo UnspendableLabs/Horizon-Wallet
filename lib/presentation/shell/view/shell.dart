@@ -102,7 +102,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                             child: Text(
                                               account.name,
                                               textAlign: TextAlign.left,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
