@@ -142,6 +142,8 @@ class OnboardingImportBloc
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
 
+
+            // create an account to house 
             Account account = Account(
                 name: 'Account 0',
                 walletUuid: wallet.uuid,
@@ -151,8 +153,22 @@ class OnboardingImportBloc
                 uuid: uuid.v4(),
                 importFormat: ImportFormat.freewallet);
 
-            List<Address> addresses =
-                await addressService.deriveAddressFreewalletBech32Range(
+            List<Address> addressesBech32 =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.bech32,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    purpose: account.purpose,
+                    coin: account.coinType,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 9);
+
+            List<Address> addressesLegacy =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.legacy,
                     privKey: decryptedPrivKey,
                     chainCodeHex: wallet.chainCodeHex,
                     accountUuid: account.uuid,
@@ -165,7 +181,9 @@ class OnboardingImportBloc
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);
-            await addressRepository.insertMany(addresses);
+            await addressRepository.insertMany(addressesBech32);
+            await addressRepository.insertMany(addressesLegacy);
+
 
             break;
           default:
