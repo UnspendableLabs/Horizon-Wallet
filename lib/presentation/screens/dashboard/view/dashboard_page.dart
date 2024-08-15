@@ -851,6 +851,11 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
             );
           },
         ),
+
+                    TextButton(
+                      child: Text("Create a New Address"),
+                      onPressed: () => print("foo")
+                    )
       ],
     );
   }

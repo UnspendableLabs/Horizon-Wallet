@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 

@@ -205,7 +205,7 @@ class OnboardingImportBloc
             // it just descripes addresses with path
             // m/segment/segment/segment
 
-            List<Address> addressesBech32 =
+            List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
                     type: AddressType.legacy,
                     privKey: decryptedPrivKey,
@@ -220,7 +220,7 @@ class OnboardingImportBloc
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);
-            await addressRepository.insertMany(addressesBech32);
+            await addressRepository.insertMany(addressesLegacy);
 
           default:
             throw UnimplementedError();
