@@ -4,7 +4,7 @@ enum ImportFormat {
   freewallet(
       "Freewallet", "Freewallet (BIP44,P2WPKH,Bech32 + BIP44,P2PKH,Base58)"),
 
-  counterwallet("Counterwallet", "Counterwallet (BIP44,P2PKH,Base58) ");
+  counterwallet("Counterwallet", "Counterwallet (BIP44,P2PKH,Base58)");
 
   const ImportFormat(this.name, this.description);
   final String name;

@@ -100,6 +100,25 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
               await accountRepository.insert(account);
               await addressRepository.insertMany(addresses);
               await addressRepository.insertMany(addressesLegacy);
+
+          case ImportFormat.counterwallet:
+
+            // TODO: fix misnomer method
+            List<Address> addresses = await addressService.deriveAddressFreewalletRange(
+                type: AddressType.legacy,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                purpose: account.purpose,
+                coin: account.coinType,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 0);
+              
+              await accountRepository.insert(account);
+              await addressRepository.insertMany(addresses);
+
           default:
             throw Exception("invalid import format");
         }
