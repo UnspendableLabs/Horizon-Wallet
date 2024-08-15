@@ -19,6 +19,11 @@ import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
+import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+
 class AccountListView extends StatelessWidget {
   const AccountListView({super.key});
   @override
@@ -319,6 +324,64 @@ class Shell extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
+            BlocProvider(
+              create: (context) => LogoutBloc(
+                walletRepository: GetIt.I.get<WalletRepository>(),
+                accountRepository: GetIt.I.get<AccountRepository>(),
+                addressRepository: GetIt.I.get<AddressRepository>(),
+                cacheProvider: GetIt.I.get<CacheProvider>(),
+              ),
+              child: BlocConsumer<LogoutBloc, LogoutState>(
+                listener: (context, state) {
+                  if (state.logoutState is LoggedOut) {
+                    final shell = context.read<ShellStateCubit>();
+                    shell.onOnboarding();
+                  }
+                },
+                builder: (context, state) => SizedBox(
+                  height: 40,
+                  child: FilledButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) {
+                          return BlocProvider.value(
+                            value: BlocProvider.of<LogoutBloc>(context),
+                            child: AlertDialog(
+                              title: const Text('Confirm Logout'),
+                              content: Text(
+                                'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    GoRouter.of(context).pop();
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    context
+                                        .read<LogoutBloc>()
+                                        .add(LogoutEvent());
+                                  },
+                                  child: const Text('Logout'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: const Text('Logout'),
+                  ),
+                ),
+              ),
+            ),
             Container(
               width: 40,
               height: 40,
