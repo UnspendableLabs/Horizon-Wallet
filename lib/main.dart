@@ -422,6 +422,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ShellStateCubit(
             walletRepository: GetIt.I<WalletRepository>(),
             accountRepository: GetIt.I<AccountRepository>(),
+            addressRepository: GetIt.I<AddressRepository>()
           )..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
