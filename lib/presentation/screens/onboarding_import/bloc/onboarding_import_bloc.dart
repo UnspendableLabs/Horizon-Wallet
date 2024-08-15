@@ -119,22 +119,22 @@ class OnboardingImportBloc
               importFormat: ImportFormat.segwit,
             );
 
-            List<Address> addresses =
-                await addressService.deriveAddressSegwitRange(
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: account0.uuid,
-                    purpose: account0.purpose,
-                    coin: account0.coinType,
-                    account: account0.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 9);
+            Address address = await addressService.deriveAddressSegwit(
+              privKey: decryptedPrivKey,
+              chainCodeHex: wallet.chainCodeHex,
+              accountUuid: account0.uuid,
+              purpose: account0.purpose,
+              coin: account0.coinType,
+              account: account0.accountIndex,
+              change: '0',
+              index: 0,
+            );
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account0);
-            await addressRepository.insertMany(addresses);
+            await addressRepository.insert(address);
             break;
+
           case ImportFormat.freewalletBech32:
             Wallet wallet = await walletService.deriveRootFreewallet(
                 state.mnemonic, state.password!);
