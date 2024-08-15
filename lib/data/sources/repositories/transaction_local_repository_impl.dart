@@ -8,7 +8,6 @@ import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
-import "package:horizon/data/models/transaction_unpacked.dart";
 
 class UnpackedMapper {
   static TransactionUnpacked toDomain(api.TransactionUnpacked u) {

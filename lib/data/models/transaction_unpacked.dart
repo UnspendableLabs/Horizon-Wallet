@@ -18,7 +18,7 @@ import "package:horizon/domain/entities/transaction_unpacked.dart";
 
 extension ToApi on TransactionUnpacked {
   api.TransactionUnpacked toApi() {
-    switch (this.runtimeType) {
+    switch (runtimeType) {
       case EnhancedSendUnpacked:
         return (this as EnhancedSendUnpacked).toApi();
       default:

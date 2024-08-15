@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/common/constants.dart';
 
@@ -44,11 +43,10 @@ Future<void> setupRegtestWallet() async {
   // read env for regtest private key
   const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
   const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
+  const network= String.fromEnvironment('NETWORK');
 
-  print('regtestPrivateKey: $regtestPrivateKey');
-  print("regtestPassword: $regtestPassword");
 
-  if (regtestPrivateKey != "" && regtestPassword != "") {
+  if (regtestPrivateKey != "" && regtestPassword != "" &&  network == "regtest") {
     RegTestUtils regTestUtils = RegTestUtils();
     EncryptionService encryptionService = GetIt.I<EncryptionService>();
     AddressService addressService = GetIt.I<AddressService>();
@@ -78,17 +76,16 @@ Future<void> setupRegtestWallet() async {
       importFormat: ImportFormat.segwit,
     );
 
-    List<Address> addresses =
-        await addressService.deriveAddressSegwitRange(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account.uuid,
-            purpose: account.purpose,
-            coin: account.coinType,
-            account: account.accountIndex,
-            change: '0',
-            start: 0,
-            end: 9);
+    List<Address> addresses = await addressService.deriveAddressSegwitRange(
+        privKey: decryptedPrivKey,
+        chainCodeHex: wallet.chainCodeHex,
+        accountUuid: account.uuid,
+        purpose: account.purpose,
+        coin: account.coinType,
+        account: account.accountIndex,
+        change: '0',
+        start: 0,
+        end: 9);
 
     await walletRepository.insert(wallet);
     await accountRepository.insert(account);

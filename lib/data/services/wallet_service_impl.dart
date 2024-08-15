@@ -12,12 +12,14 @@ import 'package:horizon/js/bip39.dart' as bip39;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 class WalletServiceImpl implements WalletService {
+  final Config config;
   @override
   EncryptionService encryptionService;
 
-  WalletServiceImpl(this.encryptionService);
+  WalletServiceImpl(this.encryptionService, this.config);
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
@@ -98,13 +100,9 @@ class WalletServiceImpl implements WalletService {
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
-  _getNetwork() {
-    // bool isTestnet = dotenv.get('TEST') == 'true';
-    bool isTestnet =
-        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
-    return isTestnet ? ecpair.testnet : ecpair.bitcoin;
-  }
-
-
-
+  _getNetwork() => switch (config.network) {
+        Network.mainnet => ecpair.bitcoin,
+        Network.testnet => ecpair.testnet,
+        Network.regtest => ecpair.regtest,
+      };
 }

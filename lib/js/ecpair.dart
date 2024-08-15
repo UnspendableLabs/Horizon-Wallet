@@ -2,7 +2,6 @@
 library;
 
 import 'dart:js_interop';
-import 'dart:js';
 
 import 'package:horizon/js/buffer.dart';
 import "package:horizon/js/common.dart" as c;
@@ -29,7 +28,6 @@ external c.Network get bitcoin;
 @JS("networks.testnet")
 external c.Network get testnet;
 
-Map<String, dynamic> reg = {"becy32": "bcrt"};
 
 final regtest = ({
   "messagePrefix": '\x18Bitcoin Signed Message:\n',

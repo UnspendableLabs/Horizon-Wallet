@@ -216,14 +216,14 @@ class Event {
   final String event;
   final String? txHash;
   final int? blockIndex;
-  final bool confirmed;
+  // final bool confirmed;
 
   const Event({
     required this.eventIndex,
     required this.event,
     required this.txHash,
     this.blockIndex,
-    required this.confirmed,
+    // required this.confirmed,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -388,7 +388,7 @@ class EnhancedSendEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 
@@ -405,7 +405,7 @@ class CreditEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 
@@ -422,7 +422,7 @@ class DebitEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 
@@ -439,7 +439,7 @@ class NewTransactionEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 
@@ -533,7 +533,7 @@ class AssetIssuanceEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 
@@ -551,7 +551,7 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     required super.blockTime,
-    required super.confirmed,
+    // required super.confirmed,
     required this.params,
   });
 
@@ -744,7 +744,7 @@ class VerboseEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required this.blockTime,
   });
 
@@ -776,7 +776,7 @@ class VerboseEnhancedSendEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -794,7 +794,7 @@ class VerboseCreditEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -812,7 +812,7 @@ class VerboseDebitEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -830,7 +830,7 @@ class VerboseNewTransactionEvent extends VerboseEvent {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required super.confirmed,
+    // required super.confirmed,
     required super.blockTime,
     required this.params,
   });
@@ -1534,8 +1534,7 @@ class EnhancedSendUnpacked extends TransactionUnpacked {
 }
 
 class TransactionUnpackedVerbose extends TransactionUnpacked {
-  const TransactionUnpackedVerbose({required String messageType})
-      : super(messageType: messageType);
+  const TransactionUnpackedVerbose({required super.messageType});
 
   factory TransactionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
     final messageType = json["message_type"];
@@ -1959,10 +1958,7 @@ class UTXO {
   factory UTXO.fromJson(Map<String, dynamic> json) => _$UTXOFromJson(json);
 }
 
-// TODO: inject baseURL ( or make dynamic)
-// @RestApi(baseUrl: dotenv.env[TESTNET_URL] as String)
-@RestApi(baseUrl: "https://dev.counterparty.io:14000/v2")
-// @RestApi(baseUrl: "http://localhost:24000/v2")
+@RestApi()
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 
@@ -2238,6 +2234,7 @@ abstract class V2Api {
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("event_name") String? eventName,
   ]);
 
   // @Verbose()
@@ -2247,6 +2244,7 @@ abstract class V2Api {
     @Query("cursor") int? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("event_name") String? eventName,
   ]);
 
   // {

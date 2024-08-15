@@ -21,20 +21,23 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
   final List<ActivityFeedItem> transactions;
   final int newTransactionCount;
   final int? nextCursor;
-  final String? mostRecentRemoteHash;
+  final String? mostRecentCounterpartyEventHash;
+  final String? mostRecentBitcoinTxHash;
 
-  const DashboardActivityFeedStateCompleteOk(
-      {required this.transactions,
-      required this.newTransactionCount,
-      required this.nextCursor,
-      required this.mostRecentRemoteHash});
+  const DashboardActivityFeedStateCompleteOk({
+    required this.transactions,
+    required this.newTransactionCount,
+    required this.nextCursor,
+    required this.mostRecentCounterpartyEventHash,
+    required this.mostRecentBitcoinTxHash,
+  });
 
   @override
   List<Object?> get props => [
         List<Object?>.from(transactions),
         newTransactionCount,
         nextCursor,
-        mostRecentRemoteHash
+        mostRecentCounterpartyEventHash
       ];
 }
 
