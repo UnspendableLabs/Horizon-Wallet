@@ -61,10 +61,7 @@ Future<void> setup() async {
 
   Config config = EnvironmentConfig();
 
-
   injector.registerLazySingleton<Config>(() => config);
-
-
 
   injector.registerLazySingleton<V2Api>(() => V2Api(Dio(BaseOptions(
       baseUrl: config.counterpartyApiBase,

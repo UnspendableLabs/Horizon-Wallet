@@ -28,7 +28,6 @@ external c.Network get bitcoin;
 @JS("networks.testnet")
 external c.Network get testnet;
 
-
 final regtest = ({
   "messagePrefix": '\x18Bitcoin Signed Message:\n',
   "bech32": 'bcrt',

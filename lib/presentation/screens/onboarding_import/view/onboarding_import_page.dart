@@ -712,7 +712,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   }
 }
 
-
 class AddressListView extends StatelessWidget {
   final List<Address> addresses;
   final Map<Address, bool> isCheckedMap;

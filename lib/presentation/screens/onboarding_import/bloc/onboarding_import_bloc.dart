@@ -142,8 +142,7 @@ class OnboardingImportBloc
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
 
-
-            // create an account to house 
+            // create an account to house
             Account account = Account(
                 name: 'Account 0',
                 walletUuid: wallet.uuid,

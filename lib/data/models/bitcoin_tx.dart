@@ -74,7 +74,9 @@ class VinModel {
           : null,
       scriptsig: json['scriptsig'] as String,
       scriptsigAsm: json['scriptsig_asm'] as String,
-      witness: json["witness"] != null ? List<String>.from(json['witness'] as List) : null,
+      witness: json["witness"] != null
+          ? List<String>.from(json['witness'] as List)
+          : null,
       isCoinbase: json['is_coinbase'] as bool,
       sequence: json['sequence'] as int,
     );
