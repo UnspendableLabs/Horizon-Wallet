@@ -1,4 +1,3 @@
-import 'package:bech32/bech32.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:horizon/common/constants.dart";
@@ -110,7 +109,6 @@ class AddressFormBloc
             break;
 
           case ImportFormat.counterwallet:
-
             List<Address> legacyAddresses =
                 await addressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
@@ -128,10 +126,6 @@ class AddressFormBloc
             await addressRepository.insertMany(legacyAddresses);
 
             emit(RemoteDataState.success(legacyAddresses));
-        }
-
-        if (wallet == null) {
-          throw Exception("invariant: wallet is null");
         }
       } catch (e) {
         emit(RemoteDataState.error(e.toString()));

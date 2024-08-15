@@ -9,9 +9,6 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
@@ -851,11 +848,9 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
             );
           },
         ),
-
-                    TextButton(
-                      child: Text("Create a New Address"),
-                      onPressed: () => print("foo")
-                    )
+        TextButton(
+            child: const Text("Create a New Address"),
+            onPressed: () => print("foo"))
       ],
     );
   }
