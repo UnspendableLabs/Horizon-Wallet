@@ -34,7 +34,8 @@ class ComposeSendPage extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeSendBloc()..add(FetchFormData(currentAddress: state.currentAddress)),
+        create: (context) => ComposeSendBloc()
+          ..add(FetchFormData(currentAddress: state.currentAddress)),
         child: _ComposeSendPage_(
           address: state.currentAddress,
           isDarkMode: isDarkMode,
@@ -50,7 +51,10 @@ class _ComposeSendPage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  const _ComposeSendPage_({required this.isDarkMode, required this.dashboardActivityFeedBloc, required this.address});
+  const _ComposeSendPage_(
+      {required this.isDarkMode,
+      required this.dashboardActivityFeedBloc,
+      required this.address});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
@@ -71,7 +75,8 @@ class AssetDropdownLoading extends StatelessWidget {
           initialSelection: "",
           // enabled: false,
           label: const Text('Asset'),
-          dropdownMenuEntries: [const DropdownMenuEntry<String>(value: "", label: "")].toList()),
+          dropdownMenuEntries:
+              [const DropdownMenuEntry<String>(value: "", label: "")].toList()),
       const Positioned(
         left: 12,
         top: 0,
@@ -133,7 +138,8 @@ _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
     return null;
   }
 
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ?? balances[0];
+  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
+      balances[0];
 }
 
 class _ComposeSendPageState extends State<_ComposeSendPage_> {
@@ -157,7 +163,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    return BlocConsumer<ComposeSendBloc, ComposeSendState>(listener: (context, state) {
+    return BlocConsumer<ComposeSendBloc, ComposeSendState>(
+        listener: (context, state) {
       state.submitState.maybeWhen(
           loading: () {
             // close modal
@@ -165,12 +172,15 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           },
           success: (txHash, sourceAddress) {
             // reload activity feed
-            widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
+            widget.dashboardActivityFeedBloc
+                .add(const Load()); // show "N more transactions".
           },
           orElse: () => null);
     }, builder: (context, state) {
       return state.submitState.maybeWhen(
-        error: (msg) => Padding(padding: const EdgeInsets.all(8.0), child: Text('An error occurred: $msg')),
+        error: (msg) => Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('An error occurred: $msg')),
         initial: () => Form(
           key: _formKey,
           child: Padding(
@@ -184,7 +194,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                   controller: fromAddressController,
                   label: "Source",
                   floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  fillColor: isDarkTheme ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme,
+                  fillColor: isDarkTheme
+                      ? dialogBackgroundColorDarkTheme
+                      : dialogBackgroundColorLightTheme,
                   textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
                 ),
                 const SizedBox(height: 16.0),
@@ -213,7 +225,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                         );
                       }, success: (balances) {
-                        Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+                        Balance? balance = balance_ ??
+                            _getBalanceForSelectedAsset(
+                                balances, asset ?? balances[0].asset);
 
                         if (balance == null) {
                           return HorizonTextFormField(
@@ -232,7 +246,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
 
                           inputFormatters: <TextInputFormatter>[
-                            TextInputFormatter.withFunction((oldValue, newValue) {
+                            TextInputFormatter.withFunction(
+                                (oldValue, newValue) {
                               if (newValue.text.isEmpty) {
                                 return newValue;
                               }
@@ -242,16 +257,19 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                               return oldValue;
                             }),
                             balance.assetInfo.divisible
-                                ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
+                                ? FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d*$'))
                                 : FilteringTextInputFormatter.digitsOnly,
                           ], // Only
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a quantity';
                             }
                             Decimal input = Decimal.parse(value);
-                            Decimal max = Decimal.parse(balance.quantityNormalized);
+                            Decimal max =
+                                Decimal.parse(balance.quantityNormalized);
 
                             if (input > max) {
                               return "quantity exceeds max";
@@ -297,10 +315,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                                   balances: balances,
                                   controller: assetController,
                                   onSelected: (String? value) {
-                                    Balance? balance = _getBalanceForSelectedAsset(balances, value!);
+                                    Balance? balance =
+                                        _getBalanceForSelectedAsset(
+                                            balances, value!);
 
                                     if (balance == null) {
-                                      throw Exception("invariant: No balance found for asset");
+                                      throw Exception(
+                                          "invariant: No balance found for asset");
                                     }
 
                                     setState(() {
@@ -327,11 +348,14 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       int quantity;
 
                       if (balance == null) {
-                        throw Exception("invariant: No balance found for asset");
+                        throw Exception(
+                            "invariant: No balance found for asset");
                       }
 
                       if (balance.assetInfo.divisible) {
-                        quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+                        quantity = (input * Decimal.fromInt(100000000))
+                            .toBigInt()
+                            .toInt();
                       } else {
                         quantity = (input).toBigInt().toInt();
                       }
@@ -340,12 +364,14 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         throw Exception("no asset");
                       }
 
-                      context.read<ComposeSendBloc>().add(ConfirmTransactionEvent(
-                          sourceAddress: widget.address.address,
-                          destinationAddress: destinationAddressController.text,
-                          asset: asset!,
-                          quantity: quantity,
-                          quantityDisplay: input.toString()));
+                      context.read<ComposeSendBloc>().add(
+                          ConfirmTransactionEvent(
+                              sourceAddress: widget.address.address,
+                              destinationAddress:
+                                  destinationAddressController.text,
+                              asset: asset!,
+                              quantity: quantity,
+                              quantityDisplay: input.toString()));
                     }
                   },
                 ),
@@ -363,8 +389,11 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
     });
   }
 
-  Widget _buildConfirmationPage(BuildContext context, SubmitStateComposingSend composeSendState, bool isDarkTheme) {
-    final inputFillColor = isDarkTheme ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme;
+  Widget _buildConfirmationPage(BuildContext context,
+      SubmitStateComposingSend composeSendState, bool isDarkTheme) {
+    final inputFillColor = isDarkTheme
+        ? dialogBackgroundColorDarkTheme
+        : dialogBackgroundColorLightTheme;
     final sendParams = composeSendState.composeSend.params;
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -373,7 +402,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         children: <Widget>[
           const Text(
             'Please review your transaction details.',
-            style: TextStyle(fontSize: 16.0, color: mainTextWhite, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: 16.0,
+                color: mainTextWhite,
+                fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16.0),
@@ -404,7 +436,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                   isDarkMode: widget.isDarkMode,
                   label: "Quantity",
                   floatingLabelBehavior: FloatingLabelBehavior.always,
-                  controller: TextEditingController(text: sendParams.quantityNormalized),
+                  controller: TextEditingController(
+                      text: sendParams.quantityNormalized),
                   enabled: false,
                   fillColor: inputFillColor,
                   textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
@@ -427,7 +460,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Divider(
-              color: isDarkTheme ? greyDarkThemeUnderlineColor : greyLightThemeUnderlineColor,
+              color: isDarkTheme
+                  ? greyDarkThemeUnderlineColor
+                  : greyLightThemeUnderlineColor,
               thickness: 1.0,
             ),
           ),
@@ -453,15 +488,18 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
               HorizonCancelButton(
                 isDarkMode: widget.isDarkMode,
                 onPressed: () {
-                  context.read<ComposeSendBloc>().add(FetchFormData(currentAddress: widget.address));
+                  context
+                      .read<ComposeSendBloc>()
+                      .add(FetchFormData(currentAddress: widget.address));
                 },
                 buttonText: 'BACK',
               ),
               HorizonContinueButton(
                 isDarkMode: widget.isDarkMode,
                 onPressed: () {
-                  context.read<ComposeSendBloc>().add(
-                      SendTransactionEvent(composeSend: composeSendState.composeSend, password: passwordController.text));
+                  context.read<ComposeSendBloc>().add(SendTransactionEvent(
+                      composeSend: composeSendState.composeSend,
+                      password: passwordController.text));
                 },
                 buttonText: 'SIGN AND BROADCAST',
               ),
