@@ -166,11 +166,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(
         listener: (context, state) {
       state.submitState.maybeWhen(
-          loading: () {
+          success: (txHash, sourceAddress) {
             // close modal
             Navigator.of(context).pop();
-          },
-          success: (txHash, sourceAddress) {
             // reload activity feed
             widget.dashboardActivityFeedBloc
                 .add(const Load()); // show "N more transactions".
@@ -178,6 +176,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           orElse: () => null);
     }, builder: (context, state) {
       return state.submitState.maybeWhen(
+        loading: () => const CircularProgressIndicator(),
         error: (msg) => Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text('An error occurred: $msg')),
@@ -365,7 +364,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       }
 
                       context.read<ComposeSendBloc>().add(
-                          ConfirmTransactionEvent(
+                          ComposeTransactionEvent(
                               sourceAddress: widget.address.address,
                               destinationAddress:
                                   destinationAddressController.text,
@@ -497,9 +496,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
               HorizonContinueButton(
                 isDarkMode: widget.isDarkMode,
                 onPressed: () {
-                  context.read<ComposeSendBloc>().add(SendTransactionEvent(
-                      composeSend: composeSendState.composeSend,
-                      password: passwordController.text));
+                  context.read<ComposeSendBloc>().add(
+                      SignAndBroadcastTransactionEvent(
+                          composeSend: composeSendState.composeSend,
+                          password: passwordController.text));
                 },
                 buttonText: 'SIGN AND BROADCAST',
               ),

@@ -5,8 +5,6 @@ class ComposeSendParams {
   final String destination;
   final String asset;
   final int quantity;
-  // final String? memo;
-  // final bool memoIsHex;
   final bool useEnhancedSend;
   final AssetInfo assetInfo;
   final String quantityNormalized;
@@ -16,8 +14,6 @@ class ComposeSendParams {
     required this.destination,
     required this.asset,
     required this.quantity,
-    // this.memo,
-    // required this.memoIsHex,
     required this.useEnhancedSend,
     required this.assetInfo,
     required this.quantityNormalized,

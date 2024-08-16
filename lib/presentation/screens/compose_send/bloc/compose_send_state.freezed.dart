@@ -16,7 +16,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$ComposeSendState {
-  dynamic get addressesState => throw _privateConstructorUsedError;
   dynamic get balancesState => throw _privateConstructorUsedError;
   dynamic get submitState => throw _privateConstructorUsedError;
 
@@ -31,8 +30,7 @@ abstract class $ComposeSendStateCopyWith<$Res> {
           ComposeSendState value, $Res Function(ComposeSendState) then) =
       _$ComposeSendStateCopyWithImpl<$Res, ComposeSendState>;
   @useResult
-  $Res call(
-      {dynamic addressesState, dynamic balancesState, dynamic submitState});
+  $Res call({dynamic balancesState, dynamic submitState});
 }
 
 /// @nodoc
@@ -48,15 +46,10 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? addressesState = freezed,
     Object? balancesState = freezed,
     Object? submitState = freezed,
   }) {
     return _then(_value.copyWith(
-      addressesState: freezed == addressesState
-          ? _value.addressesState
-          : addressesState // ignore: cast_nullable_to_non_nullable
-              as dynamic,
       balancesState: freezed == balancesState
           ? _value.balancesState
           : balancesState // ignore: cast_nullable_to_non_nullable
@@ -77,8 +70,7 @@ abstract class _$$ComposeSendStateImplCopyWith<$Res>
       __$$ComposeSendStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {dynamic addressesState, dynamic balancesState, dynamic submitState});
+  $Res call({dynamic balancesState, dynamic submitState});
 }
 
 /// @nodoc
@@ -92,13 +84,10 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? addressesState = freezed,
     Object? balancesState = freezed,
     Object? submitState = freezed,
   }) {
     return _then(_$ComposeSendStateImpl(
-      addressesState:
-          freezed == addressesState ? _value.addressesState! : addressesState,
       balancesState:
           freezed == balancesState ? _value.balancesState! : balancesState,
       submitState: freezed == submitState ? _value.submitState! : submitState,
@@ -110,13 +99,9 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
 
 class _$ComposeSendStateImpl implements _ComposeSendState {
   const _$ComposeSendStateImpl(
-      {this.addressesState = const AddressesState.initial(),
-      this.balancesState = const BalancesState.initial(),
+      {this.balancesState = const BalancesState.initial(),
       this.submitState = const SubmitState.initial()});
 
-  @override
-  @JsonKey()
-  final dynamic addressesState;
   @override
   @JsonKey()
   final dynamic balancesState;
@@ -126,7 +111,7 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
 
   @override
   String toString() {
-    return 'ComposeSendState(addressesState: $addressesState, balancesState: $balancesState, submitState: $submitState)';
+    return 'ComposeSendState(balancesState: $balancesState, submitState: $submitState)';
   }
 
   @override
@@ -134,8 +119,6 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ComposeSendStateImpl &&
-            const DeepCollectionEquality()
-                .equals(other.addressesState, addressesState) &&
             const DeepCollectionEquality()
                 .equals(other.balancesState, balancesState) &&
             const DeepCollectionEquality()
@@ -145,7 +128,6 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      const DeepCollectionEquality().hash(addressesState),
       const DeepCollectionEquality().hash(balancesState),
       const DeepCollectionEquality().hash(submitState));
 
@@ -159,12 +141,9 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
 
 abstract class _ComposeSendState implements ComposeSendState {
   const factory _ComposeSendState(
-      {final dynamic addressesState,
-      final dynamic balancesState,
+      {final dynamic balancesState,
       final dynamic submitState}) = _$ComposeSendStateImpl;
 
-  @override
-  dynamic get addressesState;
   @override
   dynamic get balancesState;
   @override
@@ -771,606 +750,6 @@ abstract class _BalanceError implements BalancesState {
   String get error;
   @JsonKey(ignore: true)
   _$$BalanceErrorImplCopyWith<_$BalanceErrorImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-mixin _$AddressesState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Address> addresses) success,
-    required TResult Function(String error) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Address> addresses)? success,
-    TResult? Function(String error)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Address> addresses)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_AddressInitial value) initial,
-    required TResult Function(_AddressLoading value) loading,
-    required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_AddressInitial value)? initial,
-    TResult? Function(_AddressLoading value)? loading,
-    TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_AddressInitial value)? initial,
-    TResult Function(_AddressLoading value)? loading,
-    TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressError value)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $AddressesStateCopyWith<$Res> {
-  factory $AddressesStateCopyWith(
-          AddressesState value, $Res Function(AddressesState) then) =
-      _$AddressesStateCopyWithImpl<$Res, AddressesState>;
-}
-
-/// @nodoc
-class _$AddressesStateCopyWithImpl<$Res, $Val extends AddressesState>
-    implements $AddressesStateCopyWith<$Res> {
-  _$AddressesStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-}
-
-/// @nodoc
-abstract class _$$AddressInitialImplCopyWith<$Res> {
-  factory _$$AddressInitialImplCopyWith(_$AddressInitialImpl value,
-          $Res Function(_$AddressInitialImpl) then) =
-      __$$AddressInitialImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$AddressInitialImplCopyWithImpl<$Res>
-    extends _$AddressesStateCopyWithImpl<$Res, _$AddressInitialImpl>
-    implements _$$AddressInitialImplCopyWith<$Res> {
-  __$$AddressInitialImplCopyWithImpl(
-      _$AddressInitialImpl _value, $Res Function(_$AddressInitialImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$AddressInitialImpl implements _AddressInitial {
-  const _$AddressInitialImpl();
-
-  @override
-  String toString() {
-    return 'AddressesState.initial()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$AddressInitialImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Address> addresses) success,
-    required TResult Function(String error) error,
-  }) {
-    return initial();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Address> addresses)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return initial?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Address> addresses)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_AddressInitial value) initial,
-    required TResult Function(_AddressLoading value) loading,
-    required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressError value) error,
-  }) {
-    return initial(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_AddressInitial value)? initial,
-    TResult? Function(_AddressLoading value)? loading,
-    TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressError value)? error,
-  }) {
-    return initial?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_AddressInitial value)? initial,
-    TResult Function(_AddressLoading value)? loading,
-    TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressError value)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _AddressInitial implements AddressesState {
-  const factory _AddressInitial() = _$AddressInitialImpl;
-}
-
-/// @nodoc
-abstract class _$$AddressLoadingImplCopyWith<$Res> {
-  factory _$$AddressLoadingImplCopyWith(_$AddressLoadingImpl value,
-          $Res Function(_$AddressLoadingImpl) then) =
-      __$$AddressLoadingImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$AddressLoadingImplCopyWithImpl<$Res>
-    extends _$AddressesStateCopyWithImpl<$Res, _$AddressLoadingImpl>
-    implements _$$AddressLoadingImplCopyWith<$Res> {
-  __$$AddressLoadingImplCopyWithImpl(
-      _$AddressLoadingImpl _value, $Res Function(_$AddressLoadingImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$AddressLoadingImpl implements _AddressLoading {
-  const _$AddressLoadingImpl();
-
-  @override
-  String toString() {
-    return 'AddressesState.loading()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$AddressLoadingImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Address> addresses) success,
-    required TResult Function(String error) error,
-  }) {
-    return loading();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Address> addresses)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return loading?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Address> addresses)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_AddressInitial value) initial,
-    required TResult Function(_AddressLoading value) loading,
-    required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressError value) error,
-  }) {
-    return loading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_AddressInitial value)? initial,
-    TResult? Function(_AddressLoading value)? loading,
-    TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressError value)? error,
-  }) {
-    return loading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_AddressInitial value)? initial,
-    TResult Function(_AddressLoading value)? loading,
-    TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressError value)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _AddressLoading implements AddressesState {
-  const factory _AddressLoading() = _$AddressLoadingImpl;
-}
-
-/// @nodoc
-abstract class _$$AddressSuccessImplCopyWith<$Res> {
-  factory _$$AddressSuccessImplCopyWith(_$AddressSuccessImpl value,
-          $Res Function(_$AddressSuccessImpl) then) =
-      __$$AddressSuccessImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({List<Address> addresses});
-}
-
-/// @nodoc
-class __$$AddressSuccessImplCopyWithImpl<$Res>
-    extends _$AddressesStateCopyWithImpl<$Res, _$AddressSuccessImpl>
-    implements _$$AddressSuccessImplCopyWith<$Res> {
-  __$$AddressSuccessImplCopyWithImpl(
-      _$AddressSuccessImpl _value, $Res Function(_$AddressSuccessImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? addresses = null,
-  }) {
-    return _then(_$AddressSuccessImpl(
-      null == addresses
-          ? _value._addresses
-          : addresses // ignore: cast_nullable_to_non_nullable
-              as List<Address>,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$AddressSuccessImpl implements _AddressSuccess {
-  const _$AddressSuccessImpl(final List<Address> addresses)
-      : _addresses = addresses;
-
-  final List<Address> _addresses;
-  @override
-  List<Address> get addresses {
-    if (_addresses is EqualUnmodifiableListView) return _addresses;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_addresses);
-  }
-
-  @override
-  String toString() {
-    return 'AddressesState.success(addresses: $addresses)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$AddressSuccessImpl &&
-            const DeepCollectionEquality()
-                .equals(other._addresses, _addresses));
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_addresses));
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$AddressSuccessImplCopyWith<_$AddressSuccessImpl> get copyWith =>
-      __$$AddressSuccessImplCopyWithImpl<_$AddressSuccessImpl>(
-          this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Address> addresses) success,
-    required TResult Function(String error) error,
-  }) {
-    return success(addresses);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Address> addresses)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return success?.call(addresses);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Address> addresses)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(addresses);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_AddressInitial value) initial,
-    required TResult Function(_AddressLoading value) loading,
-    required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressError value) error,
-  }) {
-    return success(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_AddressInitial value)? initial,
-    TResult? Function(_AddressLoading value)? loading,
-    TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressError value)? error,
-  }) {
-    return success?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_AddressInitial value)? initial,
-    TResult Function(_AddressLoading value)? loading,
-    TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressError value)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _AddressSuccess implements AddressesState {
-  const factory _AddressSuccess(final List<Address> addresses) =
-      _$AddressSuccessImpl;
-
-  List<Address> get addresses;
-  @JsonKey(ignore: true)
-  _$$AddressSuccessImplCopyWith<_$AddressSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$AddressErrorImplCopyWith<$Res> {
-  factory _$$AddressErrorImplCopyWith(
-          _$AddressErrorImpl value, $Res Function(_$AddressErrorImpl) then) =
-      __$$AddressErrorImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({String error});
-}
-
-/// @nodoc
-class __$$AddressErrorImplCopyWithImpl<$Res>
-    extends _$AddressesStateCopyWithImpl<$Res, _$AddressErrorImpl>
-    implements _$$AddressErrorImplCopyWith<$Res> {
-  __$$AddressErrorImplCopyWithImpl(
-      _$AddressErrorImpl _value, $Res Function(_$AddressErrorImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? error = null,
-  }) {
-    return _then(_$AddressErrorImpl(
-      null == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$AddressErrorImpl implements _AddressError {
-  const _$AddressErrorImpl(this.error);
-
-  @override
-  final String error;
-
-  @override
-  String toString() {
-    return 'AddressesState.error(error: $error)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$AddressErrorImpl &&
-            (identical(other.error, error) || other.error == error));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, error);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$AddressErrorImplCopyWith<_$AddressErrorImpl> get copyWith =>
-      __$$AddressErrorImplCopyWithImpl<_$AddressErrorImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Address> addresses) success,
-    required TResult Function(String error) error,
-  }) {
-    return error(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Address> addresses)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return error?.call(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Address> addresses)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this.error);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_AddressInitial value) initial,
-    required TResult Function(_AddressLoading value) loading,
-    required TResult Function(_AddressSuccess value) success,
-    required TResult Function(_AddressError value) error,
-  }) {
-    return error(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_AddressInitial value)? initial,
-    TResult? Function(_AddressLoading value)? loading,
-    TResult? Function(_AddressSuccess value)? success,
-    TResult? Function(_AddressError value)? error,
-  }) {
-    return error?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_AddressInitial value)? initial,
-    TResult Function(_AddressLoading value)? loading,
-    TResult Function(_AddressSuccess value)? success,
-    TResult Function(_AddressError value)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _AddressError implements AddressesState {
-  const factory _AddressError(final String error) = _$AddressErrorImpl;
-
-  String get error;
-  @JsonKey(ignore: true)
-  _$$AddressErrorImplCopyWith<_$AddressErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
