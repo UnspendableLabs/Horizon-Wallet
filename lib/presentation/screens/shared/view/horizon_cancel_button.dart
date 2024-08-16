@@ -19,12 +19,11 @@ class HorizonCancelButton extends StatelessWidget {
         overlayColor: noBackgroundColor,
         elevation: 0,
         backgroundColor: isDarkMode ? noBackgroundColor : lightThemeInputColor,
-        padding: const EdgeInsets.symmetric(
-            horizontal: 32, vertical: 16), // Button size
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         textStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-        ), // Text style
+        ),
       ),
       onPressed: onPressed,
       child: Padding(

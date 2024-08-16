@@ -86,7 +86,7 @@ class HorizonTextFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool? enabled;
   final Color? fillColor;
-  final Color? textColor; // New parameter
+  final Color? textColor;
 
   const HorizonTextFormField({
     super.key,
@@ -108,7 +108,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.inputFormatters,
     this.enabled,
     this.fillColor,
-    this.textColor, // Initialize new parameter
+    this.textColor,
   });
 
   @override
