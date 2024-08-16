@@ -5,6 +5,7 @@ import 'package:convert/convert.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
+import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
@@ -89,8 +90,9 @@ class AddressServiceImpl extends AddressService {
 
   // Doesn't need to be async since mnemonicToEntropy is sync
   @override
-  Future<Address> deriveAddressFreewalletBech32(
-      {required dynamic root,
+  Future<Address> deriveAddressFreewallet(
+      {required AddressType type,
+      required dynamic root,
       required String accountUuid,
       required String purpose,
       required String coin,
@@ -107,7 +109,10 @@ class AddressServiceImpl extends AddressService {
     bip32.BIP32Interface child =
         (root as bip32.BIP32Interface).derivePath(path);
 
-    String address = _bech32FromBip32(child);
+    String address = switch (type) {
+      AddressType.bech32 => _bech32FromBip32(child),
+      AddressType.legacy => _legacyFromBip32(child),
+    };
 
     return Address(
       address: address,
@@ -117,8 +122,9 @@ class AddressServiceImpl extends AddressService {
   }
 
   @override
-  Future<List<Address>> deriveAddressFreewalletBech32Range(
-      {required String privKey,
+  Future<List<Address>> deriveAddressFreewalletRange(
+      {required AddressType type,
+      required String privKey,
       required String chainCodeHex,
       required String accountUuid,
       required String purpose,
@@ -141,7 +147,8 @@ class AddressServiceImpl extends AddressService {
     List<Address> addresses = [];
 
     for (int i = start; i <= end; i++) {
-      Address address = await deriveAddressFreewalletBech32(
+      Address address = await deriveAddressFreewallet(
+          type: type,
           root: root,
           accountUuid: accountUuid,
           purpose: purpose,
@@ -177,6 +184,17 @@ class AddressServiceImpl extends AddressService {
     bip32.BIP32Interface child = root.derivePath(path);
 
     return hex.encode(child.privateKey!.toDart);
+  }
+
+  String _legacyFromBip32(bip32.BIP32Interface child) {
+    final network = _getNetwork();
+
+    final paymentOpts =
+        bitcoin.PaymentOptions(pubkey: child.publicKey, network: network);
+
+    final payment = bitcoin.p2pkh(paymentOpts);
+
+    return payment.address;
   }
 
   String _bech32FromBip32(bip32.BIP32Interface child) {

@@ -69,10 +69,7 @@ class OnboardingImportBloc
     });
 
     on<ImportFormatChanged>((event, emit) async {
-      ImportFormat importFormat = event.importFormat == "Segwit"
-          ? ImportFormat.segwit
-          : ImportFormat.freewalletBech32;
-      emit(state.copyWith(importFormat: importFormat));
+      emit(state.copyWith(importFormat: event.importFormat));
     });
 
     on<MnemonicSubmit>((event, emit) async {
@@ -89,9 +86,12 @@ class OnboardingImportBloc
           return;
         }
       }
-      ImportFormat importFormat = event.importFormat == "Segwit"
-          ? ImportFormat.segwit
-          : ImportFormat.freewalletBech32;
+      ImportFormat importFormat = switch (event.importFormat) {
+        "Segwit" => ImportFormat.segwit,
+        "Freewallet" => ImportFormat.freewallet,
+        "Counterwallet" => ImportFormat.counterwallet,
+        _ => throw Exception('Invariant: Invalid import format')
+      };
       emit(state.copyWith(
           importState: ImportStateMnemonicCollected(),
           importFormat: importFormat,
@@ -119,29 +119,30 @@ class OnboardingImportBloc
               importFormat: ImportFormat.segwit,
             );
 
-            List<Address> addresses =
-                await addressService.deriveAddressSegwitRange(
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: account0.uuid,
-                    purpose: account0.purpose,
-                    coin: account0.coinType,
-                    account: account0.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 9);
+            Address address = await addressService.deriveAddressSegwit(
+              privKey: decryptedPrivKey,
+              chainCodeHex: wallet.chainCodeHex,
+              accountUuid: account0.uuid,
+              purpose: account0.purpose,
+              coin: account0.coinType,
+              account: account0.accountIndex,
+              change: '0',
+              index: 0,
+            );
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account0);
-            await addressRepository.insertMany(addresses);
+            await addressRepository.insert(address);
             break;
-          case ImportFormat.freewalletBech32:
+
+          case ImportFormat.freewallet:
             Wallet wallet = await walletService.deriveRootFreewallet(
                 state.mnemonic, state.password!);
 
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
 
+            // create an account to house
             Account account = Account(
                 name: 'Account 0',
                 walletUuid: wallet.uuid,
@@ -149,10 +150,24 @@ class OnboardingImportBloc
                 coinType: _getCoinType(),
                 accountIndex: '0\'',
                 uuid: uuid.v4(),
-                importFormat: ImportFormat.freewalletBech32);
+                importFormat: ImportFormat.freewallet);
 
-            List<Address> addresses =
-                await addressService.deriveAddressFreewalletBech32Range(
+            List<Address> addressesBech32 =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.bech32,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    purpose: account.purpose,
+                    coin: account.coinType,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 9);
+
+            List<Address> addressesLegacy =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.legacy,
                     privKey: decryptedPrivKey,
                     chainCodeHex: wallet.chainCodeHex,
                     accountUuid: account.uuid,
@@ -165,9 +180,48 @@ class OnboardingImportBloc
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);
-            await addressRepository.insertMany(addresses);
+            await addressRepository.insertMany(addressesBech32);
+            await addressRepository.insertMany(addressesLegacy);
 
             break;
+          case ImportFormat.counterwallet:
+            Wallet wallet = await walletService.deriveRootFreewallet(
+                state.mnemonic, state.password!);
+
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
+
+            // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
+            Account account = Account(
+                name: 'Account 0',
+                walletUuid: wallet.uuid,
+                purpose: '0\'',
+                coinType: _getCoinType(),
+                accountIndex: '0\'',
+                uuid: uuid.v4(),
+                importFormat: ImportFormat.counterwallet);
+
+            // `deriveAddressFreewalle` is misnomer now
+            // it just descripes addresses with path
+            // m/segment/segment/segment
+
+            List<Address> addressesLegacy =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.legacy,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    purpose: account.purpose,
+                    coin: account.coinType,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 0);
+
+            await walletRepository.insert(wallet);
+            await accountRepository.insert(account);
+            await addressRepository.insertMany(addressesLegacy);
+
           default:
             throw UnimplementedError();
         }

@@ -813,6 +813,8 @@ mixin _$ShellStateSuccess {
   Wallet get wallet => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
   String get currentAccountUuid => throw _privateConstructorUsedError;
+  List<Address> get addresses => throw _privateConstructorUsedError;
+  Address get currentAddress => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ShellStateSuccessCopyWith<ShellStateSuccess> get copyWith =>
@@ -829,7 +831,9 @@ abstract class $ShellStateSuccessCopyWith<$Res> {
       {bool redirect,
       Wallet wallet,
       List<Account> accounts,
-      String currentAccountUuid});
+      String currentAccountUuid,
+      List<Address> addresses,
+      Address currentAddress});
 }
 
 /// @nodoc
@@ -849,6 +853,8 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
     Object? wallet = null,
     Object? accounts = null,
     Object? currentAccountUuid = null,
+    Object? addresses = null,
+    Object? currentAddress = null,
   }) {
     return _then(_value.copyWith(
       redirect: null == redirect
@@ -867,6 +873,14 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
           ? _value.currentAccountUuid
           : currentAccountUuid // ignore: cast_nullable_to_non_nullable
               as String,
+      addresses: null == addresses
+          ? _value.addresses
+          : addresses // ignore: cast_nullable_to_non_nullable
+              as List<Address>,
+      currentAddress: null == currentAddress
+          ? _value.currentAddress
+          : currentAddress // ignore: cast_nullable_to_non_nullable
+              as Address,
     ) as $Val);
   }
 }
@@ -883,7 +897,9 @@ abstract class _$$ShellStateSuccessImplCopyWith<$Res>
       {bool redirect,
       Wallet wallet,
       List<Account> accounts,
-      String currentAccountUuid});
+      String currentAccountUuid,
+      List<Address> addresses,
+      Address currentAddress});
 }
 
 /// @nodoc
@@ -901,6 +917,8 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
     Object? wallet = null,
     Object? accounts = null,
     Object? currentAccountUuid = null,
+    Object? addresses = null,
+    Object? currentAddress = null,
   }) {
     return _then(_$ShellStateSuccessImpl(
       redirect: null == redirect
@@ -919,6 +937,14 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
           ? _value.currentAccountUuid
           : currentAccountUuid // ignore: cast_nullable_to_non_nullable
               as String,
+      addresses: null == addresses
+          ? _value._addresses
+          : addresses // ignore: cast_nullable_to_non_nullable
+              as List<Address>,
+      currentAddress: null == currentAddress
+          ? _value.currentAddress
+          : currentAddress // ignore: cast_nullable_to_non_nullable
+              as Address,
     ));
   }
 }
@@ -930,8 +956,11 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
       {required this.redirect,
       required this.wallet,
       required final List<Account> accounts,
-      required this.currentAccountUuid})
-      : _accounts = accounts;
+      required this.currentAccountUuid,
+      required final List<Address> addresses,
+      required this.currentAddress})
+      : _accounts = accounts,
+        _addresses = addresses;
 
   @override
   final bool redirect;
@@ -947,10 +976,20 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
 
   @override
   final String currentAccountUuid;
+  final List<Address> _addresses;
+  @override
+  List<Address> get addresses {
+    if (_addresses is EqualUnmodifiableListView) return _addresses;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_addresses);
+  }
+
+  @override
+  final Address currentAddress;
 
   @override
   String toString() {
-    return 'ShellStateSuccess(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid)';
+    return 'ShellStateSuccess(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress)';
   }
 
   @override
@@ -963,12 +1002,22 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
             (identical(other.wallet, wallet) || other.wallet == wallet) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
             (identical(other.currentAccountUuid, currentAccountUuid) ||
-                other.currentAccountUuid == currentAccountUuid));
+                other.currentAccountUuid == currentAccountUuid) &&
+            const DeepCollectionEquality()
+                .equals(other._addresses, _addresses) &&
+            (identical(other.currentAddress, currentAddress) ||
+                other.currentAddress == currentAddress));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, redirect, wallet,
-      const DeepCollectionEquality().hash(_accounts), currentAccountUuid);
+  int get hashCode => Object.hash(
+      runtimeType,
+      redirect,
+      wallet,
+      const DeepCollectionEquality().hash(_accounts),
+      currentAccountUuid,
+      const DeepCollectionEquality().hash(_addresses),
+      currentAddress);
 
   @JsonKey(ignore: true)
   @override
@@ -983,7 +1032,9 @@ abstract class _ShellStateSuccess implements ShellStateSuccess {
       {required final bool redirect,
       required final Wallet wallet,
       required final List<Account> accounts,
-      required final String currentAccountUuid}) = _$ShellStateSuccessImpl;
+      required final String currentAccountUuid,
+      required final List<Address> addresses,
+      required final Address currentAddress}) = _$ShellStateSuccessImpl;
 
   @override
   bool get redirect;
@@ -993,6 +1044,10 @@ abstract class _ShellStateSuccess implements ShellStateSuccess {
   List<Account> get accounts;
   @override
   String get currentAccountUuid;
+  @override
+  List<Address> get addresses;
+  @override
+  Address get currentAddress;
   @override
   @JsonKey(ignore: true)
   _$$ShellStateSuccessImplCopyWith<_$ShellStateSuccessImpl> get copyWith =>

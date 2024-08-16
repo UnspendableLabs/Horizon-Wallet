@@ -47,8 +47,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           submitState: SubmitState.initial()));
 
       try {
-        List<Address> addresses =
-            await addressRepository.getAllByAccountUuid(event.accountUuid);
+        List<Address> addresses = [event.currentAddress];
 
         List<Balance> balances =
             await balanceRepository.getBalancesForAddress(addresses[0].address);

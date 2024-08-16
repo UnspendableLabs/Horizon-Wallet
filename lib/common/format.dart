@@ -12,6 +12,4 @@ Decimal satoshisToBtc(int satoshis) {
   return btcValue.toDecimal().round(scale: 8);
 }
 
-
 final numberWithCommas = NumberFormat('#,###');
-

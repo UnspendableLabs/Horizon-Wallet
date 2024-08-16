@@ -54,17 +54,12 @@ import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
-import 'package:horizon/js/ecpair.dart';
-
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
   Config config = EnvironmentConfig();
 
-
   injector.registerLazySingleton<Config>(() => config);
-
-
 
   injector.registerLazySingleton<V2Api>(() => V2Api(Dio(BaseOptions(
       baseUrl: config.counterpartyApiBase,

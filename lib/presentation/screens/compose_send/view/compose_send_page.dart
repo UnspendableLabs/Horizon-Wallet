@@ -34,7 +34,7 @@ class ComposeSendPage extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeSendBloc()
-          ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
+          ..add(FetchFormData(currentAddress: state.currentAddress)),
         child: _ComposeSendPage_(
           accountUuid: state.currentAccountUuid,
           isDarkMode: isDarkMode,

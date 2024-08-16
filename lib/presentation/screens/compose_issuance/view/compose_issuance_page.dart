@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
@@ -33,8 +34,9 @@ class ComposeIssuancePage extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeIssuanceBloc()
-          ..add(FetchFormData(accountUuid: state.currentAccountUuid)),
+          ..add(FetchFormData(currentAddress: state.currentAddress)),
         child: _ComposeIssuancePage_(
+          currentAddress: state.currentAddress,
           isDarkMode: isDarkMode,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
@@ -47,8 +49,11 @@ class ComposeIssuancePage extends StatelessWidget {
 class _ComposeIssuancePage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final Address currentAddress;
   const _ComposeIssuancePage_(
-      {required this.isDarkMode, required this.dashboardActivityFeedBloc});
+      {required this.currentAddress,
+      required this.isDarkMode,
+      required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
@@ -307,7 +312,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             context
                                 .read<ComposeIssuanceBloc>()
                                 .add(CreateIssuanceEvent(
-                                  sourceAddress: fromAddress ?? addresses[0].address,
+                                  sourceAddress:
+                                      fromAddress ?? addresses[0].address,
                                   password: passwordController.text,
                                   name: nameController.text,
                                   quantity:

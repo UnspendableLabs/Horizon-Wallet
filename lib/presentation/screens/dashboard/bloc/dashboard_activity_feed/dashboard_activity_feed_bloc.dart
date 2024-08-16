@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
@@ -17,7 +18,7 @@ final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE"];
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
   Timer? timer;
-  String accountUuid;
+  Address currentAddress;
   int pageSize;
   TransactionLocalRepository transactionLocalRepository;
   EventsRepository eventsRepository;
@@ -25,7 +26,7 @@ class DashboardActivityFeedBloc
   BitcoinRepository bitcoinRepository;
 
   DashboardActivityFeedBloc(
-      {required this.accountUuid,
+      {required this.currentAddress,
       required this.eventsRepository,
       required this.pageSize,
       required this.transactionLocalRepository,
@@ -57,9 +58,7 @@ class DashboardActivityFeedBloc
     // emit(nextState);
 
     try {
-      final addresses_ =
-          await addressRepository.getAllByAccountUuid(accountUuid);
-      List<String> addresses = addresses_.map((a) => a.address).toList();
+      List<String> addresses = [currentAddress.address];
 
       String? mostRecentCounterpartyEventHash =
           currentState.mostRecentCounterpartyEventHash;
@@ -325,16 +324,14 @@ class DashboardActivityFeedBloc
 
     try {
       // get most recent confirmed tx
-      final addresses_ =
-          await addressRepository.getAllByAccountUuid(accountUuid);
+      final addresses_ = [currentAddress];
 
       List<String> addresses = addresses_.map((a) => a.address).toList();
 
       // query local transactions above mose recent confirmed event
       final localTransactions =
-          await transactionLocalRepository.getAllByAccountVerbose(accountUuid);
+          await transactionLocalRepository.getAllByAddressesVerbose(addresses);
 
-      // get all counterparty events
       final counterpartyEvents =
           await eventsRepository.getAllByAddressesVerbose(
               addresses: addresses,

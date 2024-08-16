@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
 
 part 'shell_state.freezed.dart';
 
@@ -21,6 +22,8 @@ class ShellStateSuccess with _$ShellStateSuccess {
     required Wallet wallet,
     required List<Account> accounts,
     required String currentAccountUuid,
+    required List<Address> addresses,
+    required Address currentAddress,
   }) = _ShellStateSuccess;
 }
 

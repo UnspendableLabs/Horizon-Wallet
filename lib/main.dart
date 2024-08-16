@@ -43,10 +43,11 @@ Future<void> setupRegtestWallet() async {
   // read env for regtest private key
   const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
   const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
-  const network= String.fromEnvironment('NETWORK');
+  const network = String.fromEnvironment('NETWORK');
 
-
-  if (regtestPrivateKey != "" && regtestPassword != "" &&  network == "regtest") {
+  if (regtestPrivateKey != "" &&
+      regtestPassword != "" &&
+      network == "regtest") {
     RegTestUtils regTestUtils = RegTestUtils();
     EncryptionService encryptionService = GetIt.I<EncryptionService>();
     AddressService addressService = GetIt.I<AddressService>();
@@ -164,25 +165,22 @@ class AppRouter {
                 navigatorKey: _sectionNavigatorKey,
                 routes: [
                   GoRoute(
-                    path: "/dashboard",
-                    builder: (context, state) => const DashboardPage(),
-                  )
+                      path: "/dashboard",
+                      builder: (context, state) {
+                        final shell = context.watch<ShellStateCubit>();
+
+                        // this technically isn't necessary, will always be
+                        // success
+                        return shell.state.maybeWhen(
+                          success: (state) {
+                            return DashboardPage(
+                                key: Key(state.currentAddress.address));
+                          },
+                          orElse: () => const SizedBox.shrink(),
+                        );
+                      })
                 ],
               ),
-              // StatefulShellBranch(routes: [
-              //   GoRoute(
-              //       path: "/compose/send",
-              //       builder: (context, state) {
-              //         return const ComposeSendPage();
-              //       })
-              // ]),
-              // StatefulShellBranch(routes: [
-              //   GoRoute(
-              //     path: "/compose/issuance",
-              //     builder: (context, state) {
-              //       return const ComposeIssuancePage();
-              //     },
-              // ]),
               StatefulShellBranch(
                 routes: [
                   GoRoute(
@@ -419,9 +417,10 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
-            walletRepository: GetIt.I<WalletRepository>(),
-            accountRepository: GetIt.I<AccountRepository>(),
-          )..initialize(),
+              walletRepository: GetIt.I<WalletRepository>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>())
+            ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(),

@@ -4,8 +4,8 @@ import 'package:horizon/domain/entities/compose_send.dart';
 abstract class ComposeSendEvent {}
 
 class FetchFormData extends ComposeSendEvent {
-  String accountUuid;
-  FetchFormData({required this.accountUuid});
+  Address currentAddress;
+  FetchFormData({required this.currentAddress});
 }
 
 class FetchBalances extends ComposeSendEvent {
