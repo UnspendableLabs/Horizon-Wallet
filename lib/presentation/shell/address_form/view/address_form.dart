@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
-import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
+import "package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart";
+import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-SliverWoltModalSheetPage addAccountModal(
+SliverWoltModalSheetPage addAddressModal(
   BuildContext modalSheetContext,
   TextTheme textTheme,
   bool isDarkTheme,
+  String accountUuid,
 ) {
   const double pagePadding = 16.0;
 
@@ -22,7 +22,7 @@ SliverWoltModalSheetPage addAccountModal(
         ? dialogBackgroundColorDarkTheme
         : dialogBackgroundColorLightTheme,
     isTopBarLayerAlwaysVisible: true,
-    topBarTitle: Text('Add an account',
+    topBarTitle: Text('Create a new address',
         style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
@@ -32,90 +32,48 @@ SliverWoltModalSheetPage addAccountModal(
       icon: const Icon(Icons.close),
       onPressed: Navigator.of(modalSheetContext).pop,
     ),
-    child: const Padding(
-        padding: EdgeInsets.fromLTRB(
+    child: Padding(
+        padding: const EdgeInsets.fromLTRB(
           pagePadding,
           50,
           pagePadding,
           pagePadding,
         ),
-        child: AddAccountForm()),
+        child: AddAddressForm(
+          accountUuid: accountUuid,
+        )),
   );
 }
 
-final validAccount = RegExp(r"^\d\'$");
-
-class AddAccountForm extends StatefulWidget {
+class AddAddressForm extends StatefulWidget {
   final BuildContext? modalSheetContext;
-  const AddAccountForm({super.key, this.modalSheetContext});
+  final String accountUuid;
+  const AddAddressForm(
+      {super.key, this.modalSheetContext, required this.accountUuid});
 
   @override
-  State<AddAccountForm> createState() => _AddAccountFormState();
+  State<AddAddressForm> createState() => _AddAccountFormState();
 }
 
-class _AddAccountFormState extends State<AddAccountForm> {
+class _AddAccountFormState extends State<AddAddressForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final nameController = TextEditingController();
-  final purposeController = TextEditingController();
-  final coinTypeController = TextEditingController();
-  final accountIndexController = TextEditingController();
   final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
 
-    // TODO: the fact that we have to do all these paranoid checks
-    // is a smell.
-
-    List<Account>? accounts = shell.state
-        .maybeWhen(success: (state) => state.accounts, orElse: () => null);
-
-    if (accounts == null) {
-      throw Exception("invariant: accounts are null");
-    }
-
-    Account? currentHighestIndexAccount = shell.state.maybeWhen(
-        success: (state) {
-          // Find the account with the highest hardened account index
-          Account? highestAccount;
-          int maxIndex = -1;
-
-          for (var account in state.accounts) {
-            int currentIndex =
-                int.parse(account.accountIndex.replaceAll("'", ""));
-            if (currentIndex > maxIndex) {
-              maxIndex = currentIndex;
-              highestAccount = account;
-            }
-          }
-          return highestAccount;
-        },
-        orElse: () => null);
-
-    if (currentHighestIndexAccount == null) {
-      throw Exception("invariant: account is null");
-    }
-
-    int newAccountIndex =
-        int.parse(currentHighestIndexAccount.accountIndex.replaceAll("'", "")) +
-            1;
-
-    String newAccountPath = currentHighestIndexAccount.importFormat ==
-            ImportFormat.horizon
-        ? "m/${currentHighestIndexAccount.purpose}/${currentHighestIndexAccount.coinType}/$newAccountIndex'/"
-        : "m/$newAccountIndex'/";
-
-    return BlocConsumer<AccountFormBloc, RemoteDataState<Account>>(
+    return BlocConsumer<AddressFormBloc, RemoteDataState<List<Address>>>(
         listener: (context, state) {
       state.whenOrNull(error: (msg) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(msg),
         ));
-      }, success: (account) async {
+      }, success: (addresses) async {
         // update accounts in shell
-        shell.refresh();
+
+        shell.refreshAndSelectNewAddress(addresses.first.address);
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),
@@ -130,28 +88,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            HorizonTextFormField(
-              fillColor: noBackgroundColor,
-              controller: TextEditingController(text: newAccountPath),
-              isDarkMode: isDarkMode,
-              label: "Account Path:",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0), // Spacing between inputs
-            HorizonTextFormField(
-              controller: nameController,
-              isDarkMode: isDarkMode,
-              label: "Name:",
-              floatingLabelBehavior: FloatingLabelBehavior.auto,
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a name for your account';
-                }
-                return null;
-              },
-            ),
-
             const SizedBox(height: 16.0), // Spacing between inputs
             HorizonTextFormField(
               controller: passwordController,
@@ -198,28 +134,12 @@ class _AddAccountFormState extends State<AddAccountForm> {
                                 if (state == const RemoteDataState.loading()) {
                                   return;
                                 }
-
-                                // get name field from form
-
-                                String name = nameController.text;
-                                String purpose =
-                                    currentHighestIndexAccount.purpose;
-                                String coinType =
-                                    currentHighestIndexAccount.coinType;
-                                String accountIndex = "$newAccountIndex";
-                                String walletUuid =
-                                    currentHighestIndexAccount.walletUuid;
                                 String password = passwordController.text;
 
-                                context.read<AccountFormBloc>().add(Submit(
-                                    name: name,
-                                    purpose: purpose,
-                                    coinType: coinType,
-                                    accountIndex: "$accountIndex'",
-                                    walletUuid: walletUuid,
-                                    password: password,
-                                    importFormat: currentHighestIndexAccount
-                                        .importFormat));
+                                context.read<AddressFormBloc>().add(Submit(
+                                      accountUuid: widget.accountUuid,
+                                      password: password,
+                                    ));
                                 Navigator.of(context).pop();
                                 // return to dashboard if modalSheetContext is not null
                                 // this will be the case on smaller screens to close the wolt bottom sheet

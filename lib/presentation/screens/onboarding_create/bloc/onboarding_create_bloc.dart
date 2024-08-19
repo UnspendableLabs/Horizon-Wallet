@@ -66,7 +66,7 @@ class OnboardingCreateBloc
             coinType: _getCoinType(),
             accountIndex: '0',
             uuid: uuid.v4(),
-            importFormat: ImportFormat.segwit);
+            importFormat: ImportFormat.horizon);
 
         Address address = await addressService.deriveAddressSegwit(
             privKey: decryptedPrivKey,

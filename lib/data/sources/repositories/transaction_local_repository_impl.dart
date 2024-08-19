@@ -139,6 +139,47 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   }
 
   @override
+  Future<List<TransactionInfoVerbose>> getAllByAddressesVerbose(
+      List<String> addresses) async {
+    final transactions = await transactionDao.getAllBySources(addresses);
+
+    return transactions.map((tx) {
+      api.TransactionUnpackedVerbose? unpacked_ = tx.unpackedData != null
+          ? api.TransactionUnpackedVerbose.fromJson(
+              jsonDecode(tx.unpackedData!))
+          : null;
+
+      TransactionUnpackedVerbose? unpacked =
+          unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
+
+      return switch (unpacked) {
+        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        _ => TransactionInfoVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+          )
+      };
+    }).toList();
+  }
+
+  @override
   Future<List<TransactionInfoVerbose>> getAllByAccountVerbose(
       String accountUuid) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);

@@ -26,6 +26,7 @@ import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.
 import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
@@ -43,10 +44,11 @@ Future<void> setupRegtestWallet() async {
   // read env for regtest private key
   const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
   const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
-  const network= String.fromEnvironment('NETWORK');
+  const network = String.fromEnvironment('NETWORK');
 
-
-  if (regtestPrivateKey != "" && regtestPassword != "" &&  network == "regtest") {
+  if (regtestPrivateKey != "" &&
+      regtestPassword != "" &&
+      network == "regtest") {
     RegTestUtils regTestUtils = RegTestUtils();
     EncryptionService encryptionService = GetIt.I<EncryptionService>();
     AddressService addressService = GetIt.I<AddressService>();
@@ -73,7 +75,7 @@ Future<void> setupRegtestWallet() async {
       coinType: '1\'',
       accountIndex: '0\'',
       uuid: uuid.v4(),
-      importFormat: ImportFormat.segwit,
+      importFormat: ImportFormat.horizon,
     );
 
     List<Address> addresses = await addressService.deriveAddressSegwitRange(
@@ -164,25 +166,22 @@ class AppRouter {
                 navigatorKey: _sectionNavigatorKey,
                 routes: [
                   GoRoute(
-                    path: "/dashboard",
-                    builder: (context, state) => const DashboardPage(),
-                  )
+                      path: "/dashboard",
+                      builder: (context, state) {
+                        final shell = context.watch<ShellStateCubit>();
+
+                        // this technically isn't necessary, will always be
+                        // success
+                        return shell.state.maybeWhen(
+                          success: (state) {
+                            return DashboardPage(
+                                key: Key(state.currentAddress.address));
+                          },
+                          orElse: () => const SizedBox.shrink(),
+                        );
+                      })
                 ],
               ),
-              // StatefulShellBranch(routes: [
-              //   GoRoute(
-              //       path: "/compose/send",
-              //       builder: (context, state) {
-              //         return const ComposeSendPage();
-              //       })
-              // ]),
-              // StatefulShellBranch(routes: [
-              //   GoRoute(
-              //     path: "/compose/issuance",
-              //     builder: (context, state) {
-              //       return const ComposeIssuancePage();
-              //     },
-              // ]),
               StatefulShellBranch(
                 routes: [
                   GoRoute(
@@ -419,12 +418,16 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
-            walletRepository: GetIt.I<WalletRepository>(),
-            accountRepository: GetIt.I<AccountRepository>(),
-          )..initialize(),
+              walletRepository: GetIt.I<WalletRepository>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>())
+            ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(),
+        ),
+        BlocProvider<AddressFormBloc>(
+          create: (context) => AddressFormBloc(),
         ),
         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),

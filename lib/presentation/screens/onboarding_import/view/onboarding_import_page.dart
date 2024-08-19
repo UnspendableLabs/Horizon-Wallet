@@ -34,7 +34,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
   final TextEditingController _importFormat =
-      TextEditingController(text: ImportFormat.segwit.name);
+      TextEditingController(text: ImportFormat.horizon.name);
 
   @override
   dispose() {
@@ -365,7 +365,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   List<TextEditingController> controllers =
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
-  String? selectedFormat = ImportFormat.segwit.name;
+  String? selectedFormat = ImportFormat.horizon.name;
 
   @override
   void dispose() {
@@ -649,11 +649,15 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               },
               dropdownColor: dropdownBackgroundColor,
               items: [
-                _buildDropdownMenuItem(ImportFormat.segwit.name,
-                    ImportFormat.segwit.description, dropdownBackgroundColor),
+                _buildDropdownMenuItem(ImportFormat.horizon.name,
+                    ImportFormat.horizon.description, dropdownBackgroundColor),
                 _buildDropdownMenuItem(
-                    ImportFormat.freewalletBech32.name,
-                    ImportFormat.freewalletBech32.description,
+                    ImportFormat.freewallet.name,
+                    ImportFormat.freewallet.description,
+                    dropdownBackgroundColor),
+                _buildDropdownMenuItem(
+                    ImportFormat.counterwallet.name,
+                    ImportFormat.counterwallet.description,
                     dropdownBackgroundColor),
               ],
             ),
@@ -705,95 +709,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     context
         .read<OnboardingImportBloc>()
         .add(MnemonicChanged(mnemonic: mnemonic));
-  }
-}
-
-class SeedPrompt extends StatelessWidget {
-  const SeedPrompt({
-    super.key,
-    required TextEditingController seedPhraseController,
-    required OnboardingImportState state,
-  })  : _seedPhraseController = seedPhraseController,
-        _state = state;
-
-  final TextEditingController _seedPhraseController;
-  final OnboardingImportState _state;
-
-  @override
-  Widget build(BuildContext context) {
-    return Flexible(
-      child: Container(
-          margin: const EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            32,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                  child: Column(children: [
-                TextField(
-                  controller: _seedPhraseController,
-                  onChanged: (value) {
-                    context
-                        .read<OnboardingImportBloc>()
-                        .add(MnemonicChanged(mnemonic: value));
-                  },
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Seed phrase',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    DropdownMenu<String>(
-                      label: const Text("Import format"),
-                      onSelected: (newValue) {
-                        context
-                            .read<OnboardingImportBloc>()
-                            .add(ImportFormatChanged(importFormat: newValue!));
-                      },
-                      initialSelection: ImportFormat.segwit.name,
-                      dropdownMenuEntries: [
-                        DropdownMenuEntry<String>(
-                          value: ImportFormat.segwit.name,
-                          label: ImportFormat.segwit.description,
-                        ),
-                        // DropdownMenuEntry<String>(
-                        //   value: ImportFormat.legacy.name,
-                        //   label: ImportFormat.legacy.description,
-                        // ),
-                        DropdownMenuEntry<String>(
-                          value: ImportFormat.freewalletBech32.name,
-                          label: ImportFormat.freewalletBech32.description,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ])),
-              _state.importState is ImportStateError
-                  ? Text(_state.importState.message)
-                  : const Text(""),
-              Row(children: [
-                // TODO: figure out how to disable a button
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<OnboardingImportBloc>().add(ImportWallet());
-                  },
-                  child: const Text('Import Addresses'),
-                ),
-              ]),
-              _state.importState is ImportStateLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("")
-            ],
-          )),
-    );
   }
 }
 

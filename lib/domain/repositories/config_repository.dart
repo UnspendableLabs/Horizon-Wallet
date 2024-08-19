@@ -1,4 +1,3 @@
-
 enum Network { mainnet, testnet, regtest }
 
 abstract class Config {

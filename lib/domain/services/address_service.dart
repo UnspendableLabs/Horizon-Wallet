@@ -1,5 +1,7 @@
 import 'package:horizon/domain/entities/address.dart';
 
+enum AddressType { bech32, legacy }
+
 // TODO: define mnemonic type
 abstract class AddressService {
   Future<Address> deriveAddressSegwit(
@@ -11,8 +13,9 @@ abstract class AddressService {
       required String account,
       required String change,
       required int index});
-  Future<Address> deriveAddressFreewalletBech32(
-      {required dynamic root,
+  Future<Address> deriveAddressFreewallet(
+      {required AddressType type,
+      required dynamic root,
       required String accountUuid,
       required String purpose,
       required String coin,
@@ -31,8 +34,9 @@ abstract class AddressService {
       required String change,
       required int start,
       required int end});
-  Future<List<Address>> deriveAddressFreewalletBech32Range(
-      {required String privKey,
+  Future<List<Address>> deriveAddressFreewalletRange(
+      {required AddressType type,
+      required String privKey,
       required String chainCodeHex,
       required String accountUuid,
       required String purpose,

@@ -1,8 +1,10 @@
+import 'package:horizon/domain/entities/address.dart';
+
 abstract class ComposeIssuanceEvent {}
 
 class FetchFormData extends ComposeIssuanceEvent {
-  String accountUuid;
-  FetchFormData({required this.accountUuid});
+  Address currentAddress;
+  FetchFormData({required this.currentAddress});
 }
 
 class FetchBalances extends ComposeIssuanceEvent {

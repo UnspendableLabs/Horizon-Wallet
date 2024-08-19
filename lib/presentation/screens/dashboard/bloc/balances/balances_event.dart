@@ -1,9 +1,6 @@
 abstract class BalancesEvent {}
 
-class Fetch extends BalancesEvent {
-  final String accountUuid;
-  Fetch({required this.accountUuid});
-}
+class Fetch extends BalancesEvent {}
 
 class Start extends BalancesEvent {
   final Duration pollingInterval;

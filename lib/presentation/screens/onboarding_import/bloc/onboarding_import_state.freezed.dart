@@ -187,7 +187,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       this.passwordError,
       this.mnemonic = "",
       this.mnemonicError = "",
-      this.importFormat = ImportFormat.segwit,
+      this.importFormat = ImportFormat.horizon,
       this.getAddressesState = GetAddressesStateNotAsked,
       final Map<Address, bool> isCheckedMap = const {},
       this.importState = ImportStateNotAsked})

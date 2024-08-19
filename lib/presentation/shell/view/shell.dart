@@ -8,16 +8,18 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_bloc.dart';
-import 'package:horizon/presentation/screens/addresses/bloc/addresses_event.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
+import 'package:horizon/presentation/shell/view/address_dropdown.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+
+import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 class AccountListView extends StatelessWidget {
   const AccountListView({super.key});
@@ -203,7 +205,7 @@ class Shell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.read<ShellStateCubit>();
+    final shell = context.watch<ShellStateCubit>();
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
@@ -256,6 +258,19 @@ class Shell extends StatelessWidget {
             },
           ),
           actions: [
+            shell.state.maybeWhen(
+              success: (state) => state.addresses.length > 1
+                  ? AddressDropdown(
+                      key: Key(state.currentAddress.address),
+                      isDarkTheme: isDarkTheme,
+                      addresses: state.addresses,
+                      currentAddress: state.currentAddress,
+                      onChange: shell.onAddressChanged,
+                    )
+                  : const SizedBox.shrink(),
+              orElse: () => const SizedBox.shrink(),
+            ),
+            const SizedBox(width: 8),
             Container(
               width: 80,
               height: 40,
@@ -319,20 +334,62 @@ class Shell extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
+            BlocProvider(
+              create: (context) => LogoutBloc(
+                walletRepository: GetIt.I.get<WalletRepository>(),
+                accountRepository: GetIt.I.get<AccountRepository>(),
+                addressRepository: GetIt.I.get<AddressRepository>(),
+                cacheProvider: GetIt.I.get<CacheProvider>(),
               ),
-              child: IconButton(
-                icon: Icon(Icons.settings,
-                    size: 15,
-                    color: isDarkTheme ? Colors.grey : royalBlueLightTheme),
-                onPressed: () {
-                  context.go('/settings');
+              child: BlocConsumer<LogoutBloc, LogoutState>(
+                listener: (context, state) {
+                  if (state.logoutState is LoggedOut) {
+                    final shell = context.read<ShellStateCubit>();
+                    shell.onOnboarding();
+                  }
                 },
+                builder: (context, state) => SizedBox(
+                  height: 40,
+                  child: FilledButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) {
+                          return BlocProvider.value(
+                            value: BlocProvider.of<LogoutBloc>(context),
+                            child: AlertDialog(
+                              title: const Text('Confirm Logout'),
+                              content: Text(
+                                'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    GoRouter.of(context).pop();
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    context
+                                        .read<LogoutBloc>()
+                                        .add(LogoutEvent());
+                                  },
+                                  child: const Text('Logout'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: const Text('Logout'),
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -351,20 +408,9 @@ class Shell extends StatelessWidget {
                       loading: () => const Text("Loading..."),
                       error: (e) => const Text("error"),
                       success: (shell) {
-                        return BlocProvider<AddressesBloc>(
-                            key: Key(shell.currentAccountUuid),
-                            child: navigationShell,
-                            create: (_) => AddressesBloc(
-                                  walletRepository: GetIt.I<WalletRepository>(),
-                                  accountRepository:
-                                      GetIt.I<AccountRepository>(),
-                                  addressService: GetIt.I<AddressService>(),
-                                  addressRepository:
-                                      GetIt.I<AddressRepository>(),
-                                  encryptionService:
-                                      GetIt.I<EncryptionService>(),
-                                )..add(GetAll(
-                                    accountUuid: shell.currentAccountUuid)));
+                        return Builder(
+                          builder: (context) => navigationShell,
+                        );
                       },
                     )))
           ]),
