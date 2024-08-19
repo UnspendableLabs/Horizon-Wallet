@@ -111,8 +111,6 @@ class OnboardingImportBloc
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
 
-            print('decryptedPrivKey: $decryptedPrivKey');
-
             //m/84'/1'/0'/0
             Account account0 = Account(
               name: 'Account #0',

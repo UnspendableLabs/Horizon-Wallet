@@ -271,6 +271,11 @@ class PasswordPrompt extends StatelessWidget {
                   ),
                 ),
               ),
+
+              _state.importState is ImportStateError
+                  ? Text(_state.importState.message)
+                  : const SizedBox.shrink(),
+                    const SizedBox(width: 8),
               _state.passwordError != null
                   ? Text(_state.passwordError!)
                   : const Text(""),
@@ -308,7 +313,6 @@ class PasswordPrompt extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     SizedBox(
                       width: 200,
                       child: ElevatedButton(
@@ -353,9 +357,6 @@ class PasswordPrompt extends StatelessWidget {
                   ],
                 ),
               ),
-              _state.importState is ImportStateError
-                  ? Text(_state.importState.message)
-                  : const SizedBox.shrink()
             ],
           ),
         ),
@@ -417,6 +418,7 @@ class _PKFieldState extends State<PKField> {
                           ? darkThemeInputColor
                           : lightThemeInputColor,
                       labelText: 'Private Key',
+                      helperText: 'Root BIP32 Extended Private Key',
                       labelStyle: TextStyle(
                         color: isDarkMode
                             ? darkThemeInputLabelColor

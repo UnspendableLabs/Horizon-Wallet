@@ -88,14 +88,19 @@ class ShellStateCubit extends Cubit<ShellState> {
     emit(const ShellState.onboarding(Onboarding.importPK()));
   }
 
-  void onAccountChanged(Account account) {
+  void onAccountChanged(Account account) async {
+    List<Address> addresses =
+        await addressRepository.getAllByAccountUuid(account.uuid);
+
     final state_ = state.when(
         initial: () => state,
         loading: () => state,
         error: (_) => state,
         onboarding: (_) => state,
-        success: (stateInner) => ShellState.success(
-            stateInner.copyWith(currentAccountUuid: account.uuid)));
+        success: (stateInner) => ShellState.success(stateInner.copyWith(
+              currentAccountUuid: account.uuid,
+              currentAddress: addresses.first,
+            )));
 
     emit(state_);
   }
