@@ -26,6 +26,7 @@ import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.
 import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
@@ -424,6 +425,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(),
+        ),
+        BlocProvider<AddressFormBloc>(
+          create: (context) => AddressFormBloc(),
         ),
         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),

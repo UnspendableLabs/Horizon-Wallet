@@ -205,7 +205,7 @@ class Shell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.read<ShellStateCubit>();
+    final shell = context.watch<ShellStateCubit>();
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
@@ -261,8 +261,10 @@ class Shell extends StatelessWidget {
             shell.state.maybeWhen(
               success: (state) => state.addresses.length > 1
                   ? AddressDropdown(
+                      key: Key(state.currentAddress.address),
                       isDarkTheme: isDarkTheme,
                       addresses: state.addresses,
+                      currentAddress: state.currentAddress,
                       onChange: shell.onAddressChanged,
                     )
                   : const SizedBox.shrink(),

@@ -142,4 +142,43 @@ class ShellStateCubit extends Cubit<ShellState> {
       emit(ShellState.error(error.toString()));
     }
   }
+
+  void refreshAndSelectNewAddress(String address) async {
+    try {
+      Wallet? wallet = await walletRepository.getCurrentWallet();
+
+      if (wallet == null) {
+        emit(const ShellState.onboarding(Onboarding.initial()));
+        return;
+      }
+
+      List<Account> accounts =
+          await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+
+      if (accounts.isEmpty) {
+        throw Exception("invariant: no accounts for this wallet");
+      }
+
+      List<Address> addresses =
+          await addressRepository.getAllByAccountUuid(accounts.last.uuid);
+
+      if (addresses.isEmpty) {
+        throw Exception("invariant: no addresses for this account");
+      }
+
+      Address newAddress =
+          addresses.firstWhere((element) => element.address == address);
+
+      emit(ShellState.success(ShellStateSuccess(
+        redirect: true,
+        wallet: wallet,
+        accounts: accounts,
+        addresses: addresses,
+        currentAccountUuid: accounts.last.uuid,
+        currentAddress: newAddress,
+      )));
+    } catch (error) {
+      emit(ShellState.error(error.toString()));
+    }
+  }
 }

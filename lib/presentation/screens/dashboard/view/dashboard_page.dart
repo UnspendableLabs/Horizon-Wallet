@@ -23,6 +23,8 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
+import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
+
 String balancesStateToString(BalancesState state) {
   return state.when(
     initial: () => 'Initial',
@@ -55,10 +57,30 @@ class DashboardPage extends StatelessWidget {
 
     // we should only ever get to this page if shell is success
     return shell.maybeWhen(
-        success: (data) => _DashboardPage(
-              key: Key(data.currentAccountUuid),
-              accountUuid: data.currentAccountUuid,
-              currentAddress: data.currentAddress,
+        success: (data) => MultiBlocProvider(
+              providers: [
+                BlocProvider<BalancesBloc>(
+                  create: (context) => BalancesBloc(
+                    currentAddress: data.currentAddress,
+                  )..add(Start(pollingInterval: const Duration(seconds: 60))),
+                ),
+                BlocProvider<DashboardActivityFeedBloc>(
+                  create: (context) => DashboardActivityFeedBloc(
+                    currentAddress: data.currentAddress,
+                    eventsRepository: GetIt.I.get<EventsRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+                    transactionLocalRepository:
+                        GetIt.I.get<TransactionLocalRepository>(),
+                    pageSize: 10,
+                  ),
+                ),
+              ],
+              child: _DashboardPage(
+                key: Key(data.currentAccountUuid),
+                accountUuid: data.currentAccountUuid,
+                currentAddress: data.currentAddress,
+              ),
             ),
         orElse: () => const SizedBox.shrink());
   }
@@ -96,60 +118,44 @@ class _DashboardPage_State extends State<_DashboardPage> {
     Color backgroundColor =
         isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
 
-    return BlocProvider(
-        key: widget.key,
-        create: (context) => DashboardActivityFeedBloc(
-              currentAddress: widget.currentAddress,
-              eventsRepository: GetIt.I.get<EventsRepository>(),
-              addressRepository: GetIt.I.get<AddressRepository>(),
-              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-              transactionLocalRepository:
-                  GetIt.I.get<TransactionLocalRepository>(),
-              pageSize: 10,
-            ),
-        child: Builder(builder: (context) {
-          final dashboardActivityFeedBloc =
-              BlocProvider.of<DashboardActivityFeedBloc>(context);
+    return Builder(builder: (context) {
+      final dashboardActivityFeedBloc =
+          BlocProvider.of<DashboardActivityFeedBloc>(context);
 
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-            child: Container(
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (screenWidth < 768)
-                      AccountSelectionButton(
-                        isDarkTheme: isDarkTheme,
-                        onPressed: () => showAccountList(context, isDarkTheme),
-                      ),
-                    AddressActions(
-                        isDarkTheme: isDarkTheme,
-                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                        addresses: [widget.currentAddress],
-                        accountUuid: widget.accountUuid,
-                        currentAddress: widget.currentAddress),
-                    BlocProvider(
-                      create: (context) =>
-                          BalancesBloc(currentAddress: widget.currentAddress),
-                      child: BalancesDisplay(
-                        key: Key(widget.currentAddress.address),
-                        isDarkTheme: isDarkTheme,
-                        addresses: [widget.currentAddress],
-                        accountUuid: widget.accountUuid,
-                      ),
-                    ),
-                    DashboardActivityFeedScreen(
-                        addresses: [widget.currentAddress]),
-                  ],
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                if (screenWidth < 768)
+                  AccountSelectionButton(
+                    isDarkTheme: isDarkTheme,
+                    onPressed: () => showAccountList(context, isDarkTheme),
+                  ),
+                AddressActions(
+                    isDarkTheme: isDarkTheme,
+                    dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                    addresses: [widget.currentAddress],
+                    accountUuid: widget.accountUuid,
+                    currentAddress: widget.currentAddress),
+                BalancesDisplay(
+                  key: Key(widget.currentAddress.address),
+                  isDarkTheme: isDarkTheme,
+                  addresses: [widget.currentAddress],
+                  accountUuid: widget.accountUuid,
                 ),
-              ),
+                DashboardActivityFeedScreen(addresses: [widget.currentAddress]),
+              ],
             ),
-          );
-        }));
+          ),
+        ),
+      );
+    });
   }
 }
 
@@ -691,6 +697,7 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -850,7 +857,36 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
         ),
         TextButton(
             child: const Text("Create a New Address"),
-            onPressed: () => print("foo"))
+            onPressed: () {
+              final textTheme = Theme.of(context).textTheme;
+              final isDarkTheme =
+                  Theme.of(context).brightness == Brightness.dark;
+              final accountUuid =
+                  context.read<ShellStateCubit>().state.maybeWhen(
+                        success: (state) => state.currentAccountUuid,
+                        orElse: () => throw Exception("invariant: no account"),
+                      );
+
+              // 1) close receive modal
+              Navigator.of(context).pop();
+
+              // 2) open add address modal
+              WoltModalSheet.show<void>(
+                context: context,
+                pageListBuilder: (modalSheetContext) {
+                  return [
+                    addAddressModal(
+                        modalSheetContext, textTheme, isDarkTheme, accountUuid)
+                  ];
+                },
+                modalTypeBuilder: (context) {
+                  final size = MediaQuery.of(context).size.width;
+                  return size < 768.0
+                      ? WoltModalType.bottomSheet
+                      : WoltModalType.dialog;
+                },
+              );
+            })
       ],
     );
   }

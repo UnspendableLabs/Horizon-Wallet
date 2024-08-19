@@ -47,7 +47,7 @@ class AddressFormBloc
             await accountRepository.getAccountByUuid(event.accountUuid);
 
         if (account == null) {
-          throw Exception("invariant: account is null");
+          throw Exception("invariant: account is null: $event.accountUuid");
         }
 
         List<Address> addresses =

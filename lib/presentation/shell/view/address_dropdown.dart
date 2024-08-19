@@ -5,10 +5,12 @@ import 'package:horizon/presentation/screens/shared/colors.dart';
 class AddressDropdown extends StatefulWidget {
   final bool isDarkTheme;
   final List<Address> addresses;
+  final Address currentAddress;
   final Function(Address) onChange;
 
   const AddressDropdown(
       {super.key,
+      required this.currentAddress,
       required this.isDarkTheme,
       required this.addresses,
       required this.onChange});
@@ -23,7 +25,7 @@ class AddressDropdownState extends State<AddressDropdown> {
   @override
   void initState() {
     super.initState();
-    _selectedAddress = widget.addresses.first;
+    _selectedAddress = widget.currentAddress;
   }
 
   @override
