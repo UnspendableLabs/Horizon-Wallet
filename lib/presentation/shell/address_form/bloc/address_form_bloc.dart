@@ -24,6 +24,10 @@ class AddressFormBloc
 
   AddressFormBloc() : super(const RemoteDataState.initial()) {
     on<Submit>((event, emit) async {
+
+
+      final currentState = state;
+
       emit(const RemoteDataState.loading());
 
       try {
@@ -59,18 +63,20 @@ class AddressFormBloc
 
         switch (account.importFormat) {
           case ImportFormat.horizon:
-            Address address = await addressService.deriveAddressSegwit(
-              privKey: decryptedPrivKey,
-              chainCodeHex: wallet.chainCodeHex,
-              accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
-              account: account.accountIndex,
-              change: "0",
-              index: maxIndex + 1,
-            );
-            await addressRepository.insert(address);
-            emit(RemoteDataState.success([address]));
+            // this is a no-op
+
+            // Address address = await addressService.deriveAddressSegwit(
+            //   privKey: decryptedPrivKey,
+            //   chainCodeHex: wallet.chainCodeHex,
+            //   accountUuid: account.uuid,
+            //   purpose: account.purpose,
+            //   coin: account.coinType,
+            //   account: account.accountIndex,
+            //   change: "0",
+            //   index: maxIndex + 1,
+            // );
+            // await addressRepository.insert(address);
+            emit(currentState);
             break;
           case ImportFormat.freewallet:
             List<Address> legacyAddresses =

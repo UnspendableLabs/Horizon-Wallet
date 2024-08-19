@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -22,7 +23,7 @@ import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 
 String balancesStateToString(BalancesState state) {
@@ -53,9 +54,9 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>().state;
-
-    // we should only ever get to this page if shell is success
+    final shell = context
+        .watch<ShellStateCubit>()
+        .state; // we should only ever get to this page if shell is success
     return shell.maybeWhen(
         success: (data) => MultiBlocProvider(
               providers: [
@@ -855,38 +856,52 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
             );
           },
         ),
-        TextButton(
-            child: const Text("Create a New Address"),
-            onPressed: () {
-              final textTheme = Theme.of(context).textTheme;
-              final isDarkTheme =
-                  Theme.of(context).brightness == Brightness.dark;
-              final accountUuid =
-                  context.read<ShellStateCubit>().state.maybeWhen(
-                        success: (state) => state.currentAccountUuid,
-                        orElse: () => throw Exception("invariant: no account"),
-                      );
-
-              // 1) close receive modal
-              Navigator.of(context).pop();
-
-              // 2) open add address modal
-              WoltModalSheet.show<void>(
-                context: context,
-                pageListBuilder: (modalSheetContext) {
-                  return [
-                    addAddressModal(
-                        modalSheetContext, textTheme, isDarkTheme, accountUuid)
-                  ];
-                },
-                modalTypeBuilder: (context) {
-                  final size = MediaQuery.of(context).size.width;
-                  return size < 768.0
-                      ? WoltModalType.bottomSheet
-                      : WoltModalType.dialog;
-                },
+        Builder(builder: (context) {
+          // TODO: this is a bit smelly
+          final accountUuid = context.read<ShellStateCubit>().state.maybeWhen(
+                success: (state) => state.currentAccountUuid,
+                orElse: () => throw Exception("invariant: no account"),
               );
-            })
+
+          // look up account
+          Account account = context.read<ShellStateCubit>().state.maybeWhen(
+                success: (state) => state.accounts
+                    .firstWhere((account) => account.uuid == accountUuid),
+                orElse: () => throw Exception("invariant: no account"),
+              );
+
+          // don't support address creation for horizon accounts
+          return switch (account.importFormat) {
+            ImportFormat.horizon => const SizedBox.shrink(),
+            _ => TextButton(
+                child: const Text("Create a New Address"),
+                onPressed: () {
+                  final textTheme = Theme.of(context).textTheme;
+                  final isDarkTheme =
+                      Theme.of(context).brightness == Brightness.dark;
+
+                  // 1) close receive modal
+                  Navigator.of(context).pop();
+
+                  // 2) open add address modal
+                  WoltModalSheet.show<void>(
+                    context: context,
+                    pageListBuilder: (modalSheetContext) {
+                      return [
+                        addAddressModal(modalSheetContext, textTheme,
+                            isDarkTheme, accountUuid)
+                      ];
+                    },
+                    modalTypeBuilder: (context) {
+                      final size = MediaQuery.of(context).size.width;
+                      return size < 768.0
+                          ? WoltModalType.bottomSheet
+                          : WoltModalType.dialog;
+                    },
+                  );
+                })
+          };
+        })
       ],
     );
   }
