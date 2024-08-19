@@ -22,6 +22,7 @@ import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart'
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
+import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
 import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
 import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
@@ -156,6 +157,15 @@ class AppRouter {
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
+        GoRoute(
+          path: "/onboarding/import-pk",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child:
+                  const OnboardingImportPKPage(), // TODO: be consistent with screen / page
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationShell) {
@@ -217,8 +227,10 @@ class AppRouter {
             onboarding: (onboarding) {
               return onboarding.when(
                 initial: () => "/onboarding",
+
                 create: () => "/onboarding/create",
                 import: () => "/onboarding/import",
+                importPK: () => "/onboarding/import-pk",
               );
             },
             success: (data) {

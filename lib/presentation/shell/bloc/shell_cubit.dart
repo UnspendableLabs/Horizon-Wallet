@@ -84,6 +84,10 @@ class ShellStateCubit extends Cubit<ShellState> {
     emit(const ShellState.onboarding(Onboarding.import()));
   }
 
+  void onOnboardingImportPK() {
+    emit(const ShellState.onboarding(Onboarding.importPK()));
+  }
+
   void onAccountChanged(Account account) {
     final state_ = state.when(
         initial: () => state,
