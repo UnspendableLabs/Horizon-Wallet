@@ -55,7 +55,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
 
         switch (event.importFormat) {
           // if it's just segwit, only imprt single addy
-          case ImportFormat.segwit:
+          case ImportFormat.horizon:
             Address address = await addressService.deriveAddressSegwit(
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,

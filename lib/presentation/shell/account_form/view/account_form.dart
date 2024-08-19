@@ -103,7 +103,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
             1;
 
     String newAccountPath = currentHighestIndexAccount.importFormat ==
-            ImportFormat.segwit
+            ImportFormat.horizon
         ? "m/${currentHighestIndexAccount.purpose}/${currentHighestIndexAccount.coinType}/$newAccountIndex'/"
         : "m/$newAccountIndex'/";
 

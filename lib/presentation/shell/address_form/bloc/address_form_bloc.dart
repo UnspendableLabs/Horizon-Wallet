@@ -58,7 +58,7 @@ class AddressFormBloc
             .index;
 
         switch (account.importFormat) {
-          case ImportFormat.segwit:
+          case ImportFormat.horizon:
             Address address = await addressService.deriveAddressSegwit(
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,

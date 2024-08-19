@@ -87,7 +87,7 @@ class OnboardingImportBloc
         }
       }
       ImportFormat importFormat = switch (event.importFormat) {
-        "Segwit" => ImportFormat.segwit,
+        "Horizon" => ImportFormat.horizon,
         "Freewallet" => ImportFormat.freewallet,
         "Counterwallet" => ImportFormat.counterwallet,
         _ => throw Exception('Invariant: Invalid import format')
@@ -102,7 +102,7 @@ class OnboardingImportBloc
       emit(state.copyWith(importState: ImportStateLoading()));
       try {
         switch (state.importFormat) {
-          case ImportFormat.segwit:
+          case ImportFormat.horizon:
             Wallet wallet =
                 await walletService.deriveRoot(state.mnemonic, state.password!);
             String decryptedPrivKey = await encryptionService.decrypt(
@@ -116,7 +116,7 @@ class OnboardingImportBloc
               coinType: '${_getCoinType()}\'',
               accountIndex: '0\'',
               uuid: uuid.v4(),
-              importFormat: ImportFormat.segwit,
+              importFormat: ImportFormat.horizon,
             );
 
             Address address = await addressService.deriveAddressSegwit(

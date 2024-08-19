@@ -34,7 +34,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
   final TextEditingController _importFormat =
-      TextEditingController(text: ImportFormat.segwit.name);
+      TextEditingController(text: ImportFormat.horizon.name);
 
   @override
   dispose() {
@@ -365,7 +365,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   List<TextEditingController> controllers =
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
-  String? selectedFormat = ImportFormat.segwit.name;
+  String? selectedFormat = ImportFormat.horizon.name;
 
   @override
   void dispose() {
@@ -649,8 +649,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               },
               dropdownColor: dropdownBackgroundColor,
               items: [
-                _buildDropdownMenuItem(ImportFormat.segwit.name,
-                    ImportFormat.segwit.description, dropdownBackgroundColor),
+                _buildDropdownMenuItem(ImportFormat.horizon.name,
+                    ImportFormat.horizon.description, dropdownBackgroundColor),
                 _buildDropdownMenuItem(
                     ImportFormat.freewallet.name,
                     ImportFormat.freewallet.description,

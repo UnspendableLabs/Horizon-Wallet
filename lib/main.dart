@@ -75,7 +75,7 @@ Future<void> setupRegtestWallet() async {
       coinType: '1\'',
       accountIndex: '0\'',
       uuid: uuid.v4(),
-      importFormat: ImportFormat.segwit,
+      importFormat: ImportFormat.horizon,
     );
 
     List<Address> addresses = await addressService.deriveAddressSegwitRange(
