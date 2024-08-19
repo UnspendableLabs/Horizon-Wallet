@@ -175,7 +175,7 @@ class AppRouter {
                         return shell.state.maybeWhen(
                           success: (state) {
                             return DashboardPage(
-                                key: Key(state.currentAddress.address));
+                                key: Key("${state.currentAccountUuid}:${state.currentAddress.address}"));
                           },
                           orElse: () => const SizedBox.shrink(),
                         );
