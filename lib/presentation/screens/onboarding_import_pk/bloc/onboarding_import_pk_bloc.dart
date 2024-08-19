@@ -70,6 +70,8 @@ class OnboardingImportPKBloc
 
       ImportFormat importFormat = switch (event.importFormat) {
         "Horizon" => ImportFormat.horizon,
+        "Freewallet" => ImportFormat.freewallet,
+        "Counterwallet" => ImportFormat.counterwallet,
         _ => throw Exception('Invariant: Invalid import format')
       };
 
@@ -117,17 +119,101 @@ class OnboardingImportPKBloc
             await addressRepository.insert(address);
             break;
 
+          case ImportFormat.freewallet:
+            Wallet wallet =
+                await walletService.fromBase58(state.pk, state.password!);
+
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
+
+            // create an account to house
+            Account account = Account(
+                name: 'Account 0',
+                walletUuid: wallet.uuid,
+                purpose: '32', // unused in Freewallet path
+                coinType: _getCoinType(),
+                accountIndex: '0\'',
+                uuid: uuid.v4(),
+                importFormat: ImportFormat.freewallet);
+
+            List<Address> addressesBech32 =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.bech32,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    purpose: account.purpose,
+                    coin: account.coinType,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 9);
+
+            List<Address> addressesLegacy =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.legacy,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    purpose: account.purpose,
+                    coin: account.coinType,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 9);
+
+            await walletRepository.insert(wallet);
+            await accountRepository.insert(account);
+            await addressRepository.insertMany(addressesBech32);
+            await addressRepository.insertMany(addressesLegacy);
+
+            break;
+          case ImportFormat.counterwallet:
+            Wallet wallet =
+                await walletService.fromBase58(state.pk, state.password!);
+
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
+
+            // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
+            Account account = Account(
+                name: 'Account 0',
+                walletUuid: wallet.uuid,
+                purpose: '0\'',
+                coinType: _getCoinType(),
+                accountIndex: '0\'',
+                uuid: uuid.v4(),
+                importFormat: ImportFormat.counterwallet);
+
+            // `deriveAddressFreewalle` is misnomer now
+            // it just descripes addresses with path
+            // m/segment/segment/segment
+
+            List<Address> addressesLegacy =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.legacy,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    purpose: account.purpose,
+                    coin: account.coinType,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 0);
+
+            await walletRepository.insert(wallet);
+            await accountRepository.insert(account);
+            await addressRepository.insertMany(addressesLegacy);
+
           default:
             throw UnimplementedError();
         }
 
         emit(state.copyWith(importState: ImportStateSuccess()));
-        return;
       } catch (e) {
-        rethrow;
         emit(state.copyWith(
             importState: ImportStateError(message: e.toString())));
-        return;
       }
     });
   }

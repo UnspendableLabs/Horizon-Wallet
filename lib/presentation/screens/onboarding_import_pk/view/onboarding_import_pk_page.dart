@@ -132,6 +132,11 @@ class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
                                 state: state,
                               ),
                       ),
+                      // Flexible(
+                      //   child: state.importState == ImportStateError
+                      //       ? Text(state.importState!.message) : const SizedBox.shrink()
+                      //
+                      // ),
                     ],
                   ),
                 ),
@@ -348,6 +353,9 @@ class PasswordPrompt extends StatelessWidget {
                   ],
                 ),
               ),
+              _state.importState is ImportStateError
+                  ? Text(_state.importState.message)
+                  : const SizedBox.shrink()
             ],
           ),
         ),
@@ -499,7 +507,6 @@ class _PKFieldState extends State<PKField> {
     );
   }
 
-
   Widget buildDropdownButton(bool isDarkMode) {
     final dropdownBackgroundColor =
         isDarkMode ? darkThemeInputColor : lightThemeInputColor;
@@ -559,7 +566,4 @@ class _PKFieldState extends State<PKField> {
       ),
     );
   }
-
 }
-
-
