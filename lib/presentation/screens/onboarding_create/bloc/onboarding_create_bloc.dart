@@ -15,9 +15,12 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
+  final Config config = GetIt.I<Config>();
+
   final Logger logger = Logger();
   final mnmonicService = GetIt.I<MnemonicService>();
   final accountRepository = GetIt.I<AccountRepository>();
@@ -133,10 +136,6 @@ class OnboardingCreateBloc
     });
   }
 
-  _getCoinType() {
-    // bool isTestnet = dotenv.get('TEST') == 'true';
-    bool isTestnet =
-        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
-    return isTestnet ? '1\'' : '0\'';
-  }
+  String _getCoinType() =>
+      switch (config.network) { Network.mainnet => "0", _ => "1" };
 }

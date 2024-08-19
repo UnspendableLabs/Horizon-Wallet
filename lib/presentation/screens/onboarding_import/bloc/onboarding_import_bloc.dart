@@ -14,9 +14,11 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
+  final Config config = GetIt.I<Config>();
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
@@ -25,7 +27,8 @@ class OnboardingImportBloc
   final mnemonicService = GetIt.I<MnemonicService>();
   final encryptionService = GetIt.I<EncryptionService>();
 
-  OnboardingImportBloc() : super(const OnboardingImportState()) {
+  OnboardingImportBloc()
+      : super(const OnboardingImportState()) {
     on<PasswordChanged>((event, emit) {
       if (event.password.length < 8) {
         emit(state.copyWith(
@@ -236,10 +239,6 @@ class OnboardingImportBloc
     });
   }
 
-  String _getCoinType() {
-    // bool isTestnet = dotenv.get('TEST') == 'true';
-    bool isTestnet =
-        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
-    return isTestnet ? '1' : '0';
-  }
+  String _getCoinType() =>
+      switch (config.network) { Network.mainnet => "0", _ => "1" };
 }
