@@ -12,13 +12,12 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
+import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 
-class OnboardingImportBloc
-    extends Bloc<OnboardingImportEvent, OnboardingImportState> {
-  final Config config = GetIt.I<Config>();
+class OnboardingImportPKBloc
+    extends Bloc<OnboardingImportPKEvent, OnboardingImportPKState> {
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
@@ -26,8 +25,9 @@ class OnboardingImportBloc
   final addressService = GetIt.I<AddressService>();
   final mnemonicService = GetIt.I<MnemonicService>();
   final encryptionService = GetIt.I<EncryptionService>();
+  final Config config = GetIt.I<Config>();
 
-  OnboardingImportBloc() : super(const OnboardingImportState()) {
+  OnboardingImportPKBloc() : super(const OnboardingImportPKState()) {
     on<PasswordChanged>((event, emit) {
       if (event.password.length < 8) {
         emit(state.copyWith(
@@ -49,55 +49,36 @@ class OnboardingImportBloc
       emit(state.copyWith(passwordError: event.error));
     });
 
-    on<MnemonicChanged>((event, emit) async {
-      if (event.mnemonic.isEmpty) {
-        emit(state.copyWith(
-            mnemonicError: "Mnemonic is required", mnemonic: event.mnemonic));
-        return;
-      } else if (event.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(
-            mnemonicError: "Invalid mnemonic length",
-            mnemonic: event.mnemonic));
-        return;
-      } else {
-        bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-        if (!validMnemonic) {
-          emit(state.copyWith(
-              mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
-          return;
-        }
-        emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
+    on<PKChanged>((event, emit) async {
+      if (event.pk.isEmpty) {
+        emit(state.copyWith(pkError: "PK is required", pk: event.pk));
       }
+      emit(state.copyWith(pk: event.pk, pkError: null));
     });
 
     on<ImportFormatChanged>((event, emit) async {
       emit(state.copyWith(importFormat: event.importFormat));
     });
 
-    on<MnemonicSubmit>((event, emit) async {
-      if (state.mnemonic.isEmpty) {
-        emit(state.copyWith(mnemonicError: "Mnemonic is required"));
+    on<PKSubmit>((event, emit) async {
+      if (state.pk.isEmpty) {
+        emit(state.copyWith(pkError: "PK is required"));
         return;
-      } else if (state.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
-        return;
-      } else {
-        bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
-        if (!validMnemonic) {
-          emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
-          return;
-        }
       }
+
+      // TODO: validate PK
+
       ImportFormat importFormat = switch (event.importFormat) {
         "Horizon" => ImportFormat.horizon,
         "Freewallet" => ImportFormat.freewallet,
         "Counterwallet" => ImportFormat.counterwallet,
         _ => throw Exception('Invariant: Invalid import format')
       };
+
       emit(state.copyWith(
-          importState: ImportStateMnemonicCollected(),
+          importState: ImportStatePKCollected(),
           importFormat: importFormat,
-          mnemonic: event.mnemonic));
+          pk: event.pk));
     });
 
     on<ImportWallet>((event, emit) async {
@@ -106,7 +87,8 @@ class OnboardingImportBloc
         switch (state.importFormat) {
           case ImportFormat.horizon:
             Wallet wallet =
-                await walletService.deriveRoot(state.mnemonic, state.password!);
+                await walletService.fromBase58(state.pk, state.password!);
+
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
 
@@ -138,8 +120,8 @@ class OnboardingImportBloc
             break;
 
           case ImportFormat.freewallet:
-            Wallet wallet = await walletService.deriveRootFreewallet(
-                state.mnemonic, state.password!);
+            Wallet wallet =
+                await walletService.fromBase58(state.pk, state.password!);
 
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
@@ -187,8 +169,8 @@ class OnboardingImportBloc
 
             break;
           case ImportFormat.counterwallet:
-            Wallet wallet = await walletService.deriveRootFreewallet(
-                state.mnemonic, state.password!);
+            Wallet wallet =
+                await walletService.fromBase58(state.pk, state.password!);
 
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
@@ -229,11 +211,9 @@ class OnboardingImportBloc
         }
 
         emit(state.copyWith(importState: ImportStateSuccess()));
-        return;
       } catch (e) {
         emit(state.copyWith(
             importState: ImportStateError(message: e.toString())));
-        return;
       }
     });
   }

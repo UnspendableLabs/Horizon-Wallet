@@ -24,8 +24,6 @@ class AddressFormBloc
 
   AddressFormBloc() : super(const RemoteDataState.initial()) {
     on<Submit>((event, emit) async {
-
-
       final currentState = state;
 
       emit(const RemoteDataState.loading());

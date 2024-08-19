@@ -1061,6 +1061,7 @@ mixin _$Onboarding {
     required TResult Function() initial,
     required TResult Function() create,
     required TResult Function() import,
+    required TResult Function() importPK,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -1068,6 +1069,7 @@ mixin _$Onboarding {
     TResult? Function()? initial,
     TResult? Function()? create,
     TResult? Function()? import,
+    TResult? Function()? importPK,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -1075,6 +1077,7 @@ mixin _$Onboarding {
     TResult Function()? initial,
     TResult Function()? create,
     TResult Function()? import,
+    TResult Function()? importPK,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -1083,6 +1086,7 @@ mixin _$Onboarding {
     required TResult Function(_OnboardingInitial value) initial,
     required TResult Function(_Create value) create,
     required TResult Function(_Import value) import,
+    required TResult Function(_ImportPK value) importPK,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -1090,6 +1094,7 @@ mixin _$Onboarding {
     TResult? Function(_OnboardingInitial value)? initial,
     TResult? Function(_Create value)? create,
     TResult? Function(_Import value)? import,
+    TResult? Function(_ImportPK value)? importPK,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -1097,6 +1102,7 @@ mixin _$Onboarding {
     TResult Function(_OnboardingInitial value)? initial,
     TResult Function(_Create value)? create,
     TResult Function(_Import value)? import,
+    TResult Function(_ImportPK value)? importPK,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -1161,6 +1167,7 @@ class _$OnboardingInitialImpl implements _OnboardingInitial {
     required TResult Function() initial,
     required TResult Function() create,
     required TResult Function() import,
+    required TResult Function() importPK,
   }) {
     return initial();
   }
@@ -1171,6 +1178,7 @@ class _$OnboardingInitialImpl implements _OnboardingInitial {
     TResult? Function()? initial,
     TResult? Function()? create,
     TResult? Function()? import,
+    TResult? Function()? importPK,
   }) {
     return initial?.call();
   }
@@ -1181,6 +1189,7 @@ class _$OnboardingInitialImpl implements _OnboardingInitial {
     TResult Function()? initial,
     TResult Function()? create,
     TResult Function()? import,
+    TResult Function()? importPK,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -1195,6 +1204,7 @@ class _$OnboardingInitialImpl implements _OnboardingInitial {
     required TResult Function(_OnboardingInitial value) initial,
     required TResult Function(_Create value) create,
     required TResult Function(_Import value) import,
+    required TResult Function(_ImportPK value) importPK,
   }) {
     return initial(this);
   }
@@ -1205,6 +1215,7 @@ class _$OnboardingInitialImpl implements _OnboardingInitial {
     TResult? Function(_OnboardingInitial value)? initial,
     TResult? Function(_Create value)? create,
     TResult? Function(_Import value)? import,
+    TResult? Function(_ImportPK value)? importPK,
   }) {
     return initial?.call(this);
   }
@@ -1215,6 +1226,7 @@ class _$OnboardingInitialImpl implements _OnboardingInitial {
     TResult Function(_OnboardingInitial value)? initial,
     TResult Function(_Create value)? create,
     TResult Function(_Import value)? import,
+    TResult Function(_ImportPK value)? importPK,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -1269,6 +1281,7 @@ class _$CreateImpl implements _Create {
     required TResult Function() initial,
     required TResult Function() create,
     required TResult Function() import,
+    required TResult Function() importPK,
   }) {
     return create();
   }
@@ -1279,6 +1292,7 @@ class _$CreateImpl implements _Create {
     TResult? Function()? initial,
     TResult? Function()? create,
     TResult? Function()? import,
+    TResult? Function()? importPK,
   }) {
     return create?.call();
   }
@@ -1289,6 +1303,7 @@ class _$CreateImpl implements _Create {
     TResult Function()? initial,
     TResult Function()? create,
     TResult Function()? import,
+    TResult Function()? importPK,
     required TResult orElse(),
   }) {
     if (create != null) {
@@ -1303,6 +1318,7 @@ class _$CreateImpl implements _Create {
     required TResult Function(_OnboardingInitial value) initial,
     required TResult Function(_Create value) create,
     required TResult Function(_Import value) import,
+    required TResult Function(_ImportPK value) importPK,
   }) {
     return create(this);
   }
@@ -1313,6 +1329,7 @@ class _$CreateImpl implements _Create {
     TResult? Function(_OnboardingInitial value)? initial,
     TResult? Function(_Create value)? create,
     TResult? Function(_Import value)? import,
+    TResult? Function(_ImportPK value)? importPK,
   }) {
     return create?.call(this);
   }
@@ -1323,6 +1340,7 @@ class _$CreateImpl implements _Create {
     TResult Function(_OnboardingInitial value)? initial,
     TResult Function(_Create value)? create,
     TResult Function(_Import value)? import,
+    TResult Function(_ImportPK value)? importPK,
     required TResult orElse(),
   }) {
     if (create != null) {
@@ -1377,6 +1395,7 @@ class _$ImportImpl implements _Import {
     required TResult Function() initial,
     required TResult Function() create,
     required TResult Function() import,
+    required TResult Function() importPK,
   }) {
     return import();
   }
@@ -1387,6 +1406,7 @@ class _$ImportImpl implements _Import {
     TResult? Function()? initial,
     TResult? Function()? create,
     TResult? Function()? import,
+    TResult? Function()? importPK,
   }) {
     return import?.call();
   }
@@ -1397,6 +1417,7 @@ class _$ImportImpl implements _Import {
     TResult Function()? initial,
     TResult Function()? create,
     TResult Function()? import,
+    TResult Function()? importPK,
     required TResult orElse(),
   }) {
     if (import != null) {
@@ -1411,6 +1432,7 @@ class _$ImportImpl implements _Import {
     required TResult Function(_OnboardingInitial value) initial,
     required TResult Function(_Create value) create,
     required TResult Function(_Import value) import,
+    required TResult Function(_ImportPK value) importPK,
   }) {
     return import(this);
   }
@@ -1421,6 +1443,7 @@ class _$ImportImpl implements _Import {
     TResult? Function(_OnboardingInitial value)? initial,
     TResult? Function(_Create value)? create,
     TResult? Function(_Import value)? import,
+    TResult? Function(_ImportPK value)? importPK,
   }) {
     return import?.call(this);
   }
@@ -1431,6 +1454,7 @@ class _$ImportImpl implements _Import {
     TResult Function(_OnboardingInitial value)? initial,
     TResult Function(_Create value)? create,
     TResult Function(_Import value)? import,
+    TResult Function(_ImportPK value)? importPK,
     required TResult orElse(),
   }) {
     if (import != null) {
@@ -1442,4 +1466,118 @@ class _$ImportImpl implements _Import {
 
 abstract class _Import implements Onboarding {
   const factory _Import() = _$ImportImpl;
+}
+
+/// @nodoc
+abstract class _$$ImportPKImplCopyWith<$Res> {
+  factory _$$ImportPKImplCopyWith(
+          _$ImportPKImpl value, $Res Function(_$ImportPKImpl) then) =
+      __$$ImportPKImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ImportPKImplCopyWithImpl<$Res>
+    extends _$OnboardingCopyWithImpl<$Res, _$ImportPKImpl>
+    implements _$$ImportPKImplCopyWith<$Res> {
+  __$$ImportPKImplCopyWithImpl(
+      _$ImportPKImpl _value, $Res Function(_$ImportPKImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$ImportPKImpl implements _ImportPK {
+  const _$ImportPKImpl();
+
+  @override
+  String toString() {
+    return 'Onboarding.importPK()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ImportPKImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() create,
+    required TResult Function() import,
+    required TResult Function() importPK,
+  }) {
+    return importPK();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? create,
+    TResult? Function()? import,
+    TResult? Function()? importPK,
+  }) {
+    return importPK?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? create,
+    TResult Function()? import,
+    TResult Function()? importPK,
+    required TResult orElse(),
+  }) {
+    if (importPK != null) {
+      return importPK();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_OnboardingInitial value) initial,
+    required TResult Function(_Create value) create,
+    required TResult Function(_Import value) import,
+    required TResult Function(_ImportPK value) importPK,
+  }) {
+    return importPK(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_OnboardingInitial value)? initial,
+    TResult? Function(_Create value)? create,
+    TResult? Function(_Import value)? import,
+    TResult? Function(_ImportPK value)? importPK,
+  }) {
+    return importPK?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_OnboardingInitial value)? initial,
+    TResult Function(_Create value)? create,
+    TResult Function(_Import value)? import,
+    TResult Function(_ImportPK value)? importPK,
+    required TResult orElse(),
+  }) {
+    if (importPK != null) {
+      return importPK(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ImportPK implements Onboarding {
+  const factory _ImportPK() = _$ImportPKImpl;
 }

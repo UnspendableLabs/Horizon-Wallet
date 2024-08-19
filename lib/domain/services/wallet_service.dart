@@ -11,4 +11,6 @@ abstract class WalletService {
   Future<Wallet> deriveRootFreewallet(String mnemonic, String password);
 
   Future<Wallet> fromPrivateKey(String privateKey, String chainCodeHex);
+
+  Future<Wallet> fromBase58(String privateKey, String password);
 }

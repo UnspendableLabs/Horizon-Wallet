@@ -59,6 +59,8 @@ class DashboardPage extends StatelessWidget {
         .state; // we should only ever get to this page if shell is success
     return shell.maybeWhen(
         success: (data) => MultiBlocProvider(
+              key: Key(
+                  "${data.currentAccountUuid}:${data.currentAddress.address}"),
               providers: [
                 BlocProvider<BalancesBloc>(
                   create: (context) => BalancesBloc(
@@ -78,7 +80,8 @@ class DashboardPage extends StatelessWidget {
                 ),
               ],
               child: _DashboardPage(
-                key: Key(data.currentAccountUuid),
+                key: Key(
+                    "${data.currentAccountUuid}:${data.currentAddress.address}"),
                 accountUuid: data.currentAccountUuid,
                 currentAddress: data.currentAddress,
               ),

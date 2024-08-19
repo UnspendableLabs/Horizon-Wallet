@@ -32,4 +32,5 @@ class Onboarding with _$Onboarding {
   const factory Onboarding.initial() = _OnboardingInitial;
   const factory Onboarding.create() = _Create;
   const factory Onboarding.import() = _Import;
+  const factory Onboarding.importPK() = _ImportPK;
 }
