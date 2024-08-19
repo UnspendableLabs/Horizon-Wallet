@@ -14,6 +14,7 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingImportPKBloc
     extends Bloc<OnboardingImportPKEvent, OnboardingImportPKState> {
@@ -24,6 +25,7 @@ class OnboardingImportPKBloc
   final addressService = GetIt.I<AddressService>();
   final mnemonicService = GetIt.I<MnemonicService>();
   final encryptionService = GetIt.I<EncryptionService>();
+  final Config config = GetIt.I<Config>();
 
   OnboardingImportPKBloc() : super(const OnboardingImportPKState()) {
     on<PasswordChanged>((event, emit) {
@@ -130,11 +132,6 @@ class OnboardingImportPKBloc
     });
   }
 
-  String _getCoinType() {
-    // bool isTestnet = dotenv.get('TEST') == 'true';
-    return "0";
-    bool isTestnet =
-        const String.fromEnvironment('TEST', defaultValue: 'true') == 'true';
-    return isTestnet ? '1' : '0';
-  }
+  String _getCoinType() =>
+      switch (config.network) { Network.mainnet => "0", _ => "1" };
 }
