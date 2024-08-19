@@ -224,6 +224,17 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                         );
                       }, success: (balances) {
+
+                        if ( balances.isEmpty ) {
+
+                          return HorizonTextFormField(
+                            isDarkMode: widget.isDarkMode,
+                            enabled: false,
+                          );
+
+                        }
+
+
                         Balance? balance = balance_ ??
                             _getBalanceForSelectedAsset(
                                 balances, asset ?? balances[0].asset);
