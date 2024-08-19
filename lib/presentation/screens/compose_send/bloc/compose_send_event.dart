@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/compose_send.dart';
 
 abstract class ComposeSendEvent {}
 
@@ -12,31 +13,28 @@ class FetchBalances extends ComposeSendEvent {
   FetchBalances({required this.address});
 }
 
-class SendTransactionEvent extends ComposeSendEvent {
+class ComposeTransactionEvent extends ComposeSendEvent {
   final String sourceAddress;
   final String destinationAddress;
   final int quantity;
+  final String quantityDisplay;
   final String asset;
-  final String password;
-  final String? memo;
-  final bool? memoIsHex;
-  SendTransactionEvent({
+
+  ComposeTransactionEvent({
     required this.sourceAddress,
     required this.destinationAddress,
     required this.quantity,
+    required this.quantityDisplay,
     required this.asset,
-    required this.password,
-    this.memo,
-    this.memoIsHex,
   });
 }
 
-class SignTransactionEvent extends ComposeSendEvent {
-  final String unsignedTransactionHex;
-  final Address sourceAddress;
-  final String network;
-  SignTransactionEvent(
-      {required this.unsignedTransactionHex,
-      required this.sourceAddress,
-      required this.network});
+class SignAndBroadcastTransactionEvent extends ComposeSendEvent {
+  final ComposeSend composeSend;
+  final String password;
+
+  SignAndBroadcastTransactionEvent({
+    required this.composeSend,
+    required this.password,
+  });
 }
