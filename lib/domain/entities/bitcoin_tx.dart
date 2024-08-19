@@ -1,5 +1,7 @@
 import 'package:decimal/decimal.dart';
 
+final Decimal btcFactor = Decimal.fromInt(100000000);
+
 class Prevout {
   final String scriptpubkey;
   final String scriptpubkeyAsm;
@@ -140,4 +142,21 @@ class BitcoinTx {
   bool isCounterpartyTx(List<String> addresses) {
     return getAmountSent(addresses) == Decimal.zero;
   }
+
+  Decimal getAmountSentNormalized(List<String> addresses) {
+    Decimal sats = getAmountSent(addresses);
+
+    final btcValue = sats / btcFactor;
+
+    return btcValue.toDecimal().round(scale: 8);
+  }
+
+  Decimal getAmountReceivedNormalized(List<String> addresses) {
+    Decimal sats = getAmountReceived(addresses);
+
+    final btcValue = sats / btcFactor;
+
+    return btcValue.toDecimal().round(scale: 8);
+  }
+
 }

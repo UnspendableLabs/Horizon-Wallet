@@ -172,12 +172,12 @@ class ActivityFeedListItem extends StatelessWidget {
 
     return switch (tx.getTransactionType(addresses_)) {
       TransactionType.sender => SendTitle(
-          quantityNormalized: satoshisToBtc(tx.vout.first.value).toString(),
+          quantityNormalized: tx.getAmountSentNormalized(addresses_).toString(),
           asset: 'BTC',
         ),
       // TODO: assumes single party send?
       TransactionType.recipient => ReceiveTitle(
-          quantityNormalized: satoshisToBtc(tx.vout.first.value).toString(),
+          quantityNormalized: tx.getAmountReceivedNormalized(addresses_).toString(),
           asset: 'BTC',
         ),
       TransactionType.neither =>
