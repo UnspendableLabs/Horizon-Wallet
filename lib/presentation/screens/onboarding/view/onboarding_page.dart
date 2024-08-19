@@ -156,12 +156,46 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text('LOGIN TO EXISTING WALLET',
+                                  child: Text('IMPORT SEED',
                                       style: TextStyle(
                                           color: isDarkMode
                                               ? mainTextGrey
                                               : mainTextBlack)),
                                 ),
+
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: 250,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  overlayColor: noBackgroundColor,
+                                  elevation: 0,
+                                  backgroundColor: isDarkMode
+                                      ? noBackgroundColor
+                                      : backdropBackgroundColor,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 16), // Button size
+                                  textStyle: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ), // Text style
+                                ),
+                                onPressed: () {
+                                  // final shell = context.read<ShellStateCubit>();
+                                  // shell.onOnboardingImport();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text('IMPORT PRIVATE KEY',
+                                      style: TextStyle(
+                                          color: isDarkMode
+                                              ? mainTextGrey
+                                              : mainTextBlack)),
+                                ),
+
                               ),
                             ),
                           ],
