@@ -162,7 +162,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                               ? mainTextGrey
                                               : mainTextBlack)),
                                 ),
-
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -195,7 +194,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                               ? mainTextGrey
                                               : mainTextBlack)),
                                 ),
-
                               ),
                             ),
                           ],

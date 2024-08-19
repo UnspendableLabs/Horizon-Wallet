@@ -1,4 +1,3 @@
-
 // TODO: research part of / equatable
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -17,7 +16,6 @@ class OnboardingImportPKState with _$OnboardingImportPKState {
     @Default(ImportStateNotAsked) importState,
   }) = _OnboardingImportPKState;
 }
-
 
 abstract class ImportState {}
 

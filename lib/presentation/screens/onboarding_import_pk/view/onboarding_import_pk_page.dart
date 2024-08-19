@@ -271,11 +271,10 @@ class PasswordPrompt extends StatelessWidget {
                   ),
                 ),
               ),
-
               _state.importState is ImportStateError
                   ? Text(_state.importState.message)
                   : const SizedBox.shrink(),
-                    const SizedBox(width: 8),
+              const SizedBox(width: 8),
               _state.passwordError != null
                   ? Text(_state.passwordError!)
                   : const Text(""),

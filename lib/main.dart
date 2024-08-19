@@ -185,7 +185,8 @@ class AppRouter {
                         return shell.state.maybeWhen(
                           success: (state) {
                             return DashboardPage(
-                                key: Key("${state.currentAccountUuid}:${state.currentAddress.address}"));
+                                key: Key(
+                                    "${state.currentAccountUuid}:${state.currentAddress.address}"));
                           },
                           orElse: () => const SizedBox.shrink(),
                         );
@@ -227,7 +228,6 @@ class AppRouter {
             onboarding: (onboarding) {
               return onboarding.when(
                 initial: () => "/onboarding",
-
                 create: () => "/onboarding/create",
                 import: () => "/onboarding/import",
                 importPK: () => "/onboarding/import-pk",

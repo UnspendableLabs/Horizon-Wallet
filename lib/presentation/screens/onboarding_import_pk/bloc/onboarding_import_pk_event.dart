@@ -1,4 +1,3 @@
-
 abstract class OnboardingImportPKEvent {}
 
 class PasswordChanged extends OnboardingImportPKEvent {

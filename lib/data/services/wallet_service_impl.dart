@@ -117,8 +117,6 @@ class WalletServiceImpl implements WalletService {
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
-
-
   _getNetwork() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin,
         Network.testnet => ecpair.testnet,

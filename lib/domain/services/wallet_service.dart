@@ -13,6 +13,4 @@ abstract class WalletService {
   Future<Wallet> fromPrivateKey(String privateKey, String chainCodeHex);
 
   Future<Wallet> fromBase58(String privateKey, String password);
-
-
 }
