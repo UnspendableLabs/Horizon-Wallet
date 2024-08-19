@@ -33,5 +33,7 @@ class SubmitState with _$SubmitState {
 
 class SubmitStateComposingSend {
   final ComposeSend composeSend;
-  SubmitStateComposingSend({required this.composeSend});
+  final int virtualSize;
+  SubmitStateComposingSend(
+      {required this.composeSend, required this.virtualSize});
 }

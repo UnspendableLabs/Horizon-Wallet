@@ -79,16 +79,15 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final quantity = event.quantity;
         final asset = event.asset;
 
-        final send = await composeRepository.composeSendVerbose(
-            source,
-            destination,
-            asset,
-            quantity,
-            true,
-            2000); // TODO: don't hardcode fee
+        final send = await composeRepository.composeSendVerbose(source,
+            destination, asset, quantity, true); 
+
+        final virtualSize =
+            transactionService.getVirtualSize(send.rawtransaction);
+
         emit(state.copyWith(
-            submitState: SubmitState.composing(
-                SubmitStateComposingSend(composeSend: send))));
+            submitState: SubmitState.composing(SubmitStateComposingSend(
+                composeSend: send, virtualSize: virtualSize))));
       } catch (error) {
         if (error is DioException) {
           emit(state.copyWith(

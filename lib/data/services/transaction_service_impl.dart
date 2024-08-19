@@ -82,6 +82,14 @@ class TransactionServiceImpl implements TransactionService {
     return txHex;
   }
 
+  @override
+  int getVirtualSize(String unsignedTransaction) {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(unsignedTransaction);
+
+    return transaction.virtualSize();
+  }
+
   _getNetwork() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin,
         Network.testnet => ecpair.testnet,
