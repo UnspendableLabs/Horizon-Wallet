@@ -29,10 +29,7 @@ class DB extends _$DB {
         // Run migration steps without foreign keys and re-enable them later
         // (https://drift.simonbinder.eu/docs/advanced-features/migrations/#tips)
 
-
         await customStatement('PRAGMA foreign_keys = OFF');
-
-
 
         await m.runMigrationSteps(
             from: from,
@@ -40,9 +37,62 @@ class DB extends _$DB {
             steps: migrationSteps(
               from1To2: (m, schema) async {
                 await m.createTable(schema.transactions);
+
+                // migrate addresses table
+
+                // step 1) migrate primary key
+                await customStatement('''
+                      -- Create a new table with the desired structure
+                      CREATE TABLE addresses_temp (
+                        account_uuid TEXT NOT NULL,
+                        address TEXT NOT NULL UNIQUE,
+                        address_index INTEGER NOT NULL,
+                        PRIMARY KEY (address)
+                      );
+
+                      -- Copy data from the old table to the new one
+                      INSERT INTO addresses_temp (account_uuid, address, address_index)
+                      SELECT account_uuid, address, "index" FROM addresses;
+
+                      -- Drop the old table
+                      DROP TABLE addresses;
+
+                      -- Rename the new table to the original name
+                      ALTER TABLE addresses_temp RENAME TO addresses;
+                ''');
+
+                // step 2) rename column `address_index` to `index
+
+                await m.alterTable(TableMigration(
+                  schema.addresses,
+                  columnTransformer: {
+                    schema.addresses.index:
+                        const CustomExpression('address_index')
+                  },
+                ));
               },
               from2To3: (m, schema) async {
-                await m.addColumn(schema.wallets, schema.wallets.encryptedMnemonic);
+
+                // add encryptedMnemonic column to wallets table
+                await m.addColumn(
+                    schema.wallets, schema.wallets.encryptedMnemonic);
+
+                // // make btc_amount, fee, and unpacked_data nullable
+                // https://drift.simonbinder.eu/docs/migrations/api/#changing-the-type-of-a-column
+                await m.alterTable(TableMigration(
+                  schema.transactions,
+                  columnTransformer: {
+                    schema.transactions.btcAmount:
+                       schema.transactions.btcAmount.cast<int>(),
+                    schema.transactions.fee:
+                       schema.transactions.fee.cast<int>(),
+                    schema.transactions.unpackedData:
+                       schema.transactions.unpackedData.cast<String>()
+                  },
+                ));
+
+          
+
               },
             ));
 
