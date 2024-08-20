@@ -110,8 +110,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
       }
     });
 
-
-
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
       emit(state.copyWith(submitState: const SubmitState.loading()));
 
@@ -123,7 +121,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final asset = sendParams.asset;
         final password = event.password;
         final fee = event.fee;
-
 
         // Compose a new tx with user specified fee
         final send = await composeRepository.composeSendVerbose(
@@ -199,7 +196,5 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         rethrow;
       }
     });
-
-
   }
 }

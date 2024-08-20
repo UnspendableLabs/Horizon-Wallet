@@ -40,7 +40,3 @@ class SignAndBroadcastTransactionEvent extends ComposeSendEvent {
     required this.fee,
   });
 }
-
-
-
-
