@@ -658,7 +658,7 @@ class ConfirmationPage extends StatefulWidget {
   final Address address;
 
   const ConfirmationPage(
-      {required this.composeSendState,
+      {super.key, required this.composeSendState,
       required this.isDarkMode,
       required this.address});
 
