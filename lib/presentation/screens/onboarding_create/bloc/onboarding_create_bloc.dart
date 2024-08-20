@@ -66,8 +66,8 @@ class OnboardingCreateBloc
             name: 'Account 0',
             walletUuid: wallet.uuid,
             purpose: '84\'',
-            coinType: _getCoinType(),
-            accountIndex: '0',
+            coinType: '${_getCoinType()}\'',
+            accountIndex: '0\'',
             uuid: uuid.v4(),
             importFormat: ImportFormat.horizon);
 
