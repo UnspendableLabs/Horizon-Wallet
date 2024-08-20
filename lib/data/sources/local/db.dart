@@ -18,7 +18,7 @@ class DB extends _$DB {
   DB() : super(connectOnWeb());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
