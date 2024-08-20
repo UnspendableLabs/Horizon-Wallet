@@ -81,8 +81,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         // We use lowest fee possible here ( 1 sat )
         // so we can calculate the virtual size of the transaction
-        final send = await composeRepository.composeSendVerbose(source,
-            destination, asset, quantity, true, 1 ); 
+        final send = await composeRepository.composeSendVerbose(
+            source, destination, asset, quantity, true, 1);
 
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);

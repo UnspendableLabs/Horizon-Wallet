@@ -10,7 +10,7 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   BitcoinRepositoryImpl({required EsploraApi esploraApi})
       : _esploraApi = esploraApi;
 
-        @override
+  @override
   Future<Either<Failure, Map<String, double>>> getFeeEstimates() async {
     try {
       final feeEstimates = await _esploraApi.getFeeEstimates();
@@ -138,9 +138,6 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
       return Left(UnexpectedFailure(message: e.toString()));
     }
   }
-
-
-
 
   Future<List<BitcoinTx>> _fetchAllTransactionsForAddress(
       String address) async {
