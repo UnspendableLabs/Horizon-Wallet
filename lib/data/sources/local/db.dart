@@ -43,7 +43,7 @@ class DB extends _$DB {
                 await m.createTable(schema.transactions);
               },
               from2To3: (m, schema) async {
-                await m.createTable(schema.transactions);
+                await m.addColumn(schema.wallets, schema.wallets.encryptedMnemonic);
               },
             ));
 
