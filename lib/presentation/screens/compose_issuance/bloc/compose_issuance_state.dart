@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_issuance.dart';
 
 part 'compose_issuance_state.freezed.dart';
 
@@ -26,6 +27,7 @@ class AddressesState with _$AddressesState {
 class BalancesState with _$BalancesState {
   const factory BalancesState.initial() = _BalanceInital;
   const factory BalancesState.loading() = _BalanceLoading;
+
   const factory BalancesState.success(List<Balance> balances) = _BalanceSuccess;
   const factory BalancesState.error(String error) = _BalanceError;
 }
@@ -34,6 +36,14 @@ class BalancesState with _$BalancesState {
 class SubmitState with _$SubmitState {
   const factory SubmitState.initial() = _SubmitInitial;
   const factory SubmitState.loading() = _SubmitLoading;
+  const factory SubmitState.composing(
+          SubmitStateComposingIssuance submitStateComposingIssuance) =
+      _SubmitComposing;
   const factory SubmitState.success(String transactionHex) = _SubmitSuccess;
   const factory SubmitState.error(String error) = _SubmitError;
+}
+
+class SubmitStateComposingIssuance {
+  final ComposeIssuance composeIssuance;
+  SubmitStateComposingIssuance({required this.composeIssuance});
 }

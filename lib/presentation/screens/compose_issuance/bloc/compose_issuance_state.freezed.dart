@@ -1382,6 +1382,9 @@ mixin _$SubmitState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)
+        composing,
     required TResult Function(String transactionHex) success,
     required TResult Function(String error) error,
   }) =>
@@ -1390,6 +1393,9 @@ mixin _$SubmitState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult? Function(String transactionHex)? success,
     TResult? Function(String error)? error,
   }) =>
@@ -1398,6 +1404,8 @@ mixin _$SubmitState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult Function(String transactionHex)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1407,6 +1415,7 @@ mixin _$SubmitState {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) =>
@@ -1415,6 +1424,7 @@ mixin _$SubmitState {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) =>
@@ -1423,6 +1433,7 @@ mixin _$SubmitState {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1488,6 +1499,9 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)
+        composing,
     required TResult Function(String transactionHex) success,
     required TResult Function(String error) error,
   }) {
@@ -1499,6 +1513,9 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult? Function(String transactionHex)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1510,6 +1527,8 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult Function(String transactionHex)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1525,6 +1544,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1536,6 +1556,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1547,6 +1568,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1602,6 +1624,9 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)
+        composing,
     required TResult Function(String transactionHex) success,
     required TResult Function(String error) error,
   }) {
@@ -1613,6 +1638,9 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult? Function(String transactionHex)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1624,6 +1652,8 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult Function(String transactionHex)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1639,6 +1669,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1650,6 +1681,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1661,6 +1693,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1674,6 +1707,168 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
 
 abstract class _SubmitLoading implements SubmitState {
   const factory _SubmitLoading() = _$SubmitLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$SubmitComposingImplCopyWith<$Res> {
+  factory _$$SubmitComposingImplCopyWith(_$SubmitComposingImpl value,
+          $Res Function(_$SubmitComposingImpl) then) =
+      __$$SubmitComposingImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({SubmitStateComposingIssuance submitStateComposingIssuance});
+}
+
+/// @nodoc
+class __$$SubmitComposingImplCopyWithImpl<$Res>
+    extends _$SubmitStateCopyWithImpl<$Res, _$SubmitComposingImpl>
+    implements _$$SubmitComposingImplCopyWith<$Res> {
+  __$$SubmitComposingImplCopyWithImpl(
+      _$SubmitComposingImpl _value, $Res Function(_$SubmitComposingImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? submitStateComposingIssuance = null,
+  }) {
+    return _then(_$SubmitComposingImpl(
+      null == submitStateComposingIssuance
+          ? _value.submitStateComposingIssuance
+          : submitStateComposingIssuance // ignore: cast_nullable_to_non_nullable
+              as SubmitStateComposingIssuance,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$SubmitComposingImpl implements _SubmitComposing {
+  const _$SubmitComposingImpl(this.submitStateComposingIssuance);
+
+  @override
+  final SubmitStateComposingIssuance submitStateComposingIssuance;
+
+  @override
+  String toString() {
+    return 'SubmitState.composing(submitStateComposingIssuance: $submitStateComposingIssuance)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SubmitComposingImpl &&
+            (identical(other.submitStateComposingIssuance,
+                    submitStateComposingIssuance) ||
+                other.submitStateComposingIssuance ==
+                    submitStateComposingIssuance));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, submitStateComposingIssuance);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SubmitComposingImplCopyWith<_$SubmitComposingImpl> get copyWith =>
+      __$$SubmitComposingImplCopyWithImpl<_$SubmitComposingImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)
+        composing,
+    required TResult Function(String transactionHex) success,
+    required TResult Function(String error) error,
+  }) {
+    return composing(submitStateComposingIssuance);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
+    TResult? Function(String transactionHex)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return composing?.call(submitStateComposingIssuance);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
+    TResult Function(String transactionHex)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (composing != null) {
+      return composing(submitStateComposingIssuance);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SubmitInitial value) initial,
+    required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitSuccess value) success,
+    required TResult Function(_SubmitError value) error,
+  }) {
+    return composing(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SubmitInitial value)? initial,
+    TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitSuccess value)? success,
+    TResult? Function(_SubmitError value)? error,
+  }) {
+    return composing?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SubmitInitial value)? initial,
+    TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitSuccess value)? success,
+    TResult Function(_SubmitError value)? error,
+    required TResult orElse(),
+  }) {
+    if (composing != null) {
+      return composing(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _SubmitComposing implements SubmitState {
+  const factory _SubmitComposing(
+          final SubmitStateComposingIssuance submitStateComposingIssuance) =
+      _$SubmitComposingImpl;
+
+  SubmitStateComposingIssuance get submitStateComposingIssuance;
+  @JsonKey(ignore: true)
+  _$$SubmitComposingImplCopyWith<_$SubmitComposingImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1743,6 +1938,9 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)
+        composing,
     required TResult Function(String transactionHex) success,
     required TResult Function(String error) error,
   }) {
@@ -1754,6 +1952,9 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult? Function(String transactionHex)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1765,6 +1966,8 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult Function(String transactionHex)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1780,6 +1983,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1791,6 +1995,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1802,6 +2007,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1889,6 +2095,9 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)
+        composing,
     required TResult Function(String transactionHex) success,
     required TResult Function(String error) error,
   }) {
@@ -1900,6 +2109,9 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function(
+            SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult? Function(String transactionHex)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1911,6 +2123,8 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function(SubmitStateComposingIssuance submitStateComposingIssuance)?
+        composing,
     TResult Function(String transactionHex)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1926,6 +2140,7 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult map<TResult extends Object?>({
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1937,6 +2152,7 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1948,6 +2164,7 @@ class _$SubmitErrorImpl implements _SubmitError {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),

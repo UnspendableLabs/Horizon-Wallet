@@ -5,12 +5,15 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -19,10 +22,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
-
-import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
@@ -79,29 +78,43 @@ class ComposeIssuanceBloc
       }
     });
 
-    on<CreateIssuanceEvent>((event, emit) async {
+    on<ComposeTransactionEvent>((event, emit) async {
+      emit(state.copyWith(submitState: const SubmitState.loading()));
       final source = event.sourceAddress;
       final quantity = event.quantity;
       final name = event.name;
-      final password = event.password;
       final divisible = event.divisible;
       final lock = event.lock;
       final reset = event.reset;
       final description = event.description;
-      final transferDestination = event.transferDestination;
+      // final transferDestination = event.transferDestination;
 
       emit(state.copyWith(submitState: const SubmitState.loading()));
       try {
         ComposeIssuance issuance = await composeRepository.composeIssuance(
-            source,
-            name,
-            quantity,
-            divisible,
-            lock,
-            reset,
-            description,
-            transferDestination);
+            source, name, quantity, divisible, lock, reset, description);
+        emit(state.copyWith(
+            submitState: SubmitState.composing(
+                SubmitStateComposingIssuance(composeIssuance: issuance))));
+      } catch (error) {
+        if (error is DioException) {
+          emit(state.copyWith(
+              submitState: SubmitState.error(
+                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
+        } else {
+          emit(
+              state.copyWith(submitState: SubmitState.error(error.toString())));
+        }
+      }
+    });
 
+    on<SignAndBroadcastTransactionEvent>((event, emit) async {
+      final composeIssuance = event.composeIssuance;
+      final password = event.password;
+      final source = composeIssuance.params.source;
+
+      emit(state.copyWith(submitState: const SubmitState.loading()));
+      try {
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
@@ -122,7 +135,7 @@ class ComposeIssuanceBloc
             index: address.index);
 
         String txHex = await transactionService.signTransaction(
-            issuance.rawtransaction, addressPrivKey, source, utxoMap);
+            composeIssuance.rawtransaction, addressPrivKey, source, utxoMap);
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
