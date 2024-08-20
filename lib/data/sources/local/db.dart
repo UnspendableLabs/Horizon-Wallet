@@ -1,7 +1,6 @@
-import 'dart:js' as js;
+// import 'dart:js' as js;
 
 import 'package:drift/drift.dart';
-import 'package:drift/wasm.dart';
 import 'package:horizon/data/sources/local/tables/accounts_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
@@ -15,7 +14,7 @@ const ENV = "dev";
 
 @DriftDatabase(tables: [Wallets, Accounts, Addresses, Transactions])
 class DB extends _$DB {
-  DB() : super(connectOnWeb());
+  DB(QueryExecutor e) : super(e);
 
   @override
   int get schemaVersion => 3;
@@ -67,44 +66,24 @@ class DB extends _$DB {
     markTablesUpdated(allTables);
   }
 
-  Future<void> deleteDatabase() async {
-    await close(); // Ensure the database is closed before deleting
-
-    // JavaScript code to delete IndexedDB
-    js.context.callMethod('eval', [
-      """
-      var DBDeleteRequest = window.indexedDB.deleteDatabase('horizon_db');
-
-      DBDeleteRequest.onerror = function(event) {
-        console.log('Error deleting database.');
-      };
-
-      DBDeleteRequest.onsuccess = function(event) {
-        console.log('Database deleted successfully');
-      };
-    """
-    ]);
-
-    print('Database deletion initiated');
-  }
-}
-
-DatabaseConnection connectOnWeb() {
-  return DatabaseConnection.delayed(Future(() async {
-    final result = await WasmDatabase.open(
-      databaseName: 'horizon_db', // prefer to only use valid identifiers here
-      sqlite3Uri: Uri.parse('sqlite3.wasm'),
-      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
-    );
-
-    if (result.missingFeatures.isNotEmpty) {
-      // Depending how central local persistence is to your app, you may want
-      // to show a warning to the user if only unrealiable implemetentations
-      // are available.
-      print('Using ${result.chosenImplementation} due to missing browser '
-          'features: ${result.missingFeatures}');
-    }
-
-    return result.resolvedExecutor;
-  }));
+  // Future<void> deleteDatabase() async {
+  //   await close(); // Ensure the database is closed before deleting
+  //
+  //   // JavaScript code to delete IndexedDB
+  //   js.context.callMethod('eval', [
+  //     """
+  //     var DBDeleteRequest = window.indexedDB.deleteDatabase('horizon_db');
+  //
+  //     DBDeleteRequest.onerror = function(event) {
+  //       console.log('Error deleting database.');
+  //     };
+  //
+  //     DBDeleteRequest.onsuccess = function(event) {
+  //       console.log('Database deleted successfully');
+  //     };
+  //   """
+  //   ]);
+  //
+  //   print('Database deletion initiated');
+  // }
 }
