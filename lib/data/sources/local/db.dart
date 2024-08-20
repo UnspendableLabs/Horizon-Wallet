@@ -14,7 +14,7 @@ const ENV = "dev";
 
 @DriftDatabase(tables: [Wallets, Accounts, Addresses, Transactions])
 class DB extends _$DB {
-  DB(QueryExecutor e) : super(e);
+  DB(super.e);
 
   @override
   int get schemaVersion => 3;
