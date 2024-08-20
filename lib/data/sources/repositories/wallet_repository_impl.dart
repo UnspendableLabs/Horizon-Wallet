@@ -17,6 +17,7 @@ class WalletRepositoryImpl implements WalletRepository {
         uuid: wallet.uuid ?? uuid.v4(),
         name: wallet.name,
         encryptedPrivKey: wallet.encryptedPrivKey,
+        encryptedMnemonic: wallet.encryptedMnemonic,
         publicKey: wallet.publicKey,
         chainCodeHex: wallet.chainCodeHex));
   }
@@ -31,6 +32,7 @@ class WalletRepositoryImpl implements WalletRepository {
         uuid: walletLocal.uuid,
         name: walletLocal.name,
         encryptedPrivKey: walletLocal.encryptedPrivKey,
+        encryptedMnemonic: walletLocal.encryptedMnemonic,
         publicKey: walletLocal.publicKey,
         chainCodeHex: walletLocal.chainCodeHex);
   }
@@ -47,6 +49,7 @@ class WalletRepositoryImpl implements WalletRepository {
         uuid: wallet.uuid,
         name: wallet.name,
         encryptedPrivKey: wallet.encryptedPrivKey,
+        encryptedMnemonic: wallet.encryptedMnemonic,
         publicKey: wallet.publicKey,
         chainCodeHex: wallet.chainCodeHex);
   }
@@ -57,6 +60,7 @@ class WalletRepositoryImpl implements WalletRepository {
         uuid: wallet.uuid,
         name: wallet.name,
         encryptedPrivKey: wallet.encryptedPrivKey,
+        encryptedMnemonic: wallet.encryptedMnemonic,
         publicKey: wallet.publicKey,
         chainCodeHex: wallet.chainCodeHex));
   }

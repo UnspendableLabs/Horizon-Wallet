@@ -26,6 +26,7 @@ class RegTestUtils {
         uuid: uuid.v4(),
         name: 'Regtest #0',
         encryptedPrivKey: encryptedPrivKey,
+        encryptedMnemonic: null,
         publicKey: root.neutered().toBase58(),
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }

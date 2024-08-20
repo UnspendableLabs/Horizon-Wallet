@@ -158,5 +158,4 @@ class BitcoinTx {
 
     return btcValue.toDecimal().round(scale: 8);
   }
-
 }

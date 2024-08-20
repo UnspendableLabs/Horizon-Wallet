@@ -26,6 +26,12 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
   late final GeneratedColumn<String> encryptedPrivKey = GeneratedColumn<String>(
       'encrypted_priv_key', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _encryptedMnemonicMeta =
+      const VerificationMeta('encryptedMnemonic');
+  @override
+  late final GeneratedColumn<String> encryptedMnemonic =
+      GeneratedColumn<String>('encrypted_mnemonic', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _publicKeyMeta =
       const VerificationMeta('publicKey');
   @override
@@ -39,8 +45,14 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
       'chain_code_hex', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns =>
-      [uuid, name, encryptedPrivKey, publicKey, chainCodeHex];
+  List<GeneratedColumn> get $columns => [
+        uuid,
+        name,
+        encryptedPrivKey,
+        encryptedMnemonic,
+        publicKey,
+        chainCodeHex
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -71,6 +83,12 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
     } else if (isInserting) {
       context.missing(_encryptedPrivKeyMeta);
     }
+    if (data.containsKey('encrypted_mnemonic')) {
+      context.handle(
+          _encryptedMnemonicMeta,
+          encryptedMnemonic.isAcceptableOrUnknown(
+              data['encrypted_mnemonic']!, _encryptedMnemonicMeta));
+    }
     if (data.containsKey('public_key')) {
       context.handle(_publicKeyMeta,
           publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta));
@@ -100,6 +118,8 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       encryptedPrivKey: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}encrypted_priv_key'])!,
+      encryptedMnemonic: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}encrypted_mnemonic']),
       publicKey: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}public_key'])!,
       chainCodeHex: attachedDatabase.typeMapping
@@ -117,12 +137,14 @@ class Wallet extends DataClass implements Insertable<Wallet> {
   final String uuid;
   final String name;
   final String encryptedPrivKey;
+  final String? encryptedMnemonic;
   final String publicKey;
   final String chainCodeHex;
   const Wallet(
       {required this.uuid,
       required this.name,
       required this.encryptedPrivKey,
+      this.encryptedMnemonic,
       required this.publicKey,
       required this.chainCodeHex});
   @override
@@ -131,6 +153,9 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     map['uuid'] = Variable<String>(uuid);
     map['name'] = Variable<String>(name);
     map['encrypted_priv_key'] = Variable<String>(encryptedPrivKey);
+    if (!nullToAbsent || encryptedMnemonic != null) {
+      map['encrypted_mnemonic'] = Variable<String>(encryptedMnemonic);
+    }
     map['public_key'] = Variable<String>(publicKey);
     map['chain_code_hex'] = Variable<String>(chainCodeHex);
     return map;
@@ -141,6 +166,9 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       uuid: Value(uuid),
       name: Value(name),
       encryptedPrivKey: Value(encryptedPrivKey),
+      encryptedMnemonic: encryptedMnemonic == null && nullToAbsent
+          ? const Value.absent()
+          : Value(encryptedMnemonic),
       publicKey: Value(publicKey),
       chainCodeHex: Value(chainCodeHex),
     );
@@ -153,6 +181,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       uuid: serializer.fromJson<String>(json['uuid']),
       name: serializer.fromJson<String>(json['name']),
       encryptedPrivKey: serializer.fromJson<String>(json['encryptedPrivKey']),
+      encryptedMnemonic:
+          serializer.fromJson<String?>(json['encryptedMnemonic']),
       publicKey: serializer.fromJson<String>(json['publicKey']),
       chainCodeHex: serializer.fromJson<String>(json['chainCodeHex']),
     );
@@ -164,6 +194,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       'uuid': serializer.toJson<String>(uuid),
       'name': serializer.toJson<String>(name),
       'encryptedPrivKey': serializer.toJson<String>(encryptedPrivKey),
+      'encryptedMnemonic': serializer.toJson<String?>(encryptedMnemonic),
       'publicKey': serializer.toJson<String>(publicKey),
       'chainCodeHex': serializer.toJson<String>(chainCodeHex),
     };
@@ -173,12 +204,16 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           {String? uuid,
           String? name,
           String? encryptedPrivKey,
+          Value<String?> encryptedMnemonic = const Value.absent(),
           String? publicKey,
           String? chainCodeHex}) =>
       Wallet(
         uuid: uuid ?? this.uuid,
         name: name ?? this.name,
         encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
+        encryptedMnemonic: encryptedMnemonic.present
+            ? encryptedMnemonic.value
+            : this.encryptedMnemonic,
         publicKey: publicKey ?? this.publicKey,
         chainCodeHex: chainCodeHex ?? this.chainCodeHex,
       );
@@ -188,6 +223,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
           ..write('encryptedPrivKey: $encryptedPrivKey, ')
+          ..write('encryptedMnemonic: $encryptedMnemonic, ')
           ..write('publicKey: $publicKey, ')
           ..write('chainCodeHex: $chainCodeHex')
           ..write(')'))
@@ -195,8 +231,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(uuid, name, encryptedPrivKey, publicKey, chainCodeHex);
+  int get hashCode => Object.hash(
+      uuid, name, encryptedPrivKey, encryptedMnemonic, publicKey, chainCodeHex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -204,6 +240,7 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           other.uuid == this.uuid &&
           other.name == this.name &&
           other.encryptedPrivKey == this.encryptedPrivKey &&
+          other.encryptedMnemonic == this.encryptedMnemonic &&
           other.publicKey == this.publicKey &&
           other.chainCodeHex == this.chainCodeHex);
 }
@@ -212,6 +249,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
   final Value<String> uuid;
   final Value<String> name;
   final Value<String> encryptedPrivKey;
+  final Value<String?> encryptedMnemonic;
   final Value<String> publicKey;
   final Value<String> chainCodeHex;
   final Value<int> rowid;
@@ -219,6 +257,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     this.uuid = const Value.absent(),
     this.name = const Value.absent(),
     this.encryptedPrivKey = const Value.absent(),
+    this.encryptedMnemonic = const Value.absent(),
     this.publicKey = const Value.absent(),
     this.chainCodeHex = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -227,6 +266,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     required String uuid,
     required String name,
     required String encryptedPrivKey,
+    this.encryptedMnemonic = const Value.absent(),
     required String publicKey,
     required String chainCodeHex,
     this.rowid = const Value.absent(),
@@ -239,6 +279,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     Expression<String>? uuid,
     Expression<String>? name,
     Expression<String>? encryptedPrivKey,
+    Expression<String>? encryptedMnemonic,
     Expression<String>? publicKey,
     Expression<String>? chainCodeHex,
     Expression<int>? rowid,
@@ -247,6 +288,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
       if (uuid != null) 'uuid': uuid,
       if (name != null) 'name': name,
       if (encryptedPrivKey != null) 'encrypted_priv_key': encryptedPrivKey,
+      if (encryptedMnemonic != null) 'encrypted_mnemonic': encryptedMnemonic,
       if (publicKey != null) 'public_key': publicKey,
       if (chainCodeHex != null) 'chain_code_hex': chainCodeHex,
       if (rowid != null) 'rowid': rowid,
@@ -257,6 +299,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
       {Value<String>? uuid,
       Value<String>? name,
       Value<String>? encryptedPrivKey,
+      Value<String?>? encryptedMnemonic,
       Value<String>? publicKey,
       Value<String>? chainCodeHex,
       Value<int>? rowid}) {
@@ -264,6 +307,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
       uuid: uuid ?? this.uuid,
       name: name ?? this.name,
       encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
+      encryptedMnemonic: encryptedMnemonic ?? this.encryptedMnemonic,
       publicKey: publicKey ?? this.publicKey,
       chainCodeHex: chainCodeHex ?? this.chainCodeHex,
       rowid: rowid ?? this.rowid,
@@ -281,6 +325,9 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     }
     if (encryptedPrivKey.present) {
       map['encrypted_priv_key'] = Variable<String>(encryptedPrivKey.value);
+    }
+    if (encryptedMnemonic.present) {
+      map['encrypted_mnemonic'] = Variable<String>(encryptedMnemonic.value);
     }
     if (publicKey.present) {
       map['public_key'] = Variable<String>(publicKey.value);
@@ -300,6 +347,7 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
           ..write('uuid: $uuid, ')
           ..write('name: $name, ')
           ..write('encryptedPrivKey: $encryptedPrivKey, ')
+          ..write('encryptedMnemonic: $encryptedMnemonic, ')
           ..write('publicKey: $publicKey, ')
           ..write('chainCodeHex: $chainCodeHex, ')
           ..write('rowid: $rowid')

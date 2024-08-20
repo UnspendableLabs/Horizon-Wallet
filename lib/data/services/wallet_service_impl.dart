@@ -36,10 +36,14 @@ class WalletServiceImpl implements WalletService {
     String encryptedPrivKey =
         await encryptionService.encrypt(privKey, password);
 
+    String encryptedMnemonic =
+        await encryptionService.encrypt(mnemonic, password);
+
     return entity.Wallet(
         uuid: uuid.v4(),
         name: 'Wallet 1',
         encryptedPrivKey: encryptedPrivKey,
+        encryptedMnemonic: encryptedMnemonic,
         publicKey: root.neutered().toBase58(),
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
@@ -60,10 +64,14 @@ class WalletServiceImpl implements WalletService {
     String encryptedPrivKey =
         await encryptionService.encrypt(privKey, password);
 
+    String encryptedMnemonic =
+        await encryptionService.encrypt(mnemonic, password);
+
     return entity.Wallet(
         uuid: uuid.v4(),
         name: 'Wallet 1',
         encryptedPrivKey: encryptedPrivKey,
+        encryptedMnemonic: encryptedMnemonic,
         publicKey: root.neutered().toBase58(),
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
