@@ -2,7 +2,6 @@ import 'package:test/test.dart';
 import 'package:drift_dev/api/migrations.dart';
 import "package:horizon/data/sources/local/db.dart";
 
-
 import 'drift_migrations/schema.dart';
 
 void main() {
@@ -28,7 +27,6 @@ void main() {
     await db.close();
   });
 
-
   test('upgrade from v2 to v3', () async {
     // Use startAt(1) to obtain a database connection with all tables
     // from the v1 schema.
@@ -40,5 +38,4 @@ void main() {
     await verifier.migrateAndValidate(db, 3);
     await db.close();
   });
-
 }

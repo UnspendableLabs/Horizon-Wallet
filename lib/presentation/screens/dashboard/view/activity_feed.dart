@@ -177,7 +177,8 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       // TODO: assumes single party send?
       TransactionType.recipient => ReceiveTitle(
-          quantityNormalized: tx.getAmountReceivedNormalized(addresses_).toString(),
+          quantityNormalized:
+              tx.getAmountReceivedNormalized(addresses_).toString(),
           asset: 'BTC',
         ),
       TransactionType.neither =>

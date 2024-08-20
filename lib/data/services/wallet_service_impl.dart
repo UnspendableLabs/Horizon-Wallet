@@ -65,7 +65,7 @@ class WalletServiceImpl implements WalletService {
         await encryptionService.encrypt(privKey, password);
 
     String encryptedMnemonic =
-      await encryptionService.encrypt(mnemonic, password);
+        await encryptionService.encrypt(mnemonic, password);
 
     return entity.Wallet(
         uuid: uuid.v4(),

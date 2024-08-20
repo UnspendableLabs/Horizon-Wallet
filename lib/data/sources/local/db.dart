@@ -72,7 +72,6 @@ class DB extends _$DB {
                 ));
               },
               from2To3: (m, schema) async {
-
                 // add encryptedMnemonic column to wallets table
                 await m.addColumn(
                     schema.wallets, schema.wallets.encryptedMnemonic);
@@ -83,16 +82,13 @@ class DB extends _$DB {
                   schema.transactions,
                   columnTransformer: {
                     schema.transactions.btcAmount:
-                       schema.transactions.btcAmount.cast<int>(),
+                        schema.transactions.btcAmount.cast<int>(),
                     schema.transactions.fee:
-                       schema.transactions.fee.cast<int>(),
+                        schema.transactions.fee.cast<int>(),
                     schema.transactions.unpackedData:
-                       schema.transactions.unpackedData.cast<String>()
+                        schema.transactions.unpackedData.cast<String>()
                   },
                 ));
-
-          
-
               },
             ));
 
