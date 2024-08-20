@@ -3,6 +3,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
@@ -22,7 +23,8 @@ class DiscreteSlider extends StatefulWidget {
   final Map<String, double> valueMap;
   final Function(String) onChanged;
 
-  DiscreteSlider({required this.valueMap, required this.onChanged});
+  const DiscreteSlider(
+      {super.key, required this.valueMap, required this.onChanged});
 
   @override
   _DiscreteSliderState createState() => _DiscreteSliderState();
@@ -58,7 +60,6 @@ class _DiscreteSliderState extends State<DiscreteSlider> {
             }
           },
         ),
-        Text('Selected: ${_keys[_currentValue.round()]}'),
       ],
     );
   }
@@ -194,7 +195,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
   TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
 
   String? asset;
   Balance? balance_;
@@ -434,55 +434,264 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           // },
         ),
         composing: (composeSendState) {
-          return _buildConfirmationPage(context, composeSendState, isDarkTheme);
+          return ConfirmationPage(
+            composeSendState: composeSendState,
+            isDarkMode: isDarkTheme,
+            address: widget.address,
+          );
+          // return _buildConfirmationPage(context, composeSendState, isDarkTheme);
         },
         orElse: () => const SizedBox.shrink(),
       );
     });
   }
 
-  Widget _buildConfirmationPage(BuildContext context,
-      SubmitStateComposingSend composeSendState, bool isDarkTheme) {
-    final inputFillColor = isDarkTheme
+  // Widget _buildConfirmationPage(BuildContext context,
+  //     SubmitStateComposingSend composeSendState, bool isDarkTheme) {
+  //   final inputFillColor = isDarkTheme
+  //       ? dialogBackgroundColorDarkTheme
+  //       : dialogBackgroundColorLightTheme;
+  //   final sendParams = composeSendState.composeSend.params;
+  //   return Padding(
+  //     padding: const EdgeInsets.all(16.0),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: <Widget>[
+  //         const Text(
+  //           'Please review your transaction details.',
+  //           style: TextStyle(
+  //               fontSize: 16.0,
+  //               color: mainTextWhite,
+  //               fontWeight: FontWeight.bold),
+  //           textAlign: TextAlign.center,
+  //         ),
+  //         const SizedBox(height: 16.0),
+  //         HorizonTextFormField(
+  //           isDarkMode: widget.isDarkMode,
+  //           label: "Source Address",
+  //           floatingLabelBehavior: FloatingLabelBehavior.always,
+  //           controller: TextEditingController(text: sendParams.source),
+  //           enabled: false,
+  //           fillColor: inputFillColor,
+  //           textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+  //         ),
+  //         const SizedBox(height: 16.0),
+  //         HorizonTextFormField(
+  //           isDarkMode: widget.isDarkMode,
+  //           label: "Destination Address",
+  //           floatingLabelBehavior: FloatingLabelBehavior.always,
+  //           controller: TextEditingController(text: sendParams.destination),
+  //           enabled: false,
+  //           fillColor: inputFillColor,
+  //           textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+  //         ),
+  //         const SizedBox(height: 16.0),
+  //         Row(
+  //           children: [
+  //             Expanded(
+  //               child: HorizonTextFormField(
+  //                 isDarkMode: widget.isDarkMode,
+  //                 label: "Quantity",
+  //                 floatingLabelBehavior: FloatingLabelBehavior.always,
+  //                 controller: TextEditingController(
+  //                     text: sendParams.quantityNormalized),
+  //                 enabled: false,
+  //                 fillColor: inputFillColor,
+  //                 textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+  //               ),
+  //             ),
+  //             const SizedBox(width: 16.0), // Spacing between inputs
+  //             Expanded(
+  //               child: HorizonTextFormField(
+  //                 isDarkMode: widget.isDarkMode,
+  //                 label: "Asset",
+  //                 floatingLabelBehavior: FloatingLabelBehavior.always,
+  //                 controller: TextEditingController(text: sendParams.asset),
+  //                 enabled: false,
+  //                 fillColor: inputFillColor,
+  //                 textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16.0),
+  //         FeeEstimation(
+  //             feeMap: composeSendState.feeEstimates,
+  //             virtualSize: composeSendState.virtualSize,
+  //             onChanged: (v) {
+  //               setState(() {
+  //                 fee = v.toInt();
+  //               });
+  //             }),
+  //         Padding(
+  //           padding: const EdgeInsets.symmetric(vertical: 16.0),
+  //           child: Divider(
+  //             color: isDarkTheme
+  //                 ? greyDarkThemeUnderlineColor
+  //                 : greyLightThemeUnderlineColor,
+  //             thickness: 1.0,
+  //           ),
+  //         ),
+  //         HorizonTextFormField(
+  //           isDarkMode: widget.isDarkMode,
+  //           obscureText: true,
+  //           enableSuggestions: false,
+  //           autocorrect: false,
+  //           controller: passwordController,
+  //           label: "Password",
+  //           floatingLabelBehavior: FloatingLabelBehavior.auto,
+  //           validator: (value) {
+  //             if (value == null || value.isEmpty) {
+  //               return 'Please enter your password';
+  //             }
+  //             return null;
+  //           },
+  //         ),
+  //         const SizedBox(height: 16.0),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             HorizonCancelButton(
+  //               isDarkMode: widget.isDarkMode,
+  //               onPressed: () {
+  //                 context
+  //                     .read<ComposeSendBloc>()
+  //                     .add(FetchFormData(currentAddress: widget.address));
+  //               },
+  //               buttonText: 'BACK',
+  //             ),
+  //             HorizonContinueButton(
+  //               isDarkMode: widget.isDarkMode,
+  //               onPressed: () {
+  //                 context.read<ComposeSendBloc>().add(
+  //                     SignAndBroadcastTransactionEvent(
+  //                         composeSend: composeSendState.composeSend,
+  //                         password: passwordController.text));
+  //               },
+  //               buttonText: 'SIGN AND BROADCAST',
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+}
+
+class FeeEstimation extends StatefulWidget {
+  final Map<String, double> feeMap;
+  final Function(double) onChanged;
+  final int virtualSize;
+
+  const FeeEstimation(
+      {super.key,
+      required this.feeMap,
+      required this.onChanged,
+      required this.virtualSize});
+
+  @override
+  FeeEstimationState createState() => FeeEstimationState();
+}
+
+class FeeEstimationState extends State<FeeEstimation> {
+  late String _confirmationTarget;
+
+  @override
+  void initState() {
+    super.initState();
+    _confirmationTarget = widget.feeMap.keys.first;
+  }
+
+  @override
+  Widget build(context) {
+    return Column(
+      children: [
+        DiscreteSlider(
+          valueMap: widget.feeMap,
+          onChanged: (key) {
+            setState(() {
+              _confirmationTarget = key;
+            });
+            widget.onChanged(_getTotalSats().toDouble());
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Text(
+                        "$_confirmationTarget block${int.parse(_confirmationTarget) > 1 ? "s" : ""}",
+                        style: Theme.of(context).textTheme.labelLarge),
+                    const SizedBox(width: 4),
+                    Text(
+                      "(${widget.feeMap[_confirmationTarget]!.toStringAsFixed(4)} sats/vbyte)",
+                    ),
+                  ],
+                ),
+              ),
+              Row(children: [
+                Text("${satoshisToBtc(_getTotalSats()).toString()} BTC",
+                    style: Theme.of(context).textTheme.labelLarge),
+                const SizedBox(width: 4),
+                Text(
+                  "${_getTotalSats().toString()} sats",
+                ),
+              ]),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  int _getTotalSats() {
+    return (widget.virtualSize * widget.feeMap[_confirmationTarget]!).ceil();
+  }
+}
+
+class ConfirmationPage extends StatefulWidget {
+  final SubmitStateComposingSend composeSendState;
+  final bool isDarkMode;
+  final Address address;
+
+  const ConfirmationPage(
+      {required this.composeSendState,
+      required this.isDarkMode,
+      required this.address});
+
+  @override
+  ConfirmationPageState createState() => ConfirmationPageState();
+}
+
+class ConfirmationPageState extends State<ConfirmationPage> {
+  late int fee;
+  TextEditingController passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // initialize fee
+    fee = (widget.composeSendState.virtualSize *
+            widget.composeSendState
+                .feeEstimates[widget.composeSendState.feeEstimates.keys.first]!)
+        .ceil();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final inputFillColor = widget.isDarkMode
         ? dialogBackgroundColorDarkTheme
         : dialogBackgroundColorLightTheme;
-    final sendParams = composeSendState.composeSend.params;
+    final sendParams = widget.composeSendState.composeSend.params;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Text("virtualsize: ${composeSendState.virtualSize}"),
-          DiscreteSlider(valueMap: const {
-            "1": 9.682,
-            "2": 9.682,
-            "3": 7.174,
-            "4": 6.567,
-            "5": 6.567,
-            "6": 4.631,
-            "7": 4.462000000000001,
-            "8": 4.006,
-            "9": 3.4749999999999996,
-            "10": 3.4749999999999996,
-            "11": 3.4749999999999996,
-            "12": 3.4749999999999996,
-            "13": 3.137,
-            "14": 3.137,
-            "15": 3.137,
-            "16": 3.137,
-            "17": 3.137,
-            "18": 3.0020000000000002,
-            "19": 3.0020000000000002,
-            "20": 3.0020000000000002,
-            "21": 3.0020000000000002,
-            "22": 3.0020000000000002,
-            "23": 3.0020000000000002,
-            "24": 3.0020000000000002,
-            "25": 3.0020000000000002,
-            "144": 2.6020000000000003,
-            "504": 2.485,
-            "1008": 2.485
-          }, onChanged: print),
           const Text(
             'Please review your transaction details.',
             style: TextStyle(
@@ -499,7 +708,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
             controller: TextEditingController(text: sendParams.source),
             enabled: false,
             fillColor: inputFillColor,
-            textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+            textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
           ),
           const SizedBox(height: 16.0),
           HorizonTextFormField(
@@ -509,7 +718,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
             controller: TextEditingController(text: sendParams.destination),
             enabled: false,
             fillColor: inputFillColor,
-            textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+            textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
           ),
           const SizedBox(height: 16.0),
           Row(
@@ -523,7 +732,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       text: sendParams.quantityNormalized),
                   enabled: false,
                   fillColor: inputFillColor,
-                  textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+                  textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
                 ),
               ),
               const SizedBox(width: 16.0), // Spacing between inputs
@@ -535,15 +744,24 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                   controller: TextEditingController(text: sendParams.asset),
                   enabled: false,
                   fillColor: inputFillColor,
-                  textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+                  textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 16.0),
+          FeeEstimation(
+              feeMap: widget.composeSendState.feeEstimates,
+              virtualSize: widget.composeSendState.virtualSize,
+              onChanged: (v) {
+                setState(() {
+                  fee = v.toInt();
+                });
+              }),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Divider(
-              color: isDarkTheme
+              color: widget.isDarkMode
                   ? greyDarkThemeUnderlineColor
                   : greyLightThemeUnderlineColor,
               thickness: 1.0,
@@ -580,10 +798,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
               HorizonContinueButton(
                 isDarkMode: widget.isDarkMode,
                 onPressed: () {
-                  context.read<ComposeSendBloc>().add(
-                      SignAndBroadcastTransactionEvent(
-                          composeSend: composeSendState.composeSend,
-                          password: passwordController.text));
+                  context
+                      .read<ComposeSendBloc>()
+                      .add(SignAndBroadcastTransactionEvent(
+                        composeSend: widget.composeSendState.composeSend,
+                        password: passwordController.text,
+                        fee: fee,
+                      ));
                 },
                 buttonText: 'SIGN AND BROADCAST',
               ),

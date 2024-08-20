@@ -34,6 +34,11 @@ class SubmitState with _$SubmitState {
 class SubmitStateComposingSend {
   final ComposeSend composeSend;
   final int virtualSize;
+  final Map<String, double> feeEstimates;
+  final String confirmationTarget;
   SubmitStateComposingSend(
-      {required this.composeSend, required this.virtualSize});
+      {required this.composeSend,
+      required this.virtualSize,
+      required this.feeEstimates,
+      required this.confirmationTarget});
 }
