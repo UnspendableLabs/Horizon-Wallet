@@ -18,6 +18,52 @@ import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.d
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+class DiscreteSlider extends StatefulWidget {
+  final Map<String, double> valueMap;
+  final Function(String) onChanged;
+
+  DiscreteSlider({required this.valueMap, required this.onChanged});
+
+  @override
+  _DiscreteSliderState createState() => _DiscreteSliderState();
+}
+
+class _DiscreteSliderState extends State<DiscreteSlider> {
+  late List<String> _keys;
+  late double _currentValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _keys = widget.valueMap.keys.toList();
+    _currentValue = 0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Slider(
+          min: 0,
+          max: (_keys.length - 1).toDouble(),
+          divisions: _keys.length - 1,
+          value: _currentValue,
+          onChanged: (value) {
+            setState(() {
+              _currentValue = value;
+            });
+            int index = value.round();
+            if (index >= 0 && index < _keys.length) {
+              widget.onChanged(_keys[index]);
+            }
+          },
+        ),
+        Text('Selected: ${_keys[_currentValue.round()]}'),
+      ],
+    );
+  }
+}
+
 class ComposeSendPage extends StatelessWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -406,6 +452,37 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
+          Text("virtualsize: ${composeSendState.virtualSize}"),
+          DiscreteSlider(valueMap: const {
+            "1": 9.682,
+            "2": 9.682,
+            "3": 7.174,
+            "4": 6.567,
+            "5": 6.567,
+            "6": 4.631,
+            "7": 4.462000000000001,
+            "8": 4.006,
+            "9": 3.4749999999999996,
+            "10": 3.4749999999999996,
+            "11": 3.4749999999999996,
+            "12": 3.4749999999999996,
+            "13": 3.137,
+            "14": 3.137,
+            "15": 3.137,
+            "16": 3.137,
+            "17": 3.137,
+            "18": 3.0020000000000002,
+            "19": 3.0020000000000002,
+            "20": 3.0020000000000002,
+            "21": 3.0020000000000002,
+            "22": 3.0020000000000002,
+            "23": 3.0020000000000002,
+            "24": 3.0020000000000002,
+            "25": 3.0020000000000002,
+            "144": 2.6020000000000003,
+            "504": 2.485,
+            "1008": 2.485
+          }, onChanged: print),
           const Text(
             'Please review your transaction details.',
             style: TextStyle(
