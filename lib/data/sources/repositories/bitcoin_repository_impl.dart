@@ -7,9 +7,20 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 
 class BitcoinRepositoryImpl extends BitcoinRepository {
   final EsploraApi _esploraApi;
-
   BitcoinRepositoryImpl({required EsploraApi esploraApi})
       : _esploraApi = esploraApi;
+
+        @override
+  Future<Either<Failure, Map<String, double>>> getFeeEstimates() async {
+    try {
+      final feeEstimates = await _esploraApi.getFeeEstimates();
+      return Right(feeEstimates);
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
 
   @override
   Future<Either<Failure, BitcoinTx>> getTransaction(String txid) async {
@@ -128,6 +139,9 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
     }
   }
 
+
+
+
   Future<List<BitcoinTx>> _fetchAllTransactionsForAddress(
       String address) async {
     final allTransactions = <BitcoinTx>[];
@@ -203,6 +217,18 @@ class EsploraApi {
       final response = await _dio.get('/tx/$txid');
       final tx = BitcoinTxModel.fromJson(response.data as Map<String, dynamic>);
       return tx.toDomain();
+    } on DioException catch (e) {
+      _handleDioException(e);
+    }
+  }
+
+  Future<Map<String, double>> getFeeEstimates() async {
+    try {
+      final response = await _dio.get('/fee-estimates');
+      final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+
+      // Convert the dynamic values to double
+      return data.map((key, value) => MapEntry(key, (value as num).toDouble()));
     } on DioException catch (e) {
       _handleDioException(e);
     }
