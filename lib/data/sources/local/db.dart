@@ -29,14 +29,23 @@ class DB extends _$DB {
       onUpgrade: (m, from, to) async {
         // Run migration steps without foreign keys and re-enable them later
         // (https://drift.simonbinder.eu/docs/advanced-features/migrations/#tips)
+
+
         await customStatement('PRAGMA foreign_keys = OFF');
+
+
 
         await m.runMigrationSteps(
             from: from,
             to: to,
-            steps: migrationSteps(from1To2: (m, schema) async {
-              await m.createTable(schema.transactions);
-            }));
+            steps: migrationSteps(
+              from1To2: (m, schema) async {
+                await m.createTable(schema.transactions);
+              },
+              from2To3: (m, schema) async {
+                await m.createTable(schema.transactions);
+              },
+            ));
 
         if (ENV == "dev") {
           final wrongForeignKeys =
