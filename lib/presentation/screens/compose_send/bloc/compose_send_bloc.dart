@@ -193,7 +193,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           emit(
               state.copyWith(submitState: SubmitState.error(error.toString())));
         }
-        rethrow;
       }
     });
   }

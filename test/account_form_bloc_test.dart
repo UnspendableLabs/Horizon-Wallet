@@ -73,7 +73,7 @@ void main() {
     const password = 'test-password';
     const decryptedPrivKey = 'decrypted-private-key';
     const chainCodeHex = 'chain-code-hex';
-    final wallet = Wallet(
+    const wallet = Wallet(
       uuid: walletUuid,
       name: 'Test Wallet',
       publicKey: 'public-key',

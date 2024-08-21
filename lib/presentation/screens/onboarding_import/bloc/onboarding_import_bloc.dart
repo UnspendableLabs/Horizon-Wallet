@@ -82,11 +82,11 @@ class OnboardingImportBloc
         emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
         return;
       } else {
-        bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
-        if (!validMnemonic) {
-          emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
-          return;
-        }
+        // bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
+        // if (!validMnemonic) {
+        //   emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
+        //   return;
+        // }
       }
       ImportFormat importFormat = switch (event.importFormat) {
         "Horizon" => ImportFormat.horizon,

@@ -77,9 +77,6 @@ class AddressFormBloc
             emit(currentState);
             break;
           case ImportFormat.freewallet:
-           
-    
-
             List<Address> legacyAddresses =
                 await addressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
@@ -116,7 +113,6 @@ class AddressFormBloc
             break;
 
           case ImportFormat.counterwallet:
-
             List<Address> legacyAddresses =
                 await addressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,

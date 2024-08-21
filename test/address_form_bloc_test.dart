@@ -183,7 +183,7 @@ void main() {
             )).thenAnswer((_) async => [FakeAddress(index: 2)]);
 
         when(() => mockAddressRepository.insertMany(any()))
-            .thenAnswer((_) async => null);
+            .thenAnswer((_) async {});
 
         return AddressFormBloc();
       },
@@ -252,7 +252,7 @@ void main() {
             )).thenAnswer((_) async => [FakeAddress(index: 2)]);
 
         when(() => mockAddressRepository.insertMany(any()))
-            .thenAnswer((_) async => null);
+            .thenAnswer((_) async {});
 
         return AddressFormBloc();
       },

@@ -27,8 +27,11 @@ class MockEncryptionService extends Mock implements EncryptionService {}
 class MockAddressService extends Mock implements AddressService {}
 
 class MockWalletRepository extends Mock implements WalletRepository {}
-class MockAccountRepository extends Mock implements AccountRepository {} 
+
+class MockAccountRepository extends Mock implements AccountRepository {}
+
 class MockAddressRepository extends Mock implements AddressRepository {}
+
 class MockConfig extends Mock implements Config {}
 
 // Fake classes for fallback values
@@ -105,7 +108,7 @@ void main() {
               account: any(named: 'account'),
               change: any(named: 'change'),
               index: any(named: 'index')))
-          .thenAnswer((_) async => Address(
+          .thenAnswer((_) async => const Address(
               index: 0, address: "0xdeadbeef", accountUuid: 'account-uuid'));
       when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
@@ -159,7 +162,7 @@ void main() {
               start: any(named: 'start'),
               end: any(named: 'end')))
           .thenAnswer((_) async => [
-                Address(
+                const Address(
                     index: 0,
                     address: "0xdeadbeef",
                     accountUuid: 'account-uuid')
@@ -302,7 +305,6 @@ void main() {
         Network.testnet,
         '1',
         ImportFormat.freewallet);
-
 
     runImportTest(
         'emits correct states when importing wallet for regtest using Freewallet format',
