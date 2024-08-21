@@ -73,16 +73,21 @@ to run in testnet mode, set TEST=true
 - esplora api only returns 50 txs in mempool with no addresses
 
 
-### account derivation paths 
-
-network,method,format,path
-----------------------------------
-mainnet,onboarding_create,horizon,\m\84'\0'\0'\0\0,
-testnet,onboarding_create,horizon,\m\84'\1'\0'\0\0,
-regtest,onboarding_create,horizon,\m\84'\1'\0'\0\0,
 
 
 
+| Network | Method | Format | Path | Address Type |
+|---------|--------|--------|------|--------------|
+| mainnet | onboarding_create | horizon | m/84'/0'/0'/0/0 | bech32 |
+| testnet | onboarding_create | horizon | m/84'/1'/0'/0/0 | bech32 |
+| mainnet | onboarding_import | horizon | m/84'/0'/0'/0/0 | bech32 |
+| testnet | onboarding_import | horizon | m/84'/1'/0'/0/0 | bech32 |
+| mainnet | onboarding_import | freewallet | m/32/0/0'/0/0-9 | bech32 |
+| mainnet | onboarding_import | freewallet | m/32/0/0'/0/0-9 | legacy |
+| testnet | onboarding_import | freewallet | m/32/1/0'/0/0-9 | bech32 |
+| testnet | onboarding_import | freewallet | m/32/1/0'/0/0-9 | legacy |
+| mainnet | onboarding_import | counterwallet | m/0'/0/0'/0/0 | legacy |
+| testnet | onboarding_import | counterwallet | m/0'/1/0'/0/0 | legacy |
 
 
 

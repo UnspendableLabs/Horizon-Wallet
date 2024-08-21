@@ -224,6 +224,7 @@ class OnboardingImportBloc
             await accountRepository.insert(account);
             await addressRepository.insertMany(addressesLegacy);
 
+            break;
           default:
             throw UnimplementedError();
         }
