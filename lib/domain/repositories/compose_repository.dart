@@ -16,4 +16,13 @@ abstract class ComposeRepository {
       bool? reset,
       String? description,
       String? transferDestination]);
+  Future<ComposeIssuanceVerbose> composeIssuanceVerbose(
+      String sourceAddress, String name, double quantity,
+      [bool? divisible,
+      bool? lock,
+      bool? reset,
+      String? description,
+      String? transferDestination,
+      bool? unconfirmed,
+      int? confirmationTarget]);
 }

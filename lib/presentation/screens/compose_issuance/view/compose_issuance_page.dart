@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_cancel_button.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_continue_button.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeIssuancePage extends StatelessWidget {
   final bool isDarkMode;
@@ -36,7 +36,7 @@ class ComposeIssuancePage extends StatelessWidget {
         create: (context) => ComposeIssuanceBloc()
           ..add(FetchFormData(currentAddress: state.currentAddress)),
         child: _ComposeIssuancePage_(
-          currentAddress: state.currentAddress,
+          address: state.currentAddress,
           isDarkMode: isDarkMode,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
@@ -49,9 +49,9 @@ class ComposeIssuancePage extends StatelessWidget {
 class _ComposeIssuancePage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address currentAddress;
+  final Address address;
   const _ComposeIssuancePage_(
-      {required this.currentAddress,
+      {required this.address,
       required this.isDarkMode,
       required this.dashboardActivityFeedBloc});
 
@@ -70,17 +70,22 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
   TextEditingController descriptionController = TextEditingController();
 
   String? asset;
-  String? fromAddress;
 
   bool isDivisible = true;
   bool isLocked = false;
   bool isReset = false;
 
   @override
+  void initState() {
+    super.initState();
+    fromAddressController.text = widget.address.address;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
         listener: (context, state) {
-      state.submitState.when(
+      state.submitState.maybeWhen(
         success: (txHash) {
           // 0) reload activity feed
           widget.dashboardActivityFeedBloc
@@ -104,18 +109,15 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
 
           // Navigator.of(context).pop();
         },
-        error: (msg) => ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg))),
-        loading: () => ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Loading"))),
-        initial: () => const Text(''),
+        orElse: () => null,
       );
     }, builder: (context, state) {
-      return state.addressesState.when(
-        initial: () => const SizedBox.shrink(),
-        loading: () => const SizedBox.shrink(),
-        error: (e) => Text(e),
-        success: (addresses) {
+      return state.submitState.maybeWhen(
+        loading: () => const CircularProgressIndicator(),
+        error: (msg) => Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('An error occurred: $msg')),
+        initial: () {
           return state.balancesState.when(
             initial: () => const SizedBox.shrink(),
             loading: () => const SizedBox.shrink(),
@@ -138,19 +140,17 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      HorizonDropdownMenu(
+                      HorizonTextFormField(
+                        enabled: false,
                         isDarkMode: widget.isDarkMode,
-                        label: 'Source Address',
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            fromAddress = newValue;
-                          });
-                        },
-                        items:
-                            addresses.map<DropdownMenuItem<String>>((address) {
-                          return buildDropdownMenuItem(
-                              address.address, address.address);
-                        }).toList(),
+                        controller: fromAddressController,
+                        label: "Source",
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        fillColor: widget.isDarkMode
+                            ? dialogBackgroundColorDarkTheme
+                            : dialogBackgroundColorLightTheme,
+                        textColor:
+                            widget.isDarkMode ? mainTextWhite : mainTextBlack,
                       ),
                       const SizedBox(height: 16.0),
                       HorizonTextFormField(
@@ -195,26 +195,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         controller: descriptionController,
                         label: 'Description (optional)',
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        validator: (value) {
-                          // Allow empty values
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16.0),
-                      HorizonTextFormField(
-                        isDarkMode: widget.isDarkMode,
-                        controller: passwordController,
-                        label: 'Password',
-                        obscureText: true,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 16.0),
                       Column(
@@ -311,10 +291,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           if (_formKey.currentState!.validate()) {
                             context
                                 .read<ComposeIssuanceBloc>()
-                                .add(CreateIssuanceEvent(
-                                  sourceAddress:
-                                      fromAddress ?? addresses[0].address,
-                                  password: passwordController.text,
+                                .add(ComposeTransactionEvent(
+                                  sourceAddress: widget.address.address,
                                   name: nameController.text,
                                   quantity:
                                       double.parse(quantityController.text),
@@ -333,8 +311,219 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
             },
           );
         },
+        composing: (composeIssuanceState) => ComposeIssuanceConfirmationPage(
+          isDarkMode: widget.isDarkMode,
+          composeIssuanceState: composeIssuanceState,
+          address: widget.address,
+        ),
+        orElse: () => const SizedBox.shrink(),
       );
     });
+  }
+}
+
+class ComposeIssuanceConfirmationPage extends StatefulWidget {
+  final bool isDarkMode;
+  final SubmitStateComposingIssuance composeIssuanceState;
+  final Address address;
+  final TextEditingController passwordController = TextEditingController();
+
+  ComposeIssuanceConfirmationPage(
+      {super.key, required this.isDarkMode,
+      required this.composeIssuanceState,
+      required this.address});
+
+  @override
+  State<ComposeIssuanceConfirmationPage> createState() =>
+      _ComposeIssuanceConfirmationPageState();
+}
+
+class _ComposeIssuanceConfirmationPageState
+    extends State<ComposeIssuanceConfirmationPage> {
+  @override
+  Widget build(BuildContext context) {
+    return _ComposeIssuanceConfirmationPage(
+      isDarkMode: widget.isDarkMode,
+      composeIssuanceState: widget.composeIssuanceState,
+      address: widget.address,
+    );
+  }
+}
+
+class _ComposeIssuanceConfirmationPage extends StatelessWidget {
+  final bool isDarkMode;
+  final SubmitStateComposingIssuance composeIssuanceState;
+  final Address address;
+  final TextEditingController passwordController = TextEditingController();
+
+  _ComposeIssuanceConfirmationPage(
+      {required this.isDarkMode,
+      required this.composeIssuanceState,
+      required this.address});
+
+  @override
+  Widget build(BuildContext context) {
+    final inputFillColor = isDarkMode
+        ? dialogBackgroundColorDarkTheme
+        : dialogBackgroundColorLightTheme;
+    final issueParams = composeIssuanceState.composeIssuance.params;
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          const Text(
+            'Please review your transaction details.',
+            style: TextStyle(
+                fontSize: 16.0,
+                color: mainTextWhite,
+                fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16.0),
+          HorizonTextFormField(
+            isDarkMode: isDarkMode,
+            label: "Source Address",
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            controller: TextEditingController(text: issueParams.source),
+            enabled: false,
+            fillColor: inputFillColor,
+            textColor: isDarkMode ? mainTextWhite : mainTextBlack,
+          ),
+          const SizedBox(height: 16.0),
+          HorizonTextFormField(
+            isDarkMode: isDarkMode,
+            label: "Token name",
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            controller: TextEditingController(
+                text: composeIssuanceState.composeIssuance.name),
+            enabled: false,
+            fillColor: inputFillColor,
+            textColor: isDarkMode ? mainTextWhite : mainTextBlack,
+          ),
+          const SizedBox(height: 16.0),
+          HorizonTextFormField(
+            isDarkMode: isDarkMode,
+            label: "Quantity",
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            controller: TextEditingController(
+                text: composeIssuanceState
+                    .composeIssuance.params.quantityNormalized),
+            enabled: false,
+            fillColor: inputFillColor,
+            textColor: isDarkMode ? mainTextWhite : mainTextBlack,
+          ),
+          const SizedBox(height: 16.0),
+          composeIssuanceState.composeIssuance.params.description != ''
+              ? HorizonTextFormField(
+                  isDarkMode: isDarkMode,
+                  label: "Description",
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  controller: TextEditingController(
+                      text: composeIssuanceState
+                          .composeIssuance.params.description),
+                  enabled: false,
+                  fillColor: inputFillColor,
+                  textColor: isDarkMode ? mainTextWhite : mainTextBlack,
+                )
+              : const SizedBox.shrink(),
+          Column(
+            children: [
+              Row(
+                children: [
+                  Checkbox(
+                    value: issueParams.divisible ?? false,
+                    onChanged: null,
+                    activeColor: isDarkMode ? Colors.grey : Colors.grey[400],
+                  ),
+                  Text('Divisible',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? mainTextWhite : mainTextBlack)),
+                ],
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: issueParams.lock ?? false,
+                    onChanged: null,
+                    activeColor: isDarkMode ? Colors.grey : Colors.grey[400],
+                  ),
+                  Text('Lock',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? mainTextWhite : mainTextBlack)),
+                ],
+              ),
+              const SizedBox(width: 16.0),
+              Row(
+                children: [
+                  Checkbox(
+                    value: issueParams.reset ?? false,
+                    onChanged: null,
+                    activeColor: isDarkMode ? Colors.grey : Colors.grey[400],
+                  ),
+                  Text('Reset',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? mainTextWhite : mainTextBlack)),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Divider(
+                  color: isDarkMode
+                      ? greyDarkThemeUnderlineColor
+                      : greyLightThemeUnderlineColor,
+                  thickness: 1.0,
+                ),
+              ),
+              HorizonTextFormField(
+                isDarkMode: isDarkMode,
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                controller: passwordController,
+                label: "Password",
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  HorizonCancelButton(
+                    isDarkMode: isDarkMode,
+                    onPressed: () {
+                      context
+                          .read<ComposeIssuanceBloc>()
+                          .add(FetchFormData(currentAddress: address));
+                    },
+                    buttonText: 'BACK',
+                  ),
+                  HorizonContinueButton(
+                    isDarkMode: isDarkMode,
+                    onPressed: () {
+                      context.read<ComposeIssuanceBloc>().add(
+                          SignAndBroadcastTransactionEvent(
+                              composeIssuance:
+                                  composeIssuanceState.composeIssuance,
+                              password: passwordController.text));
+                    },
+                    buttonText: 'SIGN AND BROADCAST',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -81,4 +81,49 @@ class ComposeRepositoryImpl extends ComposeRepository {
             transferDestination: transferDestination),
         name: name);
   }
+
+  @override
+  Future<compose_issuance.ComposeIssuanceVerbose> composeIssuanceVerbose(
+    String sourceAddress,
+    String name,
+    double quantity, [
+    bool? divisible,
+    bool? lock,
+    bool? reset,
+    String? description,
+    String? transferDestination,
+    bool? unconfirmed,
+    int? confirmationTarget,
+  ]) async {
+    final response = await api.composeIssuanceVerbose(
+        sourceAddress,
+        name,
+        quantity,
+        transferDestination,
+        divisible,
+        lock,
+        reset,
+        description,
+        unconfirmed,
+        confirmationTarget);
+    if (response.result == null) {
+      // TODO: handle errors
+      throw Exception('Failed to compose issuance');
+    }
+
+    final txVerbose = response.result!;
+    return compose_issuance.ComposeIssuanceVerbose(
+        rawtransaction: txVerbose.rawtransaction,
+        params: compose_issuance.ComposeIssuanceVerboseParams(
+          source: txVerbose.params.source,
+          asset: txVerbose.params.asset,
+          quantity: txVerbose.params.quantity.toDouble(),
+          divisible: txVerbose.params.divisible,
+          lock: txVerbose.params.lock,
+          description: description,
+          transferDestination: transferDestination,
+          quantityNormalized: txVerbose.params.quantityNormalized,
+        ),
+        name: name);
+  }
 }

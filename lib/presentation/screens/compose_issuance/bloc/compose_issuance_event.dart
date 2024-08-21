@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/compose_issuance.dart';
 
 abstract class ComposeIssuanceEvent {}
 
@@ -33,4 +34,36 @@ class CreateIssuanceEvent extends ComposeIssuanceEvent {
       this.reset,
       this.description,
       this.transferDestination});
+}
+
+class ComposeTransactionEvent extends ComposeIssuanceEvent {
+  final String sourceAddress;
+  final String name;
+  final double quantity;
+  final String description;
+  final bool divisible;
+  final bool lock;
+  final bool reset;
+  // final String quantityDisplay;
+  // final String asset;
+
+  ComposeTransactionEvent({
+    required this.sourceAddress,
+    required this.name,
+    required this.quantity,
+    required this.description,
+    required this.divisible,
+    required this.lock,
+    required this.reset,
+  });
+}
+
+class SignAndBroadcastTransactionEvent extends ComposeIssuanceEvent {
+  final ComposeIssuanceVerbose composeIssuance;
+  final String password;
+
+  SignAndBroadcastTransactionEvent({
+    required this.composeIssuance,
+    required this.password,
+  });
 }
