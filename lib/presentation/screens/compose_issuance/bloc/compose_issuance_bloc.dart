@@ -101,8 +101,7 @@ class ComposeIssuanceBloc
                 reset,
                 description,
                 null,
-                true,
-                1000000);
+                true);
         emit(state.copyWith(
             submitState: SubmitState.composing(
                 SubmitStateComposingIssuance(composeIssuance: issuance))));

@@ -63,7 +63,7 @@ class ComposeIssuanceVerboseParams {
     this.lock,
     this.reset,
     this.description,
-    this.transferDestination,
+    required this.transferDestination,
     required this.quantityNormalized,
   });
 }

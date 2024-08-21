@@ -981,8 +981,8 @@ ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
       description: json['description'] as String?,
-      transferDestination: json['transferDestination'] as String?,
-      quantityNormalized: json['quantityNormalized'] as String,
+      transferDestination: json['transfer_destination'] as String?,
+      quantityNormalized: json['quantity_normalized'] as String,
     );
 
 Map<String, dynamic> _$ComposeIssuanceVerboseParamsToJson(
@@ -994,8 +994,8 @@ Map<String, dynamic> _$ComposeIssuanceVerboseParamsToJson(
       'divisible': instance.divisible,
       'lock': instance.lock,
       'description': instance.description,
-      'transferDestination': instance.transferDestination,
-      'quantityNormalized': instance.quantityNormalized,
+      'transfer_destination': instance.transferDestination,
+      'quantity_normalized': instance.quantityNormalized,
     };
 
 Send _$SendFromJson(Map<String, dynamic> json) => Send(

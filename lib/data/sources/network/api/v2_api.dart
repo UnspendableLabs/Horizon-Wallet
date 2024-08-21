@@ -1156,7 +1156,7 @@ class ComposeIssuanceParams {
       _$ComposeIssuanceParamsFromJson(json);
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeIssuanceVerbose extends ComposeIssuance {
   @override
   final ComposeIssuanceVerboseParams params;
@@ -1171,7 +1171,7 @@ class ComposeIssuanceVerbose extends ComposeIssuance {
       _$ComposeIssuanceVerboseFromJson(json);
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeIssuanceVerboseParams extends ComposeIssuanceParams {
   final String quantityNormalized;
 
