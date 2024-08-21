@@ -71,3 +71,22 @@ to run in testnet mode, set TEST=true
 ### notes
 
 - esplora api only returns 50 txs in mempool with no addresses
+
+
+### account derivation paths 
+
+network,method,format,path
+----------------------------------
+mainnet,onboarding_create,horizon,\m\84'\0'\0'\0\0,
+testnet,onboarding_create,horizon,\m\84'\1'\0'\0\0,
+regtest,onboarding_create,horizon,\m\84'\1'\0'\0\0,
+
+
+
+
+
+
+
+
+
+
