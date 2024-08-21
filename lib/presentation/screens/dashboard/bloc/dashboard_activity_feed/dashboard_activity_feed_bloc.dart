@@ -244,7 +244,8 @@ class DashboardActivityFeedBloc
         transactions: nextList,
       ));
     } catch (e) {
-      emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
+      // if we fail for any reason, just emit current state ( which is CompleteOK)
+      emit(currentState);
     }
   }
 
