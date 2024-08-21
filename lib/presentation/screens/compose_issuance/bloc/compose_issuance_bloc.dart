@@ -22,6 +22,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
@@ -44,6 +45,7 @@ class ComposeIssuanceBloc
     final transactionRepository = GetIt.I.get<TransactionRepository>();
     final transactionLocalRepository =
         GetIt.I.get<TransactionLocalRepository>();
+    final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
     on<FetchFormData>((event, emit) async {
       emit(const ComposeIssuanceState(
@@ -93,10 +95,22 @@ class ComposeIssuanceBloc
       try {
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(source, name,
-                quantity, divisible, lock, reset, description, null, true);
+                quantity, divisible, lock, reset, description, null, true, 1);
+
+        final virtualSize =
+            transactionService.getVirtualSize(issuance.rawtransaction);
+
+        final feeEstimatesE = await bitcoinRepository.getFeeEstimates();
+
+        final feeEstimates = feeEstimatesE.fold(
+            (l) => throw Exception("Error getting fee estimates"), (r) => r);
+
         emit(state.copyWith(
-            submitState: SubmitState.composing(
-                SubmitStateComposingIssuance(composeIssuance: issuance))));
+            submitState: SubmitState.composing(SubmitStateComposingIssuance(
+                composeIssuance: issuance,
+                virtualSize: virtualSize,
+                feeEstimates: feeEstimates,
+                confirmationTarget: feeEstimates.keys.first))));
       } catch (error) {
         if (error is DioException) {
           emit(state.copyWith(
@@ -110,12 +124,29 @@ class ComposeIssuanceBloc
     });
 
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
+      emit(state.copyWith(submitState: const SubmitState.loading()));
+
       final composeIssuance = event.composeIssuance;
       final password = event.password;
       final source = composeIssuance.params.source;
+      final fee = event.fee;
 
-      emit(state.copyWith(submitState: const SubmitState.loading()));
       try {
+        ComposeIssuanceVerbose issuance =
+            await composeRepository.composeIssuanceVerbose(
+                composeIssuance.params.source,
+                composeIssuance.params.asset,
+                composeIssuance.params.quantity,
+                composeIssuance.params.divisible,
+                composeIssuance.params.lock,
+                composeIssuance.params.reset,
+                composeIssuance.params.description,
+                null,
+                true,
+                fee);
+
+        final rawTx = issuance.rawtransaction;
+
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
@@ -136,7 +167,7 @@ class ComposeIssuanceBloc
             index: address.index);
 
         String txHex = await transactionService.signTransaction(
-            composeIssuance.rawtransaction, addressPrivKey, source, utxoMap);
+            rawTx, addressPrivKey, source, utxoMap);
 
         String txHash = await bitcoindService.sendrawtransaction(txHex);
 
@@ -149,7 +180,6 @@ class ComposeIssuanceBloc
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {
-        rethrow;
         if (error is DioException) {
           emit(state.copyWith(
               submitState: SubmitState.error(

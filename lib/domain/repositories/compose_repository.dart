@@ -24,5 +24,5 @@ abstract class ComposeRepository {
       String? description,
       String? transferDestination,
       bool? unconfirmed,
-      int? confirmationTarget]);
+      int? fee]);
 }
