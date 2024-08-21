@@ -2257,7 +2257,7 @@ abstract class V2Api {
     @Query("reset") bool? reset,
     @Query("description") String? description,
     @Query("unconfirmed") bool? unconfirmed,
-    @Query("confirmation_target") int? confirmationTarget,
+    @Query("fee") int? fee,
   ]);
 
   @GET("/addresses/{address}/transactions")

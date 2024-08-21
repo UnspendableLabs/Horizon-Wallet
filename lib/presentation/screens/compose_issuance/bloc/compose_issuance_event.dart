@@ -61,9 +61,11 @@ class ComposeTransactionEvent extends ComposeIssuanceEvent {
 class SignAndBroadcastTransactionEvent extends ComposeIssuanceEvent {
   final ComposeIssuanceVerbose composeIssuance;
   final String password;
+  final int fee;
 
   SignAndBroadcastTransactionEvent({
     required this.composeIssuance,
     required this.password,
+    required this.fee,
   });
 }

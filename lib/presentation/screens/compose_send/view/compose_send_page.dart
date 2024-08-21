@@ -3,9 +3,9 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/presentation/common/fee_estimation.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -18,52 +18,6 @@ import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-
-class DiscreteSlider extends StatefulWidget {
-  final Map<String, double> valueMap;
-  final Function(String) onChanged;
-
-  const DiscreteSlider(
-      {super.key, required this.valueMap, required this.onChanged});
-
-  @override
-  _DiscreteSliderState createState() => _DiscreteSliderState();
-}
-
-class _DiscreteSliderState extends State<DiscreteSlider> {
-  late List<String> _keys;
-  late double _currentValue;
-
-  @override
-  void initState() {
-    super.initState();
-    _keys = widget.valueMap.keys.toList();
-    _currentValue = 0;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Slider(
-          min: 0,
-          max: (_keys.length - 1).toDouble(),
-          divisions: _keys.length - 1,
-          value: _currentValue,
-          onChanged: (value) {
-            setState(() {
-              _currentValue = value;
-            });
-            int index = value.round();
-            if (index >= 0 && index < _keys.length) {
-              widget.onChanged(_keys[index]);
-            }
-          },
-        ),
-      ],
-    );
-  }
-}
 
 class ComposeSendPage extends StatelessWidget {
   final bool isDarkMode;
@@ -445,211 +399,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
       );
     });
   }
-
-  // Widget _buildConfirmationPage(BuildContext context,
-  //     SubmitStateComposingSend composeSendState, bool isDarkTheme) {
-  //   final inputFillColor = isDarkTheme
-  //       ? dialogBackgroundColorDarkTheme
-  //       : dialogBackgroundColorLightTheme;
-  //   final sendParams = composeSendState.composeSend.params;
-  //   return Padding(
-  //     padding: const EdgeInsets.all(16.0),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.center,
-  //       children: <Widget>[
-  //         const Text(
-  //           'Please review your transaction details.',
-  //           style: TextStyle(
-  //               fontSize: 16.0,
-  //               color: mainTextWhite,
-  //               fontWeight: FontWeight.bold),
-  //           textAlign: TextAlign.center,
-  //         ),
-  //         const SizedBox(height: 16.0),
-  //         HorizonTextFormField(
-  //           isDarkMode: widget.isDarkMode,
-  //           label: "Source Address",
-  //           floatingLabelBehavior: FloatingLabelBehavior.always,
-  //           controller: TextEditingController(text: sendParams.source),
-  //           enabled: false,
-  //           fillColor: inputFillColor,
-  //           textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
-  //         ),
-  //         const SizedBox(height: 16.0),
-  //         HorizonTextFormField(
-  //           isDarkMode: widget.isDarkMode,
-  //           label: "Destination Address",
-  //           floatingLabelBehavior: FloatingLabelBehavior.always,
-  //           controller: TextEditingController(text: sendParams.destination),
-  //           enabled: false,
-  //           fillColor: inputFillColor,
-  //           textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
-  //         ),
-  //         const SizedBox(height: 16.0),
-  //         Row(
-  //           children: [
-  //             Expanded(
-  //               child: HorizonTextFormField(
-  //                 isDarkMode: widget.isDarkMode,
-  //                 label: "Quantity",
-  //                 floatingLabelBehavior: FloatingLabelBehavior.always,
-  //                 controller: TextEditingController(
-  //                     text: sendParams.quantityNormalized),
-  //                 enabled: false,
-  //                 fillColor: inputFillColor,
-  //                 textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
-  //               ),
-  //             ),
-  //             const SizedBox(width: 16.0), // Spacing between inputs
-  //             Expanded(
-  //               child: HorizonTextFormField(
-  //                 isDarkMode: widget.isDarkMode,
-  //                 label: "Asset",
-  //                 floatingLabelBehavior: FloatingLabelBehavior.always,
-  //                 controller: TextEditingController(text: sendParams.asset),
-  //                 enabled: false,
-  //                 fillColor: inputFillColor,
-  //                 textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         const SizedBox(height: 16.0),
-  //         FeeEstimation(
-  //             feeMap: composeSendState.feeEstimates,
-  //             virtualSize: composeSendState.virtualSize,
-  //             onChanged: (v) {
-  //               setState(() {
-  //                 fee = v.toInt();
-  //               });
-  //             }),
-  //         Padding(
-  //           padding: const EdgeInsets.symmetric(vertical: 16.0),
-  //           child: Divider(
-  //             color: isDarkTheme
-  //                 ? greyDarkThemeUnderlineColor
-  //                 : greyLightThemeUnderlineColor,
-  //             thickness: 1.0,
-  //           ),
-  //         ),
-  //         HorizonTextFormField(
-  //           isDarkMode: widget.isDarkMode,
-  //           obscureText: true,
-  //           enableSuggestions: false,
-  //           autocorrect: false,
-  //           controller: passwordController,
-  //           label: "Password",
-  //           floatingLabelBehavior: FloatingLabelBehavior.auto,
-  //           validator: (value) {
-  //             if (value == null || value.isEmpty) {
-  //               return 'Please enter your password';
-  //             }
-  //             return null;
-  //           },
-  //         ),
-  //         const SizedBox(height: 16.0),
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             HorizonCancelButton(
-  //               isDarkMode: widget.isDarkMode,
-  //               onPressed: () {
-  //                 context
-  //                     .read<ComposeSendBloc>()
-  //                     .add(FetchFormData(currentAddress: widget.address));
-  //               },
-  //               buttonText: 'BACK',
-  //             ),
-  //             HorizonContinueButton(
-  //               isDarkMode: widget.isDarkMode,
-  //               onPressed: () {
-  //                 context.read<ComposeSendBloc>().add(
-  //                     SignAndBroadcastTransactionEvent(
-  //                         composeSend: composeSendState.composeSend,
-  //                         password: passwordController.text));
-  //               },
-  //               buttonText: 'SIGN AND BROADCAST',
-  //             ),
-  //           ],
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-}
-
-class FeeEstimation extends StatefulWidget {
-  final Map<String, double> feeMap;
-  final Function(double) onChanged;
-  final int virtualSize;
-
-  const FeeEstimation(
-      {super.key,
-      required this.feeMap,
-      required this.onChanged,
-      required this.virtualSize});
-
-  @override
-  FeeEstimationState createState() => FeeEstimationState();
-}
-
-class FeeEstimationState extends State<FeeEstimation> {
-  late String _confirmationTarget;
-
-  @override
-  void initState() {
-    super.initState();
-    _confirmationTarget = widget.feeMap.keys.first;
-  }
-
-  @override
-  Widget build(context) {
-    return Column(
-      children: [
-        DiscreteSlider(
-          valueMap: widget.feeMap,
-          onChanged: (key) {
-            setState(() {
-              _confirmationTarget = key;
-            });
-            widget.onChanged(_getTotalSats().toDouble());
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Text(
-                        "$_confirmationTarget block${int.parse(_confirmationTarget) > 1 ? "s" : ""}",
-                        style: Theme.of(context).textTheme.labelLarge),
-                    const SizedBox(width: 4),
-                    Text(
-                      "(${widget.feeMap[_confirmationTarget]!.toStringAsFixed(4)} sats/vbyte)",
-                    ),
-                  ],
-                ),
-              ),
-              Row(children: [
-                Text("${satoshisToBtc(_getTotalSats()).toString()} BTC",
-                    style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(width: 4),
-                Text(
-                  "${_getTotalSats().toString()} sats",
-                ),
-              ]),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-
-  int _getTotalSats() {
-    return (widget.virtualSize * widget.feeMap[_confirmationTarget]!).ceil();
-  }
 }
 
 class ConfirmationPage extends StatefulWidget {
@@ -658,7 +407,8 @@ class ConfirmationPage extends StatefulWidget {
   final Address address;
 
   const ConfirmationPage(
-      {super.key, required this.composeSendState,
+      {super.key,
+      required this.composeSendState,
       required this.isDarkMode,
       required this.address});
 
