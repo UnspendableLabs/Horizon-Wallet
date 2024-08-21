@@ -92,16 +92,8 @@ class ComposeIssuanceBloc
       emit(state.copyWith(submitState: const SubmitState.loading()));
       try {
         ComposeIssuanceVerbose issuance =
-            await composeRepository.composeIssuanceVerbose(
-                source,
-                name,
-                quantity,
-                divisible,
-                lock,
-                reset,
-                description,
-                null,
-                true);
+            await composeRepository.composeIssuanceVerbose(source, name,
+                quantity, divisible, lock, reset, description, null, true);
         emit(state.copyWith(
             submitState: SubmitState.composing(
                 SubmitStateComposingIssuance(composeIssuance: issuance))));

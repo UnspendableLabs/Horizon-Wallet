@@ -195,10 +195,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         controller: descriptionController,
                         label: 'Description (optional)',
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        validator: (value) {
-                          // Allow empty values
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 16.0),
                       Column(
@@ -333,7 +329,7 @@ class ComposeIssuanceConfirmationPage extends StatefulWidget {
   final TextEditingController passwordController = TextEditingController();
 
   ComposeIssuanceConfirmationPage(
-      {required this.isDarkMode,
+      {super.key, required this.isDarkMode,
       required this.composeIssuanceState,
       required this.address});
 
@@ -418,7 +414,7 @@ class _ComposeIssuanceConfirmationPage extends StatelessWidget {
             textColor: isDarkMode ? mainTextWhite : mainTextBlack,
           ),
           const SizedBox(height: 16.0),
-          composeIssuanceState.composeIssuance.params.description != null
+          composeIssuanceState.composeIssuance.params.description != ''
               ? HorizonTextFormField(
                   isDarkMode: isDarkMode,
                   label: "Description",
@@ -446,7 +442,6 @@ class _ComposeIssuanceConfirmationPage extends StatelessWidget {
                           color: isDarkMode ? mainTextWhite : mainTextBlack)),
                 ],
               ),
-              const SizedBox(height: 16.0),
               Row(
                 children: [
                   Checkbox(
