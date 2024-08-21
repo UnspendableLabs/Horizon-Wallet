@@ -253,6 +253,19 @@ class Shell extends StatelessWidget {
                         fontSize: 30,
                         fontWeight: FontWeight.w600,
                       )),
+                  const SizedBox(width: 8),
+                  const Text('Wallet',
+                      style: TextStyle(
+                        color: neonBlueDarkTheme,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                      )),
+                  const SizedBox(width: 12 ),
+                  const Text('ALPHA',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      )),
                 ],
               );
             },
