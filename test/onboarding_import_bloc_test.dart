@@ -27,11 +27,8 @@ class MockEncryptionService extends Mock implements EncryptionService {}
 class MockAddressService extends Mock implements AddressService {}
 
 class MockWalletRepository extends Mock implements WalletRepository {}
-
-class MockAccountRepository extends Mock implements AccountRepository {}
-
+class MockAccountRepository extends Mock implements AccountRepository {} 
 class MockAddressRepository extends Mock implements AddressRepository {}
-
 class MockConfig extends Mock implements Config {}
 
 // Fake classes for fallback values
@@ -108,7 +105,7 @@ void main() {
               account: any(named: 'account'),
               change: any(named: 'change'),
               index: any(named: 'index')))
-          .thenAnswer((_) async => const Address(
+          .thenAnswer((_) async => Address(
               index: 0, address: "0xdeadbeef", accountUuid: 'account-uuid'));
       when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
@@ -126,8 +123,8 @@ void main() {
               privKey: any(named: 'privKey'),
               chainCodeHex: any(named: 'chainCodeHex'),
               accountUuid: any(named: 'accountUuid'),
-              purpose: any(named: 'purpose'),
-              coin: any(named: 'coin'),
+              // purpose: any(named: 'purpose'),
+              // coin: any(named: 'coin'),
               account: any(named: 'account'),
               change: any(named: 'change'),
               start: any(named: 'start'),
@@ -155,14 +152,14 @@ void main() {
               privKey: any(named: 'privKey'),
               chainCodeHex: any(named: 'chainCodeHex'),
               accountUuid: any(named: 'accountUuid'),
-              purpose: any(named: 'purpose'),
-              coin: any(named: 'coin'),
+              // purpose: any(named: 'purpose'),
+              // coin: any(named: 'coin'),
               account: any(named: 'account'),
               change: any(named: 'change'),
               start: any(named: 'start'),
               end: any(named: 'end')))
           .thenAnswer((_) async => [
-                const Address(
+                Address(
                     index: 0,
                     address: "0xdeadbeef",
                     accountUuid: 'account-uuid')
@@ -230,8 +227,8 @@ void main() {
                   privKey: any(named: 'privKey'),
                   chainCodeHex: any(named: 'chainCodeHex'),
                   accountUuid: any(named: 'accountUuid'),
-                  purpose: '32',
-                  coin: expectedCoinType,
+                  // purpose: '32',
+                  // coin: expectedCoinType,
                   account: '0\'',
                   change: '0',
                   start: 0,
@@ -241,8 +238,8 @@ void main() {
                   privKey: decryptedPrivKey,
                   chainCodeHex: wallet.chainCodeHex,
                   accountUuid: any(named: 'accountUuid'),
-                  purpose: '32',
-                  coin: expectedCoinType,
+                  // purpose: '32',
+                  // coin: expectedCoinType,
                   account: '0\'',
                   change: '0',
                   start: 0,
@@ -261,8 +258,8 @@ void main() {
                   privKey: any(named: 'privKey'),
                   chainCodeHex: wallet.chainCodeHex,
                   accountUuid: any(named: 'accountUuid'),
-                  purpose: '0\'',
-                  coin: expectedCoinType,
+                  // purpose: '0\'',
+                  // coin: expectedCoinType,
                   account: '0\'',
                   change: '0',
                   start: 0,
@@ -305,6 +302,7 @@ void main() {
         Network.testnet,
         '1',
         ImportFormat.freewallet);
+
 
     runImportTest(
         'emits correct states when importing wallet for regtest using Freewallet format',

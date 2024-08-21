@@ -72,26 +72,19 @@ to run in testnet mode, set TEST=true
 
 - esplora api only returns 50 txs in mempool with no addresses
 
+### derivation paths
 
+| Network | Method            | Format        | Path                                     | Address Type         |
+| ------- | ----------------- | ------------- | ---------------------------------------- | -------------------- |
+| mainnet | onboarding_create | horizon       | m/84'/0'/0'/0/0                          | 1 bech32             |
+| testnet | onboarding_create | horizon       | m/84'/1'/0'/0/0                          | 1 bech32             |
+| mainnet | onboarding_import | horizon       | m/84'/0'/0'/0/0                          | 1 bech32             |
+| testnet | onboarding_import | horizon       | m/84'/1'/0'/0/0                          | 1 bech32             |
+| mainnet | onboarding_import | freewallet    | m/0'/0/0-9                               | 10 bech32, 10 legacy |
+| testnet | onboarding_import | freewallet    | m/0'/0/0-9 ( effectively not supported ) | 10 bech32, 10 legacy |
+| mainnet | onboarding_import | counterwallet | m/0'/0/0                                 | 1 legacy             |
+| testnet | onboarding_import | counterwallet | m/0'/0/0 ( effectively not supported )   | 1 legacy             |
 
+#### sources
 
-
-| Network | Method | Format | Path | Address Type |
-|---------|--------|--------|------|--------------|
-| mainnet | onboarding_create | horizon | m/84'/0'/0'/0/0 | bech32 |
-| testnet | onboarding_create | horizon | m/84'/1'/0'/0/0 | bech32 |
-| mainnet | onboarding_import | horizon | m/84'/0'/0'/0/0 | bech32 |
-| testnet | onboarding_import | horizon | m/84'/1'/0'/0/0 | bech32 |
-| mainnet | onboarding_import | freewallet | m/32/0/0'/0/0-9 | bech32 |
-| mainnet | onboarding_import | freewallet | m/32/0/0'/0/0-9 | legacy |
-| testnet | onboarding_import | freewallet | m/32/1/0'/0/0-9 | bech32 |
-| testnet | onboarding_import | freewallet | m/32/1/0'/0/0-9 | legacy |
-| mainnet | onboarding_import | counterwallet | m/0'/0/0'/0/0 | legacy |
-| testnet | onboarding_import | counterwallet | m/0'/1/0'/0/0 | legacy |
-
-
-
-
-
-
-
+- https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17

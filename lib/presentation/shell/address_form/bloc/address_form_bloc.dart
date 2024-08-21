@@ -77,14 +77,17 @@ class AddressFormBloc
             emit(currentState);
             break;
           case ImportFormat.freewallet:
+           
+    
+
             List<Address> legacyAddresses =
                 await addressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
               accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
+              // purpose: account.purpose,
+              // coin: account.coinType,
               account: account.accountIndex,
               change: "0",
               start: maxIndex + 1,
@@ -93,12 +96,12 @@ class AddressFormBloc
 
             List<Address> bech32Addresses =
                 await addressService.deriveAddressFreewalletRange(
-              type: AddressType.legacy,
+              type: AddressType.bech32,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
               accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
+              // purpose: account.purpose,
+              // coin: account.coinType,
               account: account.accountIndex,
               change: "0",
               start: maxIndex + 1,
@@ -113,14 +116,15 @@ class AddressFormBloc
             break;
 
           case ImportFormat.counterwallet:
+
             List<Address> legacyAddresses =
                 await addressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
               accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
+              // purpose: account.purpose,
+              // coin: account.coinType,
               account: account.accountIndex,
               change: "0",
               start: maxIndex + 1,
