@@ -315,16 +315,59 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
             },
           );
         },
-        composing: (composeIssuanceState) => _buildConfirmationPage(
-            context, composeIssuanceState, widget.isDarkMode),
+        composing: (composeIssuanceState) => ComposeIssuanceConfirmationPage(
+          isDarkMode: widget.isDarkMode,
+          composeIssuanceState: composeIssuanceState,
+          address: widget.address,
+        ),
         orElse: () => const SizedBox.shrink(),
       );
     });
   }
+}
 
-  Widget _buildConfirmationPage(BuildContext context,
-      SubmitStateComposingIssuance composeIssuanceState, bool isDarkTheme) {
-    final inputFillColor = isDarkTheme
+class ComposeIssuanceConfirmationPage extends StatefulWidget {
+  final bool isDarkMode;
+  final SubmitStateComposingIssuance composeIssuanceState;
+  final Address address;
+  final TextEditingController passwordController = TextEditingController();
+
+  ComposeIssuanceConfirmationPage(
+      {required this.isDarkMode,
+      required this.composeIssuanceState,
+      required this.address});
+
+  @override
+  State<ComposeIssuanceConfirmationPage> createState() =>
+      _ComposeIssuanceConfirmationPageState();
+}
+
+class _ComposeIssuanceConfirmationPageState
+    extends State<ComposeIssuanceConfirmationPage> {
+  @override
+  Widget build(BuildContext context) {
+    return _ComposeIssuanceConfirmationPage(
+      isDarkMode: widget.isDarkMode,
+      composeIssuanceState: widget.composeIssuanceState,
+      address: widget.address,
+    );
+  }
+}
+
+class _ComposeIssuanceConfirmationPage extends StatelessWidget {
+  final bool isDarkMode;
+  final SubmitStateComposingIssuance composeIssuanceState;
+  final Address address;
+  final TextEditingController passwordController = TextEditingController();
+
+  _ComposeIssuanceConfirmationPage(
+      {required this.isDarkMode,
+      required this.composeIssuanceState,
+      required this.address});
+
+  @override
+  Widget build(BuildContext context) {
+    final inputFillColor = isDarkMode
         ? dialogBackgroundColorDarkTheme
         : dialogBackgroundColorLightTheme;
     final issueParams = composeIssuanceState.composeIssuance.params;
@@ -343,41 +386,41 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
           ),
           const SizedBox(height: 16.0),
           HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
+            isDarkMode: isDarkMode,
             label: "Source Address",
             floatingLabelBehavior: FloatingLabelBehavior.always,
             controller: TextEditingController(text: issueParams.source),
             enabled: false,
             fillColor: inputFillColor,
-            textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+            textColor: isDarkMode ? mainTextWhite : mainTextBlack,
           ),
           const SizedBox(height: 16.0),
           HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
+            isDarkMode: isDarkMode,
             label: "Token name",
             floatingLabelBehavior: FloatingLabelBehavior.always,
             controller: TextEditingController(
                 text: composeIssuanceState.composeIssuance.name),
             enabled: false,
             fillColor: inputFillColor,
-            textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+            textColor: isDarkMode ? mainTextWhite : mainTextBlack,
           ),
           const SizedBox(height: 16.0),
           HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
+            isDarkMode: isDarkMode,
             label: "Quantity",
             floatingLabelBehavior: FloatingLabelBehavior.always,
             controller: TextEditingController(
-                text: composeIssuanceState.composeIssuance.params.quantity
-                    .toString()),
+                text: composeIssuanceState
+                    .composeIssuance.params.quantityNormalized),
             enabled: false,
             fillColor: inputFillColor,
-            textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+            textColor: isDarkMode ? mainTextWhite : mainTextBlack,
           ),
           const SizedBox(height: 16.0),
           composeIssuanceState.composeIssuance.params.description != null
               ? HorizonTextFormField(
-                  isDarkMode: widget.isDarkMode,
+                  isDarkMode: isDarkMode,
                   label: "Description",
                   floatingLabelBehavior: FloatingLabelBehavior.always,
                   controller: TextEditingController(
@@ -385,7 +428,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           .composeIssuance.params.description),
                   enabled: false,
                   fillColor: inputFillColor,
-                  textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
+                  textColor: isDarkMode ? mainTextWhite : mainTextBlack,
                 )
               : const SizedBox.shrink(),
           Column(
@@ -395,15 +438,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                   Checkbox(
                     value: issueParams.divisible ?? false,
                     onChanged: null,
-                    activeColor:
-                        widget.isDarkMode ? Colors.grey : Colors.grey[400],
+                    activeColor: isDarkMode ? Colors.grey : Colors.grey[400],
                   ),
                   Text('Divisible',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: widget.isDarkMode
-                              ? mainTextWhite
-                              : mainTextBlack)),
+                          color: isDarkMode ? mainTextWhite : mainTextBlack)),
                 ],
               ),
               const SizedBox(height: 16.0),
@@ -412,15 +452,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                   Checkbox(
                     value: issueParams.lock ?? false,
                     onChanged: null,
-                    activeColor:
-                        widget.isDarkMode ? Colors.grey : Colors.grey[400],
+                    activeColor: isDarkMode ? Colors.grey : Colors.grey[400],
                   ),
                   Text('Lock',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: widget.isDarkMode
-                              ? mainTextWhite
-                              : mainTextBlack)),
+                          color: isDarkMode ? mainTextWhite : mainTextBlack)),
                 ],
               ),
               const SizedBox(width: 16.0),
@@ -429,28 +466,25 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                   Checkbox(
                     value: issueParams.reset ?? false,
                     onChanged: null,
-                    activeColor:
-                        widget.isDarkMode ? Colors.grey : Colors.grey[400],
+                    activeColor: isDarkMode ? Colors.grey : Colors.grey[400],
                   ),
                   Text('Reset',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: widget.isDarkMode
-                              ? mainTextWhite
-                              : mainTextBlack)),
+                          color: isDarkMode ? mainTextWhite : mainTextBlack)),
                 ],
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Divider(
-                  color: isDarkTheme
+                  color: isDarkMode
                       ? greyDarkThemeUnderlineColor
                       : greyLightThemeUnderlineColor,
                   thickness: 1.0,
                 ),
               ),
               HorizonTextFormField(
-                isDarkMode: widget.isDarkMode,
+                isDarkMode: isDarkMode,
                 obscureText: true,
                 enableSuggestions: false,
                 autocorrect: false,
@@ -469,16 +503,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   HorizonCancelButton(
-                    isDarkMode: widget.isDarkMode,
+                    isDarkMode: isDarkMode,
                     onPressed: () {
                       context
                           .read<ComposeIssuanceBloc>()
-                          .add(FetchFormData(currentAddress: widget.address));
+                          .add(FetchFormData(currentAddress: address));
                     },
                     buttonText: 'BACK',
                   ),
                   HorizonContinueButton(
-                    isDarkMode: widget.isDarkMode,
+                    isDarkMode: isDarkMode,
                     onPressed: () {
                       context.read<ComposeIssuanceBloc>().add(
                           SignAndBroadcastTransactionEvent(

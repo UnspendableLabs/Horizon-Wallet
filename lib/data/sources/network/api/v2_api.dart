@@ -1156,6 +1156,40 @@ class ComposeIssuanceParams {
       _$ComposeIssuanceParamsFromJson(json);
 }
 
+@JsonSerializable()
+class ComposeIssuanceVerbose extends ComposeIssuance {
+  @override
+  final ComposeIssuanceVerboseParams params;
+
+  ComposeIssuanceVerbose({
+    required super.rawtransaction,
+    required super.name,
+    required this.params,
+  }) : super(params: params);
+
+  factory ComposeIssuanceVerbose.fromJson(Map<String, dynamic> json) =>
+      _$ComposeIssuanceVerboseFromJson(json);
+}
+
+@JsonSerializable()
+class ComposeIssuanceVerboseParams extends ComposeIssuanceParams {
+  final String quantityNormalized;
+
+  ComposeIssuanceVerboseParams({
+    required super.source,
+    required super.asset,
+    required super.quantity,
+    required super.divisible,
+    required super.lock,
+    super.description,
+    super.transferDestination,
+    required this.quantityNormalized,
+  });
+
+  factory ComposeIssuanceVerboseParams.fromJson(Map<String, dynamic> json) =>
+      _$ComposeIssuanceVerboseParamsFromJson(json);
+}
+
 // Send
 // {
 //                 "tx_index": 2726604,
@@ -2210,6 +2244,20 @@ abstract class V2Api {
     @Query("reset") bool? reset,
     @Query("description") String? description,
     @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
+  @GET("/addresses/{address}/compose/issuance?verbose=true")
+  Future<Response<ComposeIssuanceVerbose>> composeIssuanceVerbose(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity") double quantity, [
+    @Query("transferDestination") String? transferDestination,
+    @Query("divisible") bool? divisible,
+    @Query("lock") bool? lock,
+    @Query("reset") bool? reset,
+    @Query("description") String? description,
+    @Query("unconfirmed") bool? unconfirmed,
+    @Query("confirmation_target") int? confirmationTarget,
   ]);
 
   @GET("/addresses/{address}/transactions")

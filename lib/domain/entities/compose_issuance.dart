@@ -31,3 +31,39 @@ class ComposeIssuanceParams {
     this.transferDestination,
   });
 }
+
+class ComposeIssuanceVerbose {
+  final String rawtransaction;
+  final ComposeIssuanceVerboseParams params;
+  final String name;
+
+  const ComposeIssuanceVerbose({
+    required this.rawtransaction,
+    required this.params,
+    required this.name,
+  });
+}
+
+class ComposeIssuanceVerboseParams {
+  final String source;
+  final String asset;
+  final double quantity;
+  final bool? divisible;
+  final bool? lock;
+  final bool? reset;
+  final String? description;
+  final String? transferDestination;
+  final String quantityNormalized;
+
+  const ComposeIssuanceVerboseParams({
+    required this.source,
+    required this.asset,
+    required this.quantity,
+    this.divisible,
+    this.lock,
+    this.reset,
+    this.description,
+    this.transferDestination,
+    required this.quantityNormalized,
+  });
+}

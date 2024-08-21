@@ -44,6 +44,6 @@ class SubmitState with _$SubmitState {
 }
 
 class SubmitStateComposingIssuance {
-  final ComposeIssuance composeIssuance;
+  final ComposeIssuanceVerbose composeIssuance;
   SubmitStateComposingIssuance({required this.composeIssuance});
 }
