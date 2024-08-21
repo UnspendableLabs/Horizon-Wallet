@@ -27,6 +27,7 @@ extension type Transaction._(JSObject _) implements JSObject {
   external JSArray<TxInput> ins;
   external JSArray<TxOutput> outs;
   external String toHex();
+  external int virtualSize();
 }
 
 extension type Psbt._(JSObject _) implements JSObject {

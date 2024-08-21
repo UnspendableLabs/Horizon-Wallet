@@ -79,16 +79,25 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final quantity = event.quantity;
         final asset = event.asset;
 
+        // We use lowest fee possible here ( 1 sat )
+        // so we can calculate the virtual size of the transaction
         final send = await composeRepository.composeSendVerbose(
-            source,
-            destination,
-            asset,
-            quantity,
-            true,
-            2000); // TODO: don't hardcode fee
+            source, destination, asset, quantity, true, 1);
+
+        final virtualSize =
+            transactionService.getVirtualSize(send.rawtransaction);
+
+        final feeEstimatesE = await bitcoinRepository.getFeeEstimates();
+
+        final feeEstimates = feeEstimatesE.fold(
+            (l) => throw Exception("Error getting fee estimates"), (r) => r);
+
         emit(state.copyWith(
-            submitState: SubmitState.composing(
-                SubmitStateComposingSend(composeSend: send))));
+            submitState: SubmitState.composing(SubmitStateComposingSend(
+                composeSend: send,
+                virtualSize: virtualSize,
+                feeEstimates: feeEstimates,
+                confirmationTarget: feeEstimates.keys.first))));
       } catch (error) {
         if (error is DioException) {
           emit(state.copyWith(
@@ -110,8 +119,15 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final destination = sendParams.destination;
         final quantity = sendParams.quantity;
         final asset = sendParams.asset;
-        final rawTx = event.composeSend.rawtransaction;
         final password = event.password;
+        final fee = event.fee;
+
+        // Compose a new tx with user specified fee
+        final send = await composeRepository.composeSendVerbose(
+            source, destination, asset, quantity, true, fee);
+
+        final rawTx = send.rawtransaction;
+
         // final memo = event.memo;
         // final memoIsHex = event.memoIsHex;
 
@@ -165,24 +181,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             fee: 0, // dummy values
             data: "",
           ));
-
-          // final txEither = await bitcoinRepository.getTransaction(txHash);
-
-          // txEither.match((l) {
-          //   print("error: ${l.message}");
-          // }, (r) {
-          //   final tx = r as BitcoinTx;
-          //
-          //   print("bitcontx cool: ${tx}");
-          //
-          //   // transactionLocalRepository.insert(tx.copyWith(
-          //   //     source: source,
-          //   //     destination: destination,
-          //   //     asset: asset,
-          //   //     quantity: quantity,
-          //   //     fee: rawTx.fee,
-          //   //     txHash: txHash));
-          // });
         }
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
