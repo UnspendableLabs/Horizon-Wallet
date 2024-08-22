@@ -202,8 +202,8 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
         Text("Issue ${params.quantityNormalized} ${params.asset}"),
-      VerboseDispenseEvent(params: var params) =>
-        Text("Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
+      VerboseDispenseEvent(params: var params) => Text(
+          "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       _ =>
         Text('Invariant: title unsupported event type: ${event.runtimeType}'),
     };
