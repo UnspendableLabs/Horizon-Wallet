@@ -7,4 +7,5 @@ abstract class AddressRepository {
   Future<void> insertMany(List<Address> addresses);
   Future<void> deleteAddresses(String walletUuid);
   Future<void> deleteAllAddresses();
+  Future<List<Address>>  getAll();
 }
