@@ -260,7 +260,7 @@ class Shell extends StatelessWidget {
                         fontSize: 30,
                         fontWeight: FontWeight.w600,
                       )),
-                  const SizedBox(width: 12 ),
+                  const SizedBox(width: 12),
                   const Text('ALPHA',
                       style: TextStyle(
                         fontSize: 16,

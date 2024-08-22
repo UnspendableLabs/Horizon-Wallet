@@ -59,7 +59,7 @@ class OnboardingImportBloc
             mnemonicError: "Invalid mnemonic length",
             mnemonic: event.mnemonic));
         return;
-      } else if ( state.importFormat == "Horizon" ) {
+      } else if (state.importFormat == "Horizon") {
         bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
         if (!validMnemonic) {
           emit(state.copyWith(
