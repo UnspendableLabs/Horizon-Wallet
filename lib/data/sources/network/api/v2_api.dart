@@ -589,7 +589,6 @@ class DispenseParams {
 
   factory DispenseParams.fromJson(Map<String, dynamic> json) =>
       _$DispenseParamsFromJson(json);
-
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
