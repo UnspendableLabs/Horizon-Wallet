@@ -59,7 +59,7 @@ class OnboardingImportBloc
             mnemonicError: "Invalid mnemonic length",
             mnemonic: event.mnemonic));
         return;
-      } else {
+      } else if (state.importFormat == "Horizon") {
         bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
         if (!validMnemonic) {
           emit(state.copyWith(
@@ -81,7 +81,8 @@ class OnboardingImportBloc
       } else if (state.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
         return;
-      } else {
+      } else if (event.importFormat == "Horizon") {
+        // only validate mnemonic if importing from horizon
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
           emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
@@ -160,8 +161,6 @@ class OnboardingImportBloc
                     privKey: decryptedPrivKey,
                     chainCodeHex: wallet.chainCodeHex,
                     accountUuid: account.uuid,
-                    purpose: account.purpose,
-                    coin: account.coinType,
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
@@ -173,8 +172,6 @@ class OnboardingImportBloc
                     privKey: decryptedPrivKey,
                     chainCodeHex: wallet.chainCodeHex,
                     accountUuid: account.uuid,
-                    purpose: account.purpose,
-                    coin: account.coinType,
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
@@ -213,8 +210,8 @@ class OnboardingImportBloc
                     privKey: decryptedPrivKey,
                     chainCodeHex: wallet.chainCodeHex,
                     accountUuid: account.uuid,
-                    purpose: account.purpose,
-                    coin: account.coinType,
+                    // purpose: account.purpose,
+                    // coin: account.coinType,
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
@@ -224,6 +221,7 @@ class OnboardingImportBloc
             await accountRepository.insert(account);
             await addressRepository.insertMany(addressesLegacy);
 
+            break;
           default:
             throw UnimplementedError();
         }

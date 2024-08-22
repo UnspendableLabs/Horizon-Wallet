@@ -38,7 +38,6 @@ to run in testnet mode, set TEST=true
 
    More details instructions [here](./regtest.md)
 
-
    ```
    flutter run -d Chrome --dart-define=REG_TEST_PK=<PK>  \
                          --dart-define=REG_TEST_PASSWORD=<PW> \
@@ -71,3 +70,22 @@ to run in testnet mode, set TEST=true
 ### notes
 
 - esplora api only returns 50 txs in mempool with no addresses
+
+### derivation paths
+
+| Network          | Method            | Format        | Path                                   | Address Type         |
+| ---------------- | ----------------- | ------------- | -------------------------------------- | -------------------- |
+| mainnet          | onboarding_create | horizon       | m/84'/0'/0'/0/0                        | 1 bech32             |
+| testnet          | onboarding_create | horizon       | m/84'/1'/0'/0/0                        | 1 bech32             |
+| mainnet          | onboarding_import | horizon       | m/84'/0'/0'/0/0                        | 1 bech32             |
+| testnet          | onboarding_import | horizon       | m/84'/1'/0'/0/0                        | 1 bech32             |
+| mainnet, testnet | onboarding_import | freewallet    | m/0'/0/0-9                             | 10 bech32, 10 legacy |
+| mainnet, testnet | onboarding_import | counterwallet | m/0'/0/0                               | 1 legacy             |
+| mainnet          | add_account       | horizon       | m/84'/0'/1'/0/0 ( max_account_idx + 1) | 1 bech32             |
+| testnet          | add_account       | horizon       | m/84'/1'/1'/0/0 ( max_account_idx + 1) | 1 bech32             |
+| mainnet, testnet | add_account       | freewallet    | m/1'/0/0-9 ( max_segment_0 + 1)        | 10 bech32, 10 legacy |
+| mainnet, testnet | add_account       | counterwallet | m/1'/0/0 ( max_segment_0 + 1)          | 1 legacy             |
+
+#### sources
+
+- https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17

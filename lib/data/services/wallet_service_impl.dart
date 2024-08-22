@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/wallet.dart' as entity;
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/mnemonicjs.dart';
 import 'package:horizon/js/bip39.dart' as bip39;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
@@ -51,7 +52,11 @@ class WalletServiceImpl implements WalletService {
   @override
   Future<entity.Wallet> deriveRootFreewallet(
       String mnemonic, String password) async {
-    Seed seed = Seed.fromHex(bip39.mnemonicToEntropy(mnemonic));
+    List<String> words = mnemonic.split(" ");
+
+    Mnemonic mnemonic_ = Mnemonic(words.map((el) => el.toJS).toList().toJS);
+
+    Seed seed = Seed.fromHex(mnemonic_.toHex());
 
     Buffer buffer = Buffer.from(seed.bytes.toJS);
 

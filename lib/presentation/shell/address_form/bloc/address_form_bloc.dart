@@ -62,18 +62,6 @@ class AddressFormBloc
         switch (account.importFormat) {
           case ImportFormat.horizon:
             // this is a no-op
-
-            // Address address = await addressService.deriveAddressSegwit(
-            //   privKey: decryptedPrivKey,
-            //   chainCodeHex: wallet.chainCodeHex,
-            //   accountUuid: account.uuid,
-            //   purpose: account.purpose,
-            //   coin: account.coinType,
-            //   account: account.accountIndex,
-            //   change: "0",
-            //   index: maxIndex + 1,
-            // );
-            // await addressRepository.insert(address);
             emit(currentState);
             break;
           case ImportFormat.freewallet:
@@ -83,8 +71,6 @@ class AddressFormBloc
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
               accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
               account: account.accountIndex,
               change: "0",
               start: maxIndex + 1,
@@ -93,12 +79,10 @@ class AddressFormBloc
 
             List<Address> bech32Addresses =
                 await addressService.deriveAddressFreewalletRange(
-              type: AddressType.legacy,
+              type: AddressType.bech32,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
               accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
               account: account.accountIndex,
               change: "0",
               start: maxIndex + 1,
@@ -119,8 +103,6 @@ class AddressFormBloc
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
               accountUuid: account.uuid,
-              purpose: account.purpose,
-              coin: account.coinType,
               account: account.accountIndex,
               change: "0",
               start: maxIndex + 1,

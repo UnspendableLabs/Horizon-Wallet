@@ -17,8 +17,6 @@ abstract class AddressService {
       {required AddressType type,
       required dynamic root,
       required String accountUuid,
-      required String purpose,
-      required String coin,
       required String account,
       required String change,
       required int index});
@@ -39,8 +37,6 @@ abstract class AddressService {
       required String privKey,
       required String chainCodeHex,
       required String accountUuid,
-      required String purpose,
-      required String coin,
       required String account,
       required String change,
       required int start,
