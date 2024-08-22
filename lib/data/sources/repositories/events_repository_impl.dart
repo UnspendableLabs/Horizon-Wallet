@@ -30,6 +30,8 @@ class EventMapper {
       case 'ASSET_ISSUANCE':
         return AssetIssuanceEventMapper.toDomain(
             apiEvent as api.AssetIssuanceEvent);
+      case "DISPENSE":
+        return DispenseEventMapper.toDomain(apiEvent as api.DispenseEvent);
 
       // case 'NEW_TRANSACTION':
       //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
@@ -62,29 +64,17 @@ class VerboseEventMapper {
       case 'DEBIT':
         return VerboseDebitEventMapper.toDomain(
             apiEvent as api.VerboseDebitEvent);
+      case "DISPENSE":
+        return VerboseDispenseEventMapper.toDomain(
+            apiEvent as api.VerboseDispenseEvent);
+
       // case 'ASSET_ISSUANCE':
       //   return VerboseAssetIssuanceEventMapper.toDomain(
       //       apiEvent as api.VerboseAssetIssuanceEvent);
       case 'ASSET_ISSUANCE':
-        if (apiEvent is api.VerboseAssetIssuanceEvent) {
-          return VerboseAssetIssuanceEventMapper.toDomain(apiEvent);
-        } else {
-          print(
-              "Warning: Expected VerboseAssetIssuanceEvent but got ${apiEvent.runtimeType}");
-
-          // Handle this case, perhaps by returning a generic VerboseEvent
-          return VerboseEvent(
-            state: StateMapper.getVerbose(apiEvent),
-            eventIndex: apiEvent.eventIndex,
-            event: apiEvent.event,
-            txHash: apiEvent.txHash!,
-            blockIndex: apiEvent.blockIndex,
-            // confirmed: apiEvent.confirmed,
-            blockTime: apiEvent.blockTime,
-          );
-        }
-      // case 'ASSET_ISSUANCE':
-      //   return VerboseAssetIssuanceEventMapper.toDomain(
+        return VerboseAssetIssuanceEventMapper.toDomain(
+            apiEvent as api.VerboseAssetIssuanceEvent);
+case 'DISPENSE': // case 'ASSET_ISSUANCE': return VerboseAssetIssuanceEventMapper.toDomain(
       //       apiEvent as api.VerboseAssetIssuanceEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -92,7 +82,15 @@ class VerboseEventMapper {
       // case 'ASSET_ISSUANCE':
       //   return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as ApiVerboseAssetIssuanceEvent);
       default:
-        throw Exception('Invariant: unsupported event type: ${apiEvent.event}');
+        return VerboseEvent(
+          state: StateMapper.getVerbose(apiEvent),
+          eventIndex: apiEvent.eventIndex,
+          event: apiEvent.event,
+          txHash: apiEvent.txHash!,
+          blockIndex: apiEvent.blockIndex,
+          // confirmed: apiEvent.confirmed,
+          blockTime: apiEvent.blockTime,
+        );
     }
   }
 }
@@ -365,6 +363,70 @@ class VerboseAssetIssuanceParamsMapper {
       blockTime: apiParams.blockTime,
       quantityNormalized: apiParams.quantityNormalized,
       feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class DispenseEventMapper {
+  static DispenseEvent toDomain(api.DispenseEvent apiEvent) {
+    return DispenseEvent(
+      state: StateMapper.get(apiEvent),
+      event: "DISPENSE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      // confirmed: apiEvent.confirmed,
+      params: DispenseParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class DispenseParamsMapper {
+  static DispenseParams toDomain(api.DispenseParams apiParams) {
+    return DispenseParams(
+        asset: apiParams.asset,
+        blockIndex: apiParams.blockIndex,
+        btcAmount: apiParams.btcAmount,
+        destination: apiParams.destination,
+        dispenseIndex: apiParams.dispenseIndex,
+        dispenseQuantity: apiParams.dispenseQuantity,
+        dispenserTxHash: apiParams.dispenserTxHash,
+        source: apiParams.source,
+        txHash: apiParams.txHash,
+        txIndex: apiParams.txIndex);
+  }
+}
+
+class VerboseDispenseEventMapper {
+  static VerboseDispenseEvent toDomain(api.VerboseDispenseEvent apiEvent) {
+    return VerboseDispenseEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "DISPENSE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      // confirmed: apiEvent.confirmed,
+      blockTime: apiEvent.blockTime,
+      params: VerboseDispenseParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseDispenseParamsMapper {
+  static VerboseDispenseParams toDomain(api.VerboseDispenseParams apiParams) {
+    return VerboseDispenseParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      btcAmount: apiParams.btcAmount,
+      destination: apiParams.destination,
+      dispenseIndex: apiParams.dispenseIndex,
+      dispenseQuantity: apiParams.dispenseQuantity,
+      dispenserTxHash: apiParams.dispenserTxHash,
+      source: apiParams.source,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      btcAmountNormalized: apiParams.btcAmountNormalized,
+      dispenseQuantityNormalized: apiParams.dispenseQuantityNormalized,
     );
   }
 }

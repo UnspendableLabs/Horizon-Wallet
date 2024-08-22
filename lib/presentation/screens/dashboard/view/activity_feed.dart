@@ -202,6 +202,8 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
         Text("Issue ${params.quantityNormalized} ${params.asset}"),
+      VerboseDispenseEvent(params: var params) =>
+        Text("Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       _ =>
         Text('Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -262,6 +264,8 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseEnhancedSendEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseDispenseEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => Text(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -319,6 +323,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.arrow_forward, color: Colors.green),
       VerboseAssetIssuanceEvent(params: var params) =>
         const Icon(Icons.toll, color: Colors.grey),
+      VerboseDispenseEvent(params: var params) =>
+        const Icon(Icons.paid, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
@@ -332,7 +338,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionType.recipient =>
         const Icon(Icons.arrow_forward, color: Colors.green),
       TransactionType.neither =>
-        throw Exception('Invariant: account neither sender or receiver')
+        const Icon(Icons.arrow_forward, color: Colors.green),
     };
   }
 

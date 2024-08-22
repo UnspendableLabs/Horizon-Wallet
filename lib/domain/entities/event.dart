@@ -445,3 +445,77 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
     required this.params,
   });
 }
+
+class DispenseParams {
+  final String asset;
+  final int blockIndex;
+  final int btcAmount;
+  final String destination;
+  final int dispenseIndex;
+  final int dispenseQuantity;
+  final String dispenserTxHash;
+  final String source;
+  final String txHash;
+  final int txIndex;
+
+  DispenseParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.btcAmount,
+    required this.destination,
+    required this.dispenseIndex,
+    required this.dispenseQuantity,
+    required this.dispenserTxHash,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class VerboseDispenseParams extends DispenseParams {
+  // final AssetInfo assetInfo;
+  final String dispenseQuantityNormalized;
+  final String btcAmountNormalized;
+
+  VerboseDispenseParams(
+      {required super.asset,
+      required super.blockIndex,
+      required super.btcAmount,
+      required super.destination,
+      required super.dispenseIndex,
+      required super.dispenseQuantity,
+      required super.dispenserTxHash,
+      required super.source,
+      required super.txHash,
+      required super.txIndex,
+      // required this.assetInfo,
+      required this.dispenseQuantityNormalized,
+      required this.btcAmountNormalized});
+}
+
+class DispenseEvent extends Event {
+  final DispenseParams params;
+  const DispenseEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    // required super.confirmed,
+    required this.params,
+  });
+}
+
+class VerboseDispenseEvent extends VerboseEvent {
+  final VerboseDispenseParams params;
+  const VerboseDispenseEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    // required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+}

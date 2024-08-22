@@ -239,6 +239,8 @@ class Event {
         return NewTransactionEvent.fromJson(json);
       case 'ASSET_ISSUANCE':
         return AssetIssuanceEvent.fromJson(json);
+      case 'DISPENSE':
+        return DispenseEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -558,6 +560,97 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
   factory VerboseAssetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
       _$VerboseAssetIssuanceEventFromJson(json);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DispenseParams {
+  final String asset;
+  final int blockIndex;
+  final int btcAmount;
+  final String destination;
+  final int dispenseIndex;
+  final int dispenseQuantity;
+  final String dispenserTxHash;
+  final String source;
+  final String txHash;
+  final int txIndex;
+
+  DispenseParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.btcAmount,
+    required this.destination,
+    required this.dispenseIndex,
+    required this.dispenseQuantity,
+    required this.dispenserTxHash,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory DispenseParams.fromJson(Map<String, dynamic> json) =>
+      _$DispenseParamsFromJson(json);
+
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDispenseParams extends DispenseParams {
+  // final AssetInfo assetInfo;
+  final String dispenseQuantityNormalized;
+  final String btcAmountNormalized;
+
+  VerboseDispenseParams(
+      {required super.asset,
+      required super.blockIndex,
+      required super.btcAmount,
+      required super.destination,
+      required super.dispenseIndex,
+      required super.dispenseQuantity,
+      required super.dispenserTxHash,
+      required super.source,
+      required super.txHash,
+      required super.txIndex,
+      // required this.assetInfo,
+      required this.dispenseQuantityNormalized,
+      required this.btcAmountNormalized});
+
+  factory VerboseDispenseParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDispenseParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DispenseEvent extends Event {
+  final DispenseParams params;
+
+  DispenseEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    // required super.confirmed,
+    required this.params,
+  });
+
+  factory DispenseEvent.fromJson(Map<String, dynamic> json) =>
+      _$DispenseEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDispenseEvent extends VerboseEvent {
+  final VerboseDispenseParams params;
+  VerboseDispenseEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    // required super.confirmed,
+    required this.params,
+  });
+
+  factory VerboseDispenseEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDispenseEventFromJson(json);
+}
+
 //
 //  "event_index": 5348402,
 //   "event": "ASSET_ISSUANCE",
@@ -761,6 +854,8 @@ class VerboseEvent extends Event {
         return VerboseNewTransactionEvent.fromJson(json);
       case 'ASSET_ISSUANCE':
         return VerboseAssetIssuanceEvent.fromJson(json);
+      case 'DISPENSE':
+        return VerboseDispenseEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
