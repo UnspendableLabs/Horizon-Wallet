@@ -59,13 +59,13 @@ class OnboardingImportBloc
             mnemonicError: "Invalid mnemonic length",
             mnemonic: event.mnemonic));
         return;
-      } else {
-        // bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-        // if (!validMnemonic) {
-        //   emit(state.copyWith(
-        //       mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
-        //   return;
-        // }
+      } else if ( state.importFormat == "Horizon" ) {
+        bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
+        if (!validMnemonic) {
+          emit(state.copyWith(
+              mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
+          return;
+        }
         emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
       }
     });
@@ -81,12 +81,13 @@ class OnboardingImportBloc
       } else if (state.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
         return;
-      } else {
-        // bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
-        // if (!validMnemonic) {
-        //   emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
-        //   return;
-        // }
+      } else if (event.importFormat == "Horizon") {
+        // only validate mnemonic if importing from horizon
+        bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
+        if (!validMnemonic) {
+          emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
+          return;
+        }
       }
       ImportFormat importFormat = switch (event.importFormat) {
         "Horizon" => ImportFormat.horizon,
