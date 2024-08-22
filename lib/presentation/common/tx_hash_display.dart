@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:get_it/get_it.dart';
+
+enum URIType { btcexplorer, hoex }
 
 class TxHashDisplay extends StatefulWidget {
   final String hash;
   final int displayLength;
+  final Config config = GetIt.I<Config>();
+  final URIType uriType;
 
-  const TxHashDisplay({
+  TxHashDisplay({
     super.key,
     required this.hash,
+    required this.uriType,
     this.displayLength = 5,
   });
 
@@ -21,6 +29,21 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
   String get shortenedHash {
     if (widget.hash.length <= widget.displayLength * 2) return widget.hash;
     return '${widget.hash.substring(0, widget.displayLength)}...${widget.hash.substring(widget.hash.length - widget.displayLength)}';
+  }
+
+  Future<void> _launchUrl() async {
+    final uri = switch (widget.uriType) {
+      URIType.btcexplorer =>
+        Uri.parse("${widget.config.btcExplorerBase}/tx/${widget.hash}"),
+      URIType.hoex =>
+        Uri.parse("${widget.config.horizonExplorerBase}/tx/${widget.hash}")
+    };
+
+    // final uri =
+
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
   }
 
   void _copyToClipboard() {
@@ -40,7 +63,8 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _copyToClipboard,
+      onLongPress: _copyToClipboard,
+      onTap: _launchUrl,
       child: RichText(
         text: TextSpan(
           style: DefaultTextStyle.of(context).style,

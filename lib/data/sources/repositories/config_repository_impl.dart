@@ -29,6 +29,20 @@ class EnvironmentConfig implements Config {
       };
 
   @override
+  String get horizonExplorerBase => switch (network) {
+        Network.mainnet => "https://explorer.unspendablelabs.com",
+        Network.testnet => "https://testnet-explorer.unspendablelabs.com",
+        Network.regtest => "http://127.0.0.1:3000",
+      };
+
+  @override
+  String get btcExplorerBase => switch (network) {
+        Network.mainnet => "https://mempool.space",
+        Network.testnet => "https://mempool.space/testnet",
+        Network.regtest => "http://127.0.0.1:3000",
+      };
+
+  @override
   String toString() {
     return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase)';
   }

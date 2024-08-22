@@ -258,20 +258,32 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildEventSubtitle(Event event) {
     return switch (event) {
-      VerboseAssetIssuanceEvent(txHash: var hash) => TxHashDisplay(hash: hash),
-      VerboseEnhancedSendEvent(txHash: var hash) => TxHashDisplay(hash: hash),
+      VerboseAssetIssuanceEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseEnhancedSendEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => Text(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
   }
 
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
-    return TxHashDisplay(hash: info.hash);
+    return switch (info) {
+      // local can only ever be a send
+      TransactionInfoEnhancedSendVerbose() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfoIssuanceVerbose() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
+      _ => const Icon(Icons.error),
+    };
   }
 
   Widget _buildBitcoinTxSubtitle(BitcoinTx btx) {
     return TxHashDisplay(
       hash: btx.txid,
+      uriType: URIType.btcexplorer,
     );
   }
 
