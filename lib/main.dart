@@ -225,9 +225,9 @@ class AppRouter {
             ])
       ],
       errorBuilder: (context, state) => ErrorScreen(
-        error: state.error,
-        onGoHome: () => context.go('/dashboard'),
-      ),
+            error: state.error,
+            onGoHome: () => context.go('/dashboard'),
+          ),
       redirect: (context, state) async {
         final shell = context.read<ShellStateCubit>();
 
@@ -261,7 +261,7 @@ class ErrorScreen extends StatelessWidget {
   final Exception? error;
   final VoidCallback onGoHome;
 
-  const ErrorScreen({Key? key, this.error, required this.onGoHome}) : super(key: key);
+  const ErrorScreen({super.key, this.error, required this.onGoHome});
 
   @override
   Widget build(BuildContext context) {
