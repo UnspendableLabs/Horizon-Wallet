@@ -493,6 +493,110 @@ Map<String, dynamic> _$VerboseAssetIssuanceEventToJson(
       'params': instance.params,
     };
 
+DispenseParams _$DispenseParamsFromJson(Map<String, dynamic> json) =>
+    DispenseParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      btcAmount: (json['btc_amount'] as num).toInt(),
+      destination: json['destination'] as String,
+      dispenseIndex: (json['dispense_index'] as num).toInt(),
+      dispenseQuantity: (json['dispense_quantity'] as num).toInt(),
+      dispenserTxHash: json['dispenser_tx_hash'] as String,
+      source: json['source'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$DispenseParamsToJson(DispenseParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'btc_amount': instance.btcAmount,
+      'destination': instance.destination,
+      'dispense_index': instance.dispenseIndex,
+      'dispense_quantity': instance.dispenseQuantity,
+      'dispenser_tx_hash': instance.dispenserTxHash,
+      'source': instance.source,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+VerboseDispenseParams _$VerboseDispenseParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDispenseParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      btcAmount: (json['btc_amount'] as num).toInt(),
+      destination: json['destination'] as String,
+      dispenseIndex: (json['dispense_index'] as num).toInt(),
+      dispenseQuantity: (json['dispense_quantity'] as num).toInt(),
+      dispenserTxHash: json['dispenser_tx_hash'] as String,
+      source: json['source'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      dispenseQuantityNormalized:
+          json['dispense_quantity_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseDispenseParamsToJson(
+        VerboseDispenseParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'btc_amount': instance.btcAmount,
+      'destination': instance.destination,
+      'dispense_index': instance.dispenseIndex,
+      'dispense_quantity': instance.dispenseQuantity,
+      'dispenser_tx_hash': instance.dispenserTxHash,
+      'source': instance.source,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'dispense_quantity_normalized': instance.dispenseQuantityNormalized,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+    };
+
+DispenseEvent _$DispenseEventFromJson(Map<String, dynamic> json) =>
+    DispenseEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: DispenseParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DispenseEventToJson(DispenseEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+VerboseDispenseEvent _$VerboseDispenseEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDispenseEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      params: VerboseDispenseParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDispenseEventToJson(
+        VerboseDispenseEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
 VerboseEnhancedSendParams _$VerboseEnhancedSendParamsFromJson(
         Map<String, dynamic> json) =>
     VerboseEnhancedSendParams(

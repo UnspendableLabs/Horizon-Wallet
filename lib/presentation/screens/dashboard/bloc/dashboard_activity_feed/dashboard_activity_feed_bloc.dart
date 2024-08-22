@@ -13,7 +13,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
-final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE"];
+final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE", "DISPENSE"];
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {

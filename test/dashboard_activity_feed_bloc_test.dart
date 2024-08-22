@@ -23,6 +23,7 @@ import 'package:mocktail/mocktail.dart';
 final DEFAULT_WHITELIST = [
   "ENHANCED_SEND",
   "ASSET_ISSUANCE",
+  "DISPENSE",
 ];
 
 extension DateTimeExtension on DateTime {
