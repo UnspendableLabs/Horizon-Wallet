@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
@@ -102,11 +101,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
         int.parse(currentHighestIndexAccount.accountIndex.replaceAll("'", "")) +
             1;
 
-    String newAccountPath = currentHighestIndexAccount.importFormat ==
-            ImportFormat.horizon
-        ? "m/${currentHighestIndexAccount.purpose}/${currentHighestIndexAccount.coinType}/$newAccountIndex'/"
-        : "m/$newAccountIndex'/";
-
     return BlocConsumer<AccountFormBloc, RemoteDataState<Account>>(
         listener: (context, state) {
       state.whenOrNull(error: (msg) {
@@ -130,15 +124,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            HorizonTextFormField(
-              fillColor: noBackgroundColor,
-              controller: TextEditingController(text: newAccountPath),
-              isDarkMode: isDarkMode,
-              label: "Account Path:",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0), // Spacing between inputs
             HorizonTextFormField(
               controller: nameController,
               isDarkMode: isDarkMode,

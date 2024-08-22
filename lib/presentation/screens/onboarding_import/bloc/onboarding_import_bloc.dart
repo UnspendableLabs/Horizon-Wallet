@@ -60,13 +60,13 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        if ( state.importFormat == "Horizon" ) {
-        bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-        if (!validMnemonic) {
-          emit(state.copyWith(
-              mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
-          return;
-        }
+        if (state.importFormat == "Horizon") {
+          bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
+          if (!validMnemonic) {
+            emit(state.copyWith(
+                mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
+            return;
+          }
         }
         emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
       }
