@@ -381,6 +381,7 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 class _DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -424,23 +425,18 @@ class _DashboardActivityFeedScreenState
             children: [
               if (newTransactionCount > 0)
                 NewTransactionsBanner(count: newTransactionCount),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: transactions.length,
-                itemBuilder: (context, index) {
-                  if (index < transactions.length) {
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: transactions.length,
+                  itemBuilder: (context, index) {
                     return ActivityFeedListItem(
+                      key: ValueKey(transactions[index].hash),
                       item: transactions[index],
                       addresses: widget.addresses,
                     );
-                  } else if (index == transactions.length) {
-                    return state is DashboardActivityFeedStateReloadingOk
-                        ? const Center(child: CircularProgressIndicator())
-                        : const SizedBox.shrink();
-                  }
-                  return null;
-                },
+                  },
+                ),
               ),
             ],
           );
