@@ -62,4 +62,13 @@ class AddressRepositoryImpl implements AddressRepository {
   Future<void> deleteAllAddresses() async {
     await _addressDao.deleteAllAddresses();
   }
+
+  @override
+  Future<List<entity.Address>> getAll() async {
+    List<AddressModel> addresses = await _addressDao.getAllAddresses();
+    return addresses
+        .map((a) => entity.Address(
+            accountUuid: a.accountUuid, address: a.address, index: a.index))
+        .toList();
+  }
 }

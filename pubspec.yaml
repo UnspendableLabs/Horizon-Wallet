@@ -80,6 +80,8 @@ dev_dependencies:
   floor_generator: ^1.4.2
   retrofit_generator: ^8.1.0
   build_runner: ^2.4.9
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
 
@@ -116,8 +118,7 @@ flutter:
 
   #   - .env
 
-
-  # An image asset can refer to one or more resolution-specific "variants", see
+# An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 
   # For details regarding adding assets from package dependencies, see

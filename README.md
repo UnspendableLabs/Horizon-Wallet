@@ -89,3 +89,20 @@ to run in testnet mode, set TEST=true
 #### sources
 
 - https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
+
+#### integration_test
+
+1. set up your env
+
+https://docs.flutter.dev/testing/integration-tests#test-in-a-web-browser
+
+2. run tests ( defaults to mainnet )
+
+```
+# Mainnet
+flutter drive   --driver=test_driver/integration_test.dart   --target=integration_test/app_test.dart   -d chrome
+
+# Testnet
+flutter drive   --driver=test_driver/integration_test.dart   --target=integration_test/app_test.dart   -d chrome --dart-define=NETWORK=testnet
+
+```
