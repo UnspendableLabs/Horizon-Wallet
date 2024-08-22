@@ -164,6 +164,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfoVerbose(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -197,6 +208,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
 
       return switch (unpacked) {
         EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
