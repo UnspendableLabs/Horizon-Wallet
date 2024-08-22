@@ -5,7 +5,7 @@ class EnvironmentConfig implements Config {
   Network get network {
     // default to testnet for now
     const networkString =
-        String.fromEnvironment('NETWORK', defaultValue: 'testnet');
+        String.fromEnvironment('NETWORK', defaultValue: 'mainnet');
     return switch (networkString.toLowerCase()) {
       'testnet' => Network.testnet,
       'regtest' => Network.regtest,
