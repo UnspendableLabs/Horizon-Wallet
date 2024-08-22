@@ -133,30 +133,35 @@ class _DashboardPage_State extends State<_DashboardPage> {
             color: backgroundColor,
             borderRadius: BorderRadius.circular(30.0),
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                if (screenWidth < 768)
-                  AccountSelectionButton(
+          child: CustomScrollView(slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  if (screenWidth < 768)
+                    AccountSelectionButton(
+                      isDarkTheme: isDarkTheme,
+                      onPressed: () => showAccountList(context, isDarkTheme),
+                    ),
+                  AddressActions(
+                      isDarkTheme: isDarkTheme,
+                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      addresses: [widget.currentAddress],
+                      accountUuid: widget.accountUuid,
+                      currentAddress: widget.currentAddress),
+                  BalancesDisplay(
+                    key: Key(widget.currentAddress.address),
                     isDarkTheme: isDarkTheme,
-                    onPressed: () => showAccountList(context, isDarkTheme),
-                  ),
-                AddressActions(
-                    isDarkTheme: isDarkTheme,
-                    dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                     addresses: [widget.currentAddress],
                     accountUuid: widget.accountUuid,
-                    currentAddress: widget.currentAddress),
-                BalancesDisplay(
-                  key: Key(widget.currentAddress.address),
-                  isDarkTheme: isDarkTheme,
-                  addresses: [widget.currentAddress],
-                  accountUuid: widget.accountUuid,
-                ),
-                DashboardActivityFeedScreen(addresses: [widget.currentAddress]),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
+            SliverFillRemaining(
+              child: DashboardActivityFeedScreen(
+                  addresses: [widget.currentAddress]),
+            )
+          ]),
         ),
       );
     });
