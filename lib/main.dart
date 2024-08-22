@@ -37,6 +37,7 @@ import 'package:logger/logger.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -124,14 +125,16 @@ class AppRouter {
             builder: (context, state) {
               return const LoadingScreen();
             }),
-        GoRoute(
-          path: "/db",
-          pageBuilder: (context, state) => CustomTransitionPage<void>(
-              key: state.pageKey,
-              child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
-        ),
+        if (GetIt.instance<Config>().isDatabaseViewerEnabled)
+          GoRoute(
+            path: "/db",
+            pageBuilder: (context, state) => CustomTransitionPage<void>(
+                key: state.pageKey,
+                child:
+                    DriftDbViewer(GetIt.instance<DatabaseManager>().database),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) => child),
+          ),
         GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
@@ -221,6 +224,10 @@ class AppRouter {
               // ),
             ])
       ],
+      errorBuilder: (context, state) => ErrorScreen(
+            error: state.error,
+            onGoHome: () => context.go('/dashboard'),
+          ),
       redirect: (context, state) async {
         final shell = context.read<ShellStateCubit>();
 
@@ -247,6 +254,34 @@ class AppRouter {
 
         return path;
       });
+}
+
+// Custom error screen widget
+class ErrorScreen extends StatelessWidget {
+  final Exception? error;
+  final VoidCallback onGoHome;
+
+  const ErrorScreen({super.key, this.error, required this.onGoHome});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Error')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('GoRouter Exception: ${error?.toString() ?? 'Unknown error'}'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: onGoHome,
+              child: const Text('Go to Dashboard'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 void main() {

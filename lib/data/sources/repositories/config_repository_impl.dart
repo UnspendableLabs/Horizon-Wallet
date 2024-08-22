@@ -43,6 +43,11 @@ class EnvironmentConfig implements Config {
       };
 
   @override
+  bool get isDatabaseViewerEnabled {
+    return const bool.fromEnvironment('ENABLE_DB_VIEWER', defaultValue: false);
+  }
+
+  @override
   String toString() {
     return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase)';
   }

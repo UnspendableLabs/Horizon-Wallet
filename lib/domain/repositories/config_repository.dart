@@ -6,4 +6,5 @@ abstract class Config {
   String get esploraBase;
   String get horizonExplorerBase;
   String get btcExplorerBase;
+  bool get isDatabaseViewerEnabled;
 }

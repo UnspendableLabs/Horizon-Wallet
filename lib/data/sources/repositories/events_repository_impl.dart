@@ -74,7 +74,7 @@ class VerboseEventMapper {
       case 'ASSET_ISSUANCE':
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
-case 'DISPENSE': // case 'ASSET_ISSUANCE': return VerboseAssetIssuanceEventMapper.toDomain(
+      case 'DISPENSE': // case 'ASSET_ISSUANCE': return VerboseAssetIssuanceEventMapper.toDomain(
       //       apiEvent as api.VerboseAssetIssuanceEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
