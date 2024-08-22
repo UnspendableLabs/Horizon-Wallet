@@ -94,8 +94,6 @@ class AddressServiceImpl extends AddressService {
       {required AddressType type,
       required dynamic root,
       required String accountUuid,
-      // required String purpose,
-      // required String coin,
       required String account,
       required String change,
       required int index}) async {
@@ -128,8 +126,6 @@ class AddressServiceImpl extends AddressService {
       required String privKey,
       required String chainCodeHex,
       required String accountUuid,
-      // required String purpose,
-      // required String coin,
       required String account,
       required String change,
       required int start,
@@ -152,8 +148,6 @@ class AddressServiceImpl extends AddressService {
           type: type,
           root: root,
           accountUuid: accountUuid,
-          // purpose: purpose,
-          // coin: coin,
           account: account,
           change: change,
           index: i);
