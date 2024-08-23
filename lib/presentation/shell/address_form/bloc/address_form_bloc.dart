@@ -13,7 +13,8 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
-class AddressFormBloc extends Bloc<AddressFormEvent, RemoteDataState<List<Address>>> {
+class AddressFormBloc
+    extends Bloc<AddressFormEvent, RemoteDataState<List<Address>>> {
   final walletRepository = GetIt.I<WalletRepository>();
   final walletService = GetIt.I<WalletService>();
   final encryptionService = GetIt.I<EncryptionService>();
@@ -34,23 +35,29 @@ class AddressFormBloc extends Bloc<AddressFormEvent, RemoteDataState<List<Addres
           throw Exception("invariant: wallet is null");
         }
 
-        String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, event.password);
+        String decryptedPrivKey = await encryptionService.decrypt(
+            wallet.encryptedPrivKey, event.password);
 
-        Wallet compareWallet = await walletService.fromPrivateKey(decryptedPrivKey, wallet.chainCodeHex);
+        Wallet compareWallet = await walletService.fromPrivateKey(
+            decryptedPrivKey, wallet.chainCodeHex);
 
         if (wallet.publicKey != compareWallet.publicKey) {
           throw Exception("invalid password");
         }
 
-        Account? account = await accountRepository.getAccountByUuid(event.accountUuid);
+        Account? account =
+            await accountRepository.getAccountByUuid(event.accountUuid);
 
         if (account == null) {
           throw Exception("invariant: account is null: $event.accountUuid");
         }
 
-        List<Address> addresses = await addressRepository.getAllByAccountUuid(event.accountUuid);
+        List<Address> addresses =
+            await addressRepository.getAllByAccountUuid(event.accountUuid);
 
-        int maxIndex = addresses.reduce((acc, curr) => acc.index > curr.index ? acc : curr).index;
+        int maxIndex = addresses
+            .reduce((acc, curr) => acc.index > curr.index ? acc : curr)
+            .index;
 
         switch (account.importFormat) {
           case ImportFormat.horizon:
@@ -58,7 +65,8 @@ class AddressFormBloc extends Bloc<AddressFormEvent, RemoteDataState<List<Addres
             emit(currentState);
             break;
           case ImportFormat.freewallet:
-            List<Address> legacyAddresses = await addressService.deriveAddressFreewalletRange(
+            List<Address> legacyAddresses =
+                await addressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
@@ -69,7 +77,8 @@ class AddressFormBloc extends Bloc<AddressFormEvent, RemoteDataState<List<Addres
               end: maxIndex + 1,
             );
 
-            List<Address> bech32Addresses = await addressService.deriveAddressFreewalletRange(
+            List<Address> bech32Addresses =
+                await addressService.deriveAddressFreewalletRange(
               type: AddressType.bech32,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
@@ -88,7 +97,8 @@ class AddressFormBloc extends Bloc<AddressFormEvent, RemoteDataState<List<Addres
             break;
 
           case ImportFormat.counterwallet:
-            List<Address> legacyAddresses = await addressService.deriveAddressFreewalletRange(
+            List<Address> legacyAddresses =
+                await addressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
@@ -99,7 +109,8 @@ class AddressFormBloc extends Bloc<AddressFormEvent, RemoteDataState<List<Addres
               end: maxIndex + 1,
             );
 
-            List<Address> bech32Addresses = await addressService.deriveAddressFreewalletRange(
+            List<Address> bech32Addresses =
+                await addressService.deriveAddressFreewalletRange(
               type: AddressType.bech32,
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,

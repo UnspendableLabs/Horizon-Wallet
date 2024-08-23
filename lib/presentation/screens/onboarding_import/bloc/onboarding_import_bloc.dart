@@ -16,7 +16,8 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
-class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportState> {
+class OnboardingImportBloc
+    extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final Config config = GetIt.I<Config>();
   final accountRepository = GetIt.I<AccountRepository>();
   final addressRepository = GetIt.I<AddressRepository>();
@@ -29,7 +30,8 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
   OnboardingImportBloc() : super(const OnboardingImportState()) {
     on<PasswordChanged>((event, emit) {
       if (event.password.length < 8) {
-        emit(state.copyWith(passwordError: "Password must be at least 8 characters."));
+        emit(state.copyWith(
+            passwordError: "Password must be at least 8 characters."));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
@@ -49,16 +51,21 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
 
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
-        emit(state.copyWith(mnemonicError: "Mnemonic is required", mnemonic: event.mnemonic));
+        emit(state.copyWith(
+            mnemonicError: "Mnemonic is required", mnemonic: event.mnemonic));
         return;
       } else if (event.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(mnemonicError: "Invalid mnemonic length", mnemonic: event.mnemonic));
+        emit(state.copyWith(
+            mnemonicError: "Invalid mnemonic length",
+            mnemonic: event.mnemonic));
         return;
       } else {
-        if (state.importFormat == "Horizon" || state.importFormat == "Freewallet") {
+        if (state.importFormat == "Horizon" ||
+            state.importFormat == "Freewallet") {
           bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
           if (!validMnemonic) {
-            emit(state.copyWith(mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
+            emit(state.copyWith(
+                mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
             return;
           }
         }
@@ -91,8 +98,10 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         "Counterwallet" => ImportFormat.counterwallet,
         _ => throw Exception('Invariant: Invalid import format')
       };
-      emit(
-          state.copyWith(importState: ImportStateMnemonicCollected(), importFormat: importFormat, mnemonic: event.mnemonic));
+      emit(state.copyWith(
+          importState: ImportStateMnemonicCollected(),
+          importFormat: importFormat,
+          mnemonic: event.mnemonic));
     });
 
     on<ImportWallet>((event, emit) async {
@@ -100,8 +109,10 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
       try {
         switch (state.importFormat) {
           case ImportFormat.horizon:
-            Wallet wallet = await walletService.deriveRoot(state.mnemonic, state.password!);
-            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            Wallet wallet =
+                await walletService.deriveRoot(state.mnemonic, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
 
             //m/84'/1'/0'/0
             Account account0 = Account(
@@ -131,9 +142,11 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
             break;
 
           case ImportFormat.freewallet:
-            Wallet wallet = await walletService.deriveRootFreewallet(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRootFreewallet(
+                state.mnemonic, state.password!);
 
-            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
 
             // create an account to house
             Account account = Account(
@@ -145,25 +158,27 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
                 uuid: uuid.v4(),
                 importFormat: ImportFormat.freewallet);
 
-            List<Address> addressesBech32 = await addressService.deriveAddressFreewalletRange(
-                type: AddressType.bech32,
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: account.uuid,
-                account: account.accountIndex,
-                change: '0',
-                start: 0,
-                end: 9);
+            List<Address> addressesBech32 =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.bech32,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 9);
 
-            List<Address> addressesLegacy = await addressService.deriveAddressFreewalletRange(
-                type: AddressType.legacy,
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: account.uuid,
-                account: account.accountIndex,
-                change: '0',
-                start: 0,
-                end: 9);
+            List<Address> addressesLegacy =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.legacy,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 9);
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);
@@ -172,9 +187,11 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
 
             break;
           case ImportFormat.counterwallet:
-            Wallet wallet = await walletService.deriveRootCounterwallet(state.mnemonic, state.password!);
+            Wallet wallet = await walletService.deriveRootCounterwallet(
+                state.mnemonic, state.password!);
 
-            String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, state.password!);
+            String decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password!);
 
             // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
             Account account = Account(
@@ -190,27 +207,29 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
             // it just descripes addresses with path
             // m/segment/segment/segment
 
-            List<Address> addressesBech32 = await addressService.deriveAddressFreewalletRange(
-                type: AddressType.bech32,
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: account.uuid,
-                account: account.accountIndex,
-                change: '0',
-                start: 0,
-                end: 9);
+            List<Address> addressesBech32 =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.bech32,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 9);
 
-            List<Address> addressesLegacy = await addressService.deriveAddressFreewalletRange(
-                type: AddressType.legacy,
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: account.uuid,
-                // purpose: account.purpose,
-                // coin: account.coinType,
-                account: account.accountIndex,
-                change: '0',
-                start: 0,
-                end: 0);
+            List<Address> addressesLegacy =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.legacy,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    // purpose: account.purpose,
+                    // coin: account.coinType,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 0);
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);
@@ -225,11 +244,13 @@ class OnboardingImportBloc extends Bloc<OnboardingImportEvent, OnboardingImportS
         emit(state.copyWith(importState: ImportStateSuccess()));
         return;
       } catch (e) {
-        emit(state.copyWith(importState: ImportStateError(message: e.toString())));
+        emit(state.copyWith(
+            importState: ImportStateError(message: e.toString())));
         return;
       }
     });
   }
 
-  String _getCoinType() => switch (config.network) { Network.mainnet => "0", _ => "1" };
+  String _getCoinType() =>
+      switch (config.network) { Network.mainnet => "0", _ => "1" };
 }
