@@ -107,7 +107,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 9);
+                    end: 0);
 
             // TODO: fix misnomer method
             List<Address> addressesLegacy =

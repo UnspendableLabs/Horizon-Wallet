@@ -10,7 +10,7 @@ import 'package:get_it/get_it.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const network = String.fromEnvironment('NETWORK', defaultValue: 'testnet');
+  const network = String.fromEnvironment('NETWORK', defaultValue: 'mainnet');
 
   // Define test cases
   final testCases_ = [

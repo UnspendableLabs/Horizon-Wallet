@@ -216,7 +216,7 @@ class OnboardingImportBloc
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 9);
+                    end: 0);
 
             List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
