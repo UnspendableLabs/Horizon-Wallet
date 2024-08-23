@@ -33,11 +33,9 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
           throw Exception("invariant: wallet is null");
         }
 
-        String decryptedPrivKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, event.password);
+        String decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, event.password);
 
-        Wallet compareWallet = await walletService.fromPrivateKey(
-            decryptedPrivKey, wallet.chainCodeHex);
+        Wallet compareWallet = await walletService.fromPrivateKey(decryptedPrivKey, wallet.chainCodeHex);
 
         if (wallet.publicKey != compareWallet.publicKey) {
           throw Exception("invalid password");
@@ -71,48 +69,55 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
             await addressRepository.insert(address);
 
           case ImportFormat.freewallet:
-            List<Address> addresses =
-                await addressService.deriveAddressFreewalletRange(
-                    type: AddressType.bech32,
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: account.uuid,
-                    account: account.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 9);
+            List<Address> addresses = await addressService.deriveAddressFreewalletRange(
+                type: AddressType.bech32,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
 
-            List<Address> addressesLegacy =
-                await addressService.deriveAddressFreewalletRange(
-                    type: AddressType.legacy,
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: account.uuid,
-                    account: account.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 9);
+            List<Address> addressesLegacy = await addressService.deriveAddressFreewalletRange(
+                type: AddressType.legacy,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
 
             await accountRepository.insert(account);
             await addressRepository.insertMany(addresses);
             await addressRepository.insertMany(addressesLegacy);
 
           case ImportFormat.counterwallet:
+            List<Address> addresses = await addressService.deriveAddressFreewalletRange(
+                type: AddressType.bech32,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
 
             // TODO: fix misnomer method
-            List<Address> addresses =
-                await addressService.deriveAddressFreewalletRange(
-                    type: AddressType.legacy,
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: account.uuid,
-                    account: account.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 0);
+            List<Address> addressesLegacy = await addressService.deriveAddressFreewalletRange(
+                type: AddressType.legacy,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: account.uuid,
+                account: account.accountIndex,
+                change: '0',
+                start: 0,
+                end: 0);
 
             await accountRepository.insert(account);
             await addressRepository.insertMany(addresses);
+            await addressRepository.insertMany(addressesLegacy);
 
           default:
             throw Exception("invalid import format");

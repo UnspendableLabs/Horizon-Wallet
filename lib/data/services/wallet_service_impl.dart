@@ -48,9 +48,34 @@ class WalletServiceImpl implements WalletService {
         publicKey: root.neutered().toBase58(),
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
+    @override
+  Future<entity.Wallet> deriveRootFreewallet(String mnemonic, String password) async {
+    String seed = await bip39.mnemonicToEntropy(mnemonic);
+
+    Uint8List seedBytes = hex.decode(seed) as Uint8List;
+    Buffer buffer = Buffer.from(seedBytes.toJS);
+
+    final network = _getNetwork();
+
+    bip32.BIP32Interface root = _bip32.fromSeed(buffer, network);
+
+    String privKey = hex.encode(root.privateKey!.toDart);
+
+    String encryptedPrivKey = await encryptionService.encrypt(privKey, password);
+
+    String encryptedMnemonic = await encryptionService.encrypt(mnemonic, password);
+
+    return entity.Wallet(
+        uuid: uuid.v4(),
+        name: 'Wallet 1',
+        encryptedPrivKey: encryptedPrivKey,
+        encryptedMnemonic: encryptedMnemonic,
+        publicKey: root.neutered().toBase58(),
+        chainCodeHex: hex.encode(root.chainCode.toDart));
+  }
 
   @override
-  Future<entity.Wallet> deriveRootFreewallet(
+  Future<entity.Wallet> deriveRootCounterwallet(
       String mnemonic, String password) async {
     List<String> words = mnemonic.split(" ");
 
