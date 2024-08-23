@@ -84,7 +84,8 @@ class OnboardingImportBloc
       } else if (state.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
         return;
-      } else if (event.importFormat == "Horizon") {
+      } else if (event.importFormat == "Horizon" ||
+          event.importFormat == "Freewallet") {
         // only validate mnemonic if importing from horizon
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
