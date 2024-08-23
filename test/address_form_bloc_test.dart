@@ -1,20 +1,20 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_event.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/shell/address_form/bloc/address_form_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 
@@ -239,6 +239,18 @@ void main() {
           accountIndex: "0'",
         );
         when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              // purpose: any(named: 'purpose'),
+              // coin: any(named: 'coin'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            )).thenAnswer((_) async => [FakeAddress(index: 2)]);
+        when(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
               privKey: any(named: 'privKey'),
               chainCodeHex: any(named: 'chainCodeHex'),
@@ -267,10 +279,22 @@ void main() {
             success: (addresses) => addresses.length,
           ),
           'address count',
-          1,
+          2,
         ),
       ],
       verify: (_) {
+        verify(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: "privKey"),
+              chainCodeHex: any(named: "chainCodeHex"),
+              accountUuid: any(named: "accountUuid"),
+              // purpose: '0\'',
+              // coin: '0',
+              account: '0\'',
+              change: '0',
+              start: 2,
+              end: 2,
+            )).called(1);
         verify(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
               privKey: any(named: "privKey"),

@@ -1,17 +1,17 @@
-import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import "package:horizon/common/constants.dart";
-import "package:horizon/remote_data_bloc/remote_data_state.dart";
-import "package:horizon/domain/entities/address.dart";
 import "package:horizon/domain/entities/account.dart";
+import "package:horizon/domain/entities/address.dart";
 import "package:horizon/domain/entities/wallet.dart";
-import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
+import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
+import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
 class AddressFormBloc
     extends Bloc<AddressFormEvent, RemoteDataState<List<Address>>> {
@@ -109,9 +109,23 @@ class AddressFormBloc
               end: maxIndex + 1,
             );
 
-            await addressRepository.insertMany(legacyAddresses);
+            List<Address> bech32Addresses =
+                await addressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: decryptedPrivKey,
+              chainCodeHex: wallet.chainCodeHex,
+              accountUuid: account.uuid,
+              account: account.accountIndex,
+              change: "0",
+              start: maxIndex + 1,
+              end: maxIndex + 1,
+            );
+            final newAddresses = [bech32Addresses[0], legacyAddresses[0]];
 
-            emit(RemoteDataState.success(legacyAddresses));
+            await addressRepository.insertMany(newAddresses);
+
+            emit(RemoteDataState.success(newAddresses));
+            break;
         }
       } catch (e) {
         emit(RemoteDataState.error(e.toString()));

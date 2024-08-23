@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -14,7 +15,6 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
@@ -60,7 +60,8 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        if (state.importFormat == "Horizon") {
+        if (state.importFormat == "Horizon" ||
+            state.importFormat == "Freewallet") {
           bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
           if (!validMnemonic) {
             emit(state.copyWith(
@@ -83,7 +84,8 @@ class OnboardingImportBloc
       } else if (state.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
         return;
-      } else if (event.importFormat == "Horizon") {
+      } else if (event.importFormat == "Horizon" ||
+          event.importFormat == "Freewallet") {
         // only validate mnemonic if importing from horizon
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
@@ -186,7 +188,7 @@ class OnboardingImportBloc
 
             break;
           case ImportFormat.counterwallet:
-            Wallet wallet = await walletService.deriveRootFreewallet(
+            Wallet wallet = await walletService.deriveRootCounterwallet(
                 state.mnemonic, state.password!);
 
             String decryptedPrivKey = await encryptionService.decrypt(
@@ -206,6 +208,17 @@ class OnboardingImportBloc
             // it just descripes addresses with path
             // m/segment/segment/segment
 
+            List<Address> addressesBech32 =
+                await addressService.deriveAddressFreewalletRange(
+                    type: AddressType.bech32,
+                    privKey: decryptedPrivKey,
+                    chainCodeHex: wallet.chainCodeHex,
+                    accountUuid: account.uuid,
+                    account: account.accountIndex,
+                    change: '0',
+                    start: 0,
+                    end: 0);
+
             List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
                     type: AddressType.legacy,
@@ -221,6 +234,7 @@ class OnboardingImportBloc
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);
+            await addressRepository.insertMany(addressesBech32);
             await addressRepository.insertMany(addressesLegacy);
 
             break;

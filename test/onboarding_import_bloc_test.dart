@@ -1,22 +1,22 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
+import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 
@@ -146,7 +146,7 @@ void main() {
 
     void setupMocksCounterwallet(Network network, String expectedCoinType) {
       when(() => mockConfig.network).thenReturn(network);
-      when(() => mockWalletService.deriveRootFreewallet(any(), any()))
+      when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
           .thenAnswer((_) async => wallet);
       when(() => mockEncryptionService.decrypt(any(), any()))
           .thenAnswer((_) async => decryptedPrivKey);
@@ -252,10 +252,21 @@ void main() {
               verify(() => mockAddressRepository.insertMany(any())).called(2);
               break;
             case ImportFormat.counterwallet:
-              verify(() => mockWalletService.deriveRootFreewallet(
+              verify(() => mockWalletService.deriveRootCounterwallet(
                   mnemonic, password)).called(1);
               verify(() => mockEncryptionService.decrypt(any(), password))
                   .called(1);
+              verify(() => mockAddressService.deriveAddressFreewalletRange(
+                  type: AddressType.bech32,
+                  privKey: any(named: 'privKey'),
+                  chainCodeHex: any(named: 'chainCodeHex'),
+                  accountUuid: any(named: 'accountUuid'),
+                  // purpose: '32',
+                  // coin: expectedCoinType,
+                  account: '0\'',
+                  change: '0',
+                  start: 0,
+                  end: 0)).called(1);
               verify(() => mockAddressService.deriveAddressFreewalletRange(
                   type: AddressType.legacy,
                   privKey: any(named: 'privKey'),
@@ -269,7 +280,7 @@ void main() {
                   end: 0)).called(1);
               verify(() => mockWalletRepository.insert(any())).called(1);
               verify(() => mockAccountRepository.insert(any())).called(1);
-              verify(() => mockAddressRepository.insertMany(any())).called(1);
+              verify(() => mockAddressRepository.insertMany(any())).called(2);
               break;
           }
         },
