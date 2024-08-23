@@ -115,7 +115,6 @@ void main() {
       await setup();
     });
 
-    print('TEST CASES: $testCases');
     for (final testCase in testCases) {
       testWidgets('Import seed flow - ${testCase['format']}',
           (WidgetTester tester) async {
