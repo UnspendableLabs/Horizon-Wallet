@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
@@ -20,11 +21,10 @@ import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
+import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 
 String balancesStateToString(BalancesState state) {
   return state.when(
@@ -519,82 +519,85 @@ class _BalancesState extends State<Balances> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
-      double height = MediaQuery.of(context).size.height * 0.75;
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: (result) => _resultToBalanceList(
-            result, height, widget.isDarkTheme, widget.addresses),
-        reloading: (result) => _resultToBalanceList(
-            result, height, widget.isDarkTheme, widget.addresses),
+        complete: (result) =>
+            _resultToBalanceList(result, widget.isDarkTheme, widget.addresses),
+        reloading: (result) =>
+            _resultToBalanceList(result, widget.isDarkTheme, widget.addresses),
       );
     });
   }
 
   Widget _resultToBalanceList(
-      Result result, double height, bool isDarkTheme, List<Address> addresses) {
+      Result result, bool isDarkTheme, List<Address> addresses) {
     Color backgroundColor = isDarkTheme
         ? const Color.fromRGBO(35, 35, 58, 1)
         : const Color.fromRGBO(246, 247, 250, 1);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 16.0),
-      child: Container(
-        // height: height,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(30.0),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: 343,
         ),
-        child: Column(
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Account Balances',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-                child:
-                    Container(child: _balanceList(result, widget.isDarkTheme))),
-            if (_isExpanded)
-              Builder(builder: (context) {
-                return Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: FractionallySizedBox(
-                      widthFactor: 0.5,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isExpanded = false;
-                          });
-                        },
-                        child: const Text("Collapse"),
+        child: Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Account Balances',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                );
-              }),
-          ],
+                  ],
+                ),
+              ),
+              Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+                  child: Container(
+                      child: _balanceList(result, widget.isDarkTheme))),
+              if (_isExpanded)
+                Builder(builder: (context) {
+                  return Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FractionallySizedBox(
+                        widthFactor: 0.5,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isExpanded = false;
+                            });
+                          },
+                          child: const Text("Collapse"),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+            ],
+          ),
         ),
       ),
     );
@@ -645,12 +648,12 @@ class _BalancesState extends State<Balances> {
           );
         }).toList();
 
-        if (balanceWidgets.length > 6 && !_isExpanded) {
+        if (balanceWidgets.length > 3 && !_isExpanded) {
           return Column(
             children: [
               ListView(
                 shrinkWrap: true,
-                children: balanceWidgets.take(6).toList(),
+                children: balanceWidgets.take(3).toList(),
               ),
               FractionallySizedBox(
                 widthFactor: 0.5,
