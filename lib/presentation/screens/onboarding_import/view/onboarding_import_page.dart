@@ -652,12 +652,12 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 _buildDropdownMenuItem(ImportFormat.horizon.name,
                     ImportFormat.horizon.description, dropdownBackgroundColor),
                 _buildDropdownMenuItem(
-                    ImportFormat.freewallet.name,
-                    ImportFormat.freewallet.description,
-                    dropdownBackgroundColor),
-                _buildDropdownMenuItem(
                     ImportFormat.counterwallet.name,
                     ImportFormat.counterwallet.description,
+                    dropdownBackgroundColor),
+                _buildDropdownMenuItem(
+                    ImportFormat.freewallet.name,
+                    ImportFormat.freewallet.description,
                     dropdownBackgroundColor),
               ],
             ),
