@@ -1,10 +1,9 @@
 enum ImportFormat {
-  horizon("Horizon", "Horizon (BIP84,P2WPKH,Bech32)"),
+  horizon("Horizon", "Horizon"),
   // legacy("Legacy", "BIP44,P2PKH,Base58"),
-  freewallet(
-      "Freewallet", "Freewallet (BIP44,P2WPKH,Bech32 + BIP44,P2PKH,Base58)"),
+  freewallet("Freewallet", "Freewallet bip39"),
 
-  counterwallet("Counterwallet", "Counterwallet (BIP44,P2PKH,Base58)");
+  counterwallet("Counterwallet", "Freewallet / Counterwallet");
 
   const ImportFormat(this.name, this.description);
   final String name;
