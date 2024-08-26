@@ -179,52 +179,58 @@ class PasswordPrompt extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(),
-              Text(
-                'Please create a password',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? mainTextWhite : mainTextBlack),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width / 3),
-                child: const Text(
-                  'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
-                  style: TextStyle(fontSize: 16),
+              Expanded(
+                child: Text(
+                  'Please create a password',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? mainTextWhite : mainTextBlack),
                   textAlign: TextAlign.center,
                 ),
               ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: Container(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width / 3),
+                  child: const Text(
+                    'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
               const SizedBox(height: 32),
-              Container(
-                constraints: const BoxConstraints(
-                    minHeight: 48, minWidth: double.infinity),
-                child: Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    child: TextField(
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      controller: _passwordController,
-                      onChanged: (value) {
-                        context
-                            .read<OnboardingImportBloc>()
-                            .add(PasswordChanged(password: value));
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: inputBackgroundColor,
-                        labelText: 'Password',
-                        labelStyle: TextStyle(
-                            color: isDarkMode
-                                ? darkThemeInputLabelColor
-                                : lightThemeInputLabelColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide.none,
+              Expanded(
+                child: Container(
+                  constraints: const BoxConstraints(
+                      minHeight: 48, minWidth: double.infinity),
+                  child: Center(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width / 3,
+                      child: TextField(
+                        obscureText: true,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        controller: _passwordController,
+                        onChanged: (value) {
+                          context
+                              .read<OnboardingImportBloc>()
+                              .add(PasswordChanged(password: value));
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: inputBackgroundColor,
+                          labelText: 'Password',
+                          labelStyle: TextStyle(
+                              color: isDarkMode
+                                  ? darkThemeInputLabelColor
+                                  : lightThemeInputLabelColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
@@ -232,33 +238,35 @@ class PasswordPrompt extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Container(
-                constraints: const BoxConstraints(
-                    minHeight: 48, minWidth: double.infinity),
-                child: Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    child: TextField(
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      controller: _passwordConfirmationController,
-                      onChanged: (value) {
-                        context.read<OnboardingImportBloc>().add(
-                            PasswordConfirmationChanged(
-                                passwordConfirmation: value));
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: inputBackgroundColor,
-                        labelText: 'Confirm Password',
-                        labelStyle: TextStyle(
-                            color: isDarkMode
-                                ? darkThemeInputLabelColor
-                                : lightThemeInputLabelColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide.none,
+              Expanded(
+                child: Container(
+                  constraints: const BoxConstraints(
+                      minHeight: 48, minWidth: double.infinity),
+                  child: Center(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width / 3,
+                      child: TextField(
+                        obscureText: true,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        controller: _passwordConfirmationController,
+                        onChanged: (value) {
+                          context.read<OnboardingImportBloc>().add(
+                              PasswordConfirmationChanged(
+                                  passwordConfirmation: value));
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: inputBackgroundColor,
+                          labelText: 'Confirm Password',
+                          labelStyle: TextStyle(
+                              color: isDarkMode
+                                  ? darkThemeInputLabelColor
+                                  : lightThemeInputLabelColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),

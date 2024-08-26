@@ -1,6 +1,7 @@
 // https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,9 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
+import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -15,32 +19,6 @@ import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/view/address_dropdown.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-
-import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
-import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
-import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-
-class AccountListView extends StatelessWidget {
-  const AccountListView({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final shell = context.read<ShellStateCubit>();
-
-    return shell.state.maybeWhen(
-        success: (state) => ListView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: state.accounts.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  title: Center(child: Text(state.accounts[index].name)),
-                  onTap: () => print(index),
-                );
-              },
-            ),
-        orElse: () => const Text(""));
-  }
-}
 
 class ResponsiveAccountSidebar extends StatefulWidget {
   const ResponsiveAccountSidebar({super.key});
@@ -239,56 +217,68 @@ class Shell extends StatelessWidget {
                 backgroundColor: noBackgroundColor,
                 title: LayoutBuilder(
                   builder: (context, constraints) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        isDarkTheme
-                            ? SvgPicture.asset(
-                                'assets/logo-white.svg',
-                                width: 35,
-                                height: 35,
-                              )
-                            : SvgPicture.asset(
-                                'assets/logo-black.svg',
-                                width: 35,
-                                height: 35,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: isDarkTheme
+                                  ? SvgPicture.asset(
+                                      'assets/logo-white.svg',
+                                      width: 35,
+                                      height: 35,
+                                    )
+                                  : SvgPicture.asset(
+                                      'assets/logo-black.svg',
+                                      width: 35,
+                                      height: 35,
+                                    ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Horizon',
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w600,
+                                )),
+                            const SizedBox(width: 8),
+                            const Text('Wallet',
+                                style: TextStyle(
+                                  color: neonBlueDarkTheme,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w600,
+                                )),
+                            const SizedBox(width: 12),
+                            const Text('ALPHA',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                )),
+                            const SizedBox(width: 12),
+                            if (!isSmallScreen)
+                              shell.state.maybeWhen(
+                                success: (state) => state.addresses.length > 1
+                                    ? Flexible(
+                                        child: AddressDropdown(
+                                          key:
+                                              Key(state.currentAddress.address),
+                                          isDarkTheme: isDarkTheme,
+                                          addresses: state.addresses,
+                                          currentAddress: state.currentAddress,
+                                          onChange: shell.onAddressChanged,
+                                        ),
+                                      )
+                                    : const SizedBox.shrink(),
+                                orElse: () => const SizedBox.shrink(),
                               ),
-                        const SizedBox(width: 8),
-                        const Text('Horizon',
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w600,
-                            )),
-                        const SizedBox(width: 8),
-                        const Text('Wallet',
-                            style: TextStyle(
-                              color: neonBlueDarkTheme,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w600,
-                            )),
-                        const SizedBox(width: 12),
-                        const Text('ALPHA',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            )),
+                          ],
+                        ),
                       ],
                     );
                   },
                 ),
                 actions: [
-                  shell.state.maybeWhen(
-                    success: (state) => state.addresses.length > 1
-                        ? AddressDropdown(
-                            key: Key(state.currentAddress.address),
-                            isDarkTheme: isDarkTheme,
-                            addresses: state.addresses,
-                            currentAddress: state.currentAddress,
-                            onChange: shell.onAddressChanged,
-                          )
-                        : const SizedBox.shrink(),
-                    orElse: () => const SizedBox.shrink(),
-                  ),
                   const SizedBox(width: 8),
                   Container(
                     width: 80,
@@ -431,6 +421,23 @@ class Shell extends StatelessWidget {
               body: SafeArea(
                 child: Column(
                   children: [
+                    if (isSmallScreen)
+                      shell.state.maybeWhen(
+                        success: (state) => state.addresses.length > 1
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: AddressDropdown(
+                                  key: Key(state.currentAddress.address),
+                                  isDarkTheme: isDarkTheme,
+                                  addresses: state.addresses,
+                                  currentAddress: state.currentAddress,
+                                  onChange: shell.onAddressChanged,
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
                     Expanded(
                       child: Row(
                         children: [

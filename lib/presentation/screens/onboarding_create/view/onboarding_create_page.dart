@@ -83,32 +83,42 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                 ),
                 child: Scaffold(
                   backgroundColor: scaffoldBackgroundColor,
-                  appBar: AppBar(
-                    backgroundColor: scaffoldBackgroundColor,
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        isDarkMode
-                            ? SvgPicture.asset(
-                                'assets/logo-white.svg',
-                                width: 48,
-                                height: 48,
-                              )
-                            : SvgPicture.asset(
-                                'assets/logo-black.svg',
-                                width: 48,
-                                height: 48,
-                              ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Horizon',
-                          style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  isDarkMode ? mainTextWhite : mainTextBlack),
+                  appBar: PreferredSize(
+                    preferredSize: const Size.fromHeight(kToolbarHeight + 24),
+                    child: AppBar(
+                      backgroundColor: scaffoldBackgroundColor,
+                      title: Padding(
+                        padding: const EdgeInsets.only(
+                            top: 24.0), // Move the Row down by 24 pixels
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            isDarkMode
+                                ? SvgPicture.asset(
+                                    'assets/logo-white.svg',
+                                    width: 48,
+                                    height: 48,
+                                  )
+                                : SvgPicture.asset(
+                                    'assets/logo-black.svg',
+                                    width: 48,
+                                    height: 48,
+                                  ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Horizon',
+                              style: TextStyle(
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarkMode
+                                      ? mainTextWhite
+                                      : mainTextBlack),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
+                      toolbarHeight: kToolbarHeight +
+                          24, // Increase the height of the AppBar
                     ),
                   ),
                   body: Column(
@@ -390,7 +400,12 @@ class _MnemonicState extends State<Mnemonic> {
         isDarkMode ? noBackgroundColor : lightThemeInputColor;
     final continueButtonBackgroundColor =
         isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
-    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreenWidth = screenSize.width < 768;
+    final screenHeight = screenSize.height;
+
+    final boxHeight = (screenHeight / 10)
+        .clamp(20.0, 70.0); // Adjust height based on screen height
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
@@ -400,62 +415,36 @@ class _MnemonicState extends State<Mnemonic> {
             child: Container(
               margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (state.mnemonicState is GenerateMnemonicStateLoading)
                     const CircularProgressIndicator()
                   else if (state.mnemonicState
                       is GenerateMnemonicStateGenerated)
-                    Expanded(
-                      child: Container(
-                        constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width / 2),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 20),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: SvgPicture.asset(
-                                color: onboardingQuoteDarkThemeColor,
-                                'assets/open-quote.svg',
-                                width: 48,
-                                height: 48,
-                              ),
+                    Container(
+                      constraints:
+                          BoxConstraints(maxWidth: screenSize.width / 2),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: boxHeight),
+                          _buildMnemonicText(
+                              state.mnemonicState.mnemonic, isSmallScreenWidth),
+                          SizedBox(height: boxHeight),
+                          const Text(
+                            textAlign: TextAlign.center,
+                            'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 16,
                             ),
-                            SelectableText(
-                              textAlign: TextAlign.center,
-                              state.mnemonicState.mnemonic,
-                              style: TextStyle(
-                                color:
-                                    isDarkMode ? mainTextWhite : mainTextBlack,
-                                fontWeight: FontWeight.bold,
-                                fontSize: isSmallScreen ? 35 : 45,
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: SvgPicture.asset(
-                                color: onboardingQuoteDarkThemeColor,
-                                'assets/closed-quote.svg',
-                                width: 48,
-                                height: 48,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              textAlign: TextAlign.center,
-                              'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
+                  const Spacer(),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
@@ -463,7 +452,7 @@ class _MnemonicState extends State<Mnemonic> {
                       children: [
                         Flexible(
                           child: SizedBox(
-                            width: isSmallScreen ? double.infinity : 150,
+                            width: isSmallScreenWidth ? double.infinity : 150,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 overlayColor: noBackgroundColor,
@@ -492,10 +481,9 @@ class _MnemonicState extends State<Mnemonic> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
                         Flexible(
                           child: SizedBox(
-                            width: isSmallScreen ? double.infinity : 250,
+                            width: isSmallScreenWidth ? double.infinity : 250,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
@@ -532,6 +520,27 @@ class _MnemonicState extends State<Mnemonic> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMnemonicText(String mnemonic, bool isSmallScreen) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final minFontSize = 20.0;
+    final maxFontSize = 40.0;
+    final fontSize =
+        ((screenWidth / 1000) * (maxFontSize - minFontSize) + minFontSize)
+            .clamp(minFontSize, maxFontSize);
+
+    return SelectableText(
+      mnemonic,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? mainTextWhite
+            : mainTextBlack,
+        fontWeight: FontWeight.bold,
+        fontSize: fontSize,
+      ),
     );
   }
 }

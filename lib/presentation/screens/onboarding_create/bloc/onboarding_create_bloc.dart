@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -15,7 +16,6 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
@@ -94,6 +94,11 @@ class OnboardingCreateBloc
     });
 
     on<GenerateMnemonic>((event, emit) {
+      // print('state.mnemonicState.mnemonic: ${state.mnemonicState.mnemonic}');
+      print('state.mnemonicState: ${state.mnemonicState}');
+      // if (state.mnemonicState.mnemonic != '' || state.mnemonicState.mnemonic != null) {
+      //   return;
+      // }
       emit(state.copyWith(mnemonicState: GenerateMnemonicStateLoading()));
 
       try {
