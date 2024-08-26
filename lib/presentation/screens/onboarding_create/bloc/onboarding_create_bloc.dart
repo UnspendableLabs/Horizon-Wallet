@@ -94,11 +94,11 @@ class OnboardingCreateBloc
     });
 
     on<GenerateMnemonic>((event, emit) {
-      // print('state.mnemonicState.mnemonic: ${state.mnemonicState.mnemonic}');
-      print('state.mnemonicState: ${state.mnemonicState}');
-      // if (state.mnemonicState.mnemonic != '' || state.mnemonicState.mnemonic != null) {
-      //   return;
-      // }
+      print('state.mnemonicState in GENERATE!!!: ${state.mnemonicState}');
+      if (state.mnemonicState is GenerateMnemonicStateUnconfirmed) {
+        // If a mnemonic is already generated, do not generate a new one
+        return;
+      }
       emit(state.copyWith(mnemonicState: GenerateMnemonicStateLoading()));
 
       try {

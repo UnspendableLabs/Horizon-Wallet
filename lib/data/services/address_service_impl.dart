@@ -104,7 +104,7 @@ class AddressServiceImpl extends AddressService {
      */
 
     String path = 'm/$account/$change/$index';
-    
+
     bip32.BIP32Interface child =
         (root as bip32.BIP32Interface).derivePath(path);
 

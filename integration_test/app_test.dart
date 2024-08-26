@@ -234,8 +234,8 @@ void main() {
               reason:
                   'Imported address ${address.address} was not in the list of expected addresses');
         }
-        
-         final logoutButton = find.text('Logout');
+
+        final logoutButton = find.text('Logout');
         expect(logoutButton, findsOneWidget);
         await tester.tap(logoutButton);
         await tester.pumpAndSettle();

@@ -388,7 +388,11 @@ class _MnemonicState extends State<Mnemonic> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<OnboardingCreateBloc>(context).add(GenerateMnemonic());
+    final state = BlocProvider.of<OnboardingCreateBloc>(context).state;
+    print('state.mnemonicState in INIT!!!: ${state.mnemonicState}');
+    if (state.mnemonicState is! GenerateMnemonicStateUnconfirmed) {
+      BlocProvider.of<OnboardingCreateBloc>(context).add(GenerateMnemonic());
+    }
   }
 
   @override
@@ -421,7 +425,8 @@ class _MnemonicState extends State<Mnemonic> {
                   if (state.mnemonicState is GenerateMnemonicStateLoading)
                     const CircularProgressIndicator()
                   else if (state.mnemonicState
-                      is GenerateMnemonicStateGenerated)
+                          is GenerateMnemonicStateGenerated ||
+                      state.mnemonicState is GenerateMnemonicStateUnconfirmed)
                     Container(
                       constraints:
                           BoxConstraints(maxWidth: screenSize.width / 2),
