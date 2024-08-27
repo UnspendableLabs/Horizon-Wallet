@@ -7,7 +7,7 @@ class OnboardingCreateState with _$OnboardingCreateState {
   const factory OnboardingCreateState({
     String? password,
     String? passwordError,
-    String? mnemonicError,
+    @Default(null) MnemonicErrorState? mnemonicError,
     @Default(GenerateMnemonicStateNotAsked) mnemonicState,
     @Default(CreateStateNotAsked) createState,
   }) = _OnboardingCreateState;
@@ -53,5 +53,12 @@ class CreateStateSuccess extends CreateState {}
 
 class CreateStateError extends CreateState {
   final String message;
-  CreateStateError({required this.message});
+  final List<int>? incorrectIndexes;
+  CreateStateError({required this.message, this.incorrectIndexes});
+}
+
+class MnemonicErrorState {
+  final String message;
+  final List<int>? incorrectIndexes;
+  MnemonicErrorState({required this.message, this.incorrectIndexes});
 }

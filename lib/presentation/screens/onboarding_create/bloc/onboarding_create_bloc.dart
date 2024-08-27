@@ -121,7 +121,17 @@ class OnboardingCreateBloc
 
     on<ConfirmMnemonicChanged>((event, emit) {
       if (state.mnemonicState.mnemonic != event.mnemonic) {
-        emit(state.copyWith(mnemonicError: 'Mnemonic does not match'));
+        List<int> incorrectIndexes = [];
+        for (int i = 0; i < 12; i++) {
+          if (state.mnemonicState.mnemonic.split(' ')[i] !=
+              event.mnemonic.split(' ')[i]) {
+            incorrectIndexes.add(i);
+          }
+        }
+        emit(state.copyWith(
+            mnemonicError: MnemonicErrorState(
+                message: 'Seed does not match',
+                incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(mnemonicError: null));
       }
@@ -129,7 +139,17 @@ class OnboardingCreateBloc
 
     on<ConfirmMnemonic>((event, emit) {
       if (state.mnemonicState.mnemonic != event.mnemonic) {
-        emit(state.copyWith(mnemonicError: 'Mnemonic does not match'));
+        List<int> incorrectIndexes = [];
+        for (int i = 0; i < 12; i++) {
+          if (state.mnemonicState.mnemonic.split(' ')[i] !=
+              event.mnemonic.split(' ')[i]) {
+            incorrectIndexes.add(i);
+          }
+        }
+        emit(state.copyWith(
+            mnemonicError: MnemonicErrorState(
+                message: 'Seed does not match',
+                incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(
             createState: CreateStateMnemonicConfirmed, mnemonicError: null));

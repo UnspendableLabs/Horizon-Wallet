@@ -389,7 +389,6 @@ class _MnemonicState extends State<Mnemonic> {
   void initState() {
     super.initState();
     final state = BlocProvider.of<OnboardingCreateBloc>(context).state;
-    print('state.mnemonicState in INIT!!!: ${state.mnemonicState}');
     if (state.mnemonicState is! GenerateMnemonicStateUnconfirmed) {
       BlocProvider.of<OnboardingCreateBloc>(context).add(GenerateMnemonic());
     }
@@ -551,7 +550,7 @@ class _MnemonicState extends State<Mnemonic> {
 }
 
 class ConfirmSeedInputFields extends StatefulWidget {
-  final String? mnemonicErrorState;
+  final MnemonicErrorState? mnemonicErrorState;
   const ConfirmSeedInputFields({required this.mnemonicErrorState, super.key});
   @override
   State<ConfirmSeedInputFields> createState() => _ConfirmSeedInputFieldsState();
@@ -600,6 +599,29 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                   color: isDarkMode ? mainTextWhite : mainTextBlack),
             ),
           ),
+          isSmallScreen && widget.mnemonicErrorState != null
+              ? Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: redErrorTextTransparent,
+                      borderRadius: BorderRadius.circular(40.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.info, color: redErrorText),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.mnemonicErrorState!.message,
+                          style: TextStyle(color: redErrorText),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : const Text(""),
           Expanded(
             child: isSmallScreen
                 ? SingleChildScrollView(
@@ -637,8 +659,31 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                             color: isDarkMode ? mainTextGrey : mainTextBlack)),
                   ),
                 ),
+                !isSmallScreen && widget.mnemonicErrorState != null
+                    ? Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: redErrorTextTransparent,
+                            borderRadius: BorderRadius.circular(40.0),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.info, color: redErrorText),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.mnemonicErrorState!.message,
+                                style: TextStyle(color: redErrorText),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : const Text(""),
                 SizedBox(
-                  width: 250,
+                  width: isSmallScreen ? 200 : 250,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
@@ -719,13 +764,42 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                         : lightThemeInputColor,
                                     labelText: 'Word ${index + 1}',
                                     labelStyle: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        color: isDarkMode
-                                            ? darkThemeInputLabelColor
-                                            : lightThemeInputLabelColor),
-                                    border: OutlineInputBorder(
+                                      fontWeight: FontWeight.normal,
+                                      color: isDarkMode
+                                          ? darkThemeInputLabelColor
+                                          : lightThemeInputLabelColor,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide.none,
+                                      borderSide:
+                                          widget.mnemonicErrorState != null &&
+                                                  widget.mnemonicErrorState
+                                                          ?.incorrectIndexes !=
+                                                      null &&
+                                                  widget.mnemonicErrorState!
+                                                      .incorrectIndexes!
+                                                      .contains(index)
+                                              ? BorderSide(
+                                                  color: redErrorText,
+                                                  width: 1.0,
+                                                  style: BorderStyle.solid)
+                                              : BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      borderSide:
+                                          widget.mnemonicErrorState != null &&
+                                                  widget.mnemonicErrorState
+                                                          ?.incorrectIndexes !=
+                                                      null &&
+                                                  widget.mnemonicErrorState!
+                                                      .incorrectIndexes!
+                                                      .contains(index)
+                                              ? BorderSide(
+                                                  color: redErrorText,
+                                                  width: 1.0,
+                                                  style: BorderStyle.solid)
+                                              : BorderSide.none,
                                     ),
                                   ),
                                   style: const TextStyle(fontSize: 16),
@@ -739,9 +813,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                   ),
                 ],
               ),
-              widget.mnemonicErrorState != null
-                  ? Text(widget.mnemonicErrorState!)
-                  : const Text(""),
             ],
           );
         } else {
@@ -792,14 +863,46 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                               : lightThemeInputColor,
                                           labelText: 'Word ${index + 1}',
                                           labelStyle: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: isDarkMode
-                                                  ? darkThemeInputLabelColor
-                                                  : lightThemeInputLabelColor),
-                                          border: OutlineInputBorder(
+                                            fontWeight: FontWeight.normal,
+                                            color: isDarkMode
+                                                ? darkThemeInputLabelColor
+                                                : lightThemeInputLabelColor,
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
                                             borderRadius:
                                                 BorderRadius.circular(8.0),
-                                            borderSide: BorderSide.none,
+                                            borderSide: widget
+                                                            .mnemonicErrorState !=
+                                                        null &&
+                                                    widget.mnemonicErrorState
+                                                            ?.incorrectIndexes !=
+                                                        null &&
+                                                    widget.mnemonicErrorState!
+                                                        .incorrectIndexes!
+                                                        .contains(index)
+                                                ? BorderSide(
+                                                    color: redErrorText,
+                                                    width: 1.0,
+                                                    style: BorderStyle.solid)
+                                                : BorderSide.none,
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            borderSide: widget
+                                                            .mnemonicErrorState !=
+                                                        null &&
+                                                    widget.mnemonicErrorState
+                                                            ?.incorrectIndexes !=
+                                                        null &&
+                                                    widget.mnemonicErrorState!
+                                                        .incorrectIndexes!
+                                                        .contains(index)
+                                                ? BorderSide(
+                                                    color: redErrorText,
+                                                    width: 1.0,
+                                                    style: BorderStyle.solid)
+                                                : BorderSide.none,
                                           ),
                                         ),
                                         style: const TextStyle(fontSize: 16),
@@ -813,9 +916,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                         );
                       }),
                     ),
-                    widget.mnemonicErrorState != null
-                        ? Text(widget.mnemonicErrorState!)
-                        : const Text(""),
                   ],
                 ),
               ),
