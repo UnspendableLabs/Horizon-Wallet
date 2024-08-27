@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
@@ -177,10 +178,6 @@ class PasswordPrompt extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final cancelButtonBackgroundColor =
-        isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
@@ -204,7 +201,7 @@ class PasswordPrompt extends StatelessWidget {
               const SizedBox(height: 8),
               Container(
                 constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width / 3),
+                    maxWidth: MediaQuery.of(context).size.width / 2),
                 child: const Text(
                   'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
                   style: TextStyle(fontSize: 16),
@@ -287,87 +284,30 @@ class PasswordPrompt extends StatelessWidget {
                   ? Text(_state.passwordError!)
                   : const Text(""),
               const Spacer(),
-              if (isSmallScreen) const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: SizedBox(
-                        width: isSmallScreen ? double.infinity : 150,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            overlayColor: noBackgroundColor,
-                            elevation: 0,
-                            backgroundColor: cancelButtonBackgroundColor,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 32, vertical: 16), // Button size
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ), // Text style
-                          ),
-                          onPressed: () {
-                            final shell = context.read<ShellStateCubit>();
-                            shell.onOnboarding();
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('CANCEL',
-                                style: TextStyle(
-                                    color: isDarkMode
-                                        ? mainTextGrey
-                                        : mainTextBlack)),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: SizedBox(
-                        width: isSmallScreen ? double.infinity : 250,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: continueButtonBackgroundColor,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 32, vertical: 16),
-                            textStyle: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w500),
-                          ),
-                          onPressed: () {
-                            if (_passwordController.text == '' ||
-                                _passwordConfirmationController.text == '') {
-                              context.read<OnboardingCreateBloc>().add(
-                                  PasswordError(
-                                      error: 'Password cannot be empty'));
-                            } else if (_passwordController.text !=
-                                _passwordConfirmationController.text) {
-                              context.read<OnboardingCreateBloc>().add(
-                                  PasswordError(
-                                      error: 'Passwords do not match'));
-                            } else {
-                              context
-                                  .read<OnboardingCreateBloc>()
-                                  .add(CreateWallet());
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'CONTINUE',
-                              style: TextStyle(
-                                  color: isDarkMode
-                                      ? neonBlueDarkTheme
-                                      : mainTextWhite),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              BackContinueButtons(
+                isDarkMode: isDarkMode,
+                isSmallScreenWidth: isSmallScreen,
+                onPressedBack: () {
+                  final shell = context.read<ShellStateCubit>();
+                  shell.onOnboarding();
+                },
+                onPressedContinue: () {
+                  if (_passwordController.text == '' ||
+                      _passwordConfirmationController.text == '') {
+                    context
+                        .read<OnboardingCreateBloc>()
+                        .add(PasswordError(error: 'Password cannot be empty'));
+                  } else if (_passwordController.text !=
+                      _passwordConfirmationController.text) {
+                    context
+                        .read<OnboardingCreateBloc>()
+                        .add(PasswordError(error: 'Passwords do not match'));
+                  } else {
+                    context.read<OnboardingCreateBloc>().add(CreateWallet());
+                  }
+                },
+                backButtonText: 'CANCEL',
+                continueButtonText: 'CONTINUE',
               ),
             ],
           ),
@@ -399,10 +339,6 @@ class _MnemonicState extends State<Mnemonic> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final cancelButtonBackgroundColor =
-        isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreenWidth = screenSize.width < 768;
     final screenHeight = screenSize.height;
@@ -418,105 +354,66 @@ class _MnemonicState extends State<Mnemonic> {
             child: Container(
               margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (state.mnemonicState is GenerateMnemonicStateLoading)
-                    const CircularProgressIndicator()
-                  else if (state.mnemonicState
-                          is GenerateMnemonicStateGenerated ||
-                      state.mnemonicState is GenerateMnemonicStateUnconfirmed)
-                    Container(
-                      constraints:
-                          BoxConstraints(maxWidth: screenSize.width / 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(height: boxHeight),
-                          _buildMnemonicText(
-                              state.mnemonicState.mnemonic, isSmallScreenWidth),
-                          SizedBox(height: boxHeight),
-                          const Text(
-                            textAlign: TextAlign.center,
-                            'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w300,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Flexible(
-                          child: SizedBox(
-                            width: isSmallScreenWidth ? double.infinity : 150,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                overlayColor: noBackgroundColor,
-                                elevation: 0,
-                                backgroundColor: cancelButtonBackgroundColor,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 16), // Button size
-                                textStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ), // Text style
-                              ),
-                              onPressed: () {
-                                final shell = context.read<ShellStateCubit>();
-                                shell.onOnboarding();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('CANCEL',
-                                    style: TextStyle(
-                                        color: isDarkMode
-                                            ? mainTextGrey
-                                            : mainTextBlack)),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Flexible(
-                          child: SizedBox(
-                            width: isSmallScreenWidth ? double.infinity : 250,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: continueButtonBackgroundColor,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 32, vertical: 16),
-                                textStyle: const TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w500),
-                              ),
-                              onPressed: () {
-                                context
-                                    .read<OnboardingCreateBloc>()
-                                    .add(UnconfirmMnemonic());
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'CONTINUE',
+                        if (state.mnemonicState is GenerateMnemonicStateLoading)
+                          const CircularProgressIndicator()
+                        else if (state.mnemonicState
+                                is GenerateMnemonicStateGenerated ||
+                            state.mnemonicState
+                                is GenerateMnemonicStateUnconfirmed)
+                          Container(
+                            constraints:
+                                BoxConstraints(maxWidth: screenSize.width / 2),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SizedBox(
+                                    height: isSmallScreenWidth ||
+                                            screenSize.height < 700
+                                        ? 16
+                                        : boxHeight),
+                                _buildMnemonicText(state.mnemonicState.mnemonic,
+                                    isSmallScreenWidth),
+                                SizedBox(
+                                    height: isSmallScreenWidth ||
+                                            screenSize.height < 700
+                                        ? 16
+                                        : boxHeight),
+                                const Text(
+                                  textAlign: TextAlign.center,
+                                  'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
                                   style: TextStyle(
-                                      color: isDarkMode
-                                          ? neonBlueDarkTheme
-                                          : mainTextWhite),
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
-                        ),
                       ],
                     ),
+                  ),
+                  const Spacer(),
+                  BackContinueButtons(
+                    isDarkMode: isDarkMode,
+                    isSmallScreenWidth: isSmallScreenWidth,
+                    onPressedBack: () {
+                      final shell = context.read<ShellStateCubit>();
+                      shell.onOnboarding();
+                    },
+                    onPressedContinue: () {
+                      context
+                          .read<OnboardingCreateBloc>()
+                          .add(UnconfirmMnemonic());
+                    },
+                    backButtonText: 'BACK',
+                    continueButtonText: 'CONTINUE',
                   ),
                 ],
               ),
@@ -578,10 +475,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final cancelButtonBackgroundColor =
-        isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -630,90 +523,45 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                 : buildInputFields(isSmallScreen, isDarkMode),
           ),
           if (isSmallScreen) const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    overlayColor: noBackgroundColor,
-                    elevation: 0,
-                    backgroundColor: cancelButtonBackgroundColor,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16), // Button size
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ), // Text style
-                  ),
-                  onPressed: () {
-                    context
-                        .read<OnboardingCreateBloc>()
-                        .add(GoBackToMnemonic());
-                  },
-                  child: Padding(
+          !isSmallScreen && widget.mnemonicErrorState != null
+              ? Align(
+                  alignment: Alignment.center,
+                  child: Container(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('BACK',
-                        style: TextStyle(
-                            color: isDarkMode ? mainTextGrey : mainTextBlack)),
-                  ),
-                ),
-                !isSmallScreen && widget.mnemonicErrorState != null
-                    ? Align(
-                        alignment: Alignment.center,
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: redErrorTextTransparent,
-                            borderRadius: BorderRadius.circular(40.0),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.info, color: redErrorText),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.mnemonicErrorState!.message,
-                                style: TextStyle(color: redErrorText),
-                              ),
-                            ],
-                          ),
+                    decoration: BoxDecoration(
+                      color: redErrorTextTransparent,
+                      borderRadius: BorderRadius.circular(40.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.info, color: redErrorText),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.mnemonicErrorState!.message,
+                          style: TextStyle(color: redErrorText),
                         ),
-                      )
-                    : const Text(""),
-                SizedBox(
-                  width: isSmallScreen ? 200 : 250,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: continueButtonBackgroundColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 16),
-                      textStyle: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w500),
-                    ),
-                    onPressed: () {
-                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
-                            mnemonic: controllers
-                                .map((controller) => controller.text)
-                                .join(' ')
-                                .trim(),
-                          ));
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'CONTINUE',
-                        style: TextStyle(
-                            color:
-                                isDarkMode ? neonBlueDarkTheme : mainTextWhite),
-                      ),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
+                )
+              : const Text(""),
+          BackContinueButtons(
+            isDarkMode: isDarkMode,
+            isSmallScreenWidth: isSmallScreen,
+            onPressedBack: () {
+              context.read<OnboardingCreateBloc>().add(GoBackToMnemonic());
+            },
+            onPressedContinue: () {
+              context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
+                    mnemonic: controllers
+                        .map((controller) => controller.text)
+                        .join(' ')
+                        .trim(),
+                  ));
+            },
+            backButtonText: 'BACK',
+            continueButtonText: 'CONTINUE',
           ),
         ],
       ),
