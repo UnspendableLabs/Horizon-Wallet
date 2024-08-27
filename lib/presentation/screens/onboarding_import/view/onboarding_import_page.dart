@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
@@ -129,6 +130,40 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                 passwordConfirmationController:
                                     _passwordConfirmationController,
                                 state: state,
+                                onPasswordChanged: (value) {
+                                  context
+                                      .read<OnboardingImportBloc>()
+                                      .add(PasswordChanged(password: value));
+                                },
+                                onPasswordConfirmationChanged: (value) {
+                                  context.read<OnboardingImportBloc>().add(
+                                      PasswordConfirmationChanged(
+                                          passwordConfirmation: value));
+                                },
+                                onPressedBack: () {
+                                  final shell = context.read<ShellStateCubit>();
+                                  shell.onOnboarding();
+                                },
+                                onPressedContinue: () {
+                                  if (_passwordController.text == '' ||
+                                      _passwordConfirmationController.text ==
+                                          '') {
+                                    context.read<OnboardingImportBloc>().add(
+                                        PasswordError(
+                                            error: 'Password cannot be empty'));
+                                  } else if (_passwordController.text !=
+                                      _passwordConfirmationController.text) {
+                                    context.read<OnboardingImportBloc>().add(
+                                        PasswordError(
+                                            error: 'Passwords do not match'));
+                                  } else {
+                                    context
+                                        .read<OnboardingImportBloc>()
+                                        .add(ImportWallet());
+                                  }
+                                },
+                                backButtonText: 'CANCEL',
+                                continueButtonText: 'LOGIN',
                               ),
                       ),
                     ],
@@ -136,225 +171,6 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                 ),
               );
             }),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class PasswordPrompt extends StatelessWidget {
-  const PasswordPrompt({
-    super.key,
-    required TextEditingController passwordController,
-    required TextEditingController passwordConfirmationController,
-    required OnboardingImportState state,
-  })  : _passwordController = passwordController,
-        _passwordConfirmationController = passwordConfirmationController,
-        _state = state;
-
-  final TextEditingController _passwordController;
-  final TextEditingController _passwordConfirmationController;
-  final OnboardingImportState _state;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final inputBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-    final cancelButtonBackgroundColor =
-        isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
-
-    return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Spacer(),
-              Expanded(
-                child: Text(
-                  'Please create a password',
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? mainTextWhite : mainTextBlack),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Container(
-                  constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width / 3),
-                  child: const Text(
-                    'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(
-                      minHeight: 48, minWidth: double.infinity),
-                  child: Center(
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 3,
-                      child: TextField(
-                        obscureText: true,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        controller: _passwordController,
-                        onChanged: (value) {
-                          context
-                              .read<OnboardingImportBloc>()
-                              .add(PasswordChanged(password: value));
-                        },
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: inputBackgroundColor,
-                          labelText: 'Password',
-                          labelStyle: TextStyle(
-                              color: isDarkMode
-                                  ? darkThemeInputLabelColor
-                                  : lightThemeInputLabelColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(
-                      minHeight: 48, minWidth: double.infinity),
-                  child: Center(
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 3,
-                      child: TextField(
-                        obscureText: true,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        controller: _passwordConfirmationController,
-                        onChanged: (value) {
-                          context.read<OnboardingImportBloc>().add(
-                              PasswordConfirmationChanged(
-                                  passwordConfirmation: value));
-                        },
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: inputBackgroundColor,
-                          labelText: 'Confirm Password',
-                          labelStyle: TextStyle(
-                              color: isDarkMode
-                                  ? darkThemeInputLabelColor
-                                  : lightThemeInputLabelColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              _state.passwordError != null
-                  ? Text(_state.passwordError!)
-                  : const Text(""),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: 150,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          overlayColor: noBackgroundColor,
-                          elevation: 0,
-                          backgroundColor: cancelButtonBackgroundColor,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 16), // Button size
-                          textStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ), // Text style
-                        ),
-                        onPressed: () {
-                          final shell = context.read<ShellStateCubit>();
-                          shell.onOnboarding();
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text('CANCEL',
-                              style: TextStyle(
-                                  color: isDarkMode
-                                      ? mainTextGrey
-                                      : mainTextBlack)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 200,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: continueButtonBackgroundColor,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 16), // Button size
-                          textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500), // Text style
-                        ),
-                        onPressed: () {
-                          if (_passwordController.text == '' ||
-                              _passwordConfirmationController.text == '') {
-                            context.read<OnboardingImportBloc>().add(
-                                PasswordError(
-                                    error: 'Password cannot be empty'));
-                          } else if (_passwordController.text !=
-                              _passwordConfirmationController.text) {
-                            context.read<OnboardingImportBloc>().add(
-                                PasswordError(error: 'Passwords do not match'));
-                          } else {
-                            context
-                                .read<OnboardingImportBloc>()
-                                .add(ImportWallet());
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'LOGIN',
-                            style: TextStyle(
-                                color: isDarkMode
-                                    ? neonBlueDarkTheme
-                                    : mainTextWhite),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ),
       ),
