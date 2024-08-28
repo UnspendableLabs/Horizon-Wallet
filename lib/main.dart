@@ -365,7 +365,7 @@ class MyApp extends StatelessWidget {
     inputDecorationTheme: InputDecorationTheme(
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: Colors.red),
+        borderSide: const BorderSide(color: redErrorText),
       ),
     ),
     checkboxTheme: CheckboxThemeData(
@@ -437,7 +437,7 @@ class MyApp extends StatelessWidget {
     inputDecorationTheme: InputDecorationTheme(
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: Colors.red),
+        borderSide: const BorderSide(color: redErrorText),
       ),
     ),
     checkboxTheme: CheckboxThemeData(

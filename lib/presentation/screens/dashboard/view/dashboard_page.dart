@@ -539,7 +539,7 @@ class _BalancesState extends State<Balances> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 16.0),
       child: ConstrainedBox(
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           maxHeight: 343,
         ),
         child: Container(

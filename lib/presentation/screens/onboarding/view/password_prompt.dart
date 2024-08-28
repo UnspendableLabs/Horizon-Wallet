@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 
-class PasswordPrompt extends StatelessWidget {
+class PasswordPrompt extends StatefulWidget {
   final Function(String) onPasswordChanged;
   final Function(String) onPasswordConfirmationChanged;
   final Function() onPressedBack;
@@ -28,6 +28,14 @@ class PasswordPrompt extends StatelessWidget {
   final TextEditingController _passwordController;
   final TextEditingController _passwordConfirmationController;
   final dynamic _state;
+
+  @override
+  _PasswordPromptState createState() => _PasswordPromptState();
+}
+
+class _PasswordPromptState extends State<PasswordPrompt> {
+  bool _isPasswordObscured = true;
+  bool _isPasswordConfirmationObscured = true;
 
   @override
   Widget build(BuildContext context) {
@@ -72,11 +80,11 @@ class PasswordPrompt extends StatelessWidget {
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
                     child: TextField(
-                      obscureText: true,
+                      obscureText: _isPasswordObscured,
                       enableSuggestions: false,
                       autocorrect: false,
-                      controller: _passwordController,
-                      onChanged: onPasswordChanged,
+                      controller: widget._passwordController,
+                      onChanged: widget.onPasswordChanged,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: isDarkMode
@@ -91,6 +99,18 @@ class PasswordPrompt extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
                         ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordObscured
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordObscured = !_isPasswordObscured;
+                            });
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -104,11 +124,11 @@ class PasswordPrompt extends StatelessWidget {
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 3,
                     child: TextField(
-                      obscureText: true,
+                      obscureText: _isPasswordConfirmationObscured,
                       enableSuggestions: false,
                       autocorrect: false,
-                      controller: _passwordConfirmationController,
-                      onChanged: onPasswordConfirmationChanged,
+                      controller: widget._passwordConfirmationController,
+                      onChanged: widget.onPasswordConfirmationChanged,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: isDarkMode
@@ -123,26 +143,39 @@ class PasswordPrompt extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
                         ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordConfirmationObscured
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordConfirmationObscured =
+                                  !_isPasswordConfirmationObscured;
+                            });
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-              _state.passwordError != null
-                  ? Text(_state.passwordError!,
-                      style: TextStyle(
-                          color: redErrorText,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold))
+              widget._state.passwordError != null
+                  ? Text(widget._state.passwordError!,
+                      style: const TextStyle(
+                        color: redErrorText,
+                        fontSize: 16,
+                      ))
                   : const Text(""),
               const Spacer(),
               BackContinueButtons(
                 isDarkMode: isDarkMode,
                 isSmallScreenWidth: isSmallScreen,
-                onPressedBack: onPressedBack,
-                onPressedContinue: onPressedContinue,
-                backButtonText: backButtonText,
-                continueButtonText: continueButtonText,
+                onPressedBack: widget.onPressedBack,
+                onPressedContinue: widget.onPressedContinue,
+                backButtonText: widget.backButtonText,
+                continueButtonText: widget.continueButtonText,
               ),
             ],
           ),

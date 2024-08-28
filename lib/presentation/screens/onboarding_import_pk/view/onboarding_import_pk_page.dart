@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
@@ -89,33 +89,11 @@ class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
                 ),
                 child: Scaffold(
                   backgroundColor: scaffoldBackgroundColor,
-                  appBar: AppBar(
-                    backgroundColor: scaffoldBackgroundColor,
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        isDarkMode
-                            ? SvgPicture.asset(
-                                'assets/logo-white.svg',
-                                width: 48,
-                                height: 48,
-                              )
-                            : SvgPicture.asset(
-                                'assets/logo-black.svg',
-                                width: 48,
-                                height: 48,
-                              ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Horizon',
-                          style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  isDarkMode ? mainTextWhite : mainTextBlack),
-                        ),
-                      ],
-                    ),
+                  appBar: OnboardingAppBar(
+                    isDarkMode: isDarkMode,
+                    isSmallScreenWidth: isSmallScreen,
+                    isSmallScreenHeight: isSmallScreen,
+                    scaffoldBackgroundColor: scaffoldBackgroundColor,
                   ),
                   body: Column(
                     children: [
@@ -387,10 +365,6 @@ class _PKFieldState extends State<PKField> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final cancelButtonBackgroundColor =
-        isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
 
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
@@ -443,65 +417,21 @@ class _PKFieldState extends State<PKField> {
           )),
           if (isSmallScreen) const SizedBox(height: 16),
           buildDropdownButton(isDarkMode),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 30),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    overlayColor: noBackgroundColor,
-                    elevation: 0,
-                    backgroundColor: cancelButtonBackgroundColor,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16), // Button size
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ), // Text style
-                  ),
-                  onPressed: () {
-                    final shell = context.read<ShellStateCubit>();
-                    shell.onOnboarding();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('CANCEL',
-                        style: TextStyle(
-                            color: isDarkMode ? mainTextGrey : mainTextBlack)),
-                  ),
-                ),
-                SizedBox(
-                  width: 250,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: continueButtonBackgroundColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 16),
-                      textStyle: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w500),
-                    ),
-                    onPressed: () {
-                      context.read<OnboardingImportPKBloc>().add(PKSubmit(
-                            pk: pkController.text,
-                            importFormat: selectedFormat!,
-                          ));
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'CONTINUE',
-                        style: TextStyle(
-                            color:
-                                isDarkMode ? neonBlueDarkTheme : mainTextWhite),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          BackContinueButtons(
+              isDarkMode: isDarkMode,
+              isSmallScreenWidth: isSmallScreen,
+              onPressedBack: () {
+                final shell = context.read<ShellStateCubit>();
+                shell.onOnboarding();
+              },
+              onPressedContinue: () {
+                context.read<OnboardingImportPKBloc>().add(PKSubmit(
+                      pk: pkController.text,
+                      importFormat: selectedFormat!,
+                    ));
+              },
+              backButtonText: 'CANCEL',
+              continueButtonText: 'CONTINUE'),
         ],
       ),
     );

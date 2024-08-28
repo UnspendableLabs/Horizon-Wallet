@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
@@ -90,33 +91,11 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                 ),
                 child: Scaffold(
                   backgroundColor: scaffoldBackgroundColor,
-                  appBar: AppBar(
-                    backgroundColor: scaffoldBackgroundColor,
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        isDarkMode
-                            ? SvgPicture.asset(
-                                'assets/logo-white.svg',
-                                width: 48,
-                                height: 48,
-                              )
-                            : SvgPicture.asset(
-                                'assets/logo-black.svg',
-                                width: 48,
-                                height: 48,
-                              ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Horizon',
-                          style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  isDarkMode ? mainTextWhite : mainTextBlack),
-                        ),
-                      ],
-                    ),
+                  appBar: OnboardingAppBar(
+                    isDarkMode: isDarkMode,
+                    isSmallScreenWidth: isSmallScreen,
+                    isSmallScreenHeight: isSmallScreen,
+                    scaffoldBackgroundColor: scaffoldBackgroundColor,
                   ),
                   body: Column(
                     children: [
@@ -190,7 +169,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   String? selectedFormat = ImportFormat.horizon.name;
-
   @override
   void dispose() {
     for (var controller in controllers) {
@@ -208,16 +186,34 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final cancelButtonBackgroundColor =
-        isDarkMode ? noBackgroundColor : lightThemeInputColor;
-    final continueButtonBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : royalBlueLightTheme;
-
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
       body: Column(
         children: [
-          SizedBox(height: isSmallScreen ? 16 : 20),
+          const SizedBox(height: 16),
+          isSmallScreen && widget.mnemonicErrorState != null
+              ? Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: redErrorTextTransparent,
+                      borderRadius: BorderRadius.circular(40.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.info, color: redErrorText),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.mnemonicErrorState!,
+                          style: const TextStyle(color: redErrorText),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : const Text(""),
           Expanded(
             child: isSmallScreen
                 ? SingleChildScrollView(
@@ -227,67 +223,47 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
           ),
           if (isSmallScreen) const SizedBox(height: 16),
           buildDropdownButton(isDarkMode),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 30),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    overlayColor: noBackgroundColor,
-                    elevation: 0,
-                    backgroundColor: cancelButtonBackgroundColor,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16), // Button size
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ), // Text style
-                  ),
-                  onPressed: () {
-                    final shell = context.read<ShellStateCubit>();
-                    shell.onOnboarding();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('CANCEL',
-                        style: TextStyle(
-                            color: isDarkMode ? mainTextGrey : mainTextBlack)),
-                  ),
-                ),
-                SizedBox(
-                  width: 250,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: continueButtonBackgroundColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 16),
-                      textStyle: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w500),
-                    ),
-                    onPressed: () {
-                      context.read<OnboardingImportBloc>().add(MnemonicSubmit(
-                            mnemonic: controllers
-                                .map((controller) => controller.text)
-                                .join(' ')
-                                .trim(),
-                            importFormat: selectedFormat!,
-                          ));
-                    },
-                    child: Padding(
+          BackContinueButtons(
+            isDarkMode: isDarkMode,
+            isSmallScreenWidth: isSmallScreen,
+            backButtonText: 'CANCEL',
+            continueButtonText: 'CONTINUE',
+            onPressedBack: () {
+              final shell = context.read<ShellStateCubit>();
+              shell.onOnboarding();
+            },
+            onPressedContinue: () {
+              context.read<OnboardingImportBloc>().add(MnemonicSubmit(
+                    mnemonic: controllers
+                        .map((controller) => controller.text)
+                        .join(' ')
+                        .trim(),
+                    importFormat: selectedFormat!,
+                  ));
+            },
+            errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
+                ? Align(
+                    alignment: Alignment.center,
+                    child: Container(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'CONTINUE',
-                        style: TextStyle(
-                            color:
-                                isDarkMode ? neonBlueDarkTheme : mainTextWhite),
+                      decoration: BoxDecoration(
+                        color: redErrorTextTransparent,
+                        borderRadius: BorderRadius.circular(40.0),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.info, color: redErrorText),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.mnemonicErrorState!,
+                            style: const TextStyle(color: redErrorText),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
+                  )
+                : null,
           ),
         ],
       ),
@@ -358,9 +334,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                   ),
                 ],
               ),
-              widget.mnemonicErrorState != null
-                  ? Text(widget.mnemonicErrorState!)
-                  : const Text(""),
             ],
           );
         } else {
@@ -432,9 +405,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         );
                       }),
                     ),
-                    widget.mnemonicErrorState != null
-                        ? Text(widget.mnemonicErrorState!)
-                        : const Text(""),
                   ],
                 ),
               ),

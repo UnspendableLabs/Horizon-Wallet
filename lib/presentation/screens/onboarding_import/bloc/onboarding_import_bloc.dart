@@ -60,15 +60,21 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
+        // TODO: bug. the import formats should always be stored consistently
         if (state.importFormat == "Horizon" ||
-            state.importFormat == "Freewallet") {
+            state.importFormat == "Freewallet" ||
+            state.importFormat == ImportFormat.horizon ||
+            state.importFormat == ImportFormat.freewallet) {
+          print('validating mnemonic');
           bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
+          print('validMnemonic: $validMnemonic');
           if (!validMnemonic) {
             emit(state.copyWith(
                 mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
             return;
           }
         }
+        print('mnemonic: ${event.mnemonic}');
         emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
       }
     });
@@ -86,7 +92,7 @@ class OnboardingImportBloc
         return;
       } else if (event.importFormat == "Horizon" ||
           event.importFormat == "Freewallet") {
-        // only validate mnemonic if importing from horizon
+        // only validate mnemonic if importing from horizon or freewallet
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
           emit(state.copyWith(mnemonicError: "Invalid mnemonic"));

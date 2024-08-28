@@ -238,26 +238,27 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     style: ElevatedButton.styleFrom(
                                       overlayColor: noBackgroundColor,
                                       elevation: 0,
-                                      backgroundColor: isDarkMode
-                                          ? noBackgroundColor
-                                          : backdropBackgroundColor,
+                                      backgroundColor: noBackgroundColor,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 32, vertical: 16),
+                                          horizontal: 8, vertical: 4),
+                                      shape: const CircleBorder(
+                                        side: BorderSide(
+                                            color: mainTextGreyTransparent),
+                                      ),
                                       textStyle: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ), // Text style
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500),
                                     ),
                                     onPressed: _toggleMenu,
                                     child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(2.0),
                                       child: Icon(
                                         _isMenuExpanded
                                             ? Icons.arrow_drop_up
                                             : Icons.arrow_drop_down,
                                         color: isDarkMode
                                             ? mainTextGrey
-                                            : mainTextBlack,
+                                            : mainTextWhite,
                                       ),
                                     ),
                                   ),
@@ -293,7 +294,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const SizedBox(height: 50),
+                              SizedBox(height: 50),
                               Text(
                                 'Horizon',
                                 style: TextStyle(

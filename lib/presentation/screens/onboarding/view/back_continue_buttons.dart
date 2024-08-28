@@ -8,6 +8,7 @@ class BackContinueButtons extends StatelessWidget {
   final String backButtonText;
   final VoidCallback onPressedContinue;
   final String continueButtonText;
+  final Widget? errorWidget;
 
   const BackContinueButtons(
       {super.key,
@@ -16,7 +17,8 @@ class BackContinueButtons extends StatelessWidget {
       required this.onPressedBack,
       required this.onPressedContinue,
       required this.backButtonText,
-      required this.continueButtonText});
+      required this.continueButtonText,
+      this.errorWidget});
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class BackContinueButtons extends StatelessWidget {
               ),
             ),
           ),
+          if (errorWidget != null) errorWidget!,
           Flexible(
             child: SizedBox(
               width: isSmallScreenWidth ? double.infinity : 250,

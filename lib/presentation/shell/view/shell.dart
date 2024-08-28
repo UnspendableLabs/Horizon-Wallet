@@ -210,7 +210,7 @@ class Shell extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(top: 20.0, bottom: 40.0),
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 926),
+            constraints: const BoxConstraints(maxWidth: 926),
             child: Scaffold(
               backgroundColor: noBackgroundColor,
               appBar: AppBar(

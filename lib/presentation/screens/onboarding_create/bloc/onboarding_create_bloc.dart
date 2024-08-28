@@ -94,7 +94,6 @@ class OnboardingCreateBloc
     });
 
     on<GenerateMnemonic>((event, emit) {
-      print('state.mnemonicState in GENERATE!!!: ${state.mnemonicState}');
       if (state.mnemonicState is GenerateMnemonicStateUnconfirmed) {
         // If a mnemonic is already generated, do not generate a new one
         return;
