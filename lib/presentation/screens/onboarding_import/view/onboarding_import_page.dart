@@ -110,9 +110,12 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                     _passwordConfirmationController,
                                 state: state,
                                 onPasswordChanged: (value) {
-                                  context
-                                      .read<OnboardingImportBloc>()
-                                      .add(PasswordChanged(password: value));
+                                  context.read<OnboardingImportBloc>().add(
+                                      PasswordChanged(
+                                          password: value,
+                                          passwordConfirmation:
+                                              _passwordConfirmationController
+                                                  .text));
                                 },
                                 onPasswordConfirmationChanged: (value) {
                                   context.read<OnboardingImportBloc>().add(

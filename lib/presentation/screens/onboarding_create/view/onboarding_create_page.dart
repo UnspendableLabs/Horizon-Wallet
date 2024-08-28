@@ -109,9 +109,12 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                       _passwordConfirmationController,
                                   state: state,
                                   onPasswordChanged: (value) {
-                                    context
-                                        .read<OnboardingCreateBloc>()
-                                        .add(PasswordChanged(password: value));
+                                    context.read<OnboardingCreateBloc>().add(
+                                        PasswordChanged(
+                                            password: value,
+                                            passwordConfirmation:
+                                                _passwordConfirmationController
+                                                    .text));
                                   },
                                   onPasswordConfirmationChanged: (value) {
                                     context.read<OnboardingCreateBloc>().add(

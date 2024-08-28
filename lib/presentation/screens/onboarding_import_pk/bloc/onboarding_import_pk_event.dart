@@ -2,7 +2,8 @@ abstract class OnboardingImportPKEvent {}
 
 class PasswordChanged extends OnboardingImportPKEvent {
   final String password;
-  PasswordChanged({required this.password});
+  final String? passwordConfirmation;
+  PasswordChanged({required this.password, this.passwordConfirmation});
 }
 
 class PasswordConfirmationChanged extends OnboardingImportPKEvent {

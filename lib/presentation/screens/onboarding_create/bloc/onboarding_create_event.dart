@@ -2,8 +2,10 @@ abstract class OnboardingCreateEvent {}
 
 class PasswordChanged extends OnboardingCreateEvent {
   final String password;
+  final String? passwordConfirmation;
   PasswordChanged({
     required this.password,
+    this.passwordConfirmation,
   });
 }
 

@@ -9,6 +9,7 @@ class PasswordPrompt extends StatefulWidget {
   final Function() onPressedContinue;
   final String backButtonText;
   final String continueButtonText;
+  final Widget? optionalErrorWiget;
 
   const PasswordPrompt({
     super.key,
@@ -21,6 +22,7 @@ class PasswordPrompt extends StatefulWidget {
     required this.onPressedContinue,
     required this.backButtonText,
     required this.continueButtonText,
+    this.optionalErrorWiget,
   })  : _passwordController = passwordController,
         _passwordConfirmationController = passwordConfirmationController,
         _state = state;
@@ -161,6 +163,9 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                   ),
                 ),
               ),
+              widget.optionalErrorWiget != null
+                  ? widget.optionalErrorWiget!
+                  : const SizedBox.shrink(),
               widget._state.passwordError != null
                   ? Text(widget._state.passwordError!,
                       style: const TextStyle(
