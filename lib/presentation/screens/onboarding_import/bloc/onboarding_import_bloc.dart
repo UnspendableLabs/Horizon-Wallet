@@ -69,16 +69,13 @@ class OnboardingImportBloc
             state.importFormat == "Freewallet" ||
             state.importFormat == ImportFormat.horizon ||
             state.importFormat == ImportFormat.freewallet) {
-          print('validating mnemonic');
           bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-          print('validMnemonic: $validMnemonic');
           if (!validMnemonic) {
             emit(state.copyWith(
                 mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
             return;
           }
         }
-        print('mnemonic: ${event.mnemonic}');
         emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
       }
     });

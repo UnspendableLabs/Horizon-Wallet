@@ -86,7 +86,6 @@ class OnboardingImportPKBloc
     });
 
     on<ImportWallet>((event, emit) async {
-      print("importing wallet bloc?!?!?!?");
       emit(state.copyWith(importState: ImportStateLoading()));
       try {
         switch (state.importFormat) {
@@ -217,7 +216,6 @@ class OnboardingImportPKBloc
 
         emit(state.copyWith(importState: ImportStateSuccess()));
       } catch (e) {
-        print("error importing wallet: $e");
         emit(state.copyWith(
             importState: ImportStateError(message: e.toString())));
       }

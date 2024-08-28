@@ -136,8 +136,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
-        // print("utxoMap $utxoMap");
-
         Address? address = await addressRepository.getAddress(source);
         Account? account =
             await accountRepository.getAccountByUuid(address!.accountUuid);
