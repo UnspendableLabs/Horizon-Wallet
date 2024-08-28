@@ -115,6 +115,7 @@ flutter:
     - assets/logo-white.svg
     - assets/open-quote.svg
     - assets/closed-quote.svg
+    - assets/logo-blue-3d.png
 
   #   - .env
 

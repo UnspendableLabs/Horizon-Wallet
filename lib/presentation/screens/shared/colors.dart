@@ -17,6 +17,9 @@ const mainTextWhite = Color.fromRGBO(255, 255, 255, 1);
 const mainTextBlack = Color.fromRGBO(0, 0, 0, 1);
 const neonBlueDarkTheme = Color.fromRGBO(108, 210, 255, 1);
 const mainTextGrey = Color.fromRGBO(148, 148, 162, 1);
+const mainTextGreyTransparent = Color.fromRGBO(148, 148, 162, 0.5);
+const redErrorText = Color.fromRGBO(239, 87, 87, 1);
+const redErrorTextTransparent = Color.fromRGBO(239, 87, 87, 0.16);
 
 const greyDashboardTextDarkTheme = Color.fromRGBO(255, 255, 255, 0.8);
 const greyDashboardTextLightTheme = Color.fromRGBO(8, 8, 51, 0.8);

@@ -266,7 +266,7 @@ void main() {
                   account: '0\'',
                   change: '0',
                   start: 0,
-                  end: 0)).called(1);
+                  end: 9)).called(1);
               verify(() => mockAddressService.deriveAddressFreewalletRange(
                   type: AddressType.legacy,
                   privKey: any(named: 'privKey'),
@@ -277,7 +277,7 @@ void main() {
                   account: '0\'',
                   change: '0',
                   start: 0,
-                  end: 0)).called(1);
+                  end: 9)).called(1);
               verify(() => mockWalletRepository.insert(any())).called(1);
               verify(() => mockAccountRepository.insert(any())).called(1);
               verify(() => mockAddressRepository.insertMany(any())).called(2);

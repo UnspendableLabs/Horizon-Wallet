@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
@@ -12,9 +11,17 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class OnboardingScreenState extends State<OnboardingScreen> {
+  bool _isMenuExpanded = false;
+
   @override
   void initState() {
     super.initState();
+  }
+
+  void _toggleMenu() {
+    setState(() {
+      _isMenuExpanded = !_isMenuExpanded;
+    });
   }
 
   @override
@@ -58,29 +65,55 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              height: 200,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    'assets/logo-white.svg',
-                                    width: 48,
-                                    height: 48,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Text(
-                                    'Horizon',
+                            const SizedBox(height: 50, width: 10),
+                            const Stack(
+                              alignment: Alignment.center,
+                              clipBehavior:
+                                  Clip.none, // Ensure ALPHA is not clipped
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Horizon',
+                                      style: TextStyle(
+                                        color: mainTextWhite,
+                                        fontSize: 50,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Wallet',
+                                      style: TextStyle(
+                                        color: neonBlueDarkTheme,
+                                        fontSize: 50,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Positioned(
+                                  top: 95,
+                                  right: -50,
+                                  child: Text(
+                                    'ALPHA',
                                     style: TextStyle(
-                                      color: mainTextWhite,
-                                      fontSize: 40,
-                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            Expanded(
+                              child: Image.asset(
+                                'assets/logo-blue-3d.png',
+                                width: 800,
+                                height: 800,
                               ),
                             ),
-                            // TODO: 3d image here
                           ],
                         ),
                       ),
@@ -167,33 +200,69 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                             const SizedBox(height: 20),
                             SizedBox(
                               width: 250,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  overlayColor: noBackgroundColor,
-                                  elevation: 0,
-                                  backgroundColor: isDarkMode
-                                      ? noBackgroundColor
-                                      : backdropBackgroundColor,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 32,
-                                      vertical: 16), // Button size
-                                  textStyle: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ), // Text style
-                                ),
-                                onPressed: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboardingImportPK();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text('IMPORT PRIVATE KEY',
-                                      style: TextStyle(
-                                          color: isDarkMode
-                                              ? mainTextGrey
-                                              : mainTextBlack)),
-                                ),
+                              child: Column(
+                                children: [
+                                  if (_isMenuExpanded)
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        overlayColor: noBackgroundColor,
+                                        elevation: 0,
+                                        backgroundColor: isDarkMode
+                                            ? noBackgroundColor
+                                            : backdropBackgroundColor,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 32,
+                                            vertical: 16), // Button size
+                                        textStyle: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ), // Text style
+                                      ),
+                                      onPressed: () {
+                                        final shell =
+                                            context.read<ShellStateCubit>();
+                                        shell.onOnboardingImportPK();
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'IMPORT PRIVATE KEY',
+                                          style: TextStyle(
+                                              color: isDarkMode
+                                                  ? mainTextGrey
+                                                  : mainTextBlack),
+                                        ),
+                                      ),
+                                    ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      overlayColor: noBackgroundColor,
+                                      elevation: 0,
+                                      backgroundColor: noBackgroundColor,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      shape: const CircleBorder(
+                                        side: BorderSide(
+                                            color: mainTextGreyTransparent),
+                                      ),
+                                      textStyle: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    onPressed: _toggleMenu,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Icon(
+                                        _isMenuExpanded
+                                            ? Icons.arrow_drop_up
+                                            : Icons.arrow_drop_down,
+                                        color: isDarkMode
+                                            ? mainTextGrey
+                                            : mainTextWhite,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -217,26 +286,53 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(
-                        height: 200,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(
-                              'assets/logo-white.svg',
-                              width: 48,
-                              height: 48,
-                            ),
-                            const SizedBox(width: 10),
-                            const Text(
-                              'Horizon',
+                      const Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none, // Ensure ALPHA is not clipped
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(height: 50),
+                              Text(
+                                'Horizon',
+                                style: TextStyle(
+                                  color: mainTextWhite,
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'Wallet',
+                                style: TextStyle(
+                                  color: neonBlueDarkTheme,
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            top: 145, // Adjust this value to move ALPHA down
+                            right:
+                                -50, // Adjust this value to position ALPHA correctly
+                            child: Text(
+                              'ALPHA',
                               style: TextStyle(
-                                color: mainTextWhite,
-                                fontSize: 40,
-                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: Image.asset(
+                          'assets/logo-blue-3d.png', // Ensure this path matches the actual path to your PNG image
+                          width: 900, // Set the desired width
+                          height: 900, // Set the desired height
                         ),
                       ),
                       Container(
@@ -310,31 +406,65 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                             const SizedBox(height: 20),
                             SizedBox(
                               width: 250,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  overlayColor: Colors.transparent,
-                                  elevation: 0,
-                                  backgroundColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 32, vertical: 16),
-                                  textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                onPressed: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboardingImportPK();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'IMPORT PRIVATE KEY',
-                                    style: TextStyle(
+                              child: Column(
+                                children: [
+                                  if (_isMenuExpanded)
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        overlayColor: Colors.transparent,
+                                        elevation: 0,
+                                        backgroundColor: Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 32, vertical: 16),
+                                        textStyle: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                      onPressed: () {
+                                        final shell =
+                                            context.read<ShellStateCubit>();
+                                        shell.onOnboardingImportPK();
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'IMPORT PRIVATE KEY',
+                                          style: TextStyle(
+                                              color: isDarkMode
+                                                  ? mainTextGrey
+                                                  : mainTextWhite),
+                                        ),
+                                      ),
+                                    ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      overlayColor: noBackgroundColor,
+                                      elevation: 0,
+                                      backgroundColor: noBackgroundColor,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      shape: const CircleBorder(
+                                        side: BorderSide(
+                                            color: mainTextGreyTransparent),
+                                      ),
+                                      textStyle: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    onPressed: _toggleMenu,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Icon(
+                                        _isMenuExpanded
+                                            ? Icons.arrow_drop_up
+                                            : Icons.arrow_drop_down,
                                         color: isDarkMode
                                             ? mainTextGrey
-                                            : mainTextWhite),
+                                            : mainTextWhite,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ),
                           ],

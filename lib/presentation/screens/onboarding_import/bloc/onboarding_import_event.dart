@@ -4,7 +4,8 @@ abstract class OnboardingImportEvent {}
 
 class PasswordChanged extends OnboardingImportEvent {
   final String password;
-  PasswordChanged({required this.password});
+  final String? passwordConfirmation;
+  PasswordChanged({required this.password, this.passwordConfirmation});
 }
 
 class PasswordConfirmationChanged extends OnboardingImportEvent {

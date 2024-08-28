@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -15,7 +16,6 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
@@ -35,6 +35,10 @@ class OnboardingCreateBloc
       if (event.password.length < 8) {
         emit(state.copyWith(
             passwordError: "Password must be at least 8 characters."));
+      } else if (event.passwordConfirmation != null &&
+          event.passwordConfirmation!.isNotEmpty &&
+          event.password != event.passwordConfirmation) {
+        emit(state.copyWith(passwordError: "Passwords do not match"));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
@@ -94,6 +98,10 @@ class OnboardingCreateBloc
     });
 
     on<GenerateMnemonic>((event, emit) {
+      if (state.mnemonicState is GenerateMnemonicStateUnconfirmed) {
+        // If a mnemonic is already generated, do not generate a new one
+        return;
+      }
       emit(state.copyWith(mnemonicState: GenerateMnemonicStateLoading()));
 
       try {
@@ -116,7 +124,17 @@ class OnboardingCreateBloc
 
     on<ConfirmMnemonicChanged>((event, emit) {
       if (state.mnemonicState.mnemonic != event.mnemonic) {
-        emit(state.copyWith(mnemonicError: 'Mnemonic does not match'));
+        List<int> incorrectIndexes = [];
+        for (int i = 0; i < 12; i++) {
+          if (state.mnemonicState.mnemonic.split(' ')[i] !=
+              event.mnemonic.split(' ')[i]) {
+            incorrectIndexes.add(i);
+          }
+        }
+        emit(state.copyWith(
+            mnemonicError: MnemonicErrorState(
+                message: 'Seed does not match',
+                incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(mnemonicError: null));
       }
@@ -124,7 +142,17 @@ class OnboardingCreateBloc
 
     on<ConfirmMnemonic>((event, emit) {
       if (state.mnemonicState.mnemonic != event.mnemonic) {
-        emit(state.copyWith(mnemonicError: 'Mnemonic does not match'));
+        List<int> incorrectIndexes = [];
+        for (int i = 0; i < 12; i++) {
+          if (state.mnemonicState.mnemonic.split(' ')[i] !=
+              event.mnemonic.split(' ')[i]) {
+            incorrectIndexes.add(i);
+          }
+        }
+        emit(state.copyWith(
+            mnemonicError: MnemonicErrorState(
+                message: 'Seed does not match',
+                incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(
             createState: CreateStateMnemonicConfirmed, mnemonicError: null));

@@ -127,12 +127,6 @@ class WalletServiceImpl implements WalletService {
         privateKeyBuffer, chainCodeHexBuffer, _getNetwork());
 
     // String privKey = hex.encode(root.privateKey!.toDart);
-    //
-    // print("original privateKey $privateKey");
-    //
-    // print("compare $privateKey");
-    //
-    // print("compre2 ${root.neutered().toBase58()}");
 
     return entity.Wallet(
         uuid: '',

@@ -12,7 +12,7 @@ class OnboardingImportState with _$OnboardingImportState {
     String? password,
     String? passwordError,
     @Default("") String mnemonic,
-    @Default("") String? mnemonicError,
+    @Default(null) String? mnemonicError,
     @Default(ImportFormat.horizon) importFormat,
     @Default(GetAddressesStateNotAsked) getAddressesState,
     @Default({}) Map<Address, bool> isCheckedMap,

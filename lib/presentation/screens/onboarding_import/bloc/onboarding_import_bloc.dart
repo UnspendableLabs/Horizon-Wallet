@@ -32,6 +32,10 @@ class OnboardingImportBloc
       if (event.password.length < 8) {
         emit(state.copyWith(
             passwordError: "Password must be at least 8 characters."));
+      } else if (event.passwordConfirmation != null &&
+          event.passwordConfirmation!.isNotEmpty &&
+          event.password != event.passwordConfirmation) {
+        emit(state.copyWith(passwordError: "Passwords do not match"));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
@@ -60,8 +64,11 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
+        // TODO: bug. the import formats should always be stored consistently
         if (state.importFormat == "Horizon" ||
-            state.importFormat == "Freewallet") {
+            state.importFormat == "Freewallet" ||
+            state.importFormat == ImportFormat.horizon ||
+            state.importFormat == ImportFormat.freewallet) {
           bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
           if (!validMnemonic) {
             emit(state.copyWith(
@@ -86,7 +93,7 @@ class OnboardingImportBloc
         return;
       } else if (event.importFormat == "Horizon" ||
           event.importFormat == "Freewallet") {
-        // only validate mnemonic if importing from horizon
+        // only validate mnemonic if importing from horizon or freewallet
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
           emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
@@ -217,7 +224,7 @@ class OnboardingImportBloc
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 0);
+                    end: 9);
 
             List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
@@ -230,7 +237,7 @@ class OnboardingImportBloc
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 0);
+                    end: 9);
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);

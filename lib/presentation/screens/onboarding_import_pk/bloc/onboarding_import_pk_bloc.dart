@@ -32,6 +32,10 @@ class OnboardingImportPKBloc
       if (event.password.length < 8) {
         emit(state.copyWith(
             passwordError: "Password must be at least 8 characters."));
+      } else if (event.passwordConfirmation != null &&
+          event.passwordConfirmation!.isNotEmpty &&
+          event.password != event.passwordConfirmation) {
+        emit(state.copyWith(passwordError: "Passwords do not match"));
       } else {
         emit(state.copyWith(password: event.password, passwordError: null));
       }
