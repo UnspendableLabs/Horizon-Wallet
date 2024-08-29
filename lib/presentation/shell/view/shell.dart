@@ -36,8 +36,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
     final shell = context.watch<ShellStateCubit>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
+    final backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
 
     if (screenWidth >= 768.0) {
       // Sidebar for wider screens
@@ -83,7 +82,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                               account.name,
                                               textAlign: TextAlign.left,
                                               style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                           ),
@@ -148,7 +147,9 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                               },
                             );
                           },
-                          child: const Text("Add Account"),
+                          child: const Text("Add Account",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const Padding(
@@ -240,14 +241,14 @@ class Shell extends StatelessWidget {
                             const Text('Horizon',
                                 style: TextStyle(
                                   fontSize: 30,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                 )),
                             const SizedBox(width: 8),
                             const Text('Wallet',
                                 style: TextStyle(
                                   color: neonBlueDarkTheme,
                                   fontSize: 30,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                 )),
                             const SizedBox(width: 12),
                             const Text('ALPHA',

@@ -331,8 +331,23 @@ class MyApp extends StatelessWidget {
       buttonColor: Color.fromRGBO(227, 237, 254, 1),
     ),
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Color.fromRGBO(68, 69, 99, 1)),
-      bodyMedium: TextStyle(color: Color.fromRGBO(106, 106, 134, 1)),
+      displayLarge: TextStyle(fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(fontFamily: 'Montserrat'),
+      displaySmall: TextStyle(fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(fontFamily: 'Montserrat'),
+      titleMedium: TextStyle(fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(fontFamily: 'Montserrat'),
+      bodyLarge: TextStyle(
+          color: Color.fromRGBO(68, 69, 99, 1), fontFamily: 'Montserrat'),
+      bodyMedium: TextStyle(
+          color: Color.fromRGBO(106, 106, 134, 1), fontFamily: 'Montserrat'),
+      bodySmall: TextStyle(fontFamily: 'Montserrat'),
+      labelLarge: TextStyle(fontFamily: 'Montserrat'),
+      labelMedium: TextStyle(fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(fontFamily: 'Montserrat'),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -402,8 +417,22 @@ class MyApp extends StatelessWidget {
       buttonColor: Color.fromRGBO(25, 25, 39, 1),
     ),
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: Color.fromRGBO(141, 141, 153, 1)),
+      displayLarge: TextStyle(fontFamily: 'Montserrat'),
+      displayMedium: TextStyle(fontFamily: 'Montserrat'),
+      displaySmall: TextStyle(fontFamily: 'Montserrat'),
+      headlineLarge: TextStyle(fontFamily: 'Montserrat'),
+      headlineMedium: TextStyle(fontFamily: 'Montserrat'),
+      headlineSmall: TextStyle(fontFamily: 'Montserrat'),
+      titleLarge: TextStyle(fontFamily: 'Montserrat'),
+      titleMedium: TextStyle(fontFamily: 'Montserrat'),
+      titleSmall: TextStyle(fontFamily: 'Montserrat'),
+      bodyLarge: TextStyle(color: Colors.white, fontFamily: 'Montserrat'),
+      bodyMedium: TextStyle(
+          color: Color.fromRGBO(141, 141, 153, 1), fontFamily: 'Montserrat'),
+      bodySmall: TextStyle(fontFamily: 'Montserrat'),
+      labelLarge: TextStyle(fontFamily: 'Montserrat'),
+      labelMedium: TextStyle(fontFamily: 'Montserrat'),
+      labelSmall: TextStyle(fontFamily: 'Montserrat'),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
