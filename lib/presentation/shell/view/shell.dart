@@ -83,6 +83,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                               textAlign: TextAlign.left,
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w700,
+                                                fontSize: 14,
                                               ),
                                             ),
                                           ),

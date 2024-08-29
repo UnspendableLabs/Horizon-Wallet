@@ -131,35 +131,41 @@ class _DashboardPage_State extends State<_DashboardPage> {
             color: backgroundColor,
             borderRadius: BorderRadius.circular(30.0),
           ),
-          child: CustomScrollView(slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  if (screenWidth < 768)
-                    AccountSelectionButton(
-                      isDarkTheme: isDarkTheme,
-                      onPressed: () => showAccountList(context, isDarkTheme),
-                    ),
-                  AddressActions(
-                      isDarkTheme: isDarkTheme,
-                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                      addresses: [widget.currentAddress],
-                      accountUuid: widget.accountUuid,
-                      currentAddress: widget.currentAddress),
-                  BalancesDisplay(
+          child: Column(
+            children: [
+              if (screenWidth < 768)
+                AccountSelectionButton(
+                  isDarkTheme: isDarkTheme,
+                  onPressed: () => showAccountList(context, isDarkTheme),
+                ),
+              AddressActions(
+                isDarkTheme: isDarkTheme,
+                dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                addresses: [widget.currentAddress],
+                accountUuid: widget.accountUuid,
+                currentAddress: widget.currentAddress,
+              ),
+              Expanded(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: 300),
+                  child: BalancesDisplay(
                     key: Key(widget.currentAddress.address),
                     isDarkTheme: isDarkTheme,
                     addresses: [widget.currentAddress],
                     accountUuid: widget.accountUuid,
                   ),
-                ],
+                ),
               ),
-            ),
-            SliverFillRemaining(
-              child: DashboardActivityFeedScreen(
-                  addresses: [widget.currentAddress]),
-            )
-          ]),
+              Expanded(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: 700),
+                  child: DashboardActivityFeedScreen(
+                    addresses: [widget.currentAddress],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     });
@@ -168,8 +174,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
-
-  final textTheme = Theme.of(context).textTheme;
 
   WoltModalSheet.show<void>(
     context: context,
@@ -249,7 +253,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                           },
                           child: const Text("Add Account",
                               style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold)),
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
@@ -349,13 +353,15 @@ class AddressAction extends StatelessWidget {
   final HorizonDialog dialog;
   final IconData icon;
   final String text;
+  final double? iconSize;
 
   const AddressAction(
       {super.key,
       required this.isDarkTheme,
       required this.dialog,
       required this.icon,
-      required this.text});
+      required this.text,
+      this.iconSize});
 
   @override
   Widget build(BuildContext context) {
@@ -386,7 +392,7 @@ class AddressAction extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(icon,
-                      size: 32.0,
+                      size: iconSize ?? 28.0,
                       color: isDarkTheme
                           ? greyDashboardButtonTextDarkTheme
                           : greyDashboardButtonTextLightTheme),
@@ -434,20 +440,6 @@ class AddressActions extends StatelessWidget {
             AddressAction(
               isDarkTheme: isDarkTheme,
               dialog: HorizonDialog(
-                title: "Compose Issuance",
-                body: ComposeIssuancePage(
-                  isDarkMode: isDarkTheme,
-                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                ),
-                includeBackButton: false,
-                includeCloseButton: true,
-              ),
-              icon: Icons.add,
-              text: "ISSUE",
-            ),
-            AddressAction(
-              isDarkTheme: isDarkTheme,
-              dialog: HorizonDialog(
                 title: "Compose Send",
                 body: ComposeSendPage(
                   isDarkMode: isDarkTheme,
@@ -458,6 +450,21 @@ class AddressActions extends StatelessWidget {
               ),
               icon: Icons.send,
               text: "SEND",
+              iconSize: 22.0,
+            ),
+            AddressAction(
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonDialog(
+                title: "Compose Issuance",
+                body: ComposeIssuancePage(
+                  isDarkMode: isDarkTheme,
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                ),
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.add,
+              text: "ISSUE",
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,
@@ -471,7 +478,8 @@ class AddressActions extends StatelessWidget {
                   includeCloseButton: true,
                 ),
                 icon: Icons.qr_code,
-                text: "RECEIVE")
+                text: "RECEIVE",
+                iconSize: 24.0)
           ],
         ),
       ),
@@ -560,7 +568,7 @@ class _BalancesState extends State<Balances> {
       padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxHeight: 343,
+          maxHeight: 300,
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -569,23 +577,8 @@ class _BalancesState extends State<Balances> {
           ),
           child: Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Account Balances',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
                   child: Container(
                       child: _balanceList(result, widget.isDarkTheme))),
               if (_isExpanded)
@@ -643,7 +636,7 @@ class _BalancesState extends State<Balances> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -678,36 +671,32 @@ class _BalancesState extends State<Balances> {
           );
         }).toList();
 
-        if (balanceWidgets.length > 3 && !_isExpanded) {
+        if (balanceWidgets.length > 4 && !_isExpanded) {
           return Column(
             children: [
               ListView(
                 shrinkWrap: true,
-                children: balanceWidgets.take(3).toList(),
+                children: balanceWidgets.take(4).toList(),
               ),
-              FractionallySizedBox(
-                widthFactor: 0.5,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _isExpanded = true;
-                    });
-                  },
-                  child: Text(
-                    "SEE ALL",
-                    style: TextStyle(
-                        color: isDarkMode
-                            ? neonBlueDarkTheme
-                            : royalBlueLightTheme,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold),
-                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isExpanded = true;
+                  });
+                },
+                child: Text(
+                  "SEE ALL",
+                  style: TextStyle(
+                      color:
+                          isDarkMode ? neonBlueDarkTheme : royalBlueLightTheme,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ],
