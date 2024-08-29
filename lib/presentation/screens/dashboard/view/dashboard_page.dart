@@ -145,22 +145,30 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 accountUuid: widget.accountUuid,
                 currentAddress: widget.currentAddress,
               ),
-              Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: 300),
-                  child: BalancesDisplay(
-                    key: Key(widget.currentAddress.address),
-                    isDarkTheme: isDarkTheme,
-                    addresses: [widget.currentAddress],
-                    accountUuid: widget.accountUuid,
-                  ),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 300),
+                child: BalancesDisplay(
+                  key: Key(widget.currentAddress.address),
+                  isDarkTheme: isDarkTheme,
+                  addresses: [widget.currentAddress],
+                  accountUuid: widget.accountUuid,
                 ),
               ),
               Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: 700),
-                  child: DashboardActivityFeedScreen(
-                    addresses: [widget.currentAddress],
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: 700),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            isDarkTheme ? lightNavyDarkTheme : greyLightTheme,
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      child: DashboardActivityFeedScreen(
+                        addresses: [widget.currentAddress],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -544,8 +552,6 @@ class Balances extends StatefulWidget {
 }
 
 class _BalancesState extends State<Balances> {
-  bool _isExpanded = false;
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
@@ -565,70 +571,34 @@ class _BalancesState extends State<Balances> {
     Color backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
+      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxHeight: 300,
+          maxHeight: 275,
         ),
         child: Container(
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(30.0),
           ),
-          child: Column(
-            children: [
-              Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
-                  child: Container(
-                      child: _balanceList(result, widget.isDarkTheme))),
-              if (_isExpanded)
-                Builder(builder: (context) {
-                  return Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FractionallySizedBox(
-                        widthFactor: 0.5,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isExpanded = false;
-                            });
-                          },
-                          child: Text(
-                            "COLLAPSE",
-                            style: TextStyle(
-                                color: isDarkTheme
-                                    ? neonBlueDarkTheme
-                                    : royalBlueLightTheme,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
+            child: SingleChildScrollView(
+              child: Column(
+                children: _balanceList(result, widget.isDarkTheme),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _balanceList(Result result, bool isDarkMode) {
+  List<Widget> _balanceList(Result result, bool isDarkMode) {
     return result.when(
       ok: (balances, aggregated) {
         if (balances.isEmpty) {
-          return const Center(child: Text("No balance"));
+          return [const Center(child: Text("No balance"))];
         }
 
         final balanceWidgets = aggregated.entries.map((entry) {
@@ -670,45 +640,9 @@ class _BalancesState extends State<Balances> {
             ],
           );
         }).toList();
-
-        if (balanceWidgets.length > 4 && !_isExpanded) {
-          return Column(
-            children: [
-              ListView(
-                shrinkWrap: true,
-                children: balanceWidgets.take(4).toList(),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isExpanded = true;
-                  });
-                },
-                child: Text(
-                  "SEE ALL",
-                  style: TextStyle(
-                      color:
-                          isDarkMode ? neonBlueDarkTheme : royalBlueLightTheme,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          );
-        } else {
-          return ListView(
-            shrinkWrap: true,
-            children: balanceWidgets,
-          );
-        }
+        return balanceWidgets;
       },
-      error: (error) => Text('Error: $error'),
+      error: (error) => [Text('Error: $error')],
     );
   }
 }
