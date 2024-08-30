@@ -67,7 +67,7 @@ class OnboardingCreateBloc
             wallet.encryptedPrivKey, state.password!);
 
         Account account = Account(
-            name: 'Account 0',
+            name: 'ACCOUNT 1',
             walletUuid: wallet.uuid,
             purpose: '84\'',
             coinType: '${_getCoinType()}\'',

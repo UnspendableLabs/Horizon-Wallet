@@ -36,8 +36,7 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
     final shell = context.watch<ShellStateCubit>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDarkTheme ? const Color.fromRGBO(25, 25, 39, 1) : Colors.white;
+    final backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
 
     if (screenWidth >= 768.0) {
       // Sidebar for wider screens
@@ -83,7 +82,8 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                               account.name,
                                               textAlign: TextAlign.left,
                                               style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
                                               ),
                                             ),
                                           ),
@@ -148,7 +148,9 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                               },
                             );
                           },
-                          child: const Text("Add Account"),
+                          child: const Text("Add Account",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const Padding(
@@ -208,9 +210,9 @@ class Shell extends StatelessWidget {
       ),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 40.0),
+          padding: const EdgeInsets.only(top: 20.0, bottom: 0.0),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 926),
+            constraints: const BoxConstraints(maxWidth: 926, maxHeight: 845),
             child: Scaffold(
               backgroundColor: noBackgroundColor,
               appBar: AppBar(
@@ -237,25 +239,27 @@ class Shell extends StatelessWidget {
                                     ),
                             ),
                             const SizedBox(width: 8),
-                            const Text('Horizon',
+                            Text('Horizon',
                                 style: TextStyle(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: isSmallScreen ? 25 : 30,
+                                  fontWeight: FontWeight.w700,
                                 )),
-                            const SizedBox(width: 8),
-                            const Text('Wallet',
-                                style: TextStyle(
-                                  color: neonBlueDarkTheme,
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w600,
-                                )),
-                            const SizedBox(width: 12),
-                            const Text('ALPHA',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                )),
-                            const SizedBox(width: 12),
+                            if (!isSmallScreen) const SizedBox(width: 8),
+                            if (!isSmallScreen)
+                              const Text('Wallet',
+                                  style: TextStyle(
+                                    color: neonBlueDarkTheme,
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w700,
+                                  )),
+                            if (!isSmallScreen) const SizedBox(width: 12),
+                            if (!isSmallScreen)
+                              const Text('ALPHA',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  )),
+                            if (!isSmallScreen) const SizedBox(width: 12),
                             if (!isSmallScreen)
                               shell.state.maybeWhen(
                                 success: (state) => state.addresses.length > 1

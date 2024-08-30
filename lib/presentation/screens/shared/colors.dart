@@ -22,7 +22,10 @@ const redErrorText = Color.fromRGBO(239, 87, 87, 1);
 const redErrorTextTransparent = Color.fromRGBO(239, 87, 87, 0.16);
 
 const greyDashboardTextDarkTheme = Color.fromRGBO(255, 255, 255, 0.8);
+const greyDashboardButtonTextDarkTheme = Color.fromRGBO(142, 142, 155, 1);
+
 const greyDashboardTextLightTheme = Color.fromRGBO(8, 8, 51, 0.8);
+const greyDashboardButtonTextLightTheme = Color.fromRGBO(106, 106, 137, 1);
 
 // Common Button and input Colors
 const navyDarkTheme = Color.fromRGBO(32, 42, 67, 1);
