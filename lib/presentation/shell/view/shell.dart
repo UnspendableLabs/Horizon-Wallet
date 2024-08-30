@@ -239,25 +239,27 @@ class Shell extends StatelessWidget {
                                     ),
                             ),
                             const SizedBox(width: 8),
-                            const Text('Horizon',
+                            Text('Horizon',
                                 style: TextStyle(
-                                  fontSize: 30,
+                                  fontSize: isSmallScreen ? 25 : 30,
                                   fontWeight: FontWeight.w700,
                                 )),
-                            const SizedBox(width: 8),
-                            const Text('Wallet',
-                                style: TextStyle(
-                                  color: neonBlueDarkTheme,
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w700,
-                                )),
-                            const SizedBox(width: 12),
-                            const Text('ALPHA',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                )),
-                            const SizedBox(width: 12),
+                            if (!isSmallScreen) const SizedBox(width: 8),
+                            if (!isSmallScreen)
+                              const Text('Wallet',
+                                  style: TextStyle(
+                                    color: neonBlueDarkTheme,
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w700,
+                                  )),
+                            if (!isSmallScreen) const SizedBox(width: 12),
+                            if (!isSmallScreen)
+                              const Text('ALPHA',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  )),
+                            if (!isSmallScreen) const SizedBox(width: 12),
                             if (!isSmallScreen)
                               shell.state.maybeWhen(
                                 success: (state) => state.addresses.length > 1

@@ -46,6 +46,16 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
     }
   }
 
+  String _getUrl() {
+    final uri = switch (widget.uriType) {
+      URIType.btcexplorer =>
+        Uri.parse("${widget.config.btcExplorerBase}/tx/${widget.hash}"),
+      URIType.hoex =>
+        Uri.parse("${widget.config.horizonExplorerBase}/tx/${widget.hash}")
+    };
+    return uri.toString();
+  }
+
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: widget.hash));
     setState(() {
@@ -65,17 +75,23 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
     return GestureDetector(
       onLongPress: _copyToClipboard,
       onTap: _launchUrl,
-      child: RichText(
-        text: TextSpan(
-          style: DefaultTextStyle.of(context).style,
-          children: [
-            TextSpan(
-              text: shortenedHash,
-              // style: const TextStyle(
-              //   // color: Colors.white,
-              // ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Tooltip(
+          message: _getUrl(),
+          child: RichText(
+            text: TextSpan(
+              style: DefaultTextStyle.of(context).style,
+              children: [
+                TextSpan(
+                  text: shortenedHash,
+                  style: const TextStyle(
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

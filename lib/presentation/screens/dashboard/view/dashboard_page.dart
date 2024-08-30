@@ -144,9 +144,10 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 addresses: [widget.currentAddress],
                 accountUuid: widget.accountUuid,
                 currentAddress: widget.currentAddress,
+                screenWidth: screenWidth,
               ),
               ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: 300),
+                constraints: const BoxConstraints(maxHeight: 300),
                 child: BalancesDisplay(
                   key: Key(widget.currentAddress.address),
                   isDarkTheme: isDarkTheme,
@@ -158,7 +159,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: 700),
+                    constraints: const BoxConstraints(maxHeight: 700),
                     child: Container(
                       decoration: BoxDecoration(
                         color:
@@ -428,6 +429,7 @@ class AddressActions extends StatelessWidget {
   final List<Address> addresses;
   final String accountUuid;
   final Address currentAddress;
+  final double screenWidth;
 
   const AddressActions(
       {super.key,
@@ -435,7 +437,8 @@ class AddressActions extends StatelessWidget {
       required this.dashboardActivityFeedBloc,
       required this.addresses,
       required this.accountUuid,
-      required this.currentAddress});
+      required this.currentAddress,
+      required this.screenWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -452,6 +455,7 @@ class AddressActions extends StatelessWidget {
                 body: ComposeSendPage(
                   isDarkMode: isDarkTheme,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                  screenWidth: screenWidth,
                 ),
                 includeBackButton: false,
                 includeCloseButton: true,

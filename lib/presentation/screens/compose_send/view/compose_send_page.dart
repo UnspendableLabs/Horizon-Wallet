@@ -22,10 +22,12 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 class ComposeSendPage extends StatelessWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final double screenWidth;
 
   const ComposeSendPage({
     required this.isDarkMode,
     required this.dashboardActivityFeedBloc,
+    required this.screenWidth,
     super.key,
   });
 
@@ -41,6 +43,7 @@ class ComposeSendPage extends StatelessWidget {
           address: state.currentAddress,
           isDarkMode: isDarkMode,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+          screenWidth: screenWidth,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -52,10 +55,12 @@ class _ComposeSendPage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
+  final double screenWidth;
   const _ComposeSendPage_(
       {required this.isDarkMode,
       required this.dashboardActivityFeedBloc,
-      required this.address});
+      required this.address,
+      required this.screenWidth});
 
   @override
   _ComposeSendPageState createState() => _ComposeSendPageState();
@@ -211,138 +216,14 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       return null;
                     }),
                 const SizedBox(height: 16.0),
-                Row(
-                  children: [
-                    Expanded(
-                        // TODO: make his type of input it's own component ( e.g. BalanceInput )
-                        child: Builder(builder: (context) {
-                      return state.balancesState.maybeWhen(orElse: () {
-                        return HorizonTextFormField(
-                          isDarkMode: widget.isDarkMode,
-                          controller: quantityController,
-                          label: 'Quantity',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                        );
-                      }, success: (balances) {
-                        if (balances.isEmpty) {
-                          return HorizonTextFormField(
-                            isDarkMode: widget.isDarkMode,
-                            enabled: false,
-                          );
-                        }
-
-                        Balance? balance = balance_ ??
-                            _getBalanceForSelectedAsset(
-                                balances, asset ?? balances[0].asset);
-
-                        if (balance == null) {
-                          return HorizonTextFormField(
-                            isDarkMode: widget.isDarkMode,
-                            enabled: false,
-                          );
-                        }
-
-                        return HorizonTextFormField(
-                          isDarkMode: widget.isDarkMode,
-                          controller: quantityController,
-                          label: 'Quantity',
-                          suffix: Builder(builder: (context) {
-                            return Text("${balance.quantityNormalized} max");
-                          }),
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
-
-                          inputFormatters: <TextInputFormatter>[
-                            TextInputFormatter.withFunction(
-                                (oldValue, newValue) {
-                              if (newValue.text.isEmpty) {
-                                return newValue;
-                              }
-                              if (double.tryParse(newValue.text) != null) {
-                                return newValue;
-                              }
-                              return oldValue;
-                            }),
-                            balance.assetInfo.divisible
-                                ? FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d*$'))
-                                : FilteringTextInputFormatter.digitsOnly,
-                          ], // Only
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a quantity';
-                            }
-                            Decimal input = Decimal.parse(value);
-                            Decimal max =
-                                Decimal.parse(balance.quantityNormalized);
-
-                            if (input > max) {
-                              return "quantity exceeds max";
-                            }
-
-                            setState(() {
-                              balance_ = balance;
-                            });
-
-                            return null;
-                          },
-                        );
-                      });
-                    })),
-                    const SizedBox(width: 16.0),
-                    Expanded(
-                      child: Builder(builder: (context) {
-                        return state.balancesState.maybeWhen(
-                            orElse: () => const AssetDropdownLoading(),
-                            success: (balances) {
-                              if (balances.isEmpty) {
-                                return HorizonTextFormField(
-                                  isDarkMode: widget.isDarkMode,
-                                  enabled: false,
-                                  label: "No assets",
-                                );
-                              }
-
-                              // Use a post-frame callback to set the asset state
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (asset == null) {
-                                  setState(() {
-                                    asset = balances[0].asset;
-                                  });
-                                }
-                              });
-
-                              return SizedBox(
-                                height: 48.0,
-                                child: AssetDropdown(
-                                  isDarkMode: widget.isDarkMode,
-                                  asset: asset,
-                                  balances: balances,
-                                  controller: assetController,
-                                  onSelected: (String? value) {
-                                    Balance? balance =
-                                        _getBalanceForSelectedAsset(
-                                            balances, value!);
-
-                                    if (balance == null) {
-                                      throw Exception(
-                                          "invariant: No balance found for asset");
-                                    }
-
-                                    setState(() {
-                                      asset = value;
-                                      balance_ = balance;
-                                      quantityController.text = '';
-                                    });
-                                  },
-                                ),
-                              );
-                            });
-                      }),
-                    ),
-                  ],
-                ),
+                if (widget.screenWidth > 768)
+                  Row(children: _buildQuantityAndAssetInputsForRow(state)),
+                if (widget.screenWidth <= 768)
+                  Column(children: [
+                    _buildQuantityInput(state),
+                    const SizedBox(height: 16.0),
+                    _buildAssetInput(state)
+                  ]),
                 HorizonDialogSubmitButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
@@ -398,6 +279,159 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         orElse: () => const SizedBox.shrink(),
       );
     });
+  }
+
+  Widget _buildQuantityInput(ComposeSendState state) {
+    return state.balancesState.maybeWhen(orElse: () {
+      return _buildQuantityInputField();
+    }, success: (balances) {
+      if (balances.isEmpty) {
+        return HorizonTextFormField(
+          isDarkMode: widget.isDarkMode,
+          enabled: false,
+        );
+      }
+
+      Balance? balance = balance_ ??
+          _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+
+      if (balance == null) {
+        return HorizonTextFormField(
+          isDarkMode: widget.isDarkMode,
+          enabled: false,
+        );
+      }
+
+      return _buildQuantityInputField(balance);
+    });
+  }
+
+  Widget _buildQuantityInputField([Balance? balance]) {
+    return Stack(
+      children: [
+        HorizonTextFormField(
+          isDarkMode: widget.isDarkMode,
+          controller: quantityController,
+          label: 'Quantity',
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          inputFormatters: <TextInputFormatter>[
+            TextInputFormatter.withFunction((oldValue, newValue) {
+              if (newValue.text.isEmpty) {
+                return newValue;
+              }
+              if (double.tryParse(newValue.text) != null) {
+                return newValue;
+              }
+              return oldValue;
+            }),
+            balance?.assetInfo.divisible == true
+                ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
+                : FilteringTextInputFormatter.digitsOnly,
+          ], // Only
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a quantity';
+            }
+            Decimal input = Decimal.parse(value);
+            Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
+
+            if (input > max) {
+              return "quantity exceeds max";
+            }
+
+            setState(() {
+              balance_ = balance;
+            });
+
+            return null;
+          },
+        ),
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 0,
+          child: TextButton(
+            onPressed: balance != null
+                ? () {
+                    setState(() {
+                      quantityController.text = balance.quantityNormalized;
+                    });
+                  }
+                : null,
+            child: Text('MAX',
+                style: TextStyle(
+                    fontSize: 14.0,
+                    color: widget.isDarkMode
+                        ? darkThemeInputLabelColor
+                        : lightThemeInputLabelColor)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAssetInput(ComposeSendState state) {
+    return state.balancesState.maybeWhen(
+        orElse: () => const AssetDropdownLoading(),
+        success: (balances) {
+          if (balances.isEmpty) {
+            return HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              enabled: false,
+              label: "No assets",
+            );
+          }
+
+          // Use a post-frame callback to set the asset state
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (asset == null) {
+              setState(() {
+                asset = balances[0].asset;
+              });
+            }
+          });
+
+          return SizedBox(
+            height: 48.0,
+            child: AssetDropdown(
+              isDarkMode: widget.isDarkMode,
+              asset: asset,
+              balances: balances,
+              controller: assetController,
+              onSelected: (String? value) {
+                Balance? balance =
+                    _getBalanceForSelectedAsset(balances, value!);
+
+                if (balance == null) {
+                  throw Exception("invariant: No balance found for asset");
+                }
+
+                setState(() {
+                  asset = value;
+                  balance_ = balance;
+                  quantityController.text = '';
+                });
+              },
+            ),
+          );
+        });
+  }
+
+  List<Widget> _buildQuantityAndAssetInputsForRow(ComposeSendState state) {
+    return [
+      Expanded(
+          // TODO: make his type of input it's own component ( e.g. BalanceInput )
+          child: Builder(builder: (context) {
+        return _buildQuantityInput(state);
+      })),
+      const SizedBox(width: 16.0),
+      Expanded(
+        child: Builder(builder: (context) {
+          return _buildAssetInput(state);
+        }),
+      )
+    ];
   }
 }
 
