@@ -22,7 +22,7 @@ SliverWoltModalSheetPage addAddressModal(
         ? dialogBackgroundColorDarkTheme
         : dialogBackgroundColorLightTheme,
     isTopBarLayerAlwaysVisible: true,
-    topBarTitle: Text('Create a new address',
+    topBarTitle: Text('Add an address',
         style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
@@ -98,7 +98,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
               label: 'Password',
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Required';
+                  return 'Please enter your password';
                 }
 
                 return null;
@@ -153,7 +153,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator())
-                                : const Text('Submit'),
+                                : const Text('SUBMIT'),
                           ),
                         ),
                       ))

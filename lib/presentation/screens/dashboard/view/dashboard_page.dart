@@ -850,7 +850,7 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
           return switch (account.importFormat) {
             ImportFormat.horizon => const SizedBox.shrink(),
             _ => TextButton(
-                child: const Text("Create a New Address"),
+                child: const Text("Add a new address"),
                 onPressed: () {
                   final textTheme = Theme.of(context).textTheme;
                   final isDarkTheme =
