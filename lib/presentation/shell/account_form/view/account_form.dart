@@ -147,7 +147,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
               label: 'Password',
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Required';
+                  return 'Please enter your password';
                 }
 
                 return null;
@@ -218,7 +218,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator())
-                                : const Text('Submit'),
+                                : const Text('SUBMIT'),
                           ),
                         ),
                       ))

@@ -453,6 +453,7 @@ class ConfirmationPage extends StatefulWidget {
 class ConfirmationPageState extends State<ConfirmationPage> {
   late int fee;
   TextEditingController passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -471,130 +472,137 @@ class ConfirmationPageState extends State<ConfirmationPage> {
         ? dialogBackgroundColorDarkTheme
         : dialogBackgroundColorLightTheme;
     final sendParams = widget.composeSendState.composeSend.params;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          const Text(
-            'Please review your transaction details.',
-            style: TextStyle(
-                fontSize: 16.0,
-                color: mainTextWhite,
-                fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16.0),
-          HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
-            label: "Source Address",
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            controller: TextEditingController(text: sendParams.source),
-            enabled: false,
-            fillColor: inputFillColor,
-            textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-          ),
-          const SizedBox(height: 16.0),
-          HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
-            label: "Destination Address",
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            controller: TextEditingController(text: sendParams.destination),
-            enabled: false,
-            fillColor: inputFillColor,
-            textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-          ),
-          const SizedBox(height: 16.0),
-          Row(
-            children: [
-              Expanded(
-                child: HorizonTextFormField(
-                  isDarkMode: widget.isDarkMode,
-                  label: "Quantity",
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                  controller: TextEditingController(
-                      text: sendParams.quantityNormalized),
-                  enabled: false,
-                  fillColor: inputFillColor,
-                  textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-                ),
-              ),
-              const SizedBox(width: 16.0), // Spacing between inputs
-              Expanded(
-                child: HorizonTextFormField(
-                  isDarkMode: widget.isDarkMode,
-                  label: "Asset",
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                  controller: TextEditingController(text: sendParams.asset),
-                  enabled: false,
-                  fillColor: inputFillColor,
-                  textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16.0),
-          FeeEstimation(
-              feeMap: widget.composeSendState.feeEstimates,
-              virtualSize: widget.composeSendState.virtualSize,
-              onChanged: (v) {
-                setState(() {
-                  fee = v.toInt();
-                });
-              }),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Divider(
-              color: widget.isDarkMode
-                  ? greyDarkThemeUnderlineColor
-                  : greyLightThemeUnderlineColor,
-              thickness: 1.0,
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'Please review your transaction details.',
+              style: TextStyle(
+                  fontSize: 16.0,
+                  color: mainTextWhite,
+                  fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-          ),
-          HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
-            obscureText: true,
-            enableSuggestions: false,
-            autocorrect: false,
-            controller: passwordController,
-            label: "Password",
-            floatingLabelBehavior: FloatingLabelBehavior.auto,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your password';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              HorizonCancelButton(
-                isDarkMode: widget.isDarkMode,
-                onPressed: () {
-                  context
-                      .read<ComposeSendBloc>()
-                      .add(FetchFormData(currentAddress: widget.address));
-                },
-                buttonText: 'BACK',
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Source Address",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(text: sendParams.source),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Destination Address",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(text: sendParams.destination),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                Expanded(
+                  child: HorizonTextFormField(
+                    isDarkMode: widget.isDarkMode,
+                    label: "Quantity",
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    controller: TextEditingController(
+                        text: sendParams.quantityNormalized),
+                    enabled: false,
+                    fillColor: inputFillColor,
+                    textColor:
+                        widget.isDarkMode ? mainTextWhite : mainTextBlack,
+                  ),
+                ),
+                const SizedBox(width: 16.0), // Spacing between inputs
+                Expanded(
+                  child: HorizonTextFormField(
+                    isDarkMode: widget.isDarkMode,
+                    label: "Asset",
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    controller: TextEditingController(text: sendParams.asset),
+                    enabled: false,
+                    fillColor: inputFillColor,
+                    textColor:
+                        widget.isDarkMode ? mainTextWhite : mainTextBlack,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+            FeeEstimation(
+                feeMap: widget.composeSendState.feeEstimates,
+                virtualSize: widget.composeSendState.virtualSize,
+                onChanged: (v) {
+                  setState(() {
+                    fee = v.toInt();
+                  });
+                }),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Divider(
+                color: widget.isDarkMode
+                    ? greyDarkThemeUnderlineColor
+                    : greyLightThemeUnderlineColor,
+                thickness: 1.0,
               ),
-              HorizonContinueButton(
-                isDarkMode: widget.isDarkMode,
-                onPressed: () {
-                  context
-                      .read<ComposeSendBloc>()
-                      .add(SignAndBroadcastTransactionEvent(
-                        composeSend: widget.composeSendState.composeSend,
-                        password: passwordController.text,
-                        fee: fee,
-                      ));
-                },
-                buttonText: 'SIGN AND BROADCAST',
-              ),
-            ],
-          ),
-        ],
+            ),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
+              controller: passwordController,
+              label: "Password",
+              floatingLabelBehavior: FloatingLabelBehavior.auto,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                HorizonCancelButton(
+                  isDarkMode: widget.isDarkMode,
+                  onPressed: () {
+                    context
+                        .read<ComposeSendBloc>()
+                        .add(FetchFormData(currentAddress: widget.address));
+                  },
+                  buttonText: 'BACK',
+                ),
+                HorizonContinueButton(
+                  isDarkMode: widget.isDarkMode,
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      context.read<ComposeSendBloc>().add(
+                            SignAndBroadcastTransactionEvent(
+                              composeSend: widget.composeSendState.composeSend,
+                              password: passwordController.text,
+                              fee: fee,
+                            ),
+                          );
+                    }
+                  },
+                  buttonText: 'SIGN AND BROADCAST',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

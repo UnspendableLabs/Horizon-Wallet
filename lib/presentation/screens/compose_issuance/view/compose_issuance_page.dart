@@ -343,6 +343,7 @@ class _ComposeIssuanceConfirmationPageState
     extends State<ComposeIssuanceConfirmationPage> {
   late int fee;
   final TextEditingController passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -361,180 +362,188 @@ class _ComposeIssuanceConfirmationPageState
         ? dialogBackgroundColorDarkTheme
         : dialogBackgroundColorLightTheme;
     final issueParams = widget.composeIssuanceState.composeIssuance.params;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          const Text(
-            'Please review your transaction details.',
-            style: TextStyle(
-                fontSize: 16.0,
-                color: mainTextWhite,
-                fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16.0),
-          HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
-            label: "Source Address",
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            controller: TextEditingController(text: issueParams.source),
-            enabled: false,
-            fillColor: inputFillColor,
-            textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-          ),
-          const SizedBox(height: 16.0),
-          HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
-            label: "Token name",
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            controller: TextEditingController(
-                text: widget.composeIssuanceState.composeIssuance.name),
-            enabled: false,
-            fillColor: inputFillColor,
-            textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-          ),
-          const SizedBox(height: 16.0),
-          HorizonTextFormField(
-            isDarkMode: widget.isDarkMode,
-            label: "Quantity",
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            controller: TextEditingController(
-                text: widget.composeIssuanceState.composeIssuance.params
-                    .quantityNormalized),
-            enabled: false,
-            fillColor: inputFillColor,
-            textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-          ),
-          const SizedBox(height: 16.0),
-          widget.composeIssuanceState.composeIssuance.params.description != ''
-              ? HorizonTextFormField(
-                  isDarkMode: widget.isDarkMode,
-                  label: "Description",
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                  controller: TextEditingController(
-                      text: widget.composeIssuanceState.composeIssuance.params
-                          .description),
-                  enabled: false,
-                  fillColor: inputFillColor,
-                  textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
-                )
-              : const SizedBox.shrink(),
-          Column(
-            children: [
-              Row(
-                children: [
-                  Checkbox(
-                    value: issueParams.divisible ?? false,
-                    onChanged: null,
-                    activeColor:
-                        widget.isDarkMode ? Colors.grey : Colors.grey[400],
-                  ),
-                  Text('Divisible',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: widget.isDarkMode
-                              ? mainTextWhite
-                              : mainTextBlack)),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: issueParams.lock ?? false,
-                    onChanged: null,
-                    activeColor:
-                        widget.isDarkMode ? Colors.grey : Colors.grey[400],
-                  ),
-                  Text('Lock',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: widget.isDarkMode
-                              ? mainTextWhite
-                              : mainTextBlack)),
-                ],
-              ),
-              const SizedBox(width: 16.0),
-              Row(
-                children: [
-                  Checkbox(
-                    value: issueParams.reset ?? false,
-                    onChanged: null,
-                    activeColor:
-                        widget.isDarkMode ? Colors.grey : Colors.grey[400],
-                  ),
-                  Text('Reset',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: widget.isDarkMode
-                              ? mainTextWhite
-                              : mainTextBlack)),
-                ],
-              ),
-              const SizedBox(height: 16.0),
-              FeeEstimation(
-                  feeMap: widget.composeIssuanceState.feeEstimates,
-                  virtualSize: widget.composeIssuanceState.virtualSize,
-                  onChanged: (v) {
-                    setState(() {
-                      fee = v.toInt();
-                    });
-                  }),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Divider(
-                  color: widget.isDarkMode
-                      ? greyDarkThemeUnderlineColor
-                      : greyLightThemeUnderlineColor,
-                  thickness: 1.0,
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'Please review your transaction details.',
+              style: TextStyle(
+                  fontSize: 16.0,
+                  color: mainTextWhite,
+                  fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Source Address",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(text: issueParams.source),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Token name",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(
+                  text: widget.composeIssuanceState.composeIssuance.name),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Quantity",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(
+                  text: widget.composeIssuanceState.composeIssuance.params
+                      .quantityNormalized),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
+            const SizedBox(height: 16.0),
+            widget.composeIssuanceState.composeIssuance.params.description != ''
+                ? HorizonTextFormField(
+                    isDarkMode: widget.isDarkMode,
+                    label: "Description",
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    controller: TextEditingController(
+                        text: widget.composeIssuanceState.composeIssuance.params
+                            .description),
+                    enabled: false,
+                    fillColor: inputFillColor,
+                    textColor:
+                        widget.isDarkMode ? mainTextWhite : mainTextBlack,
+                  )
+                : const SizedBox.shrink(),
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Checkbox(
+                      value: issueParams.divisible ?? false,
+                      onChanged: null,
+                      activeColor:
+                          widget.isDarkMode ? Colors.grey : Colors.grey[400],
+                    ),
+                    Text('Divisible',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: widget.isDarkMode
+                                ? mainTextWhite
+                                : mainTextBlack)),
+                  ],
                 ),
-              ),
-              HorizonTextFormField(
-                isDarkMode: widget.isDarkMode,
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                controller: passwordController,
-                label: "Password",
-                floatingLabelBehavior: FloatingLabelBehavior.auto,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  HorizonCancelButton(
-                    isDarkMode: widget.isDarkMode,
-                    onPressed: () {
-                      context
-                          .read<ComposeIssuanceBloc>()
-                          .add(FetchFormData(currentAddress: widget.address));
-                    },
-                    buttonText: 'BACK',
+                Row(
+                  children: [
+                    Checkbox(
+                      value: issueParams.lock ?? false,
+                      onChanged: null,
+                      activeColor:
+                          widget.isDarkMode ? Colors.grey : Colors.grey[400],
+                    ),
+                    Text('Lock',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: widget.isDarkMode
+                                ? mainTextWhite
+                                : mainTextBlack)),
+                  ],
+                ),
+                const SizedBox(width: 16.0),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: issueParams.reset ?? false,
+                      onChanged: null,
+                      activeColor:
+                          widget.isDarkMode ? Colors.grey : Colors.grey[400],
+                    ),
+                    Text('Reset',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: widget.isDarkMode
+                                ? mainTextWhite
+                                : mainTextBlack)),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                FeeEstimation(
+                    feeMap: widget.composeIssuanceState.feeEstimates,
+                    virtualSize: widget.composeIssuanceState.virtualSize,
+                    onChanged: (v) {
+                      setState(() {
+                        fee = v.toInt();
+                      });
+                    }),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Divider(
+                    color: widget.isDarkMode
+                        ? greyDarkThemeUnderlineColor
+                        : greyLightThemeUnderlineColor,
+                    thickness: 1.0,
                   ),
-                  HorizonContinueButton(
-                    isDarkMode: widget.isDarkMode,
-                    onPressed: () {
-                      context.read<ComposeIssuanceBloc>().add(
-                          SignAndBroadcastTransactionEvent(
-                              composeIssuance:
-                                  widget.composeIssuanceState.composeIssuance,
-                              password: passwordController.text,
-                              fee: fee));
-                    },
-                    buttonText: 'SIGN AND BROADCAST',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+                ),
+                HorizonTextFormField(
+                  isDarkMode: widget.isDarkMode,
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  controller: passwordController,
+                  label: "Password",
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    HorizonCancelButton(
+                      isDarkMode: widget.isDarkMode,
+                      onPressed: () {
+                        context
+                            .read<ComposeIssuanceBloc>()
+                            .add(FetchFormData(currentAddress: widget.address));
+                      },
+                      buttonText: 'BACK',
+                    ),
+                    HorizonContinueButton(
+                      isDarkMode: widget.isDarkMode,
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          context.read<ComposeIssuanceBloc>().add(
+                                SignAndBroadcastTransactionEvent(
+                                  composeIssuance: widget
+                                      .composeIssuanceState.composeIssuance,
+                                  password: passwordController.text,
+                                  fee: fee,
+                                ),
+                              );
+                        }
+                      },
+                      buttonText: 'SIGN AND BROADCAST',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
