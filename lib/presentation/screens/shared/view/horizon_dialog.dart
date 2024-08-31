@@ -113,7 +113,7 @@ class HorizonDialogSubmitButton extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onPressed,
-                  child: const Text('Submit'),
+                  child: const Text('SUBMIT'),
                 ),
               ),
             ),

@@ -9,10 +9,12 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
 import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
 import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
@@ -192,7 +194,7 @@ class Shell extends StatelessWidget {
     final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
     final selectedColor =
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
-    final unselectedColor = isDarkTheme ? mainTextGrey : Colors.grey;
+    final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
 
     return Container(
       decoration: BoxDecoration(
@@ -374,47 +376,80 @@ class Shell extends StatelessWidget {
                           shell.onOnboarding();
                         }
                       },
-                      builder: (context, state) => SizedBox(
+                      builder: (context, state) => Container(
+                        width: 40,
                         height: 40,
-                        child: FilledButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) {
-                                return BlocProvider.value(
-                                  value: BlocProvider.of<LogoutBloc>(context),
-                                  child: AlertDialog(
-                                    title: const Text('Confirm Logout'),
-                                    content: Text(
-                                      'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary),
+                        decoration: BoxDecoration(
+                          color: isDarkTheme
+                              ? darkNavyDarkTheme
+                              : lightBlueLightTheme,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: noBackgroundColor),
+                        ),
+                        child: PopupMenuButton<String>(
+                          position: PopupMenuPosition.under,
+                          icon: Icon(
+                            Icons.settings,
+                            size: 20,
+                            color: isDarkTheme
+                                ? mainTextGrey
+                                : royalBlueLightTheme,
+                          ),
+                          onSelected: (value) {
+                            if (value == 'reset') {
+                              showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return BlocProvider.value(
+                                    value: BlocProvider.of<LogoutBloc>(context),
+                                    child: HorizonDialog(
+                                      title: 'Reset wallet',
+                                      body: Column(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              textAlign: TextAlign.center,
+                                              'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDarkTheme
+                                                    ? mainTextGrey
+                                                    : mainTextBlack,
+                                              ),
+                                            ),
+                                          ),
+                                          BackContinueButtons(
+                                            isDarkMode: isDarkTheme,
+                                            isSmallScreenWidth: isSmallScreen,
+                                            onPressedContinue: () {
+                                              GoRouter.of(context).pop();
+                                            },
+                                            backButtonText: 'RESET WALLET',
+                                            continueButtonText:
+                                                'CANCEL', // The BackContinueButtons widget is the style/responiveness we want here, however we want the CANCEL button to be more prominent so that the user doesn't accidentally reset their wallet. In BackContinueButtons, the continue button is the one that is more prominent.
+                                            onPressedBack: () {
+                                              context
+                                                  .read<LogoutBloc>()
+                                                  .add(LogoutEvent());
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () {
-                                          GoRouter.of(context).pop();
-                                        },
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          context
-                                              .read<LogoutBloc>()
-                                              .add(LogoutEvent());
-                                        },
-                                        child: const Text('Logout'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
+                                  );
+                                },
+                              );
+                            }
                           },
-                          child: const Text('Logout'),
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'reset',
+                              child: Text('Reset wallet'),
+                            ),
+                          ],
                         ),
                       ),
                     ),

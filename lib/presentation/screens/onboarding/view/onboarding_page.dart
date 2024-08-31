@@ -142,12 +142,10 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   backgroundColor:
                                       leftSideBackgroundColor, // Background color
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 32,
-                                      vertical: 16), // Button size
+                                      horizontal: 32, vertical: 16),
                                   textStyle: const TextStyle(
                                       fontSize: 12,
-                                      fontWeight:
-                                          FontWeight.w500), // Text style
+                                      fontWeight: FontWeight.w700),
                                 ),
                                 onPressed: () {
                                   final shell = context.read<ShellStateCubit>();
@@ -170,30 +168,30 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               width: 250,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  overlayColor: noBackgroundColor,
-                                  elevation: 0,
-                                  backgroundColor: isDarkMode
-                                      ? noBackgroundColor
-                                      : backdropBackgroundColor,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 32,
-                                      vertical: 16), // Button size
-                                  textStyle: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ), // Text style
-                                ),
+                                    overlayColor: noBackgroundColor,
+                                    elevation: 0,
+                                    backgroundColor: isDarkMode
+                                        ? noBackgroundColor
+                                        : backdropBackgroundColor,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 32, vertical: 16),
+                                    textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    )),
                                 onPressed: () {
                                   final shell = context.read<ShellStateCubit>();
                                   shell.onOnboardingImport();
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text('IMPORT SEED',
-                                      style: TextStyle(
-                                          color: isDarkMode
-                                              ? mainTextGrey
-                                              : mainTextBlack)),
+                                  child: Text(
+                                    'IMPORT SEED',
+                                    style: TextStyle(
+                                        color: isDarkMode
+                                            ? mainTextGrey
+                                            : mainTextBlack),
+                                  ),
                                 ),
                               ),
                             ),
@@ -211,12 +209,11 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                             ? noBackgroundColor
                                             : backdropBackgroundColor,
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 32,
-                                            vertical: 16), // Button size
+                                            horizontal: 32, vertical: 16),
                                         textStyle: const TextStyle(
                                           fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ), // Text style
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
                                       onPressed: () {
                                         final shell =
@@ -234,6 +231,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                         ),
                                       ),
                                     ),
+                                  if (_isMenuExpanded)
+                                    const SizedBox(height: 20),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       overlayColor: noBackgroundColor,
@@ -256,9 +255,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                         _isMenuExpanded
                                             ? Icons.arrow_drop_up
                                             : Icons.arrow_drop_down,
-                                        color: isDarkMode
-                                            ? mainTextGrey
-                                            : mainTextWhite,
+                                        color: mainTextGreyTransparent,
                                       ),
                                     ),
                                   ),
@@ -330,9 +327,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                       Expanded(
                         child: Image.asset(
-                          'assets/logo-blue-3d.png', // Ensure this path matches the actual path to your PNG image
-                          width: 900, // Set the desired width
-                          height: 900, // Set the desired height
+                          'assets/logo-blue-3d.png',
+                          width: 900,
+                          height: 900,
                         ),
                       ),
                       Container(
@@ -355,7 +352,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       horizontal: 32, vertical: 16),
                                   textStyle: const TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w500),
+                                      fontWeight: FontWeight.w700),
                                 ),
                                 onPressed: () {
                                   final shell = context.read<ShellStateCubit>();
@@ -385,7 +382,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       horizontal: 32, vertical: 16),
                                   textStyle: const TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w500),
+                                      fontWeight: FontWeight.w700),
                                 ),
                                 onPressed: () {
                                   final shell = context.read<ShellStateCubit>();
@@ -418,7 +415,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                             horizontal: 32, vertical: 16),
                                         textStyle: const TextStyle(
                                             fontSize: 12,
-                                            fontWeight: FontWeight.w500),
+                                            fontWeight: FontWeight.w700),
                                       ),
                                       onPressed: () {
                                         final shell =
@@ -458,9 +455,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                         _isMenuExpanded
                                             ? Icons.arrow_drop_up
                                             : Icons.arrow_drop_down,
-                                        color: isDarkMode
-                                            ? mainTextGrey
-                                            : mainTextWhite,
+                                        color: mainTextGreyTransparent,
                                       ),
                                     ),
                                   ),
