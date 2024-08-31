@@ -90,6 +90,7 @@ class ComposeIssuanceBloc
       final reset = event.reset;
       final description = event.description;
       // final transferDestination = event.transferDestination;
+      print("Divisible: $divisible");
 
       emit(state.copyWith(submitState: const SubmitState.loading()));
       try {
@@ -164,7 +165,8 @@ class ComposeIssuanceBloc
             coin: account.coinType,
             account: account.accountIndex,
             change: '0', // TODO make sure change is stored
-            index: address.index);
+            index: address.index,
+            importFormat: account.importFormat);
 
         String txHex = await transactionService.signTransaction(
             rawTx, addressPrivKey, source, utxoMap);

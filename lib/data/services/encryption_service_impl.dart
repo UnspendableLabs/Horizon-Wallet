@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'dart:convert';
+
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -27,11 +28,18 @@ class EncryptionServiceImpl implements EncryptionService {
 
   @override
   Future<String> decrypt(String data, String password) async {
-    final iv = IV(base64Decode(data.substring(0, 24)));
-    final key = _generate32ByteKeyFromPassword(password);
-    final encrypter = Encrypter(AES(key));
-    final cypher = data.substring(24);
-    return encrypter.decrypt64(cypher, iv: iv);
+    try {
+      final iv = IV(base64Decode(data.substring(0, 24)));
+      final key = _generate32ByteKeyFromPassword(password);
+      final encrypter = Encrypter(AES(key));
+      final cypher = data.substring(24);
+      return encrypter.decrypt64(cypher, iv: iv);
+    } catch (e) {
+      if (e.toString().contains("invalid or corrupted padlock")) {
+        throw ('Error incorrect password');
+      }
+      rethrow;
+    }
   }
 
   Key _generate32ByteKeyFromPassword(String password) {

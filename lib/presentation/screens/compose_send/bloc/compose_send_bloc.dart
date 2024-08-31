@@ -142,6 +142,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
         String decryptedRootPrivKey =
             await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+        print("Decrypted root priv key: $decryptedRootPrivKey");
         String addressPrivKey = await addressService.deriveAddressPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: wallet.chainCodeHex,
@@ -149,13 +150,15 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             coin: account.coinType,
             account: account.accountIndex,
             change: '0', // TODO make sure change is stored
-            index: address.index);
+            index: address.index,
+            importFormat: account.importFormat);
+        print('Address priv key: $addressPrivKey');
 
         String txHex = await transactionService.signTransaction(
             rawTx, addressPrivKey, source, utxoMap);
-
+        print("Tx hex: $txHex");
         String txHash = await bitcoindService.sendrawtransaction(txHex);
-
+        print("Tx hash: $txHash");
         // for now we don't track btc sends
         if (asset.toLowerCase() != 'btc') {
           TransactionInfoVerbose txInfo =

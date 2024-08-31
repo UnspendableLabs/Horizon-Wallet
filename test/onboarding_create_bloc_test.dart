@@ -97,7 +97,7 @@ void main() {
 
     void setupMocks(Network network, String expectedCoinType) {
       final account = Account(
-          name: 'Account 0',
+          name: 'ACCOUNT 1',
           walletUuid: wallet.uuid,
           purpose: '84\'',
           coinType: '$expectedCoinType\'',

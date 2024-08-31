@@ -206,7 +206,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 value: isDivisible,
                                 onChanged: (bool? value) {
                                   setState(() {
-                                    isDivisible = value ?? true;
+                                    isDivisible = !isDivisible;
                                   });
                                 },
                               ),

@@ -2,15 +2,16 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
-import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 // TODO: implement some sort of cache
 
@@ -102,10 +103,11 @@ class AddressServiceImpl extends AddressService {
      */
 
     String path = 'm/$account/$change/$index';
+    print("Path: $path");
 
     bip32.BIP32Interface child =
         (root as bip32.BIP32Interface).derivePath(path);
-
+    print("Child: ${child.privateKey}");
     String address = switch (type) {
       AddressType.bech32 => _bech32FromBip32(child),
       AddressType.legacy => _legacyFromBip32(child),
@@ -131,6 +133,8 @@ class AddressServiceImpl extends AddressService {
     if (start > end) {
       throw ArgumentError('Invalid range');
     }
+    print("Priv key: $privKey");
+    print("Chain code hex: $chainCodeHex");
     final network = _getNetwork();
     Buffer privKeyJS =
         Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
@@ -163,8 +167,16 @@ class AddressServiceImpl extends AddressService {
       required String coin,
       required String account,
       required String change,
-      required int index}) async {
-    String path = 'm/$purpose/$coin/$account/$change/$index';
+      required int index,
+      required ImportFormat importFormat}) async {
+    print("Root priv key: $rootPrivKey");
+    print("Chain code hex: $chainCodeHex");
+
+    String path = switch (importFormat) {
+      ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
+      _ => 'm/$account/$change/$index',
+    };
+    print("Path: $path");
     final network = _getNetwork();
 
     Buffer privKeyJS =
@@ -175,7 +187,7 @@ class AddressServiceImpl extends AddressService {
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
     bip32.BIP32Interface child = root.derivePath(path);
-
+    print("Child: ${child.privateKey}");
     return hex.encode(child.privateKey!.toDart);
   }
 

@@ -158,7 +158,7 @@ class OnboardingImportBloc
 
             // create an account to house
             Account account = Account(
-                name: 'Account 0',
+                name: 'ACCOUNT 1',
                 walletUuid: wallet.uuid,
                 purpose: '32', // unused in Freewallet path
                 coinType: _getCoinType(),
@@ -201,9 +201,11 @@ class OnboardingImportBloc
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, state.password!);
 
+            print("Decrypted root priv key: $decryptedPrivKey");
+
             // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
             Account account = Account(
-                name: 'Account 0',
+                name: 'ACCOUNT 1',
                 walletUuid: wallet.uuid,
                 purpose: '0\'',
                 coinType: _getCoinType(),
@@ -215,16 +217,15 @@ class OnboardingImportBloc
             // it just descripes addresses with path
             // m/segment/segment/segment
 
-            List<Address> addressesBech32 =
-                await addressService.deriveAddressFreewalletRange(
-                    type: AddressType.bech32,
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: account.uuid,
-                    account: account.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 9);
+            // List<Address> addressesBech32 = await addressService.deriveAddressFreewalletRange(
+            //     type: AddressType.bech32,
+            //     privKey: decryptedPrivKey,
+            //     chainCodeHex: wallet.chainCodeHex,
+            //     accountUuid: account.uuid,
+            //     account: account.accountIndex,
+            //     change: '0',
+            //     start: 0,
+            //     end: 0);
 
             List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
@@ -237,7 +238,7 @@ class OnboardingImportBloc
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 9);
+                    end: 0);
 
             await walletRepository.insert(wallet);
             await accountRepository.insert(account);
