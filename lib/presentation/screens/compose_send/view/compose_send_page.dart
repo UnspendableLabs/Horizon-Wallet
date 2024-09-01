@@ -251,14 +251,15 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         throw Exception("no asset");
                       }
 
-                      context.read<ComposeSendBloc>().add(
-                          ComposeTransactionEvent(
-                              sourceAddress: widget.address.address,
-                              destinationAddress:
-                                  destinationAddressController.text,
-                              asset: asset!,
-                              quantity: quantity,
-                              quantityDisplay: input.toString()));
+                      context
+                          .read<ComposeSendBloc>()
+                          .add(ComposeTransactionEvent(
+                            sourceAddress: widget.address.address,
+                            destinationAddress:
+                                destinationAddressController.text,
+                            asset: asset!,
+                            quantity: quantity,
+                          ));
                     }
                   },
                 ),
@@ -314,21 +315,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           controller: quantityController,
           label: 'Quantity',
           floatingLabelBehavior: FloatingLabelBehavior.auto,
-          inputFormatters: <TextInputFormatter>[
-            TextInputFormatter.withFunction((oldValue, newValue) {
-              if (newValue.text.isEmpty) {
-                return newValue;
-              }
-              if (double.tryParse(newValue.text) != null) {
-                return newValue;
-              }
-              return oldValue;
-            }),
+          inputFormatters: [
             balance?.assetInfo.divisible == true
                 ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
                 : FilteringTextInputFormatter.digitsOnly,
-          ], // Only
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          ],
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: false),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';

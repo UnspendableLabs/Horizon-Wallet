@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/presentation/common/fee_estimation.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
@@ -16,7 +17,6 @@ import 'package:horizon/presentation/screens/shared/view/horizon_continue_button
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/common/fee_estimation.dart';
 
 class ComposeIssuancePage extends StatelessWidget {
   final bool isDarkMode;
@@ -206,7 +206,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 value: isDivisible,
                                 onChanged: (bool? value) {
                                   setState(() {
-                                    isDivisible = value ?? true;
+                                    isDivisible = value ?? false;
                                   });
                                 },
                               ),
@@ -425,57 +425,41 @@ class _ComposeIssuanceConfirmationPageState
                         widget.isDarkMode ? mainTextWhite : mainTextBlack,
                   )
                 : const SizedBox.shrink(),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Divisible",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(
+                  text: issueParams.divisible == true ? 'true' : 'false'),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Lock",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(
+                  text: issueParams.lock == true ? 'true' : 'false'),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              isDarkMode: widget.isDarkMode,
+              label: "Reset",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              controller: TextEditingController(
+                  text: issueParams.reset == true ? 'true' : 'false'),
+              enabled: false,
+              fillColor: inputFillColor,
+              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+            ),
             Column(
               children: [
-                Row(
-                  children: [
-                    Checkbox(
-                      value: issueParams.divisible ?? false,
-                      onChanged: null,
-                      activeColor:
-                          widget.isDarkMode ? Colors.grey : Colors.grey[400],
-                    ),
-                    Text('Divisible',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: widget.isDarkMode
-                                ? mainTextWhite
-                                : mainTextBlack)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: issueParams.lock ?? false,
-                      onChanged: null,
-                      activeColor:
-                          widget.isDarkMode ? Colors.grey : Colors.grey[400],
-                    ),
-                    Text('Lock',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: widget.isDarkMode
-                                ? mainTextWhite
-                                : mainTextBlack)),
-                  ],
-                ),
-                const SizedBox(width: 16.0),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: issueParams.reset ?? false,
-                      onChanged: null,
-                      activeColor:
-                          widget.isDarkMode ? Colors.grey : Colors.grey[400],
-                    ),
-                    Text('Reset',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: widget.isDarkMode
-                                ? mainTextWhite
-                                : mainTextBlack)),
-                  ],
-                ),
                 const SizedBox(height: 16.0),
                 FeeEstimation(
                     feeMap: widget.composeIssuanceState.feeEstimates,

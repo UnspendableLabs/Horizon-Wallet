@@ -17,14 +17,12 @@ class ComposeTransactionEvent extends ComposeSendEvent {
   final String sourceAddress;
   final String destinationAddress;
   final int quantity;
-  final String quantityDisplay;
   final String asset;
 
   ComposeTransactionEvent({
     required this.sourceAddress,
     required this.destinationAddress,
     required this.quantity,
-    required this.quantityDisplay,
     required this.asset,
   });
 }
