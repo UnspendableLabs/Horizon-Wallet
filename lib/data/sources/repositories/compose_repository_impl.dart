@@ -105,7 +105,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         reset,
         description,
         unconfirmed,
-        500);
+        fee);
     if (response.result == null) {
       // TODO: handle errors
       throw Exception('Failed to compose issuance');
