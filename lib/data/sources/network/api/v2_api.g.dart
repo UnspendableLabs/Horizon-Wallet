@@ -1040,7 +1040,7 @@ ComposeIssuanceParams _$ComposeIssuanceParamsFromJson(
     ComposeIssuanceParams(
       source: json['source'] as String,
       asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toDouble(),
+      quantity: (json['quantity'] as num).toInt(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
       description: json['description'] as String?,
@@ -1081,7 +1081,7 @@ ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
     ComposeIssuanceVerboseParams(
       source: json['source'] as String,
       asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toDouble(),
+      quantity: (json['quantity'] as num).toInt(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
       description: json['description'] as String?,

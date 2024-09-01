@@ -227,12 +227,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                 HorizonDialogSubmitButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      if (asset == null) {
-                        throw Exception("no asset");
-                      }
-                      print('quantity: ${quantityController.text}');
-                      print(
-                          'double.parse(quantityController.text): ${double.parse(quantityController.text)}');
+                      // TODO: wrap this in function and write some tests
                       Decimal input = Decimal.parse(quantityController.text);
 
                       Balance? balance = balance_;
@@ -250,6 +245,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                             .toInt();
                       } else {
                         quantity = (input).toBigInt().toInt();
+                      }
+
+                      if (asset == null) {
+                        throw Exception("no asset");
                       }
 
                       context
@@ -316,13 +315,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           controller: quantityController,
           label: 'Quantity',
           floatingLabelBehavior: FloatingLabelBehavior.auto,
-          keyboardType: const TextInputType.numberWithOptions(
-              decimal: true, signed: false),
           inputFormatters: [
             balance?.assetInfo.divisible == true
                 ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
                 : FilteringTextInputFormatter.digitsOnly,
           ],
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: false),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
@@ -341,42 +340,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
             return null;
           },
         ),
-        // HorizonTextFormField(
-        //   isDarkMode: widget.isDarkMode,
-        //   controller: quantityController,
-        //   label: 'Quantity',
-        //   floatingLabelBehavior: FloatingLabelBehavior.auto,
-        //   inputFormatters: <TextInputFormatter>[
-        //     TextInputFormatter.withFunction((oldValue, newValue) {
-        //       if (newValue.text.isEmpty) {
-        //         return newValue;
-        //       }
-        //       if (double.tryParse(newValue.text) != null) {
-        //         return newValue;
-        //       }
-        //       return oldValue;
-        //     }),
-
-        //   ], // Only
-        //   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        //   validator: (value) {
-        //     if (value == null || value.isEmpty) {
-        //       return 'Please enter a quantity';
-        //     }
-        //     Decimal input = Decimal.parse(value);
-        //     Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
-
-        //     if (input > max) {
-        //       return "quantity exceeds max";
-        //     }
-
-        //     setState(() {
-        //       balance_ = balance;
-        //     });
-
-        //     return null;
-        //   },
-        // ),
         Positioned(
           right: 0,
           top: 0,
