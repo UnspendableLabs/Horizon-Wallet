@@ -13,7 +13,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<RawTransaction> composeSend(
-      String sourceAddress, String destination, String asset, double quantity,
+      String sourceAddress, String destination, String asset, int quantity,
       [bool? allowUnconfirmedTx, int? fee]) async {
     final response = await api.composeSend(
         sourceAddress, destination, asset, quantity, allowUnconfirmedTx, fee);
@@ -27,16 +27,14 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_send.ComposeSend> composeSendVerbose(
-      String sourceAddress, String destination, String asset, double quantity,
+      String sourceAddress, String destination, String asset, int quantity,
       [bool? allowUnconfirmedTx, int? fee]) async {
     final response = await api.composeSendVerbose(
         sourceAddress, destination, asset, quantity, allowUnconfirmedTx, fee);
-
     if (response.result == null) {
       // TODO: handle errors
       throw Exception('Failed to compose send');
     }
-
     final txVerbose = response.result!;
     return compose_send.ComposeSend(
         params: compose_send.ComposeSendParams(
@@ -117,7 +115,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         params: compose_issuance.ComposeIssuanceVerboseParams(
           source: txVerbose.params.source,
           asset: txVerbose.params.asset,
-          quantity: txVerbose.params.quantity.toDouble(),
+          quantity: txVerbose.params.quantity,
           divisible: txVerbose.params.divisible,
           lock: txVerbose.params.lock,
           description: description,

@@ -4,7 +4,7 @@ class ComposeSendParams {
   final String source;
   final String destination;
   final String asset;
-  final double quantity;
+  final int quantity;
   final bool useEnhancedSend;
   final AssetInfo assetInfo;
   final String quantityNormalized;

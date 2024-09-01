@@ -230,6 +230,27 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       if (asset == null) {
                         throw Exception("no asset");
                       }
+                      print('quantity: ${quantityController.text}');
+                      print(
+                          'double.parse(quantityController.text): ${double.parse(quantityController.text)}');
+                      Decimal input = Decimal.parse(quantityController.text);
+
+                      Balance? balance = balance_;
+
+                      int quantity;
+
+                      if (balance == null) {
+                        throw Exception(
+                            "invariant: No balance found for asset");
+                      }
+
+                      if (balance.assetInfo.divisible) {
+                        quantity = (input * Decimal.fromInt(100000000))
+                            .toBigInt()
+                            .toInt();
+                      } else {
+                        quantity = (input).toBigInt().toInt();
+                      }
 
                       context
                           .read<ComposeSendBloc>()
@@ -238,7 +259,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                             destinationAddress:
                                 destinationAddressController.text,
                             asset: asset!,
-                            quantity: double.parse(quantityController.text),
+                            quantity: quantity,
                           ));
                     }
                   },

@@ -290,6 +290,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       HorizonDialogSubmitButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
+                            print('quantity: ${quantityController.text}');
+                            print(
+                                'double.parse(quantityController.text): ${double.parse(quantityController.text)}');
+
                             context
                                 .read<ComposeIssuanceBloc>()
                                 .add(ComposeTransactionEvent(

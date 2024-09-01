@@ -16,7 +16,7 @@ class FetchBalances extends ComposeSendEvent {
 class ComposeTransactionEvent extends ComposeSendEvent {
   final String sourceAddress;
   final String destinationAddress;
-  final double quantity;
+  final int quantity;
   final String asset;
 
   ComposeTransactionEvent({
