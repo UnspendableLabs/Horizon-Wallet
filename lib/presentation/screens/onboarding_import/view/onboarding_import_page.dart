@@ -443,6 +443,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 context
                     .read<OnboardingImportBloc>()
                     .add(ImportFormatChanged(importFormat: newValue!));
+                updateMnemonic();
               },
               dropdownColor: dropdownBackgroundColor,
               items: [
@@ -473,7 +474,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         onExit: (_) {},
         onHover: (_) {},
         child: Text(description,
-            style: const TextStyle(fontWeight: FontWeight.normal)),
+            style: const TextStyle(fontWeight: FontWeight.w500)),
       ),
     );
   }

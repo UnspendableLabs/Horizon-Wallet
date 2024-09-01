@@ -172,7 +172,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             hash: txHash,
             source: source,
             destination: destination,
-            btcAmount: quantity,
+            btcAmount: quantity.toInt(), // TODO: should this save as double?
             domain: TransactionInfoDomainLocal(
                 raw: txHex, submittedAt: DateTime.now()),
             btcAmountNormalized: quantity.toString(), //TODO: this is temporary

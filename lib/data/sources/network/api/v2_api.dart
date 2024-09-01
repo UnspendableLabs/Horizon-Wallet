@@ -1230,7 +1230,7 @@ class ComposeIssuance {
 class ComposeIssuanceParams {
   final String source;
   final String asset;
-  final int quantity;
+  final double quantity;
   final bool divisible;
   final bool lock;
   final String? description;
@@ -1506,7 +1506,7 @@ class SendTxParams {
   final String source;
   final String destination;
   final String asset;
-  final int quantity;
+  final double quantity;
   final String? memo;
   final bool memoIsHex;
   final bool useEnhancedSend;
@@ -2297,7 +2297,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("destination") String destination,
     @Query("asset") String asset,
-    @Query("quantity") int quantity, [
+    @Query("quantity") double quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("fee") int? fee,
   ]);
@@ -2308,7 +2308,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("destination") String destination,
     @Query("asset") String asset,
-    @Query("quantity") int quantity, [
+    @Query("quantity") double quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("fee") int? fee,
   ]);

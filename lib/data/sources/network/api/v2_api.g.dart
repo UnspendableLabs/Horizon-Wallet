@@ -1040,7 +1040,7 @@ ComposeIssuanceParams _$ComposeIssuanceParamsFromJson(
     ComposeIssuanceParams(
       source: json['source'] as String,
       asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num).toDouble(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
       description: json['description'] as String?,
@@ -1081,7 +1081,7 @@ ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
     ComposeIssuanceVerboseParams(
       source: json['source'] as String,
       asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num).toDouble(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
       description: json['description'] as String?,
@@ -1224,7 +1224,7 @@ SendTxParams _$SendTxParamsFromJson(Map<String, dynamic> json) => SendTxParams(
       source: json['source'] as String,
       destination: json['destination'] as String,
       asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num).toDouble(),
       memo: json['memo'] as String?,
       memoIsHex: json['memo_is_hex'] as bool,
       useEnhancedSend: json['use_enhanced_send'] as bool,
@@ -1258,7 +1258,7 @@ SendTxParamsVerbose _$SendTxParamsVerboseFromJson(Map<String, dynamic> json) =>
       source: json['source'] as String,
       destination: json['destination'] as String,
       asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num).toDouble(),
       memo: json['memo'] as String?,
       memoIsHex: json['memo_is_hex'] as bool,
       useEnhancedSend: json['use_enhanced_send'] as bool,
@@ -2307,7 +2307,7 @@ class _V2Api implements V2Api {
     String address,
     String destination,
     String asset,
-    int quantity, [
+    double quantity, [
     bool? allowUnconfirmedInputs,
     int? fee,
   ]) async {
@@ -2351,7 +2351,7 @@ class _V2Api implements V2Api {
     String address,
     String destination,
     String asset,
-    int quantity, [
+    double quantity, [
     bool? allowUnconfirmedInputs,
     int? fee,
   ]) async {
