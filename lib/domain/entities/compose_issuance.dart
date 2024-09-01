@@ -13,7 +13,7 @@ class ComposeIssuance {
 class ComposeIssuanceParams {
   final String source;
   final String asset;
-  final double quantity;
+  final int quantity;
   final bool? divisible;
   final bool? lock;
   final bool? reset;
@@ -47,7 +47,7 @@ class ComposeIssuanceVerbose {
 class ComposeIssuanceVerboseParams {
   final String source;
   final String asset;
-  final double quantity;
+  final int quantity;
   final bool? divisible;
   final bool? lock;
   final bool? reset;

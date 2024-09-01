@@ -10,14 +10,14 @@ abstract class ComposeRepository {
       String sourceAddress, String destination, String asset, int quantity,
       [bool? allowUnconfirmedTx, int? fee]);
   Future<ComposeIssuance> composeIssuance(
-      String sourceAddress, String name, double quantity,
+      String sourceAddress, String name, int quantity,
       [bool? divisible,
       bool? lock,
       bool? reset,
       String? description,
       String? transferDestination]);
   Future<ComposeIssuanceVerbose> composeIssuanceVerbose(
-      String sourceAddress, String name, double quantity,
+      String sourceAddress, String name, int quantity,
       [bool? divisible,
       bool? lock,
       bool? reset,

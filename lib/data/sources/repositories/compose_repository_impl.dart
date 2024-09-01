@@ -57,7 +57,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_issuance.ComposeIssuance> composeIssuance(
-      String sourceAddress, String name, double quantity,
+      String sourceAddress, String name, int quantity,
       [bool? divisible,
       bool? lock,
       bool? reset,
@@ -86,14 +86,14 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_issuance.ComposeIssuanceVerbose> composeIssuanceVerbose(
     String sourceAddress,
     String name,
-    double quantity, [
+    int quantity, [
     bool? divisible,
     bool? lock,
     bool? reset,
     String? description,
     String? transferDestination,
     bool? unconfirmed,
-    int? confirmationTarget,
+    int? fee,
   ]) async {
     final response = await api.composeIssuanceVerbose(
         sourceAddress,
@@ -105,7 +105,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         reset,
         description,
         unconfirmed,
-        confirmationTarget);
+        500);
     if (response.result == null) {
       // TODO: handle errors
       throw Exception('Failed to compose issuance');
@@ -117,7 +117,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         params: compose_issuance.ComposeIssuanceVerboseParams(
           source: txVerbose.params.source,
           asset: txVerbose.params.asset,
-          quantity: txVerbose.params.quantity.toDouble(),
+          quantity: txVerbose.params.quantity,
           divisible: txVerbose.params.divisible,
           lock: txVerbose.params.lock,
           description: description,
