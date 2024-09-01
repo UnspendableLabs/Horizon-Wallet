@@ -2479,7 +2479,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeIssuance>> composeIssuance(
     String address,
     String asset,
-    double quantity, [
+    int quantity, [
     String? transferDestination,
     bool? divisible,
     bool? lock,
@@ -2529,7 +2529,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeIssuanceVerbose>> composeIssuanceVerbose(
     String address,
     String asset,
-    double quantity, [
+    int quantity, [
     String? transferDestination,
     bool? divisible,
     bool? lock,

@@ -13,39 +13,14 @@ class FetchBalances extends ComposeIssuanceEvent {
   FetchBalances({required this.address});
 }
 
-class CreateIssuanceEvent extends ComposeIssuanceEvent {
-  final String sourceAddress;
-  final String password;
-  final String name;
-  final double quantity;
-  final bool? divisible;
-  final bool? lock;
-  final bool? reset;
-  final String? description;
-  final String? transferDestination;
-
-  CreateIssuanceEvent(
-      {required this.sourceAddress,
-      required this.password,
-      required this.name,
-      required this.quantity,
-      this.divisible,
-      this.lock,
-      this.reset,
-      this.description,
-      this.transferDestination});
-}
-
 class ComposeTransactionEvent extends ComposeIssuanceEvent {
   final String sourceAddress;
   final String name;
-  final double quantity;
+  final int quantity;
   final String description;
   final bool divisible;
   final bool lock;
   final bool reset;
-  // final String quantityDisplay;
-  // final String asset;
 
   ComposeTransactionEvent({
     required this.sourceAddress,

@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -180,8 +181,10 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true, signed: false),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d*')),
+                          isDivisible == true
+                              ? FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*$'))
+                              : FilteringTextInputFormatter.digitsOnly,
                         ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -207,6 +210,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 onChanged: (bool? value) {
                                   setState(() {
                                     isDivisible = value ?? false;
+                                    quantityController.text = '';
                                   });
                                 },
                               ),
@@ -290,13 +294,26 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       HorizonDialogSubmitButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
+                            // TODO: wrap this in function and write some tests
+                            Decimal input =
+                                Decimal.parse(quantityController.text);
+
+                            int quantity;
+
+                            if (isDivisible) {
+                              quantity = (input * Decimal.fromInt(100000000))
+                                  .toBigInt()
+                                  .toInt();
+                            } else {
+                              quantity = (input).toBigInt().toInt();
+                            }
+
                             context
                                 .read<ComposeIssuanceBloc>()
                                 .add(ComposeTransactionEvent(
                                   sourceAddress: widget.address.address,
                                   name: nameController.text,
-                                  quantity:
-                                      double.parse(quantityController.text),
+                                  quantity: quantity,
                                   description: descriptionController.text,
                                   divisible: isDivisible,
                                   lock: isLocked,

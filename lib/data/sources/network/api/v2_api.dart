@@ -2331,7 +2331,7 @@ abstract class V2Api {
   Future<Response<ComposeIssuance>> composeIssuance(
     @Path("address") String address,
     @Query("asset") String asset,
-    @Query("quantity") double quantity, [
+    @Query("quantity") int quantity, [
     @Query("transferDestination") String? transferDestination,
     @Query("divisible") bool? divisible,
     @Query("lock") bool? lock,
@@ -2344,7 +2344,7 @@ abstract class V2Api {
   Future<Response<ComposeIssuanceVerbose>> composeIssuanceVerbose(
     @Path("address") String address,
     @Query("asset") String asset,
-    @Query("quantity") double quantity, [
+    @Query("quantity") int quantity, [
     @Query("transferDestination") String? transferDestination,
     @Query("divisible") bool? divisible,
     @Query("lock") bool? lock,
