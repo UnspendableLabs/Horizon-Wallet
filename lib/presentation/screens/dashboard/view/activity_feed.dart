@@ -81,7 +81,7 @@ class TransactionStatusPill extends StatelessWidget {
   String _getText() {
     return text ??
         switch (status) {
-          TransactionStatus.local => 'SENT',
+          TransactionStatus.local => 'BROADCASTED',
           TransactionStatus.mempool => 'MEMPOOL',
           TransactionStatus.confirmed => 'CONFIRMED',
         };
