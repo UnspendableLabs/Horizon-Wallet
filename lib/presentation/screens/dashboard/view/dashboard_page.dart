@@ -623,10 +623,7 @@ class _BalancesState extends State<Balances> {
         }).toList();
         return balanceWidgets;
       },
-      error: (error) {
-        print('error>>>>>>>>>>>: $error');
-        return [SelectableText('Error: $error')];
-      },
+      error: (error) => [SelectableText('Error: $error')],
     );
   }
 }
