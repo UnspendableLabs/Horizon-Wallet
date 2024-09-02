@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart' as _;
 import 'package:decimal/decimal.dart';
+import 'package:dio/dio.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
@@ -21,6 +22,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
     final List<b.Balance> balances = [];
     balances.addAll(await _getBtcBalances([address]));
     balances.addAll(await _fetchBalances(address));
+    throw Exception('test');
     return balances;
   }
 
@@ -30,7 +32,9 @@ class BalanceRepositoryImpl implements BalanceRepository {
     final List<b.Balance> balances = [];
     balances.addAll(await _getBtcBalances(addresses));
     balances.addAll(await _fetchBalancesByAllAddresses(addresses));
-
+    throw DioException(
+        type: DioExceptionType.connectionTimeout,
+        requestOptions: RequestOptions(path: 'test'));
     return balances;
   }
 

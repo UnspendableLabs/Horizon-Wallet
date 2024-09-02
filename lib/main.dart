@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -302,7 +303,12 @@ void main() {
 
     runApp(MyApp());
   }, (Object error, StackTrace stackTrace) {
-    logger.e({'error': error.toString(), 'stackTrace': stackTrace.toString()});
+    if (error is DioException) {
+      logger.e({'error': error.message, 'stackTrace': stackTrace.toString()});
+    } else {
+      logger
+          .e({'error': error.toString(), 'stackTrace': stackTrace.toString()});
+    }
     // Log the error to a service or handle it accordingly
   });
 }

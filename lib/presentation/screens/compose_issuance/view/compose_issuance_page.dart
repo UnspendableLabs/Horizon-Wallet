@@ -118,12 +118,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
         loading: () => const CircularProgressIndicator(),
         error: (msg) => Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('An error occurred: $msg')),
+            child: SelectableText('An error occurred: $msg')),
         initial: () {
           return state.balancesState.when(
             initial: () => const SizedBox.shrink(),
             loading: () => const SizedBox.shrink(),
-            error: (e) => Text(e),
+            error: (e) => SelectableText('An error occurred: $e'),
             success: (balances) {
               bool hasXCPBalance = balances.isNotEmpty &&
                   balances.any((balance) => balance.asset == 'XCP');

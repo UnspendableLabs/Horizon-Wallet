@@ -184,7 +184,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         loading: () => const CircularProgressIndicator(),
         error: (msg) => Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('An error occurred: $msg')),
+            child: SelectableText('An error occurred: $msg')),
         initial: () => Form(
           key: _formKey,
           child: Padding(

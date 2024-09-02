@@ -224,7 +224,7 @@ class SettingsPage extends StatelessWidget {
             listener: (context, state) {
           state.whenOrNull(error: (msg) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(msg),
+              content: SelectableText(msg),
             ));
           }, success: (password, gapLimit) async {
             context.read<AddressesBloc>().add(Update(
@@ -379,7 +379,7 @@ class SettingsPage extends StatelessWidget {
                     return state.when(
                       initial: () => const Text("initial"),
                       loading: () => const Text("loading"),
-                      error: (error) => Text("Error: $error"),
+                      error: (error) => SelectableText("Error: $error"),
                       success: (addresses) => ListView.builder(
                         itemCount: addresses.length,
                         itemBuilder: (BuildContext context, int index) {
