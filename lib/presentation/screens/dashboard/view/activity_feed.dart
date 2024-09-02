@@ -420,7 +420,7 @@ class _DashboardActivityFeedScreenState
             state is DashboardActivityFeedStateLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is DashboardActivityFeedStateCompleteError) {
-          return Center(child: Text('Error: ${state.error}'));
+          return Center(child: SelectableText('Error: ${state.error}'));
         } else if (state is DashboardActivityFeedStateCompleteOk ||
             state is DashboardActivityFeedStateReloadingOk) {
           final transactions =

@@ -26,29 +26,6 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-String balancesStateToString(BalancesState state) {
-  return state.when(
-    initial: () => 'Initial',
-    loading: () => 'Loading',
-    complete: (result) => 'Complete: ${resultToString(result)}',
-    reloading: (result) => 'Reloading: ${resultToString(result)}',
-  );
-}
-
-String resultToString(Result result) {
-  return result.when(
-    ok: (balances, aggregated) {
-      var assetSummaries = aggregated.entries
-          .map((entry) =>
-              '${entry.key}: ${entry.value.quantity.toStringAsFixed(2)}')
-          .join(', ');
-
-      return 'OK (${balances.length} balances, $assetSummaries)';
-    },
-    error: (error) => 'Error: $error',
-  );
-}
-
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
@@ -646,7 +623,7 @@ class _BalancesState extends State<Balances> {
         }).toList();
         return balanceWidgets;
       },
-      error: (error) => [Text('Error: $error')],
+      error: (error) => [SelectableText('Error: $error')],
     );
   }
 }

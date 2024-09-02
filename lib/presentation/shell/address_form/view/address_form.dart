@@ -68,7 +68,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
         listener: (context, state) {
       state.whenOrNull(error: (msg) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(msg),
+          content: SelectableText(msg),
         ));
       }, success: (addresses) async {
         // update accounts in shell

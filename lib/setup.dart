@@ -61,10 +61,20 @@ Future<void> setup() async {
 
   injector.registerLazySingleton<Config>(() => config);
 
-  injector.registerLazySingleton<V2Api>(() => V2Api(Dio(BaseOptions(
-      baseUrl: config.counterpartyApiBase,
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 3)))));
+  final dio = Dio(BaseOptions(
+    baseUrl: config.counterpartyApiBase,
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
+
+  dio.interceptors.addAll([
+    TimeoutInterceptor(),
+    ConnectionErrorInterceptor(),
+    BadResponseInterceptor(),
+    BadCertificateInterceptor()
+  ]);
+
+  injector.registerLazySingleton<V2Api>(() => V2Api(dio));
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
       esploraApi: EsploraApi(
@@ -129,4 +139,91 @@ Future<void> setup() async {
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
+}
+
+class CustomDioException extends DioException {
+  CustomDioException({
+    required super.requestOptions,
+    required String super.error,
+    required super.type,
+  });
+
+  @override
+  String toString() {
+    return error.toString();
+  }
+}
+
+class TimeoutInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.type == DioExceptionType.connectionTimeout ||
+        err.type == DioExceptionType.receiveTimeout ||
+        err.type == DioExceptionType.sendTimeout) {
+      final requestPath = err.requestOptions.uri.toString();
+      final timeoutDuration =
+          err.requestOptions.connectTimeout ?? const Duration(seconds: 5);
+      final formattedError = CustomDioException(
+        requestOptions: err.requestOptions,
+        error:
+            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath',
+        type: DioExceptionType.connectionTimeout,
+      );
+      handler.next(formattedError);
+    } else {
+      handler.next(err);
+    }
+  }
+}
+
+class ConnectionErrorInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.type == DioExceptionType.connectionError ||
+        err.type == DioExceptionType.unknown) {
+      final requestPath = err.requestOptions.uri.toString();
+      final formattedError = CustomDioException(
+        requestOptions: err.requestOptions,
+        error: 'Connection Error — Request Failed $requestPath',
+        type: DioExceptionType.connectionError,
+      );
+      handler.next(formattedError);
+    } else {
+      handler.next(err);
+    }
+  }
+}
+
+class BadResponseInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.type == DioExceptionType.badResponse) {
+      final requestPath = err.requestOptions.uri.toString();
+      final formattedError = CustomDioException(
+        requestOptions: err.requestOptions,
+        error: 'Bad Response — Request Failed $requestPath',
+        type: DioExceptionType.badResponse,
+      );
+      handler.next(formattedError);
+    } else {
+      handler.next(err);
+    }
+  }
+}
+
+class BadCertificateInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.type == DioExceptionType.badCertificate) {
+      final requestPath = err.requestOptions.uri.toString();
+      final formattedError = CustomDioException(
+        requestOptions: err.requestOptions,
+        error: 'Bad Certificate — Request Failed $requestPath',
+        type: DioExceptionType.badCertificate,
+      );
+      handler.next(formattedError);
+    } else {
+      handler.next(err);
+    }
+  }
 }

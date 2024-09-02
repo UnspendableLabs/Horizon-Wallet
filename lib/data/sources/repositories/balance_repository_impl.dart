@@ -30,7 +30,6 @@ class BalanceRepositoryImpl implements BalanceRepository {
     final List<b.Balance> balances = [];
     balances.addAll(await _getBtcBalances(addresses));
     balances.addAll(await _fetchBalancesByAllAddresses(addresses));
-
     return balances;
   }
 
