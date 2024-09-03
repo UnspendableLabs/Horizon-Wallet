@@ -2,6 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/data/services/encryption_service_impl.dart';
 
+/**
+ * Tests for the [EncryptionServiceImpl] class.
+ * 
+ * THESE ARE ALL SKIPPED AND RECAPITULATED IN INTEGRATION TEST
+ * DUE TO ARGON2 SYSTEM DEPENDENCY BUG IN THE FLUTTER LIB
+ */
+
 void main() {
   late EncryptionService encryptionService;
 
@@ -9,7 +16,6 @@ void main() {
     encryptionService = EncryptionServiceImpl();
   });
 
-  // skipping due to dargon2 system lib dependency
   group('EncryptionServiceImpl Tests', () {
     test('Encrypt and decrypt with new Argon2 method', () async {
       const originalData = 'Sensitive data to encrypt';

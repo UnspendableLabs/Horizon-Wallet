@@ -25,13 +25,18 @@ class EncryptionServiceImpl implements EncryptionService {
   Future<String> encrypt(String data, String password) async {
     final iv = IV(base64Decode(_generateRandomIV()));
     final salt = Salt.newSalt();
-
     final argon2Result = await _hashPasswordWithArgon2(password, salt);
     final key =
         Key(Uint8List.fromList(base64Decode(argon2Result.base64String)));
+
     final encrypter = Encrypter(AES(key));
     final cipher = encrypter.encrypt(data, iv: iv).base64;
-    return '$_argon2Prefix${base64Encode(salt.bytes)}::${argon2Result.encodedString}::${iv.base64}$cipher';
+
+    final parts = argon2Result.encodedString.split('\$');
+    final version = parts[2];
+    final params = parts[3];
+
+    return '$_argon2Prefix$version::$params::${base64Encode(salt.bytes)}::${iv.base64}$cipher';
   }
 
   Future<String> encryptLegacy(String data, String password) async {
@@ -61,22 +66,14 @@ class EncryptionServiceImpl implements EncryptionService {
 
   Future<String> _decryptArgon2(String data, String password) async {
     final parts = data.split('::');
-    if (parts.length != 3) {
+    if (parts.length != 4) {
       throw const FormatException('Invalid encrypted data format');
     }
-    final saltBase64 = parts[0];
-    final encodedHash = parts[1];
-    final ivAndCipher = parts[2];
+    final saltBase64 = parts[2];
+    final ivAndCipher = parts[3];
     final salt = Salt(base64Decode(saltBase64));
     final iv = IV(base64Decode(ivAndCipher.substring(0, 24)));
     final cipher = ivAndCipher.substring(24);
-
-    final isValid = await argon2.verifyHashString(password, encodedHash);
-    if (!isValid) {
-      throw Exception('Invalid password');
-    }
-
-    // log a timestamp
     final argon2Result = await _hashPasswordWithArgon2(password, salt);
     final key =
         Key(Uint8List.fromList(base64Decode(argon2Result.base64String)));
