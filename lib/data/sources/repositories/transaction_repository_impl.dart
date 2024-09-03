@@ -1,4 +1,4 @@
-import 'package:horizon/data/sources/network/api/cursor.dart';
+import 'package:horizon/domain/entities/cursor.dart' as domain_cursor;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
@@ -244,10 +244,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<(List<TransactionInfoVerbose>, Cursor? nextCursor, int? resultCount)>
-      getByAccountVerbose({
+  Future<
+      (
+        List<TransactionInfoVerbose>,
+        domain_cursor.Cursor? nextCursor,
+        int? resultCount
+      )> getByAccountVerbose({
     required String accountUuid,
-    Cursor? cursor,
+    domain_cursor.Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
   }) async {
@@ -257,7 +261,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
         addresses.map((address) => address.address).join(',');
 
     final response = await api_.getTransactionsByAddressesVerbose(
-        addressesParam, cursor, limit, unconfirmed);
+        addressesParam,
+        domain_cursor.CursorMapper.toData(cursor),
+        limit,
+        unconfirmed);
 
     if (response.error != null) {
       throw Exception("Failed to get transactions by account: $accountUuid");
@@ -296,7 +303,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
           ),
       };
     }).toList();
-    Cursor? nextCursor = response.nextCursor;
+    domain_cursor.Cursor? nextCursor =
+        domain_cursor.CursorMapper.toDomain(response.nextCursor);
     return (transactions, nextCursor, response.resultCount);
   }
 }

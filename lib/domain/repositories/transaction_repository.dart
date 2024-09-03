@@ -1,4 +1,4 @@
-import 'package:horizon/data/sources/network/api/cursor.dart';
+import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 
@@ -9,7 +9,7 @@ abstract class TransactionRepository {
   Future<TransactionUnpackedVerbose> unpackVerbose(String raw);
   Future<TransactionInfo> getInfo(String raw);
   Future<TransactionInfoVerbose> getInfoVerbose(String raw);
-  // Future<(List<TransactionInfo>, Cursor nextCursor, int? total)> getByAccount(
+  // Future<(List<TransactionInfo>, Cursor? nextCursor, int? total)> getByAccount(
   //     {required String accountUuid,
   //     int? limit,
   //     Cursor? cursor,

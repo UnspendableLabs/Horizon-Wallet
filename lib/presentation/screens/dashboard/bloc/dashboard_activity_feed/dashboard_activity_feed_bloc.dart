@@ -1,18 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/data/sources/network/api/cursor.dart';
- import 'dart:async';
+import 'package:horizon/domain/entities/cursor.dart';
+import 'dart:async';
 
- import "dashboard_activity_feed_event.dart";
- import "dashboard_activity_feed_state.dart";
+import "dashboard_activity_feed_event.dart";
+import "dashboard_activity_feed_state.dart";
 
- import 'package:horizon/domain/repositories/bitcoin_repository.dart';
- import 'package:horizon/domain/repositories/address_repository.dart';
- import 'package:horizon/domain/repositories/transaction_local_repository.dart';
- import 'package:horizon/domain/repositories/events_repository.dart';
- import 'package:horizon/domain/entities/event.dart';
- import 'package:horizon/domain/entities/address.dart';
- import 'package:horizon/domain/entities/bitcoin_tx.dart';
- import 'package:horizon/domain/entities/activity_feed_item.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/domain/entities/activity_feed_item.dart';
 
 final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE", "DISPENSE"];
 

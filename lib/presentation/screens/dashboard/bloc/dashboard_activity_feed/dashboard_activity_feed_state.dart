@@ -1,6 +1,6 @@
 import "package:equatable/equatable.dart";
-import "package:horizon/data/sources/network/api/cursor.dart";
 import "package:horizon/domain/entities/activity_feed_item.dart";
+import "package:horizon/domain/entities/cursor.dart";
 
 abstract class DashboardActivityFeedState extends Equatable {
   const DashboardActivityFeedState();
