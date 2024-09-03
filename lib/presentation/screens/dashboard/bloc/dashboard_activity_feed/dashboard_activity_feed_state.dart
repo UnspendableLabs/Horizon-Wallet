@@ -1,4 +1,5 @@
 import "package:equatable/equatable.dart";
+import "package:horizon/data/sources/network/api/cursor.dart";
 import "package:horizon/domain/entities/activity_feed_item.dart";
 
 abstract class DashboardActivityFeedState extends Equatable {
@@ -20,7 +21,7 @@ class DashboardActivityFeedStateLoading extends DashboardActivityFeedState {}
 class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
   final List<ActivityFeedItem> transactions;
   final int newTransactionCount;
-  final int? nextCursor;
+  final Cursor? nextCursor;
   final String? mostRecentCounterpartyEventHash;
   final String? mostRecentBitcoinTxHash;
 

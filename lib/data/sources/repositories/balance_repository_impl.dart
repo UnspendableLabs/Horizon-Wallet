@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart' as _;
 import 'package:decimal/decimal.dart';
+import 'package:horizon/data/sources/network/api/cursor.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
@@ -36,7 +37,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
   Future<List<b.Balance>> _fetchBalances(String address) async {
     final List<b.Balance> balances = [];
     int limit = 50;
-    int? cursor;
+    Cursor? cursor;
 
     do {
       final response =
@@ -66,7 +67,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
       List<String> addresses) async {
     final List<b.Balance> balances = [];
     int limit = 50;
-    int? cursor;
+    Cursor? cursor;
 
     do {
       final response = await api.getBalancesByAddressesVerbose(

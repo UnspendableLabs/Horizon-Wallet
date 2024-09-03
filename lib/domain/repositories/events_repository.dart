@@ -1,18 +1,19 @@
 import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/data/sources/network/api/cursor.dart';
 
 abstract class EventsRepository {
-  Future<(List<Event>, int? nextCursor, int? resultCount)> getByAddresses({
+  Future<(List<Event>, Cursor? nextCursor, int? resultCount)> getByAddresses({
     required List<String> addresses,
     int? limit,
-    int? cursor,
+    Cursor? cursor,
     bool? unconfirmed = false,
     List<String>? whitelist,
   });
-  Future<(List<VerboseEvent>, int? nextCursor, int? resultCount)>
+  Future<(List<VerboseEvent>, Cursor? nextCursor, int? resultCount)>
       getByAddressesVerbose({
     required List<String> addresses,
     int? limit,
-    int? cursor,
+    Cursor? cursor,
     bool? unconfirmed = false,
     List<String>? whitelist,
   });

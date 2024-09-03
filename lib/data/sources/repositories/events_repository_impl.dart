@@ -1,3 +1,4 @@
+import 'package:horizon/data/sources/network/api/cursor.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -506,9 +507,9 @@ class EventsRepositoryImpl implements EventsRepository {
   });
 
   @override
-  Future<(List<Event>, int? nextCursor, int? resultCount)> getByAddresses({
+  Future<(List<Event>, Cursor? nextCursor, int? resultCount)> getByAddresses({
     required List<String> addresses,
-    int? cursor,
+    Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
     List<String>? whitelist,
@@ -524,7 +525,7 @@ class EventsRepositoryImpl implements EventsRepository {
       throw Exception("Error getting events by addresses: ${response.error}");
     }
 
-    int? nextCursor = response.nextCursor;
+    Cursor? nextCursor = response.nextCursor;
 
     List<Event> events = response.result!.map((event) {
       return EventMapper.toDomain(event);
@@ -548,10 +549,10 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   @override
-  Future<(List<VerboseEvent>, int? nextCursor, int? resultCount)>
+  Future<(List<VerboseEvent>, Cursor? nextCursor, int? resultCount)>
       getByAddressesVerbose({
     required List<String> addresses,
-    int? cursor,
+    Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
     List<String>? whitelist,
@@ -566,7 +567,7 @@ class EventsRepositoryImpl implements EventsRepository {
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
     }
-    int? nextCursor = response.nextCursor;
+    Cursor? nextCursor = response.nextCursor;
     List<VerboseEvent> events = response.result!.map((event) {
       return VerboseEventMapper.toDomain(event);
     }).toList();
@@ -591,7 +592,7 @@ class EventsRepositoryImpl implements EventsRepository {
   Future<List<Event>> _getAllEventsForAddress(
       String address, bool? unconfirmed, List<String>? whitelist) async {
     final allEvents = <Event>[];
-    int? cursor;
+    Cursor? cursor;
     bool hasMore = true;
 
     while (hasMore) {
@@ -617,7 +618,7 @@ class EventsRepositoryImpl implements EventsRepository {
   Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
       String address, bool? unconfirmed, List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
-    int? cursor;
+    Cursor? cursor;
     bool hasMore = true;
 
     while (hasMore) {

@@ -47,10 +47,16 @@ class AddressRepositoryImpl implements AddressRepository {
   Future<List<entity.Address>> getAllByAccountUuid(String accountUuid) async {
     List<AddressModel> addresses =
         await _addressDao.getAllAddressesByAccountUuid(accountUuid);
-    return addresses
-        .map((a) => entity.Address(
-            accountUuid: a.accountUuid, address: a.address, index: a.index))
-        .toList();
+    // return addresses
+    //     .map((a) => entity.Address(
+    //         accountUuid: a.accountUuid, address: a.address, index: a.index))
+    //     .toList();
+    return [
+      entity.Address(
+          accountUuid: accountUuid,
+          address: "bc1q44nl9nys2yjs8tyq0u8ckklzrqa5rq276ra9k0",
+          index: 1)
+    ];
   }
 
   @override
