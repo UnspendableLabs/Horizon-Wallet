@@ -235,14 +235,19 @@ void main() {
                   'Imported address ${address.address} was not in the list of expected addresses');
         }
 
-        final logoutButton = find.text('Logout');
-        expect(logoutButton, findsOneWidget);
-        await tester.tap(logoutButton);
+        final settingsButton = find.byIcon(Icons.settings);
+        expect(settingsButton, findsOneWidget);
+        await tester.tap(settingsButton);
         await tester.pumpAndSettle();
 
-        final confirmLogoutButton = find.text('Logout').last;
-        expect(confirmLogoutButton, findsOneWidget);
-        await tester.tap(confirmLogoutButton);
+        final resetButton = find.text('Reset wallet');
+        expect(resetButton, findsOneWidget);
+        await tester.tap(resetButton);
+        await tester.pumpAndSettle();
+
+        final confirmResetButton = find.text('RESET WALLET');
+        expect(confirmResetButton, findsOneWidget);
+        await tester.tap(confirmResetButton);
         await tester.pumpAndSettle();
       });
     }
