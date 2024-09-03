@@ -75,8 +75,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
 
         shell.refreshAndSelectNewAddress(addresses.first.address);
 
-                                        Navigator.of(context).pop();
-
+        Navigator.of(context).pop();
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),
