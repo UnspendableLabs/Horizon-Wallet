@@ -75,6 +75,9 @@ class _AddAccountFormState extends State<AddAddressForm> {
 
         shell.refreshAndSelectNewAddress(addresses.first.address);
 
+                                        Navigator.of(context).pop();
+
+
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),
         ));
@@ -140,7 +143,6 @@ class _AddAccountFormState extends State<AddAddressForm> {
                                       accountUuid: widget.accountUuid,
                                       password: password,
                                     ));
-                                Navigator.of(context).pop();
                                 // return to dashboard if modalSheetContext is not null
                                 // this will be the case on smaller screens to close the wolt bottom sheet
                                 if (widget.modalSheetContext != null) {

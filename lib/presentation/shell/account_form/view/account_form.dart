@@ -111,6 +111,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
         // update accounts in shell
         shell.refresh();
 
+        Navigator.of(context).pop();
+
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),
         ));
@@ -205,7 +207,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                                     password: password,
                                     importFormat: currentHighestIndexAccount
                                         .importFormat));
-                                Navigator.of(context).pop();
+
+                                // Navigator.of(context).pop();
                                 // return to dashboard if modalSheetContext is not null
                                 // this will be the case on smaller screens to close the wolt bottom sheet
                                 if (widget.modalSheetContext != null) {
