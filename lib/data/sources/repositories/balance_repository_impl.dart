@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart' as _;
 import 'package:decimal/decimal.dart';
-import 'package:horizon/data/sources/network/api/cursor.dart';
+import 'package:horizon/data/models/cursor.dart' as api_cursor;
+import 'package:horizon/domain/entities/cursor.dart' as domain_cursor;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
@@ -37,11 +38,11 @@ class BalanceRepositoryImpl implements BalanceRepository {
   Future<List<b.Balance>> _fetchBalances(String address) async {
     final List<b.Balance> balances = [];
     int limit = 50;
-    Cursor? cursor;
+    domain_cursor.Cursor? cursor;
 
     do {
-      final response =
-          await api.getBalancesByAddressVerbose(address, cursor, limit);
+      final response = await api.getBalancesByAddressVerbose(
+          address, domain_cursor.CursorMapper.toData(cursor), limit);
 
       for (var a in response.result ?? []) {
         balances.add(b.Balance(
@@ -57,7 +58,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
               // locked: a.assetInfo.locked,
             )));
       }
-      cursor = response.nextCursor;
+      cursor = domain_cursor.CursorMapper.toDomain(response.nextCursor);
     } while (cursor != null);
 
     return balances;
@@ -67,7 +68,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
       List<String> addresses) async {
     final List<b.Balance> balances = [];
     int limit = 50;
-    Cursor? cursor;
+    api_cursor.Cursor? cursor;
 
     do {
       final response = await api.getBalancesByAddressesVerbose(

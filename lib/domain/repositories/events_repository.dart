@@ -1,5 +1,5 @@
 import 'package:horizon/domain/entities/event.dart';
-import 'package:horizon/data/sources/network/api/cursor.dart';
+import 'package:horizon/domain/entities/cursor.dart';
 
 abstract class EventsRepository {
   Future<(List<Event>, Cursor? nextCursor, int? resultCount)> getByAddresses({

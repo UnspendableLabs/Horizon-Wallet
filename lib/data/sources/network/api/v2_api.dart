@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/data/sources/network/api/cursor.dart';
+import 'package:horizon/data/models/cursor.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 

@@ -1,5 +1,6 @@
-import 'package:horizon/data/sources/network/api/cursor.dart';
+import 'package:horizon/domain/entities/cursor.dart' as domain_cursor;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
+import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
@@ -507,9 +508,10 @@ class EventsRepositoryImpl implements EventsRepository {
   });
 
   @override
-  Future<(List<Event>, Cursor? nextCursor, int? resultCount)> getByAddresses({
+  Future<(List<Event>, domain_cursor.Cursor? nextCursor, int? resultCount)>
+      getByAddresses({
     required List<String> addresses,
-    Cursor? cursor,
+    domain_cursor.Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
     List<String>? whitelist,
@@ -519,13 +521,18 @@ class EventsRepositoryImpl implements EventsRepository {
     final whitelist_ = whitelist?.join(",");
 
     final response = await api_.getEventsByAddresses(
-        addressesParam, cursor, limit, unconfirmed, whitelist_);
+        addressesParam,
+        domain_cursor.CursorMapper.toData(cursor),
+        limit,
+        unconfirmed,
+        whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
     }
 
-    Cursor? nextCursor = response.nextCursor;
+    domain_cursor.Cursor? nextCursor =
+        domain_cursor.CursorMapper.toDomain(response.nextCursor);
 
     List<Event> events = response.result!.map((event) {
       return EventMapper.toDomain(event);
@@ -549,10 +556,14 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   @override
-  Future<(List<VerboseEvent>, Cursor? nextCursor, int? resultCount)>
-      getByAddressesVerbose({
+  Future<
+      (
+        List<VerboseEvent>,
+        domain_cursor.Cursor? nextCursor,
+        int? resultCount
+      )> getByAddressesVerbose({
     required List<String> addresses,
-    Cursor? cursor,
+    domain_cursor.Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
     List<String>? whitelist,
@@ -562,12 +573,17 @@ class EventsRepositoryImpl implements EventsRepository {
     final whitelist_ = whitelist?.join(",");
 
     final response = await api_.getEventsByAddressesVerbose(
-        addressesParam, cursor, limit, unconfirmed, whitelist_);
+        addressesParam,
+        domain_cursor.CursorMapper.toData(cursor),
+        limit,
+        unconfirmed,
+        whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
     }
-    Cursor? nextCursor = response.nextCursor;
+    domain_cursor.Cursor? nextCursor =
+        domain_cursor.CursorMapper.toDomain(response.nextCursor);
     List<VerboseEvent> events = response.result!.map((event) {
       return VerboseEventMapper.toDomain(event);
     }).toList();
