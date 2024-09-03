@@ -1,3 +1,4 @@
+import 'package:horizon/data/sources/network/api/cursor.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -35,7 +36,7 @@ class UtxoRepositoryImpl implements UtxoRepository {
       [bool? unconfirmed, String? unspentTxHash, bool? verbose]) async {
     List<Utxo> utxos = [];
     int limit = 50;
-    int? cursor;
+    Cursor? cursor;
 
     do {
       final response = await api.getUnspentUTXOsByAddresses(

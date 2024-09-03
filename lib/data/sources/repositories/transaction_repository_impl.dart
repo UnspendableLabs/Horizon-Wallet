@@ -1,8 +1,9 @@
+import 'package:horizon/data/sources/network/api/cursor.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
 // import "package:horizon/data/models/unpacked.dart" as unpacked_model;
 
 // TODO: move to sh
@@ -243,10 +244,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<(List<TransactionInfoVerbose>, int? nextCursor, int? resultCount)>
+  Future<(List<TransactionInfoVerbose>, Cursor? nextCursor, int? resultCount)>
       getByAccountVerbose({
     required String accountUuid,
-    int? cursor,
+    Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
   }) async {
@@ -295,7 +296,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
           ),
       };
     }).toList();
-    int? nextCursor = response.nextCursor;
+    Cursor? nextCursor = response.nextCursor;
     return (transactions, nextCursor, response.resultCount);
   }
 }
