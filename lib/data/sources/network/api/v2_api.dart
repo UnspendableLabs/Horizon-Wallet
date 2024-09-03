@@ -4781,140 +4781,1401 @@ abstract class V2Api {
 //             "required": false
 //           }
 //         ],
-//         "description": "Composes a transaction to send multiple assets to multiple addresses."
+//         "description": "Composes a transaction to send multiple payments to multiple addresses."
+//       },
+//       {
+//         "path": "/v2/addresses/<address>/compose/order",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address that will be issuing the order request (must have the necessary quantity of the specified asset to give) (e.g. 1CounterpartyXXXXXXXXXXXXXXXUWLpVr)"
+//           },
+//           {
+//             "name": "give_asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset that will be given in the trade (e.g. XCP)"
+//           },
+//           {
+//             "name": "give_quantity",
+//             "required": true,
+//             "type": "int",
+//             "description": "The quantity of the asset that will be given (e.g. 1000)"
+//           },
+//           {
+//             "name": "get_asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset that will be received in the trade (e.g. PEPECASH)"
+//           },
+//           {
+//             "name": "get_quantity",
+//             "required": true,
+//             "type": "int",
+//             "description": "The quantity of the asset that will be received (e.g. 1000)"
+//           },
+//           {
+//             "name": "expiration",
+//             "required": true,
+//             "type": "int",
+//             "description": "The number of blocks for which the order should be valid (e.g. 100)"
+//           },
+//           {
+//             "name": "fee_required",
+//             "required": true,
+//             "type": "int",
+//             "description": "The miners’ fee required to be paid by orders for them to match this one; in BTC; required only if buying BTC (may be zero, though) (e.g. 100)"
+//           },
+//           {
+//             "name": "encoding",
+//             "type": "str",
+//             "default": "auto",
+//             "description": "The encoding method to use",
+//             "required": false
+//           },
+//           {
+//             "name": "fee_per_kb",
+//             "type": "int",
+//             "default": null,
+//             "description": "The fee per kilobyte of transaction data constant that the server uses when deciding on the dynamic fee to use (in satoshis)",
+//             "required": false
+//           },
+//           {
+//             "name": "regular_dust_size",
+//             "type": "int",
+//             "default": 546,
+//             "description": "Specify (in satoshis) to override the (dust) amount of BTC used for each non-(bare) multisig output.",
+//             "required": false
+//           },
+//           {
+//             "name": "multisig_dust_size",
+//             "type": "int",
+//             "default": 1000,
+//             "description": "Specify (in satoshis) to override the (dust) amount of BTC used for each (bare) multisig output",
+//             "required": false
+//           },
+//           {
+//             "name": "pubkey",
+//             "type": "str",
+//             "default": null,
+//             "description": "The hexadecimal public key of the source address (or a list of the keys, if multi-sig). Required when using encoding parameter values of multisig or pubkeyhash.",
+//             "required": false
+//           },
+//           {
+//             "name": "allow_unconfirmed_inputs",
+//             "type": "bool",
+//             "default": false,
+//             "description": "Set to true to allow this transaction to utilize unconfirmed UTXOs as inputs",
+//             "required": false
+//           },
+//           {
+//             "name": "fee",
+//             "type": "int",
+//             "default": null,
+//             "description": "If you'd like to specify a custom miners' fee, specify it here (in satoshis). Leave as default for the server to automatically choose",
+//             "required": false
+//           },
+//           {
+//             "name": "fee_provided",
+//             "type": "int",
+//             "default": 0,
+//             "description": "If you would like to specify a maximum fee (up to and including which may be used as the transaction fee), specify it here (in satoshis). This differs from fee in that this is an upper bound value, which fee is an exact value",
+//             "required": false
+//           },
+//           {
+//             "name": "unspent_tx_hash",
+//             "type": "str",
+//             "default": null,
+//             "description": "When compiling the UTXOs to use as inputs for the transaction being created, only consider unspent outputs from this specific transaction hash. Defaults to null to consider all UTXOs for the address. Do not use this parameter if you are specifying custom_inputs",
+//             "required": false
+//           },
+//           {
+//             "name": "dust_return_pubkey",
+//             "type": "str",
+//             "default": null,
+//             "description": "The dust return pubkey is used in multi-sig data outputs (as the only real pubkey) to make those the outputs spendable. By default, this pubkey is taken from the pubkey used in the first transaction input. However, it can be overridden here (and is required to be specified if a P2SH input is used and multisig is used as the data output encoding.) If specified, specify the public key (in hex format) where dust will be returned to so that it can be reclaimed. Only valid/useful when used with transactions that utilize multisig data encoding. Note that if this value is set to false, this instructs counterparty-server to use the default dust return pubkey configured at the node level. If this default is not set at the node level, the call will generate an exception",
+//             "required": false
+//           },
+//           {
+//             "name": "disable_utxo_locks",
+//             "type": "bool",
+//             "default": false,
+//             "description": "By default, UTXOs utilized when creating a transaction are 'locked' for a few seconds, to prevent a case where rapidly generating create_ calls reuse UTXOs due to their spent status not being updated in bitcoind yet. Specify true for this parameter to disable this behavior, and not temporarily lock UTXOs",
+//             "required": false
+//           },
+//           {
+//             "name": "extended_tx_info",
+//             "type": "bool",
+//             "default": false,
+//             "description": "When this is not specified or false, the create_ calls return only a hex-encoded string. If this is true, the create_ calls return a data object with the following keys: tx_hex, btc_in, btc_out, btc_change, and btc_fee",
+//             "required": false
+//           },
+//           {
+//             "name": "p2sh_pretx_txid",
+//             "type": "str",
+//             "default": null,
+//             "description": "The previous transaction txid for a two part P2SH message. This txid must be taken from the signed transaction",
+//             "required": false
+//           },
+//           {
+//             "name": "segwit",
+//             "type": "bool",
+//             "default": false,
+//             "description": "Use segwit",
+//             "required": false
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Composes a transaction to place an order on the distributed exchange."
+//       },
+//       {
+//         "path": "/v2/addresses/<address>/compose/send",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address that will be sending (must have the necessary quantity of the specified asset) (e.g. 1CounterpartyXXXXXXXXXXXXXXXUWLpVr)"
+//           },
+//           {
+//             "name": "destination",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address that will be receiving the asset (e.g. 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev)"
+//           },
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset or subasset to send (e.g. XCP)"
+//           },
+//           {
+//             "name": "quantity",
+//             "required": true,
+//             "type": "int",
+//             "description": "The quantity of the asset to send (e.g. 1000)"
+//           },
+//           {
+//             "name": "memo",
+//             "default": null,
+//             "required": false,
+//             "type": "str",
+//             "description": "The Memo associated with this transaction"
+//           },
+//           {
+//             "name": "memo_is_hex",
+//             "default": false,
+//             "required": false,
+//             "type": "bool",
+//             "description": "Whether the memo field is a hexadecimal string"
+//           },
+//           {
+//             "name": "use_enhanced_send",
+//             "default": true,
+//             "required": false,
+//             "type": "bool",
+//             "description": "If this is false, the construct a legacy transaction sending bitcoin dust"
+//           },
+//           {
+//             "name": "encoding",
+//             "type": "str",
+//             "default": "auto",
+//             "description": "The encoding method to use",
+//             "required": false
+//           },
+//           {
+//             "name": "fee_per_kb",
+//             "type": "int",
+//             "default": null,
+//             "description": "The fee per kilobyte of transaction data constant that the server uses when deciding on the dynamic fee to use (in satoshis)",
+//             "required": false
+//           },
+//           {
+//             "name": "regular_dust_size",
+//             "type": "int",
+//             "default": 546,
+//             "description": "Specify (in satoshis) to override the (dust) amount of BTC used for each non-(bare) multisig output.",
+//             "required": false
+//           },
+//           {
+//             "name": "multisig_dust_size",
+//             "type": "int",
+//             "default": 1000,
+//             "description": "Specify (in satoshis) to override the (dust) amount of BTC used for each (bare) multisig output",
+//             "required": false
+//           },
+//           {
+//             "name": "pubkey",
+//             "type": "str",
+//             "default": null,
+//             "description": "The hexadecimal public key of the source address (or a list of the keys, if multi-sig). Required when using encoding parameter values of multisig or pubkeyhash.",
+//             "required": false
+//           },
+//           {
+//             "name": "allow_unconfirmed_inputs",
+//             "type": "bool",
+//             "default": false,
+//             "description": "Set to true to allow this transaction to utilize unconfirmed UTXOs as inputs",
+//             "required": false
+//           },
+//           {
+//             "name": "fee",
+//             "type": "int",
+//             "default": null,
+//             "description": "If you'd like to specify a custom miners' fee, specify it here (in satoshis). Leave as default for the server to automatically choose",
+//             "required": false
+//           },
+//           {
+//             "name": "fee_provided",
+//             "type": "int",
+//             "default": 0,
+//             "description": "If you would like to specify a maximum fee (up to and including which may be used as the transaction fee), specify it here (in satoshis). This differs from fee in that this is an upper bound value, which fee is an exact value",
+//             "required": false
+//           },
+//           {
+//             "name": "unspent_tx_hash",
+//             "type": "str",
+//             "default": null,
+//             "description": "When compiling the UTXOs to use as inputs for the transaction being created, only consider unspent outputs from this specific transaction hash. Defaults to null to consider all UTXOs for the address. Do not use this parameter if you are specifying custom_inputs",
+//             "required": false
+//           },
+//           {
+//             "name": "dust_return_pubkey",
+//             "type": "str",
+//             "default": null,
+//             "description": "The dust return pubkey is used in multi-sig data outputs (as the only real pubkey) to make those the outputs spendable. By default, this pubkey is taken from the pubkey used in the first transaction input. However, it can be overridden here (and is required to be specified if a P2SH input is used and multisig is used as the data output encoding.) If specified, specify the public key (in hex format) where dust will be returned to so that it can be reclaimed. Only valid/useful when used with transactions that utilize multisig data encoding. Note that if this value is set to false, this instructs counterparty-server to use the default dust return pubkey configured at the node level. If this default is not set at the node level, the call will generate an exception",
+//             "required": false
+//           },
+//           {
+//             "name": "disable_utxo_locks",
+//             "type": "bool",
+//             "default": false,
+//             "description": "By default, UTXOs utilized when creating a transaction are 'locked' for a few seconds, to prevent a case where rapidly generating create_ calls reuse UTXOs due to their spent status not being updated in bitcoind yet. Specify true for this parameter to disable this behavior, and not temporarily lock UTXOs",
+//             "required": false
+//           },
+//           {
+//             "name": "extended_tx_info",
+//             "type": "bool",
+//             "default": false,
+//             "description": "When this is not specified or false, the create_ calls return only a hex-encoded string. If this is true, the create_ calls return a data object with the following keys: tx_hex, btc_in, btc_out, btc_change, and btc_fee",
+//             "required": false
+//           },
+//           {
+//             "name": "p2sh_pretx_txid",
+//             "type": "str",
+//             "default": null,
+//             "description": "The previous transaction txid for a two part P2SH message. This txid must be taken from the signed transaction",
+//             "required": false
+//           },
+//           {
+//             "name": "segwit",
+//             "type": "bool",
+//             "default": false,
+//             "description": "Use segwit",
+//             "required": false
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Composes a transaction to send a quantity of an asset to another address."
+//       },
+//       {
+//         "path": "/v2/addresses/<address>/compose/sweep",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address that will be sending (e.g. 1CounterpartyXXXXXXXXXXXXXXXUWLpVr)"
+//           },
+//           {
+//             "name": "destination",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address to receive the assets and/or ownerships (e.g. 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev)"
+//           },
+//           {
+//             "name": "flags",
+//             "required": true,
+//             "type": "int",
+//             "description": "An OR mask of flags indicating how the sweep should be processed. Possible flags are:\n- FLAG_BALANCES: (integer) 1, specifies that all balances should be transferred.\n- FLAG_OWNERSHIP: (integer) 2, specifies that all ownerships should be transferred.\n- FLAG_BINARY_MEMO: (integer) 4, specifies that the memo is in binary/hex form.\n(e.g. 7)"
+//           },
+//           {
+//             "name": "memo",
+//             "required": true,
+//             "type": "str",
+//             "description": "The Memo associated with this transaction in hex format (e.g. FFFF)"
+//           },
+//           {
+//             "name": "encoding",
+//             "type": "str",
+//             "default": "auto",
+//             "description": "The encoding method to use",
+//             "required": false
+//           },
+//           {
+//             "name": "fee_per_kb",
+//             "type": "int",
+//             "default": null,
+//             "description": "The fee per kilobyte of transaction data constant that the server uses when deciding on the dynamic fee to use (in satoshis)",
+//             "required": false
+//           },
+//           {
+//             "name": "regular_dust_size",
+//             "type": "int",
+//             "default": 546,
+//             "description": "Specify (in satoshis) to override the (dust) amount of BTC used for each non-(bare) multisig output.",
+//             "required": false
+//           },
+//           {
+//             "name": "multisig_dust_size",
+//             "type": "int",
+//             "default": 1000,
+//             "description": "Specify (in satoshis) to override the (dust) amount of BTC used for each (bare) multisig output",
+//             "required": false
+//           },
+//           {
+//             "name": "pubkey",
+//             "type": "str",
+//             "default": null,
+//             "description": "The hexadecimal public key of the source address (or a list of the keys, if multi-sig). Required when using encoding parameter values of multisig or pubkeyhash.",
+//             "required": false
+//           },
+//           {
+//             "name": "allow_unconfirmed_inputs",
+//             "type": "bool",
+//             "default": false,
+//             "description": "Set to true to allow this transaction to utilize unconfirmed UTXOs as inputs",
+//             "required": false
+//           },
+//           {
+//             "name": "fee",
+//             "type": "int",
+//             "default": null,
+//             "description": "If you'd like to specify a custom miners' fee, specify it here (in satoshis). Leave as default for the server to automatically choose",
+//             "required": false
+//           },
+//           {
+//             "name": "fee_provided",
+//             "type": "int",
+//             "default": 0,
+//             "description": "If you would like to specify a maximum fee (up to and including which may be used as the transaction fee), specify it here (in satoshis). This differs from fee in that this is an upper bound value, which fee is an exact value",
+//             "required": false
+//           },
+//           {
+//             "name": "unspent_tx_hash",
+//             "type": "str",
+//             "default": null,
+//             "description": "When compiling the UTXOs to use as inputs for the transaction being created, only consider unspent outputs from this specific transaction hash. Defaults to null to consider all UTXOs for the address. Do not use this parameter if you are specifying custom_inputs",
+//             "required": false
+//           },
+//           {
+//             "name": "dust_return_pubkey",
+//             "type": "str",
+//             "default": null,
+//             "description": "The dust return pubkey is used in multi-sig data outputs (as the only real pubkey) to make those the outputs spendable. By default, this pubkey is taken from the pubkey used in the first transaction input. However, it can be overridden here (and is required to be specified if a P2SH input is used and multisig is used as the data output encoding.) If specified, specify the public key (in hex format) where dust will be returned to so that it can be reclaimed. Only valid/useful when used with transactions that utilize multisig data encoding. Note that if this value is set to false, this instructs counterparty-server to use the default dust return pubkey configured at the node level. If this default is not set at the node level, the call will generate an exception",
+//             "required": false
+//           },
+//           {
+//             "name": "disable_utxo_locks",
+//             "type": "bool",
+//             "default": false,
+//             "description": "By default, UTXOs utilized when creating a transaction are 'locked' for a few seconds, to prevent a case where rapidly generating create_ calls reuse UTXOs due to their spent status not being updated in bitcoind yet. Specify true for this parameter to disable this behavior, and not temporarily lock UTXOs",
+//             "required": false
+//           },
+//           {
+//             "name": "extended_tx_info",
+//             "type": "bool",
+//             "default": false,
+//             "description": "When this is not specified or false, the create_ calls return only a hex-encoded string. If this is true, the create_ calls return a data object with the following keys: tx_hex, btc_in, btc_out, btc_change, and btc_fee",
+//             "required": false
+//           },
+//           {
+//             "name": "p2sh_pretx_txid",
+//             "type": "str",
+//             "default": null,
+//             "description": "The previous transaction txid for a two part P2SH message. This txid must be taken from the signed transaction",
+//             "required": false
+//           },
+//           {
+//             "name": "segwit",
+//             "type": "bool",
+//             "default": false,
+//             "description": "Use segwit",
+//             "required": false
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Composes a transaction to Sends all assets and/or transfer ownerships to a destination address."
+//       },
+//       {
+//         "path": "/v2/assets",
+//         "args": [
+//           {
+//             "name": "offset",
+//             "default": 0,
+//             "required": false,
+//             "type": "int",
+//             "description": "The offset of the assets to return (e.g. 0)"
+//           },
+//           {
+//             "name": "limit",
+//             "default": 100,
+//             "required": false,
+//             "type": "int",
+//             "description": "The limit of the assets to return (e.g. 5)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the valid assets"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. UNNEGOTIABLE)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the asset information"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/balances",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. UNNEGOTIABLE)"
+//           },
+//           {
+//             "name": "exclude_zero_balances",
+//             "default": true,
+//             "required": false,
+//             "type": "bool",
+//             "description": "Whether to exclude zero balances (e.g. True)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the asset balances"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/balances/<address>",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address to return (e.g. 1C3uGcoSGzKVgFqyZ3kM2DBq9CYttTMAVs)"
+//           },
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. XCP)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the balance of an address and asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/orders",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. NEEDPEPE)"
+//           },
+//           {
+//             "name": "status",
+//             "default": "open",
+//             "required": false,
+//             "type": "str",
+//             "description": "The status of the orders to return (e.g. filled)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the orders of an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/credits",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. UNNEGOTIABLE)"
+//           },
+//           {
+//             "name": "limit",
+//             "default": 100,
+//             "required": false,
+//             "type": "int",
+//             "description": "The maximum number of credits to return (e.g. 5)"
+//           },
+//           {
+//             "name": "offset",
+//             "default": 0,
+//             "required": false,
+//             "type": "int",
+//             "description": "The offset of the credits to return (e.g. 0)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the credits of an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/debits",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. XCP)"
+//           },
+//           {
+//             "name": "limit",
+//             "default": 100,
+//             "required": false,
+//             "type": "int",
+//             "description": "The maximum number of debits to return (e.g. 5)"
+//           },
+//           {
+//             "name": "offset",
+//             "default": 0,
+//             "required": false,
+//             "type": "int",
+//             "description": "The offset of the debits to return (e.g. 0)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the debits of an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/dividends",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. GMONEYPEPE)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the dividends of an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/issuances",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. UNNEGOTIABLE)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the issuances of an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/sends",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. XCP)"
+//           },
+//           {
+//             "name": "limit",
+//             "default": 100,
+//             "required": false,
+//             "type": "int",
+//             "description": "The maximum number of sends to return (e.g. 5)"
+//           },
+//           {
+//             "name": "offset",
+//             "default": 0,
+//             "required": false,
+//             "type": "int",
+//             "description": "The offset of the sends to return (e.g. 0)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the sends of an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/dispensers",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. ERYKAHPEPU)"
+//           },
+//           {
+//             "name": "status",
+//             "default": 0,
+//             "required": false,
+//             "type": "int"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the dispensers of an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/dispensers/<address>",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address to return (e.g. bc1qlzkcy8c5fa6y6xvd8zn4axnvmhndfhku3hmdpz)"
+//           },
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. ERYKAHPEPU)"
+//           },
+//           {
+//             "name": "status",
+//             "default": 0,
+//             "required": false,
+//             "type": "int"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the dispensers of an address and an asset"
+//       },
+//       {
+//         "path": "/v2/assets/<asset>/holders",
+//         "args": [
+//           {
+//             "name": "asset",
+//             "required": true,
+//             "type": "str",
+//             "description": "The asset to return (e.g. ERYKAHPEPU)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the holders of an asset"
+//       },
+//       {
+//         "path": "/v2/orders/<order_hash>",
+//         "args": [
+//           {
+//             "name": "order_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the transaction that created the order (e.g. 23f68fdf934e81144cca31ce8ef69062d553c521321a039166e7ba99aede0776)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the information of an order"
+//       },
+//       {
+//         "path": "/v2/orders/<order_hash>/matches",
+//         "args": [
+//           {
+//             "name": "order_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the transaction that created the order (e.g. 5461e6f99a37a7167428b4a720a52052cd9afed43905f818f5d7d4f56abd0947)"
+//           },
+//           {
+//             "name": "status",
+//             "default": "pending",
+//             "required": false,
+//             "type": "str",
+//             "description": "The status of the order matches to return (e.g. completed)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the order matches of an order"
+//       },
+//       {
+//         "path": "/v2/orders/<order_hash>/btcpays",
+//         "args": [
+//           {
+//             "name": "order_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the transaction that created the order (e.g. 299b5b648f54eacb839f3487232d49aea373cdd681b706d4cc0b5e0b03688db4)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the BTC pays of an order"
+//       },
+//       {
+//         "path": "/v2/orders/<asset1>/<asset2>",
+//         "args": [
+//           {
+//             "name": "asset1",
+//             "required": true,
+//             "type": "str",
+//             "description": "The first asset to return (e.g. NEEDPEPE)"
+//           },
+//           {
+//             "name": "asset2",
+//             "required": true,
+//             "type": "str",
+//             "description": "The second asset to return (e.g. XCP)"
+//           },
+//           {
+//             "name": "status",
+//             "default": "open",
+//             "required": false,
+//             "type": "str",
+//             "description": "The status of the orders to return (e.g. filled)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the orders to exchange two assets"
+//       },
+//       {
+//         "path": "/v2/bets/<bet_hash>",
+//         "args": [
+//           {
+//             "name": "bet_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the transaction that created the bet (e.g. 5d097b4729cb74d927b4458d365beb811a26fcee7f8712f049ecbe780eb496ed)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the information of a bet"
+//       },
+//       {
+//         "path": "/v2/bets/<bet_hash>/matches",
+//         "args": [
+//           {
+//             "name": "bet_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the transaction that created the bet (e.g. 5d097b4729cb74d927b4458d365beb811a26fcee7f8712f049ecbe780eb496ed)"
+//           },
+//           {
+//             "name": "status",
+//             "default": "pending",
+//             "required": false,
+//             "type": "str",
+//             "description": "The status of the bet matches (e.g. expired)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the bet matches of a bet"
+//       },
+//       {
+//         "path": "/v2/bets/<bet_hash>/resolutions",
+//         "args": [
+//           {
+//             "name": "bet_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the transaction that created the bet (e.g. 36bbbb7dbd85054dac140a8ad8204eda2ee859545528bd2a9da69ad77c277ace)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the resolutions of a bet"
+//       },
+//       {
+//         "path": "/v2/burns",
+//         "args": [
+//           {
+//             "name": "status",
+//             "default": "valid",
+//             "required": false,
+//             "type": "str",
+//             "description": "The status of the burns to return (e.g. valid)"
+//           },
+//           {
+//             "name": "offset",
+//             "default": 0,
+//             "required": false,
+//             "type": "int",
+//             "description": "The offset of the burns to return (e.g. 10)"
+//           },
+//           {
+//             "name": "limit",
+//             "default": 100,
+//             "required": false,
+//             "type": "int",
+//             "description": "The limit of the burns to return (e.g. 5)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the burns"
+//       },
+//       {
+//         "path": "/v2/dispensers/<dispenser_hash>",
+//         "args": [
+//           {
+//             "name": "dispenser_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the dispenser to return (e.g. 753787004d6e93e71f6e0aa1e0932cc74457d12276d53856424b2e4088cc542a)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the dispenser information by tx_hash"
+//       },
+//       {
+//         "path": "/v2/dispensers/<dispenser_hash>/dispenses",
+//         "args": [
+//           {
+//             "name": "dispenser_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The hash of the dispenser to return (e.g. 753787004d6e93e71f6e0aa1e0932cc74457d12276d53856424b2e4088cc542a)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the dispenses of a dispenser"
+//       },
+//       {
+//         "path": "/v2/events",
+//         "args": [
+//           {
+//             "name": "last",
+//             "default": null,
+//             "required": false,
+//             "type": "int",
+//             "description": "The last event index to return (e.g. 10665092)"
+//           },
+//           {
+//             "name": "limit",
+//             "default": 100,
+//             "required": false,
+//             "type": "int",
+//             "description": "The maximum number of events to return (e.g. 5)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns all events"
+//       },
+//       {
+//         "path": "/v2/events/<int:event_index>",
+//         "args": [
+//           {
+//             "name": "event_index",
+//             "required": true,
+//             "type": "int",
+//             "description": "The index of the event to return (e.g. 10665092)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the event of an index"
+//       },
+//       {
+//         "path": "/v2/events/counts",
+//         "args": [
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the event counts of all blocks"
+//       },
+//       {
+//         "path": "/v2/events/<event>",
+//         "args": [
+//           {
+//             "name": "event",
+//             "required": true,
+//             "type": "str",
+//             "description": "The event to return (e.g. CREDIT)"
+//           },
+//           {
+//             "name": "last",
+//             "default": null,
+//             "required": false,
+//             "type": "int",
+//             "description": "The last event index to return (e.g. 10665092)"
+//           },
+//           {
+//             "name": "limit",
+//             "default": 100,
+//             "required": false,
+//             "type": "int",
+//             "description": "The maximum number of events to return (e.g. 5)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the events filtered by event name"
+//       },
+//       {
+//         "path": "/v2/healthz",
+//         "args": [
+//           {
+//             "name": "check_type",
+//             "default": "heavy",
+//             "required": false,
+//             "type": "str",
+//             "description": "Type of health check to perform. Options are 'light' and 'heavy' (e.g. light)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Health check route."
+//       },
+//       {
+//         "path": "/v2/bitcoin/addresses/<address>/transactions",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address to search for (e.g. 14TjwxgnuqgB4HcDcSZk2m7WKwcGVYxRjS)"
+//           },
+//           {
+//             "name": "unconfirmed",
+//             "default": true,
+//             "required": false,
+//             "type": "bool",
+//             "description": "Include unconfirmed transactions (e.g. True)"
+//           },
+//           {
+//             "name": "only_tx_hashes",
+//             "default": false,
+//             "required": false,
+//             "type": "bool",
+//             "description": "Return only the tx hashes (e.g. True)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns all transactions involving a given address"
+//       },
+//       {
+//         "path": "/v2/bitcoin/addresses/<address>/transactions/oldest",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address to search for. (e.g. 14TjwxgnuqgB4HcDcSZk2m7WKwcGVYxRjS)"
+//           },
+//           {
+//             "name": "block_index",
+//             "default": null,
+//             "required": false,
+//             "type": "int",
+//             "description": "The block index to search from."
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Get the oldest transaction for an address."
+//       },
+//       {
+//         "path": "/v2/bitcoin/addresses/<address>/utxos",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "The address to search for (e.g. 14TjwxgnuqgB4HcDcSZk2m7WKwcGVYxRjS)"
+//           },
+//           {
+//             "name": "unconfirmed",
+//             "default": false,
+//             "required": false,
+//             "type": "bool",
+//             "description": "Include unconfirmed transactions"
+//           },
+//           {
+//             "name": "unspent_tx_hash",
+//             "default": null,
+//             "required": false,
+//             "type": "str",
+//             "description": "Filter by unspent_tx_hash"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns a list of unspent outputs for a specific address"
+//       },
+//       {
+//         "path": "/v2/bitcoin/addresses/<address>/pubkey",
+//         "args": [
+//           {
+//             "name": "address",
+//             "required": true,
+//             "type": "str",
+//             "description": "Address to get pubkey for. (e.g. 14TjwxgnuqgB4HcDcSZk2m7WKwcGVYxRjS)"
+//           },
+//           {
+//             "name": "provided_pubkeys",
+//             "default": null,
+//             "required": false,
+//             "type": "str",
+//             "description": "Comma separated list of provided pubkeys."
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Get pubkey for an address."
+//       },
+//       {
+//         "path": "/v2/bitcoin/transactions/<tx_hash>",
+//         "args": [
+//           {
+//             "name": "tx_hash",
+//             "required": true,
+//             "type": "str",
+//             "description": "The transaction hash (e.g. 3190047bf2320bdcd0fade655ae49be309519d151330aa478573815229cc0018)"
+//           },
+//           {
+//             "name": "format",
+//             "default": "json",
+//             "required": false,
+//             "type": "str",
+//             "description": "Whether to return JSON output or raw hex (e.g. hex)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Get a transaction from the blockchain"
+//       },
+//       {
+//         "path": "/v2/bitcoin/estimatesmartfee",
+//         "args": [
+//           {
+//             "name": "conf_target",
+//             "default": 3,
+//             "required": false,
+//             "type": "int",
+//             "description": "Confirmation target in blocks (1 - 1008) (e.g. 2)"
+//           },
+//           {
+//             "name": "mode",
+//             "default": "CONSERVATIVE",
+//             "required": false,
+//             "type": "str",
+//             "description": "The fee estimate mode. (e.g. CONSERVATIVE)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Get the fee per kilobyte for a transaction to be confirmed in `conf_target` blocks."
+//       },
+//       {
+//         "path": "/v2/mempool/events",
+//         "args": [
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns all mempool events"
+//       },
+//       {
+//         "path": "/v2/mempool/events/<event>",
+//         "args": [
+//           {
+//             "name": "event",
+//             "required": true,
+//             "type": "str",
+//             "description": "The event to return (e.g. OPEN_ORDER)"
+//           },
+//           {
+//             "name": "verbose",
+//             "type": "bool",
+//             "default": "false",
+//             "description": "Include asset and dispenser info and normalized quantities in the response.",
+//             "required": false
+//           }
+//         ],
+//         "description": "Returns the mempool events filtered by event name"
+//       },
+//       {
+//         "path": "/",
+//         "args": [
+//           {
+//             "name": "subpath",
+//             "default": "",
+//             "required": false,
+//             "type": "str",
+//             "description": "The path to redirect to (e.g. healthz)"
+//           }
+//         ],
+//         "description": "Redirect to the API v1."
+//       },
+//       {
+//         "path": "/v1/<path:subpath>",
+//         "args": [
+//           {
+//             "name": "subpath",
+//             "default": "",
+//             "required": false,
+//             "type": "str",
+//             "description": "The path to redirect to (e.g. healthz)"
+//           }
+//         ],
+//         "description": "Redirect to the API v1."
+//       },
+//       {
+//         "path": "/api/<path:subpath>",
+//         "args": [
+//           {
+//             "name": "subpath",
+//             "default": "",
+//             "required": false,
+//             "type": "str",
+//             "description": "The path to redirect to (e.g. healthz)"
+//           }
+//         ],
+//         "description": "Redirect to the API v1."
+//       },
+//       {
+//         "path": "/rpc/<path:subpath>",
+//         "args": [
+//           {
+//             "name": "subpath",
+//             "default": "",
+//             "required": false,
+//             "type": "str",
+//             "description": "The path to redirect to (e.g. healthz)"
+//           }
+//         ],
+//         "description": "Redirect to the API v1."
+//       },
+//       {
+//         "path": "/<path:subpath>",
+//         "args": [
+//           {
+//             "name": "subpath",
+//             "default": "",
+//             "required": false,
+//             "type": "str",
+//             "description": "The path to redirect to (e.g. healthz)"
+//           }
+//         ],
+//         "description": "Redirect to the API v1."
 //       }
 //     ]
 //   }
 // }
 //
-// @JsonSerializable(fieldRename: FieldRename.snake)
-// class VerboseDebitParams extends DebitParams {
-//   final Map<String, dynamic> unpackedData;
-//   final String btcAmountNormalized;
-//
-//   VerboseDebitParams({
-//     required String address,
-//     required String asset,
-//     required int quantity,
-//     required this.unpackedData,
-//     required this.btcAmountNormalized,
-//   }) : super(
-//           address: address,
-//           asset: asset,
-//           quantity: quantity,
-//         );
-//
-//   factory VerboseDebitParams.fromJson(Map<String, dynamic> json) =>
-//       _$VerboseDebitParamsFromJson(json);
-// }
-//
-// @JsonSerializable(fieldRename: FieldRename.snake)
-// class VerboseNewTransactionParams extends NewTransactionParams {
-//   final Map<String, dynamic> unpackedData;
-//   final String btcAmountNormalized;
-//
-//   VerboseNewTransactionParams({
-//     required String address,
-//     required String asset,
-//     required int quantity,
-//     required this.unpackedData,
-//     required this.btcAmountNormalized,
-//   }) : super(
-//           address: address,
-//           asset: asset,
-//           quantity: quantity,
-//         );
-//
-//   factory VerboseNewTransactionParams.fromJson(Map<String, dynamic> json) =>
-//       _$VerboseNewTransactionParamsFromJson(json);
-// }
-//
-// @JsonSerializable(fieldRename: FieldRename.snake)
-// class SendTxVerbose extends SendTx {
-//   final Map<String, dynamic> unpackedData;
-//   final String btcAmountNormalized;
-//
-//   SendTxVerbose({
-//     required String address,
-//     required String asset,
-//     required int quantity,
-//     required this.unpackedData,
-//     required this.btcAmountNormalized,
-//   }) : super(
-//           address: address,
-//           asset: asset,
-//           quantity: quantity,
-//         );
-//
-//   factory SendTxVerbose.fromJson(Map<String, dynamic> json) =>
-//       _$SendTxVerboseFromJson(json);
-// }
-//
-// @JsonSerializable(fieldRename: FieldRename.snake)
-// class Unpack {
-//   final String messageType;
-//   final int messageTypeId;
-//   final String message;
-//   final String address;
-//   final String asset;
-//   final int quantity;
-//   final String source;
-//   final String destination;
-//   final String txHash;
-//   final String blockHash;
-//   final int blockIndex;
-//   final int blockTime;
-//   final int txIndex;
-//   final int txTime;
-//   final int expiration;
-//   final int feePaid;
-//   final int feeProvided;
-//   final int feeRequired;
-//   final int highPriority;
-//   final int highPriorityFee;
-//   final int highPriorityFeeRequired;
-//   final int highPriorityFeeProvided;
-//   final int highPriorityFeePaid;
-//   final int highPriorityFeePerKb;
-//   final int highPriorityFeePerKbRequired;
-//   final int highPriorityFeePerKbProvided;
-//   final int highPriorityFeePerKbPaid;
-//   final int highPriorityFeePerKbDifference;
-//   final int highPriorityFeePerKbDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceProvided;
-//   final int highPriorityFeePerKbDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceRequired;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceProvided;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferencePaid;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifference;
-//   final int highPriorityFeePerKbDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceDifferenceRequired;
 }
