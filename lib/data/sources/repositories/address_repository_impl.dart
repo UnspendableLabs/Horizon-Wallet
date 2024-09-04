@@ -53,7 +53,7 @@ class AddressRepositoryImpl implements AddressRepository {
             accountUuid: a.accountUuid, address: a.address, index: a.index))
         .toList();
 
-    entityAddresses.sort(_addressSortComparator);
+    entityAddresses.sort(addressSortComparator);
 
     return entityAddresses;
   }
@@ -79,7 +79,7 @@ class AddressRepositoryImpl implements AddressRepository {
 }
 
 // Sort addresses by index, then by address type (legacy before bech32)
-int _addressSortComparator(entity.Address a, entity.Address b) {
+int addressSortComparator(entity.Address a, entity.Address b) {
   bool aIsBech32 = a.address.startsWith('bc1q') || a.address.startsWith('tb1q');
   bool bIsBech32 = b.address.startsWith('bc1q') || b.address.startsWith('tb1q');
 

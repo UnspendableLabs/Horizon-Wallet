@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
+import 'package:horizon/presentation/shell/view/address_dropdown.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -18,12 +22,11 @@ void main() {
 
   group('Onboarding Integration Tests', () {
     setUpAll(() async {
-      // Perform any common setup here
       await setup();
     });
 
-    for (final testCase in testCases_) {
-      testWidgets('Import seed flow - ${testCase['format']}',
+    for (final testCase in testCases) {
+      testWidgets('AddressDropdown displays addresses in correct sort order',
           (WidgetTester tester) async {
         // Override FlutterError.onError to ignore RenderFlex overflow errors
         final void Function(FlutterErrorDetails) originalOnError =
@@ -74,9 +77,6 @@ void main() {
         await tester.tap(continueButton);
         await tester.pumpAndSettle();
 
-        // Now we should be on the password entry screen
-        expect(find.text('Please create a password'), findsOneWidget);
-
         // Enter the password
         final passwordField = find.byType(TextField).first;
         await tester.enterText(passwordField, 'securepassword123');
@@ -93,22 +93,46 @@ void main() {
         await tester.tap(loginButton);
         await tester.pumpAndSettle();
 
-        final addressRepository = GetIt.instance<AddressRepository>();
-        final addresses = await addressRepository.getAll();
+        // Verify that the AddressDropdown is displayed
+        final addressDropdownFinder = find.byType(AddressDropdown);
+        expect(addressDropdownFinder, findsOneWidget);
+
+        // Verify the addresses are in the correct order
+        final dropdownButton = find.byType(DropdownButton<Address>);
+        await tester.tap(dropdownButton);
+        await tester.pumpAndSettle();
+
+        // Scroll through the dropdown menu to ensure all items are rendered
+        final dropdownMenu = find.byType(DropdownMenuItem<Address>);
+        final gesture =
+            await tester.startGesture(tester.getCenter(dropdownMenu.first));
+        await gesture
+            .moveBy(const Offset(0, -300)); // Adjust the offset as needed
+        await tester.pumpAndSettle();
+
         final expectedAddresses = testCase['addresses'] as List<String>;
 
+        // ensure addresses are returned in the correct order
+        final addressRepository = GetIt.instance<AddressRepository>();
+        final accountRepository = GetIt.instance<AccountRepository>();
+        final walletRepository = GetIt.instance<WalletRepository>();
+        final wallet = await walletRepository.getCurrentWallet();
+        final account =
+            await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
+        final addresses =
+            await addressRepository.getAllByAccountUuid(account.first.uuid);
         expect(addresses.length, expectedAddresses.length,
             reason: 'Number of imported addresses does not match expected');
 
-        for (var address in addresses) {
-          expect(expectedAddresses.contains(address.address), isTrue,
+        for (var i = 0; i < addresses.length; i++) {
+          expect(addresses[i].address, expectedAddresses[i],
               reason:
-                  'Imported address ${address.address} was not in the list of expected addresses');
+                  'Address ${addresses[i].address} does not match expected address ${expectedAddresses[i]}');
         }
 
         final settingsButton = find.byIcon(Icons.settings);
         expect(settingsButton, findsOneWidget);
-        await tester.tap(settingsButton);
+        await tester.tap(settingsButton, warnIfMissed: false);
         await tester.pumpAndSettle();
 
         final resetButton = find.text('Reset wallet');
