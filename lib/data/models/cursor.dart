@@ -1,17 +1,20 @@
-class Cursor {
+import 'package:horizon/domain/entities/cursor.dart';
+
+class CursorModel {
   final int? intValue;
   final String? stringValue;
 
-  Cursor._({this.intValue, this.stringValue});
+  CursorModel._({this.intValue, this.stringValue});
 
-  factory Cursor.fromInt(int value) => Cursor._(intValue: value);
-  factory Cursor.fromString(String value) => Cursor._(stringValue: value);
+  factory CursorModel.fromInt(int value) => CursorModel._(intValue: value);
+  factory CursorModel.fromString(String value) =>
+      CursorModel._(stringValue: value);
 
-  factory Cursor.fromJson(dynamic json) {
+  factory CursorModel.fromJson(dynamic json) {
     if (json is int) {
-      return Cursor.fromInt(json);
+      return CursorModel.fromInt(json);
     } else if (json is String) {
-      return Cursor.fromString(json);
+      return CursorModel.fromString(json);
     }
     throw ArgumentError('Invalid cursor value');
   }
@@ -23,5 +26,31 @@ class Cursor {
       return stringValue;
     }
     return null;
+  }
+}
+
+class CursorMapper {
+  static Cursor? toDomain(CursorModel? cursor) {
+    if (cursor == null) {
+      return null;
+    }
+    if (cursor.intValue != null) {
+      return Cursor.fromInt(cursor.intValue!);
+    } else if (cursor.stringValue != null) {
+      return Cursor.fromString(cursor.stringValue!);
+    }
+    throw ArgumentError('Invalid cursor value');
+  }
+
+  static CursorModel? toData(Cursor? cursor) {
+    if (cursor == null) {
+      return null;
+    }
+    if (cursor.intValue != null) {
+      return CursorModel.fromInt(cursor.intValue!);
+    } else if (cursor.stringValue != null) {
+      return CursorModel.fromString(cursor.stringValue!);
+    }
+    throw ArgumentError('Invalid cursor value');
   }
 }

@@ -1,4 +1,5 @@
-import 'package:horizon/domain/entities/cursor.dart' as domain_cursor;
+import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
@@ -247,11 +248,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<
       (
         List<TransactionInfoVerbose>,
-        domain_cursor.Cursor? nextCursor,
+        cursor_entity.Cursor? nextCursor,
         int? resultCount
       )> getByAccountVerbose({
     required String accountUuid,
-    domain_cursor.Cursor? cursor,
+    cursor_entity.Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
   }) async {
@@ -262,7 +263,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     final response = await api_.getTransactionsByAddressesVerbose(
         addressesParam,
-        domain_cursor.CursorMapper.toData(cursor),
+        cursor_model.CursorMapper.toData(cursor),
         limit,
         unconfirmed);
 
@@ -303,8 +304,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
           ),
       };
     }).toList();
-    domain_cursor.Cursor? nextCursor =
-        domain_cursor.CursorMapper.toDomain(response.nextCursor);
+    cursor_entity.Cursor? nextCursor =
+        cursor_model.CursorMapper.toDomain(response.nextCursor);
     return (transactions, nextCursor, response.resultCount);
   }
 }
