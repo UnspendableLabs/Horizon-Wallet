@@ -2,15 +2,16 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
-import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 // TODO: implement some sort of cache
 
@@ -34,10 +35,8 @@ class AddressServiceImpl extends AddressService {
     String path = 'm/$purpose/$coin/$account/$change/$index';
     final network = _getNetwork();
 
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
-    Buffer chainCodeJs =
-        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
+    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
@@ -103,8 +102,7 @@ class AddressServiceImpl extends AddressService {
 
     String path = 'm/$account/$change/$index';
 
-    bip32.BIP32Interface child =
-        (root as bip32.BIP32Interface).derivePath(path);
+    bip32.BIP32Interface child = (root as bip32.BIP32Interface).derivePath(path);
 
     String address = switch (type) {
       AddressType.bech32 => _bech32FromBip32(child),
@@ -132,10 +130,8 @@ class AddressServiceImpl extends AddressService {
       throw ArgumentError('Invalid range');
     }
     final network = _getNetwork();
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
-    Buffer chainCodeJs =
-        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
+    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
@@ -143,12 +139,7 @@ class AddressServiceImpl extends AddressService {
 
     for (int i = start; i <= end; i++) {
       Address address = await deriveAddressFreewallet(
-          type: type,
-          root: root,
-          accountUuid: accountUuid,
-          account: account,
-          change: change,
-          index: i);
+          type: type, root: root, accountUuid: accountUuid, account: account, change: change, index: i);
       addresses.add(address);
     }
 
@@ -163,18 +154,30 @@ class AddressServiceImpl extends AddressService {
       required String coin,
       required String account,
       required String change,
-      required int index}) async {
-    String path = 'm/$purpose/$coin/$account/$change/$index';
+      required int index,
+      required ImportFormat importFormat}) async {
+    print('deriveAddressPriv');
+
+    String path = switch (importFormat) {
+      ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
+      _ => 'm/$account/$change/$index',
+    };
+
     final network = _getNetwork();
 
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(rootPrivKey)).toJS);
-    Buffer chainCodeJs =
-        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(rootPrivKey)).toJS);
+    Buffer chainCodeJs = Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
     bip32.BIP32Interface child = root.derivePath(path);
+
+    // print('child: ${child.privateKey}');
+    final legacy = _legacyFromBip32(child);
+    print('legacy: $legacy');
+
+    final bech32 = _bech32FromBip32(child);
+    print('bech32: $bech32');
 
     return hex.encode(child.privateKey!.toDart);
   }
@@ -182,8 +185,7 @@ class AddressServiceImpl extends AddressService {
   String _legacyFromBip32(bip32.BIP32Interface child) {
     final network = _getNetwork();
 
-    final paymentOpts =
-        bitcoin.PaymentOptions(pubkey: child.publicKey, network: network);
+    final paymentOpts = bitcoin.PaymentOptions(pubkey: child.publicKey, network: network);
 
     final payment = bitcoin.p2pkh(paymentOpts);
 
@@ -192,14 +194,10 @@ class AddressServiceImpl extends AddressService {
 
   String _bech32FromBip32(bip32.BIP32Interface child) {
     List<int> identifier = child.identifier.toDart;
-    List<int> words = bech32
-        .toWords(identifier.map((el) => el.toJS).toList().toJS)
-        .toDart
-        .map((el) => el.toDartInt)
-        .toList();
+    List<int> words =
+        bech32.toWords(identifier.map((el) => el.toJS).toList().toJS).toDart.map((el) => el.toDartInt).toList();
     words.insert(0, 0);
-    return bech32.encode(
-        _getNetworkBech32(), words.map((el) => el.toJS).toList().toJS);
+    return bech32.encode(_getNetworkBech32(), words.map((el) => el.toJS).toList().toJS);
   }
 
   _getNetwork() => switch (config.network) {

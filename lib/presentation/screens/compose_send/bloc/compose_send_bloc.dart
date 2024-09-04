@@ -149,7 +149,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             coin: account.coinType,
             account: account.accountIndex,
             change: '0', // TODO make sure change is stored
-            index: address.index);
+            index: address.index,
+            importFormat: account.importFormat);
 
         String txHex = await transactionService.signTransaction(
             rawTx, addressPrivKey, source, utxoMap);
