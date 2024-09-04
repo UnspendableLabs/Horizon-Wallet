@@ -27,7 +27,7 @@ part 'v2_api.g.dart';
     genericArgumentFactories: true, fieldRename: FieldRename.snake)
 class Response<T> {
   final T? result;
-  final Cursor? nextCursor;
+  final CursorModel? nextCursor;
   final int? resultCount;
   final String? error;
 
@@ -2100,21 +2100,21 @@ abstract class V2Api {
   Future<Response<List<Balance>>> getBalancesByAddress(
     @Path("address") String address,
     @Query("verbose") bool verbose, [
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
   ]);
 
   @GET("/addresses/{address}/balances?verbose=true")
   Future<Response<List<BalanceVerbose>>> getBalancesByAddressVerbose(
     @Path("address") String address, [
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
   ]);
 
   @GET("/addresses/balances")
   Future<Response<List<MultiAddressBalance>>> getBalancesByAddresses(
     @Query("addresses") String addresses, [
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
   ]);
 
@@ -2122,7 +2122,7 @@ abstract class V2Api {
   Future<Response<List<MultiAddressBalanceVerbose>>>
       getBalancesByAddressesVerbose(
     @Query("addresses") String addresses, [
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
   ]);
 
@@ -2366,7 +2366,7 @@ abstract class V2Api {
   @GET("/addresses/transactions?verbose=true")
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
     @Query("addresses") String addresses, [
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
@@ -2374,7 +2374,7 @@ abstract class V2Api {
   @GET("/addresses/events")
   Future<Response<List<Event>>> getEventsByAddresses(
     @Query("addresses") String addresses, [
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("event_name") String? eventName,
@@ -2384,7 +2384,7 @@ abstract class V2Api {
   @GET("/addresses/events?verbose=true")
   Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
     @Query("addresses") String addresses, [
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("event_name") String? eventName,
@@ -2464,7 +2464,7 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
     @Query("verbose") bool? verbose,
     @Query("limit") int? limit,
-    @Query("cursor") Cursor? cursor,
+    @Query("cursor") CursorModel? cursor,
   ]);
 
   //     PubKeyHash To Pubkey

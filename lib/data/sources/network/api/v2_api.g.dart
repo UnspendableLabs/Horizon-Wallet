@@ -15,7 +15,7 @@ Response<T> _$ResponseFromJson<T>(
       error: json['error'] as String?,
       nextCursor: json['next_cursor'] == null
           ? null
-          : Cursor.fromJson(json['next_cursor']),
+          : CursorModel.fromJson(json['next_cursor']),
       resultCount: (json['result_count'] as num?)?.toInt(),
     );
 
@@ -1590,7 +1590,7 @@ class _V2Api implements V2Api {
   Future<Response<List<Balance>>> getBalancesByAddress(
     String address,
     bool verbose, [
-    Cursor? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -1633,7 +1633,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<BalanceVerbose>>> getBalancesByAddressVerbose(
     String address, [
-    Cursor? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -1676,7 +1676,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<MultiAddressBalance>>> getBalancesByAddresses(
     String addresses, [
-    Cursor? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -1721,7 +1721,7 @@ class _V2Api implements V2Api {
   Future<Response<List<MultiAddressBalanceVerbose>>>
       getBalancesByAddressesVerbose(
     String addresses, [
-    Cursor? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -2625,7 +2625,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
     String addresses, [
-    Cursor? cursor,
+    CursorModel? cursor,
     int? limit,
     bool? showUnconfirmed,
   ]) async {
@@ -2671,7 +2671,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<Event>>> getEventsByAddresses(
     String addresses, [
-    Cursor? cursor,
+    CursorModel? cursor,
     int? limit,
     bool? showUnconfirmed,
     String? eventName,
@@ -2718,7 +2718,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
     String addresses, [
-    Cursor? cursor,
+    CursorModel? cursor,
     int? limit,
     bool? showUnconfirmed,
     String? eventName,
@@ -2813,7 +2813,7 @@ class _V2Api implements V2Api {
     bool? unconfirmed,
     bool? verbose,
     int? limit,
-    Cursor? cursor,
+    CursorModel? cursor,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
