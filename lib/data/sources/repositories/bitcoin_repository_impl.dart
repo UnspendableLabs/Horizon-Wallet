@@ -152,8 +152,6 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
     }
   }
 
-
-
   Future<List<BitcoinTx>> _fetchAllTransactionsForAddress(
       String address) async {
     final allTransactions = <BitcoinTx>[];

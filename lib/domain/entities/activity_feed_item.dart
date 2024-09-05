@@ -11,20 +11,31 @@ class ActivityFeedItem extends Equatable {
   final BitcoinTx? bitcoinTx;
   int? confirmations;
 
-  ActivityFeedItem({required this.hash, this.event, this.info, this.bitcoinTx, this.confirmations});
+  ActivityFeedItem(
+      {required this.hash,
+      this.event,
+      this.info,
+      this.bitcoinTx,
+      this.confirmations});
 
   @override
   List<Object?> get props => [hash, event, info, bitcoinTx, confirmations];
 
   int? getBlockIndex() => switch (this) {
         ActivityFeedItem(event: Event(blockIndex: final index?)) => index,
-        ActivityFeedItem(bitcoinTx: BitcoinTx(status: Status(blockHeight: final height?))) => height,
+        ActivityFeedItem(
+          bitcoinTx: BitcoinTx(status: Status(blockHeight: final height?))
+        ) =>
+          height,
         _ => null
       };
 
   bool isMempool() => switch (this) {
         ActivityFeedItem(event: Event(state: EventStateMempool())) => true,
-        ActivityFeedItem(bitcoinTx: BitcoinTx(status: Status(confirmed: false))) => true,
+        ActivityFeedItem(
+          bitcoinTx: BitcoinTx(status: Status(confirmed: false))
+        ) =>
+          true,
         _ => false,
       };
 }

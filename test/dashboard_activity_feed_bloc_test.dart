@@ -288,6 +288,9 @@ void main() {
   when(() => defaultBitcoinRepository.getConfirmedTransactions(any()))
       .thenAnswer((_) async => const Right([]));
 
+  when(() => defaultBitcoinRepository.getBlockHeight())
+      .thenAnswer((_) async => const Right(100));
+
   group("StartPolling", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "sets timer",
