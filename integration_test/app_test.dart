@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
@@ -222,27 +224,39 @@ void main() {
         await tester.tap(loginButton);
         await tester.pumpAndSettle();
 
-        final addressRepository = GetIt.instance<AddressRepository>();
-        final addresses = await addressRepository.getAll();
         final expectedAddresses = testCase['addresses'] as List<String>;
 
+        // Ensure addresses are returned in the correct order
+        final addressRepository = GetIt.instance<AddressRepository>();
+        final accountRepository = GetIt.instance<AccountRepository>();
+        final walletRepository = GetIt.instance<WalletRepository>();
+        final wallet = await walletRepository.getCurrentWallet();
+        final account =
+            await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
+        final addresses =
+            await addressRepository.getAllByAccountUuid(account.first.uuid);
         expect(addresses.length, expectedAddresses.length,
             reason: 'Number of imported addresses does not match expected');
 
-        for (var address in addresses) {
-          expect(expectedAddresses.contains(address.address), isTrue,
+        for (var i = 0; i < addresses.length; i++) {
+          expect(addresses[i].address, expectedAddresses[i],
               reason:
-                  'Imported address ${address.address} was not in the list of expected addresses');
+                  'Address ${addresses[i].address} does not match expected address ${expectedAddresses[i]}');
         }
 
-        final logoutButton = find.text('Logout');
-        expect(logoutButton, findsOneWidget);
-        await tester.tap(logoutButton);
+        final settingsButton = find.byIcon(Icons.settings);
+        expect(settingsButton, findsOneWidget);
+        await tester.tap(settingsButton);
         await tester.pumpAndSettle();
 
-        final confirmLogoutButton = find.text('Logout').last;
-        expect(confirmLogoutButton, findsOneWidget);
-        await tester.tap(confirmLogoutButton);
+        final resetButton = find.text('Reset wallet');
+        expect(resetButton, findsOneWidget);
+        await tester.tap(resetButton);
+        await tester.pumpAndSettle();
+
+        final confirmResetButton = find.text('RESET WALLET');
+        expect(confirmResetButton, findsOneWidget);
+        await tester.tap(confirmResetButton);
         await tester.pumpAndSettle();
       });
     }
