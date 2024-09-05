@@ -2,15 +2,16 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
-import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 // TODO: implement some sort of cache
 
@@ -163,8 +164,13 @@ class AddressServiceImpl extends AddressService {
       required String coin,
       required String account,
       required String change,
-      required int index}) async {
-    String path = 'm/$purpose/$coin/$account/$change/$index';
+      required int index,
+      required ImportFormat importFormat}) async {
+    String path = switch (importFormat) {
+      ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
+      _ => 'm/$account/$change/$index',
+    };
+
     final network = _getNetwork();
 
     Buffer privKeyJS =

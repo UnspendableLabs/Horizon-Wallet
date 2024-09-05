@@ -1,3 +1,4 @@
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 
 enum AddressType { bech32, legacy }
@@ -49,7 +50,8 @@ abstract class AddressService {
       required String coin,
       required String account,
       required String change,
-      required int index});
+      required int index,
+      required ImportFormat importFormat});
 
   // Future<Address> deriveAddressSegwitPublicKey(
   //     {required String publicKey,

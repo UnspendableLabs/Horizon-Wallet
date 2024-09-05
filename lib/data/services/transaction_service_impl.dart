@@ -1,8 +1,10 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:convert/convert.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 import 'package:horizon/js/buffer.dart';
@@ -15,6 +17,7 @@ class TransactionServiceImpl implements TransactionService {
 
   ecpair.ECPairFactory ecpairFactory =
       ecpair.ECPairFactory(tinysecp256k1js.ecc);
+  final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceImpl({required this.config});
 
@@ -51,7 +54,6 @@ class TransactionServiceImpl implements TransactionService {
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
 
       var prev = utxoMap[txHash];
-
       if (prev != null) {
         if (isSegwit) {
           input.witnessUtxo =
@@ -59,6 +61,16 @@ class TransactionServiceImpl implements TransactionService {
           psbt.addInput(input);
         } else {
           input.script = script.output;
+          final txHex = await bitcoinRepository.getTransactionHex(prev.txid);
+
+          txHex.fold(
+            (l) => throw Exception('Failed to get transaction: ${l.message}'),
+            (tx) {
+              input.nonWitnessUtxo =
+                  Buffer.from(Uint8List.fromList(hex.decode(tx)).toJS);
+              psbt.addInput(input);
+            },
+          );
         }
       } else {
         // TODO: handle errors in UI
@@ -68,7 +80,6 @@ class TransactionServiceImpl implements TransactionService {
 
     for (var i = 0; i < transaction.outs.toDart.length; i++) {
       bitcoinjs.TxOutput output = transaction.outs.toDart[i];
-
       psbt.addOutput(output);
     }
 
