@@ -146,6 +146,7 @@ class DashboardActivityFeedBloc
 
       for (final event in newCounterpartyEvents) {
         if (!seenHashes.contains(event.txHash)) {
+        // TODO: here
           deduplicatedActivityFeedItems
               .add(ActivityFeedItem(hash: event.txHash, event: event));
           seenHashes.add(event.txHash);
@@ -386,6 +387,9 @@ class DashboardActivityFeedBloc
 
       final btcConfirmedMap = {for (var tx in btcConfirmedList) tx.txid: tx};
 
+      final blockHeightE = await bitcoinRepository.getBlockHeight();
+      final blockHeight = blockHeightE.getOrElse((left) => throw left);
+
       List<ActivityFeedItem> localActivityFeedItems = localTransactions
           .where((tx) =>
               !counterpartyMempoolByHash.keys.contains(tx.hash) &&
@@ -393,7 +397,9 @@ class DashboardActivityFeedBloc
               !btcConfirmedMap.keys.contains(tx.hash) &&
               !btcMempoolMap.keys.contains(tx.hash))
           .map((tx) {
-        return ActivityFeedItem(hash: tx.hash, info: tx);
+        final activityFeedItem = ActivityFeedItem(hash: tx.hash, info: tx);
+        activityFeedItem.confirmations = _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+        return activityFeedItem;
       }).toList();
 
       // mempool transactions are the set of txs in ( preferring counterparty events over btc):
@@ -403,13 +409,15 @@ class DashboardActivityFeedBloc
 
       // don't add btc mempool if it's in the counterparty mempoool
       for (final tx in btcMempoolList) {
-        mempoolActivityFeedItems
-            .add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
+        final activityFeedItem = ActivityFeedItem(hash: tx.txid, bitcoinTx: tx);
+        activityFeedItem.confirmations = _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+        mempoolActivityFeedItems.add(activityFeedItem);
       }
 
       for (final tx in counterpartyMempool) {
-        mempoolActivityFeedItems
-            .add(ActivityFeedItem(hash: tx.txHash, event: tx));
+        final activityFeedItem = ActivityFeedItem(hash: tx.txHash, event: tx);
+        activityFeedItem.confirmations = _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+        mempoolActivityFeedItems.add(activityFeedItem);
       }
 
       // add btc confirmed, preferring counterparty events
@@ -419,16 +427,18 @@ class DashboardActivityFeedBloc
       final seenHashes = <String>{};
       for (final event in counterpartyConfirmed) {
         if (!seenHashes.contains(event.txHash)) {
-          confirmedActivityFeedItems
-              .add(ActivityFeedItem(hash: event.txHash, event: event));
+          final activityFeedItem = ActivityFeedItem(hash: event.txHash, event: event);
+          activityFeedItem.confirmations = _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+          confirmedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(event.txHash);
         }
       }
 
       for (final btx in btcConfirmedList) {
         if (!seenHashes.contains(btx.txid)) {
-          confirmedActivityFeedItems
-              .add(ActivityFeedItem(hash: btx.txid, bitcoinTx: btx));
+          final activityFeedItem = ActivityFeedItem(hash: btx.txid, bitcoinTx: btx);
+          activityFeedItem.confirmations = _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+          confirmedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(btx.txid);
         }
       }
@@ -472,5 +482,11 @@ class DashboardActivityFeedBloc
       StopPolling event, Emitter<DashboardActivityFeedState> emit) {
     timer?.cancel();
     timer = null;
+  }
+
+  int _getConfirmations(int blockHeight, int blockIndex) {
+    // Number of confirmations = Current Bitcoin block height - Transaction block height + 1
+    final confirmations = blockHeight - blockIndex + 1;
+    return confirmations;
   }
 }

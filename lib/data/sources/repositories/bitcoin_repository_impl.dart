@@ -139,6 +139,21 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, int>> getBlockHeight() async {
+    try {
+      final blockHeight = await _esploraApi.getBlockHeight();
+      return Right(blockHeight);
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      print('IS THIS THE ERROR? $e');
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+
+
   Future<List<BitcoinTx>> _fetchAllTransactionsForAddress(
       String address) async {
     final allTransactions = <BitcoinTx>[];
@@ -226,6 +241,15 @@ class EsploraApi {
 
       // Convert the dynamic values to double
       return data.map((key, value) => MapEntry(key, (value as num).toDouble()));
+    } on DioException catch (e) {
+      _handleDioException(e);
+    }
+  }
+
+  Future<int> getBlockHeight() async {
+    try {
+      final response = await _dio.get('/blocks/tip/height');
+      return int.parse(response.data);
     } on DioException catch (e) {
       _handleDioException(e);
     }
