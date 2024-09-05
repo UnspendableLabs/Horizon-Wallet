@@ -318,6 +318,7 @@ class DashboardActivityFeedBloc
 
   void _onLoad(event, Emitter<DashboardActivityFeedState> emit) async {
     final nextState = switch (state) {
+
       DashboardActivityFeedStateCompleteOk completeOk =>
         DashboardActivityFeedStateReloadingOk(
           transactions: completeOk.transactions,
@@ -329,7 +330,7 @@ class DashboardActivityFeedBloc
         ),
       _ => DashboardActivityFeedStateLoading(),
     };
-
+    print('nextState: $nextState');
     emit(nextState);
 
     try {
@@ -397,6 +398,7 @@ class DashboardActivityFeedBloc
 
       final blockHeightE = await bitcoinRepository.getBlockHeight();
       final blockHeight = blockHeightE.getOrElse((left) => throw left);
+      print('blockHeight!!!!!!!!!!!!: $blockHeight');
 
       List<ActivityFeedItem> localActivityFeedItems = localTransactions
           .where((tx) =>
