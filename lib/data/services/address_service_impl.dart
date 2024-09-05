@@ -166,8 +166,6 @@ class AddressServiceImpl extends AddressService {
       required String change,
       required int index,
       required ImportFormat importFormat}) async {
-    print('deriveAddressPriv');
-
     String path = switch (importFormat) {
       ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
       _ => 'm/$account/$change/$index',
@@ -183,13 +181,6 @@ class AddressServiceImpl extends AddressService {
     final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
 
     bip32.BIP32Interface child = root.derivePath(path);
-
-    // print('child: ${child.privateKey}');
-    final legacy = _legacyFromBip32(child);
-    print('legacy: $legacy');
-
-    final bech32 = _bech32FromBip32(child);
-    print('bech32: $bech32');
 
     return hex.encode(child.privateKey!.toDart);
   }

@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -99,14 +98,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
                 feeEstimates: feeEstimates,
                 confirmationTarget: feeEstimates.keys.first))));
       } catch (error) {
-        if (error is DioException) {
-          emit(state.copyWith(
-              submitState: SubmitState.error(
-                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
-        } else {
-          emit(
-              state.copyWith(submitState: SubmitState.error(error.toString())));
-        }
+        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
       }
     });
 
@@ -184,14 +176,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
       } catch (error) {
-        if (error is DioException) {
-          emit(state.copyWith(
-              submitState: SubmitState.error(
-                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
-        } else {
-          emit(
-              state.copyWith(submitState: SubmitState.error(error.toString())));
-        }
+        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
       }
     });
   }

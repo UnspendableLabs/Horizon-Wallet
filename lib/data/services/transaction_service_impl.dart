@@ -54,7 +54,6 @@ class TransactionServiceImpl implements TransactionService {
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
 
       var prev = utxoMap[txHash];
-      print('prev: ${prev?.txid}');
       if (prev != null) {
         if (isSegwit) {
           input.witnessUtxo =
@@ -62,9 +61,9 @@ class TransactionServiceImpl implements TransactionService {
           psbt.addInput(input);
         } else {
           input.script = script.output;
-          final txE = await bitcoinRepository.getTransactionHex(prev.txid);
+          final txHex = await bitcoinRepository.getTransactionHex(prev.txid);
 
-          txE.fold(
+          txHex.fold(
             (l) => throw Exception('Failed to get transaction: ${l.message}'),
             (tx) {
               input.nonWitnessUtxo =
@@ -72,7 +71,6 @@ class TransactionServiceImpl implements TransactionService {
               psbt.addInput(input);
             },
           );
-
         }
       } else {
         // TODO: handle errors in UI
@@ -81,15 +79,9 @@ class TransactionServiceImpl implements TransactionService {
     }
 
     for (var i = 0; i < transaction.outs.toDart.length; i++) {
-      print('output: $i');
-      // print(transaction.outs[i]);
       bitcoinjs.TxOutput output = transaction.outs.toDart[i];
-      // print('output: $i: ${output.toJSBox}');
-      print('output dart: $i: $output');
       psbt.addOutput(output);
     }
-
-    print('psbt: $psbt: ${psbt.toString()}');
 
     psbt.signAllInputs(signer);
 
