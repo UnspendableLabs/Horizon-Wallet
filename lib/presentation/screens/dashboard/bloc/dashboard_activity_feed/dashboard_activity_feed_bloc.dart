@@ -318,7 +318,6 @@ class DashboardActivityFeedBloc
 
   void _onLoad(event, Emitter<DashboardActivityFeedState> emit) async {
     final nextState = switch (state) {
-
       DashboardActivityFeedStateCompleteOk completeOk =>
         DashboardActivityFeedStateReloadingOk(
           transactions: completeOk.transactions,
@@ -338,6 +337,8 @@ class DashboardActivityFeedBloc
       final addresses_ = [currentAddress];
 
       List<String> addresses = addresses_.map((a) => a.address).toList();
+
+      print('addresses: $addresses');
 
       // query local transactions above mose recent confirmed event
       final localTransactions =
@@ -408,8 +409,8 @@ class DashboardActivityFeedBloc
               !btcMempoolMap.keys.contains(tx.hash))
           .map((tx) {
         final activityFeedItem = ActivityFeedItem(hash: tx.hash, info: tx);
-        activityFeedItem.confirmations =
-            _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+        // activityFeedItem.confirmations =
+        //     _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
         return activityFeedItem;
       }).toList();
 
@@ -443,7 +444,7 @@ class DashboardActivityFeedBloc
           final activityFeedItem =
               ActivityFeedItem(hash: event.txHash, event: event);
 
-            print("activityFeedItem $activityFeedItem");
+          print("activityFeedItem $activityFeedItem");
 
           activityFeedItem.confirmations =
               _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);

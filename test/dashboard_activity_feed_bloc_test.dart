@@ -297,6 +297,9 @@ void main() {
                   mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
+          when(() => mockTransactionLocalRepository
+              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+
           final mockEventsRepository = MockEventsRepository();
 
           when(() => mockEventsRepository.getByAddressesVerbose(
@@ -310,7 +313,7 @@ void main() {
                 addresses: ["0x123"],
                 unconfirmed: true,
                 whitelist: DEFAULT_WHITELIST,
-              )).thenAnswer((_) async => <VerboseEvent>[]);
+              )).thenAnswer((_) async => []);
 
           return DashboardActivityFeedBloc(
             currentAddress: AddressMock(),
@@ -341,6 +344,9 @@ void main() {
           when(() =>
                   mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
+
+          when(() => mockTransactionLocalRepository
+              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -386,6 +392,9 @@ void main() {
                   mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
+          when(() => mockTransactionLocalRepository
+              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+
           final mockEventsRepository = MockEventsRepository();
 
           when(() => mockEventsRepository.getByAddressesVerbose(
@@ -422,6 +431,9 @@ void main() {
           when(() =>
                   mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
+
+          when(() => mockTransactionLocalRepository
+              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -469,6 +481,9 @@ void main() {
                   mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
 
+          when(() => mockTransactionLocalRepository
+              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+
           final mockEventsRepository = MockEventsRepository();
 
           when(() => mockEventsRepository.getByAddressesVerbose(
@@ -510,6 +525,8 @@ void main() {
           when(() =>
                   mockTransactionLocalRepository.getAllByAccountVerbose("123"))
               .thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository
+              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -570,8 +587,8 @@ void main() {
 
           mockedRemote = MockEventFactory.createMultiple([
             ("0004", EventStateMempool(), null),
-            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1), null),
-            ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1), null),
+            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
+            ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
           ]);
 
           when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
@@ -608,9 +625,14 @@ void main() {
                   ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
                   ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
                   ActivityFeedItem(hash: "0003", info: mockedLocal[2]),
-                  ActivityFeedItem(hash: "0004", event: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0005", event: mockedRemote[1]),
-                  ActivityFeedItem(hash: "0006", event: mockedRemote[2]),
+                  ActivityFeedItem(
+                      hash: "0004",
+                      event: mockedRemote[0],
+                      confirmations: null),
+                  ActivityFeedItem(
+                      hash: "0005", event: mockedRemote[1], confirmations: 100),
+                  ActivityFeedItem(
+                      hash: "0006", event: mockedRemote[2], confirmations: 100),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -647,7 +669,7 @@ void main() {
 
           mockedRemote = MockEventFactory.createMultiple([
             ("0002", EventStateMempool(), null),
-            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), null),
+            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
           ]);
 
           when(() => mockEventsRepository.getByAddressesVerbose(
@@ -668,6 +690,8 @@ void main() {
               .thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
               .thenAnswer((_) async => const Right([]));
+          when(() => mockBitcoinRepository.getBlockHeight())
+              .thenAnswer((_) async => const Right(100));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
@@ -682,9 +706,14 @@ void main() {
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                  ActivityFeedItem(hash: "0002", event: mockedRemote[0]),
-                  ActivityFeedItem(hash: "0003", event: mockedRemote[1]),
+                  ActivityFeedItem(
+                      hash: "0001", info: mockedLocal[0], confirmations: null),
+                  ActivityFeedItem(
+                      hash: "0002",
+                      event: mockedRemote[0],
+                      confirmations: null),
+                  ActivityFeedItem(
+                      hash: "0003", event: mockedRemote[1], confirmations: 100),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -759,8 +788,12 @@ void main() {
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  ActivityFeedItem(hash: "0005", event: mockedRemote[0], ),
-                  ActivityFeedItem(hash: "0004", event: mockedRemote[1], confirmations: 100),
+                  ActivityFeedItem(
+                    hash: "0005",
+                    event: mockedRemote[0],
+                  ),
+                  ActivityFeedItem(
+                      hash: "0004", event: mockedRemote[1], confirmations: 100),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null, //TODO: next cursor always null for now
@@ -1247,7 +1280,7 @@ void main() {
                     ActivityFeedItem(
                         hash: "btx_1",
                         bitcoinTx: mockedBtcMempool[0],
-                        confirmations: 101),
+                        confirmations: null),
                   ],
                   newTransactionCount: 0,
                   nextCursor: null,
@@ -1268,6 +1301,9 @@ void main() {
                 TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
               ),
             ]);
+            when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
+                any())).thenAnswer((_) async => mockedLocal);
+
             when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
                 any())).thenAnswer((_) async => mockedLocal);
 
