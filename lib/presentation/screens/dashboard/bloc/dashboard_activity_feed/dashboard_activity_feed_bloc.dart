@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/cursor.dart';
 import 'dart:async';
 
 import "dashboard_activity_feed_event.dart";
@@ -80,7 +81,7 @@ class DashboardActivityFeedBloc
         // 1b) otherwise, we need to get the list of all events
         //     above the most recent counterparty event hash
         bool found = false;
-        int? nextCursor;
+        Cursor? nextCursor;
         while (!found) {
           final (remoteEvents, nextCursor_, _) =
               await eventsRepository.getByAddressesVerbose(

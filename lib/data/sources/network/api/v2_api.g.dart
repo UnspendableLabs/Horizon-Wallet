@@ -13,7 +13,9 @@ Response<T> _$ResponseFromJson<T>(
     Response<T>(
       result: _$nullableGenericFromJson(json['result'], fromJsonT),
       error: json['error'] as String?,
-      nextCursor: (json['next_cursor'] as num?)?.toInt(),
+      nextCursor: json['next_cursor'] == null
+          ? null
+          : CursorModel.fromJson(json['next_cursor']),
       resultCount: (json['result_count'] as num?)?.toInt(),
     );
 
@@ -1588,13 +1590,13 @@ class _V2Api implements V2Api {
   Future<Response<List<Balance>>> getBalancesByAddress(
     String address,
     bool verbose, [
-    int? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'verbose': verbose,
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
       r'limit': limit,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -1631,12 +1633,12 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<BalanceVerbose>>> getBalancesByAddressVerbose(
     String address, [
-    int? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
       r'limit': limit,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -1674,13 +1676,13 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<MultiAddressBalance>>> getBalancesByAddresses(
     String addresses, [
-    int? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'addresses': addresses,
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
       r'limit': limit,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -1719,13 +1721,13 @@ class _V2Api implements V2Api {
   Future<Response<List<MultiAddressBalanceVerbose>>>
       getBalancesByAddressesVerbose(
     String addresses, [
-    int? cursor,
+    CursorModel? cursor,
     int? limit,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'addresses': addresses,
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
       r'limit': limit,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -2623,14 +2625,14 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<TransactionVerbose>>> getTransactionsByAddressesVerbose(
     String addresses, [
-    int? cursor,
+    CursorModel? cursor,
     int? limit,
     bool? showUnconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'addresses': addresses,
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
     };
@@ -2669,7 +2671,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<Event>>> getEventsByAddresses(
     String addresses, [
-    int? cursor,
+    CursorModel? cursor,
     int? limit,
     bool? showUnconfirmed,
     String? eventName,
@@ -2677,7 +2679,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'addresses': addresses,
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
       r'event_name': eventName,
@@ -2716,7 +2718,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
     String addresses, [
-    int? cursor,
+    CursorModel? cursor,
     int? limit,
     bool? showUnconfirmed,
     String? eventName,
@@ -2724,7 +2726,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'addresses': addresses,
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'show_unconfirmed': showUnconfirmed,
       r'event_name': eventName,
@@ -2811,7 +2813,7 @@ class _V2Api implements V2Api {
     bool? unconfirmed,
     bool? verbose,
     int? limit,
-    int? cursor,
+    CursorModel? cursor,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2819,7 +2821,7 @@ class _V2Api implements V2Api {
       r'unconfirmed': unconfirmed,
       r'verbose': verbose,
       r'limit': limit,
-      r'cursor': cursor,
+      r'cursor': cursor?.toJson(),
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

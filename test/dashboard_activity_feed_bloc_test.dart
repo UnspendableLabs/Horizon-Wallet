@@ -1,4 +1,5 @@
 import 'package:decimal/decimal.dart';
+import 'package:horizon/domain/entities/cursor.dart';
 import 'package:test/test.dart';
 import 'dart:async';
 import "package:fpdart/src/either.dart";
@@ -287,6 +288,7 @@ void main() {
 
   when(() => defaultBitcoinRepository.getConfirmedTransactions(any()))
       .thenAnswer((_) async => const Right([]));
+  final Cursor cursor = Cursor.fromInt(1);
 
   group("StartPolling", () {
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
@@ -306,7 +308,7 @@ void main() {
                 limit: 10,
                 unconfirmed: false,
                 whitelist: DEFAULT_WHITELIST,
-              )).thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
+              )).thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 addresses: ["0x123"],
@@ -351,7 +353,7 @@ void main() {
                   limit: 10,
                   unconfirmed: false,
                   whitelist: DEFAULT_WHITELIST))
-              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
+              .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 whitelist: DEFAULT_WHITELIST,
@@ -395,7 +397,7 @@ void main() {
                   addresses: ["0x123"],
                   limit: 10,
                   unconfirmed: false))
-              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
+              .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 addresses: ["0x123"],
@@ -432,7 +434,7 @@ void main() {
                   addresses: ["0x123"],
                   limit: 10,
                   unconfirmed: false))
-              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
+              .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 whitelist: DEFAULT_WHITELIST,
                 addresses: ["0x123"],
@@ -478,7 +480,7 @@ void main() {
                   addresses: ["0x123"],
                   limit: 10,
                   unconfirmed: false))
-              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
+              .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 whitelist: DEFAULT_WHITELIST,
@@ -520,7 +522,7 @@ void main() {
                   addresses: ["0x123"],
                   limit: 10,
                   unconfirmed: false))
-              .thenAnswer((_) async => (<VerboseEvent>[], 1, 0));
+              .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 whitelist: DEFAULT_WHITELIST,
@@ -586,7 +588,7 @@ void main() {
                   addresses: ["0x123"],
                   limit: 10,
                   unconfirmed: false))
-              .thenAnswer((_) async => (<VerboseEvent>[], 1, 3));
+              .thenAnswer((_) async => (<VerboseEvent>[], cursor, 3));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 whitelist: DEFAULT_WHITELIST,
@@ -657,7 +659,7 @@ void main() {
                   addresses: ["0x123"],
                   limit: 10,
                   unconfirmed: false))
-              .thenAnswer((_) async => (<VerboseEvent>[], 1, 2));
+              .thenAnswer((_) async => (<VerboseEvent>[], cursor, 2));
 
           when(() => mockEventsRepository.getAllByAddressesVerbose(
                 whitelist: DEFAULT_WHITELIST,
@@ -728,7 +730,7 @@ void main() {
                   addresses: ["0x123"],
                   limit: 10,
                   unconfirmed: false))
-              .thenAnswer((_) async => ([mockedRemote[1]], 1, 2));
+              .thenAnswer((_) async => ([mockedRemote[1]], cursor, 2));
 
           // Return all transactions
           when(() => mockEventsRepository.getAllByAddressesVerbose(
@@ -945,7 +947,8 @@ void main() {
                 ActivityFeedItem(hash: "0003", event: mockedRemote[3]),
               ],
               newTransactionCount: 0,
-              nextCursor: 4, // doesn't matter since we are prepending
+              nextCursor:
+                  Cursor.fromInt(4), // doesn't matter since we are prepending
               mostRecentCounterpartyEventHash: "0002",
               mostRecentBitcoinTxHash: null,
             ),
@@ -973,7 +976,8 @@ void main() {
                   )
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 2)
-                  .having((state) => state.nextCursor, 'nextCursor', 4)
+                  .having(
+                      (state) => state.nextCursor, 'nextCursor', isA<Cursor>())
                   .having((state) => state.mostRecentCounterpartyEventHash,
                       'mostRecentCounterpartyEventHash', '0002'),
             ]);
@@ -1030,7 +1034,7 @@ void main() {
                 ActivityFeedItem(hash: "0002", event: mockedRemote[1]),
               ],
               newTransactionCount: 0,
-              nextCursor: 4,
+              nextCursor: Cursor.fromInt(4),
               mostRecentCounterpartyEventHash: "0002",
               mostRecentBitcoinTxHash: null,
             ),
@@ -1054,7 +1058,8 @@ void main() {
                   )
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 0)
-                  .having((state) => state.nextCursor, 'nextCursor', 4)
+                  .having(
+                      (state) => state.nextCursor, 'nextCursor', isA<Cursor>())
                   .having((state) => state.mostRecentCounterpartyEventHash,
                       'mostRecentCounterpartyEventHash', '0001'),
             ]);
@@ -1127,7 +1132,7 @@ void main() {
                 ActivityFeedItem(hash: "0003", event: mockedRemote[2]),
               ],
               newTransactionCount: 0,
-              nextCursor: 4,
+              nextCursor: Cursor.fromInt(4),
               mostRecentCounterpartyEventHash: "0003",
               mostRecentBitcoinTxHash: null,
             ),
@@ -1161,7 +1166,8 @@ void main() {
                   )
                   .having((state) => state.newTransactionCount,
                       'newTransactionCount', 0)
-                  .having((state) => state.nextCursor, 'nextCursor', 4)
+                  .having(
+                      (state) => state.nextCursor, 'nextCursor', isA<Cursor>())
                   .having((state) => state.mostRecentCounterpartyEventHash,
                       'mostRecentCounterpartyEventHash', '0001'),
             ]);

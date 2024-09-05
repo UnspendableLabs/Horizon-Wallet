@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart' as _;
 import 'package:decimal/decimal.dart';
+import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
+import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/domain/entities/utxo.dart' as entity;
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -36,11 +38,11 @@ class BalanceRepositoryImpl implements BalanceRepository {
   Future<List<b.Balance>> _fetchBalances(String address) async {
     final List<b.Balance> balances = [];
     int limit = 50;
-    int? cursor;
+    cursor_entity.Cursor? cursor;
 
     do {
-      final response =
-          await api.getBalancesByAddressVerbose(address, cursor, limit);
+      final response = await api.getBalancesByAddressVerbose(
+          address, cursor_model.CursorMapper.toData(cursor), limit);
 
       for (var a in response.result ?? []) {
         balances.add(b.Balance(
@@ -56,7 +58,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
               // locked: a.assetInfo.locked,
             )));
       }
-      cursor = response.nextCursor;
+      cursor = cursor_model.CursorMapper.toDomain(response.nextCursor);
     } while (cursor != null);
 
     return balances;
@@ -66,7 +68,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
       List<String> addresses) async {
     final List<b.Balance> balances = [];
     int limit = 50;
-    int? cursor;
+    cursor_model.CursorModel? cursor;
 
     do {
       final response = await api.getBalancesByAddressesVerbose(
