@@ -11,4 +11,5 @@ abstract class BitcoinRepository {
       List<String> addresses);
   Future<Either<Failure, BitcoinTx>> getTransaction(String txid);
   Future<Either<Failure, Map<String, double>>> getFeeEstimates();
+  Future<Either<Failure, String>> getTransactionHex(String txid);
 }

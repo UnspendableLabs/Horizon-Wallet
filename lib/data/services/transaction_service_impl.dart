@@ -1,8 +1,10 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:convert/convert.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 import 'package:horizon/js/buffer.dart';
@@ -13,30 +15,37 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 class TransactionServiceImpl implements TransactionService {
   final Config config;
 
-  ecpair.ECPairFactory ecpairFactory = ecpair.ECPairFactory(tinysecp256k1js.ecc);
+  ecpair.ECPairFactory ecpairFactory =
+      ecpair.ECPairFactory(tinysecp256k1js.ecc);
+  final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceImpl({required this.config});
 
   @override
-  Future<String> signTransaction(
-      String unsignedTransaction, String privateKey, String sourceAddress, Map<String, Utxo> utxoMap) async {
-    bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(unsignedTransaction);
+  Future<String> signTransaction(String unsignedTransaction, String privateKey,
+      String sourceAddress, Map<String, Utxo> utxoMap) async {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
-    Buffer privKeyJS = Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
 
     final network = _getNetwork();
 
     dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
-    bool isSegwit = sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
+    bool isSegwit =
+        sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
 
     bitcoinjs.Payment script;
     if (isSegwit) {
-      script = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
+      script = bitcoinjs.p2wpkh(
+          bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
     } else {
-      script = bitcoinjs.p2pkh(bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
+      script = bitcoinjs.p2pkh(
+          bitcoinjs.PaymentOptions(pubkey: signer.publicKey, network: network));
     }
 
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
@@ -48,11 +57,22 @@ class TransactionServiceImpl implements TransactionService {
       print('prev: ${prev?.txid}');
       if (prev != null) {
         if (isSegwit) {
-          input.witnessUtxo = bitcoinjs.WitnessUTXO(script: script.output, value: prev.value);
+          input.witnessUtxo =
+              bitcoinjs.WitnessUTXO(script: script.output, value: prev.value);
           psbt.addInput(input);
         } else {
           input.script = script.output;
-          psbt.addInput(input);
+          final txE = await bitcoinRepository.getTransactionHex(prev.txid);
+
+          txE.fold(
+            (l) => throw Exception('Failed to get transaction: ${l.message}'),
+            (tx) {
+              input.nonWitnessUtxo =
+                  Buffer.from(Uint8List.fromList(hex.decode(tx)).toJS);
+              psbt.addInput(input);
+            },
+          );
+
         }
       } else {
         // TODO: handle errors in UI
@@ -65,11 +85,11 @@ class TransactionServiceImpl implements TransactionService {
       // print(transaction.outs[i]);
       bitcoinjs.TxOutput output = transaction.outs.toDart[i];
       // print('output: $i: ${output.toJSBox}');
-      print('output dart: $i: ${output}');
+      print('output dart: $i: $output');
       psbt.addOutput(output);
     }
 
-    print('psbt: ${psbt}: ${psbt.toString()}');
+    print('psbt: $psbt: ${psbt.toString()}');
 
     psbt.signAllInputs(signer);
 
@@ -83,7 +103,8 @@ class TransactionServiceImpl implements TransactionService {
 
   @override
   int getVirtualSize(String unsignedTransaction) {
-    bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(unsignedTransaction);
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
     return transaction.virtualSize();
   }

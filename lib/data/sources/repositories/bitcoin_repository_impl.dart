@@ -35,6 +35,18 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   }
 
   @override
+  Future<Either<Failure, String>> getTransactionHex(String txid) async {
+    try {
+      final tx = await _esploraApi.getTransactionHex(txid);
+      return Right(tx);
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<BitcoinTx>>> getTransactions(
       List<String> addresses) async {
     try {
@@ -214,6 +226,15 @@ class EsploraApi {
       final response = await _dio.get('/tx/$txid');
       final tx = BitcoinTxModel.fromJson(response.data as Map<String, dynamic>);
       return tx.toDomain();
+    } on DioException catch (e) {
+      _handleDioException(e);
+    }
+  }
+
+  Future<String> getTransactionHex(String txid) async {
+    try {
+      final response = await _dio.get('/tx/$txid/hex');
+      return response.data as String;
     } on DioException catch (e) {
       _handleDioException(e);
     }
