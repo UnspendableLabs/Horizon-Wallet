@@ -158,7 +158,7 @@ class OnboardingImportBloc
 
             // create an account to house
             Account account = Account(
-                name: 'Account 0',
+                name: 'ACCOUNT 1',
                 walletUuid: wallet.uuid,
                 purpose: '32', // unused in Freewallet path
                 coinType: _getCoinType(),
@@ -203,7 +203,7 @@ class OnboardingImportBloc
 
             // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
             Account account = Account(
-                name: 'Account 0',
+                name: 'ACCOUNT 1',
                 walletUuid: wallet.uuid,
                 purpose: '0\'',
                 coinType: _getCoinType(),
