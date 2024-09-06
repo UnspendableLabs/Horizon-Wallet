@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+import 'package:horizon/presentation/common/footer.dart';
+
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -35,6 +37,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
         isDarkMode ? darkNavyDarkTheme : whiteLightTheme;
 
     return Scaffold(
+      bottomNavigationBar: const Footer(),
       backgroundColor: backdropBackgroundColor,
       body: LayoutBuilder(
         builder: (context, constraints) {

@@ -334,7 +334,8 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
     super.initState();
     for (int i = 0; i < focusNodes.length; i++) {
       focusNodes[i].onKeyEvent = (node, event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.tab) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.tab) {
           handleTabNavigation(i);
           return KeyEventResult.handled;
         }
