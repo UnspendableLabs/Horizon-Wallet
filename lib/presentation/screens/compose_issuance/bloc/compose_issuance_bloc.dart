@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -112,14 +111,7 @@ class ComposeIssuanceBloc
                 feeEstimates: feeEstimates,
                 confirmationTarget: feeEstimates.keys.first))));
       } catch (error) {
-        if (error is DioException) {
-          emit(state.copyWith(
-              submitState: SubmitState.error(
-                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
-        } else {
-          emit(
-              state.copyWith(submitState: SubmitState.error(error.toString())));
-        }
+        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
       }
     });
 
@@ -164,7 +156,8 @@ class ComposeIssuanceBloc
             coin: account.coinType,
             account: account.accountIndex,
             change: '0', // TODO make sure change is stored
-            index: address.index);
+            index: address.index,
+            importFormat: account.importFormat);
 
         String txHex = await transactionService.signTransaction(
             rawTx, addressPrivKey, source, utxoMap);
@@ -180,14 +173,7 @@ class ComposeIssuanceBloc
 
         emit(state.copyWith(submitState: SubmitState.success(txHex)));
       } catch (error) {
-        if (error is DioException) {
-          emit(state.copyWith(
-              submitState: SubmitState.error(
-                  "${error.response!.data.keys.first} ${error.response!.data.values.first}")));
-        } else {
-          emit(
-              state.copyWith(submitState: SubmitState.error(error.toString())));
-        }
+        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
       }
     });
   }

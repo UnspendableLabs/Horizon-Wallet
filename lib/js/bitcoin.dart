@@ -2,6 +2,7 @@
 library;
 
 import 'dart:js_interop';
+import 'package:horizon/js/buffer.dart';
 
 extension type WitnessUTXO._(JSObject o) implements JSObject {
   external WitnessUTXO({JSUint8Array script, int value});
@@ -15,6 +16,7 @@ extension type TxInput._(JSObject _) implements JSObject {
   external int sequence;
   external JSUint8Array witness;
   external WitnessUTXO? witnessUtxo;
+  external Buffer? nonWitnessUtxo;
 }
 
 extension type TxOutput._(JSObject _) implements JSObject {
