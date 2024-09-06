@@ -97,7 +97,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   top: 95,
                                   right: -50,
                                   child: Text(
-                                    'ALPHA',
+                                    'BETA',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 22,
