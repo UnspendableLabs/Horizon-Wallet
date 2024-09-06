@@ -1,3 +1,5 @@
+import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -35,11 +37,15 @@ class UtxoRepositoryImpl implements UtxoRepository {
       [bool? unconfirmed, String? unspentTxHash, bool? verbose]) async {
     List<Utxo> utxos = [];
     int limit = 50;
-    int? cursor;
+    cursor_entity.Cursor? cursor;
 
     do {
       final response = await api.getUnspentUTXOsByAddresses(
-          addresses.join(','), unconfirmed, verbose, limit, cursor);
+          addresses.join(','),
+          unconfirmed,
+          verbose,
+          limit,
+          cursor_model.CursorMapper.toData(cursor));
       for (UTXO a in response.result ?? []) {
         utxos.add(Utxo(
             vout: a.vout,
@@ -50,7 +56,7 @@ class UtxoRepositoryImpl implements UtxoRepository {
             txid: a.txid,
             address: a.address!));
       }
-      cursor = response.nextCursor;
+      cursor = cursor_model.CursorMapper.toDomain(response.nextCursor);
     } while (cursor != null);
 
     return utxos;

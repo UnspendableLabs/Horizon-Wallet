@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
@@ -91,69 +92,90 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                     isSmallScreenHeight: isSmallScreen,
                     scaffoldBackgroundColor: scaffoldBackgroundColor,
                   ),
-                  body: Column(
+                  body: Stack(
                     children: [
-                      Flexible(
-                        child: BlocBuilder<OnboardingCreateBloc,
-                            OnboardingCreateState>(builder: (context, state) {
-                          return Scaffold(
-                            body: switch (state.createState) {
-                              CreateStateNotAsked => const Mnemonic(),
-                              CreateStateMnemonicUnconfirmed =>
-                                ConfirmSeedInputFields(
-                                  mnemonicErrorState: state.mnemonicError,
-                                ),
-                              CreateStateMnemonicConfirmed => PasswordPrompt(
-                                  passwordController: _passwordController,
-                                  passwordConfirmationController:
-                                      _passwordConfirmationController,
-                                  state: state,
-                                  onPasswordChanged: (value) {
-                                    context.read<OnboardingCreateBloc>().add(
-                                        PasswordChanged(
-                                            password: value,
-                                            passwordConfirmation:
-                                                _passwordConfirmationController
-                                                    .text));
-                                  },
-                                  onPasswordConfirmationChanged: (value) {
-                                    context.read<OnboardingCreateBloc>().add(
-                                        PasswordConfirmationChanged(
-                                            passwordConfirmation: value));
-                                  },
-                                  onPressedBack: () {
-                                    final shell =
-                                        context.read<ShellStateCubit>();
-                                    shell.onOnboarding();
-                                  },
-                                  onPressedContinue: () {
-                                    if (_passwordController.text == '' ||
-                                        _passwordConfirmationController.text ==
-                                            '') {
-                                      context.read<OnboardingCreateBloc>().add(
-                                          PasswordError(
-                                              error:
-                                                  'Password cannot be empty'));
-                                    } else if (_passwordController.text !=
-                                        _passwordConfirmationController.text) {
-                                      context.read<OnboardingCreateBloc>().add(
-                                          PasswordError(
-                                              error: 'Passwords do not match'));
-                                    } else {
-                                      context
-                                          .read<OnboardingCreateBloc>()
-                                          .add(CreateWallet());
-                                    }
-                                  },
-                                  backButtonText: 'CANCEL',
-                                  continueButtonText: 'CONTINUE',
-                                ),
-                              Object() => const Text(''),
-                              null => throw UnimplementedError(),
-                            },
-                          );
-                        }),
+                      Column(
+                        children: [
+                          Flexible(
+                            child: BlocBuilder<OnboardingCreateBloc,
+                                    OnboardingCreateState>(
+                                builder: (context, state) {
+                              print("state.createState: ${state.createState}");
+
+                              return Scaffold(
+                                body: switch (state.createState) {
+                                  CreateStateNotAsked => const Mnemonic(),
+                                  CreateStateMnemonicUnconfirmed =>
+                                    ConfirmSeedInputFields(
+                                      mnemonicErrorState: state.mnemonicError,
+                                    ),
+                                  _ => PasswordPrompt(
+                                      passwordController: _passwordController,
+                                      passwordConfirmationController:
+                                          _passwordConfirmationController,
+                                      state: state,
+                                      onPasswordChanged: (value) {
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(PasswordChanged(
+                                                password: value,
+                                                passwordConfirmation:
+                                                    _passwordConfirmationController
+                                                        .text));
+                                      },
+                                      onPasswordConfirmationChanged: (value) {
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(PasswordConfirmationChanged(
+                                                passwordConfirmation: value));
+                                      },
+                                      onPressedBack: () {
+                                        final shell =
+                                            context.read<ShellStateCubit>();
+                                        shell.onOnboarding();
+                                      },
+                                      onPressedContinue: () {
+                                        if (_passwordController.text == '' ||
+                                            _passwordConfirmationController
+                                                    .text ==
+                                                '') {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(
+                                                  error:
+                                                      'Password cannot be empty'));
+                                        } else if (_passwordController.text !=
+                                            _passwordConfirmationController
+                                                .text) {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(
+                                                  error:
+                                                      'Passwords do not match'));
+                                        } else {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(CreateWallet());
+                                        }
+                                      },
+                                      backButtonText: 'CANCEL',
+                                      continueButtonText: 'CONTINUE',
+                                    ),
+                                  Object() => const Text(''),
+                                  null => throw UnimplementedError(),
+                                },
+                              );
+                            }),
+                          ),
+                        ],
                       ),
+                      if (state.createState is CreateStateLoading)
+                        Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -308,6 +330,21 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
 
   @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < focusNodes.length; i++) {
+      focusNodes[i].onKeyEvent = (node, event) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.tab) {
+          handleTabNavigation(i);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      };
+    }
+  }
+
+  @override
   void dispose() {
     for (var controller in controllers) {
       controller.dispose();
@@ -450,8 +487,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                   focusNode: focusNodes[index],
                                   onChanged: (value) =>
                                       handleInput(value, index),
-                                  onEditingComplete: () =>
-                                      handleTabNavigation(index),
                                   decoration: InputDecoration(
                                     filled: true,
                                     fillColor: isDarkMode
@@ -549,8 +584,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                         focusNode: focusNodes[index],
                                         onChanged: (value) =>
                                             handleInput(value, index),
-                                        onEditingComplete: () =>
-                                            handleTabNavigation(index),
                                         decoration: InputDecoration(
                                           filled: true,
                                           fillColor: isDarkMode
@@ -558,11 +591,10 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                                               : lightThemeInputColor,
                                           labelText: 'Word ${index + 1}',
                                           labelStyle: TextStyle(
-                                            fontWeight: FontWeight.normal,
-                                            color: isDarkMode
-                                                ? darkThemeInputLabelColor
-                                                : lightThemeInputLabelColor,
-                                          ),
+                                              fontWeight: FontWeight.normal,
+                                              color: isDarkMode
+                                                  ? darkThemeInputLabelColor
+                                                  : lightThemeInputLabelColor),
                                           enabledBorder: OutlineInputBorder(
                                             borderRadius:
                                                 BorderRadius.circular(8.0),
@@ -621,6 +653,23 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
     );
   }
 
+  void handleTabNavigation(int index) {
+    int nextIndex;
+    if (index % 6 == 5) {
+      // Move to the next column
+      nextIndex = index + 7 - 6;
+    } else {
+      // Move down the current column
+      nextIndex = index + 1;
+    }
+
+    if (nextIndex < 12) {
+      FocusScope.of(context).requestFocus(focusNodes[nextIndex]);
+    } else {
+      FocusScope.of(context).unfocus();
+    }
+  }
+
   void handleInput(String value, int index) {
     var words = value.split(RegExp(r'\s+'));
     if (words.length > 1 && index < 11) {
@@ -632,15 +681,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
       }
     }
     updateMnemonic();
-  }
-
-  void handleTabNavigation(int index) {
-    int nextIndex = index + 1;
-    if (nextIndex < 12) {
-      FocusScope.of(context).requestFocus(focusNodes[nextIndex]);
-    } else {
-      FocusScope.of(context).unfocus();
-    }
   }
 
   void updateMnemonic() {

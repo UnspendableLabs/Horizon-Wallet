@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -97,57 +98,75 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                     isSmallScreenHeight: isSmallScreen,
                     scaffoldBackgroundColor: scaffoldBackgroundColor,
                   ),
-                  body: Column(
+                  body: Stack(
                     children: [
-                      Flexible(
-                        child: state.importState == ImportStateNotAsked
-                            ? SeedInputFields(
-                                mnemonicErrorState: state.mnemonicError,
-                              )
-                            : PasswordPrompt(
-                                passwordController: _passwordController,
-                                passwordConfirmationController:
-                                    _passwordConfirmationController,
-                                state: state,
-                                onPasswordChanged: (value) {
-                                  context.read<OnboardingImportBloc>().add(
-                                      PasswordChanged(
-                                          password: value,
-                                          passwordConfirmation:
-                                              _passwordConfirmationController
-                                                  .text));
-                                },
-                                onPasswordConfirmationChanged: (value) {
-                                  context.read<OnboardingImportBloc>().add(
-                                      PasswordConfirmationChanged(
-                                          passwordConfirmation: value));
-                                },
-                                onPressedBack: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboarding();
-                                },
-                                onPressedContinue: () {
-                                  if (_passwordController.text == '' ||
-                                      _passwordConfirmationController.text ==
-                                          '') {
-                                    context.read<OnboardingImportBloc>().add(
-                                        PasswordError(
-                                            error: 'Password cannot be empty'));
-                                  } else if (_passwordController.text !=
-                                      _passwordConfirmationController.text) {
-                                    context.read<OnboardingImportBloc>().add(
-                                        PasswordError(
-                                            error: 'Passwords do not match'));
-                                  } else {
-                                    context
-                                        .read<OnboardingImportBloc>()
-                                        .add(ImportWallet());
-                                  }
-                                },
-                                backButtonText: 'CANCEL',
-                                continueButtonText: 'LOGIN',
-                              ),
+                      Column(
+                        children: [
+                          Flexible(
+                            child: state.importState == ImportStateNotAsked
+                                ? SeedInputFields(
+                                    mnemonicErrorState: state.mnemonicError,
+                                  )
+                                : PasswordPrompt(
+                                    passwordController: _passwordController,
+                                    passwordConfirmationController:
+                                        _passwordConfirmationController,
+                                    state: state,
+                                    onPasswordChanged: (value) {
+                                      context.read<OnboardingImportBloc>().add(
+                                          PasswordChanged(
+                                              password: value,
+                                              passwordConfirmation:
+                                                  _passwordConfirmationController
+                                                      .text));
+                                    },
+                                    onPasswordConfirmationChanged: (value) {
+                                      context.read<OnboardingImportBloc>().add(
+                                          PasswordConfirmationChanged(
+                                              passwordConfirmation: value));
+                                    },
+                                    onPressedBack: () {
+                                      final shell =
+                                          context.read<ShellStateCubit>();
+                                      shell.onOnboarding();
+                                    },
+                                    onPressedContinue: () {
+                                      if (_passwordController.text == '' ||
+                                          _passwordConfirmationController
+                                                  .text ==
+                                              '') {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(
+                                                error:
+                                                    'Password cannot be empty'));
+                                      } else if (_passwordController.text !=
+                                          _passwordConfirmationController
+                                              .text) {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(
+                                                error:
+                                                    'Passwords do not match'));
+                                      } else {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(ImportWallet());
+                                      }
+                                    },
+                                    backButtonText: 'CANCEL',
+                                    continueButtonText: 'LOGIN',
+                                  ),
+                          ),
+                        ],
                       ),
+                      if (state.importState is ImportStateLoading)
+                        Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -172,6 +191,22 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   String? selectedFormat = ImportFormat.horizon.name;
+
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < focusNodes.length; i++) {
+      focusNodes[i].onKeyEvent = (node, event) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.tab) {
+          handleTabNavigation(i);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      };
+    }
+  }
+
   @override
   void dispose() {
     for (var controller in controllers) {
@@ -308,8 +343,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                   focusNode: focusNodes[index],
                                   onChanged: (value) =>
                                       handleInput(value, index),
-                                  onEditingComplete: () =>
-                                      handleTabNavigation(index),
                                   decoration: InputDecoration(
                                     filled: true,
                                     fillColor: isDarkMode
@@ -378,8 +411,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                         focusNode: focusNodes[index],
                                         onChanged: (value) =>
                                             handleInput(value, index),
-                                        onEditingComplete: () =>
-                                            handleTabNavigation(index),
                                         decoration: InputDecoration(
                                           filled: true,
                                           fillColor: isDarkMode
@@ -493,7 +524,15 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   }
 
   void handleTabNavigation(int index) {
-    int nextIndex = index + 1;
+    int nextIndex;
+    if (index % 6 == 5) {
+      // Move to the next column
+      nextIndex = index + 7 - 6;
+    } else {
+      // Move down the current column
+      nextIndex = index + 1;
+    }
+
     if (nextIndex < 12) {
       FocusScope.of(context).requestFocus(focusNodes[nextIndex]);
     } else {

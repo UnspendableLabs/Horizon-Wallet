@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/cursor.dart';
 import 'dart:async';
 
 import "dashboard_activity_feed_event.dart";
@@ -80,7 +81,7 @@ class DashboardActivityFeedBloc
         // 1b) otherwise, we need to get the list of all events
         //     above the most recent counterparty event hash
         bool found = false;
-        int? nextCursor;
+        Cursor? nextCursor;
         while (!found) {
           final (remoteEvents, nextCursor_, _) =
               await eventsRepository.getByAddressesVerbose(
@@ -140,22 +141,35 @@ class DashboardActivityFeedBloc
         }
       }
 
+      final blockHeightE = await bitcoinRepository.getBlockHeight();
+      final blockHeight = blockHeightE.getOrElse((left) => throw left);
+
       // 3) dedupe by tx hash
       final deduplicatedActivityFeedItems = <ActivityFeedItem>[];
       final seenHashes = <String>{};
 
       for (final event in newCounterpartyEvents) {
         if (!seenHashes.contains(event.txHash)) {
-          deduplicatedActivityFeedItems
-              .add(ActivityFeedItem(hash: event.txHash, event: event));
+          final activityFeedItem =
+              ActivityFeedItem(hash: event.txHash, event: event);
+          if (activityFeedItem.getBlockIndex() != null) {
+            activityFeedItem.confirmations = _getConfirmations(
+                blockHeight, activityFeedItem.getBlockIndex()!);
+          }
+          deduplicatedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(event.txHash);
         }
       }
 
       for (final btcTx in newBitcoinTransactions) {
         if (!seenHashes.contains(btcTx.txid)) {
-          deduplicatedActivityFeedItems
-              .add(ActivityFeedItem(hash: btcTx.txid, bitcoinTx: btcTx));
+          final activityFeedItem =
+              ActivityFeedItem(hash: btcTx.txid, bitcoinTx: btcTx);
+          if (activityFeedItem.getBlockIndex() != null) {
+            activityFeedItem.confirmations = _getConfirmations(
+                blockHeight, activityFeedItem.getBlockIndex()!);
+          }
+          deduplicatedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(btcTx.txid);
         }
       }
@@ -320,7 +334,6 @@ class DashboardActivityFeedBloc
         ),
       _ => DashboardActivityFeedStateLoading(),
     };
-
     emit(nextState);
 
     try {
@@ -386,6 +399,9 @@ class DashboardActivityFeedBloc
 
       final btcConfirmedMap = {for (var tx in btcConfirmedList) tx.txid: tx};
 
+      final blockHeightE = await bitcoinRepository.getBlockHeight();
+      final blockHeight = blockHeightE.getOrElse((left) => throw left);
+
       List<ActivityFeedItem> localActivityFeedItems = localTransactions
           .where((tx) =>
               !counterpartyMempoolByHash.keys.contains(tx.hash) &&
@@ -419,16 +435,23 @@ class DashboardActivityFeedBloc
       final seenHashes = <String>{};
       for (final event in counterpartyConfirmed) {
         if (!seenHashes.contains(event.txHash)) {
-          confirmedActivityFeedItems
-              .add(ActivityFeedItem(hash: event.txHash, event: event));
+          final activityFeedItem =
+              ActivityFeedItem(hash: event.txHash, event: event);
+
+          activityFeedItem.confirmations =
+              _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+          confirmedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(event.txHash);
         }
       }
 
       for (final btx in btcConfirmedList) {
         if (!seenHashes.contains(btx.txid)) {
-          confirmedActivityFeedItems
-              .add(ActivityFeedItem(hash: btx.txid, bitcoinTx: btx));
+          final activityFeedItem =
+              ActivityFeedItem(hash: btx.txid, bitcoinTx: btx);
+          activityFeedItem.confirmations =
+              _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+          confirmedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(btx.txid);
         }
       }
@@ -472,5 +495,11 @@ class DashboardActivityFeedBloc
       StopPolling event, Emitter<DashboardActivityFeedState> emit) {
     timer?.cancel();
     timer = null;
+  }
+
+  int _getConfirmations(int blockHeight, int blockIndex) {
+    // Number of confirmations = Current Bitcoin block height - Transaction block height + 1
+    final confirmations = blockHeight - blockIndex + 1;
+    return confirmations;
   }
 }

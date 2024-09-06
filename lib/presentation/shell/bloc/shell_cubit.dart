@@ -98,9 +98,9 @@ class ShellStateCubit extends Cubit<ShellState> {
         error: (_) => state,
         onboarding: (_) => state,
         success: (stateInner) => ShellState.success(stateInner.copyWith(
-              currentAccountUuid: account.uuid,
-              currentAddress: addresses.first,
-            )));
+            currentAccountUuid: account.uuid,
+            currentAddress: addresses.first,
+            addresses: addresses)));
 
     emit(state_);
   }

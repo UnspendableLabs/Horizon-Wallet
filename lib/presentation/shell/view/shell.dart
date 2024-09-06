@@ -21,6 +21,7 @@ import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/view/address_dropdown.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:horizon/presentation/common/footer.dart';
 
 class ResponsiveAccountSidebar extends StatefulWidget {
   const ResponsiveAccountSidebar({super.key});
@@ -217,6 +218,7 @@ class Shell extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 926, maxHeight: 845),
             child: Scaffold(
               backgroundColor: noBackgroundColor,
+              bottomNavigationBar: const Footer(),
               appBar: AppBar(
                 backgroundColor: noBackgroundColor,
                 title: LayoutBuilder(
@@ -256,7 +258,7 @@ class Shell extends StatelessWidget {
                                   )),
                             if (!isSmallScreen) const SizedBox(width: 12),
                             if (!isSmallScreen)
-                              const Text('ALPHA',
+                              const Text('BETA',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,

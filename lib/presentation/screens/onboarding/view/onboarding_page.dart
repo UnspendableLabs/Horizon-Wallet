@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+import 'package:horizon/presentation/common/footer.dart';
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -35,6 +36,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
         isDarkMode ? darkNavyDarkTheme : whiteLightTheme;
 
     return Scaffold(
+      bottomNavigationBar: const Footer(),
       backgroundColor: backdropBackgroundColor,
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -97,7 +99,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   top: 95,
                                   right: -50,
                                   child: Text(
-                                    'ALPHA',
+                                    'BETA',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 22,
@@ -391,7 +393,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    'IMPORT SEED',
+                                    'IMPORT SEED PHRASE',
                                     style: TextStyle(
                                         color: isDarkMode
                                             ? mainTextGrey
