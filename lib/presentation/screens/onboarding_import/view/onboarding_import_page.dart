@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -190,6 +191,21 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   String? selectedFormat = ImportFormat.horizon.name;
+
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < focusNodes.length; i++) {
+      focusNodes[i].onKeyEvent = (node, event) {
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.tab) {
+          handleTabNavigation(i);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      };
+    }
+  }
+
   @override
   void dispose() {
     for (var controller in controllers) {
@@ -326,8 +342,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                   focusNode: focusNodes[index],
                                   onChanged: (value) =>
                                       handleInput(value, index),
-                                  onEditingComplete: () =>
-                                      handleTabNavigation(index),
                                   decoration: InputDecoration(
                                     filled: true,
                                     fillColor: isDarkMode
@@ -396,8 +410,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                                         focusNode: focusNodes[index],
                                         onChanged: (value) =>
                                             handleInput(value, index),
-                                        onEditingComplete: () =>
-                                            handleTabNavigation(index),
                                         decoration: InputDecoration(
                                           filled: true,
                                           fillColor: isDarkMode
@@ -511,7 +523,15 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   }
 
   void handleTabNavigation(int index) {
-    int nextIndex = index + 1;
+    int nextIndex;
+    if (index % 6 == 5) {
+      // Move to the next column
+      nextIndex = index + 7 - 6;
+    } else {
+      // Move down the current column
+      nextIndex = index + 1;
+    }
+
     if (nextIndex < 12) {
       FocusScope.of(context).requestFocus(focusNodes[nextIndex]);
     } else {
