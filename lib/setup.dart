@@ -5,7 +5,8 @@ import 'package:horizon/data/services/address_service_impl.dart';
 import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
-import 'package:horizon/data/services/encryption_service_impl.dart';
+import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
+
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
@@ -102,7 +103,8 @@ Future<void> setup() async {
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(
       TransactionServiceImpl(config: config));
-  injector.registerSingleton<EncryptionService>(EncryptionServiceImpl());
+  injector
+      .registerSingleton<EncryptionService>(EncryptionServiceWebWorkerImpl());
   injector
       .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
   injector

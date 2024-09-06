@@ -1,8 +1,10 @@
+import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
 // import "package:horizon/data/models/unpacked.dart" as unpacked_model;
 
 // TODO: move to sh
@@ -243,10 +245,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<(List<TransactionInfoVerbose>, int? nextCursor, int? resultCount)>
-      getByAccountVerbose({
+  Future<
+      (
+        List<TransactionInfoVerbose>,
+        cursor_entity.Cursor? nextCursor,
+        int? resultCount
+      )> getByAccountVerbose({
     required String accountUuid,
-    int? cursor,
+    cursor_entity.Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
   }) async {
@@ -256,7 +262,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
         addresses.map((address) => address.address).join(',');
 
     final response = await api_.getTransactionsByAddressesVerbose(
-        addressesParam, cursor, limit, unconfirmed);
+        addressesParam,
+        cursor_model.CursorMapper.toData(cursor),
+        limit,
+        unconfirmed);
 
     if (response.error != null) {
       throw Exception("Failed to get transactions by account: $accountUuid");
@@ -295,7 +304,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
           ),
       };
     }).toList();
-    int? nextCursor = response.nextCursor;
+    cursor_entity.Cursor? nextCursor =
+        cursor_model.CursorMapper.toDomain(response.nextCursor);
     return (transactions, nextCursor, response.resultCount);
   }
 }
