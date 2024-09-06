@@ -9,12 +9,17 @@ class ActivityFeedItem extends Equatable {
   final Event? event;
   final TransactionInfo? info;
   final BitcoinTx? bitcoinTx;
+  int? confirmations;
 
-  const ActivityFeedItem(
-      {required this.hash, this.event, this.info, this.bitcoinTx});
+  ActivityFeedItem(
+      {required this.hash,
+      this.event,
+      this.info,
+      this.bitcoinTx,
+      this.confirmations});
 
   @override
-  List<Object?> get props => [hash, event, info, bitcoinTx];
+  List<Object?> get props => [hash, event, info, bitcoinTx, confirmations];
 
   int? getBlockIndex() => switch (this) {
         ActivityFeedItem(event: Event(blockIndex: final index?)) => index,
