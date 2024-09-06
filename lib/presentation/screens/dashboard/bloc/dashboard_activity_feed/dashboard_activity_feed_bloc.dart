@@ -418,11 +418,13 @@ class DashboardActivityFeedBloc
 
       // don't add btc mempool if it's in the counterparty mempoool
       for (final tx in btcMempoolList) {
-        mempoolActivityFeedItems.add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
+        mempoolActivityFeedItems
+            .add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
       }
 
       for (final tx in counterpartyMempool) {
-        mempoolActivityFeedItems.add(ActivityFeedItem(hash: tx.txHash, event: tx));
+        mempoolActivityFeedItems
+            .add(ActivityFeedItem(hash: tx.txHash, event: tx));
       }
 
       // add btc confirmed, preferring counterparty events

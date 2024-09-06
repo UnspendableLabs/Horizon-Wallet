@@ -374,12 +374,10 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   String _getConfirmations(int? confirmations, int? blockHeight) {
-
     return switch (confirmations) {
       null => "#${numberWithCommas.format(blockHeight)}",
       _ => "${confirmations > 6 ? 6 : confirmations} confirmations",
     };
-
   }
 }
 

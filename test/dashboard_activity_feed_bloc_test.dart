@@ -625,10 +625,7 @@ void main() {
                   ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
                   ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
                   ActivityFeedItem(hash: "0003", info: mockedLocal[2]),
-                  ActivityFeedItem(
-                      hash: "0004",
-                      event: mockedRemote[0],
-                      confirmations: null),
+                  ActivityFeedItem(hash: "0004", event: mockedRemote[0]),
                   ActivityFeedItem(
                       hash: "0005", event: mockedRemote[1], confirmations: 100),
                   ActivityFeedItem(
@@ -708,10 +705,7 @@ void main() {
                 transactions: [
                   ActivityFeedItem(
                       hash: "0001", info: mockedLocal[0], confirmations: null),
-                  ActivityFeedItem(
-                      hash: "0002",
-                      event: mockedRemote[0],
-                      confirmations: null),
+                  ActivityFeedItem(hash: "0002", event: mockedRemote[0]),
                   ActivityFeedItem(
                       hash: "0003", event: mockedRemote[1], confirmations: 100),
                 ],
@@ -975,10 +969,8 @@ void main() {
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
-                ActivityFeedItem(
-                    hash: "0001", info: mockedLocal[0], confirmations: null),
-                ActivityFeedItem(
-                    hash: "0002", event: mockedRemote[2], confirmations: 100),
+                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(hash: "0002", event: mockedRemote[2]),
                 ActivityFeedItem(
                     hash: "0003", event: mockedRemote[3], confirmations: 100),
               ],
@@ -1006,7 +998,7 @@ void main() {
                           .having(
                               (item) => item.event, 'event', isA<MockEvent>())
                           .having((item) => item.confirmations, 'confirmations',
-                              100),
+                              null),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0003')
                           .having(
@@ -1046,7 +1038,7 @@ void main() {
               EventStateConfirmed(
                   blockHeight: 1,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              null
+              1
             ),
           ]);
 
@@ -1070,7 +1062,8 @@ void main() {
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
                 ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                ActivityFeedItem(hash: "0002", event: mockedRemote[1]),
+                ActivityFeedItem(
+                    hash: "0002", event: mockedRemote[1], confirmations: 100),
               ],
               newTransactionCount: 0,
               nextCursor: 4,
@@ -1088,11 +1081,15 @@ void main() {
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0001')
                           .having(
-                              (item) => item.event, 'event', isA<MockEvent>()),
+                              (item) => item.event, 'event', isA<MockEvent>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              null),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0002')
                           .having(
-                              (item) => item.event, 'event', isA<MockEvent>()),
+                              (item) => item.event, 'event', isA<MockEvent>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              100),
                     ],
                   )
                   .having((state) => state.newTransactionCount,
@@ -1128,23 +1125,23 @@ void main() {
             (
               "0001",
               EventStateConfirmed(
-                  blockHeight: 1,
+                  blockHeight: 4,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              null
+              4
             ),
             (
               "0002",
               EventStateConfirmed(
-                  blockHeight: 1,
+                  blockHeight: 5,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              null
+              5
             ),
             (
               "0003",
               EventStateConfirmed(
-                  blockHeight: 1,
+                  blockHeight: 6,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              null
+              6
             ),
           ]);
 
@@ -1170,7 +1167,7 @@ void main() {
                 ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
                 ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
                 ActivityFeedItem(
-                    hash: "0003", event: mockedRemote[2], confirmations: 100),
+                    hash: "0003", event: mockedRemote[2], confirmations: 95),
               ],
               newTransactionCount: 0,
               nextCursor: 4,
@@ -1192,7 +1189,7 @@ void main() {
                           .having((item) => item.event!.state, 'state',
                               isA<EventStateConfirmed>())
                           .having((item) => item.confirmations, 'confirmations',
-                              null),
+                              97),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0002')
                           .having(
@@ -1200,7 +1197,7 @@ void main() {
                           .having((item) => item.event!.state, 'state',
                               isA<EventStateConfirmed>())
                           .having((item) => item.confirmations, 'confirmations',
-                              null),
+                              96),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0003')
                           .having(
@@ -1208,7 +1205,7 @@ void main() {
                           .having((item) => item.event!.state, 'state',
                               isA<EventStateConfirmed>())
                           .having((item) => item.confirmations, 'confirmations',
-                              100),
+                              95),
                     ],
                   )
                   .having((state) => state.newTransactionCount,
@@ -1283,9 +1280,7 @@ void main() {
                 DashboardActivityFeedStateCompleteOk(
                   transactions: [
                     ActivityFeedItem(
-                        hash: "btx_1",
-                        bitcoinTx: mockedBtcMempool[0],
-                        confirmations: null),
+                        hash: "btx_1", bitcoinTx: mockedBtcMempool[0]),
                   ],
                   newTransactionCount: 0,
                   nextCursor: null,
@@ -1315,7 +1310,7 @@ void main() {
             // btc mocks
             final mockBitcoinRepository = MockBitcoinRepository();
             mockedBtcConfirmed = MockBitcoinTxFactory.createMultiple([
-              ("btx_1", true, 0, "", 0),
+              ("btx_1", true, 0, "", 1),
             ]);
             when(() => mockBitcoinRepository.getMempoolTransactions(any()))
                 .thenAnswer((_) async => const Right([]));
