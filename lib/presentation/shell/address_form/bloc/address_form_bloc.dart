@@ -127,6 +127,11 @@ class AddressFormBloc
             emit(RemoteDataState.success(newAddresses));
             break;
         }
+
+        // // this is a bit of a hack to reset the form after success
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        emit(const RemoteDataState.initial());
       } catch (e) {
         emit(RemoteDataState.error(e.toString()));
       }

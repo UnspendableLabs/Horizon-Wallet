@@ -97,57 +97,75 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                     isSmallScreenHeight: isSmallScreen,
                     scaffoldBackgroundColor: scaffoldBackgroundColor,
                   ),
-                  body: Column(
+                  body: Stack(
                     children: [
-                      Flexible(
-                        child: state.importState == ImportStateNotAsked
-                            ? SeedInputFields(
-                                mnemonicErrorState: state.mnemonicError,
-                              )
-                            : PasswordPrompt(
-                                passwordController: _passwordController,
-                                passwordConfirmationController:
-                                    _passwordConfirmationController,
-                                state: state,
-                                onPasswordChanged: (value) {
-                                  context.read<OnboardingImportBloc>().add(
-                                      PasswordChanged(
-                                          password: value,
-                                          passwordConfirmation:
-                                              _passwordConfirmationController
-                                                  .text));
-                                },
-                                onPasswordConfirmationChanged: (value) {
-                                  context.read<OnboardingImportBloc>().add(
-                                      PasswordConfirmationChanged(
-                                          passwordConfirmation: value));
-                                },
-                                onPressedBack: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboarding();
-                                },
-                                onPressedContinue: () {
-                                  if (_passwordController.text == '' ||
-                                      _passwordConfirmationController.text ==
-                                          '') {
-                                    context.read<OnboardingImportBloc>().add(
-                                        PasswordError(
-                                            error: 'Password cannot be empty'));
-                                  } else if (_passwordController.text !=
-                                      _passwordConfirmationController.text) {
-                                    context.read<OnboardingImportBloc>().add(
-                                        PasswordError(
-                                            error: 'Passwords do not match'));
-                                  } else {
-                                    context
-                                        .read<OnboardingImportBloc>()
-                                        .add(ImportWallet());
-                                  }
-                                },
-                                backButtonText: 'CANCEL',
-                                continueButtonText: 'LOGIN',
-                              ),
+                      Column(
+                        children: [
+                          Flexible(
+                            child: state.importState == ImportStateNotAsked
+                                ? SeedInputFields(
+                                    mnemonicErrorState: state.mnemonicError,
+                                  )
+                                : PasswordPrompt(
+                                    passwordController: _passwordController,
+                                    passwordConfirmationController:
+                                        _passwordConfirmationController,
+                                    state: state,
+                                    onPasswordChanged: (value) {
+                                      context.read<OnboardingImportBloc>().add(
+                                          PasswordChanged(
+                                              password: value,
+                                              passwordConfirmation:
+                                                  _passwordConfirmationController
+                                                      .text));
+                                    },
+                                    onPasswordConfirmationChanged: (value) {
+                                      context.read<OnboardingImportBloc>().add(
+                                          PasswordConfirmationChanged(
+                                              passwordConfirmation: value));
+                                    },
+                                    onPressedBack: () {
+                                      final shell =
+                                          context.read<ShellStateCubit>();
+                                      shell.onOnboarding();
+                                    },
+                                    onPressedContinue: () {
+                                      if (_passwordController.text == '' ||
+                                          _passwordConfirmationController
+                                                  .text ==
+                                              '') {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(
+                                                error:
+                                                    'Password cannot be empty'));
+                                      } else if (_passwordController.text !=
+                                          _passwordConfirmationController
+                                              .text) {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(
+                                                error:
+                                                    'Passwords do not match'));
+                                      } else {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(ImportWallet());
+                                      }
+                                    },
+                                    backButtonText: 'CANCEL',
+                                    continueButtonText: 'LOGIN',
+                                  ),
+                          ),
+                        ],
                       ),
+                      if (state.importState is ImportStateLoading)
+                        Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
                     ],
                   ),
                 ),

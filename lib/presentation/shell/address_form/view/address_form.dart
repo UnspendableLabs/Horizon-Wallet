@@ -122,10 +122,10 @@ class _AddAccountFormState extends State<AddAddressForm> {
                     ),
                   ),
                   Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 350),
-                        child: SizedBox(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 350),
+                      child: SizedBox(
                           height: 45,
                           width: double.infinity,
                           child: FilledButton(
@@ -149,15 +149,19 @@ class _AddAccountFormState extends State<AddAddressForm> {
                                 }
                               }
                             },
-                            child: state == const RemoteDataState.loading()
-                                ? const SizedBox(
+                            child: state.maybeWhen(
+                                loading: () => const SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator())
-                                : const Text('SUBMIT'),
-                          ),
-                        ),
-                      ))
+                                    child: CircularProgressIndicator()),
+                                success: (_) => const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator()),
+                                orElse: () => const Text('SUBMIT')),
+                          )),
+                    ),
+                  ),
                 ],
               ),
             ),
