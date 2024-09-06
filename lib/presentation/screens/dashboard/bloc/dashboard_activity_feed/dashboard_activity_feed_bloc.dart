@@ -408,10 +408,7 @@ class DashboardActivityFeedBloc
               !btcConfirmedMap.keys.contains(tx.hash) &&
               !btcMempoolMap.keys.contains(tx.hash))
           .map((tx) {
-        final activityFeedItem = ActivityFeedItem(hash: tx.hash, info: tx);
-        // activityFeedItem.confirmations =
-        //     _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
-        return activityFeedItem;
+        return ActivityFeedItem(hash: tx.hash, info: tx);
       }).toList();
 
       // mempool transactions are the set of txs in ( preferring counterparty events over btc):
@@ -421,17 +418,11 @@ class DashboardActivityFeedBloc
 
       // don't add btc mempool if it's in the counterparty mempoool
       for (final tx in btcMempoolList) {
-        final activityFeedItem = ActivityFeedItem(hash: tx.txid, bitcoinTx: tx);
-        // activityFeedItem.confirmations =
-        //     _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
-        mempoolActivityFeedItems.add(activityFeedItem);
+        mempoolActivityFeedItems.add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
       }
 
       for (final tx in counterpartyMempool) {
-        final activityFeedItem = ActivityFeedItem(hash: tx.txHash, event: tx);
-        // activityFeedItem.confirmations =
-        //     _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
-        mempoolActivityFeedItems.add(activityFeedItem);
+        mempoolActivityFeedItems.add(ActivityFeedItem(hash: tx.txHash, event: tx));
       }
 
       // add btc confirmed, preferring counterparty events
@@ -484,7 +475,6 @@ class DashboardActivityFeedBloc
               : null,
           transactions: transactions));
     } catch (e) {
-      rethrow;
       emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
     }
   }
