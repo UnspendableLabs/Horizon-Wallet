@@ -99,7 +99,6 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                             child: BlocBuilder<OnboardingCreateBloc,
                                     OnboardingCreateState>(
                                 builder: (context, state) {
-
                               print("state.createState: ${state.createState}");
 
                               return Scaffold(
@@ -109,8 +108,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                     ConfirmSeedInputFields(
                                       mnemonicErrorState: state.mnemonicError,
                                     ),
-                                  _ =>
-                                    PasswordPrompt(
+                                  _ => PasswordPrompt(
                                       passwordController: _passwordController,
                                       passwordConfirmationController:
                                           _passwordConfirmationController,
