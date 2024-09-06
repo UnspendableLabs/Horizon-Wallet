@@ -4,7 +4,6 @@ import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 import 'package:horizon/presentation/common/footer.dart';
-
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -394,7 +393,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    'IMPORT SEED',
+                                    'IMPORT SEED PHRASE',
                                     style: TextStyle(
                                         color: isDarkMode
                                             ? mainTextGrey
