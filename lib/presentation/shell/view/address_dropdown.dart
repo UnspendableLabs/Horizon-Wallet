@@ -25,6 +25,7 @@ class AddressDropdownState extends State<AddressDropdown> {
   @override
   void initState() {
     super.initState();
+
     _selectedAddress = widget.currentAddress;
   }
 
