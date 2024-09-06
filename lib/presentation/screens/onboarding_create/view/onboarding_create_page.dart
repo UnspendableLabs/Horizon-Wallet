@@ -91,69 +91,92 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                     isSmallScreenHeight: isSmallScreen,
                     scaffoldBackgroundColor: scaffoldBackgroundColor,
                   ),
-                  body: Column(
+                  body: Stack(
                     children: [
-                      Flexible(
-                        child: BlocBuilder<OnboardingCreateBloc,
-                            OnboardingCreateState>(builder: (context, state) {
-                          return Scaffold(
-                            body: switch (state.createState) {
-                              CreateStateNotAsked => const Mnemonic(),
-                              CreateStateMnemonicUnconfirmed =>
-                                ConfirmSeedInputFields(
-                                  mnemonicErrorState: state.mnemonicError,
-                                ),
-                              CreateStateMnemonicConfirmed => PasswordPrompt(
-                                  passwordController: _passwordController,
-                                  passwordConfirmationController:
-                                      _passwordConfirmationController,
-                                  state: state,
-                                  onPasswordChanged: (value) {
-                                    context.read<OnboardingCreateBloc>().add(
-                                        PasswordChanged(
-                                            password: value,
-                                            passwordConfirmation:
-                                                _passwordConfirmationController
-                                                    .text));
-                                  },
-                                  onPasswordConfirmationChanged: (value) {
-                                    context.read<OnboardingCreateBloc>().add(
-                                        PasswordConfirmationChanged(
-                                            passwordConfirmation: value));
-                                  },
-                                  onPressedBack: () {
-                                    final shell =
-                                        context.read<ShellStateCubit>();
-                                    shell.onOnboarding();
-                                  },
-                                  onPressedContinue: () {
-                                    if (_passwordController.text == '' ||
-                                        _passwordConfirmationController.text ==
-                                            '') {
-                                      context.read<OnboardingCreateBloc>().add(
-                                          PasswordError(
-                                              error:
-                                                  'Password cannot be empty'));
-                                    } else if (_passwordController.text !=
-                                        _passwordConfirmationController.text) {
-                                      context.read<OnboardingCreateBloc>().add(
-                                          PasswordError(
-                                              error: 'Passwords do not match'));
-                                    } else {
-                                      context
-                                          .read<OnboardingCreateBloc>()
-                                          .add(CreateWallet());
-                                    }
-                                  },
-                                  backButtonText: 'CANCEL',
-                                  continueButtonText: 'CONTINUE',
-                                ),
-                              Object() => const Text(''),
-                              null => throw UnimplementedError(),
-                            },
-                          );
-                        }),
+                      Column(
+                        children: [
+                          Flexible(
+                            child: BlocBuilder<OnboardingCreateBloc,
+                                    OnboardingCreateState>(
+                                builder: (context, state) {
+
+                              print("state.createState: ${state.createState}");
+
+                              return Scaffold(
+                                body: switch (state.createState) {
+                                  CreateStateNotAsked => const Mnemonic(),
+                                  CreateStateMnemonicUnconfirmed =>
+                                    ConfirmSeedInputFields(
+                                      mnemonicErrorState: state.mnemonicError,
+                                    ),
+                                  _ =>
+                                    PasswordPrompt(
+                                      passwordController: _passwordController,
+                                      passwordConfirmationController:
+                                          _passwordConfirmationController,
+                                      state: state,
+                                      onPasswordChanged: (value) {
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(PasswordChanged(
+                                                password: value,
+                                                passwordConfirmation:
+                                                    _passwordConfirmationController
+                                                        .text));
+                                      },
+                                      onPasswordConfirmationChanged: (value) {
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(PasswordConfirmationChanged(
+                                                passwordConfirmation: value));
+                                      },
+                                      onPressedBack: () {
+                                        final shell =
+                                            context.read<ShellStateCubit>();
+                                        shell.onOnboarding();
+                                      },
+                                      onPressedContinue: () {
+                                        if (_passwordController.text == '' ||
+                                            _passwordConfirmationController
+                                                    .text ==
+                                                '') {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(
+                                                  error:
+                                                      'Password cannot be empty'));
+                                        } else if (_passwordController.text !=
+                                            _passwordConfirmationController
+                                                .text) {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(
+                                                  error:
+                                                      'Passwords do not match'));
+                                        } else {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(CreateWallet());
+                                        }
+                                      },
+                                      backButtonText: 'CANCEL',
+                                      continueButtonText: 'CONTINUE',
+                                    ),
+                                  Object() => const Text(''),
+                                  null => throw UnimplementedError(),
+                                },
+                              );
+                            }),
+                          ),
+                        ],
                       ),
+                      if (state.createState is CreateStateLoading)
+                        Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
                     ],
                   ),
                 ),
