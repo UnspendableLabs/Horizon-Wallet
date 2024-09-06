@@ -928,7 +928,6 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          final mockBitcoinRepository = MockBitcoinRepository();
 
           mockedLocal = MockTransactionInfoFactory.createMultiple([
             (
@@ -953,9 +952,9 @@ void main() {
 
           mockedRemote = MockEventFactory.createMultiple([
             ("0004", EventStateMempool(), null),
-            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1), null),
+            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
             ("0002", EventStateMempool(), null),
-            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), null),
+            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
           ]);
 
           // `LoadMore`
@@ -966,24 +965,22 @@ void main() {
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (mockedRemote, null, null));
-          when(() => mockBitcoinRepository.getBlockHeight())
-              .thenAnswer((_) async => const Right(100));
           return DashboardActivityFeedBloc(
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
-              bitcoinRepository: mockBitcoinRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
                 ActivityFeedItem(
-                    hash: "0001", info: mockedLocal[0], confirmations: 101),
+                    hash: "0001", info: mockedLocal[0], confirmations: null),
                 ActivityFeedItem(
-                    hash: "0002", event: mockedRemote[2], confirmations: 101),
+                    hash: "0002", event: mockedRemote[2], confirmations: 100),
                 ActivityFeedItem(
-                    hash: "0003", event: mockedRemote[3], confirmations: 101),
+                    hash: "0003", event: mockedRemote[3], confirmations: 100),
               ],
               newTransactionCount: 0,
               nextCursor: 4, // doesn't matter since we are prepending
@@ -1001,15 +998,21 @@ void main() {
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0001')
                           .having((item) => item.info, 'info',
-                              isA<MockTransactionInfo>()),
+                              isA<MockTransactionInfo>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              null),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0002')
                           .having(
-                              (item) => item.event, 'event', isA<MockEvent>()),
+                              (item) => item.event, 'event', isA<MockEvent>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              100),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0003')
                           .having(
-                              (item) => item.event, 'event', isA<MockEvent>()),
+                              (item) => item.event, 'event', isA<MockEvent>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              100),
                     ],
                   )
                   .having((state) => state.newTransactionCount,
@@ -1036,7 +1039,6 @@ void main() {
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
-          final mockBitcoinRepository = MockBitcoinRepository();
           mockedRemote = MockEventFactory.createMultiple([
             ("0001", EventStateMempool(), null),
             (
@@ -1056,15 +1058,13 @@ void main() {
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (mockedRemote, null, null));
-          when(() => mockBitcoinRepository.getBlockHeight())
-              .thenAnswer((_) async => const Right(100));
 
           return DashboardActivityFeedBloc(
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
-              bitcoinRepository: mockBitcoinRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
@@ -1107,7 +1107,6 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          final mockBitcoinRepository = MockBitcoinRepository();
           mockedLocal = MockTransactionInfoFactory.createMultiple([
             (
               "0001",
@@ -1157,21 +1156,21 @@ void main() {
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (mockedRemote, null, null));
-          when(() => mockBitcoinRepository.getBlockHeight())
-              .thenAnswer((_) async => const Right(100));
+
           return DashboardActivityFeedBloc(
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
-              bitcoinRepository: mockBitcoinRepository,
+              bitcoinRepository: defaultBitcoinRepository,
               eventsRepository: mockEventsRepository);
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
                 ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
                 ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
-                ActivityFeedItem(hash: "0003", event: mockedRemote[2]),
+                ActivityFeedItem(
+                    hash: "0003", event: mockedRemote[2], confirmations: 100),
               ],
               newTransactionCount: 0,
               nextCursor: 4,
@@ -1191,19 +1190,25 @@ void main() {
                           .having(
                               (item) => item.event, 'event', isA<MockEvent>())
                           .having((item) => item.event!.state, 'state',
-                              isA<EventStateConfirmed>()),
+                              isA<EventStateConfirmed>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              null),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0002')
                           .having(
                               (item) => item.event, 'event', isA<MockEvent>())
                           .having((item) => item.event!.state, 'state',
-                              isA<EventStateConfirmed>()),
+                              isA<EventStateConfirmed>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              null),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0003')
                           .having(
                               (item) => item.event, 'event', isA<MockEvent>())
                           .having((item) => item.event!.state, 'state',
-                              isA<EventStateConfirmed>()),
+                              isA<EventStateConfirmed>())
+                          .having((item) => item.confirmations, 'confirmations',
+                              100),
                     ],
                   )
                   .having((state) => state.newTransactionCount,
@@ -1212,7 +1217,7 @@ void main() {
                   .having((state) => state.mostRecentCounterpartyEventHash,
                       'mostRecentCounterpartyEventHash', '0001'),
             ]);
-  }, skip: true);
+  });
 
   group("w bitcoin_tx", () {
     group("Load", () {

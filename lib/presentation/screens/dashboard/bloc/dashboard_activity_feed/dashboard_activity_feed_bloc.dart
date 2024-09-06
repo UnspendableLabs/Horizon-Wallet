@@ -151,8 +151,10 @@ class DashboardActivityFeedBloc
         if (!seenHashes.contains(event.txHash)) {
           final activityFeedItem =
               ActivityFeedItem(hash: event.txHash, event: event);
-          activityFeedItem.confirmations =
-              _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+          if (activityFeedItem.getBlockIndex() != null) {
+            activityFeedItem.confirmations = _getConfirmations(
+                blockHeight, activityFeedItem.getBlockIndex()!);
+          }
           deduplicatedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(event.txHash);
         }
@@ -162,8 +164,10 @@ class DashboardActivityFeedBloc
         if (!seenHashes.contains(btcTx.txid)) {
           final activityFeedItem =
               ActivityFeedItem(hash: btcTx.txid, bitcoinTx: btcTx);
-          activityFeedItem.confirmations =
-              _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
+          if (activityFeedItem.getBlockIndex() != null) {
+            activityFeedItem.confirmations = _getConfirmations(
+                blockHeight, activityFeedItem.getBlockIndex()!);
+          }
           deduplicatedActivityFeedItems.add(activityFeedItem);
           seenHashes.add(btcTx.txid);
         }
@@ -329,7 +333,6 @@ class DashboardActivityFeedBloc
         ),
       _ => DashboardActivityFeedStateLoading(),
     };
-    print('nextState: $nextState');
     emit(nextState);
 
     try {
@@ -337,8 +340,6 @@ class DashboardActivityFeedBloc
       final addresses_ = [currentAddress];
 
       List<String> addresses = addresses_.map((a) => a.address).toList();
-
-      print('addresses: $addresses');
 
       // query local transactions above mose recent confirmed event
       final localTransactions =
@@ -399,7 +400,6 @@ class DashboardActivityFeedBloc
 
       final blockHeightE = await bitcoinRepository.getBlockHeight();
       final blockHeight = blockHeightE.getOrElse((left) => throw left);
-      print('blockHeight!!!!!!!!!!!!: $blockHeight');
 
       List<ActivityFeedItem> localActivityFeedItems = localTransactions
           .where((tx) =>
@@ -443,8 +443,6 @@ class DashboardActivityFeedBloc
         if (!seenHashes.contains(event.txHash)) {
           final activityFeedItem =
               ActivityFeedItem(hash: event.txHash, event: event);
-
-          print("activityFeedItem $activityFeedItem");
 
           activityFeedItem.confirmations =
               _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
