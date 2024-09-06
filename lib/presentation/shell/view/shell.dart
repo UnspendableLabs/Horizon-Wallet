@@ -256,7 +256,7 @@ class Shell extends StatelessWidget {
                                   )),
                             if (!isSmallScreen) const SizedBox(width: 12),
                             if (!isSmallScreen)
-                              const Text('ALPHA',
+                              const Text('BETA',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
