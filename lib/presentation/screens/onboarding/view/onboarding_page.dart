@@ -317,7 +317,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                             right:
                                 -50, // Adjust this value to position ALPHA correctly
                             child: Text(
-                              'ALPHA',
+                              'BETA',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
