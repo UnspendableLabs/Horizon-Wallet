@@ -36,7 +36,8 @@ class ComposeIssuancePage extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeIssuanceBloc()..add(FetchFormData(currentAddress: state.currentAddress)),
+        create: (context) => ComposeIssuanceBloc()
+          ..add(FetchFormData(currentAddress: state.currentAddress)),
         child: _ComposeIssuancePage_(
           address: state.currentAddress,
           isDarkMode: isDarkMode,
@@ -52,7 +53,10 @@ class _ComposeIssuancePage_ extends StatefulWidget {
   final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  const _ComposeIssuancePage_({required this.address, required this.isDarkMode, required this.dashboardActivityFeedBloc});
+  const _ComposeIssuancePage_(
+      {required this.address,
+      required this.isDarkMode,
+      required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
@@ -82,11 +86,13 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(listener: (context, state) {
+    return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
+        listener: (context, state) {
       state.submitState.maybeWhen(
         success: (txHash) {
           // 0) reload activity feed
-          widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
+          widget.dashboardActivityFeedBloc
+              .add(const Load()); // show "N more transactions".
 
           // 1) close modal
           Navigator.of(context).pop();
@@ -101,7 +107,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               ),
               content: Text(txHash),
               behavior: SnackBarBehavior.floating));
-          widget.dashboardActivityFeedBloc.add(const Load()); // show "N more transactions".
+          widget.dashboardActivityFeedBloc
+              .add(const Load()); // show "N more transactions".
 
           // Navigator.of(context).pop();
         },
@@ -110,17 +117,24 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
     }, builder: (context, state) {
       return state.submitState.maybeWhen(
         loading: () => const CircularProgressIndicator(),
-        error: (msg) => Padding(padding: const EdgeInsets.all(8.0), child: SelectableText('An error occurred: $msg')),
+        error: (msg) => Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SelectableText('An error occurred: $msg')),
         initial: () {
           return state.balancesState.when(
             initial: () => const SizedBox.shrink(),
             loading: () => const SizedBox.shrink(),
             error: (e) => SelectableText('An error occurred: $e'),
             success: (balances) {
-              bool hasXCPBalance = balances.isNotEmpty && balances.any((balance) => balance.asset == 'XCP');
-              Balance? xcpBalance = hasXCPBalance ? balances.firstWhere((element) => element.asset == 'XCP') : null;
-              bool isNamedAssetEnabled = xcpBalance != null && xcpBalance.quantity >= 50000000;
-              String quantity = xcpBalance != null ? xcpBalance.quantityNormalized : '0';
+              bool hasXCPBalance = balances.isNotEmpty &&
+                  balances.any((balance) => balance.asset == 'XCP');
+              Balance? xcpBalance = hasXCPBalance
+                  ? balances.firstWhere((element) => element.asset == 'XCP')
+                  : null;
+              bool isNamedAssetEnabled =
+                  xcpBalance != null && xcpBalance.quantity >= 50000000;
+              String quantity =
+                  xcpBalance != null ? xcpBalance.quantityNormalized : '0';
 
               return Form(
                 key: _formKey,
@@ -135,8 +149,11 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         controller: fromAddressController,
                         label: "Source",
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        fillColor: widget.isDarkMode ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme,
-                        textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+                        fillColor: widget.isDarkMode
+                            ? dialogBackgroundColorDarkTheme
+                            : dialogBackgroundColorLightTheme,
+                        textColor:
+                            widget.isDarkMode ? mainTextWhite : mainTextBlack,
                       ),
                       const SizedBox(height: 16.0),
                       Stack(
@@ -151,7 +168,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter a name for your asset';
                               }
-                              if (!isNamedAssetEnabled && !RegExp(r'^A\d+$').hasMatch(value)) {
+                              if (!isNamedAssetEnabled &&
+                                  !RegExp(r'^A\d+$').hasMatch(value)) {
                                 return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
                               }
                               return null;
@@ -162,10 +180,11 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             top: 0,
                             bottom: 0,
                             child: IconButton(
-                              icon: Icon(Icons.autorenew),
+                              icon: const Icon(Icons.autorenew),
                               onPressed: () {
                                 setState(() {
-                                  nameController.text = generateNumericAssetName();
+                                  nameController.text =
+                                      generateNumericAssetName();
                                 });
                               },
                             ),
@@ -178,10 +197,12 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         controller: quantityController,
                         label: 'Quantity',
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true, signed: false),
                         inputFormatters: [
                           isDivisible == true
-                              ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
+                              ? FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*$'))
                               : FilteringTextInputFormatter.digitsOnly,
                         ],
                         validator: (value) {
@@ -215,7 +236,9 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               Text('Divisible',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: widget.isDarkMode ? mainTextWhite : mainTextBlack)),
+                                      color: widget.isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack)),
                             ],
                           ),
                           const Row(
@@ -241,7 +264,9 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               Text('Lock',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: widget.isDarkMode ? mainTextWhite : mainTextBlack)),
+                                      color: widget.isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack)),
                             ],
                           ),
                           const Row(
@@ -268,7 +293,9 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               Text('Reset',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: widget.isDarkMode ? mainTextWhite : mainTextBlack)),
+                                      color: widget.isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack)),
                             ],
                           ),
                           const Row(
@@ -287,17 +314,22 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             // TODO: wrap this in function and write some tests
-                            Decimal input = Decimal.parse(quantityController.text);
+                            Decimal input =
+                                Decimal.parse(quantityController.text);
 
                             int quantity;
 
                             if (isDivisible) {
-                              quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+                              quantity = (input * Decimal.fromInt(100000000))
+                                  .toBigInt()
+                                  .toInt();
                             } else {
                               quantity = (input).toBigInt().toInt();
                             }
 
-                            context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
+                            context
+                                .read<ComposeIssuanceBloc>()
+                                .add(ComposeTransactionEvent(
                                   sourceAddress: widget.address.address,
                                   name: nameController.text,
                                   quantity: quantity,
@@ -333,13 +365,18 @@ class ComposeIssuanceConfirmationPage extends StatefulWidget {
   final Address address;
 
   const ComposeIssuanceConfirmationPage(
-      {super.key, required this.isDarkMode, required this.composeIssuanceState, required this.address});
+      {super.key,
+      required this.isDarkMode,
+      required this.composeIssuanceState,
+      required this.address});
 
   @override
-  State<ComposeIssuanceConfirmationPage> createState() => _ComposeIssuanceConfirmationPageState();
+  State<ComposeIssuanceConfirmationPage> createState() =>
+      _ComposeIssuanceConfirmationPageState();
 }
 
-class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirmationPage> {
+class _ComposeIssuanceConfirmationPageState
+    extends State<ComposeIssuanceConfirmationPage> {
   late int fee;
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -350,13 +387,16 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
 
     // initialize fee
     fee = (widget.composeIssuanceState.virtualSize *
-            widget.composeIssuanceState.feeEstimates[widget.composeIssuanceState.feeEstimates.keys.first]!)
+            widget.composeIssuanceState.feeEstimates[
+                widget.composeIssuanceState.feeEstimates.keys.first]!)
         .ceil();
   }
 
   @override
   Widget build(BuildContext context) {
-    final inputFillColor = widget.isDarkMode ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme;
+    final inputFillColor = widget.isDarkMode
+        ? dialogBackgroundColorDarkTheme
+        : dialogBackgroundColorLightTheme;
     final issueParams = widget.composeIssuanceState.composeIssuance.params;
     return Form(
       key: _formKey,
@@ -367,7 +407,10 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
           children: <Widget>[
             const Text(
               'Please review your transaction details.',
-              style: TextStyle(fontSize: 16.0, color: mainTextWhite, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 16.0,
+                  color: mainTextWhite,
+                  fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16.0),
@@ -385,7 +428,8 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
               isDarkMode: widget.isDarkMode,
               label: "Token name",
               floatingLabelBehavior: FloatingLabelBehavior.always,
-              controller: TextEditingController(text: widget.composeIssuanceState.composeIssuance.name),
+              controller: TextEditingController(
+                  text: widget.composeIssuanceState.composeIssuance.name),
               enabled: false,
               fillColor: inputFillColor,
               textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
@@ -395,7 +439,9 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
               isDarkMode: widget.isDarkMode,
               label: "Quantity",
               floatingLabelBehavior: FloatingLabelBehavior.always,
-              controller: TextEditingController(text: widget.composeIssuanceState.composeIssuance.params.quantityNormalized),
+              controller: TextEditingController(
+                  text: widget.composeIssuanceState.composeIssuance.params
+                      .quantityNormalized),
               enabled: false,
               fillColor: inputFillColor,
               textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
@@ -406,10 +452,13 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
                     isDarkMode: widget.isDarkMode,
                     label: "Description",
                     floatingLabelBehavior: FloatingLabelBehavior.always,
-                    controller: TextEditingController(text: widget.composeIssuanceState.composeIssuance.params.description),
+                    controller: TextEditingController(
+                        text: widget.composeIssuanceState.composeIssuance.params
+                            .description),
                     enabled: false,
                     fillColor: inputFillColor,
-                    textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
+                    textColor:
+                        widget.isDarkMode ? mainTextWhite : mainTextBlack,
                   )
                 : const SizedBox.shrink(),
             const SizedBox(height: 16.0),
@@ -417,7 +466,8 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
               isDarkMode: widget.isDarkMode,
               label: "Divisible",
               floatingLabelBehavior: FloatingLabelBehavior.always,
-              controller: TextEditingController(text: issueParams.divisible == true ? 'true' : 'false'),
+              controller: TextEditingController(
+                  text: issueParams.divisible == true ? 'true' : 'false'),
               enabled: false,
               fillColor: inputFillColor,
               textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
@@ -427,7 +477,8 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
               isDarkMode: widget.isDarkMode,
               label: "Lock",
               floatingLabelBehavior: FloatingLabelBehavior.always,
-              controller: TextEditingController(text: issueParams.lock == true ? 'true' : 'false'),
+              controller: TextEditingController(
+                  text: issueParams.lock == true ? 'true' : 'false'),
               enabled: false,
               fillColor: inputFillColor,
               textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
@@ -437,7 +488,8 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
               isDarkMode: widget.isDarkMode,
               label: "Reset",
               floatingLabelBehavior: FloatingLabelBehavior.always,
-              controller: TextEditingController(text: issueParams.reset == true ? 'true' : 'false'),
+              controller: TextEditingController(
+                  text: issueParams.reset == true ? 'true' : 'false'),
               enabled: false,
               fillColor: inputFillColor,
               textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
@@ -456,7 +508,9 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Divider(
-                    color: widget.isDarkMode ? greyDarkThemeUnderlineColor : greyLightThemeUnderlineColor,
+                    color: widget.isDarkMode
+                        ? greyDarkThemeUnderlineColor
+                        : greyLightThemeUnderlineColor,
                     thickness: 1.0,
                   ),
                 ),
@@ -482,7 +536,9 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
                     HorizonCancelButton(
                       isDarkMode: widget.isDarkMode,
                       onPressed: () {
-                        context.read<ComposeIssuanceBloc>().add(FetchFormData(currentAddress: widget.address));
+                        context
+                            .read<ComposeIssuanceBloc>()
+                            .add(FetchFormData(currentAddress: widget.address));
                       },
                       buttonText: 'BACK',
                     ),
@@ -492,7 +548,8 @@ class _ComposeIssuanceConfirmationPageState extends State<ComposeIssuanceConfirm
                         if (_formKey.currentState!.validate()) {
                           context.read<ComposeIssuanceBloc>().add(
                                 SignAndBroadcastTransactionEvent(
-                                  composeIssuance: widget.composeIssuanceState.composeIssuance,
+                                  composeIssuance: widget
+                                      .composeIssuanceState.composeIssuance,
                                   password: passwordController.text,
                                   fee: fee,
                                 ),
@@ -531,7 +588,9 @@ String generateNumericAssetName() {
 
   // Generate random bytes
   final randomBytes = List<int>.generate(32, (i) => random.nextInt(256));
-  final randomBigInt = BigInt.parse(randomBytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join(), radix: 16);
+  final randomBigInt = BigInt.parse(
+      randomBytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join(),
+      radix: 16);
 
   // Ensure the generated number is within the desired range
   final scaledRandomBigInt = (randomBigInt % range) + min;

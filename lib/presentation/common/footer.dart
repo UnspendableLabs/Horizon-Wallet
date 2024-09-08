@@ -23,7 +23,8 @@ class Footer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
-              onPressed: () => _launchURL('https://explorer.unspendablelabs.com/tos'),
+              onPressed: () =>
+                  _launchURL('https://explorer.unspendablelabs.com/tos'),
               child: const Text(
                 'Terms of Service',
                 style: TextStyle(
@@ -34,7 +35,8 @@ class Footer extends StatelessWidget {
             ),
             const SizedBox(width: 20), // Add some space between the links
             TextButton(
-              onPressed: () => _launchURL('https://explorer.unspendablelabs.com/privacy-policy'),
+              onPressed: () => _launchURL(
+                  'https://explorer.unspendablelabs.com/privacy-policy'),
               child: const Text(
                 'Privacy Policy',
                 style: TextStyle(
