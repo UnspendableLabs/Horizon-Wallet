@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
@@ -120,6 +121,12 @@ class _AddAccountFormState extends State<AddAccountForm> {
       final isDarkMode = Theme.of(context).brightness == Brightness.dark;
       return Column(
         children: [
+          Text(
+              currentHighestIndexAccount.importFormat == ImportFormat.horizon
+                  ? "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account."
+                  : "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. You can generate multiple addresses for each account. If you don't see an address that should be there, generate additional addresses in the \"Receive\" dialog.",
+              textAlign: TextAlign.center),
+          const SizedBox(height: 16.0),
           Form(
             key: _formKey,
             child: Column(

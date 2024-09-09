@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/main.dart';
@@ -53,7 +50,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Enter the seed phrase into the first field
-      final seedPhrase = mnemonic;
+      const seedPhrase = mnemonic;
       final firstWordField = find.byType(TextField).first;
       await tester.enterText(firstWordField, seedPhrase);
       await tester.pumpAndSettle();

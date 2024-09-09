@@ -159,7 +159,7 @@ class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
                                             0, // Adjust the position as needed
                                         child: Align(
                                           child: Center(
-                                            child: Text(
+                                            child: SelectableText(
                                               state.importState.message,
                                               style: const TextStyle(
                                                   color: redErrorText),
@@ -247,9 +247,9 @@ class _PKFieldState extends State<PKField> {
                   if (widget.pkErrorState != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
+                      child: SelectableText(
                         widget.pkErrorState!,
-                        style: const TextStyle(color: Colors.red),
+                        style: const TextStyle(color: redErrorText),
                       ),
                     ),
                 ],
