@@ -109,17 +109,30 @@ class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
                                     _passwordConfirmationController,
                                 state: state,
                                 onPasswordChanged: (value) {
-                                  context.read<OnboardingImportPKBloc>().add(
-                                      PasswordChanged(
-                                          password: value,
-                                          passwordConfirmation:
-                                              _passwordConfirmationController
-                                                  .text));
+                                  String? error = validatePassword(value,
+                                      _passwordConfirmationController.text);
+                                  if (error == null) {
+                                    context
+                                        .read<OnboardingImportPKBloc>()
+                                        .add(PasswordChanged(password: value));
+                                  } else {
+                                    context
+                                        .read<OnboardingImportPKBloc>()
+                                        .add(PasswordError(error: error));
+                                  }
                                 },
                                 onPasswordConfirmationChanged: (value) {
-                                  context.read<OnboardingImportPKBloc>().add(
-                                      PasswordConfirmationChanged(
-                                          passwordConfirmation: value));
+                                  String? error = validatePassword(
+                                      _passwordController.text, value);
+                                  if (error == null) {
+                                    context.read<OnboardingImportPKBloc>().add(
+                                        PasswordConfirmationChanged(
+                                            passwordConfirmation: value));
+                                  } else {
+                                    context
+                                        .read<OnboardingImportPKBloc>()
+                                        .add(PasswordError(error: error));
+                                  }
                                 },
                                 onPressedBack: () {
                                   final shell = context.read<ShellStateCubit>();

@@ -189,3 +189,14 @@ class _PasswordPromptState extends State<PasswordPrompt> {
     );
   }
 }
+
+String? validatePassword(String? password, String? confirmation) {
+  if (password == null || password.isEmpty) {
+    return "Password cannot be empty";
+  } else if (password.length < 8) {
+    return "Password must be at least 8 characters";
+  } else if (confirmation != '' && password != confirmation) {
+    return "Passwords do not match";
+  }
+  return null;
+}

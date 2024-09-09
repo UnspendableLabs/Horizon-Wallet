@@ -115,19 +115,34 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                           _passwordConfirmationController,
                                       state: state,
                                       onPasswordChanged: (value) {
-                                        context
-                                            .read<OnboardingCreateBloc>()
-                                            .add(PasswordChanged(
-                                                password: value,
-                                                passwordConfirmation:
-                                                    _passwordConfirmationController
-                                                        .text));
+                                        String? error = validatePassword(
+                                            value,
+                                            _passwordConfirmationController
+                                                .text);
+                                        if (error == null) {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordChanged(
+                                                  password: value));
+                                        } else {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(error: error));
+                                        }
                                       },
                                       onPasswordConfirmationChanged: (value) {
-                                        context
-                                            .read<OnboardingCreateBloc>()
-                                            .add(PasswordConfirmationChanged(
-                                                passwordConfirmation: value));
+                                        String? error = validatePassword(
+                                            _passwordController.text, value);
+                                        if (error == null) {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordConfirmationChanged(
+                                                  passwordConfirmation: value));
+                                        } else {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(error: error));
+                                        }
                                       },
                                       onPressedBack: () {
                                         final shell =
@@ -135,15 +150,20 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                         shell.onOnboarding();
                                       },
                                       onPressedContinue: () {
-                                        if (_passwordController.text == '' ||
-                                            _passwordConfirmationController
-                                                    .text ==
-                                                '') {
+                                        if (_passwordController.text == '') {
                                           context
                                               .read<OnboardingCreateBloc>()
                                               .add(PasswordError(
                                                   error:
                                                       'Password cannot be empty'));
+                                        } else if (_passwordController
+                                                .text.length <
+                                            8) {
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(
+                                                  error:
+                                                      'Password must be at least 8 characters'));
                                         } else if (_passwordController.text !=
                                             _passwordConfirmationController
                                                 .text) {
