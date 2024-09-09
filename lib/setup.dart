@@ -168,7 +168,7 @@ class TimeoutInterceptor extends Interceptor {
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath',
+            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
       );
       handler.next(formattedError);
@@ -186,7 +186,8 @@ class ConnectionErrorInterceptor extends Interceptor {
       final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
-        error: 'Connection Error — Request Failed $requestPath',
+        error:
+            'Connection Error — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
       handler.next(formattedError);
@@ -203,7 +204,8 @@ class BadResponseInterceptor extends Interceptor {
       final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
-        error: 'Bad Response — Request Failed $requestPath',
+        error:
+            'Bad Response — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badResponse,
       );
       handler.next(formattedError);
@@ -220,7 +222,8 @@ class BadCertificateInterceptor extends Interceptor {
       final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
-        error: 'Bad Certificate — Request Failed $requestPath',
+        error:
+            'Bad Certificate — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
       );
       handler.next(formattedError);
