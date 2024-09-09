@@ -5,10 +5,25 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 
+import 'package:horizon/domain/entities/address_info.dart';
+import 'package:horizon/data/models/address_info.dart';
+
 class BitcoinRepositoryImpl extends BitcoinRepository {
   final EsploraApi _esploraApi;
   BitcoinRepositoryImpl({required EsploraApi esploraApi})
       : _esploraApi = esploraApi;
+
+  @override
+  Future<Either<Failure, AddressInfo>> getAddressInfo(String address) async {
+    try {
+      final addressInfo = await _esploraApi.getAddressInfo(address);
+      return Right(addressInfo.toEntity());
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
 
   @override
   Future<Either<Failure, Map<String, double>>> getFeeEstimates() async {
@@ -269,6 +284,15 @@ class EsploraApi {
     try {
       final response = await _dio.get('/blocks/tip/height');
       return int.parse(response.data);
+    } on DioException catch (e) {
+      _handleDioException(e);
+    }
+  }
+
+  Future<AddressInfoModel> getAddressInfo(String address) async {
+    try {
+      final response = await _dio.get('/address/$address');
+      return AddressInfoModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       _handleDioException(e);
     }

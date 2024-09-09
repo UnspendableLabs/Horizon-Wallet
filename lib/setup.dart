@@ -95,7 +95,8 @@ Future<void> setup() async {
       UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
-      utxoRepository: GetIt.I.get<UtxoRepository>()));
+      utxoRepository: GetIt.I.get<UtxoRepository>(),
+      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
 
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
