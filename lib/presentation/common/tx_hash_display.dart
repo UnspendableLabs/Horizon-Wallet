@@ -73,24 +73,23 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onLongPress: _copyToClipboard,
-      onTap: _launchUrl,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: SelectableText.rich(
-          TextSpan(
-            style: DefaultTextStyle.of(context).style,
-            children: [
-              TextSpan(
-                text: shortenedHash,
-                style: const TextStyle(
-                  decoration: TextDecoration.underline,
+        onLongPress: _copyToClipboard,
+        onTap: _launchUrl,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: RichText(
+            text: TextSpan(
+              style: DefaultTextStyle.of(context).style,
+              children: [
+                TextSpan(
+                  text: shortenedHash,
+                  style: const TextStyle(
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }
