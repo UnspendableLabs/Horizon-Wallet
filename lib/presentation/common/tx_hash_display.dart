@@ -77,20 +77,17 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
       onTap: _launchUrl,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        child: Tooltip(
-          message: _getUrl(),
-          child: RichText(
-            text: TextSpan(
-              style: DefaultTextStyle.of(context).style,
-              children: [
-                TextSpan(
-                  text: shortenedHash,
-                  style: const TextStyle(
-                    decoration: TextDecoration.underline,
-                  ),
+        child: SelectableText.rich(
+          TextSpan(
+            style: DefaultTextStyle.of(context).style,
+            children: [
+              TextSpan(
+                text: shortenedHash,
+                style: const TextStyle(
+                  decoration: TextDecoration.underline,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
