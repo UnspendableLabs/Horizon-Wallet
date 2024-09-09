@@ -24,7 +24,8 @@ void main() {
       passwordConfirmationController.dispose();
     });
 
-    testWidgets('PasswordPrompt renders correctly', (WidgetTester tester) async {
+    testWidgets('PasswordPrompt renders correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: PasswordPrompt(
@@ -47,7 +48,8 @@ void main() {
       expect(find.text('Continue'), findsOneWidget);
     });
 
-    testWidgets('PasswordPrompt shows error message', (WidgetTester tester) async {
+    testWidgets('PasswordPrompt shows error message',
+        (WidgetTester tester) async {
       mockState.passwordError = 'Password error';
 
       await tester.pumpWidget(
@@ -69,7 +71,8 @@ void main() {
       expect(find.text('Password error'), findsOneWidget);
     });
 
-    testWidgets('PasswordPrompt calls onPasswordChanged', (WidgetTester tester) async {
+    testWidgets('PasswordPrompt calls onPasswordChanged',
+        (WidgetTester tester) async {
       bool onPasswordChangedCalled = false;
 
       await tester.pumpWidget(
@@ -92,7 +95,8 @@ void main() {
       expect(onPasswordChangedCalled, isTrue);
     });
 
-    testWidgets('PasswordPrompt calls onPasswordConfirmationChanged', (WidgetTester tester) async {
+    testWidgets('PasswordPrompt calls onPasswordConfirmationChanged',
+        (WidgetTester tester) async {
       bool onPasswordConfirmationChangedCalled = false;
 
       await tester.pumpWidget(
@@ -102,7 +106,8 @@ void main() {
             passwordConfirmationController: passwordConfirmationController,
             state: mockState,
             onPasswordChanged: (_) {},
-            onPasswordConfirmationChanged: (_) => onPasswordConfirmationChangedCalled = true,
+            onPasswordConfirmationChanged: (_) =>
+                onPasswordConfirmationChangedCalled = true,
             onPressedBack: () {},
             onPressedContinue: () {},
             backButtonText: 'Back',
@@ -126,11 +131,13 @@ void main() {
     });
 
     test('validatePassword returns error for short password', () {
-      expect(validatePassword('pass', 'pass'), equals('Password must be at least 8 characters'));
+      expect(validatePassword('pass', 'pass'),
+          equals('Password must be at least 8 characters'));
     });
 
     test('validatePassword returns error for mismatched passwords', () {
-      expect(validatePassword('password123', 'password456'), equals('Passwords do not match'));
+      expect(validatePassword('password123', 'password456'),
+          equals('Passwords do not match'));
     });
 
     test('validatePasswordOnSubmit returns null for valid password', () {
@@ -138,19 +145,23 @@ void main() {
     });
 
     test('validatePasswordOnSubmit returns error for empty password', () {
-      expect(validatePasswordOnSubmit('', ''), equals('Password cannot be empty'));
+      expect(
+          validatePasswordOnSubmit('', ''), equals('Password cannot be empty'));
     });
 
     test('validatePasswordOnSubmit returns error for short password', () {
-      expect(validatePasswordOnSubmit('pass', 'pass'), equals('Password must be at least 8 characters'));
+      expect(validatePasswordOnSubmit('pass', 'pass'),
+          equals('Password must be at least 8 characters'));
     });
 
     test('validatePasswordOnSubmit returns error for empty confirmation', () {
-      expect(validatePasswordOnSubmit('password123', ''), equals('Please confirm your password'));
+      expect(validatePasswordOnSubmit('password123', ''),
+          equals('Please confirm your password'));
     });
 
     test('validatePasswordOnSubmit returns error for mismatched passwords', () {
-      expect(validatePasswordOnSubmit('password123', 'password456'), equals('Passwords do not match'));
+      expect(validatePasswordOnSubmit('password123', 'password456'),
+          equals('Passwords do not match'));
     });
   });
 }

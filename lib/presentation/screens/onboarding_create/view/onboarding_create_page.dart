@@ -150,16 +150,19 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                         shell.onOnboarding();
                                       },
                                       onPressedContinue: () {
-                                        String? error = validatePasswordOnSubmit(
-                                            _passwordController.text,
-                                            _passwordConfirmationController
-                                                .text);
+                                        String? error =
+                                            validatePasswordOnSubmit(
+                                                _passwordController.text,
+                                                _passwordConfirmationController
+                                                    .text);
                                         if (error == null) {
                                           context
                                               .read<OnboardingCreateBloc>()
                                               .add(CreateWallet());
                                         } else {
-                                          context.read<OnboardingCreateBloc>().add(PasswordError(error: error));
+                                          context
+                                              .read<OnboardingCreateBloc>()
+                                              .add(PasswordError(error: error));
                                         }
                                       },
                                       backButtonText: 'CANCEL',

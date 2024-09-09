@@ -204,8 +204,8 @@ class ActivityFeedListItem extends StatelessWidget {
         SelectableText("Issue ${params.quantityNormalized} ${params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
-      _ =>
-        SelectableText('Invariant: title unsupported event type: ${event.runtimeType}'),
+      _ => SelectableText(
+          'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
   }
 
@@ -220,7 +220,8 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoIssuanceVerbose(
         unpackedData: var unpackedData,
       ) =>
-        SelectableText("Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+        SelectableText(
+            "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       // btc send
       TransactionInfoVerbose(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>

@@ -145,13 +145,18 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                           context.read<ShellStateCubit>();
                                       shell.onOnboarding();
                                     },
-                                onPressedContinue: () {
+                                    onPressedContinue: () {
                                       String? error = validatePasswordOnSubmit(
-                                          _passwordController.text, _passwordConfirmationController.text);
+                                          _passwordController.text,
+                                          _passwordConfirmationController.text);
                                       if (error == null) {
-                                        context.read<OnboardingImportBloc>().add(ImportWallet());
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(ImportWallet());
                                       } else {
-                                        context.read<OnboardingImportBloc>().add(PasswordError(error: error));
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(error: error));
                                       }
                                     },
                                     backButtonText: 'CANCEL',
