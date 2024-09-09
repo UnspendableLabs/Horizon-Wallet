@@ -243,7 +243,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                       children: [
                         const Icon(Icons.info, color: redErrorText),
                         const SizedBox(width: 4),
-                        Text(
+                        SelectableText(
                           widget.mnemonicErrorState!,
                           style: const TextStyle(color: redErrorText),
                         ),
@@ -293,7 +293,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         children: [
                           const Icon(Icons.info, color: redErrorText),
                           const SizedBox(width: 4),
-                          Text(
+                          SelectableText(
                             widget.mnemonicErrorState!,
                             style: const TextStyle(color: redErrorText),
                           ),

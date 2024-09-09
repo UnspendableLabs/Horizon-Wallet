@@ -113,6 +113,38 @@ class HorizonTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final decoration = InputDecoration(
+          filled: true,
+          fillColor: fillColor ??
+              (isDarkMode ? darkThemeInputColor : lightThemeInputColor),
+          labelText: label,
+          floatingLabelBehavior:
+              floatingLabelBehavior ?? FloatingLabelBehavior.never,
+          labelStyle: TextStyle(
+              fontWeight: FontWeight.normal,
+              color: isDarkMode
+                  ? darkThemeInputLabelColor
+                  : lightThemeInputLabelColor),
+          suffix: suffix,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide.none,
+      ),
+    );
+    
+    if (enabled == false) {
+      return InputDecorator(
+        decoration: decoration,
+        child: SelectableText(
+          controller?.text ?? '',
+          style: TextStyle(
+            fontSize: 16,
+            color: textColor,
+          ),
+        ),
+      );
+    }
+
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
@@ -126,24 +158,7 @@ class HorizonTextFormField extends StatelessWidget {
       keyboardType: keyboardType,
       textCapitalization: textCapitalization ?? TextCapitalization.none,
       inputFormatters: inputFormatters,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: fillColor ??
-            (isDarkMode ? darkThemeInputColor : lightThemeInputColor),
-        labelText: label,
-        floatingLabelBehavior:
-            floatingLabelBehavior ?? FloatingLabelBehavior.never,
-        labelStyle: TextStyle(
-            fontWeight: FontWeight.normal,
-            color: isDarkMode
-                ? darkThemeInputLabelColor
-                : lightThemeInputLabelColor),
-        suffix: suffix,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide.none,
-        ),
-      ),
+      decoration: decoration,
       style: TextStyle(
         fontSize: 16,
         color: textColor,

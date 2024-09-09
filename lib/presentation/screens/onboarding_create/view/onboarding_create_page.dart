@@ -391,7 +391,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                       children: [
                         const Icon(Icons.info, color: redErrorText),
                         const SizedBox(width: 4),
-                        Text(
+                        SelectableText(
                           widget.mnemonicErrorState!.message,
                           style: const TextStyle(color: redErrorText),
                         ),
@@ -438,7 +438,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                           children: [
                             const Icon(Icons.info, color: redErrorText),
                             const SizedBox(width: 4),
-                            Text(
+                            SelectableText(
                               widget.mnemonicErrorState!.message,
                               style: const TextStyle(color: redErrorText),
                             ),
