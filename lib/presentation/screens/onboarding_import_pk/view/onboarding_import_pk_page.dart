@@ -138,22 +138,13 @@ class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
                                   final shell = context.read<ShellStateCubit>();
                                   shell.onOnboarding();
                                 },
-                                onPressedContinue: () {
-                                  if (_passwordController.text == '' ||
-                                      _passwordConfirmationController.text ==
-                                          '') {
-                                    context.read<OnboardingImportPKBloc>().add(
-                                        PasswordError(
-                                            error: 'Password cannot be empty'));
-                                  } else if (_passwordController.text !=
-                                      _passwordConfirmationController.text) {
-                                    context.read<OnboardingImportPKBloc>().add(
-                                        PasswordError(
-                                            error: 'Passwords do not match'));
+                                                                      onPressedContinue: () {
+                                  String? error = validatePasswordOnSubmit(
+                                      _passwordController.text, _passwordConfirmationController.text);
+                                  if (error == null) {
+                                    context.read<OnboardingImportPKBloc>().add(ImportWallet());
                                   } else {
-                                    context
-                                        .read<OnboardingImportPKBloc>()
-                                        .add(ImportWallet());
+                                    context.read<OnboardingImportPKBloc>().add(PasswordError(error: error));
                                   }
                                 },
                                 backButtonText: 'CANCEL',

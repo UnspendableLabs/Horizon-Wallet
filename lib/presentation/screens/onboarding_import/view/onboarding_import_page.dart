@@ -145,28 +145,13 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                           context.read<ShellStateCubit>();
                                       shell.onOnboarding();
                                     },
-                                    onPressedContinue: () {
-                                      if (_passwordController.text == '' ||
-                                          _passwordConfirmationController
-                                                  .text ==
-                                              '') {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(
-                                                error:
-                                                    'Password cannot be empty'));
-                                      } else if (_passwordController.text !=
-                                          _passwordConfirmationController
-                                              .text) {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(
-                                                error:
-                                                    'Passwords do not match'));
+                                onPressedContinue: () {
+                                      String? error = validatePasswordOnSubmit(
+                                          _passwordController.text, _passwordConfirmationController.text);
+                                      if (error == null) {
+                                        context.read<OnboardingImportBloc>().add(ImportWallet());
                                       } else {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(ImportWallet());
+                                        context.read<OnboardingImportBloc>().add(PasswordError(error: error));
                                       }
                                     },
                                     backButtonText: 'CANCEL',

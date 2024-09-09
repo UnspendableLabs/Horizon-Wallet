@@ -150,32 +150,16 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                         shell.onOnboarding();
                                       },
                                       onPressedContinue: () {
-                                        if (_passwordController.text == '') {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordError(
-                                                  error:
-                                                      'Password cannot be empty'));
-                                        } else if (_passwordController
-                                                .text.length <
-                                            8) {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordError(
-                                                  error:
-                                                      'Password must be at least 8 characters'));
-                                        } else if (_passwordController.text !=
+                                        String? error = validatePasswordOnSubmit(
+                                            _passwordController.text,
                                             _passwordConfirmationController
-                                                .text) {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordError(
-                                                  error:
-                                                      'Passwords do not match'));
-                                        } else {
+                                                .text);
+                                        if (error == null) {
                                           context
                                               .read<OnboardingCreateBloc>()
                                               .add(CreateWallet());
+                                        } else {
+                                          context.read<OnboardingCreateBloc>().add(PasswordError(error: error));
                                         }
                                       },
                                       backButtonText: 'CANCEL',
