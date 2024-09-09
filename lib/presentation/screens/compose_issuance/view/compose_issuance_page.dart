@@ -18,6 +18,7 @@ import 'package:horizon/presentation/screens/shared/view/horizon_continue_button
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'dart:math';
 
 class ComposeIssuancePage extends StatelessWidget {
   final bool isDarkMode;
@@ -155,22 +156,40 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             widget.isDarkMode ? mainTextWhite : mainTextBlack,
                       ),
                       const SizedBox(height: 16.0),
-                      HorizonTextFormField(
-                        isDarkMode: widget.isDarkMode,
-                        controller: nameController,
-                        label: "Token name",
-                        floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        textCapitalization: TextCapitalization.characters,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a name for your asset';
-                          }
-                          if (!isNamedAssetEnabled &&
-                              !RegExp(r'^A\d+$').hasMatch(value)) {
-                            return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
-                          }
-                          return null;
-                        },
+                      Stack(
+                        children: [
+                          HorizonTextFormField(
+                            isDarkMode: widget.isDarkMode,
+                            controller: nameController,
+                            label: "Token name",
+                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                            textCapitalization: TextCapitalization.characters,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a name for your asset';
+                              }
+                              if (!isNamedAssetEnabled &&
+                                  !RegExp(r'^A\d+$').hasMatch(value)) {
+                                return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
+                              }
+                              return null;
+                            },
+                          ),
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: IconButton(
+                              icon: const Icon(Icons.autorenew),
+                              onPressed: () {
+                                setState(() {
+                                  nameController.text =
+                                      generateNumericAssetName();
+                                });
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16.0),
                       HorizonTextFormField(
@@ -559,4 +578,22 @@ class UpperCaseTextEditingController extends TextEditingController {
       composing: newValue.composing,
     );
   }
+}
+
+String generateNumericAssetName() {
+  final min = BigInt.from(26).pow(12) + BigInt.one;
+  final max = BigInt.from(256).pow(8);
+  final range = max - min;
+  final random = Random.secure();
+
+  // Generate random bytes
+  final randomBytes = List<int>.generate(32, (i) => random.nextInt(256));
+  final randomBigInt = BigInt.parse(
+      randomBytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join(),
+      radix: 16);
+
+  // Ensure the generated number is within the desired range
+  final scaledRandomBigInt = (randomBigInt % range) + min;
+
+  return 'A${scaledRandomBigInt.toString()}';
 }
