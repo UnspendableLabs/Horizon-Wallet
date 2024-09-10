@@ -224,8 +224,6 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                               context: context,
                               pageListBuilder: (modalSheetContext) {
                                 final textTheme = Theme.of(context).textTheme;
-                                print(
-                                    'modalSheetContext dashboard: $modalSheetContext');
                                 return [
                                   addAccountModal(
                                       modalSheetContext, textTheme, isDarkTheme)

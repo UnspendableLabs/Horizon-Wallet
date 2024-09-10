@@ -132,9 +132,9 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
           default:
             throw Exception("invalid import format");
         }
-        print('ARE WE HERE? before emit');
+
         emit(AccountFormState.success(account));
-        print('ARE WE HERE? after emit');
+
         // this is a bit of a hack to reset the form after success
 
         await Future.delayed(const Duration(milliseconds: 500));

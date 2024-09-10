@@ -147,7 +147,7 @@ class ComposeIssuanceBloc
                 composeIssuance.params.description,
                 null,
                 true,
-                200);
+                fee);
 
         final rawTx = issuance.rawtransaction;
 

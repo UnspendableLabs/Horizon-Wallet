@@ -102,13 +102,11 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
     return BlocConsumer<AccountFormBloc, AccountFormState>(
       listener: (context, state) {
-        print('listener: $state');
         state.whenOrNull(error: (msg) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: SelectableText(msg),
           ));
         }, success: (account) async {
-          print('success: $account');
           // update accounts in shell
           shell.refresh();
 
