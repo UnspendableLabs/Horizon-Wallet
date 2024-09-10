@@ -2,6 +2,8 @@ import 'package:horizon/common/constants.dart';
 
 abstract class AccountFormEvent {}
 
+class Finalize extends AccountFormEvent {}
+
 class Submit extends AccountFormEvent {
   final String name;
   final String purpose;

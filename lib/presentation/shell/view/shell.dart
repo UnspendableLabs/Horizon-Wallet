@@ -138,6 +138,8 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                               context: context,
                               pageListBuilder: (modalSheetContext) {
                                 final textTheme = Theme.of(context).textTheme;
+                                print(
+                                    'modalSheetContext SHELL:  $modalSheetContext');
                                 return [
                                   addAccountModal(
                                       modalSheetContext, textTheme, isDarkTheme)
