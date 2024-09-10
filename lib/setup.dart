@@ -69,21 +69,31 @@ Future<void> setup() async {
   ));
 
   dio.interceptors.addAll([
+    RetryInterceptor(dio: dio), // Add the RetryInterceptor here
     TimeoutInterceptor(),
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
-    BadCertificateInterceptor()
+    BadCertificateInterceptor(),
   ]);
 
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
 
-  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-      esploraApi: EsploraApi(
-          dio: Dio(BaseOptions(
+  final esploraDio = Dio(BaseOptions(
     baseUrl: config.esploraBase,
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
-  )))));
+  ));
+
+  esploraDio.interceptors.addAll([
+    RetryInterceptor(dio: dio), // Add the RetryInterceptor here
+    TimeoutInterceptor(),
+    ConnectionErrorInterceptor(),
+    BadResponseInterceptor(),
+    BadCertificateInterceptor(),
+  ]);
+
+  injector.registerSingleton<BitcoinRepository>(
+      BitcoinRepositoryImpl(esploraApi: EsploraApi(dio: esploraDio)));
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
@@ -230,6 +240,57 @@ class BadCertificateInterceptor extends Interceptor {
       handler.next(formattedError);
     } else {
       handler.next(err);
+    }
+  }
+}
+
+class RetryInterceptor extends Interceptor {
+  final int maxRetries;
+  final int initialDelayMs;
+  final Dio dio;
+
+  RetryInterceptor({
+    required this.dio,
+    this.maxRetries = 5,
+    this.initialDelayMs = 300,
+  });
+
+  @override
+  Future onError(DioError err, ErrorInterceptorHandler handler) async {
+    print("retry interceptor on errror");
+    if (_shouldRetry(err)) {
+      return _retry(err, handler);
+    } else {
+      print("ot retrying");
+    }
+    return super.onError(err, handler);
+  }
+
+  bool _shouldRetry(DioError err) {
+    return err.type == DioErrorType.badResponse &&
+        err.requestOptions.method == 'GET' &&
+        err.response!.statusCode != null &&
+        err.response!.statusCode! >= 500;
+  }
+
+  Future<void> _retry(DioError err, ErrorInterceptorHandler handler) async {
+    var retryCount = 0;
+    var delay = initialDelayMs;
+
+    while (retryCount < maxRetries) {
+      try {
+        retryCount++;
+        await Future.delayed(Duration(milliseconds: delay));
+        delay *= 2; // Exponential backoff
+
+        final response = await dio.fetch(err.requestOptions);
+        return handler.resolve(response);
+      } on DioError catch (e) {
+        err = e;
+        if (retryCount >= maxRetries) {
+          return handler.next(err);
+        }
+      }
     }
   }
 }

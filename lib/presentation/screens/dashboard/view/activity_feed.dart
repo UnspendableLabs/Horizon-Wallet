@@ -396,6 +396,8 @@ class _DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
   final ScrollController _scrollController = ScrollController();
+  static const int _initialDisplayCount = 100; // Or any other number you prefer
+  int _displayCount = _initialDisplayCount;
 
   @override
   void initState() {
@@ -406,7 +408,7 @@ class _DashboardActivityFeedScreenState
     // TODO: make this part of config?
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _bloc?.add(const StartPolling(interval: Duration(seconds: 30)));
+      _bloc?.add(const StartPolling(interval: Duration(seconds: 180)));
     });
   }
 
@@ -415,6 +417,12 @@ class _DashboardActivityFeedScreenState
     // Use the saved reference to the bloc
     _bloc?.add(const StopPolling());
     super.dispose();
+  }
+
+  void _loadMore() {
+    setState(() {
+      _displayCount += _initialDisplayCount; // Increase by 10 or any other number
+    });
   }
 
   @override
@@ -433,8 +441,14 @@ class _DashboardActivityFeedScreenState
             state is DashboardActivityFeedStateReloadingOk) {
           final transactions =
               (state as dynamic).transactions as List<ActivityFeedItem>;
+
           final newTransactionCount =
               (state as dynamic).newTransactionCount as int;
+
+          final displayedTransactions =
+              transactions.take(_displayCount).toList();
+          final hasMore = transactions.length > displayedTransactions.length;
+
           return Column(
             children: [
               if (newTransactionCount > 0)
@@ -442,13 +456,29 @@ class _DashboardActivityFeedScreenState
               Expanded(
                 child: ListView.builder(
                   controller: _scrollController,
-                  itemCount: transactions.length,
+                  itemCount: displayedTransactions.length + (hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    return ActivityFeedListItem(
-                      key: ValueKey(transactions[index].hash),
-                      item: transactions[index],
-                      addresses: widget.addresses,
-                    );
+                    if (index < displayedTransactions.length) {
+                      return ActivityFeedListItem(
+                        key: ValueKey(displayedTransactions[index].hash),
+                        item: displayedTransactions[index],
+                        addresses: widget.addresses,
+                      );
+                    } else {
+                      // This is the last item, show a "Load More" button or a message
+                      return hasMore
+                          ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                                onPressed: _loadMore,
+                                child: Text('Load More'),
+                              ),
+                          )
+                          : Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text('No more transactions to load'),
+                            );
+                    }
                   },
                 ),
               ),
