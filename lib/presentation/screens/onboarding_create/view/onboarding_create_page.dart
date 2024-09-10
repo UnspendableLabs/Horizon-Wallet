@@ -82,7 +82,6 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                 builder: (context, state) {
                   return Stack(
                     children: [
-                      
                       Column(
                         children: [
                           OnboardingAppBar(
@@ -91,13 +90,13 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                             isSmallScreenHeight: isSmallScreen,
                             scaffoldBackgroundColor: scaffoldBackgroundColor,
                           ),
-                                                   
                           Flexible(
                             child: BlocBuilder<OnboardingCreateBloc,
                                 OnboardingCreateState>(
                               builder: (context, state) {
-                                print("state.createState: ${state.createState}");
-        
+                                print(
+                                    "state.createState: ${state.createState}");
+
                                 return switch (state.createState) {
                                   CreateStateNotAsked => const Mnemonic(),
                                   CreateStateMnemonicUnconfirmed =>
@@ -110,16 +109,18 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                           _passwordConfirmationController,
                                       state: state,
                                       onPasswordChanged: (value) {
-                                        context.read<OnboardingCreateBloc>().add(
-                                            PasswordChanged(
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(PasswordChanged(
                                                 password: value,
                                                 passwordConfirmation:
                                                     _passwordConfirmationController
                                                         .text));
                                       },
                                       onPasswordConfirmationChanged: (value) {
-                                        context.read<OnboardingCreateBloc>().add(
-                                            PasswordConfirmationChanged(
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(PasswordConfirmationChanged(
                                                 passwordConfirmation: value));
                                       },
                                       onPressedBack: () {
@@ -395,7 +396,7 @@ class _MnemonicState extends State<Mnemonic> {
                   ),
                   const Spacer(),
                   SafeArea(
-                  child: BackContinueButtons(
+                      child: BackContinueButtons(
                     isDarkMode: isDarkMode,
                     isSmallScreenWidth: isSmallScreenWidth,
                     onPressedBack: () {
@@ -427,16 +428,42 @@ class _MnemonicState extends State<Mnemonic> {
         ((screenWidth / 1000) * (maxFontSize - minFontSize) + minFontSize)
             .clamp(minFontSize, maxFontSize);
 
-    return SelectableText(
-      mnemonic,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? mainTextWhite
-            : mainTextBlack,
-        fontWeight: FontWeight.bold,
-        fontSize: fontSize,
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SelectableText(
+          mnemonic,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? mainTextWhite
+                : mainTextBlack,
+            fontWeight: FontWeight.bold,
+            fontSize: fontSize,
+          ),
+        ),
+        const SizedBox(
+            height: 16), // Add some space between the text and button
+        ElevatedButton.icon(
+          icon: const Icon(Icons.copy),
+          label: const Text('COPY'),
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: mnemonic));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Mnemonic copied to clipboard'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ],
     );
   }
 }
