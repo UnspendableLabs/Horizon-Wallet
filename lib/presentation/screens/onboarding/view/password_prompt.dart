@@ -45,10 +45,11 @@ class _PasswordPromptState extends State<PasswordPrompt> {
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
+    final screenSize = MediaQuery.of(context).size;
 
-    return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
-      body: Center(
+    return Container(
+      color: scaffoldBackgroundColor,
+      child: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -67,7 +68,9 @@ class _PasswordPromptState extends State<PasswordPrompt> {
               const SizedBox(height: 8),
               Container(
                 constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width / 2),
+                    maxWidth: isSmallScreen
+                        ? screenSize.width
+                        : screenSize.width / 2),
                 child: const Text(
                   'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
                   style: TextStyle(fontSize: 16),
@@ -76,11 +79,15 @@ class _PasswordPromptState extends State<PasswordPrompt> {
               ),
               const SizedBox(height: 32),
               Container(
-                constraints: const BoxConstraints(
-                    minHeight: 48, minWidth: double.infinity),
+                constraints: BoxConstraints(
+                    maxWidth: isSmallScreen
+                        ? screenSize.width
+                        : screenSize.width / 2),
                 child: Center(
                   child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
+                    width: isSmallScreen
+                        ? screenSize.width
+                        : screenSize.width / 3,
                     child: TextField(
                       obscureText: _isPasswordObscured,
                       enableSuggestions: false,
@@ -121,10 +128,13 @@ class _PasswordPromptState extends State<PasswordPrompt> {
               const SizedBox(height: 16),
               Container(
                 constraints: const BoxConstraints(
+
                     minHeight: 48, minWidth: double.infinity),
                 child: Center(
                   child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
+                    width: isSmallScreen
+                        ? screenSize.width
+                        : screenSize.width / 3,
                     child: TextField(
                       obscureText: _isPasswordConfirmationObscured,
                       enableSuggestions: false,
