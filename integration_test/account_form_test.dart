@@ -75,8 +75,7 @@ class MockShellStateCubit extends Mock implements ShellStateCubit {
           uuid: 'test-wallet-uuid',
           publicKey: '',
           encryptedPrivKey: '',
-          chainCodeHex: '',
-          derivationPath: ''),
+          chainCodeHex: ''),
       currentAccountUuid: 'test-account-uuid',
       addresses: [],
       currentAddress: const Address(

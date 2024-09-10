@@ -454,7 +454,8 @@ class _MnemonicState extends State<Mnemonic> {
         const SizedBox(
             height: 16), // Add some space between the text and button
         ElevatedButton.icon(
-          icon: const Icon(Icons.copy,
+          icon: const Icon(
+            Icons.copy,
           ),
           label: const Text('COPY'),
           onPressed: () {

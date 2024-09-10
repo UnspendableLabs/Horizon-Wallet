@@ -5,12 +5,12 @@ class Wallet {
   final String? encryptedMnemonic;
   final String chainCodeHex;
   final String publicKey;
-  const Wallet(
-      {required this.uuid,
-      required this.name,
-      required this.encryptedPrivKey,
-      this.encryptedMnemonic,
-      required this.chainCodeHex,
-      required this.publicKey,
-      required String derivationPath});
+  const Wallet({
+    required this.uuid,
+    required this.name,
+    required this.encryptedPrivKey,
+    this.encryptedMnemonic,
+    required this.chainCodeHex,
+    required this.publicKey,
+  });
 }
