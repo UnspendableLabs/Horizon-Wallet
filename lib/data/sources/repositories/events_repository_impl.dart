@@ -641,6 +641,7 @@ class EventsRepositoryImpl implements EventsRepository {
     while (hasMore) {
       final (events, nextCursor, _) = await getByAddressesVerbose(
         addresses: [address],
+        limit: 1000,
         cursor: cursor,
         unconfirmed: unconfirmed,
         whitelist: whitelist,

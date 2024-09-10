@@ -204,6 +204,8 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
 class EsploraApi {
   final Dio _dio;
 
+  final _confirmedTxCache = <String, List<BitcoinTxModel>>{};
+
   EsploraApi({required Dio dio}) : _dio = dio;
 
   Future<List<BitcoinTxModel>> getTransactionsForAddress(String address) async {
@@ -235,15 +237,30 @@ class EsploraApi {
       String address,
       {String? lastSeenTxid}) async {
     try {
+      if (lastSeenTxid != null) {
+        // Check cache first
+        final cacheKey = '$address:$lastSeenTxid';
+        if (_confirmedTxCache.containsKey(cacheKey)) {
+          return _confirmedTxCache[cacheKey]!;
+        }
+      }
+
       String url = '/address/$address/txs/chain';
       if (lastSeenTxid != null) {
         url += '/$lastSeenTxid';
       }
       final response = await _dio.get(url);
       final List<dynamic> txList = response.data as List<dynamic>;
-      return txList
+      final transactions = txList
           .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
           .toList();
+
+      if (lastSeenTxid != null) {
+        final cacheKey = '$address:$lastSeenTxid';
+        _confirmedTxCache[cacheKey] = transactions;
+      }
+
+      return transactions;
     } on DioException catch (e) {
       _handleDioException(e);
     }

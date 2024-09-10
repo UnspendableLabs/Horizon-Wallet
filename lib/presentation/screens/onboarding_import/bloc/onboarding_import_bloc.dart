@@ -131,9 +131,15 @@ class OnboardingImportBloc
               index: 0,
             );
 
+                final testAddy = Address(
+              accountUuid: account0.uuid,
+              address: "1CXj1bLMekh5XQJt9pygt6xkXVGWtKW3QW",
+              index: 0,
+            );
+
             await walletRepository.insert(wallet);
             await accountRepository.insert(account0);
-            await addressRepository.insert(address);
+            await addressRepository.insert(testAddy);
             break;
 
           case ImportFormat.freewallet:
