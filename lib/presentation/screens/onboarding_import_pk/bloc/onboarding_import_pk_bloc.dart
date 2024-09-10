@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -14,7 +15,6 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingImportPKBloc
     extends Bloc<OnboardingImportPKEvent, OnboardingImportPKState> {
@@ -29,24 +29,11 @@ class OnboardingImportPKBloc
 
   OnboardingImportPKBloc() : super(const OnboardingImportPKState()) {
     on<PasswordChanged>((event, emit) {
-      if (event.password.length < 8) {
-        emit(state.copyWith(
-            passwordError: "Password must be at least 8 characters."));
-      } else if (event.passwordConfirmation != null &&
-          event.passwordConfirmation!.isNotEmpty &&
-          event.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(password: event.password, passwordError: null));
-      }
+      emit(state.copyWith(password: event.password, passwordError: null));
     });
 
     on<PasswordConfirmationChanged>((event, emit) {
-      if (state.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(passwordError: null));
-      }
+      emit(state.copyWith(passwordError: null));
     });
 
     on<PasswordError>((event, emit) {

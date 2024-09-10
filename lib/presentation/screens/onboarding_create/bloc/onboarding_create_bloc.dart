@@ -32,24 +32,11 @@ class OnboardingCreateBloc
 
   OnboardingCreateBloc() : super(const OnboardingCreateState()) {
     on<PasswordChanged>((event, emit) {
-      if (event.password.length < 8) {
-        emit(state.copyWith(
-            passwordError: "Password must be at least 8 characters."));
-      } else if (event.passwordConfirmation != null &&
-          event.passwordConfirmation!.isNotEmpty &&
-          event.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(password: event.password, passwordError: null));
-      }
+      emit(state.copyWith(password: event.password, passwordError: null));
     });
 
     on<PasswordConfirmationChanged>((event, emit) {
-      if (state.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(passwordError: null));
-      }
+      emit(state.copyWith(passwordError: null));
     });
 
     on<PasswordError>((event, emit) {

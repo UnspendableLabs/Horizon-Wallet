@@ -113,17 +113,32 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                         _passwordConfirmationController,
                                     state: state,
                                     onPasswordChanged: (value) {
-                                      context.read<OnboardingImportBloc>().add(
-                                          PasswordChanged(
-                                              password: value,
-                                              passwordConfirmation:
-                                                  _passwordConfirmationController
-                                                      .text));
+                                      String? error = validatePassword(value,
+                                          _passwordConfirmationController.text);
+                                      if (error == null) {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordChanged(
+                                                password: value));
+                                      } else {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(error: error));
+                                      }
                                     },
                                     onPasswordConfirmationChanged: (value) {
-                                      context.read<OnboardingImportBloc>().add(
-                                          PasswordConfirmationChanged(
-                                              passwordConfirmation: value));
+                                      String? error = validatePassword(
+                                          _passwordController.text, value);
+                                      if (error == null) {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordConfirmationChanged(
+                                                passwordConfirmation: value));
+                                      } else {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(error: error));
+                                      }
                                     },
                                     onPressedBack: () {
                                       final shell =
@@ -131,27 +146,17 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                       shell.onOnboarding();
                                     },
                                     onPressedContinue: () {
-                                      if (_passwordController.text == '' ||
-                                          _passwordConfirmationController
-                                                  .text ==
-                                              '') {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(
-                                                error:
-                                                    'Password cannot be empty'));
-                                      } else if (_passwordController.text !=
-                                          _passwordConfirmationController
-                                              .text) {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(
-                                                error:
-                                                    'Passwords do not match'));
-                                      } else {
+                                      String? error = validatePasswordOnSubmit(
+                                          _passwordController.text,
+                                          _passwordConfirmationController.text);
+                                      if (error == null) {
                                         context
                                             .read<OnboardingImportBloc>()
                                             .add(ImportWallet());
+                                      } else {
+                                        context
+                                            .read<OnboardingImportBloc>()
+                                            .add(PasswordError(error: error));
                                       }
                                     },
                                     backButtonText: 'CANCEL',
