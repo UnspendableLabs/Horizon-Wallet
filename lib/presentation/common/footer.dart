@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import "package:horizon/presentation/colors.dart";
+import 'package:go_router/go_router.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
-
-  Future<void> _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      // Handle error
-      print('Could not launch $url');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +14,7 @@ class Footer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
-              onPressed: () =>
-                  _launchURL('https://explorer.unspendablelabs.com/tos'),
+              onPressed: () => context.go("/tos"),
               child: const Text(
                 'Terms of Service',
                 style: TextStyle(
@@ -35,8 +25,7 @@ class Footer extends StatelessWidget {
             ),
             const SizedBox(width: 20), // Add some space between the links
             TextButton(
-              onPressed: () => _launchURL(
-                  'https://explorer.unspendablelabs.com/privacy-policy'),
+              onPressed: () => context.go("/privacy-policy"),
               child: const Text(
                 'Privacy Policy',
                 style: TextStyle(

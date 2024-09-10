@@ -35,6 +35,8 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/view/shell.dart';
+import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
 
@@ -135,6 +137,22 @@ class AppRouter {
                     (context, animation, secondaryAnimation, child) => child),
           ),
         GoRoute(
+          path: "/privacy-policy",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const PrivacyPolicy(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
+        GoRoute(
+          path: "/tos",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const TermsOfService(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
+        GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
@@ -228,6 +246,14 @@ class AppRouter {
             onGoHome: () => context.go('/dashboard'),
           ),
       redirect: (context, state) async {
+        if (state.matchedLocation == "/privacy-policy") {
+          return "/privacy-policy";
+        }
+
+        if (state.matchedLocation == "/tos") {
+          return "/tos";
+        }
+
         final shell = context.read<ShellStateCubit>();
 
         final path = shell.state.maybeWhen(
