@@ -115,13 +115,25 @@ class ComposeIssuanceBloc
       }
     });
 
+    on<FinalizeTransactionEvent>((event, emit) async {
+      emit(state.copyWith(
+          submitState: SubmitState.finalizing(SubmitStateFinalizing(
+        composeIssuance: event.composeIssuance,
+        fee: event.fee,
+      ))));
+    });
+
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
+      final finalizingState = state.submitState.maybeWhen(
+          finalizing: (finalizing) => finalizing,
+          orElse: () => throw Exception("Invariant: state not found"));
+
       emit(state.copyWith(submitState: const SubmitState.loading()));
 
-      final composeIssuance = event.composeIssuance;
-      final password = event.password;
+      final composeIssuance = finalizingState.composeIssuance;
       final source = composeIssuance.params.source;
-      final fee = event.fee;
+      final fee = finalizingState.fee;
+      final password = event.password;
 
       try {
         ComposeIssuanceVerbose issuance =
@@ -135,7 +147,7 @@ class ComposeIssuanceBloc
                 composeIssuance.params.description,
                 null,
                 true,
-                fee);
+                200);
 
         final rawTx = issuance.rawtransaction;
 

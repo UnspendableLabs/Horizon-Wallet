@@ -40,6 +40,8 @@ class SubmitState with _$SubmitState {
           SubmitStateComposingIssuance submitStateComposingIssuance) =
       _SubmitComposing;
   const factory SubmitState.success(String transactionHex) = _SubmitSuccess;
+  const factory SubmitState.finalizing(
+      SubmitStateFinalizing submitStateFinalizing) = _SubmitFinalizing;
   const factory SubmitState.error(String error) = _SubmitError;
 }
 
@@ -53,4 +55,10 @@ class SubmitStateComposingIssuance {
       required this.virtualSize,
       required this.feeEstimates,
       required this.confirmationTarget});
+}
+
+class SubmitStateFinalizing {
+  final ComposeIssuanceVerbose composeIssuance;
+  final int fee;
+  SubmitStateFinalizing({required this.composeIssuance, required this.fee});
 }
