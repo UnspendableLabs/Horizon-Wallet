@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -84,10 +85,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
   @override
   void initState() {
     super.initState();
-    //
-    // context.read<AddressesBloc>().add(GetAll(
-    //       accountUuid: widget.accountUuid,
-    //     ));
   }
 
   @override
@@ -536,16 +533,13 @@ class _BalancesState extends State<Balances> {
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: (result) =>
-            _resultToBalanceList(result, widget.isDarkTheme, widget.addresses),
-        reloading: (result) =>
-            _resultToBalanceList(result, widget.isDarkTheme, widget.addresses),
+        complete: (result) => _resultToBalanceList(result, widget.isDarkTheme),
+        reloading: (result) => _resultToBalanceList(result, widget.isDarkTheme),
       );
     });
   }
 
-  Widget _resultToBalanceList(
-      Result result, bool isDarkTheme, List<Address> addresses) {
+  Widget _resultToBalanceList(Result result, bool isDarkTheme) {
     Color backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
 
     return Padding(
@@ -579,8 +573,29 @@ class _BalancesState extends State<Balances> {
           return [const Center(child: Text("No balance"))];
         }
 
-        final balanceWidgets = aggregated.entries.map((entry) {
-          final isLastEntry = entry.key == aggregated.entries.last.key;
+        // Use MapEntry<String, Balance>? to allow null values
+        final MapEntry<String, Balance>? btcEntry =
+            aggregated.entries.where((e) => e.key == 'BTC').firstOrNull;
+
+        final MapEntry<String, Balance>? xcpEntry =
+            aggregated.entries.where((e) => e.key == 'XCP').firstOrNull;
+
+        final otherEntries = aggregated.entries
+            .where((e) => e.key != 'BTC' && e.key != 'XCP')
+            .toList();
+
+        // Combine entries in the desired order
+        final orderedEntries = [
+          if (btcEntry != null) btcEntry,
+          if (xcpEntry != null) xcpEntry,
+          ...otherEntries,
+        ];
+
+        final balanceWidgets = orderedEntries.asMap().entries.map((mapEntry) {
+          final index = mapEntry.key;
+          final entry = mapEntry.value;
+          final isLastEntry = index == orderedEntries.length - 1;
+
           return Column(
             children: [
               Padding(
