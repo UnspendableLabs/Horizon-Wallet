@@ -447,7 +447,8 @@ class _MnemonicState extends State<Mnemonic> {
         const SizedBox(
             height: 16), // Add some space between the text and button
         ElevatedButton.icon(
-          icon: const Icon(Icons.copy),
+          icon: const Icon(Icons.copy,
+          ),
           label: const Text('COPY'),
           onPressed: () {
             Clipboard.setData(ClipboardData(text: mnemonic));
@@ -462,6 +463,7 @@ class _MnemonicState extends State<Mnemonic> {
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             backgroundColor: Theme.of(context).colorScheme.primary,
+            iconColor: Theme.of(context).colorScheme.onPrimary,
           ),
         ),
       ],
