@@ -61,7 +61,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
   @override
   Widget build(BuildContext context) {
-    print('widget.parentContext: ${widget.parentContext}');
     final shell = context.watch<ShellStateCubit>();
 
     // TODO: the fact that we have to do all these paranoid checks
@@ -155,6 +154,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                       },
                     ),
                     HorizonDialogSubmitButton(
+                      buttonText: 'CONTINUE',
                       onPressed: () {
                         // Validate will return true if the form is valid, or false if
                         // the form is invalid.
@@ -222,14 +222,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                             password: password,
                             importFormat:
                                 currentHighestIndexAccount.importFormat));
-
-                        // Navigator.of(context).pop();
-                        // return to dashboard if modalSheetContext is not null
-                        // this will be the case on smaller screens to close the wolt bottom sheet
-                        print('widget.parentContext: ${widget.parentContext}');
-                        // if (widget.parentContext != null) {
-                        //   Navigator.of(widget.parentContext!).pop();
-                        // }
                       }
                     },
                   )

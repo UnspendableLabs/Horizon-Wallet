@@ -11,5 +11,6 @@ class Wallet {
       required this.encryptedPrivKey,
       this.encryptedMnemonic,
       required this.chainCodeHex,
-      required this.publicKey});
+      required this.publicKey,
+      required String derivationPath});
 }
