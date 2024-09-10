@@ -27,14 +27,20 @@ class ComposeTransactionEvent extends ComposeSendEvent {
   });
 }
 
-class SignAndBroadcastTransactionEvent extends ComposeSendEvent {
+class FinalizeTransactionEvent extends ComposeSendEvent {
   final ComposeSend composeSend;
-  final String password;
   final int fee;
 
-  SignAndBroadcastTransactionEvent({
+  FinalizeTransactionEvent({
     required this.composeSend,
-    required this.password,
     required this.fee,
+  });
+}
+
+class SignAndBroadcastTransactionEvent extends ComposeSendEvent {
+  final String password;
+
+  SignAndBroadcastTransactionEvent({
+    required this.password,
   });
 }

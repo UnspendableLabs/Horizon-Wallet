@@ -102,17 +102,29 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
       }
     });
 
+    on<FinalizeTransactionEvent>((event, emit) async {
+      emit(state.copyWith(
+          submitState: SubmitState.finalizing(SubmitStateFinalizing(
+        composeSend: event.composeSend,
+        fee: event.fee,
+      ))));
+    });
+
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
+      final finalizingState = state.submitState.maybeWhen(
+          finalizing: (finalizing) => finalizing,
+          orElse: () => throw Exception("Invariant: state not found"));
+
       emit(state.copyWith(submitState: const SubmitState.loading()));
 
       try {
-        final sendParams = event.composeSend.params;
+        final sendParams = finalizingState.composeSend.params;
         final source = sendParams.source;
         final destination = sendParams.destination;
         final quantity = sendParams.quantity;
         final asset = sendParams.asset;
+        final fee = finalizingState.fee;
         final password = event.password;
-        final fee = event.fee;
 
         // Compose a new tx with user specified fee
         final send = await composeRepository.composeSendVerbose(
