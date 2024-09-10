@@ -94,6 +94,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
 
     Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
 
@@ -108,50 +109,82 @@ class _DashboardPage_State extends State<_DashboardPage> {
             color: backgroundColor,
             borderRadius: BorderRadius.circular(30.0),
           ),
-          child: Column(
-            children: [
-              if (screenWidth < 768)
-                AccountSelectionButton(
-                  isDarkTheme: isDarkTheme,
-                  onPressed: () => showAccountList(context, isDarkTheme),
-                ),
-              AddressActions(
-                isDarkTheme: isDarkTheme,
-                dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                addresses: [widget.currentAddress],
-                accountUuid: widget.accountUuid,
-                currentAddress: widget.currentAddress,
-                screenWidth: screenWidth,
-              ),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 300),
-                child: BalancesDisplay(
-                  key: Key(widget.currentAddress.address),
-                  isDarkTheme: isDarkTheme,
-                  addresses: [widget.currentAddress],
-                  accountUuid: widget.accountUuid,
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 700),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            isDarkTheme ? lightNavyDarkTheme : greyLightTheme,
-                        borderRadius: BorderRadius.circular(30.0),
+          child: !isSmallScreen
+              ? Column(
+                  children: [
+                    if (screenWidth < 768)
+                      AccountSelectionButton(
+                        isDarkTheme: isDarkTheme,
+                        onPressed: () => showAccountList(context, isDarkTheme),
                       ),
+                    AddressActions(
+                      isDarkTheme: isDarkTheme,
+                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      addresses: [widget.currentAddress],
+                      accountUuid: widget.accountUuid,
+                      currentAddress: widget.currentAddress,
+                      screenWidth: screenWidth,
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 300),
+                      child: BalancesDisplay(
+                        key: Key(widget.currentAddress.address),
+                        isDarkTheme: isDarkTheme,
+                        addresses: [widget.currentAddress],
+                        accountUuid: widget.accountUuid,
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 700),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isDarkTheme
+                                  ? lightNavyDarkTheme
+                                  : greyLightTheme,
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            child: DashboardActivityFeedScreen(
+                              addresses: [widget.currentAddress],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : CustomScrollView(slivers: [
+                  SliverToBoxAdapter(
+                      child: Column(children: [
+                    AccountSelectionButton(
+                      isDarkTheme: isDarkTheme,
+                      onPressed: () => showAccountList(context, isDarkTheme),
+                    ),
+                    AddressActions(
+                      isDarkTheme: isDarkTheme,
+                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      addresses: [widget.currentAddress],
+                      accountUuid: widget.accountUuid,
+                      currentAddress: widget.currentAddress,
+                      screenWidth: screenWidth,
+                    ),
+                    BalancesDisplay(
+                      key: Key(widget.currentAddress.address),
+                      isDarkTheme: isDarkTheme,
+                      addresses: [widget.currentAddress],
+                      accountUuid: widget.accountUuid,
+                    ),
+                  ])),
+
+
+                    SliverFillRemaining(
                       child: DashboardActivityFeedScreen(
                         addresses: [widget.currentAddress],
                       ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+                    )
+                ]),
         ),
       );
     });
