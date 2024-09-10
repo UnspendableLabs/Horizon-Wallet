@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
-import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
+import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
@@ -56,54 +56,49 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: backdropBackgroundColor,
-      ),
-      padding: padding,
-      child: Container(
-        decoration: BoxDecoration(
-          color: scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        padding: const EdgeInsets.all(12),
-        child: Scaffold(
-          backgroundColor: scaffoldBackgroundColor,
-          body: BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
-            listener: (context, state) {
-              if (state.createState is CreateStateSuccess) {
-                final shell = context.read<ShellStateCubit>();
-                // reload shell to trigger redirect
-                shell.initialize();
-              }
-            },
-            child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+    return Scaffold(
+      backgroundColor: scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: backdropBackgroundColor,
+          ),
+          padding: padding,
+          child: Container(
+            decoration: BoxDecoration(
+              color: scaffoldBackgroundColor,
+              borderRadius: BorderRadius.circular(30),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
+              listener: (context, state) {
+                if (state.createState is CreateStateSuccess) {
+                  final shell = context.read<ShellStateCubit>();
+                  // reload shell to trigger redirect
+                  shell.initialize();
+                }
+              },
+              child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
                 builder: (context, state) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Scaffold(
-                  backgroundColor: scaffoldBackgroundColor,
-                  appBar: OnboardingAppBar(
-                    isDarkMode: isDarkMode,
-                    isSmallScreenWidth: isSmallScreen,
-                    isSmallScreenHeight: isSmallScreen,
-                    scaffoldBackgroundColor: scaffoldBackgroundColor,
-                  ),
-                  body: Stack(
+                  return Stack(
                     children: [
+                      
                       Column(
                         children: [
+                          OnboardingAppBar(
+                            isDarkMode: isDarkMode,
+                            isSmallScreenWidth: isSmallScreen,
+                            isSmallScreenHeight: isSmallScreen,
+                            scaffoldBackgroundColor: scaffoldBackgroundColor,
+                          ),
+                                                   
                           Flexible(
                             child: BlocBuilder<OnboardingCreateBloc,
-                                    OnboardingCreateState>(
-                                builder: (context, state) {
-                              print("state.createState: ${state.createState}");
-
-                              return Scaffold(
-                                body: switch (state.createState) {
+                                OnboardingCreateState>(
+                              builder: (context, state) {
+                                print("state.createState: ${state.createState}");
+        
+                                return switch (state.createState) {
                                   CreateStateNotAsked => const Mnemonic(),
                                   CreateStateMnemonicUnconfirmed =>
                                     ConfirmSeedInputFields(
@@ -115,18 +110,16 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                           _passwordConfirmationController,
                                       state: state,
                                       onPasswordChanged: (value) {
-                                        context
-                                            .read<OnboardingCreateBloc>()
-                                            .add(PasswordChanged(
+                                        context.read<OnboardingCreateBloc>().add(
+                                            PasswordChanged(
                                                 password: value,
                                                 passwordConfirmation:
                                                     _passwordConfirmationController
                                                         .text));
                                       },
                                       onPasswordConfirmationChanged: (value) {
-                                        context
-                                            .read<OnboardingCreateBloc>()
-                                            .add(PasswordConfirmationChanged(
+                                        context.read<OnboardingCreateBloc>().add(
+                                            PasswordConfirmationChanged(
                                                 passwordConfirmation: value));
                                       },
                                       onPressedBack: () {
@@ -163,9 +156,9 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                     ),
                                   Object() => const Text(''),
                                   null => throw UnimplementedError(),
-                                },
-                              );
-                            }),
+                                };
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -177,14 +170,144 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                           ),
                         ),
                     ],
-                  ),
-                ),
-              );
-            }),
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),
     );
+
+    // return Container(
+    //   decoration: BoxDecoration(
+    //     color: backdropBackgroundColor,
+    //   ),
+    //   padding: padding,
+    //   child: Container(
+    //     decoration: BoxDecoration(
+    //       color: scaffoldBackgroundColor,
+    //       borderRadius: BorderRadius.circular(30),
+    //     ),
+    //     padding: const EdgeInsets.all(12),
+    //     child: Scaffold(
+    //       backgroundColor: scaffoldBackgroundColor,
+    //       body: BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
+    //         listener: (context, state) {
+    //           if (state.createState is CreateStateSuccess) {
+    //             final shell = context.read<ShellStateCubit>();
+    //             // reload shell to trigger redirect
+    //             shell.initialize();
+    //           }
+    //         },
+    //         child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+    //             builder: (context, state) {
+    //           return Container(
+    //             decoration: BoxDecoration(
+    //               color: scaffoldBackgroundColor,
+    //               borderRadius: BorderRadius.circular(30),
+    //             ),
+    //             child: Scaffold(
+    //               backgroundColor: scaffoldBackgroundColor,
+    //               appBar: OnboardingAppBar(
+    //                 isDarkMode: isDarkMode,
+    //                 isSmallScreenWidth: isSmallScreen,
+    //                 isSmallScreenHeight: isSmallScreen,
+    //                 scaffoldBackgroundColor: scaffoldBackgroundColor,
+    //               ),
+    //               body: Stack(
+    //                 children: [
+    //                   Column(
+    //                     children: [
+    //                       Flexible(
+    //                         child: BlocBuilder<OnboardingCreateBloc,
+    //                                 OnboardingCreateState>(
+    //                             builder: (context, state) {
+    //                           print("state.createState: ${state.createState}");
+    //
+    //                           return Scaffold(
+    //                             body: switch (state.createState) {
+    //                               CreateStateNotAsked => const Mnemonic(),
+    //                               CreateStateMnemonicUnconfirmed =>
+    //                                 ConfirmSeedInputFields(
+    //                                   mnemonicErrorState: state.mnemonicError,
+    //                                 ),
+    //                               _ => PasswordPrompt(
+    //                                   passwordController: _passwordController,
+    //                                   passwordConfirmationController:
+    //                                       _passwordConfirmationController,
+    //                                   state: state,
+    //                                   onPasswordChanged: (value) {
+    //                                     context
+    //                                         .read<OnboardingCreateBloc>()
+    //                                         .add(PasswordChanged(
+    //                                             password: value,
+    //                                             passwordConfirmation:
+    //                                                 _passwordConfirmationController
+    //                                                     .text));
+    //                                   },
+    //                                   onPasswordConfirmationChanged: (value) {
+    //                                     context
+    //                                         .read<OnboardingCreateBloc>()
+    //                                         .add(PasswordConfirmationChanged(
+    //                                             passwordConfirmation: value));
+    //                                   },
+    //                                   onPressedBack: () {
+    //                                     final shell =
+    //                                         context.read<ShellStateCubit>();
+    //                                     shell.onOnboarding();
+    //                                   },
+    //                                   onPressedContinue: () {
+    //                                     if (_passwordController.text == '' ||
+    //                                         _passwordConfirmationController
+    //                                                 .text ==
+    //                                             '') {
+    //                                       context
+    //                                           .read<OnboardingCreateBloc>()
+    //                                           .add(PasswordError(
+    //                                               error:
+    //                                                   'Password cannot be empty'));
+    //                                     } else if (_passwordController.text !=
+    //                                         _passwordConfirmationController
+    //                                             .text) {
+    //                                       context
+    //                                           .read<OnboardingCreateBloc>()
+    //                                           .add(PasswordError(
+    //                                               error:
+    //                                                   'Passwords do not match'));
+    //                                     } else {
+    //                                       context
+    //                                           .read<OnboardingCreateBloc>()
+    //                                           .add(CreateWallet());
+    //                                     }
+    //                                   },
+    //                                   backButtonText: 'CANCEL',
+    //                                   continueButtonText: 'CONTINUE',
+    //                                 ),
+    //                               Object() => const Text(''),
+    //                               null => throw UnimplementedError(),
+    //                             },
+    //                           );
+    //                         }),
+    //                       ),
+    //                     ],
+    //                   ),
+    //                   if (state.createState is CreateStateLoading)
+    //                     Container(
+    //                       color: Colors.black.withOpacity(0.3),
+    //                       child: const Center(
+    //                         child: CircularProgressIndicator(),
+    //                       ),
+    //                     ),
+    //                 ],
+    //               ),
+    //             ),
+    //           );
+    //         }),
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 }
 
@@ -219,9 +342,9 @@ class _MnemonicState extends State<Mnemonic> {
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
-        return Scaffold(
-          backgroundColor: scaffoldBackgroundColor,
-          body: Center(
+        return Container(
+          color: scaffoldBackgroundColor,
+          child: Center(
             child: Container(
               margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               child: Column(
@@ -362,9 +485,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
 
-    return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
-      body: Column(
+    return Container(
+      color: scaffoldBackgroundColor,
+      child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
