@@ -18,8 +18,7 @@ class OnboardingAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: AppBar(
+    return AppBar(
         backgroundColor: scaffoldBackgroundColor,
         title: Padding(
           padding: const EdgeInsets.only(top: 24.0),
@@ -49,7 +48,6 @@ class OnboardingAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
         toolbarHeight: kToolbarHeight + 24,
-      ),
     );
   }
 
