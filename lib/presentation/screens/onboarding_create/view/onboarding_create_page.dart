@@ -362,8 +362,10 @@ class _MnemonicState extends State<Mnemonic> {
                             state.mnemonicState
                                 is GenerateMnemonicStateUnconfirmed)
                           Container(
-                            constraints:
-                                BoxConstraints(maxWidth: screenSize.width / 2),
+                            constraints: BoxConstraints(
+                                maxWidth: isSmallScreenWidth
+                                    ? screenSize.width
+                                    : screenSize.width / 2),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -457,8 +459,7 @@ class _MnemonicState extends State<Mnemonic> {
             );
           },
           style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
