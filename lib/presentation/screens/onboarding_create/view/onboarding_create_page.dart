@@ -394,7 +394,8 @@ class _MnemonicState extends State<Mnemonic> {
                     ),
                   ),
                   const Spacer(),
-                  BackContinueButtons(
+                  SafeArea(
+                  child: BackContinueButtons(
                     isDarkMode: isDarkMode,
                     isSmallScreenWidth: isSmallScreenWidth,
                     onPressedBack: () {
@@ -408,7 +409,7 @@ class _MnemonicState extends State<Mnemonic> {
                     },
                     backButtonText: 'BACK',
                     continueButtonText: 'CONTINUE',
-                  ),
+                  )),
                 ],
               ),
             ),
