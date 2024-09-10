@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 
-class HorizonDropdownMenu extends StatelessWidget {
+class HorizonDropdownMenu<T> extends StatelessWidget {
   final bool isDarkMode;
-  final List<DropdownMenuItem<String>> items;
-  final Function(String?) onChanged;
+  final List<DropdownMenuItem<T>> items;
+  final Function(T?) onChanged;
   final String? label;
   final TextEditingController? controller;
-  final String? selectedValue;
+  final T? selectedValue;
+  final Icon? icon;
+  final double? borderRadius;
 
   const HorizonDropdownMenu({
     super.key,
@@ -17,6 +19,8 @@ class HorizonDropdownMenu extends StatelessWidget {
     this.label,
     this.controller,
     this.selectedValue,
+    this.icon,
+    this.borderRadius,
   });
 
   @override
@@ -42,12 +46,14 @@ class HorizonDropdownMenu extends StatelessWidget {
         ),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
+        child: DropdownButton<T>(
           isExpanded: true,
           value: selectedValue ?? items.first.value,
           onChanged: onChanged,
           dropdownColor: dropdownBackgroundColor,
           items: items,
+          borderRadius: BorderRadius.circular(borderRadius ?? 10),
+          icon: icon,
         ),
       ),
     );

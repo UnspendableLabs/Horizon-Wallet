@@ -73,16 +73,27 @@ class AssetDropdownLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(children: [
       DropdownMenu(
-          expandedInsets: const EdgeInsets.all(0),
-          inputDecorationTheme: const InputDecorationTheme(
-            border: OutlineInputBorder(),
-            floatingLabelBehavior: FloatingLabelBehavior.always,
+        expandedInsets: const EdgeInsets.all(0),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+        ),
+        initialSelection: "",
+        // enabled: false,
+        label: const Text('Asset'),
+        dropdownMenuEntries:
+            [const DropdownMenuEntry<String>(value: "", label: "")].toList(),
+        menuStyle: MenuStyle(
+          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
           ),
-          initialSelection: "",
-          // enabled: false,
-          label: const Text('Asset'),
-          dropdownMenuEntries:
-              [const DropdownMenuEntry<String>(value: "", label: "")].toList()),
+          padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+            const EdgeInsets.symmetric(vertical: 8.0),
+          ),
+        ),
+      ),
       const Positioned(
         left: 12,
         top: 0,

@@ -43,8 +43,8 @@ void main() {
       // Wait for the app to settle
       await tester.pumpAndSettle();
 
-      // Find and tap the "IMPORT SEED" button
-      final importSeedButton = find.text('IMPORT SEED');
+      // Find and tap the "LOAD SEED" button
+      final importSeedButton = find.text('LOAD SEED PHRASE');
       expect(importSeedButton, findsOneWidget);
       await tester.tap(importSeedButton);
       await tester.pumpAndSettle();

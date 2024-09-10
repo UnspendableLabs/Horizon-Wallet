@@ -118,7 +118,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
               AddressActions(
                 isDarkTheme: isDarkTheme,
                 dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                addresses: [widget.currentAddress],
                 accountUuid: widget.accountUuid,
                 currentAddress: widget.currentAddress,
                 screenWidth: screenWidth,
@@ -403,7 +402,6 @@ class AddressAction extends StatelessWidget {
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final List<Address> addresses;
   final String accountUuid;
   final Address currentAddress;
   final double screenWidth;
@@ -412,7 +410,6 @@ class AddressActions extends StatelessWidget {
       {super.key,
       required this.isDarkTheme,
       required this.dashboardActivityFeedBloc,
-      required this.addresses,
       required this.accountUuid,
       required this.currentAddress,
       required this.screenWidth});
@@ -461,7 +458,7 @@ class AddressActions extends StatelessWidget {
                   title: "Receive",
                   body: QRCodeDialog(
                     isDarkTheme: isDarkTheme,
-                    addresses: addresses,
+                    currentAddress: currentAddress,
                   ),
                   includeBackButton: false,
                   includeCloseButton: true,
@@ -628,30 +625,16 @@ class _BalancesState extends State<Balances> {
   }
 }
 
-class QRCodeDialog extends StatefulWidget {
+class QRCodeDialog extends StatelessWidget {
   final bool isDarkTheme;
-  final List<Address> addresses;
+  final Address currentAddress;
 
   const QRCodeDialog(
-      {super.key, required this.isDarkTheme, required this.addresses});
-
-  @override
-  _QRCodeDialogState createState() => _QRCodeDialogState();
-}
-
-class _QRCodeDialogState extends State<QRCodeDialog> {
-  late String _selectedAddress;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedAddress = widget.addresses.first.address;
-  }
+      {super.key, required this.isDarkTheme, required this.currentAddress});
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -659,18 +642,18 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
         QrImageView(
           dataModuleStyle: QrDataModuleStyle(
             dataModuleShape: QrDataModuleShape.square,
-            color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme,
+            color: isDarkTheme ? mainTextWhite : royalBlueLightTheme,
           ),
           eyeStyle: QrEyeStyle(
               eyeShape: QrEyeShape.square,
-              color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme),
-          data: _selectedAddress,
+              color: isDarkTheme ? mainTextWhite : royalBlueLightTheme),
+          data: currentAddress.address,
           version: QrVersions.auto,
           size: 230.0,
         ),
         const SizedBox(height: 16.0),
         Divider(
-          color: widget.isDarkTheme
+          color: isDarkTheme
               ? greyDarkThemeUnderlineColor
               : greyLightThemeUnderlineColor,
           thickness: 1.0,
@@ -682,65 +665,24 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
               child: Container(
                 width: 500,
                 decoration: BoxDecoration(
-                  color: widget.isDarkTheme
-                      ? darkNavyDarkTheme
-                      : noBackgroundColor,
+                  color: isDarkTheme ? darkNavyDarkTheme : noBackgroundColor,
                   borderRadius: BorderRadius.circular(10.0),
-                  border: widget.isDarkTheme
+                  border: isDarkTheme
                       ? Border.all(color: noBackgroundColor)
                       : Border.all(color: greyLightThemeUnderlineColor),
                 ),
                 child: Row(
                   children: [
-                    if (widget.addresses.length > 1)
-                      Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 16.0),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              dropdownColor: widget.isDarkTheme
-                                  ? darkNavyDarkTheme
-                                  : whiteLightTheme,
-                              style: TextStyle(
-                                  color: widget.isDarkTheme
-                                      ? darkThemeInputLabelColor
-                                      : lightThemeInputLabelColor),
-                              isExpanded: true,
-                              value: _selectedAddress,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  _selectedAddress = newValue!;
-                                });
-                              },
-                              items: widget.addresses
-                                  .map<DropdownMenuItem<String>>(
-                                      (Address address) {
-                                return DropdownMenuItem<String>(
-                                  value: address.address,
-                                  child: Text(
-                                    address.address,
-                                    style: const TextStyle(
-                                        overflow: TextOverflow.ellipsis,
-                                        fontSize: 16.0),
-                                  ),
-                                );
-                              }).toList(),
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: SelectableText(
-                            _selectedAddress,
-                            style: const TextStyle(
-                                overflow: TextOverflow.ellipsis),
-                          ),
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: SelectableText(
+                          currentAddress.address,
+                          style:
+                              const TextStyle(overflow: TextOverflow.ellipsis),
                         ),
                       ),
+                    ),
                     Container(
                       padding: const EdgeInsets.all(2.0),
                       child: screenWidth < 768.0
@@ -754,8 +696,8 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: _selectedAddress));
+                                Clipboard.setData(ClipboardData(
+                                    text: currentAddress.address));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
@@ -774,8 +716,8 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: _selectedAddress));
+                                Clipboard.setData(ClipboardData(
+                                    text: currentAddress.address));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
@@ -788,14 +730,14 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                                   children: [
                                     Icon(Icons.copy,
                                         size: 14.0,
-                                        color: widget.isDarkTheme
+                                        color: isDarkTheme
                                             ? darkThemeInputLabelColor
                                             : lightThemeInputLabelColor),
                                     const SizedBox(width: 4.0, height: 16.0),
                                     Text("COPY",
                                         style: TextStyle(
                                             fontSize: 14.0,
-                                            color: widget.isDarkTheme
+                                            color: isDarkTheme
                                                 ? darkThemeInputLabelColor
                                                 : lightThemeInputLabelColor)),
                                   ],

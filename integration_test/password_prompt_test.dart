@@ -228,8 +228,8 @@ void main() {
               passwordConfirmationController: passwordConfirmationController,
               state: mockBloc.state,
               onPasswordChanged: (value) {
-                final error =
-                    validatePassword(value, passwordConfirmationController.text);
+                final error = validatePassword(
+                    value, passwordConfirmationController.text);
                 if (error == null) {
                   mockBloc.add(PasswordChanged(password: value));
                 } else {
@@ -248,7 +248,8 @@ void main() {
               onPressedBack: () {},
               onPressedContinue: () {
                 String? error = validatePasswordOnSubmit(
-                    passwordController.text, passwordConfirmationController.text);
+                    passwordController.text,
+                    passwordConfirmationController.text);
                 if (error == null) {
                   mockBloc.add(CreateWallet());
                 } else {
@@ -305,8 +306,8 @@ void main() {
               passwordConfirmationController: passwordConfirmationController,
               state: mockBloc.state,
               onPasswordChanged: (value) {
-                final error =
-                    validatePassword(value, passwordConfirmationController.text);
+                final error = validatePassword(
+                    value, passwordConfirmationController.text);
                 if (error == null) {
                   mockBloc.add(PasswordChanged(password: value));
                 } else {
@@ -325,7 +326,8 @@ void main() {
               onPressedBack: () {},
               onPressedContinue: () {
                 String? error = validatePasswordOnSubmit(
-                    passwordController.text, passwordConfirmationController.text);
+                    passwordController.text,
+                    passwordConfirmationController.text);
                 if (error == null) {
                   mockBloc.add(CreateWallet());
                 } else {
@@ -375,8 +377,8 @@ void main() {
               passwordConfirmationController: passwordConfirmationController,
               state: mockBloc.state,
               onPasswordChanged: (value) {
-                final error =
-                    validatePassword(value, passwordConfirmationController.text);
+                final error = validatePassword(
+                    value, passwordConfirmationController.text);
                 if (error == null) {
                   mockBloc.add(PasswordChanged(password: value));
                 } else {
@@ -395,7 +397,8 @@ void main() {
               onPressedBack: () {},
               onPressedContinue: () {
                 String? error = validatePasswordOnSubmit(
-                    passwordController.text, passwordConfirmationController.text);
+                    passwordController.text,
+                    passwordConfirmationController.text);
                 if (error == null) {
                   mockBloc.add(CreateWallet());
                 } else {

@@ -34,50 +34,51 @@ class AddressDropdownState extends State<AddressDropdown> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
-          decoration: BoxDecoration(
-            color: widget.isDarkTheme ? lightNavyDarkTheme : noBackgroundColor,
-            borderRadius: BorderRadius.circular(20.0),
-            border: widget.isDarkTheme
-                ? Border.all(color: noBackgroundColor)
-                : Border.all(color: greyLightThemeUnderlineColor),
-          ),
-          child: SizedBox(
-            height: 40,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<Address>(
-                  style: TextStyle(
-                      color: widget.isDarkTheme
-                          ? darkThemeInputLabelColor
-                          : lightThemeInputLabelColor),
-                  isExpanded: true,
-                  value: _selectedAddress,
-                  onChanged: (Address? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedAddress = newValue;
-                      });
-                      widget.onChange(newValue);
-                    }
-                  },
-                  items: widget.addresses
-                      .map<DropdownMenuItem<Address>>((Address address) {
-                    return DropdownMenuItem<Address>(
-                      value: address,
-                      child: Text(
-                        address.address,
-                        style: const TextStyle(
-                            overflow: TextOverflow.ellipsis, fontSize: 16.0),
-                      ),
-                    );
-                  }).toList(),
-                  icon: const Icon(Icons.keyboard_arrow_down),
+            decoration: BoxDecoration(
+              color:
+                  widget.isDarkTheme ? lightNavyDarkTheme : noBackgroundColor,
+              borderRadius: BorderRadius.circular(10.0),
+              border: widget.isDarkTheme
+                  ? Border.all(color: noBackgroundColor)
+                  : Border.all(color: greyLightThemeUnderlineColor),
+            ),
+            child: SizedBox(
+              height: 40,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<Address>(
+                    style: TextStyle(
+                        color: widget.isDarkTheme
+                            ? darkThemeInputLabelColor
+                            : lightThemeInputLabelColor),
+                    isExpanded: true,
+                    value: _selectedAddress,
+                    onChanged: (Address? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedAddress = newValue;
+                        });
+                        widget.onChange(newValue);
+                      }
+                    },
+                    items: widget.addresses
+                        .map<DropdownMenuItem<Address>>((Address address) {
+                      return DropdownMenuItem<Address>(
+                        value: address,
+                        child: Text(
+                          address.address,
+                          style: const TextStyle(
+                              overflow: TextOverflow.ellipsis, fontSize: 16.0),
+                        ),
+                      );
+                    }).toList(),
+                    borderRadius: BorderRadius.circular(10.0),
+                    icon: const Icon(Icons.keyboard_arrow_down),
+                  ),
                 ),
               ),
-            ),
-          ),
-        );
+            ));
       },
     );
   }
