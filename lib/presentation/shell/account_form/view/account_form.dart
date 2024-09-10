@@ -33,22 +33,22 @@ SliverWoltModalSheetPage addAccountModal(
       icon: const Icon(Icons.close),
       onPressed: Navigator.of(modalSheetContext).pop,
     ),
-    child: Padding(
-        padding: const EdgeInsets.fromLTRB(
+    child: const Padding(
+        padding: EdgeInsets.fromLTRB(
           pagePadding,
           50,
           pagePadding,
           pagePadding,
         ),
-        child: AddAccountForm(parentContext: modalSheetContext)),
+        child: AddAccountForm()),
   );
 }
 
 final validAccount = RegExp(r"^\d\'$");
 
 class AddAccountForm extends StatefulWidget {
-  final BuildContext? parentContext;
-  const AddAccountForm({super.key, this.parentContext});
+  final BuildContext? modalSheetContext;
+  const AddAccountForm({super.key, this.modalSheetContext});
 
   @override
   State<AddAccountForm> createState() => _AddAccountFormState();
@@ -110,9 +110,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
           shell.refresh();
 
           Navigator.of(context).pop();
-          if (widget.parentContext != null) {
-            Navigator.of(widget.parentContext!).pop();
-          }
 
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text("Success"),
@@ -124,9 +121,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
       builder: (context, state) {
         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         return state.maybeWhen(
-          loading: () => const Center(
-            child: CircularProgressIndicator(),
-          ),
           initial: () => Column(
             children: [
               Text(
@@ -154,7 +148,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                       },
                     ),
                     HorizonDialogSubmitButton(
-                      buttonText: 'CONTINUE',
+                      textChild: const Text('CONTINUE'),
                       onPressed: () {
                         // Validate will return true if the form is valid, or false if
                         // the form is invalid.
@@ -171,7 +165,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
               ),
             ],
           ),
-          finalize: () {
+          orElse: () {
             final passwordController = TextEditingController();
 
             final passwordFormKey = GlobalKey<FormState>();
@@ -195,6 +189,16 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     },
                   ),
                   HorizonDialogSubmitButton(
+                    textChild: state.maybeWhen(
+                        loading: () => const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator()),
+                        success: (_) => const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator()),
+                        orElse: () => const Text('SUBMIT')),
                     onPressed: () {
                       // Validate will return true if the form is valid, or false if
                       // the form is invalid.
@@ -229,7 +233,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
               ),
             );
           },
-          orElse: () => const SizedBox.shrink(),
         );
       },
     );
