@@ -55,8 +55,9 @@ void main() {
 
   Widget buildTestableWidget(Widget child) {
     return MaterialApp(
-      home: child,
-    );
+        home: Scaffold(
+      body: child,
+    ));
   }
 
   group('PasswordPrompt Widget Tests', () {
@@ -219,42 +220,44 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: BlocProvider<OnboardingCreateBloc>.value(
-          value: mockBloc,
-          child: PasswordPrompt(
-            passwordController: passwordController,
-            passwordConfirmationController: passwordConfirmationController,
-            state: mockBloc.state,
-            onPasswordChanged: (value) {
-              final error =
-                  validatePassword(value, passwordConfirmationController.text);
-              if (error == null) {
-                mockBloc.add(PasswordChanged(password: value));
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            onPasswordConfirmationChanged: (value) {
-              final error = validatePassword(passwordController.text, value);
-              if (error == null) {
-                mockBloc.add(
-                    PasswordConfirmationChanged(passwordConfirmation: value));
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            onPressedBack: () {},
-            onPressedContinue: () {
-              String? error = validatePasswordOnSubmit(
-                  passwordController.text, passwordConfirmationController.text);
-              if (error == null) {
-                mockBloc.add(CreateWallet());
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            backButtonText: 'Back',
-            continueButtonText: 'Continue',
+        home: Scaffold(
+          body: BlocProvider<OnboardingCreateBloc>.value(
+            value: mockBloc,
+            child: PasswordPrompt(
+              passwordController: passwordController,
+              passwordConfirmationController: passwordConfirmationController,
+              state: mockBloc.state,
+              onPasswordChanged: (value) {
+                final error =
+                    validatePassword(value, passwordConfirmationController.text);
+                if (error == null) {
+                  mockBloc.add(PasswordChanged(password: value));
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              onPasswordConfirmationChanged: (value) {
+                final error = validatePassword(passwordController.text, value);
+                if (error == null) {
+                  mockBloc.add(
+                      PasswordConfirmationChanged(passwordConfirmation: value));
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              onPressedBack: () {},
+              onPressedContinue: () {
+                String? error = validatePasswordOnSubmit(
+                    passwordController.text, passwordConfirmationController.text);
+                if (error == null) {
+                  mockBloc.add(CreateWallet());
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              backButtonText: 'Back',
+              continueButtonText: 'Continue',
+            ),
           ),
         ),
       ),
@@ -294,42 +297,44 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: BlocProvider<OnboardingCreateBloc>.value(
-          value: mockBloc,
-          child: PasswordPrompt(
-            passwordController: passwordController,
-            passwordConfirmationController: passwordConfirmationController,
-            state: mockBloc.state,
-            onPasswordChanged: (value) {
-              final error =
-                  validatePassword(value, passwordConfirmationController.text);
-              if (error == null) {
-                mockBloc.add(PasswordChanged(password: value));
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            onPasswordConfirmationChanged: (value) {
-              final error = validatePassword(passwordController.text, value);
-              if (error == null) {
-                mockBloc.add(
-                    PasswordConfirmationChanged(passwordConfirmation: value));
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            onPressedBack: () {},
-            onPressedContinue: () {
-              String? error = validatePasswordOnSubmit(
-                  passwordController.text, passwordConfirmationController.text);
-              if (error == null) {
-                mockBloc.add(CreateWallet());
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            backButtonText: 'Back',
-            continueButtonText: 'Continue',
+        home: Scaffold(
+          body: BlocProvider<OnboardingCreateBloc>.value(
+            value: mockBloc,
+            child: PasswordPrompt(
+              passwordController: passwordController,
+              passwordConfirmationController: passwordConfirmationController,
+              state: mockBloc.state,
+              onPasswordChanged: (value) {
+                final error =
+                    validatePassword(value, passwordConfirmationController.text);
+                if (error == null) {
+                  mockBloc.add(PasswordChanged(password: value));
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              onPasswordConfirmationChanged: (value) {
+                final error = validatePassword(passwordController.text, value);
+                if (error == null) {
+                  mockBloc.add(
+                      PasswordConfirmationChanged(passwordConfirmation: value));
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              onPressedBack: () {},
+              onPressedContinue: () {
+                String? error = validatePasswordOnSubmit(
+                    passwordController.text, passwordConfirmationController.text);
+                if (error == null) {
+                  mockBloc.add(CreateWallet());
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              backButtonText: 'Back',
+              continueButtonText: 'Continue',
+            ),
           ),
         ),
       ),
@@ -362,42 +367,44 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: BlocProvider<OnboardingCreateBloc>.value(
-          value: mockBloc,
-          child: PasswordPrompt(
-            passwordController: passwordController,
-            passwordConfirmationController: passwordConfirmationController,
-            state: mockBloc.state,
-            onPasswordChanged: (value) {
-              final error =
-                  validatePassword(value, passwordConfirmationController.text);
-              if (error == null) {
-                mockBloc.add(PasswordChanged(password: value));
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            onPasswordConfirmationChanged: (value) {
-              final error = validatePassword(passwordController.text, value);
-              if (error == null) {
-                mockBloc.add(
-                    PasswordConfirmationChanged(passwordConfirmation: value));
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            onPressedBack: () {},
-            onPressedContinue: () {
-              String? error = validatePasswordOnSubmit(
-                  passwordController.text, passwordConfirmationController.text);
-              if (error == null) {
-                mockBloc.add(CreateWallet());
-              } else {
-                mockBloc.add(PasswordError(error: error));
-              }
-            },
-            backButtonText: 'Back',
-            continueButtonText: 'Continue',
+        home: Scaffold(
+          body: BlocProvider<OnboardingCreateBloc>.value(
+            value: mockBloc,
+            child: PasswordPrompt(
+              passwordController: passwordController,
+              passwordConfirmationController: passwordConfirmationController,
+              state: mockBloc.state,
+              onPasswordChanged: (value) {
+                final error =
+                    validatePassword(value, passwordConfirmationController.text);
+                if (error == null) {
+                  mockBloc.add(PasswordChanged(password: value));
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              onPasswordConfirmationChanged: (value) {
+                final error = validatePassword(passwordController.text, value);
+                if (error == null) {
+                  mockBloc.add(
+                      PasswordConfirmationChanged(passwordConfirmation: value));
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              onPressedBack: () {},
+              onPressedContinue: () {
+                String? error = validatePasswordOnSubmit(
+                    passwordController.text, passwordConfirmationController.text);
+                if (error == null) {
+                  mockBloc.add(CreateWallet());
+                } else {
+                  mockBloc.add(PasswordError(error: error));
+                }
+              },
+              backButtonText: 'Back',
+              continueButtonText: 'Continue',
+            ),
           ),
         ),
       ),
