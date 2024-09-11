@@ -12,9 +12,9 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
-import "package:horizon/remote_data_bloc/remote_data_state.dart";
+import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
 
-class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
+class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
   final accountRepository = GetIt.I<AccountRepository>();
   final walletRepository = GetIt.I<WalletRepository>();
   final walletService = GetIt.I<WalletService>();
@@ -22,9 +22,13 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
   final addressService = GetIt.I<AddressService>();
   final addressRepository = GetIt.I<AddressRepository>();
 
-  AccountFormBloc() : super(const RemoteDataState.initial()) {
+  AccountFormBloc() : super(const AccountFormState.initial()) {
+    on<Finalize>((event, emit) async {
+      emit(const AccountFormState.finalize());
+    });
+
     on<Submit>((event, emit) async {
-      emit(const RemoteDataState.loading());
+      emit(const AccountFormState.loading());
 
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
@@ -129,16 +133,20 @@ class AccountFormBloc extends Bloc<AccountFormEvent, RemoteDataState<Account>> {
             throw Exception("invalid import format");
         }
 
-        emit(RemoteDataState.success(account));
+        emit(AccountFormState.success(account));
 
         // this is a bit of a hack to reset the form after success
 
         await Future.delayed(const Duration(milliseconds: 500));
 
-        emit(const RemoteDataState.initial());
+        emit(const AccountFormState.initial());
       } catch (e) {
-        emit(RemoteDataState.error(e.toString()));
+        emit(AccountFormState.error(e.toString()));
       }
+    });
+
+    on<Reset>((event, emit) {
+      emit(const AccountFormState.initial());
     });
   }
 }

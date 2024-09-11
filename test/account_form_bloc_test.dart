@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:get_it/get_it.dart';
@@ -14,7 +15,6 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 
@@ -95,7 +95,7 @@ void main() {
     }
 
     // this test isn't super helpful as args are just passed through
-    blocTest<AccountFormBloc, RemoteDataState<Account>>(
+    blocTest<AccountFormBloc, AccountFormState>(
       'submits form with Horizon import format',
       build: () {
         setupCommonMocks();
@@ -121,8 +121,8 @@ void main() {
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<Account>.loading(),
-        isA<RemoteDataState<Account>>().having(
+        const AccountFormState.loading(),
+        isA<AccountFormState>().having(
           (state) => state.whenOrNull(
             success: (account) => account,
           ),
@@ -136,7 +136,7 @@ void main() {
               .having(
                   (a) => a.importFormat, 'importFormat', ImportFormat.horizon),
         ),
-        // RemoteDataState<Account>.success(Account(
+        // AccountFormState<Account>.success(Account(
         //   uuid: any(named: "uuid"),
         //   name: any(named: "name"),
         //   walletUuid: walletUuid,

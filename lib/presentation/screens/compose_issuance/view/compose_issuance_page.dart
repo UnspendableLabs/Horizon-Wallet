@@ -116,245 +116,304 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
       );
     }, builder: (context, state) {
       return state.submitState.maybeWhen(
-        loading: () => const CircularProgressIndicator(),
-        error: (msg) => Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SelectableText('An error occurred: $msg')),
-        initial: () {
-          return state.balancesState.when(
-            initial: () => const SizedBox.shrink(),
-            loading: () => const SizedBox.shrink(),
-            error: (e) => SelectableText('An error occurred: $e'),
-            success: (balances) {
-              bool hasXCPBalance = balances.isNotEmpty &&
-                  balances.any((balance) => balance.asset == 'XCP');
-              Balance? xcpBalance = hasXCPBalance
-                  ? balances.firstWhere((element) => element.asset == 'XCP')
-                  : null;
-              bool isNamedAssetEnabled =
-                  xcpBalance != null && xcpBalance.quantity >= 50000000;
-              String quantity =
-                  xcpBalance != null ? xcpBalance.quantityNormalized : '0';
+          loading: () => const CircularProgressIndicator(),
+          error: (msg) => Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SelectableText('An error occurred: $msg')),
+          initial: () {
+            return state.balancesState.when(
+              initial: () => const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (e) => SelectableText('An error occurred: $e'),
+              success: (balances) {
+                bool hasXCPBalance = balances.isNotEmpty &&
+                    balances.any((balance) => balance.asset == 'XCP');
+                Balance? xcpBalance = hasXCPBalance
+                    ? balances.firstWhere((element) => element.asset == 'XCP')
+                    : null;
+                bool isNamedAssetEnabled =
+                    xcpBalance != null && xcpBalance.quantity >= 50000000;
+                String quantity =
+                    xcpBalance != null ? xcpBalance.quantityNormalized : '0';
 
-              return Form(
-                key: _formKey,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      HorizonTextFormField(
-                        enabled: false,
-                        isDarkMode: widget.isDarkMode,
-                        controller: fromAddressController,
-                        label: "Source",
-                        floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        fillColor: widget.isDarkMode
-                            ? dialogBackgroundColorDarkTheme
-                            : dialogBackgroundColorLightTheme,
-                        textColor:
-                            widget.isDarkMode ? mainTextWhite : mainTextBlack,
-                      ),
-                      const SizedBox(height: 16.0),
-                      Stack(
-                        children: [
-                          HorizonTextFormField(
-                            isDarkMode: widget.isDarkMode,
-                            controller: nameController,
-                            label: "Token name",
-                            floatingLabelBehavior: FloatingLabelBehavior.auto,
-                            textCapitalization: TextCapitalization.characters,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a name for your asset';
-                              }
-                              if (!isNamedAssetEnabled &&
-                                  !RegExp(r'^A\d+$').hasMatch(value)) {
-                                return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
-                              }
-                              return null;
-                            },
-                          ),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            bottom: 0,
-                            child: IconButton(
-                              icon: const Icon(Icons.autorenew),
-                              onPressed: () {
-                                setState(() {
-                                  nameController.text =
-                                      generateNumericAssetName();
-                                });
+                return Form(
+                  key: _formKey,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        HorizonTextFormField(
+                          enabled: false,
+                          isDarkMode: widget.isDarkMode,
+                          controller: fromAddressController,
+                          label: "Source",
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                          fillColor: widget.isDarkMode
+                              ? dialogBackgroundColorDarkTheme
+                              : dialogBackgroundColorLightTheme,
+                          textColor:
+                              widget.isDarkMode ? mainTextWhite : mainTextBlack,
+                        ),
+                        const SizedBox(height: 16.0),
+                        Stack(
+                          children: [
+                            HorizonTextFormField(
+                              isDarkMode: widget.isDarkMode,
+                              controller: nameController,
+                              label: "Token name",
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
+                              textCapitalization: TextCapitalization.characters,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a name for your asset';
+                                }
+                                if (!isNamedAssetEnabled &&
+                                    !RegExp(r'^A\d+$').hasMatch(value)) {
+                                  return 'You must have at least 0.5 XCP to create a named asset. Your balance is: $quantity';
+                                }
+                                return null;
                               },
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16.0),
-                      HorizonTextFormField(
-                        isDarkMode: widget.isDarkMode,
-                        controller: quantityController,
-                        label: 'Quantity',
-                        floatingLabelBehavior: FloatingLabelBehavior.auto,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true, signed: false),
-                        inputFormatters: [
-                          isDivisible == true
-                              ? FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d*$'))
-                              : FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a quantity';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16.0),
-                      HorizonTextFormField(
-                        isDarkMode: widget.isDarkMode,
-                        controller: descriptionController,
-                        label: 'Description (optional)',
-                        floatingLabelBehavior: FloatingLabelBehavior.auto,
-                      ),
-                      const SizedBox(height: 16.0),
-                      Column(
-                        children: [
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: isDivisible,
-                                onChanged: (bool? value) {
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: IconButton(
+                                icon: const Icon(Icons.autorenew),
+                                onPressed: () {
                                   setState(() {
-                                    isDivisible = value ?? false;
-                                    quantityController.text = '';
+                                    nameController.text =
+                                        generateNumericAssetName();
                                   });
                                 },
                               ),
-                              Text('Divisible',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: widget.isDarkMode
-                                          ? mainTextWhite
-                                          : mainTextBlack)),
-                            ],
-                          ),
-                          const Row(
-                            children: [
-                              SizedBox(width: 30.0),
-                              Expanded(
-                                child: Text(
-                                  'Whether this asset is divisible or not. Defaults to true.',
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: isLocked,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isLocked = value ?? false;
-                                  });
-                                },
-                              ),
-                              Text('Lock',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: widget.isDarkMode
-                                          ? mainTextWhite
-                                          : mainTextBlack)),
-                            ],
-                          ),
-                          const Row(
-                            children: [
-                              SizedBox(width: 30.0),
-                              Expanded(
-                                child: Text(
-                                  'Whether this issuance should lock supply of this asset forever. Defaults to false.',
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 16.0),
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: isReset,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    isReset = value ?? false;
-                                  });
-                                },
-                              ),
-                              Text('Reset',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: widget.isDarkMode
-                                          ? mainTextWhite
-                                          : mainTextBlack)),
-                            ],
-                          ),
-                          const Row(
-                            children: [
-                              SizedBox(width: 30.0),
-                              Expanded(
-                                child: Text(
-                                  'Whether this issuance should reset any existing supply. Defaults to false.',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      HorizonDialogSubmitButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            // TODO: wrap this in function and write some tests
-                            Decimal input =
-                                Decimal.parse(quantityController.text);
-
-                            int quantity;
-
-                            if (isDivisible) {
-                              quantity = (input * Decimal.fromInt(100000000))
-                                  .toBigInt()
-                                  .toInt();
-                            } else {
-                              quantity = (input).toBigInt().toInt();
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16.0),
+                        HorizonTextFormField(
+                          isDarkMode: widget.isDarkMode,
+                          controller: quantityController,
+                          label: 'Quantity',
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true, signed: false),
+                          inputFormatters: [
+                            isDivisible == true
+                                ? FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d*$'))
+                                : FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a quantity';
                             }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16.0),
+                        HorizonTextFormField(
+                          isDarkMode: widget.isDarkMode,
+                          controller: descriptionController,
+                          label: 'Description (optional)',
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        ),
+                        const SizedBox(height: 16.0),
+                        Column(
+                          children: [
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isDivisible,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isDivisible = value ?? false;
+                                      quantityController.text = '';
+                                    });
+                                  },
+                                ),
+                                Text('Divisible',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.isDarkMode
+                                            ? mainTextWhite
+                                            : mainTextBlack)),
+                              ],
+                            ),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0),
+                                Expanded(
+                                  child: Text(
+                                    'Whether this asset is divisible or not. Defaults to true.',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isLocked,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isLocked = value ?? false;
+                                    });
+                                  },
+                                ),
+                                Text('Lock',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.isDarkMode
+                                            ? mainTextWhite
+                                            : mainTextBlack)),
+                              ],
+                            ),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0),
+                                Expanded(
+                                  child: Text(
+                                    'Whether this issuance should lock supply of this asset forever. Defaults to false.',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16.0),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isReset,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      isReset = value ?? false;
+                                    });
+                                  },
+                                ),
+                                Text('Reset',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.isDarkMode
+                                            ? mainTextWhite
+                                            : mainTextBlack)),
+                              ],
+                            ),
+                            const Row(
+                              children: [
+                                SizedBox(width: 30.0),
+                                Expanded(
+                                  child: Text(
+                                    'Whether this issuance should reset any existing supply. Defaults to false.',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        HorizonDialogSubmitButton(
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              // TODO: wrap this in function and write some tests
+                              Decimal input =
+                                  Decimal.parse(quantityController.text);
 
-                            context
-                                .read<ComposeIssuanceBloc>()
-                                .add(ComposeTransactionEvent(
-                                  sourceAddress: widget.address.address,
-                                  name: nameController.text,
-                                  quantity: quantity,
-                                  description: descriptionController.text,
-                                  divisible: isDivisible,
-                                  lock: isLocked,
-                                  reset: isReset,
-                                ));
-                          }
-                        },
-                      ),
-                    ],
+                              int quantity;
+
+                              if (isDivisible) {
+                                quantity = (input * Decimal.fromInt(100000000))
+                                    .toBigInt()
+                                    .toInt();
+                              } else {
+                                quantity = (input).toBigInt().toInt();
+                              }
+
+                              context
+                                  .read<ComposeIssuanceBloc>()
+                                  .add(ComposeTransactionEvent(
+                                    sourceAddress: widget.address.address,
+                                    name: nameController.text,
+                                    quantity: quantity,
+                                    description: descriptionController.text,
+                                    divisible: isDivisible,
+                                    lock: isLocked,
+                                    reset: isReset,
+                                  ));
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        },
-        composing: (composeIssuanceState) => ComposeIssuanceConfirmationPage(
-          isDarkMode: widget.isDarkMode,
-          composeIssuanceState: composeIssuanceState,
-          address: widget.address,
-        ),
-        orElse: () => const SizedBox.shrink(),
-      );
+                );
+              },
+            );
+          },
+          composing: (composeIssuanceState) => ComposeIssuanceConfirmationPage(
+                isDarkMode: widget.isDarkMode,
+                composeIssuanceState: composeIssuanceState,
+                address: widget.address,
+              ),
+          orElse: () => const SizedBox.shrink(),
+          finalizing: (finalizingState) {
+            final passwordFormKey = GlobalKey<FormState>();
+            return Form(
+                key: passwordFormKey,
+                child: Column(
+                  children: [
+                    HorizonTextFormField(
+                      isDarkMode: widget.isDarkMode,
+                      obscureText: true,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      controller: passwordController,
+                      label: "Password",
+                      floatingLabelBehavior: FloatingLabelBehavior.auto,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Divider(
+                        color: widget.isDarkMode
+                            ? greyDarkThemeUnderlineColor
+                            : greyLightThemeUnderlineColor,
+                        thickness: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        HorizonCancelButton(
+                          isDarkMode: widget.isDarkMode,
+                          onPressed: () {
+                            context.read<ComposeIssuanceBloc>().add(
+                                FetchFormData(currentAddress: widget.address));
+                          },
+                          buttonText: 'BACK',
+                        ),
+                        HorizonContinueButton(
+                          isDarkMode: widget.isDarkMode,
+                          onPressed: () {
+                            if (passwordFormKey.currentState!.validate()) {
+                              context.read<ComposeIssuanceBloc>().add(
+                                    SignAndBroadcastTransactionEvent(
+                                      password: passwordController.text,
+                                    ),
+                                  );
+                            }
+                          },
+                          buttonText: 'SIGN AND BROADCAST',
+                        ),
+                      ],
+                    ),
+                  ],
+                ));
+          });
     });
   }
 }
@@ -514,21 +573,6 @@ class _ComposeIssuanceConfirmationPageState
                     thickness: 1.0,
                   ),
                 ),
-                HorizonTextFormField(
-                  isDarkMode: widget.isDarkMode,
-                  obscureText: true,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  controller: passwordController,
-                  label: "Password",
-                  floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
                 const SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -547,16 +591,15 @@ class _ComposeIssuanceConfirmationPageState
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           context.read<ComposeIssuanceBloc>().add(
-                                SignAndBroadcastTransactionEvent(
+                                FinalizeTransactionEvent(
                                   composeIssuance: widget
                                       .composeIssuanceState.composeIssuance,
-                                  password: passwordController.text,
                                   fee: fee,
                                 ),
                               );
                         }
                       },
-                      buttonText: 'SIGN AND BROADCAST',
+                      buttonText: 'CONTINUE',
                     ),
                   ],
                 ),

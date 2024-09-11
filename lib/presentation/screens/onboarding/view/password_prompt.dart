@@ -59,8 +59,9 @@ class _PasswordPromptState extends State<PasswordPrompt> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
-                !isSmallScreen ? const SizedBox(height: 32) : const SizedBox.shrink(),
+                !isSmallScreen
+                    ? const SizedBox(height: 32)
+                    : const SizedBox.shrink(),
                 Text(
                   'Please create a password',
                   style: TextStyle(

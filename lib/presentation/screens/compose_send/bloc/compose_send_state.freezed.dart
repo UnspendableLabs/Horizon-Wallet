@@ -761,6 +761,8 @@ mixin _$SubmitState {
     required TResult Function() loading,
     required TResult Function(SubmitStateComposingSend submitStateComposingSend)
         composing,
+    required TResult Function(SubmitStateFinalizing submitStateFinalizing)
+        finalizing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -772,6 +774,7 @@ mixin _$SubmitState {
     TResult? Function()? loading,
     TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult? Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) =>
@@ -782,6 +785,7 @@ mixin _$SubmitState {
     TResult Function()? loading,
     TResult Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -792,6 +796,7 @@ mixin _$SubmitState {
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
     required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitFinalizing value) finalizing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) =>
@@ -801,6 +806,7 @@ mixin _$SubmitState {
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
     TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitFinalizing value)? finalizing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) =>
@@ -810,6 +816,7 @@ mixin _$SubmitState {
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
     TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitFinalizing value)? finalizing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -877,6 +884,8 @@ class _$SubmitInitialImpl implements _SubmitInitial {
     required TResult Function() loading,
     required TResult Function(SubmitStateComposingSend submitStateComposingSend)
         composing,
+    required TResult Function(SubmitStateFinalizing submitStateFinalizing)
+        finalizing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -891,6 +900,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
     TResult? Function()? loading,
     TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult? Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -904,6 +914,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
     TResult Function()? loading,
     TResult Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -920,6 +931,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
     required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitFinalizing value) finalizing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -932,6 +944,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
     TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitFinalizing value)? finalizing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -944,6 +957,7 @@ class _$SubmitInitialImpl implements _SubmitInitial {
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
     TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitFinalizing value)? finalizing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1001,6 +1015,8 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
     required TResult Function() loading,
     required TResult Function(SubmitStateComposingSend submitStateComposingSend)
         composing,
+    required TResult Function(SubmitStateFinalizing submitStateFinalizing)
+        finalizing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1015,6 +1031,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
     TResult? Function()? loading,
     TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult? Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1028,6 +1045,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
     TResult Function()? loading,
     TResult Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1044,6 +1062,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
     required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitFinalizing value) finalizing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1056,6 +1075,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
     TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitFinalizing value)? finalizing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1068,6 +1088,7 @@ class _$SubmitLoadingImpl implements _SubmitLoading {
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
     TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitFinalizing value)? finalizing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1154,6 +1175,8 @@ class _$SubmitComposingImpl implements _SubmitComposing {
     required TResult Function() loading,
     required TResult Function(SubmitStateComposingSend submitStateComposingSend)
         composing,
+    required TResult Function(SubmitStateFinalizing submitStateFinalizing)
+        finalizing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1168,6 +1191,7 @@ class _$SubmitComposingImpl implements _SubmitComposing {
     TResult? Function()? loading,
     TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult? Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1181,6 +1205,7 @@ class _$SubmitComposingImpl implements _SubmitComposing {
     TResult Function()? loading,
     TResult Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1197,6 +1222,7 @@ class _$SubmitComposingImpl implements _SubmitComposing {
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
     required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitFinalizing value) finalizing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1209,6 +1235,7 @@ class _$SubmitComposingImpl implements _SubmitComposing {
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
     TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitFinalizing value)? finalizing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1221,6 +1248,7 @@ class _$SubmitComposingImpl implements _SubmitComposing {
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
     TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitFinalizing value)? finalizing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1240,6 +1268,172 @@ abstract class _SubmitComposing implements SubmitState {
   SubmitStateComposingSend get submitStateComposingSend;
   @JsonKey(ignore: true)
   _$$SubmitComposingImplCopyWith<_$SubmitComposingImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$SubmitFinalizingImplCopyWith<$Res> {
+  factory _$$SubmitFinalizingImplCopyWith(_$SubmitFinalizingImpl value,
+          $Res Function(_$SubmitFinalizingImpl) then) =
+      __$$SubmitFinalizingImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({SubmitStateFinalizing submitStateFinalizing});
+}
+
+/// @nodoc
+class __$$SubmitFinalizingImplCopyWithImpl<$Res>
+    extends _$SubmitStateCopyWithImpl<$Res, _$SubmitFinalizingImpl>
+    implements _$$SubmitFinalizingImplCopyWith<$Res> {
+  __$$SubmitFinalizingImplCopyWithImpl(_$SubmitFinalizingImpl _value,
+      $Res Function(_$SubmitFinalizingImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? submitStateFinalizing = null,
+  }) {
+    return _then(_$SubmitFinalizingImpl(
+      null == submitStateFinalizing
+          ? _value.submitStateFinalizing
+          : submitStateFinalizing // ignore: cast_nullable_to_non_nullable
+              as SubmitStateFinalizing,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$SubmitFinalizingImpl implements _SubmitFinalizing {
+  const _$SubmitFinalizingImpl(this.submitStateFinalizing);
+
+  @override
+  final SubmitStateFinalizing submitStateFinalizing;
+
+  @override
+  String toString() {
+    return 'SubmitState.finalizing(submitStateFinalizing: $submitStateFinalizing)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SubmitFinalizingImpl &&
+            (identical(other.submitStateFinalizing, submitStateFinalizing) ||
+                other.submitStateFinalizing == submitStateFinalizing));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, submitStateFinalizing);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SubmitFinalizingImplCopyWith<_$SubmitFinalizingImpl> get copyWith =>
+      __$$SubmitFinalizingImplCopyWithImpl<_$SubmitFinalizingImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(SubmitStateComposingSend submitStateComposingSend)
+        composing,
+    required TResult Function(SubmitStateFinalizing submitStateFinalizing)
+        finalizing,
+    required TResult Function(String transactionHex, String sourceAddress)
+        success,
+    required TResult Function(String error) error,
+  }) {
+    return finalizing(submitStateFinalizing);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
+    TResult? Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
+    TResult? Function(String transactionHex, String sourceAddress)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return finalizing?.call(submitStateFinalizing);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(SubmitStateComposingSend submitStateComposingSend)?
+        composing,
+    TResult Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
+    TResult Function(String transactionHex, String sourceAddress)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (finalizing != null) {
+      return finalizing(submitStateFinalizing);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SubmitInitial value) initial,
+    required TResult Function(_SubmitLoading value) loading,
+    required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitFinalizing value) finalizing,
+    required TResult Function(_SubmitSuccess value) success,
+    required TResult Function(_SubmitError value) error,
+  }) {
+    return finalizing(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SubmitInitial value)? initial,
+    TResult? Function(_SubmitLoading value)? loading,
+    TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitFinalizing value)? finalizing,
+    TResult? Function(_SubmitSuccess value)? success,
+    TResult? Function(_SubmitError value)? error,
+  }) {
+    return finalizing?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SubmitInitial value)? initial,
+    TResult Function(_SubmitLoading value)? loading,
+    TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitFinalizing value)? finalizing,
+    TResult Function(_SubmitSuccess value)? success,
+    TResult Function(_SubmitError value)? error,
+    required TResult orElse(),
+  }) {
+    if (finalizing != null) {
+      return finalizing(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _SubmitFinalizing implements SubmitState {
+  const factory _SubmitFinalizing(
+          final SubmitStateFinalizing submitStateFinalizing) =
+      _$SubmitFinalizingImpl;
+
+  SubmitStateFinalizing get submitStateFinalizing;
+  @JsonKey(ignore: true)
+  _$$SubmitFinalizingImplCopyWith<_$SubmitFinalizingImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1321,6 +1515,8 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
     required TResult Function() loading,
     required TResult Function(SubmitStateComposingSend submitStateComposingSend)
         composing,
+    required TResult Function(SubmitStateFinalizing submitStateFinalizing)
+        finalizing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1335,6 +1531,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
     TResult? Function()? loading,
     TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult? Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1348,6 +1545,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
     TResult Function()? loading,
     TResult Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1364,6 +1562,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
     required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitFinalizing value) finalizing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1376,6 +1575,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
     TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitFinalizing value)? finalizing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1388,6 +1588,7 @@ class _$SubmitSuccessImpl implements _SubmitSuccess {
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
     TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitFinalizing value)? finalizing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
@@ -1479,6 +1680,8 @@ class _$SubmitErrorImpl implements _SubmitError {
     required TResult Function() loading,
     required TResult Function(SubmitStateComposingSend submitStateComposingSend)
         composing,
+    required TResult Function(SubmitStateFinalizing submitStateFinalizing)
+        finalizing,
     required TResult Function(String transactionHex, String sourceAddress)
         success,
     required TResult Function(String error) error,
@@ -1493,6 +1696,7 @@ class _$SubmitErrorImpl implements _SubmitError {
     TResult? Function()? loading,
     TResult? Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult? Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult? Function(String transactionHex, String sourceAddress)? success,
     TResult? Function(String error)? error,
   }) {
@@ -1506,6 +1710,7 @@ class _$SubmitErrorImpl implements _SubmitError {
     TResult Function()? loading,
     TResult Function(SubmitStateComposingSend submitStateComposingSend)?
         composing,
+    TResult Function(SubmitStateFinalizing submitStateFinalizing)? finalizing,
     TResult Function(String transactionHex, String sourceAddress)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
@@ -1522,6 +1727,7 @@ class _$SubmitErrorImpl implements _SubmitError {
     required TResult Function(_SubmitInitial value) initial,
     required TResult Function(_SubmitLoading value) loading,
     required TResult Function(_SubmitComposing value) composing,
+    required TResult Function(_SubmitFinalizing value) finalizing,
     required TResult Function(_SubmitSuccess value) success,
     required TResult Function(_SubmitError value) error,
   }) {
@@ -1534,6 +1740,7 @@ class _$SubmitErrorImpl implements _SubmitError {
     TResult? Function(_SubmitInitial value)? initial,
     TResult? Function(_SubmitLoading value)? loading,
     TResult? Function(_SubmitComposing value)? composing,
+    TResult? Function(_SubmitFinalizing value)? finalizing,
     TResult? Function(_SubmitSuccess value)? success,
     TResult? Function(_SubmitError value)? error,
   }) {
@@ -1546,6 +1753,7 @@ class _$SubmitErrorImpl implements _SubmitError {
     TResult Function(_SubmitInitial value)? initial,
     TResult Function(_SubmitLoading value)? loading,
     TResult Function(_SubmitComposing value)? composing,
+    TResult Function(_SubmitFinalizing value)? finalizing,
     TResult Function(_SubmitSuccess value)? success,
     TResult Function(_SubmitError value)? error,
     required TResult orElse(),
