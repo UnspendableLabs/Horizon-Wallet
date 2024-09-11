@@ -467,12 +467,6 @@ class _MnemonicState extends State<Mnemonic> {
               ),
             );
           },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            iconColor: Theme.of(context).colorScheme.onPrimary,
-          ),
         ),
       ],
     );

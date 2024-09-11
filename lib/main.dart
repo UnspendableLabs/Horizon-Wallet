@@ -409,6 +409,13 @@ class MyApp extends StatelessWidget {
       contentTextStyle: TextStyle(color: mainTextBlack),
       backgroundColor: dialogBackgroundColorLightTheme,
     ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      modalBackgroundColor: dialogBackgroundColorLightTheme,
+      backgroundColor: dialogBackgroundColorLightTheme,
+    ),
+    popupMenuTheme: const PopupMenuThemeData(
+      color: dialogBackgroundColorLightTheme,
+    ),
     inputDecorationTheme: InputDecorationTheme(
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -494,6 +501,13 @@ class MyApp extends StatelessWidget {
     dialogTheme: const DialogTheme(
       contentTextStyle: TextStyle(color: mainTextWhite),
       backgroundColor: dialogBackgroundColorDarkTheme,
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      modalBackgroundColor: dialogBackgroundColorDarkTheme,
+      backgroundColor: dialogBackgroundColorDarkTheme,
+    ),
+    popupMenuTheme: const PopupMenuThemeData(
+      color: darkNavyDarkTheme,
     ),
     inputDecorationTheme: InputDecorationTheme(
       errorBorder: OutlineInputBorder(

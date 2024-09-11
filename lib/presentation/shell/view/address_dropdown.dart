@@ -35,8 +35,7 @@ class AddressDropdownState extends State<AddressDropdown> {
       builder: (context, constraints) {
         return Container(
             decoration: BoxDecoration(
-              color:
-                  widget.isDarkTheme ? lightNavyDarkTheme : noBackgroundColor,
+              color: widget.isDarkTheme ? lightNavyDarkTheme : greyLightTheme,
               borderRadius: BorderRadius.circular(10.0),
               border: widget.isDarkTheme
                   ? Border.all(color: noBackgroundColor)
