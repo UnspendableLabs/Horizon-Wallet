@@ -72,7 +72,7 @@ class HorizonDialog extends StatelessWidget {
                 ],
               ),
             ),
-            _buildSeparator(isDarkTheme),
+            _buildSeparator(),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: body,
@@ -129,13 +129,12 @@ class HorizonDialogSubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSeparator(isDarkTheme),
+          _buildSeparator(),
           Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: ConstrainedBox(
@@ -156,13 +155,10 @@ class HorizonDialogSubmitButton extends StatelessWidget {
   }
 }
 
-Widget _buildSeparator(bool isDarkTheme) {
-  return Padding(
-    padding: const EdgeInsets.all(0.0),
+Widget _buildSeparator() {
+  return const Padding(
+    padding: EdgeInsets.all(0.0),
     child: Divider(
-      color: isDarkTheme
-          ? greyDarkThemeUnderlineColor
-          : greyLightThemeUnderlineColor,
       thickness: 1.0,
     ),
   );

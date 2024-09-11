@@ -134,7 +134,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
         });
       },
       builder: (context, state) {
-        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         return state.maybeWhen(
           initial: () => Column(
             children: [
@@ -152,9 +151,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                   children: <Widget>[
                     HorizonTextFormField(
                       controller: nameController,
-                      isDarkMode: isDarkMode,
                       label: "Name",
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a name for your account';
@@ -191,7 +188,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
-                    isDarkMode: isDarkMode,
                     label: 'Password',
                     validator: (value) {
                       if (value == null || value.isEmpty) {

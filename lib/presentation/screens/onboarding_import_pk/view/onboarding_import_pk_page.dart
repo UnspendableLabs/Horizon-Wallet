@@ -264,7 +264,6 @@ class _PKFieldState extends State<PKField> {
           )),
           if (isSmallScreen) const SizedBox(height: 16),
           ImportFormatDropdown(
-            isDarkMode: isDarkMode,
             onChanged: (String? newValue) {
               setState(() {
                 selectedFormat = newValue;

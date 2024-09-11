@@ -267,7 +267,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
           ),
           if (isSmallScreen) const SizedBox(height: 16),
           ImportFormatDropdown(
-            isDarkMode: isDarkMode,
             onChanged: (String? newValue) {
               setState(() {
                 selectedFormat = newValue;

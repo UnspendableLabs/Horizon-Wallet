@@ -20,12 +20,10 @@ import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeSendPage extends StatelessWidget {
-  final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final double screenWidth;
 
   const ComposeSendPage({
-    required this.isDarkMode,
     required this.dashboardActivityFeedBloc,
     required this.screenWidth,
     super.key,
@@ -41,7 +39,6 @@ class ComposeSendPage extends StatelessWidget {
           ..add(FetchFormData(currentAddress: state.currentAddress)),
         child: _ComposeSendPage_(
           address: state.currentAddress,
-          isDarkMode: isDarkMode,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
           screenWidth: screenWidth,
         ),
@@ -52,13 +49,11 @@ class ComposeSendPage extends StatelessWidget {
 }
 
 class _ComposeSendPage_ extends StatefulWidget {
-  final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
   final double screenWidth;
   const _ComposeSendPage_(
-      {required this.isDarkMode,
-      required this.dashboardActivityFeedBloc,
+      {required this.dashboardActivityFeedBloc,
       required this.address,
       required this.screenWidth});
 
@@ -115,15 +110,13 @@ class AssetDropdown extends StatefulWidget {
   final List<Balance> balances;
   final TextEditingController controller;
   final void Function(String?) onSelected;
-  final bool isDarkMode;
 
   const AssetDropdown(
       {super.key,
       this.asset,
       required this.balances,
       required this.controller,
-      required this.onSelected,
-      required this.isDarkMode});
+      required this.onSelected});
 
   @override
   State<AssetDropdown> createState() => _AssetDropdownState();
@@ -159,7 +152,6 @@ class _AssetDropdownState extends State<AssetDropdown> {
   @override
   Widget build(BuildContext context) {
     return HorizonDropdownMenu(
-      isDarkMode: widget.isDarkMode,
       controller: widget.controller,
       label: 'Asset',
       onChanged: widget.onSelected,
@@ -198,8 +190,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(
         listener: (context, state) {
       state.submitState.maybeWhen(
@@ -226,21 +216,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
               children: <Widget>[
                 HorizonTextFormField(
                   enabled: false,
-                  isDarkMode: widget.isDarkMode,
                   controller: fromAddressController,
                   label: "Source",
-                  floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  fillColor: isDarkTheme
-                      ? dialogBackgroundColorDarkTheme
-                      : dialogBackgroundColorLightTheme,
-                  textColor: isDarkTheme ? mainTextWhite : mainTextBlack,
                 ),
                 const SizedBox(height: 16.0),
                 HorizonTextFormField(
-                    isDarkMode: widget.isDarkMode,
                     controller: destinationAddressController,
                     label: "Destination",
-                    floatingLabelBehavior: FloatingLabelBehavior.auto,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a destination address';
@@ -304,10 +286,8 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         composing: (composeSendState) {
           return ConfirmationPage(
             composeSendState: composeSendState,
-            isDarkMode: isDarkTheme,
             address: widget.address,
           );
-          // return _buildConfirmationPage(context, composeSendState, isDarkTheme);
         },
         finalizing: (finalizingState) {
           TextEditingController passwordController = TextEditingController();
@@ -319,13 +299,11 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(children: [
                   HorizonTextFormField(
-                    isDarkMode: widget.isDarkMode,
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
                     controller: passwordController,
                     label: "Password",
-                    floatingLabelBehavior: FloatingLabelBehavior.auto,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
@@ -333,12 +311,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                       return null;
                     },
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: Divider(
-                      color: widget.isDarkMode
-                          ? greyDarkThemeUnderlineColor
-                          : greyLightThemeUnderlineColor,
                       thickness: 1.0,
                     ),
                   ),
@@ -346,7 +321,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       HorizonCancelButton(
-                        isDarkMode: widget.isDarkMode,
                         onPressed: () {
                           context.read<ComposeSendBloc>().add(
                               FetchFormData(currentAddress: widget.address));
@@ -354,7 +328,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         buttonText: 'BACK',
                       ),
                       HorizonContinueButton(
-                        isDarkMode: widget.isDarkMode,
                         onPressed: () {
                           print("onPressed");
                           if (passwordFormKey.currentState!.validate()) {
@@ -391,11 +364,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
   Widget _buildQuantityInput(ComposeSendState state) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildQuantityInputField();
+      return _buildQuantityInputField(null);
     }, success: (balances) {
       if (balances.isEmpty) {
-        return HorizonTextFormField(
-          isDarkMode: widget.isDarkMode,
+        return const HorizonTextFormField(
           enabled: false,
         );
       }
@@ -404,8 +376,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
       if (balance == null) {
-        return HorizonTextFormField(
-          isDarkMode: widget.isDarkMode,
+        return const HorizonTextFormField(
           enabled: false,
         );
       }
@@ -414,14 +385,12 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
     });
   }
 
-  Widget _buildQuantityInputField([Balance? balance]) {
+  Widget _buildQuantityInputField(Balance? balance) {
     return Stack(
       children: [
         HorizonTextFormField(
-          isDarkMode: widget.isDarkMode,
           controller: quantityController,
           label: 'Quantity',
-          floatingLabelBehavior: FloatingLabelBehavior.auto,
           inputFormatters: [
             balance?.assetInfo.divisible == true
                 ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
@@ -459,12 +428,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                     });
                   }
                 : null,
-            child: Text('MAX',
+            child: const Text('MAX',
                 style: TextStyle(
-                    fontSize: 14.0,
-                    color: widget.isDarkMode
-                        ? darkThemeInputLabelColor
-                        : lightThemeInputLabelColor)),
+                  fontSize: 14.0,
+                )),
           ),
         ),
       ],
@@ -476,8 +443,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         orElse: () => const AssetDropdownLoading(),
         success: (balances) {
           if (balances.isEmpty) {
-            return HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
+            return const HorizonTextFormField(
               enabled: false,
               label: "No assets",
             );
@@ -495,7 +461,6 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           return SizedBox(
             height: 48.0,
             child: AssetDropdown(
-              isDarkMode: widget.isDarkMode,
               asset: asset,
               balances: balances,
               controller: assetController,
@@ -537,14 +502,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
 
 class ConfirmationPage extends StatefulWidget {
   final SubmitStateComposingSend composeSendState;
-  final bool isDarkMode;
   final Address address;
 
   const ConfirmationPage(
-      {super.key,
-      required this.composeSendState,
-      required this.isDarkMode,
-      required this.address});
+      {super.key, required this.composeSendState, required this.address});
 
   @override
   ConfirmationPageState createState() => ConfirmationPageState();
@@ -567,9 +528,6 @@ class ConfirmationPageState extends State<ConfirmationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final inputFillColor = widget.isDarkMode
-        ? dialogBackgroundColorDarkTheme
-        : dialogBackgroundColorLightTheme;
     final sendParams = widget.composeSendState.composeSend.params;
     return Form(
       key: _formKey,
@@ -588,51 +546,33 @@ class ConfirmationPageState extends State<ConfirmationPage> {
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Source Address",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(text: sendParams.source),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Destination Address",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(text: sendParams.destination),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             const SizedBox(height: 16.0),
             Row(
               children: [
                 Expanded(
                   child: HorizonTextFormField(
-                    isDarkMode: widget.isDarkMode,
                     label: "Quantity",
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
                     controller: TextEditingController(
                         text: sendParams.quantityNormalized),
                     enabled: false,
-                    fillColor: inputFillColor,
-                    textColor:
-                        widget.isDarkMode ? mainTextWhite : mainTextBlack,
                   ),
                 ),
                 const SizedBox(width: 16.0), // Spacing between inputs
                 Expanded(
                   child: HorizonTextFormField(
-                    isDarkMode: widget.isDarkMode,
                     label: "Asset",
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
                     controller: TextEditingController(text: sendParams.asset),
                     enabled: false,
-                    fillColor: inputFillColor,
-                    textColor:
-                        widget.isDarkMode ? mainTextWhite : mainTextBlack,
                   ),
                 ),
               ],
@@ -646,12 +586,9 @@ class ConfirmationPageState extends State<ConfirmationPage> {
                     fee = v.toInt();
                   });
                 }),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
               child: Divider(
-                color: widget.isDarkMode
-                    ? greyDarkThemeUnderlineColor
-                    : greyLightThemeUnderlineColor,
                 thickness: 1.0,
               ),
             ),
@@ -660,7 +597,6 @@ class ConfirmationPageState extends State<ConfirmationPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 HorizonCancelButton(
-                  isDarkMode: widget.isDarkMode,
                   onPressed: () {
                     context
                         .read<ComposeSendBloc>()
@@ -669,7 +605,6 @@ class ConfirmationPageState extends State<ConfirmationPage> {
                   buttonText: 'BACK',
                 ),
                 HorizonContinueButton(
-                  isDarkMode: widget.isDarkMode,
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       context.read<ComposeSendBloc>().add(

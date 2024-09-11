@@ -94,9 +94,6 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                             child: BlocBuilder<OnboardingCreateBloc,
                                 OnboardingCreateState>(
                               builder: (context, state) {
-                                print(
-                                    "state.createState: ${state.createState}");
-
                                 return switch (state.createState) {
                                   CreateStateNotAsked => const Mnemonic(),
                                   CreateStateMnemonicUnconfirmed =>

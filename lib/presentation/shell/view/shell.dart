@@ -108,13 +108,10 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                                   if (index !=
                                       state.accounts.length -
                                           1) // Avoid underline for the last element
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4.0),
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 4.0),
                                       child: Divider(
-                                        color: isDarkTheme
-                                            ? greyDarkThemeUnderlineColor
-                                            : greyLightThemeUnderlineColor,
                                         thickness: 1.0,
                                       ),
                                     ),

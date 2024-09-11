@@ -84,7 +84,6 @@ class _AddAccountFormState extends State<AddAddressForm> {
         await Future.delayed(const Duration(milliseconds: 500));
       });
     }, builder: (context, state) {
-      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
       return Form(
         key: _formKey,
         child: Column(
@@ -96,7 +95,6 @@ class _AddAccountFormState extends State<AddAddressForm> {
               obscureText: true,
               enableSuggestions: false,
               autocorrect: false,
-              isDarkMode: isDarkMode,
               label: 'Password',
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -112,12 +110,9 @@ class _AddAccountFormState extends State<AddAddressForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(0.0),
+                  const Padding(
+                    padding: EdgeInsets.all(0.0),
                     child: Divider(
-                      color: isDarkMode
-                          ? greyDarkThemeUnderlineColor
-                          : greyLightThemeUnderlineColor,
                       thickness: 1.0,
                     ),
                   ),

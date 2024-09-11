@@ -21,11 +21,9 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'dart:math';
 
 class ComposeIssuancePage extends StatelessWidget {
-  final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
   const ComposeIssuancePage({
-    required this.isDarkMode,
     required this.dashboardActivityFeedBloc,
     super.key,
   });
@@ -40,7 +38,6 @@ class ComposeIssuancePage extends StatelessWidget {
           ..add(FetchFormData(currentAddress: state.currentAddress)),
         child: _ComposeIssuancePage_(
           address: state.currentAddress,
-          isDarkMode: isDarkMode,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -50,13 +47,10 @@ class ComposeIssuancePage extends StatelessWidget {
 }
 
 class _ComposeIssuancePage_ extends StatefulWidget {
-  final bool isDarkMode;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
   const _ComposeIssuancePage_(
-      {required this.address,
-      required this.isDarkMode,
-      required this.dashboardActivityFeedBloc});
+      {required this.address, required this.dashboardActivityFeedBloc});
 
   @override
   _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
@@ -86,6 +80,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
         listener: (context, state) {
       state.submitState.maybeWhen(
@@ -145,24 +140,15 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       children: <Widget>[
                         HorizonTextFormField(
                           enabled: false,
-                          isDarkMode: widget.isDarkMode,
                           controller: fromAddressController,
                           label: "Source",
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
-                          fillColor: widget.isDarkMode
-                              ? dialogBackgroundColorDarkTheme
-                              : dialogBackgroundColorLightTheme,
-                          textColor:
-                              widget.isDarkMode ? mainTextWhite : mainTextBlack,
                         ),
                         const SizedBox(height: 16.0),
                         Stack(
                           children: [
                             HorizonTextFormField(
-                              isDarkMode: widget.isDarkMode,
                               controller: nameController,
                               label: "Token name",
-                              floatingLabelBehavior: FloatingLabelBehavior.auto,
                               textCapitalization: TextCapitalization.characters,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -193,10 +179,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         ),
                         const SizedBox(height: 16.0),
                         HorizonTextFormField(
-                          isDarkMode: widget.isDarkMode,
                           controller: quantityController,
                           label: 'Quantity',
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true, signed: false),
                           inputFormatters: [
@@ -214,10 +198,8 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         ),
                         const SizedBox(height: 16.0),
                         HorizonTextFormField(
-                          isDarkMode: widget.isDarkMode,
                           controller: descriptionController,
                           label: 'Description (optional)',
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
                         ),
                         const SizedBox(height: 16.0),
                         Column(
@@ -236,7 +218,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 Text('Divisible',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: widget.isDarkMode
+                                        color: isDarkMode
                                             ? mainTextWhite
                                             : mainTextBlack)),
                               ],
@@ -264,7 +246,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 Text('Lock',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: widget.isDarkMode
+                                        color: isDarkMode
                                             ? mainTextWhite
                                             : mainTextBlack)),
                               ],
@@ -293,7 +275,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 Text('Reset',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: widget.isDarkMode
+                                        color: isDarkMode
                                             ? mainTextWhite
                                             : mainTextBlack)),
                               ],
@@ -349,7 +331,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
             );
           },
           composing: (composeIssuanceState) => ComposeIssuanceConfirmationPage(
-                isDarkMode: widget.isDarkMode,
                 composeIssuanceState: composeIssuanceState,
                 address: widget.address,
               ),
@@ -361,13 +342,11 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                 child: Column(
                   children: [
                     HorizonTextFormField(
-                      isDarkMode: widget.isDarkMode,
                       obscureText: true,
                       enableSuggestions: false,
                       autocorrect: false,
                       controller: passwordController,
                       label: "Password",
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
@@ -375,12 +354,9 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         return null;
                       },
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
                       child: Divider(
-                        color: widget.isDarkMode
-                            ? greyDarkThemeUnderlineColor
-                            : greyLightThemeUnderlineColor,
                         thickness: 1.0,
                       ),
                     ),
@@ -389,7 +365,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         HorizonCancelButton(
-                          isDarkMode: widget.isDarkMode,
                           onPressed: () {
                             context.read<ComposeIssuanceBloc>().add(
                                 FetchFormData(currentAddress: widget.address));
@@ -397,7 +372,6 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           buttonText: 'BACK',
                         ),
                         HorizonContinueButton(
-                          isDarkMode: widget.isDarkMode,
                           onPressed: () {
                             if (passwordFormKey.currentState!.validate()) {
                               context.read<ComposeIssuanceBloc>().add(
@@ -419,15 +393,11 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
 }
 
 class ComposeIssuanceConfirmationPage extends StatefulWidget {
-  final bool isDarkMode;
   final SubmitStateComposingIssuance composeIssuanceState;
   final Address address;
 
   const ComposeIssuanceConfirmationPage(
-      {super.key,
-      required this.isDarkMode,
-      required this.composeIssuanceState,
-      required this.address});
+      {super.key, required this.composeIssuanceState, required this.address});
 
   @override
   State<ComposeIssuanceConfirmationPage> createState() =>
@@ -453,9 +423,6 @@ class _ComposeIssuanceConfirmationPageState
 
   @override
   Widget build(BuildContext context) {
-    final inputFillColor = widget.isDarkMode
-        ? dialogBackgroundColorDarkTheme
-        : dialogBackgroundColorLightTheme;
     final issueParams = widget.composeIssuanceState.composeIssuance.params;
     return Form(
       key: _formKey,
@@ -474,84 +441,55 @@ class _ComposeIssuanceConfirmationPageState
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Source Address",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(text: issueParams.source),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Token name",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(
                   text: widget.composeIssuanceState.composeIssuance.name),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Quantity",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(
                   text: widget.composeIssuanceState.composeIssuance.params
                       .quantityNormalized),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             const SizedBox(height: 16.0),
             widget.composeIssuanceState.composeIssuance.params.description != ''
                 ? HorizonTextFormField(
-                    isDarkMode: widget.isDarkMode,
                     label: "Description",
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
                     controller: TextEditingController(
                         text: widget.composeIssuanceState.composeIssuance.params
                             .description),
                     enabled: false,
-                    fillColor: inputFillColor,
-                    textColor:
-                        widget.isDarkMode ? mainTextWhite : mainTextBlack,
                   )
                 : const SizedBox.shrink(),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Divisible",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(
                   text: issueParams.divisible == true ? 'true' : 'false'),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Lock",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(
                   text: issueParams.lock == true ? 'true' : 'false'),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
               label: "Reset",
-              floatingLabelBehavior: FloatingLabelBehavior.always,
               controller: TextEditingController(
                   text: issueParams.reset == true ? 'true' : 'false'),
               enabled: false,
-              fillColor: inputFillColor,
-              textColor: widget.isDarkMode ? mainTextWhite : mainTextBlack,
             ),
             Column(
               children: [
@@ -564,12 +502,9 @@ class _ComposeIssuanceConfirmationPageState
                         fee = v.toInt();
                       });
                     }),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Divider(
-                    color: widget.isDarkMode
-                        ? greyDarkThemeUnderlineColor
-                        : greyLightThemeUnderlineColor,
                     thickness: 1.0,
                   ),
                 ),
@@ -578,7 +513,6 @@ class _ComposeIssuanceConfirmationPageState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     HorizonCancelButton(
-                      isDarkMode: widget.isDarkMode,
                       onPressed: () {
                         context
                             .read<ComposeIssuanceBloc>()
@@ -587,7 +521,6 @@ class _ComposeIssuanceConfirmationPageState
                       buttonText: 'BACK',
                     ),
                     HorizonContinueButton(
-                      isDarkMode: widget.isDarkMode,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           context.read<ComposeIssuanceBloc>().add(

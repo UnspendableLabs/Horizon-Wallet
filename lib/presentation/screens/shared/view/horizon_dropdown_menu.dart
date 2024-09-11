@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
 
 class HorizonDropdownMenu<T> extends StatelessWidget {
-  final bool isDarkMode;
   final List<DropdownMenuItem<T>> items;
   final Function(T?) onChanged;
   final String? label;
@@ -13,7 +11,6 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
 
   const HorizonDropdownMenu({
     super.key,
-    required this.isDarkMode,
     required this.items,
     required this.onChanged,
     this.label,
@@ -25,19 +22,10 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dropdownBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-
     return InputDecorator(
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-            color: isDarkMode
-                ? darkThemeInputLabelColor
-                : lightThemeInputLabelColor),
-        floatingLabelBehavior: FloatingLabelBehavior.auto,
-        filled: true,
-        fillColor: dropdownBackgroundColor,
+        floatingLabelBehavior: FloatingLabelBehavior.never,
         contentPadding: const EdgeInsets.symmetric(
             horizontal: 12.0, vertical: 8.0), // Adjust padding here
         border: OutlineInputBorder(
@@ -50,7 +38,6 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
           isExpanded: true,
           value: selectedValue ?? items.first.value,
           onChanged: onChanged,
-          dropdownColor: dropdownBackgroundColor,
           items: items,
           borderRadius: BorderRadius.circular(borderRadius ?? 10),
           icon: icon,

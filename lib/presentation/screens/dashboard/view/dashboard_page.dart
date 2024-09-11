@@ -420,7 +420,6 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonDialog(
                 title: "Compose Send",
                 body: ComposeSendPage(
-                  isDarkMode: isDarkTheme,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                   screenWidth: screenWidth,
                 ),
@@ -436,7 +435,6 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonDialog(
                 title: "Compose Issuance",
                 body: ComposeIssuancePage(
-                  isDarkMode: isDarkTheme,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -450,7 +448,6 @@ class AddressActions extends StatelessWidget {
                 dialog: HorizonDialog(
                   title: "Receive",
                   body: QRCodeDialog(
-                    isDarkTheme: isDarkTheme,
                     currentAddress: currentAddress,
                   ),
                   includeBackButton: false,
@@ -637,14 +634,13 @@ class _BalancesState extends State<Balances> {
 }
 
 class QRCodeDialog extends StatelessWidget {
-  final bool isDarkTheme;
   final Address currentAddress;
 
-  const QRCodeDialog(
-      {super.key, required this.isDarkTheme, required this.currentAddress});
+  const QRCodeDialog({super.key, required this.currentAddress});
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -663,10 +659,7 @@ class QRCodeDialog extends StatelessWidget {
           size: 230.0,
         ),
         const SizedBox(height: 16.0),
-        Divider(
-          color: isDarkTheme
-              ? greyDarkThemeUnderlineColor
-              : greyLightThemeUnderlineColor,
+        const Divider(
           thickness: 1.0,
         ),
         LayoutBuilder(

@@ -3,19 +3,14 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 
 class ImportFormatDropdown extends StatelessWidget {
-  final bool isDarkMode;
   final Function(String) onChanged;
   final String selectedFormat;
   const ImportFormatDropdown(
-      {super.key,
-      required this.isDarkMode,
-      required this.onChanged,
-      required this.selectedFormat});
+      {super.key, required this.onChanged, required this.selectedFormat});
 
   @override
   Widget build(BuildContext context) {
     return HorizonDropdownMenu(
-      isDarkMode: isDarkMode,
       controller: TextEditingController(),
       onChanged: (String? value) {
         if (value != null) {

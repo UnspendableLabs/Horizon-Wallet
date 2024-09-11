@@ -417,6 +417,15 @@ class MyApp extends StatelessWidget {
       color: dialogBackgroundColorLightTheme,
     ),
     inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: lightThemeInputColor,
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      labelStyle: const TextStyle(
+          fontWeight: FontWeight.normal, color: lightThemeInputLabelColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide.none,
+      ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: const BorderSide(color: redErrorText),
@@ -434,6 +443,16 @@ class MyApp extends StatelessWidget {
         },
       ),
     ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: lightThemeInputLabelColor,
+        backgroundColor: noBackgroundColor,
+        textStyle: const TextStyle(
+          color: lightThemeInputLabelColor,
+        ),
+      ),
+    ),
+    dividerColor: greyLightThemeUnderlineColor,
     cardTheme: CardTheme(
       color: lightThemeInputColor,
       shape: RoundedRectangleBorder(
@@ -510,6 +529,15 @@ class MyApp extends StatelessWidget {
       color: darkNavyDarkTheme,
     ),
     inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: darkThemeInputColor,
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      labelStyle: const TextStyle(
+          fontWeight: FontWeight.normal, color: darkThemeInputLabelColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide.none,
+      ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: const BorderSide(color: redErrorText),
@@ -527,6 +555,16 @@ class MyApp extends StatelessWidget {
         },
       ),
     ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: darkThemeInputLabelColor,
+        backgroundColor: noBackgroundColor,
+        textStyle: const TextStyle(
+          color: darkThemeInputLabelColor,
+        ),
+      ),
+    ),
+    dividerColor: greyDarkThemeUnderlineColor,
     cardTheme: CardTheme(
       color: darkThemeInputColor,
       shape: RoundedRectangleBorder(
