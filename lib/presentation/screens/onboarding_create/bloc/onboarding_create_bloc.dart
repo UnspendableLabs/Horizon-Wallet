@@ -120,7 +120,7 @@ class OnboardingCreateBloc
         }
         emit(state.copyWith(
             mnemonicError: MnemonicErrorState(
-                message: 'Seed does not match',
+                message: 'Seed phrase does not match',
                 incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(mnemonicError: null));
@@ -128,6 +128,12 @@ class OnboardingCreateBloc
     });
 
     on<ConfirmMnemonic>((event, emit) {
+      if (event.mnemonic.isEmpty) {
+        emit(state.copyWith(
+            mnemonicError: MnemonicErrorState(
+                message: 'Seed phrase is required', incorrectIndexes: [])));
+        return;
+      }
       if (state.mnemonicState.mnemonic != event.mnemonic) {
         List<int> incorrectIndexes = [];
         for (int i = 0; i < 12; i++) {
@@ -138,7 +144,7 @@ class OnboardingCreateBloc
         }
         emit(state.copyWith(
             mnemonicError: MnemonicErrorState(
-                message: 'Seed does not match',
+                message: 'Seed phrase does not match',
                 incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(

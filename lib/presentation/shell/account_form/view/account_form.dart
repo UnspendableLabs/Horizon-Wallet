@@ -137,10 +137,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
         return state.maybeWhen(
           initial: () => Column(
             children: [
-              Text(
+              SelectableText(
                   currentHighestIndexAccount.importFormat ==
                           ImportFormat.horizon
-                      ? "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account."
+                      ? "An account is a grouping for your balances. You can only spend from one account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account."
                       : "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. You can generate multiple addresses for each account. If you don't see an address that should be there, generate additional addresses in the \"Receive\" dialog.",
                   textAlign: TextAlign.center),
               const SizedBox(height: 16.0),

@@ -43,11 +43,12 @@ class OnboardingImportBloc
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
         emit(state.copyWith(
-            mnemonicError: "Mnemonic is required", mnemonic: event.mnemonic));
+            mnemonicError: "Seed phrase is required",
+            mnemonic: event.mnemonic));
         return;
       } else if (event.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(
-            mnemonicError: "Invalid mnemonic length",
+            mnemonicError: "Invalid seed phrase length",
             mnemonic: event.mnemonic));
         return;
       } else {
@@ -59,7 +60,8 @@ class OnboardingImportBloc
           bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
           if (!validMnemonic) {
             emit(state.copyWith(
-                mnemonicError: "Invalid mnemonic", mnemonic: event.mnemonic));
+                mnemonicError: "Invalid seed phrase",
+                mnemonic: event.mnemonic));
             return;
           }
         }
@@ -73,17 +75,17 @@ class OnboardingImportBloc
 
     on<MnemonicSubmit>((event, emit) async {
       if (state.mnemonic.isEmpty) {
-        emit(state.copyWith(mnemonicError: "Mnemonic is required"));
+        emit(state.copyWith(mnemonicError: "Seed phrase is required"));
         return;
       } else if (state.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(mnemonicError: "Invalid mnemonic length"));
+        emit(state.copyWith(mnemonicError: "Invalid seed phrase length"));
         return;
       } else if (event.importFormat == "Horizon" ||
           event.importFormat == "Freewallet") {
         // only validate mnemonic if importing from horizon or freewallet
         bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
         if (!validMnemonic) {
-          emit(state.copyWith(mnemonicError: "Invalid mnemonic"));
+          emit(state.copyWith(mnemonicError: "Invalid seed phrase"));
           return;
         }
       }
