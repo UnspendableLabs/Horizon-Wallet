@@ -309,6 +309,81 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           );
           // return _buildConfirmationPage(context, composeSendState, isDarkTheme);
         },
+        finalizing: (finalizingState) {
+          TextEditingController passwordController = TextEditingController();
+          final passwordFormKey = GlobalKey<FormState>();
+
+          return Form(
+              key: passwordFormKey,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: [
+                  HorizonTextFormField(
+                    isDarkMode: widget.isDarkMode,
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    controller: passwordController,
+                    label: "Password",
+                    floatingLabelBehavior: FloatingLabelBehavior.auto,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Divider(
+                      color: widget.isDarkMode
+                          ? greyDarkThemeUnderlineColor
+                          : greyLightThemeUnderlineColor,
+                      thickness: 1.0,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      HorizonCancelButton(
+                        isDarkMode: widget.isDarkMode,
+                        onPressed: () {
+                          context.read<ComposeSendBloc>().add(
+                              FetchFormData(currentAddress: widget.address));
+                        },
+                        buttonText: 'BACK',
+                      ),
+                      HorizonContinueButton(
+                        isDarkMode: widget.isDarkMode,
+                        onPressed: () {
+                          print("onPressed");
+                          if (passwordFormKey.currentState!.validate()) {
+                            try {
+                              final password = passwordController.text;
+                              if (password.isEmpty) {
+                                throw Exception('Password cannot be empty');
+                              }
+
+                              context.read<ComposeSendBloc>().add(
+                                    SignAndBroadcastTransactionEvent(
+                                      password: password,
+                                    ),
+                                  );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text('Error: ${e.toString()}')),
+                              );
+                            }
+                          }
+                        },
+                        buttonText: 'SIGN AND BROADCAST',
+                      ),
+                    ],
+                  ),
+                ]),
+              ));
+        },
         orElse: () => const SizedBox.shrink(),
       );
     });
@@ -477,7 +552,6 @@ class ConfirmationPage extends StatefulWidget {
 
 class ConfirmationPageState extends State<ConfirmationPage> {
   late int fee;
-  TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -581,21 +655,6 @@ class ConfirmationPageState extends State<ConfirmationPage> {
                 thickness: 1.0,
               ),
             ),
-            HorizonTextFormField(
-              isDarkMode: widget.isDarkMode,
-              obscureText: true,
-              enableSuggestions: false,
-              autocorrect: false,
-              controller: passwordController,
-              label: "Password",
-              floatingLabelBehavior: FloatingLabelBehavior.auto,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                return null;
-              },
-            ),
             const SizedBox(height: 16.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -614,15 +673,14 @@ class ConfirmationPageState extends State<ConfirmationPage> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       context.read<ComposeSendBloc>().add(
-                            SignAndBroadcastTransactionEvent(
+                            FinalizeTransactionEvent(
                               composeSend: widget.composeSendState.composeSend,
-                              password: passwordController.text,
                               fee: fee,
                             ),
                           );
                     }
                   },
-                  buttonText: 'SIGN AND BROADCAST',
+                  buttonText: 'CONTINUE',
                 ),
               ],
             ),

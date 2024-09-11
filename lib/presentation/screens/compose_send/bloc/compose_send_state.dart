@@ -26,6 +26,8 @@ class SubmitState with _$SubmitState {
   const factory SubmitState.loading() = _SubmitLoading;
   const factory SubmitState.composing(
       SubmitStateComposingSend submitStateComposingSend) = _SubmitComposing;
+  const factory SubmitState.finalizing(
+      SubmitStateFinalizing submitStateFinalizing) = _SubmitFinalizing;
   const factory SubmitState.success(
       String transactionHex, String sourceAddress) = _SubmitSuccess;
   const factory SubmitState.error(String error) = _SubmitError;
@@ -41,4 +43,10 @@ class SubmitStateComposingSend {
       required this.virtualSize,
       required this.feeEstimates,
       required this.confirmationTarget});
+}
+
+class SubmitStateFinalizing {
+  final ComposeSend composeSend;
+  final int fee;
+  SubmitStateFinalizing({required this.composeSend, required this.fee});
 }

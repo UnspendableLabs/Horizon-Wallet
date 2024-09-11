@@ -119,10 +119,12 @@ class HorizonDialog extends StatelessWidget {
 
 class HorizonDialogSubmitButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final Widget? textChild;
 
   const HorizonDialogSubmitButton({
     super.key,
     required this.onPressed,
+    this.textChild = const Text('SUBMIT'),
   });
 
   @override
@@ -143,7 +145,7 @@ class HorizonDialogSubmitButton extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onPressed,
-                  child: const Text('SUBMIT'),
+                  child: textChild,
                 ),
               ),
             ),
