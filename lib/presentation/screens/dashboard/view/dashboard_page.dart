@@ -362,11 +362,7 @@ class AddressAction extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return dialog;
-                  });
+              HorizonDialog.show(context: context, body: dialog);
             },
             child: FittedBox(
               fit: BoxFit.scaleDown,

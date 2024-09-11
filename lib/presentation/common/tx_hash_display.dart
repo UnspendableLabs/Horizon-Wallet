@@ -75,20 +75,18 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
     return GestureDetector(
         onLongPress: _copyToClipboard,
         onTap: _launchUrl,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: RichText(
-            text: TextSpan(
-              style: DefaultTextStyle.of(context).style,
-              children: [
-                TextSpan(
-                  text: shortenedHash,
-                  style: const TextStyle(
-                    decoration: TextDecoration.underline,
-                  ),
+        child: RichText(
+          text: TextSpan(
+            style: DefaultTextStyle.of(context).style,
+            children: [
+              TextSpan(
+                mouseCursor: WidgetStateMouseCursor.clickable,
+                text: shortenedHash,
+                style: const TextStyle(
+                  decoration: TextDecoration.underline,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ));
   }

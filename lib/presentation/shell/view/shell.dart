@@ -399,10 +399,9 @@ class Shell extends StatelessWidget {
                           ),
                           onSelected: (value) {
                             if (value == 'reset') {
-                              showDialog(
-                                context: context,
-                                builder: (_) {
-                                  return BlocProvider.value(
+                              HorizonDialog.show(
+                                  context: context,
+                                  body: BlocProvider.value(
                                     value: BlocProvider.of<LogoutBloc>(context),
                                     child: HorizonDialog(
                                       title: 'Reset wallet',
@@ -440,9 +439,7 @@ class Shell extends StatelessWidget {
                                         ],
                                       ),
                                     ),
-                                  );
-                                },
-                              );
+                                  ));
                             }
                           },
                           itemBuilder: (BuildContext context) =>
