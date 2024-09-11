@@ -58,6 +58,21 @@ class _AddAccountFormState extends State<AddAccountForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final nameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final passwordFormKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<AccountFormBloc>().add(Reset());
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,14 +181,12 @@ class _AddAccountFormState extends State<AddAccountForm> {
             ],
           ),
           orElse: () {
-            final passwordController = TextEditingController();
-
-            final passwordFormKey = GlobalKey<FormState>();
             return Form(
               key: passwordFormKey,
               child: Column(
                 children: [
                   HorizonTextFormField(
+                    enabled: state != const AccountFormState.loading(),
                     controller: passwordController,
                     obscureText: true,
                     enableSuggestions: false,

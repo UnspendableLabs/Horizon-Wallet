@@ -144,5 +144,9 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
         emit(AccountFormState.error(e.toString()));
       }
     });
+
+    on<Reset>((event, emit) {
+      emit(const AccountFormState.initial());
+    });
   }
 }

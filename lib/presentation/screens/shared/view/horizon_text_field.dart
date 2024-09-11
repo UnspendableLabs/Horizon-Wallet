@@ -135,13 +135,21 @@ class HorizonTextFormField extends StatelessWidget {
     if (enabled == false) {
       return InputDecorator(
         decoration: decoration,
-        child: SelectableText(
-          controller?.text ?? '',
-          style: TextStyle(
-            fontSize: 16,
-            color: textColor,
-          ),
-        ),
+        child: obscureText == true
+            ? Text(
+                '•' * (controller?.text.length ?? 0),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: textColor,
+                ),
+              )
+            : SelectableText(
+                controller?.text ?? '',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: textColor,
+                ),
+              ),
       );
     }
 
