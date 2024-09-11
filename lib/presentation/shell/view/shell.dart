@@ -174,11 +174,30 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
   }
 }
 
-class Shell extends StatelessWidget {
-  const Shell(this.navigationShell, {super.key});
+class TransparentHorizonSliverAppBar extends StatelessWidget {
+  final double expandedHeight;
 
-  final StatefulNavigationShell navigationShell;
+  const TransparentHorizonSliverAppBar({
+    Key? key,
+    this.expandedHeight = kToolbarHeight,
+  }) : super(key: key);
 
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: expandedHeight,
+      // floating: true,
+      // snap: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: HorizonAppBarContent(),
+      ),
+    );
+  }
+}
+
+class HorizonAppBarContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
@@ -190,188 +209,156 @@ class Shell extends StatelessWidget {
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: isDarkTheme
-            ? RadialGradient(
-                center: Alignment.topRight,
-                radius: 1.0,
-                colors: [
-                  blueDarkThemeGradiantColor,
-                  backgroundColor,
-                ],
-              )
-            : null,
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 0.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 926, maxHeight: 845),
-            child: Scaffold(
-              backgroundColor: noBackgroundColor,
-              bottomNavigationBar: const Footer(),
-              appBar: AppBar(
-                backgroundColor: noBackgroundColor,
-                title: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Center(
-                              child: isDarkTheme
-                                  ? SvgPicture.asset(
-                                      'assets/logo-white.svg',
-                                      width: 35,
-                                      height: 35,
-                                    )
-                                  : SvgPicture.asset(
-                                      'assets/logo-black.svg',
-                                      width: 35,
-                                      height: 35,
-                                    ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text('Horizon',
-                                style: TextStyle(
-                                  fontSize: isSmallScreen ? 25 : 30,
-                                  fontWeight: FontWeight.w700,
-                                )),
-                            if (!isSmallScreen) const SizedBox(width: 8),
-                            if (!isSmallScreen)
-                              const Text('Wallet',
-                                  style: TextStyle(
-                                    color: neonBlueDarkTheme,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w700,
-                                  )),
-                            if (!isSmallScreen) const SizedBox(width: 12),
-                            if (!isSmallScreen)
-                              const Text('BETA',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  )),
-                            if (!isSmallScreen) const SizedBox(width: 12),
-                            if (!isSmallScreen)
-                              shell.state.maybeWhen(
-                                success: (state) => state.addresses.length > 1
-                                    ? Flexible(
-                                        child: AddressDropdown(
-                                          key:
-                                              Key(state.currentAddress.address),
-                                          isDarkTheme: isDarkTheme,
-                                          addresses: state.addresses,
-                                          currentAddress: state.currentAddress,
-                                          onChange: shell.onAddressChanged,
-                                        ),
-                                      )
-                                    : const SizedBox.shrink(),
-                                orElse: () => const SizedBox.shrink(),
-                              ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                actions: [
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 80,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      border: Border.all(
-                          color: isDarkTheme
-                              ? darkNavyDarkTheme
-                              : Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (isDarkTheme) {
-                                context
-                                    .read<ThemeBloc>()
-                                    .add(ThemeEvent.toggle);
-                              }
-                            },
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isDarkTheme
-                                    ? backgroundColor
-                                    : selectedColor,
-                              ),
-                              child: Icon(
-                                Icons.wb_sunny,
-                                size: 20,
-                                color: isDarkTheme
-                                    ? unselectedColor
-                                    : Colors.white,
-                              ),
-                            ),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Center(
+                    child: isDarkTheme
+                        ? SvgPicture.asset(
+                            'assets/logo-white.svg',
+                            width: 35,
+                            height: 35,
+                          )
+                        : SvgPicture.asset(
+                            'assets/logo-black.svg',
+                            width: 35,
+                            height: 35,
                           ),
-                        ),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (!isDarkTheme) {
-                                context
-                                    .read<ThemeBloc>()
-                                    .add(ThemeEvent.toggle);
-                              }
-                            },
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isDarkTheme
-                                    ? selectedColor
-                                    : backgroundColor,
-                              ),
-                              child: Icon(
-                                Icons.dark_mode,
-                                size: 20,
-                                color: isDarkTheme
-                                    ? neonBlueDarkTheme
-                                    : unselectedColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                   const SizedBox(width: 8),
-                  BlocProvider(
-                    create: (context) => LogoutBloc(
-                      walletRepository: GetIt.I.get<WalletRepository>(),
-                      accountRepository: GetIt.I.get<AccountRepository>(),
-                      addressRepository: GetIt.I.get<AddressRepository>(),
-                      cacheProvider: GetIt.I.get<CacheProvider>(),
+                  Text('Horizon',
+                      style: TextStyle(
+                        color: isDarkTheme ? Colors.white : Colors.black,
+                        fontSize: isSmallScreen ? 25 : 30,
+                        fontWeight: FontWeight.w700,
+                      )),
+                  if (!isSmallScreen) ...[
+                    const SizedBox(width: 8),
+                    const Text('Wallet',
+                        style: TextStyle(
+                          color: neonBlueDarkTheme,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                        )),
+                    const SizedBox(width: 12),
+                    Text('BETA',
+                        style: TextStyle(
+                          color: isDarkTheme ? Colors.white : Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        )),
+                    const SizedBox(width: 12),
+                    shell.state.maybeWhen(
+                      success: (state) => state.addresses.length > 1
+                          ? Flexible(
+                              child: AddressDropdown(
+                                key: Key(state.currentAddress.address),
+                                isDarkTheme: isDarkTheme,
+                                addresses: state.addresses,
+                                currentAddress: state.currentAddress,
+                                onChange: shell.onAddressChanged,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                      orElse: () => const SizedBox.shrink(),
                     ),
-                    child: BlocConsumer<LogoutBloc, LogoutState>(
-                      listener: (context, state) {
-                        if (state.logoutState is LoggedOut) {
-                          final shell = context.read<ShellStateCubit>();
-                          shell.onOnboarding();
-                        }
-                      },
-                      builder: (context, state) => Container(
+                  ],
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                Container(
+                  width: 80,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    border: Border.all(
+                        color: isDarkTheme
+                            ? darkNavyDarkTheme
+                            : Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (isDarkTheme) {
+                              context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                            }
+                          },
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  isDarkTheme ? backgroundColor : selectedColor,
+                            ),
+                            child: Icon(
+                              Icons.wb_sunny,
+                              size: 20,
+                              color:
+                                  isDarkTheme ? unselectedColor : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (!isDarkTheme) {
+                              context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                            }
+                          },
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  isDarkTheme ? selectedColor : backgroundColor,
+                            ),
+                            child: Icon(
+                              Icons.dark_mode,
+                              size: 20,
+                              color: isDarkTheme
+                                  ? neonBlueDarkTheme
+                                  : unselectedColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                BlocProvider(
+                  create: (context) => LogoutBloc(
+                    walletRepository: GetIt.I.get<WalletRepository>(),
+                    accountRepository: GetIt.I.get<AccountRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    cacheProvider: GetIt.I.get<CacheProvider>(),
+                  ),
+                  child: BlocConsumer<LogoutBloc, LogoutState>(
+                    listener: (context, state) {
+                      if (state.logoutState is LoggedOut) {
+                        final shell = context.read<ShellStateCubit>();
+                        shell.onOnboarding();
+                      }
+                    },
+                    builder: (context, state) => Container(
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
@@ -442,17 +429,339 @@ class Shell extends StatelessWidget {
                               child: Text('Reset wallet'),
                             ),
                           ],
-                        ),
-                      ),
-                    ),
+                        )),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HorizonAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String? title;
+  final Widget? leading;
+  final List<Widget>? actions;
+  final Color backgroundColor;
+  final double elevation;
+  final double height;
+
+  const HorizonAppBar({
+    Key? key,
+    this.title,
+    this.leading,
+    this.actions,
+    this.backgroundColor = Colors.blue,
+    this.elevation = 4.0,
+    this.height = kToolbarHeight,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.watch<ShellStateCubit>();
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+
+    final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+    final selectedColor =
+        isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
+    final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
+
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Center(
+                    child: isDarkTheme
+                        ? SvgPicture.asset(
+                            'assets/logo-white.svg',
+                            width: 35,
+                            height: 35,
+                          )
+                        : SvgPicture.asset(
+                            'assets/logo-black.svg',
+                            width: 35,
+                            height: 35,
+                          ),
                   ),
                   const SizedBox(width: 8),
+                  Text('Horizon',
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 25 : 30,
+                        fontWeight: FontWeight.w700,
+                      )),
+                  if (!isSmallScreen) const SizedBox(width: 8),
+                  if (!isSmallScreen)
+                    const Text('Wallet',
+                        style: TextStyle(
+                          color: neonBlueDarkTheme,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                        )),
+                  if (!isSmallScreen) const SizedBox(width: 12),
+                  if (!isSmallScreen)
+                    const Text('BETA',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        )),
+                  if (!isSmallScreen) const SizedBox(width: 12),
+                  if (!isSmallScreen)
+                    shell.state.maybeWhen(
+                      success: (state) => state.addresses.length > 1
+                          ? Flexible(
+                              child: AddressDropdown(
+                                key: Key(state.currentAddress.address),
+                                isDarkTheme: isDarkTheme,
+                                addresses: state.addresses,
+                                currentAddress: state.currentAddress,
+                                onChange: shell.onAddressChanged,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
                 ],
               ),
-              body: SafeArea(
-                child: Column(
+            ],
+          );
+        },
+      ),
+      actions: [
+        const SizedBox(width: 8),
+        Container(
+          width: 80,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.red,
+            border: Border.all(
+                color: isDarkTheme ? darkNavyDarkTheme : Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    if (isDarkTheme) {
+                      context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                    }
+                  },
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDarkTheme ? backgroundColor : selectedColor,
+                    ),
+                    child: Icon(
+                      Icons.wb_sunny,
+                      size: 20,
+                      color: isDarkTheme ? unselectedColor : Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    if (!isDarkTheme) {
+                      context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                    }
+                  },
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDarkTheme ? selectedColor : backgroundColor,
+                    ),
+                    child: Icon(
+                      Icons.dark_mode,
+                      size: 20,
+                      color: isDarkTheme ? neonBlueDarkTheme : unselectedColor,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        BlocProvider(
+          create: (context) => LogoutBloc(
+            walletRepository: GetIt.I.get<WalletRepository>(),
+            accountRepository: GetIt.I.get<AccountRepository>(),
+            addressRepository: GetIt.I.get<AddressRepository>(),
+            cacheProvider: GetIt.I.get<CacheProvider>(),
+          ),
+          child: BlocConsumer<LogoutBloc, LogoutState>(
+            listener: (context, state) {
+              if (state.logoutState is LoggedOut) {
+                final shell = context.read<ShellStateCubit>();
+                shell.onOnboarding();
+              }
+            },
+            builder: (context, state) => Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
+                shape: BoxShape.circle,
+                border: Border.all(color: noBackgroundColor),
+              ),
+              child: PopupMenuButton<String>(
+                position: PopupMenuPosition.under,
+                icon: Icon(
+                  Icons.settings,
+                  size: 20,
+                  color: isDarkTheme ? mainTextGrey : royalBlueLightTheme,
+                ),
+                onSelected: (value) {
+                  if (value == 'reset') {
+                    showDialog(
+                      context: context,
+                      builder: (_) {
+                        return BlocProvider.value(
+                          value: BlocProvider.of<LogoutBloc>(context),
+                          child: HorizonDialog(
+                            title: 'Reset wallet',
+                            body: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDarkTheme
+                                          ? mainTextGrey
+                                          : mainTextBlack,
+                                    ),
+                                  ),
+                                ),
+                                BackContinueButtons(
+                                  isDarkMode: isDarkTheme,
+                                  isSmallScreenWidth: isSmallScreen,
+                                  onPressedContinue: () {
+                                    GoRouter.of(context).pop();
+                                  },
+                                  backButtonText: 'RESET WALLET',
+                                  continueButtonText:
+                                      'CANCEL', // The BackContinueButtons widget is the style/responiveness we want here, however we want the CANCEL button to be more prominent so that the user doesn't accidentally reset their wallet. In BackContinueButtons, the continue button is the one that is more prominent.
+                                  onPressedBack: () {
+                                    context
+                                        .read<LogoutBloc>()
+                                        .add(LogoutEvent());
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'reset',
+                    child: Text('Reset wallet'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  @override
+  Size get preferredSize => Size.fromHeight(height);
+}
+
+class Shell extends StatelessWidget {
+  const Shell(this.navigationShell, {super.key});
+
+  final StatefulNavigationShell navigationShell;
+
+  @override
+  Widget build(BuildContext context) {
+    return navigationShell;
+
+    final shell = context.watch<ShellStateCubit>();
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+
+    final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+    final selectedColor =
+        isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
+    final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
+
+    return Scaffold(
+      bottomNavigationBar: const Footer(),
+      appBar: AppBar(
+        backgroundColor: noBackgroundColor,
+        title: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    if (isSmallScreen)
+                    Center(
+                      child: isDarkTheme
+                          ? SvgPicture.asset(
+                              'assets/logo-white.svg',
+                              width: 35,
+                              height: 35,
+                            )
+                          : SvgPicture.asset(
+                              'assets/logo-black.svg',
+                              width: 35,
+                              height: 35,
+                            ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Horizon',
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 25 : 30,
+                          fontWeight: FontWeight.w700,
+                        )),
+                    if (!isSmallScreen) const SizedBox(width: 8),
+                    if (!isSmallScreen)
+                      const Text('Wallet',
+                          style: TextStyle(
+                            color: neonBlueDarkTheme,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                          )),
+                    if (!isSmallScreen) const SizedBox(width: 12),
+                    if (!isSmallScreen)
+                      const Text('BETA',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          )),
+                    if (!isSmallScreen) const SizedBox(width: 12),
+                    if (!isSmallScreen)
                       shell.state.maybeWhen(
                         success: (state) => state.addresses.length > 1
                             ? Padding(
@@ -467,43 +776,241 @@ class Shell extends StatelessWidget {
                             : const SizedBox.shrink(),
                         orElse: () => const SizedBox.shrink(),
                       ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const ResponsiveAccountSidebar(),
-                          Expanded(
-                            child: Scaffold(
-                              backgroundColor: noBackgroundColor,
-                              body: shell.state.when(
-                                initial: () => const Text("Loading..."),
-                                onboarding: (state) => const Text("onboarding"),
-                                loading: () => const Text("Loading..."),
-                                error: (state) => const Text("error"),
-                                success: (state) {
-                                  return Builder(
-                                    builder: (context) => navigationShell,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (MediaQuery.of(context).size.width < 768.0)
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
-                        child: Text(
-                          "POWERED BY\nUNSPENDABLE LABS",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 10.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                   ],
                 ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          const SizedBox(width: 8),
+          Container(
+            width: 80,
+            height: 40,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              border: Border.all(
+                  color: isDarkTheme ? darkNavyDarkTheme : Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (isDarkTheme) {
+                        context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                      }
+                    },
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isDarkTheme ? backgroundColor : selectedColor,
+                      ),
+                      child: Icon(
+                        Icons.wb_sunny,
+                        size: 20,
+                        color: isDarkTheme ? unselectedColor : Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (!isDarkTheme) {
+                        context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                      }
+                    },
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isDarkTheme ? selectedColor : backgroundColor,
+                      ),
+                      child: Icon(
+                        Icons.dark_mode,
+                        size: 20,
+                        color:
+                            isDarkTheme ? neonBlueDarkTheme : unselectedColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          BlocProvider(
+            create: (context) => LogoutBloc(
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              accountRepository: GetIt.I.get<AccountRepository>(),
+              addressRepository: GetIt.I.get<AddressRepository>(),
+              cacheProvider: GetIt.I.get<CacheProvider>(),
+            ),
+            child: BlocConsumer<LogoutBloc, LogoutState>(
+              listener: (context, state) {
+                if (state.logoutState is LoggedOut) {
+                  final shell = context.read<ShellStateCubit>();
+                  shell.onOnboarding();
+                }
+              },
+              builder: (context, state) => Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: noBackgroundColor),
+                ),
+                child: PopupMenuButton<String>(
+                  position: PopupMenuPosition.under,
+                  icon: Icon(
+                    Icons.settings,
+                    size: 20,
+                    color: isDarkTheme ? mainTextGrey : royalBlueLightTheme,
+                  ),
+                  onSelected: (value) {
+                    if (value == 'reset') {
+                      showDialog(
+                        context: context,
+                        builder: (_) {
+                          return BlocProvider.value(
+                            value: BlocProvider.of<LogoutBloc>(context),
+                            child: HorizonDialog(
+                              title: 'Reset wallet',
+                              body: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      textAlign: TextAlign.center,
+                                      'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDarkTheme
+                                            ? mainTextGrey
+                                            : mainTextBlack,
+                                      ),
+                                    ),
+                                  ),
+                                  BackContinueButtons(
+                                    isDarkMode: isDarkTheme,
+                                    isSmallScreenWidth: isSmallScreen,
+                                    onPressedContinue: () {
+                                      GoRouter.of(context).pop();
+                                    },
+                                    backButtonText: 'RESET WALLET',
+                                    continueButtonText:
+                                        'CANCEL', // The BackContinueButtons widget is the style/responiveness we want here, however we want the CANCEL button to be more prominent so that the user doesn't accidentally reset their wallet. In BackContinueButtons, the continue button is the one that is more prominent.
+                                    onPressedBack: () {
+                                      context
+                                          .read<LogoutBloc>()
+                                          .add(LogoutEvent());
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'reset',
+                      child: Text('Reset wallet'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          gradient: isDarkTheme
+              ? RadialGradient(
+                  center: Alignment.topRight,
+                  radius: 1.0,
+                  colors: [
+                    blueDarkThemeGradiantColor,
+                    backgroundColor,
+                  ],
+                )
+              : null,
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20.0, bottom: 0.0),
+            child: Container(
+              child: Column(
+                children: [
+                  if (isSmallScreen)
+                    shell.state.maybeWhen(
+                      success: (state) => state.addresses.length > 1
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: AddressDropdown(
+                                key: Key(state.currentAddress.address),
+                                isDarkTheme: isDarkTheme,
+                                addresses: state.addresses,
+                                currentAddress: state.currentAddress,
+                                onChange: shell.onAddressChanged,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const ResponsiveAccountSidebar(),
+                        Expanded(
+                          child: Scaffold(
+                            backgroundColor: noBackgroundColor,
+                            body: shell.state.when(
+                              initial: () => const Text("Loading..."),
+                              onboarding: (state) => const Text("onboarding"),
+                              loading: () => const Text("Loading..."),
+                              error: (state) => const Text("error"),
+                              success: (state) {
+                                return Builder(
+                                  builder: (context) => navigationShell,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (MediaQuery.of(context).size.width < 768.0)
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
+                      child: Text(
+                        "POWERED BY\nUNSPENDABLE LABS",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 10.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),

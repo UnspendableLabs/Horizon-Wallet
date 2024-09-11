@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 
 import 'package:horizon/presentation/common/tx_hash_display.dart';
@@ -395,7 +396,8 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 class _DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
-  final ScrollController _scrollController = ScrollController();
+  static int displayedTransactionsCount = 5;
+  static const int pageSize = 20;
 
   @override
   void initState() {
@@ -417,46 +419,93 @@ class _DashboardActivityFeedScreenState
     super.dispose();
   }
 
+  Widget _buildNewTransactionsBanner(DashboardActivityFeedState state) {
+    final newTransactionCount = (state as dynamic).newTransactionCount as int;
+    if (newTransactionCount > 0) {
+      return NewTransactionsBanner(count: newTransactionCount);
+    }
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardActivityFeedBloc, DashboardActivityFeedState>(
       listener: (context, state) {
-        // print('DashboardActivityFeedBloc state changed: $state');
+        // Your listener logic here
       },
       builder: (context, state) {
-        if (state is DashboardActivityFeedStateInitial ||
-            state is DashboardActivityFeedStateLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is DashboardActivityFeedStateCompleteError) {
-          return Center(child: SelectableText('Error: ${state.error}'));
-        } else if (state is DashboardActivityFeedStateCompleteOk ||
-            state is DashboardActivityFeedStateReloadingOk) {
-          final transactions =
-              (state as dynamic).transactions as List<ActivityFeedItem>;
-          final newTransactionCount =
-              (state as dynamic).newTransactionCount as int;
-          return Column(
-            children: [
-              if (newTransactionCount > 0)
-                NewTransactionsBanner(count: newTransactionCount),
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: transactions.length,
-                  itemBuilder: (context, index) {
-                    return ActivityFeedListItem(
-                      key: ValueKey(transactions[index].hash),
-                      item: transactions[index],
-                      addresses: widget.addresses,
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
+        return SliverList(
+            delegate: SliverChildListDelegate([
+          if (state is DashboardActivityFeedStateCompleteOk ||
+              state is DashboardActivityFeedStateReloadingOk)
+            _buildNewTransactionsBanner(state),
+          ..._buildContent(state),
+          state is DashboardActivityFeedStateCompleteOk &&
+                  state.transactions.length > displayedTransactionsCount
+              ? _buildViewMoreButton()
+              : const SizedBox.shrink(),
+        ]));
       },
+    );
+  }
+
+  List<Widget> _buildContent(DashboardActivityFeedState state) {
+    if (state is DashboardActivityFeedStateInitial ||
+        state is DashboardActivityFeedStateLoading) {
+      return [
+        const SizedBox(
+          height: 200, // Adjust as needed
+          child: Center(child: CircularProgressIndicator()),
+        )
+      ];
+    } else if (state is DashboardActivityFeedStateCompleteError) {
+      return [
+        SizedBox(
+          height: 200, // Adjust as needed
+          child: Center(child: Text('Error: ${state.error}')),
+        )
+      ];
+    } else if (state is DashboardActivityFeedStateCompleteOk ||
+        state is DashboardActivityFeedStateReloadingOk) {
+      final transactions =
+          (state as dynamic).transactions as List<ActivityFeedItem>;
+
+      if ( transactions.isEmpty) {
+        return [
+          const NoData(
+        title: 'No Transactions',
+          )
+        ];
+      }
+
+      final displayedTransactions =
+          transactions.take(displayedTransactionsCount).toList();
+
+      final List<Widget> widgets = displayedTransactions
+          .map((transaction) => ActivityFeedListItem(
+                key: ValueKey(transaction.hash),
+                item: transaction,
+                addresses: widget.addresses,
+              ))
+          .toList();
+
+      return widgets.toList();
+    }
+
+    throw Exception('Invalid state: $state');
+  }
+
+  Widget _buildViewMoreButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            displayedTransactionsCount = displayedTransactionsCount + pageSize;
+          });
+        },
+        child: const Text("View More"),
+      ),
     );
   }
 }
