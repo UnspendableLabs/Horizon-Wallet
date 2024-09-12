@@ -26,6 +26,7 @@ import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/view/shell.dart';
 import 'package:horizon/presentation/common/no_data.dart';
+import 'package:horizon/presentation/common/footer.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -109,6 +110,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
     final isSmallScreen = screenWidth < 768;
 
     return Scaffold(
+    bottomNavigationBar: Footer(),
         body: Container(
       // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
       decoration: BoxDecoration(
