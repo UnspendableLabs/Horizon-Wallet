@@ -7,12 +7,7 @@ import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/presentation/common/no_data.dart';
-import 'package:horizon/domain/entities/bitcoin_tx.dart';
-
-import 'package:horizon/presentation/common/tx_hash_display.dart';
-
-import 'package:horizon/common/format.dart';
+import 'package:horizon/presentation/common/no_data.dart'; import 'package:horizon/domain/entities/bitcoin_tx.dart'; import 'package:horizon/presentation/common/tx_hash_display.dart'; import 'package:horizon/common/format.dart';
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -396,7 +391,7 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 class _DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
-  static int displayedTransactionsCount = 5;
+  static int displayedTransactionsCount = 4;
   static const int pageSize = 20;
 
   @override
@@ -443,7 +438,7 @@ class _DashboardActivityFeedScreenState
           state is DashboardActivityFeedStateCompleteOk &&
                   state.transactions.length > displayedTransactionsCount
               ? Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {

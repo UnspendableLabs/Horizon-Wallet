@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fpdart/fpdart.dart' as fp;
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -24,6 +25,144 @@ import 'package:horizon/presentation/shell/view/address_dropdown.dart';
 import 'package:horizon/presentation/common/footer.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
+class AccountSidebar extends StatefulWidget {
+  const AccountSidebar({super.key});
+  @override
+  State<AccountSidebar> createState() =>
+      _AccountSidebarState();
+}
+
+class _AccountSidebarState extends State<AccountSidebar> {
+  final TextEditingController accountController = TextEditingController();
+  Account? selectedAccount;
+
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.watch<ShellStateCubit>();
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
+      return Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
+            child: Container(
+              width: 200,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              child: shell.state.maybeWhen(
+                success: (state) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 554,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            itemCount: state.accounts.length,
+                            itemBuilder: (context, index) {
+                              final account = state.accounts[index];
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    title: Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                      child: Row(
+                                        children: [
+                                          const SizedBox(
+                                              width:
+                                                  16.0), // Add some left padding
+                                          const Icon(Icons
+                                              .account_balance_wallet_rounded),
+                                          const SizedBox(width: 16.0),
+                                          Expanded(
+                                            child: Text(
+                                              account.name,
+                                              textAlign: TextAlign.left,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    hoverColor:
+                                        Colors.transparent, // No hover effect
+                                    selected: account.uuid ==
+                                        state.currentAccountUuid,
+                                    onTap: () {
+                                      setState(() => selectedAccount = account);
+                                      context
+                                          .read<ShellStateCubit>()
+                                          .onAccountChanged(account);
+                                      GoRouter.of(context).go('/dashboard');
+                                    },
+                                  ),
+                                  if (index !=
+                                      state.accounts.length -
+                                          1) // Avoid underline for the last element
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 4.0),
+                                      child: Divider(
+                                        thickness: 1.0,
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            elevation: 0, // No shadow
+                          ),
+                          onPressed: () {
+                            HorizonDialog.show(
+                              context: context,
+                              body: const HorizonDialog(
+                                title: "Add an account",
+                                body: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: AddAccountForm(),
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text("Add Account",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
+                        child: Text(
+                          "POWERED BY\nUNSPENDABLE LABS",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 10.0, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                orElse: () => const Text(""),
+              ),
+            ),
+          );
+  }
+}
 
 class TransparentHorizonSliverAppBar extends StatelessWidget {
   final double expandedHeight;
@@ -277,7 +416,6 @@ class HorizonAppBarContent extends StatelessWidget {
     );
   }
 }
-
 
 class AddressSelectionButton extends StatelessWidget {
   final bool isDarkTheme;
