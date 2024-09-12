@@ -455,13 +455,15 @@ class Shell extends StatelessWidget {
                     if (isSmallScreen)
                       shell.state.maybeWhen(
                         success: (state) => state.addresses.length > 1
-                            ?  Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: AddressSelectionButton(
-                                      isDarkTheme: isDarkTheme,
-                                      onPressed: () => showAddressList(context, isDarkTheme),
-                                    ),
-                            )
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: AddressSelectionButton(
+                                  isDarkTheme: isDarkTheme,
+                                  onPressed: () =>
+                                      showAddressList(context, isDarkTheme),
+                                ),
+                              )
                             : const SizedBox.shrink(),
                         orElse: () => const SizedBox.shrink(),
                       ),
@@ -510,6 +512,7 @@ class Shell extends StatelessWidget {
     );
   }
 }
+
 class AddressSelectionButton extends StatelessWidget {
   final bool isDarkTheme;
   final VoidCallback onPressed;
@@ -527,7 +530,8 @@ class AddressSelectionButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+          backgroundColor:
+              isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24.0),
           ),
@@ -541,20 +545,26 @@ class AddressSelectionButton extends StatelessWidget {
               Expanded(
                 child: Text(
                   context.read<ShellStateCubit>().state.maybeWhen(
-                        success: (state) =>
-                            state.addresses.firstWhere((address) => address.address == state.currentAddress.address).address,
+                        success: (state) => state.addresses
+                            .firstWhere((address) =>
+                                address.address == state.currentAddress.address)
+                            .address,
                         orElse: () => "Select Address",
                       ),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                    color: isDarkTheme
+                        ? greyDashboardButtonTextDarkTheme
+                        : greyDashboardButtonTextLightTheme,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               Icon(
                 Icons.arrow_drop_down,
-                color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                color: isDarkTheme
+                    ? greyDashboardButtonTextDarkTheme
+                    : greyDashboardButtonTextLightTheme,
               ),
             ],
           ),
@@ -573,11 +583,15 @@ void showAddressList(BuildContext context, bool isDarkTheme) {
       return [
         context.read<ShellStateCubit>().state.maybeWhen(
               success: (state) => WoltModalSheetPage(
-                backgroundColor: isDarkTheme ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme,
+                backgroundColor: isDarkTheme
+                    ? dialogBackgroundColorDarkTheme
+                    : dialogBackgroundColorLightTheme,
                 isTopBarLayerAlwaysVisible: true,
                 topBarTitle: Text('Select an address',
                     style: TextStyle(
-                        fontSize: 25, fontWeight: FontWeight.bold, color: isDarkTheme ? mainTextWhite : mainTextBlack)),
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkTheme ? mainTextWhite : mainTextBlack)),
                 trailingNavBarWidget: IconButton(
                   padding: const EdgeInsets.all(pagePadding),
                   icon: const Icon(Icons.close),
@@ -592,12 +606,15 @@ void showAddressList(BuildContext context, bool isDarkTheme) {
                           itemCount: state.addresses.length,
                           itemBuilder: (context, index) {
                             final address = state.addresses[index];
-                            final isSelected = address.address == state.currentAddress.address;
+                            final isSelected =
+                                address.address == state.currentAddress.address;
                             return ListTile(
                               title: Text(address.address),
                               selected: isSelected,
                               onTap: () {
-                                context.read<ShellStateCubit>().onAddressChanged(address);
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAddressChanged(address);
                                 Navigator.of(modalSheetContext).pop();
                                 GoRouter.of(context).go('/dashboard');
                               },
@@ -610,7 +627,9 @@ void showAddressList(BuildContext context, bool isDarkTheme) {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 25.0),
-                            backgroundColor: isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
+                            backgroundColor: isDarkTheme
+                                ? darkNavyDarkTheme
+                                : lightBlueLightTheme,
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.zero,
                             ),
@@ -623,13 +642,17 @@ void showAddressList(BuildContext context, bool isDarkTheme) {
                               body: HorizonDialog(
                                 title: "Add an address",
                                 body: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: AddAddressForm(accountUuid: state.currentAccountUuid),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: AddAddressForm(
+                                      accountUuid: state.currentAccountUuid),
                                 ),
                               ),
                             );
                           },
-                          child: const Text("Add address", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          child: const Text("Add address",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
