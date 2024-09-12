@@ -99,9 +99,12 @@ class _DashboardPage_State extends State<_DashboardPage> {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
+    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
     final backgroundColorInner =
         isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+
+    final backgroundColorWrapper =
+        isDarkTheme ? darkNavyDarkTheme : Colors.white;
 
     final isSmallScreen = screenWidth < 768;
 
@@ -155,7 +158,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                           child: Container(
                             margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                             decoration: BoxDecoration(
-                              color: backgroundColor,
+                              color: backgroundColorWrapper,
                               borderRadius: BorderRadius.circular(30.0),
                             ),
                           ),
