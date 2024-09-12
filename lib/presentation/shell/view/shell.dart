@@ -28,8 +28,7 @@ import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 class AccountSidebar extends StatefulWidget {
   const AccountSidebar({super.key});
   @override
-  State<AccountSidebar> createState() =>
-      _AccountSidebarState();
+  State<AccountSidebar> createState() => _AccountSidebarState();
 }
 
 class _AccountSidebarState extends State<AccountSidebar> {
@@ -41,126 +40,121 @@ class _AccountSidebarState extends State<AccountSidebar> {
     final shell = context.watch<ShellStateCubit>();
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
-      return Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
-            child: Container(
-              width: 200,
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: shell.state.maybeWhen(
-                success: (state) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: 554,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 16.0),
-                          child: ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount: state.accounts.length,
-                            itemBuilder: (context, index) {
-                              final account = state.accounts[index];
-                              return Column(
-                                children: [
-                                  ListTile(
-                                    title: Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                                      child: Row(
-                                        children: [
-                                          const SizedBox(
-                                              width:
-                                                  16.0), // Add some left padding
-                                          const Icon(Icons
-                                              .account_balance_wallet_rounded),
-                                          const SizedBox(width: 16.0),
-                                          Expanded(
-                                            child: Text(
-                                              account.name,
-                                              textAlign: TextAlign.left,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        child: shell.state.maybeWhen(
+          success: (state) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 554,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: state.accounts.length,
+                      itemBuilder: (context, index) {
+                        final account = state.accounts[index];
+                        return Column(
+                          children: [
+                            ListTile(
+                              title: Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                child: Row(
+                                  children: [
+                                    const SizedBox(
+                                        width: 16.0), // Add some left padding
+                                    const Icon(
+                                        Icons.account_balance_wallet_rounded),
+                                    const SizedBox(width: 16.0),
+                                    Expanded(
+                                      child: Text(
+                                        account.name,
+                                        textAlign: TextAlign.left,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
-                                    hoverColor:
-                                        Colors.transparent, // No hover effect
-                                    selected: account.uuid ==
-                                        state.currentAccountUuid,
-                                    onTap: () {
-                                      setState(() => selectedAccount = account);
-                                      context
-                                          .read<ShellStateCubit>()
-                                          .onAccountChanged(account);
-                                      GoRouter.of(context).go('/dashboard');
-                                    },
-                                  ),
-                                  if (index !=
-                                      state.accounts.length -
-                                          1) // Avoid underline for the last element
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 4.0),
-                                      child: Divider(
-                                        thickness: 1.0,
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero,
-                            ),
-                            elevation: 0, // No shadow
-                          ),
-                          onPressed: () {
-                            HorizonDialog.show(
-                              context: context,
-                              body: const HorizonDialog(
-                                title: "Add an account",
-                                body: Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: AddAccountForm(),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
-                          child: const Text("Add Account",
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
-                        ),
+                              hoverColor: Colors.transparent, // No hover effect
+                              selected:
+                                  account.uuid == state.currentAccountUuid,
+                              onTap: () {
+                                setState(() => selectedAccount = account);
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAccountChanged(account);
+                                GoRouter.of(context).go('/dashboard');
+                              },
+                            ),
+                            if (index !=
+                                state.accounts.length -
+                                    1) // Avoid underline for the last element
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4.0),
+                                child: Divider(
+                                  thickness: 1.0,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
-                        child: Text(
-                          "POWERED BY\nUNSPENDABLE LABS",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 10.0, fontWeight: FontWeight.bold),
+                      elevation: 0, // No shadow
+                    ),
+                    onPressed: () {
+                      HorizonDialog.show(
+                        context: context,
+                        body: const HorizonDialog(
+                          title: "Add an account",
+                          body: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            child: AddAccountForm(),
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
-                orElse: () => const Text(""),
-              ),
-            ),
-          );
+                      );
+                    },
+                    child: const Text("Add Account",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
+                  child: Text(
+                    "POWERED BY\nUNSPENDABLE LABS",
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+          orElse: () => const Text(""),
+        ),
+      ),
+    );
   }
 }
 
@@ -245,6 +239,24 @@ class HorizonAppBarContent extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         )),
                     const SizedBox(width: 12),
+                    if (!isSmallScreen)
+                      shell.state.maybeWhen(
+                        success: (state) => state.addresses.length > 1
+                            ? Flexible(
+                                child: Container(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(7, 7, 7, 7),
+                                  child: AddressSelectionButton(
+                                    isDarkTheme: isDarkTheme,
+                                    onPressed: () {
+                                      showAddressList(context, isDarkTheme);
+                                    },
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
                   ],
                 ],
               ),
@@ -420,9 +432,11 @@ class HorizonAppBarContent extends StatelessWidget {
 class AddressSelectionButton extends StatelessWidget {
   final bool isDarkTheme;
   final VoidCallback onPressed;
+  final EdgeInsets padding;
 
   const AddressSelectionButton({
     super.key,
+    this.padding = const EdgeInsets.all(12.0),
     required this.isDarkTheme,
     required this.onPressed,
   });
@@ -443,7 +457,7 @@ class AddressSelectionButton extends StatelessWidget {
         ),
         onPressed: onPressed,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: padding,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [

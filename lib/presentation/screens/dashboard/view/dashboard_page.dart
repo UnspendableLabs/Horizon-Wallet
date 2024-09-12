@@ -885,7 +885,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
 
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-    final height  = MediaQuery.of(context).size.height;
+    final height = MediaQuery.of(context).size.height;
 
     Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
     final backgroundColorInner =
@@ -920,11 +920,9 @@ class _DashboardPage_State extends State<_DashboardPage> {
                 child: CustomScrollView(
                   controller: _scrollController,
                   slivers: [
-                   SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: max(0, ((height / 2  - 560 )))
-                    ), 
-                   ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: max(0, ((height / 2 - 560)))),
+                    ),
                     SliverCrossAxisConstrained(
                         maxCrossAxisExtent: maxWidth,
                         child: TransparentHorizonSliverAppBar(
