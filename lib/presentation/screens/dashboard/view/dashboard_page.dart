@@ -30,144 +30,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
-
-
-class AddressDropdown extends StatefulWidget {
-  final bool isDarkTheme;
-  final List<Address> addresses;
-  final Address currentAddress;
-  final Function(Address) onChange;
-
-  const AddressDropdown({
-    Key? key,
-    required this.currentAddress,
-    required this.isDarkTheme,
-    required this.addresses,
-    required this.onChange,
-  }) : super(key: key);
-
-  @override
-  AddressDropdownState createState() => AddressDropdownState();
-}
-
-class AddressDropdownState extends State<AddressDropdown> {
-  late Address _selectedAddress;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedAddress = widget.currentAddress;
-  }
-
-  void _copyAddressToClipboard() {
-    Clipboard.setData(ClipboardData(text: _selectedAddress.address));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Address copied to clipboard')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isSingleAddress = widget.addresses.length == 1;
-    final isSmallScreen = MediaQuery.of(context).size.width < 768;
-
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 70),
-            elevation: 0,
-            backgroundColor:
-                isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24.0),
-            ),
-          ),
-
-          // style: ElevatedButton.styleFrom(
-          //   minimumSize: const Size(double.infinity, 70),
-          //   elevation: 0,
-          //   backgroundColor:
-          //      Colors.red,
-          //   shape: RoundedRectangleBorder(
-          //     borderRadius: BorderRadius.circular(24.0),
-          //   ),
-          // ),
-          onPressed: isSingleAddress
-              ? null
-              : () {
-                  // Show dropdown menu
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Select Address'),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: widget.addresses.map((Address address) {
-                              return ListTile(
-                                title: Text(address.address),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedAddress = address;
-                                  });
-                                  widget.onChange(address);
-                                  Navigator.of(context).pop();
-                                },
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-          child: Padding(
-              padding: const EdgeInsets.all(12.0), child: Text("ta fuck")
-              // child: Flex(
-              //   direction: isSmallScreen ? Axis.vertical : Axis.horizontal,
-              //   mainAxisAlignment: MainAxisAlignment.start,
-              //   children: [
-              //     Expanded(
-              //       child: Text(
-              //         _selectedAddress.address,
-              //         style: TextStyle(
-              //           fontWeight: FontWeight.bold,
-              //           color: widget.isDarkTheme
-              //               ? greyDashboardButtonTextDarkTheme
-              //               : greyDashboardButtonTextLightTheme,
-              //           overflow: TextOverflow.ellipsis,
-              //         ),
-              //       ),
-              //     ),
-              //     IconButton(
-              //       icon: Icon(
-              //         Icons.copy,
-              //         color: widget.isDarkTheme
-              //             ? greyDashboardButtonTextDarkTheme
-              //             : greyDashboardButtonTextLightTheme,
-              //       ),
-              //       onPressed: _copyAddressToClipboard,
-              //     ),
-              //     if (!isSingleAddress)
-              //       Icon(
-              //         Icons.arrow_drop_down,
-              //         color: widget.isDarkTheme
-              //             ? greyDashboardButtonTextDarkTheme
-              //             : greyDashboardButtonTextLightTheme,
-              //       ),
-              //   ],
-              // ),
-              ),
-        ),
-      ),
-    );
-  }
-}
-
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
@@ -313,17 +175,37 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                                 context, isDarkTheme),
                                           ),
                                         ),
-                                        // Expanded(
-                                        //     child: AddressDropdown(
-                                        //   isDarkTheme: isDarkTheme,
-                                        //   currentAddress: widget.currentAddress,
-                                        //   addresses: [widget.currentAddress],
-                                        //   onChange: (address) {
-                                        //     setState(() {
-                                        //       // widget.currentAddress = address;
-                                        //     });
-                                        //   },
-                                        // ))
+                                        Builder(builder: (context) {
+                                          return context
+                                              .read<ShellStateCubit>()
+                                              .state
+                                              .maybeWhen(
+                                                  success: (state) =>
+                                                      state.addresses.length > 1
+                                                          ? Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .fromLTRB(
+                                                                        0.0,
+                                                                        8.0,
+                                                                        8.0,
+                                                                        0.0),
+                                                                child:
+                                                                    AddressSelectionButton(
+                                                                  isDarkTheme:
+                                                                      isDarkTheme,
+                                                                  onPressed: () =>
+                                                                      showAddressList(
+                                                                          context,
+                                                                          isDarkTheme),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          : SizedBox.shrink(),
+                                                  orElse: () =>
+                                                      SizedBox.shrink());
+                                        }),
                                       ],
                                     ),
                                   )
@@ -337,20 +219,35 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                     ),
                                   )
                                 : SliverToBoxAdapter(child: SizedBox.shrink()),
-                            // isSmallScreen
-                            //     ? SliverToBoxAdapter(
-                            //         child: AddressDropdown(
-                            //           isDarkTheme: isDarkTheme,
-                            //           currentAddress: widget.currentAddress,
-                            //           addresses: [widget.currentAddress],
-                            //           onChange: (address) {
-                            //             setState(() {
-                            //               // widget.currentAddress = address;
-                            //             });
-                            //           },
-                            //         ),
-                            //       )
-                            //     : SliverToBoxAdapter(child: SizedBox.shrink()),
+                            isSmallScreen
+                                ? Builder(builder: (context) {
+                                    return context
+                                        .read<ShellStateCubit>()
+                                        .state
+                                        .maybeWhen(
+                                            success: (state) => state
+                                                        .addresses.length >
+                                                    1
+                                                ? SliverToBoxAdapter(
+                                                    child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .fromLTRB(
+                                                        8.0, 8.0, 8.0, 0.0),
+                                                    child:
+                                                        AddressSelectionButton(
+                                                      isDarkTheme: isDarkTheme,
+                                                      onPressed: () =>
+                                                          showAddressList(
+                                                              context,
+                                                              isDarkTheme),
+                                                    ),
+                                                  ))
+                                                : SliverToBoxAdapter(
+                                                    child: SizedBox.shrink()),
+                                            orElse: () => SliverToBoxAdapter(
+                                                child: SizedBox.shrink()));
+                                  })
+                                : SliverToBoxAdapter(child: SizedBox.shrink()),
                             SliverToBoxAdapter(
                                 child: Builder(builder: (context) {
                               final dashboardActivityFeedBloc =
@@ -412,65 +309,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
         ],
       ),
     ));
-
-    // return Builder(builder: (context) {
-    //   final dashboardActivityFeedBloc =
-    //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-    //
-    //   return Padding(
-    //     padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-    //     child: Container(
-    //       decoration: BoxDecoration(
-    //         color: Colors.red,
-    //         borderRadius: BorderRadius.circular(30.0),
-    //       ),
-    //       child: Column(
-    //         children: [
-    //           if (screenWidth < 768)
-    //             AccountSelectionButton(
-    //               isDarkTheme: isDarkTheme,
-    //               onPressed: () => showAccountList(context, isDarkTheme),
-    //             ),
-    //           AddressActions(
-    //             isDarkTheme: isDarkTheme,
-    //             dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-    //             addresses: [widget.currentAddress],
-    //             accountUuid: widget.accountUuid,
-    //             currentAddress: widget.currentAddress,
-    //             screenWidth: screenWidth,
-    //           ),
-    //           ConstrainedBox(
-    //             constraints: const BoxConstraints(maxHeight: 300),
-    //             child: BalancesDisplay(
-    //               key: Key(widget.currentAddress.address),
-    //               isDarkTheme: isDarkTheme,
-    //               addresses: [widget.currentAddress],
-    //               accountUuid: widget.accountUuid,
-    //             ),
-    //           ),
-    //           Expanded(
-    //             child: Padding(
-    //               padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
-    //               child: ConstrainedBox(
-    //                 constraints: const BoxConstraints(maxHeight: 700),
-    //                 child: Container(
-    //                   decoration: BoxDecoration(
-    //                     color:
-    //                         isDarkTheme ? lightNavyDarkTheme : greyLightTheme,
-    //                     borderRadius: BorderRadius.circular(30.0),
-    //                   ),
-    //                   child: DashboardActivityFeedScreen(
-    //                     addresses: [widget.currentAddress],
-    //                   ),
-    //                 ),
-    //               ),
-    //             ),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   );
-    // });
   }
 }
 

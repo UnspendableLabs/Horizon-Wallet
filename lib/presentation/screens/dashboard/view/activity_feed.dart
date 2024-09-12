@@ -431,7 +431,7 @@ class _DashboardActivityFeedScreenState
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardActivityFeedBloc, DashboardActivityFeedState>(
       listener: (context, state) {
-        // Your listener logic here
+        // print('DashboardActivityFeedBloc state changed: $state');
       },
       builder: (context, state) {
         return SliverList(
@@ -442,7 +442,18 @@ class _DashboardActivityFeedScreenState
           ..._buildContent(state),
           state is DashboardActivityFeedStateCompleteOk &&
                   state.transactions.length > displayedTransactionsCount
-              ? _buildViewMoreButton()
+              ? Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        displayedTransactionsCount =
+                            displayedTransactionsCount + pageSize;
+                      });
+                    },
+                    child: const Text("View More"),
+                  ),
+                )
               : const SizedBox.shrink(),
         ]));
       },
@@ -470,10 +481,10 @@ class _DashboardActivityFeedScreenState
       final transactions =
           (state as dynamic).transactions as List<ActivityFeedItem>;
 
-      if ( transactions.isEmpty) {
+      if (transactions.isEmpty) {
         return [
           const NoData(
-        title: 'No Transactions',
+            title: 'No Transactions',
           )
         ];
       }
@@ -495,17 +506,4 @@ class _DashboardActivityFeedScreenState
     throw Exception('Invalid state: $state');
   }
 
-  Widget _buildViewMoreButton() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            displayedTransactionsCount = displayedTransactionsCount + pageSize;
-          });
-        },
-        child: const Text("View More"),
-      ),
-    );
-  }
 }

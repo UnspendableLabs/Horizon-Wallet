@@ -189,7 +189,7 @@ class AppRouter {
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationShell) {
-              return Shell(navigationShell);
+              return navigationShell;
             },
             branches: [
               StatefulShellBranch(
