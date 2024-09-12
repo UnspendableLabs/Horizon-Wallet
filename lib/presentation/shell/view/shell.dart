@@ -16,11 +16,13 @@ import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
+import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/view/address_dropdown.dart';
 import 'package:horizon/presentation/common/footer.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class ResponsiveAccountSidebar extends StatefulWidget {
   const ResponsiveAccountSidebar({super.key});
@@ -455,13 +457,11 @@ class Shell extends StatelessWidget {
                         success: (state) => state.addresses.length > 1
                             ? Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: AddressDropdown(
-                                  key: Key(state.currentAddress.address),
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: AddressSelectionButton(
                                   isDarkTheme: isDarkTheme,
-                                  addresses: state.addresses,
-                                  currentAddress: state.currentAddress,
-                                  onChange: shell.onAddressChanged,
+                                  onPressed: () =>
+                                      showAddressList(context, isDarkTheme),
                                 ),
                               )
                             : const SizedBox.shrink(),
@@ -511,4 +511,168 @@ class Shell extends StatelessWidget {
       ),
     );
   }
+}
+
+class AddressSelectionButton extends StatelessWidget {
+  final bool isDarkTheme;
+  final VoidCallback onPressed;
+
+  const AddressSelectionButton({
+    super.key,
+    required this.isDarkTheme,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor:
+              isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24.0),
+          ),
+        ),
+        onPressed: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  context.read<ShellStateCubit>().state.maybeWhen(
+                        success: (state) => state.addresses
+                            .firstWhere((address) =>
+                                address.address == state.currentAddress.address)
+                            .address,
+                        orElse: () => "Select Address",
+                      ),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isDarkTheme
+                        ? greyDashboardButtonTextDarkTheme
+                        : greyDashboardButtonTextLightTheme,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.arrow_drop_down,
+                color: isDarkTheme
+                    ? greyDashboardButtonTextDarkTheme
+                    : greyDashboardButtonTextLightTheme,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void showAddressList(BuildContext context, bool isDarkTheme) {
+  const double pagePadding = 16.0;
+
+  WoltModalSheet.show<void>(
+    context: context,
+    pageListBuilder: (modalSheetContext) {
+      return [
+        context.read<ShellStateCubit>().state.maybeWhen(
+              success: (state) => WoltModalSheetPage(
+                backgroundColor: isDarkTheme
+                    ? dialogBackgroundColorDarkTheme
+                    : dialogBackgroundColorLightTheme,
+                isTopBarLayerAlwaysVisible: true,
+                topBarTitle: Text('Select an address',
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkTheme ? mainTextWhite : mainTextBlack)),
+                trailingNavBarWidget: IconButton(
+                  padding: const EdgeInsets.all(pagePadding),
+                  icon: const Icon(Icons.close),
+                  onPressed: Navigator.of(modalSheetContext).pop,
+                ),
+                child: SizedBox(
+                  height: 400,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: state.addresses.length,
+                          itemBuilder: (context, index) {
+                            final address = state.addresses[index];
+                            final isSelected =
+                                address.address == state.currentAddress.address;
+                            return ListTile(
+                              title: Text(address.address),
+                              selected: isSelected,
+                              onTap: () {
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAddressChanged(address);
+                                Navigator.of(modalSheetContext).pop();
+                                GoRouter.of(context).go('/dashboard');
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 25.0),
+                            backgroundColor: isDarkTheme
+                                ? darkNavyDarkTheme
+                                : lightBlueLightTheme,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            Navigator.of(modalSheetContext).pop();
+                            HorizonDialog.show(
+                              context: context,
+                              body: HorizonDialog(
+                                title: "Add an address",
+                                body: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: AddAddressForm(
+                                      accountUuid: state.currentAccountUuid),
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text("Add address",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              orElse: () => SliverWoltModalSheetPage(),
+            ),
+      ];
+    },
+    onModalDismissedWithBarrierTap: () {
+      print("dismissed with barrier tap");
+    },
+    modalTypeBuilder: (context) {
+      final size = MediaQuery.of(context).size.width;
+      if (size < 768.0) {
+        return WoltModalType.bottomSheet;
+      } else {
+        return WoltModalType.dialog;
+      }
+    },
+  );
 }
