@@ -216,21 +216,17 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                             elevation: 0,
                           ),
                           onPressed: () {
-                            WoltModalSheet.show<void>(
+                            Navigator.of(modalSheetContext).pop();
+                            HorizonDialog.show(
                               context: context,
-                              pageListBuilder: (modalSheetContext) {
-                                final textTheme = Theme.of(context).textTheme;
-                                return [
-                                  addAccountModal(
-                                      modalSheetContext, textTheme, isDarkTheme)
-                                ];
-                              },
-                              onModalDismissedWithBarrierTap: () {
-                                print("dismissed with barrier tap");
-                              },
-                              modalTypeBuilder: (context) {
-                                return WoltModalType.bottomSheet;
-                              },
+                              body: const HorizonDialog(
+                                title: "Add an account",
+                                body: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: AddAccountForm(),
+                                ),
+                              ),
                             );
                           },
                           child: const Text("Add Account",
@@ -775,29 +771,21 @@ class QRCodeDialog extends StatelessWidget {
             _ => TextButton(
                 child: const Text("Add a new address"),
                 onPressed: () {
-                  final textTheme = Theme.of(context).textTheme;
-                  final isDarkTheme =
-                      Theme.of(context).brightness == Brightness.dark;
-
                   // 1) close receive modal
                   Navigator.of(context).pop();
 
                   // 2) open add address modal
-                  WoltModalSheet.show<void>(
-                    context: context,
-                    pageListBuilder: (modalSheetContext) {
-                      return [
-                        addAddressModal(modalSheetContext, textTheme,
-                            isDarkTheme, accountUuid)
-                      ];
-                    },
-                    modalTypeBuilder: (context) {
-                      final size = MediaQuery.of(context).size.width;
-                      return size < 768.0
-                          ? WoltModalType.bottomSheet
-                          : WoltModalType.dialog;
-                    },
-                  );
+                  HorizonDialog.show(
+                      context: context,
+                      body: HorizonDialog(
+                        title: "Add an address",
+                        body: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: AddAddressForm(
+                            accountUuid: accountUuid,
+                          ),
+                        ),
+                      ));
                 })
           };
         })

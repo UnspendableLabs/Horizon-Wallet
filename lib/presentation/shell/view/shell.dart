@@ -20,7 +20,6 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/view/address_dropdown.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/presentation/common/footer.dart';
 
 class ResponsiveAccountSidebar extends StatefulWidget {
@@ -131,21 +130,16 @@ class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
                             elevation: 0, // No shadow
                           ),
                           onPressed: () {
-                            WoltModalSheet.show<void>(
+                            HorizonDialog.show(
                               context: context,
-                              pageListBuilder: (modalSheetContext) {
-                                final textTheme = Theme.of(context).textTheme;
-                                return [
-                                  addAccountModal(
-                                      modalSheetContext, textTheme, isDarkTheme)
-                                ];
-                              },
-                              onModalDismissedWithBarrierTap: () {
-                                print("dismissed with barrier tap");
-                              },
-                              modalTypeBuilder: (context) {
-                                return WoltModalType.dialog;
-                              },
+                              body: const HorizonDialog(
+                                title: "Add an account",
+                                body: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: AddAccountForm(),
+                                ),
+                              ),
                             );
                           },
                           child: const Text("Add Account",

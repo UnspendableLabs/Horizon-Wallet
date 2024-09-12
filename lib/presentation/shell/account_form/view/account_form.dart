@@ -2,53 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-
-SliverWoltModalSheetPage addAccountModal(
-  BuildContext modalSheetContext,
-  TextTheme textTheme,
-  bool isDarkTheme,
-) {
-  const double pagePadding = 16.0;
-
-  return WoltModalSheetPage(
-    backgroundColor: isDarkTheme
-        ? dialogBackgroundColorDarkTheme
-        : dialogBackgroundColorLightTheme,
-    isTopBarLayerAlwaysVisible: true,
-    topBarTitle: Text('Add an account',
-        style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-            color: isDarkTheme ? mainTextWhite : mainTextBlack)),
-    trailingNavBarWidget: IconButton(
-      padding: const EdgeInsets.all(pagePadding),
-      icon: const Icon(Icons.close),
-      onPressed: Navigator.of(modalSheetContext).pop,
-    ),
-    child: const Padding(
-        padding: EdgeInsets.fromLTRB(
-          pagePadding,
-          50,
-          pagePadding,
-          pagePadding,
-        ),
-        child: AddAccountForm()),
-  );
-}
 
 final validAccount = RegExp(r"^\d\'$");
 
 class AddAccountForm extends StatefulWidget {
-  final BuildContext? modalSheetContext;
-  const AddAccountForm({super.key, this.modalSheetContext});
+  const AddAccountForm({super.key});
 
   @override
   State<AddAccountForm> createState() => _AddAccountFormState();
