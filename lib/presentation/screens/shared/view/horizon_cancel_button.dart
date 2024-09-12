@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 
 class HorizonCancelButton extends StatelessWidget {
-  final bool isDarkMode;
   final VoidCallback onPressed;
   final String? buttonText;
 
   const HorizonCancelButton(
-      {super.key,
-      required this.isDarkMode,
-      required this.onPressed,
-      this.buttonText});
+      {super.key, required this.onPressed, this.buttonText});
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         overlayColor: noBackgroundColor,

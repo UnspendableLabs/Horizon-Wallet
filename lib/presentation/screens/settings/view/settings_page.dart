@@ -50,7 +50,6 @@ class _PasswordPromptState extends State<PasswordPrompt> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return BlocBuilder<PasswordPromptBloc, PasswordPromptState>(
         builder: (context, state) {
       return Form(
@@ -59,13 +58,11 @@ class _PasswordPromptState extends State<PasswordPrompt> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             HorizonTextFormField(
-              isDarkMode: isDarkTheme,
               obscureText: true,
               enableSuggestions: false,
               autocorrect: false,
               controller: passwordController,
               label: "Password",
-              floatingLabelBehavior: FloatingLabelBehavior.auto,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Required';
@@ -81,12 +78,9 @@ class _PasswordPromptState extends State<PasswordPrompt> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(0.0),
+                  const Padding(
+                    padding: EdgeInsets.all(0.0),
                     child: Divider(
-                      color: isDarkTheme
-                          ? greyDarkThemeUnderlineColor
-                          : greyLightThemeUnderlineColor,
                       thickness: 1.0,
                     ),
                   ),

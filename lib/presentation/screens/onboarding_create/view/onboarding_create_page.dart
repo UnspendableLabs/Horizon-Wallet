@@ -94,9 +94,6 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                             child: BlocBuilder<OnboardingCreateBloc,
                                 OnboardingCreateState>(
                               builder: (context, state) {
-                                print(
-                                    "state.createState: ${state.createState}");
-
                                 return switch (state.createState) {
                                   CreateStateNotAsked => const Mnemonic(),
                                   CreateStateMnemonicUnconfirmed =>
@@ -186,136 +183,6 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
         ),
       ),
     );
-
-    // return Container(
-    //   decoration: BoxDecoration(
-    //     color: backdropBackgroundColor,
-    //   ),
-    //   padding: padding,
-    //   child: Container(
-    //     decoration: BoxDecoration(
-    //       color: scaffoldBackgroundColor,
-    //       borderRadius: BorderRadius.circular(30),
-    //     ),
-    //     padding: const EdgeInsets.all(12),
-    //     child: Scaffold(
-    //       backgroundColor: scaffoldBackgroundColor,
-    //       body: BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
-    //         listener: (context, state) {
-    //           if (state.createState is CreateStateSuccess) {
-    //             final shell = context.read<ShellStateCubit>();
-    //             // reload shell to trigger redirect
-    //             shell.initialize();
-    //           }
-    //         },
-    //         child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
-    //             builder: (context, state) {
-    //           return Container(
-    //             decoration: BoxDecoration(
-    //               color: scaffoldBackgroundColor,
-    //               borderRadius: BorderRadius.circular(30),
-    //             ),
-    //             child: Scaffold(
-    //               backgroundColor: scaffoldBackgroundColor,
-    //               appBar: OnboardingAppBar(
-    //                 isDarkMode: isDarkMode,
-    //                 isSmallScreenWidth: isSmallScreen,
-    //                 isSmallScreenHeight: isSmallScreen,
-    //                 scaffoldBackgroundColor: scaffoldBackgroundColor,
-    //               ),
-    //               body: Stack(
-    //                 children: [
-    //                   Column(
-    //                     children: [
-    //                       Flexible(
-    //                         child: BlocBuilder<OnboardingCreateBloc,
-    //                                 OnboardingCreateState>(
-    //                             builder: (context, state) {
-    //                           print("state.createState: ${state.createState}");
-    //
-    //                           return Scaffold(
-    //                             body: switch (state.createState) {
-    //                               CreateStateNotAsked => const Mnemonic(),
-    //                               CreateStateMnemonicUnconfirmed =>
-    //                                 ConfirmSeedInputFields(
-    //                                   mnemonicErrorState: state.mnemonicError,
-    //                                 ),
-    //                               _ => PasswordPrompt(
-    //                                   passwordController: _passwordController,
-    //                                   passwordConfirmationController:
-    //                                       _passwordConfirmationController,
-    //                                   state: state,
-    //                                   onPasswordChanged: (value) {
-    //                                     context
-    //                                         .read<OnboardingCreateBloc>()
-    //                                         .add(PasswordChanged(
-    //                                             password: value,
-    //                                             passwordConfirmation:
-    //                                                 _passwordConfirmationController
-    //                                                     .text));
-    //                                   },
-    //                                   onPasswordConfirmationChanged: (value) {
-    //                                     context
-    //                                         .read<OnboardingCreateBloc>()
-    //                                         .add(PasswordConfirmationChanged(
-    //                                             passwordConfirmation: value));
-    //                                   },
-    //                                   onPressedBack: () {
-    //                                     final shell =
-    //                                         context.read<ShellStateCubit>();
-    //                                     shell.onOnboarding();
-    //                                   },
-    //                                   onPressedContinue: () {
-    //                                     if (_passwordController.text == '' ||
-    //                                         _passwordConfirmationController
-    //                                                 .text ==
-    //                                             '') {
-    //                                       context
-    //                                           .read<OnboardingCreateBloc>()
-    //                                           .add(PasswordError(
-    //                                               error:
-    //                                                   'Password cannot be empty'));
-    //                                     } else if (_passwordController.text !=
-    //                                         _passwordConfirmationController
-    //                                             .text) {
-    //                                       context
-    //                                           .read<OnboardingCreateBloc>()
-    //                                           .add(PasswordError(
-    //                                               error:
-    //                                                   'Passwords do not match'));
-    //                                     } else {
-    //                                       context
-    //                                           .read<OnboardingCreateBloc>()
-    //                                           .add(CreateWallet());
-    //                                     }
-    //                                   },
-    //                                   backButtonText: 'CANCEL',
-    //                                   continueButtonText: 'CONTINUE',
-    //                                 ),
-    //                               Object() => const Text(''),
-    //                               null => throw UnimplementedError(),
-    //                             },
-    //                           );
-    //                         }),
-    //                       ),
-    //                     ],
-    //                   ),
-    //                   if (state.createState is CreateStateLoading)
-    //                     Container(
-    //                       color: Colors.black.withOpacity(0.3),
-    //                       child: const Center(
-    //                         child: CircularProgressIndicator(),
-    //                       ),
-    //                     ),
-    //                 ],
-    //               ),
-    //             ),
-    //           );
-    //         }),
-    //       ),
-    //     ),
-    //   ),
-    // );
   }
 }
 
@@ -462,17 +329,11 @@ class _MnemonicState extends State<Mnemonic> {
             Clipboard.setData(ClipboardData(text: mnemonic));
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Mnemonic copied to clipboard'),
+                content: Text('Seed phrase copied to clipboard'),
                 duration: Duration(seconds: 2),
               ),
             );
           },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            iconColor: Theme.of(context).colorScheme.onPrimary,
-          ),
         ),
       ],
     );

@@ -1,55 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart";
 import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-
-SliverWoltModalSheetPage addAddressModal(
-  BuildContext modalSheetContext,
-  TextTheme textTheme,
-  bool isDarkTheme,
-  String accountUuid,
-) {
-  const double pagePadding = 16.0;
-
-  return WoltModalSheetPage(
-    backgroundColor: isDarkTheme
-        ? dialogBackgroundColorDarkTheme
-        : dialogBackgroundColorLightTheme,
-    isTopBarLayerAlwaysVisible: true,
-    topBarTitle: Text('Add an address',
-        style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-            color: isDarkTheme ? mainTextWhite : mainTextBlack)),
-    trailingNavBarWidget: IconButton(
-      padding: const EdgeInsets.all(pagePadding),
-      icon: const Icon(Icons.close),
-      onPressed: Navigator.of(modalSheetContext).pop,
-    ),
-    child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          pagePadding,
-          50,
-          pagePadding,
-          pagePadding,
-        ),
-        child: AddAddressForm(
-          accountUuid: accountUuid,
-        )),
-  );
-}
 
 class AddAddressForm extends StatefulWidget {
-  final BuildContext? modalSheetContext;
   final String accountUuid;
-  const AddAddressForm(
-      {super.key, this.modalSheetContext, required this.accountUuid});
+  const AddAddressForm({super.key, required this.accountUuid});
 
   @override
   State<AddAddressForm> createState() => _AddAccountFormState();
@@ -84,7 +44,6 @@ class _AddAccountFormState extends State<AddAddressForm> {
         await Future.delayed(const Duration(milliseconds: 500));
       });
     }, builder: (context, state) {
-      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
       return Form(
         key: _formKey,
         child: Column(
@@ -96,7 +55,6 @@ class _AddAccountFormState extends State<AddAddressForm> {
               obscureText: true,
               enableSuggestions: false,
               autocorrect: false,
-              isDarkMode: isDarkMode,
               label: 'Password',
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -112,12 +70,9 @@ class _AddAccountFormState extends State<AddAddressForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(0.0),
+                  const Padding(
+                    padding: EdgeInsets.all(0.0),
                     child: Divider(
-                      color: isDarkMode
-                          ? greyDarkThemeUnderlineColor
-                          : greyLightThemeUnderlineColor,
                       thickness: 1.0,
                     ),
                   ),
@@ -142,11 +97,6 @@ class _AddAccountFormState extends State<AddAddressForm> {
                                       accountUuid: widget.accountUuid,
                                       password: password,
                                     ));
-                                // return to dashboard if modalSheetContext is not null
-                                // this will be the case on smaller screens to close the wolt bottom sheet
-                                if (widget.modalSheetContext != null) {
-                                  Navigator.of(widget.modalSheetContext!).pop();
-                                }
                               }
                             },
                             child: state.maybeWhen(

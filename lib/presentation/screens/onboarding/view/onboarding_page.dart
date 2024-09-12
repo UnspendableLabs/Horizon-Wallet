@@ -189,7 +189,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    'IMPORT SEED',
+                                    'LOAD SEED PHRASE',
                                     style: TextStyle(
                                         color: isDarkMode
                                             ? mainTextGrey
@@ -226,7 +226,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          'IMPORT PRIVATE KEY',
+                                          'LOAD PRIVATE KEY',
                                           style: TextStyle(
                                               color: isDarkMode
                                                   ? mainTextGrey
@@ -394,7 +394,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    'IMPORT SEED PHRASE',
+                                    'LOAD SEED PHRASE',
                                     style: TextStyle(
                                         color: isDarkMode
                                             ? mainTextGrey
@@ -428,7 +428,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          'IMPORT PRIVATE KEY',
+                                          'LOAD PRIVATE KEY',
                                           style: TextStyle(
                                               color: isDarkMode
                                                   ? mainTextGrey

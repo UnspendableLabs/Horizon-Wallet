@@ -2,53 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-
-SliverWoltModalSheetPage addAccountModal(
-  BuildContext modalSheetContext,
-  TextTheme textTheme,
-  bool isDarkTheme,
-) {
-  const double pagePadding = 16.0;
-
-  return WoltModalSheetPage(
-    backgroundColor: isDarkTheme
-        ? dialogBackgroundColorDarkTheme
-        : dialogBackgroundColorLightTheme,
-    isTopBarLayerAlwaysVisible: true,
-    topBarTitle: Text('Add an account',
-        style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-            color: isDarkTheme ? mainTextWhite : mainTextBlack)),
-    trailingNavBarWidget: IconButton(
-      padding: const EdgeInsets.all(pagePadding),
-      icon: const Icon(Icons.close),
-      onPressed: Navigator.of(modalSheetContext).pop,
-    ),
-    child: const Padding(
-        padding: EdgeInsets.fromLTRB(
-          pagePadding,
-          50,
-          pagePadding,
-          pagePadding,
-        ),
-        child: AddAccountForm()),
-  );
-}
 
 final validAccount = RegExp(r"^\d\'$");
 
 class AddAccountForm extends StatefulWidget {
-  final BuildContext? modalSheetContext;
-  const AddAccountForm({super.key, this.modalSheetContext});
+  const AddAccountForm({super.key});
 
   @override
   State<AddAccountForm> createState() => _AddAccountFormState();
@@ -134,14 +98,13 @@ class _AddAccountFormState extends State<AddAccountForm> {
         });
       },
       builder: (context, state) {
-        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         return state.maybeWhen(
           initial: () => Column(
             children: [
-              Text(
+              SelectableText(
                   currentHighestIndexAccount.importFormat ==
                           ImportFormat.horizon
-                      ? "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account."
+                      ? "An account is a grouping for your balances. You can only spend from one account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account."
                       : "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. You can generate multiple addresses for each account. If you don't see an address that should be there, generate additional addresses in the \"Receive\" dialog.",
                   textAlign: TextAlign.center),
               const SizedBox(height: 16.0),
@@ -152,9 +115,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                   children: <Widget>[
                     HorizonTextFormField(
                       controller: nameController,
-                      isDarkMode: isDarkMode,
                       label: "Name",
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a name for your account';
@@ -191,7 +152,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
-                    isDarkMode: isDarkMode,
                     label: 'Password',
                     validator: (value) {
                       if (value == null || value.isEmpty) {

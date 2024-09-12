@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_bloc.dart';
@@ -262,7 +263,17 @@ class _PKFieldState extends State<PKField> {
             ),
           )),
           if (isSmallScreen) const SizedBox(height: 16),
-          buildDropdownButton(isDarkMode),
+          ImportFormatDropdown(
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedFormat = newValue;
+              });
+              context
+                  .read<OnboardingImportPKBloc>()
+                  .add(ImportFormatChanged(importFormat: newValue!));
+            },
+            selectedFormat: selectedFormat!,
+          ),
           BackContinueButtons(
               isDarkMode: isDarkMode,
               isSmallScreenWidth: isSmallScreen,
@@ -279,66 +290,6 @@ class _PKFieldState extends State<PKField> {
               backButtonText: 'CANCEL',
               continueButtonText: 'CONTINUE'),
         ],
-      ),
-    );
-  }
-
-  Widget buildDropdownButton(bool isDarkMode) {
-    final dropdownBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 12, 0),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: dropdownBackgroundColor,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
-            child: DropdownButton<String>(
-              isExpanded: true,
-              value: selectedFormat,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedFormat = newValue;
-                });
-                context
-                    .read<OnboardingImportPKBloc>()
-                    .add(ImportFormatChanged(importFormat: newValue!));
-              },
-              dropdownColor: dropdownBackgroundColor,
-              items: [
-                _buildDropdownMenuItem(ImportFormat.horizon.name,
-                    ImportFormat.horizon.description, dropdownBackgroundColor),
-                _buildDropdownMenuItem(
-                    ImportFormat.freewallet.name,
-                    ImportFormat.freewallet.description,
-                    dropdownBackgroundColor),
-                _buildDropdownMenuItem(
-                    ImportFormat.counterwallet.name,
-                    ImportFormat.counterwallet.description,
-                    dropdownBackgroundColor),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  DropdownMenuItem<String> _buildDropdownMenuItem(
-      String value, String description, Color backgroundColor) {
-    return DropdownMenuItem<String>(
-      value: value,
-      child: MouseRegion(
-        onEnter: (_) {},
-        onExit: (_) {},
-        onHover: (_) {},
-        child: Text(description,
-            style: const TextStyle(fontWeight: FontWeight.normal)),
       ),
     );
   }

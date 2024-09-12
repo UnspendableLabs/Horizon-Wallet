@@ -1,7 +1,7 @@
 enum ImportFormat {
-  horizon("Horizon", "Horizon"),
+  horizon("Horizon", "Horizon Native"),
   // legacy("Legacy", "BIP44,P2PKH,Base58"),
-  freewallet("Freewallet", "Freewallet bip39"),
+  freewallet("Freewallet", "Freewallet (BIP39)"),
 
   counterwallet("Counterwallet", "Freewallet / Counterwallet");
 

@@ -3,9 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 
 class HorizonTextField extends StatelessWidget {
-  final bool isDarkMode;
   final String? label;
-  final FloatingLabelBehavior? floatingLabelBehavior;
   final String? hint;
   final TextEditingController? controller;
   final FocusNode? focusNode;
@@ -18,10 +16,8 @@ class HorizonTextField extends StatelessWidget {
 
   const HorizonTextField({
     super.key,
-    required this.isDarkMode,
     this.label,
     this.hint,
-    this.floatingLabelBehavior,
     this.controller,
     this.focusNode,
     this.onChanged,
@@ -46,20 +42,7 @@ class HorizonTextField extends StatelessWidget {
         autocorrect: autocorrect ?? false,
         enabled: enabled ?? true,
         decoration: InputDecoration(
-          filled: true,
-          fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
           labelText: label,
-          floatingLabelBehavior:
-              floatingLabelBehavior ?? FloatingLabelBehavior.never,
-          labelStyle: TextStyle(
-              fontWeight: FontWeight.normal,
-              color: isDarkMode
-                  ? darkThemeInputLabelColor
-                  : lightThemeInputLabelColor),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            borderSide: BorderSide.none,
-          ),
         ),
         style: const TextStyle(fontSize: 16),
       ),
@@ -68,9 +51,7 @@ class HorizonTextField extends StatelessWidget {
 }
 
 class HorizonTextFormField extends StatelessWidget {
-  final bool isDarkMode;
   final String? label;
-  final FloatingLabelBehavior? floatingLabelBehavior;
   final String? hint;
   final TextEditingController? controller;
   final FocusNode? focusNode;
@@ -85,15 +66,11 @@ class HorizonTextFormField extends StatelessWidget {
   final TextCapitalization? textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
   final bool? enabled;
-  final Color? fillColor;
-  final Color? textColor;
 
   const HorizonTextFormField({
     super.key,
-    required this.isDarkMode,
     this.label,
     this.hint,
-    this.floatingLabelBehavior,
     this.controller,
     this.focusNode,
     this.suffix,
@@ -107,47 +84,35 @@ class HorizonTextFormField extends StatelessWidget {
     this.textCapitalization,
     this.inputFormatters,
     this.enabled,
-    this.fillColor,
-    this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final decoration = InputDecoration(
-      filled: true,
-      fillColor: fillColor ??
-          (isDarkMode ? darkThemeInputColor : lightThemeInputColor),
-      labelText: label,
-      floatingLabelBehavior:
-          floatingLabelBehavior ?? FloatingLabelBehavior.never,
-      labelStyle: TextStyle(
-          fontWeight: FontWeight.normal,
-          color: isDarkMode
-              ? darkThemeInputLabelColor
-              : lightThemeInputLabelColor),
-      suffix: suffix,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide.none,
-      ),
-    );
-
     if (enabled == false) {
+      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+      final fillColor = isDarkMode
+          ? dialogBackgroundColorDarkTheme
+          : dialogBackgroundColorLightTheme;
       return InputDecorator(
-        decoration: decoration,
+        decoration: InputDecoration(
+          fillColor: fillColor,
+          labelText: label,
+          suffix: suffix,
+        ),
         child: obscureText == true
             ? Text(
                 '•' * (controller?.text.length ?? 0),
                 style: TextStyle(
                   fontSize: 16,
-                  color: textColor,
+                  color: isDarkMode ? mainTextWhite : mainTextBlack,
                 ),
               )
             : SelectableText(
                 controller?.text ?? '',
                 style: TextStyle(
                   fontSize: 16,
-                  color: textColor,
+                  color: isDarkMode ? mainTextWhite : mainTextBlack,
                 ),
               ),
       );
@@ -166,10 +131,13 @@ class HorizonTextFormField extends StatelessWidget {
       keyboardType: keyboardType,
       textCapitalization: textCapitalization ?? TextCapitalization.none,
       inputFormatters: inputFormatters,
-      decoration: decoration,
-      style: TextStyle(
+      decoration: InputDecoration(
+        labelText: label,
+        suffix: suffix,
+      ),
+      style: const TextStyle(
         fontSize: 16,
-        color: textColor,
+        // color: isDarkMode ? mainTextWhite : mainTextBlack,
       ),
     );
   }

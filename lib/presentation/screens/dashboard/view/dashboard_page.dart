@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -84,10 +85,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
   @override
   void initState() {
     super.initState();
-    //
-    // context.read<AddressesBloc>().add(GetAll(
-    //       accountUuid: widget.accountUuid,
-    //     ));
   }
 
   @override
@@ -118,7 +115,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
               AddressActions(
                 isDarkTheme: isDarkTheme,
                 dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                addresses: [widget.currentAddress],
                 accountUuid: widget.accountUuid,
                 currentAddress: widget.currentAddress,
                 screenWidth: screenWidth,
@@ -220,21 +216,17 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                             elevation: 0,
                           ),
                           onPressed: () {
-                            WoltModalSheet.show<void>(
+                            Navigator.of(modalSheetContext).pop();
+                            HorizonDialog.show(
                               context: context,
-                              pageListBuilder: (modalSheetContext) {
-                                final textTheme = Theme.of(context).textTheme;
-                                return [
-                                  addAccountModal(
-                                      modalSheetContext, textTheme, isDarkTheme)
-                                ];
-                              },
-                              onModalDismissedWithBarrierTap: () {
-                                print("dismissed with barrier tap");
-                              },
-                              modalTypeBuilder: (context) {
-                                return WoltModalType.bottomSheet;
-                              },
+                              body: const HorizonDialog(
+                                title: "Add an account",
+                                body: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: AddAccountForm(),
+                                ),
+                              ),
                             );
                           },
                           child: const Text("Add Account",
@@ -366,11 +358,7 @@ class AddressAction extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return dialog;
-                  });
+              HorizonDialog.show(context: context, body: dialog);
             },
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -403,7 +391,6 @@ class AddressAction extends StatelessWidget {
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final List<Address> addresses;
   final String accountUuid;
   final Address currentAddress;
   final double screenWidth;
@@ -412,7 +399,6 @@ class AddressActions extends StatelessWidget {
       {super.key,
       required this.isDarkTheme,
       required this.dashboardActivityFeedBloc,
-      required this.addresses,
       required this.accountUuid,
       required this.currentAddress,
       required this.screenWidth});
@@ -430,7 +416,6 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonDialog(
                 title: "Compose Send",
                 body: ComposeSendPage(
-                  isDarkMode: isDarkTheme,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                   screenWidth: screenWidth,
                 ),
@@ -446,7 +431,6 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonDialog(
                 title: "Compose Issuance",
                 body: ComposeIssuancePage(
-                  isDarkMode: isDarkTheme,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -460,8 +444,7 @@ class AddressActions extends StatelessWidget {
                 dialog: HorizonDialog(
                   title: "Receive",
                   body: QRCodeDialog(
-                    isDarkTheme: isDarkTheme,
-                    addresses: addresses,
+                    currentAddress: currentAddress,
                   ),
                   includeBackButton: false,
                   includeCloseButton: true,
@@ -539,16 +522,13 @@ class _BalancesState extends State<Balances> {
       return state.when(
         initial: () => const Text(""),
         loading: () => const CircularProgressIndicator(),
-        complete: (result) =>
-            _resultToBalanceList(result, widget.isDarkTheme, widget.addresses),
-        reloading: (result) =>
-            _resultToBalanceList(result, widget.isDarkTheme, widget.addresses),
+        complete: (result) => _resultToBalanceList(result, widget.isDarkTheme),
+        reloading: (result) => _resultToBalanceList(result, widget.isDarkTheme),
       );
     });
   }
 
-  Widget _resultToBalanceList(
-      Result result, bool isDarkTheme, List<Address> addresses) {
+  Widget _resultToBalanceList(Result result, bool isDarkTheme) {
     Color backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
 
     return Padding(
@@ -582,8 +562,29 @@ class _BalancesState extends State<Balances> {
           return [const Center(child: Text("No balance"))];
         }
 
-        final balanceWidgets = aggregated.entries.map((entry) {
-          final isLastEntry = entry.key == aggregated.entries.last.key;
+        // Use MapEntry<String, Balance>? to allow null values
+        final MapEntry<String, Balance>? btcEntry =
+            aggregated.entries.where((e) => e.key == 'BTC').firstOrNull;
+
+        final MapEntry<String, Balance>? xcpEntry =
+            aggregated.entries.where((e) => e.key == 'XCP').firstOrNull;
+
+        final otherEntries = aggregated.entries
+            .where((e) => e.key != 'BTC' && e.key != 'XCP')
+            .toList();
+
+        // Combine entries in the desired order
+        final orderedEntries = [
+          if (btcEntry != null) btcEntry,
+          if (xcpEntry != null) xcpEntry,
+          ...otherEntries,
+        ];
+
+        final balanceWidgets = orderedEntries.asMap().entries.map((mapEntry) {
+          final index = mapEntry.key;
+          final entry = mapEntry.value;
+          final isLastEntry = index == orderedEntries.length - 1;
+
           return Column(
             children: [
               Padding(
@@ -628,30 +629,15 @@ class _BalancesState extends State<Balances> {
   }
 }
 
-class QRCodeDialog extends StatefulWidget {
-  final bool isDarkTheme;
-  final List<Address> addresses;
+class QRCodeDialog extends StatelessWidget {
+  final Address currentAddress;
 
-  const QRCodeDialog(
-      {super.key, required this.isDarkTheme, required this.addresses});
-
-  @override
-  _QRCodeDialogState createState() => _QRCodeDialogState();
-}
-
-class _QRCodeDialogState extends State<QRCodeDialog> {
-  late String _selectedAddress;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedAddress = widget.addresses.first.address;
-  }
+  const QRCodeDialog({super.key, required this.currentAddress});
 
   @override
   Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -659,20 +645,17 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
         QrImageView(
           dataModuleStyle: QrDataModuleStyle(
             dataModuleShape: QrDataModuleShape.square,
-            color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme,
+            color: isDarkTheme ? mainTextWhite : royalBlueLightTheme,
           ),
           eyeStyle: QrEyeStyle(
               eyeShape: QrEyeShape.square,
-              color: widget.isDarkTheme ? mainTextWhite : royalBlueLightTheme),
-          data: _selectedAddress,
+              color: isDarkTheme ? mainTextWhite : royalBlueLightTheme),
+          data: currentAddress.address,
           version: QrVersions.auto,
           size: 230.0,
         ),
         const SizedBox(height: 16.0),
-        Divider(
-          color: widget.isDarkTheme
-              ? greyDarkThemeUnderlineColor
-              : greyLightThemeUnderlineColor,
+        const Divider(
           thickness: 1.0,
         ),
         LayoutBuilder(
@@ -682,65 +665,24 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
               child: Container(
                 width: 500,
                 decoration: BoxDecoration(
-                  color: widget.isDarkTheme
-                      ? darkNavyDarkTheme
-                      : noBackgroundColor,
+                  color: isDarkTheme ? darkNavyDarkTheme : noBackgroundColor,
                   borderRadius: BorderRadius.circular(10.0),
-                  border: widget.isDarkTheme
+                  border: isDarkTheme
                       ? Border.all(color: noBackgroundColor)
                       : Border.all(color: greyLightThemeUnderlineColor),
                 ),
                 child: Row(
                   children: [
-                    if (widget.addresses.length > 1)
-                      Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 16.0),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              dropdownColor: widget.isDarkTheme
-                                  ? darkNavyDarkTheme
-                                  : whiteLightTheme,
-                              style: TextStyle(
-                                  color: widget.isDarkTheme
-                                      ? darkThemeInputLabelColor
-                                      : lightThemeInputLabelColor),
-                              isExpanded: true,
-                              value: _selectedAddress,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  _selectedAddress = newValue!;
-                                });
-                              },
-                              items: widget.addresses
-                                  .map<DropdownMenuItem<String>>(
-                                      (Address address) {
-                                return DropdownMenuItem<String>(
-                                  value: address.address,
-                                  child: Text(
-                                    address.address,
-                                    style: const TextStyle(
-                                        overflow: TextOverflow.ellipsis,
-                                        fontSize: 16.0),
-                                  ),
-                                );
-                              }).toList(),
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: SelectableText(
-                            _selectedAddress,
-                            style: const TextStyle(
-                                overflow: TextOverflow.ellipsis),
-                          ),
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: SelectableText(
+                          currentAddress.address,
+                          style:
+                              const TextStyle(overflow: TextOverflow.ellipsis),
                         ),
                       ),
+                    ),
                     Container(
                       padding: const EdgeInsets.all(2.0),
                       child: screenWidth < 768.0
@@ -754,8 +696,8 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: _selectedAddress));
+                                Clipboard.setData(ClipboardData(
+                                    text: currentAddress.address));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
@@ -774,8 +716,8 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: _selectedAddress));
+                                Clipboard.setData(ClipboardData(
+                                    text: currentAddress.address));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
@@ -788,14 +730,14 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
                                   children: [
                                     Icon(Icons.copy,
                                         size: 14.0,
-                                        color: widget.isDarkTheme
+                                        color: isDarkTheme
                                             ? darkThemeInputLabelColor
                                             : lightThemeInputLabelColor),
                                     const SizedBox(width: 4.0, height: 16.0),
                                     Text("COPY",
                                         style: TextStyle(
                                             fontSize: 14.0,
-                                            color: widget.isDarkTheme
+                                            color: isDarkTheme
                                                 ? darkThemeInputLabelColor
                                                 : lightThemeInputLabelColor)),
                                   ],
@@ -829,29 +771,21 @@ class _QRCodeDialogState extends State<QRCodeDialog> {
             _ => TextButton(
                 child: const Text("Add a new address"),
                 onPressed: () {
-                  final textTheme = Theme.of(context).textTheme;
-                  final isDarkTheme =
-                      Theme.of(context).brightness == Brightness.dark;
-
                   // 1) close receive modal
                   Navigator.of(context).pop();
 
                   // 2) open add address modal
-                  WoltModalSheet.show<void>(
-                    context: context,
-                    pageListBuilder: (modalSheetContext) {
-                      return [
-                        addAddressModal(modalSheetContext, textTheme,
-                            isDarkTheme, accountUuid)
-                      ];
-                    },
-                    modalTypeBuilder: (context) {
-                      final size = MediaQuery.of(context).size.width;
-                      return size < 768.0
-                          ? WoltModalType.bottomSheet
-                          : WoltModalType.dialog;
-                    },
-                  );
+                  HorizonDialog.show(
+                      context: context,
+                      body: HorizonDialog(
+                        title: "Add an address",
+                        body: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: AddAddressForm(
+                            accountUuid: accountUuid,
+                          ),
+                        ),
+                      ));
                 })
           };
         })
