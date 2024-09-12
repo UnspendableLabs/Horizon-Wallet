@@ -914,8 +914,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                     )
                   : null,
             ),
-            child: Expanded(
-              child: Container(
+            child:  Container(
                 margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                 child: CustomScrollView(
                   controller: _scrollController,
@@ -1225,7 +1224,6 @@ class _DashboardPage_State extends State<_DashboardPage> {
                   ],
                 ),
               ),
-            ),
           ));
     }
 
