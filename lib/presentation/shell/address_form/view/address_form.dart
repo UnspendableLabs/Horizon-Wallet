@@ -32,8 +32,10 @@ class _AddAccountFormState extends State<AddAddressForm> {
         ));
       }, success: (addresses) async {
         // update accounts in shell
+        print('WHAT IS THIS');
 
         shell.refreshAndSelectNewAddress(addresses.first.address);
+        print('WHAT IS THIS 2');
 
         Navigator.of(context).pop();
 
