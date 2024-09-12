@@ -12,6 +12,8 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/presentation/common/footer.dart';
+import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
@@ -25,295 +27,30 @@ import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
 import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/view/shell.dart';
-import 'package:horizon/presentation/common/no_data.dart';
-import 'package:horizon/presentation/common/footer.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:sliver_tools/sliver_tools.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+class SliverToWidgetConverter extends StatelessWidget {
+  final Widget sliver;
+  final double height;
 
-  @override
-  Widget build(BuildContext context) {
-    final shell = context
-        .watch<ShellStateCubit>()
-        .state; // we should only ever get to this page if shell is success
-    return shell.maybeWhen(
-        success: (data) => MultiBlocProvider(
-              key: Key(
-                  "${data.currentAccountUuid}:${data.currentAddress.address}"),
-              providers: [
-                BlocProvider<BalancesBloc>(
-                  create: (context) => BalancesBloc(
-                    currentAddress: data.currentAddress,
-                  )..add(Start(pollingInterval: const Duration(seconds: 60))),
-                ),
-                BlocProvider<DashboardActivityFeedBloc>(
-                  create: (context) => DashboardActivityFeedBloc(
-                    currentAddress: data.currentAddress,
-                    eventsRepository: GetIt.I.get<EventsRepository>(),
-                    addressRepository: GetIt.I.get<AddressRepository>(),
-                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-                    transactionLocalRepository:
-                        GetIt.I.get<TransactionLocalRepository>(),
-                    pageSize: 10,
-                  ),
-                ),
-              ],
-              child: _DashboardPage(
-                key: Key(
-                    "${data.currentAccountUuid}:${data.currentAddress.address}"),
-                accountUuid: data.currentAccountUuid,
-                currentAddress: data.currentAddress,
-              ),
-            ),
-        orElse: () => const SizedBox.shrink());
-  }
-}
-
-class _DashboardPage extends StatefulWidget {
-  final String accountUuid;
-  final Address currentAddress;
-
-  const _DashboardPage(
-      {super.key, required this.accountUuid, required this.currentAddress});
-
-  @override
-  _DashboardPage_State createState() => _DashboardPage_State();
-}
-
-class _DashboardPage_State extends State<_DashboardPage> {
-  final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
-
-  final _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  const SliverToWidgetConverter({
+    Key? key,
+    required this.sliver,
+    this.height = 300, // Default height, adjust as needed
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final maxWidth = 926.0;
-
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
-    final backgroundColorInner =
-        isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
-
-    final backgroundColorWrapper =
-        isDarkTheme ? darkNavyDarkTheme : Colors.white;
-
-    final isSmallScreen = screenWidth < 768;
-
-    return Scaffold(
-    bottomNavigationBar: Footer(),
-        body: Container(
-      // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: isDarkTheme
-            ? RadialGradient(
-                center: Alignment.topRight,
-                radius: 1.0,
-                colors: [
-                  blueDarkThemeGradiantColor,
-                  backgroundColor,
-                ],
-              )
-            : null,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverCrossAxisConstrained(
-                      maxCrossAxisExtent: maxWidth,
-                      child: TransparentHorizonSliverAppBar(
-                        expandedHeight: isSmallScreen ? kToolbarHeight : 150,
-                      )),
-                  SliverCrossAxisConstrained(
-                      maxCrossAxisExtent: maxWidth,
-                      child: SliverStack(children: [
-                        SliverPositioned.fill(
-                          child: Container(
-                            margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                            decoration: BoxDecoration(
-                              color: backgroundColor,
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                          ),
-                        ),
-                      ])),
-                  SliverCrossAxisConstrained(
-                    maxCrossAxisExtent: maxWidth,
-                    child: SliverStack(
-                      children: [
-                        SliverPositioned.fill(
-                          child: Container(
-                            margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                            decoration: BoxDecoration(
-                              color: backgroundColorWrapper,
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                          ),
-                        ),
-                        SliverPadding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                          sliver: MultiSliver(children: [
-                            !isSmallScreen
-                                ? SliverToBoxAdapter(
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: AccountSelectionButton(
-                                            isDarkTheme: isDarkTheme,
-                                            onPressed: () => showAccountList(
-                                                context, isDarkTheme),
-                                          ),
-                                        ),
-                                        Builder(builder: (context) {
-                                          return context
-                                              .read<ShellStateCubit>()
-                                              .state
-                                              .maybeWhen(
-                                                  success: (state) =>
-                                                      state.addresses.length > 1
-                                                          ? Expanded(
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .fromLTRB(
-                                                                        0.0,
-                                                                        8.0,
-                                                                        8.0,
-                                                                        0.0),
-                                                                child:
-                                                                    AddressSelectionButton(
-                                                                  isDarkTheme:
-                                                                      isDarkTheme,
-                                                                  onPressed: () =>
-                                                                      showAddressList(
-                                                                          context,
-                                                                          isDarkTheme),
-                                                                ),
-                                                              ),
-                                                            )
-                                                          : SizedBox.shrink(),
-                                                  orElse: () =>
-                                                      SizedBox.shrink());
-                                        }),
-                                      ],
-                                    ),
-                                  )
-                                : SliverToBoxAdapter(child: SizedBox.shrink()),
-                            isSmallScreen
-                                ? SliverToBoxAdapter(
-                                    child: AccountSelectionButton(
-                                      isDarkTheme: isDarkTheme,
-                                      onPressed: () =>
-                                          showAccountList(context, isDarkTheme),
-                                    ),
-                                  )
-                                : SliverToBoxAdapter(child: SizedBox.shrink()),
-                            isSmallScreen
-                                ? Builder(builder: (context) {
-                                    return context
-                                        .read<ShellStateCubit>()
-                                        .state
-                                        .maybeWhen(
-                                            success: (state) => state
-                                                        .addresses.length >
-                                                    1
-                                                ? SliverToBoxAdapter(
-                                                    child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .fromLTRB(
-                                                        8.0, 8.0, 8.0, 0.0),
-                                                    child:
-                                                        AddressSelectionButton(
-                                                      isDarkTheme: isDarkTheme,
-                                                      onPressed: () =>
-                                                          showAddressList(
-                                                              context,
-                                                              isDarkTheme),
-                                                    ),
-                                                  ))
-                                                : SliverToBoxAdapter(
-                                                    child: SizedBox.shrink()),
-                                            orElse: () => SliverToBoxAdapter(
-                                                child: SizedBox.shrink()));
-                                  })
-                                : SliverToBoxAdapter(child: SizedBox.shrink()),
-                            SliverToBoxAdapter(
-                                child: Builder(builder: (context) {
-                              final dashboardActivityFeedBloc =
-                                  BlocProvider.of<DashboardActivityFeedBloc>(
-                                      context);
-                              return AddressActions(
-                                isDarkTheme: isDarkTheme,
-                                dashboardActivityFeedBloc:
-                                    dashboardActivityFeedBloc,
-                                accountUuid: widget.accountUuid,
-                                currentAddress: widget.currentAddress,
-                                screenWidth: screenWidth,
-                              );
-                            })),
-                            SliverStack(children: [
-                              SliverPositioned.fill(
-                                child: Container(
-                                  margin: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorInner,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.all(8.0),
-                                sliver: BalancesDisplay(
-                                    accountUuid: widget.accountUuid,
-                                    isDarkTheme: isDarkTheme,
-                                    addresses: [widget.currentAddress]),
-                              ),
-                            ]),
-                            SliverStack(children: [
-                              SliverPositioned.fill(
-                                child: Container(
-                                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorInner,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.all(8.0),
-                                sliver: DashboardActivityFeedScreen(
-                                  addresses: [widget.currentAddress],
-                                ),
-                              ),
-                            ])
-                          ]),
-                        )
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return SizedBox(
+      height: height,
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: sliver),
         ],
       ),
-    ));
+    );
   }
 }
 
@@ -622,47 +359,6 @@ class AddressActions extends StatelessWidget {
   }
 }
 
-class BalancesDisplay extends StatefulWidget {
-  final bool isDarkTheme;
-  final List<Address> addresses;
-  final String accountUuid;
-
-  const BalancesDisplay(
-      {super.key,
-      required this.isDarkTheme,
-      required this.addresses,
-      required this.accountUuid});
-
-  @override
-  _BalancesDisplayState createState() => _BalancesDisplayState();
-}
-
-class _BalancesDisplayState extends State<BalancesDisplay> {
-  late BalancesBloc _balancesBloc;
-
-  @override
-  void initState() {
-    super.initState();
-    _balancesBloc = context.read<BalancesBloc>();
-
-    _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
-  }
-
-  @override
-  void dispose() {
-    _balancesBloc.add(Stop());
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BalancesSliver(
-      isDarkTheme: widget.isDarkTheme,
-      addresses: widget.addresses,
-    );
-  }
-}
-
 class Balances extends StatefulWidget {
   final bool isDarkTheme;
   final List<Address> addresses;
@@ -678,121 +374,75 @@ class Balances extends StatefulWidget {
   State<Balances> createState() => _BalancesState();
 }
 
-class _BalancesState extends State<Balances> {
+class BalancesDisplay extends StatefulWidget {
+  final bool isDarkTheme;
+  final List<Address> addresses;
+  final String accountUuid;
+
+  const BalancesDisplay(
+      {super.key,
+      required this.isDarkTheme,
+      required this.addresses,
+      required this.accountUuid});
+
+  @override
+  _BalancesDisplayState createState() => _BalancesDisplayState();
+}
+
+class BalancesSliver extends StatefulWidget {
+  final bool isDarkTheme;
+  final List<Address> addresses;
+  final int initialItemCount;
+
+  const BalancesSliver(
+      {Key? key,
+      required this.isDarkTheme,
+      required this.addresses,
+      this.initialItemCount = 3})
+      : super(key: key);
+
+  @override
+  _BalancesSliverState createState() => _BalancesSliverState();
+}
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
-      return state.when(
-        initial: () => const Text(""),
-        loading: () => const CircularProgressIndicator(),
-        complete: (result) => _resultToBalanceList(result, widget.isDarkTheme),
-        reloading: (result) => _resultToBalanceList(result, widget.isDarkTheme),
-      );
-    });
-  }
-
-  Widget _resultToBalanceList(Result result, bool isDarkTheme) {
-    Color backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxHeight: 275,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(30.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: _balanceList(result, widget.isDarkTheme),
+    final shell = context
+        .watch<ShellStateCubit>()
+        .state; // we should only ever get to this page if shell is success
+    return shell.maybeWhen(
+        success: (data) => MultiBlocProvider(
+              key: Key(
+                  "${data.currentAccountUuid}:${data.currentAddress.address}"),
+              providers: [
+                BlocProvider<BalancesBloc>(
+                  create: (context) => BalancesBloc(
+                    currentAddress: data.currentAddress,
+                  )..add(Start(pollingInterval: const Duration(seconds: 60))),
+                ),
+                BlocProvider<DashboardActivityFeedBloc>(
+                  create: (context) => DashboardActivityFeedBloc(
+                    currentAddress: data.currentAddress,
+                    eventsRepository: GetIt.I.get<EventsRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+                    transactionLocalRepository:
+                        GetIt.I.get<TransactionLocalRepository>(),
+                    pageSize: 10,
+                  ),
+                ),
+              ],
+              child: _DashboardPage(
+                key: Key(
+                    "${data.currentAccountUuid}:${data.currentAddress.address}"),
+                accountUuid: data.currentAccountUuid,
+                currentAddress: data.currentAddress,
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _balanceList(Result result, bool isDarkMode) {
-    return result.when(
-      ok: (balances, aggregated) {
-        if (balances.isEmpty) {
-          return [
-            const NoData(
-              title: 'No Balances',
-            )
-          ];
-        }
-
-        // Use MapEntry<String, Balance>? to allow null values
-        final MapEntry<String, Balance>? btcEntry =
-            aggregated.entries.where((e) => e.key == 'BTC').firstOrNull;
-
-        final MapEntry<String, Balance>? xcpEntry =
-            aggregated.entries.where((e) => e.key == 'XCP').firstOrNull;
-
-        final otherEntries = aggregated.entries
-            .where((e) => e.key != 'BTC' && e.key != 'XCP')
-            .toList();
-
-        // Combine entries in the desired order
-        final orderedEntries = [
-          if (btcEntry != null) btcEntry,
-          if (xcpEntry != null) xcpEntry,
-          ...otherEntries,
-        ];
-
-        final balanceWidgets = orderedEntries.asMap().entries.map((mapEntry) {
-          final index = mapEntry.key;
-          final entry = mapEntry.value;
-          final isLastEntry = index == orderedEntries.length - 1;
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SelectableText.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: '${entry.key} ',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: isDarkMode
-                                    ? greyDashboardTextDarkTheme
-                                    : greyDashboardTextLightTheme),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SelectableText(
-                      entry.value.quantityNormalized,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              if (!isLastEntry)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Divider(),
-                ),
-            ],
-          );
-        }).toList();
-        return balanceWidgets;
-      },
-      error: (error) => [SelectableText('Error: $error')],
-    );
+        orElse: () => const SizedBox.shrink());
   }
 }
 
@@ -961,20 +611,30 @@ class QRCodeDialog extends StatelessWidget {
   }
 }
 
-class BalancesSliver extends StatefulWidget {
-  final bool isDarkTheme;
-  final List<Address> addresses;
-  final int initialItemCount;
-
-  const BalancesSliver(
-      {Key? key,
-      required this.isDarkTheme,
-      required this.addresses,
-      this.initialItemCount = 3})
-      : super(key: key);
+class _BalancesDisplayState extends State<BalancesDisplay> {
+  late BalancesBloc _balancesBloc;
 
   @override
-  _BalancesSliverState createState() => _BalancesSliverState();
+  Widget build(BuildContext context) {
+    return BalancesSliver(
+      isDarkTheme: widget.isDarkTheme,
+      addresses: widget.addresses,
+    );
+  }
+
+  @override
+  void dispose() {
+    _balancesBloc.add(Stop());
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _balancesBloc = context.read<BalancesBloc>();
+
+    _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
+  }
 }
 
 class _BalancesSliverState extends State<BalancesSliver> {
@@ -988,20 +648,6 @@ class _BalancesSliverState extends State<BalancesSliver> {
           delegate: SliverChildListDelegate(_buildContent(state)),
         );
       },
-    );
-  }
-
-  List<Widget> _buildContent(BalancesState state) {
-    return state.when(
-      initial: () => [const SizedBox.shrink()],
-      loading: () => [
-        const SizedBox(
-          height: 200,
-          child: Center(child: CircularProgressIndicator()),
-        )
-      ],
-      complete: (result) => _buildBalanceList(result),
-      reloading: (result) => _buildBalanceList(result),
     );
   }
 
@@ -1081,5 +727,714 @@ class _BalancesSliverState extends State<BalancesSliver> {
         )
       ],
     );
+  }
+
+  List<Widget> _buildContent(BalancesState state) {
+    return state.when(
+      initial: () => [const SizedBox.shrink()],
+      loading: () => [
+        const SizedBox(
+          height: 200,
+          child: Center(child: CircularProgressIndicator()),
+        )
+      ],
+      complete: (result) => _buildBalanceList(result),
+      reloading: (result) => _buildBalanceList(result),
+    );
+  }
+}
+
+class _BalancesState extends State<Balances> {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
+      return state.when(
+        initial: () => const Text(""),
+        loading: () => const CircularProgressIndicator(),
+        complete: (result) => _resultToBalanceList(result, widget.isDarkTheme),
+        reloading: (result) => _resultToBalanceList(result, widget.isDarkTheme),
+      );
+    });
+  }
+
+  List<Widget> _balanceList(Result result, bool isDarkMode) {
+    return result.when(
+      ok: (balances, aggregated) {
+        if (balances.isEmpty) {
+          return [
+            const NoData(
+              title: 'No Balances',
+            )
+          ];
+        }
+
+        // Use MapEntry<String, Balance>? to allow null values
+        final MapEntry<String, Balance>? btcEntry =
+            aggregated.entries.where((e) => e.key == 'BTC').firstOrNull;
+
+        final MapEntry<String, Balance>? xcpEntry =
+            aggregated.entries.where((e) => e.key == 'XCP').firstOrNull;
+
+        final otherEntries = aggregated.entries
+            .where((e) => e.key != 'BTC' && e.key != 'XCP')
+            .toList();
+
+        // Combine entries in the desired order
+        final orderedEntries = [
+          if (btcEntry != null) btcEntry,
+          if (xcpEntry != null) xcpEntry,
+          ...otherEntries,
+        ];
+
+        final balanceWidgets = orderedEntries.asMap().entries.map((mapEntry) {
+          final index = mapEntry.key;
+          final entry = mapEntry.value;
+          final isLastEntry = index == orderedEntries.length - 1;
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SelectableText.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${entry.key} ',
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isDarkMode
+                                    ? greyDashboardTextDarkTheme
+                                    : greyDashboardTextLightTheme),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SelectableText(
+                      entry.value.quantityNormalized,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              if (!isLastEntry)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Divider(),
+                ),
+            ],
+          );
+        }).toList();
+        return balanceWidgets;
+      },
+      error: (error) => [SelectableText('Error: $error')],
+    );
+  }
+
+  Widget _resultToBalanceList(Result result, bool isDarkTheme) {
+    Color backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: 275,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
+            child: SingleChildScrollView(
+              child: Column(
+                children: _balanceList(result, widget.isDarkTheme),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardPage extends StatefulWidget {
+  final String accountUuid;
+  final Address currentAddress;
+
+  const _DashboardPage(
+      {super.key, required this.accountUuid, required this.currentAddress});
+
+  @override
+  _DashboardPage_State createState() => _DashboardPage_State();
+}
+
+class _DashboardPage_State extends State<_DashboardPage> {
+  final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
+
+  final _scrollController = ScrollController();
+
+  @override
+  Widget build(BuildContext context) {
+    final maxWidth = 926.0;
+
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
+    final backgroundColorInner =
+        isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+
+    final backgroundColorWrapper =
+        isDarkTheme ? darkNavyDarkTheme : Colors.white;
+
+    final isSmallScreen = screenWidth < 768;
+
+    if (!isSmallScreen) {
+      return Scaffold(
+          bottomNavigationBar: Footer(),
+          body: Container(
+            // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              gradient: isDarkTheme
+                  ? RadialGradient(
+                      center: Alignment.topRight,
+                      radius: 1.0,
+                      colors: [
+                        blueDarkThemeGradiantColor,
+                        backgroundColor,
+                      ],
+                    )
+                  : null,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        SliverCrossAxisConstrained(
+                            maxCrossAxisExtent: maxWidth,
+                            child: TransparentHorizonSliverAppBar(
+                              expandedHeight:
+                                  isSmallScreen ? kToolbarHeight : 150,
+                            )),
+                        SliverCrossAxisConstrained(
+                            maxCrossAxisExtent: maxWidth,
+                            child: SliverStack(children: [
+                              SliverPositioned.fill(
+                                child: Container(
+                                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                  decoration: BoxDecoration(
+                                    color: backgroundColor,
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                ),
+                              ),
+                            ])),
+                        SliverCrossAxisConstrained(
+                          maxCrossAxisExtent: maxWidth,
+                          child: SliverStack(
+                            children: [
+                              SliverPositioned.fill(
+                                child: Container(
+                                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                  decoration: BoxDecoration(
+                                    color: backgroundColorWrapper,
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                ),
+                              ),
+                              SliverPadding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      8.0, 8.0, 8.0, 8.0),
+                                  sliver: SliverToBoxAdapter(
+                                      child: Row(children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Column(
+                                        children: [
+                                          // Add your new widgets here
+                                          Container(
+                                            height: 200,
+                                            color: Colors.grey[300],
+                                            child: Center(
+                                              child: Text('New Left Column'),
+                                            ),
+                                          ),
+                                          SizedBox(height: 16),
+                                          // Add more widgets as needed
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: 16),
+                                    Expanded(
+                                        flex: 3,
+                                        child: Column(
+                                          children: [
+                                            // Add your new widgets here
+                                            Builder(builder: (context) {
+                                              final dashboardActivityFeedBloc =
+                                                  BlocProvider.of<
+                                                          DashboardActivityFeedBloc>(
+                                                      context);
+                                              return AddressActions(
+                                                isDarkTheme: isDarkTheme,
+                                                dashboardActivityFeedBloc:
+                                                    dashboardActivityFeedBloc,
+                                                accountUuid: widget.accountUuid,
+                                                currentAddress:
+                                                    widget.currentAddress,
+                                                screenWidth: screenWidth,
+                                              );
+                                            }),
+                                            SizedBox(
+                                              height: 300,
+                                              child: CustomScrollView(
+                                                slivers: [
+                                                  SliverPadding(
+                                                    padding:
+                                                        const EdgeInsets.all(8.0),
+                                                    sliver: BalancesDisplay(
+                                                        accountUuid:
+                                                            widget.accountUuid,
+                                                        isDarkTheme: isDarkTheme,
+                                                        addresses: [
+                                                          widget.currentAddress
+                                                        ]),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            // BalancesDisplay(
+                                            //     accountUuid:
+                                            //         widget.accountUuid,
+                                            //     isDarkTheme: isDarkTheme,
+                                            //     addresses: [
+                                            //   widget.currentAddress
+                                            // ]),
+                                            Container(
+                                              height: 200,
+                                              color: Colors.grey[300],
+                                              child: Center(
+                                                child: Text('New Right Column'),
+                                              ),
+                                            ),
+                                            SizedBox(height: 16),
+                                            // Add more widgets as needed
+                                          ],
+                                        )
+
+                                        // MultiSliver(children: [
+                                        //   !isSmallScreen
+                                        //       ? SliverToBoxAdapter(
+                                        //           child: Row(
+                                        //             children: [
+                                        //               Expanded(
+                                        //                 child:
+                                        //                     AccountSelectionButton(
+                                        //                   isDarkTheme:
+                                        //                       isDarkTheme,
+                                        //                   onPressed: () =>
+                                        //                       showAccountList(
+                                        //                           context,
+                                        //                           isDarkTheme),
+                                        //                 ),
+                                        //               ),
+                                        //               Builder(builder: (context) {
+                                        //                 return context
+                                        //                     .read<
+                                        //                         ShellStateCubit>()
+                                        //                     .state
+                                        //                     .maybeWhen(
+                                        //                         success: (state) =>
+                                        //                             state.addresses
+                                        //                                         .length >
+                                        //                                     1
+                                        //                                 ? Expanded(
+                                        //                                     child:
+                                        //                                         Padding(
+                                        //                                       padding: const EdgeInsets.fromLTRB(
+                                        //                                           0.0,
+                                        //                                           8.0,
+                                        //                                           8.0,
+                                        //                                           0.0),
+                                        //                                       child:
+                                        //                                           AddressSelectionButton(
+                                        //                                         isDarkTheme: isDarkTheme,
+                                        //                                         onPressed: () => showAddressList(context, isDarkTheme),
+                                        //                                       ),
+                                        //                                     ),
+                                        //                                   )
+                                        //                                 : SizedBox
+                                        //                                     .shrink(),
+                                        //                         orElse: () =>
+                                        //                             SizedBox
+                                        //                                 .shrink());
+                                        //               }),
+                                        //             ],
+                                        //           ),
+                                        //         )
+                                        //       : SliverToBoxAdapter(
+                                        //           child: SizedBox.shrink()),
+                                        //   isSmallScreen
+                                        //       ? SliverToBoxAdapter(
+                                        //           child: AccountSelectionButton(
+                                        //             isDarkTheme: isDarkTheme,
+                                        //             onPressed: () =>
+                                        //                 showAccountList(
+                                        //                     context, isDarkTheme),
+                                        //           ),
+                                        //         )
+                                        //       : SliverToBoxAdapter(
+                                        //           child: SizedBox.shrink()),
+                                        //   isSmallScreen
+                                        //       ? Builder(builder: (context) {
+                                        //           return context
+                                        //               .read<ShellStateCubit>()
+                                        //               .state
+                                        //               .maybeWhen(
+                                        //                   success: (state) => state
+                                        //                               .addresses
+                                        //                               .length >
+                                        //                           1
+                                        //                       ? SliverToBoxAdapter(
+                                        //                           child: Padding(
+                                        //                           padding:
+                                        //                               const EdgeInsets
+                                        //                                   .fromLTRB(
+                                        //                                   8.0,
+                                        //                                   8.0,
+                                        //                                   8.0,
+                                        //                                   0.0),
+                                        //                           child:
+                                        //                               AddressSelectionButton(
+                                        //                             isDarkTheme:
+                                        //                                 isDarkTheme,
+                                        //                             onPressed: () =>
+                                        //                                 showAddressList(
+                                        //                                     context,
+                                        //                                     isDarkTheme),
+                                        //                           ),
+                                        //                         ))
+                                        //                       : SliverToBoxAdapter(
+                                        //                           child: SizedBox
+                                        //                               .shrink()),
+                                        //                   orElse: () =>
+                                        //                       SliverToBoxAdapter(
+                                        //                           child: SizedBox
+                                        //                               .shrink()));
+                                        //         })
+                                        //       : SliverToBoxAdapter(
+                                        //           child: SizedBox.shrink()),
+                                        //   SliverToBoxAdapter(
+                                        //       child: Builder(builder: (context) {
+                                        //     final dashboardActivityFeedBloc =
+                                        //         BlocProvider.of<
+                                        //                 DashboardActivityFeedBloc>(
+                                        //             context);
+                                        //     return AddressActions(
+                                        //       isDarkTheme: isDarkTheme,
+                                        //       dashboardActivityFeedBloc:
+                                        //           dashboardActivityFeedBloc,
+                                        //       accountUuid: widget.accountUuid,
+                                        //       currentAddress:
+                                        //           widget.currentAddress,
+                                        //       screenWidth: screenWidth,
+                                        //     );
+                                        //   })),
+                                        //   SliverStack(children: [
+                                        //     SliverPositioned.fill(
+                                        //       child: Container(
+                                        //         margin: const EdgeInsets.fromLTRB(
+                                        //             8, 4, 8, 0),
+                                        //         decoration: BoxDecoration(
+                                        //           color: backgroundColorInner,
+                                        //           borderRadius:
+                                        //               BorderRadius.circular(30.0),
+                                        //         ),
+                                        //       ),
+                                        //     ),
+                                        //     SliverPadding(
+                                        //       padding: const EdgeInsets.all(8.0),
+                                        //       sliver: BalancesDisplay(
+                                        //           accountUuid: widget.accountUuid,
+                                        //           isDarkTheme: isDarkTheme,
+                                        //           addresses: [
+                                        //             widget.currentAddress
+                                        //           ]),
+                                        //     ),
+                                        //   ]),
+                                        //   SliverStack(children: [
+                                        //     SliverPositioned.fill(
+                                        //       child: Container(
+                                        //         margin: const EdgeInsets.fromLTRB(
+                                        //             8, 8, 8, 0),
+                                        //         decoration: BoxDecoration(
+                                        //           color: backgroundColorInner,
+                                        //           borderRadius:
+                                        //               BorderRadius.circular(30.0),
+                                        //         ),
+                                        //       ),
+                                        //     ),
+                                        //     SliverPadding(
+                                        //       padding: const EdgeInsets.all(8.0),
+                                        //       sliver: DashboardActivityFeedScreen(
+                                        //         addresses: [
+                                        //           widget.currentAddress
+                                        //         ],
+                                        //       ),
+                                        //     ),
+                                        //   ])
+                                        // ]
+
+                                        // ),
+                                        ),
+                                  ])))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ));
+    }
+
+    return Scaffold(
+        bottomNavigationBar: Footer(),
+        body: Container(
+          // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            gradient: isDarkTheme
+                ? RadialGradient(
+                    center: Alignment.topRight,
+                    radius: 1.0,
+                    colors: [
+                      blueDarkThemeGradiantColor,
+                      backgroundColor,
+                    ],
+                  )
+                : null,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
+                      SliverCrossAxisConstrained(
+                          maxCrossAxisExtent: maxWidth,
+                          child: TransparentHorizonSliverAppBar(
+                            expandedHeight:
+                                isSmallScreen ? kToolbarHeight : 150,
+                          )),
+                      SliverCrossAxisConstrained(
+                          maxCrossAxisExtent: maxWidth,
+                          child: SliverStack(children: [
+                            SliverPositioned.fill(
+                              child: Container(
+                                margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                decoration: BoxDecoration(
+                                  color: backgroundColor,
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                              ),
+                            ),
+                          ])),
+                      SliverCrossAxisConstrained(
+                        maxCrossAxisExtent: maxWidth,
+                        child: SliverStack(
+                          children: [
+                            SliverPositioned.fill(
+                              child: Container(
+                                margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                decoration: BoxDecoration(
+                                  color: backgroundColorWrapper,
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                              ),
+                            ),
+                            SliverPadding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                              sliver: MultiSliver(children: [
+                                !isSmallScreen
+                                    ? SliverToBoxAdapter(
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: AccountSelectionButton(
+                                                isDarkTheme: isDarkTheme,
+                                                onPressed: () =>
+                                                    showAccountList(
+                                                        context, isDarkTheme),
+                                              ),
+                                            ),
+                                            Builder(builder: (context) {
+                                              return context
+                                                  .read<ShellStateCubit>()
+                                                  .state
+                                                  .maybeWhen(
+                                                      success: (state) => state
+                                                                  .addresses
+                                                                  .length >
+                                                              1
+                                                          ? Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .fromLTRB(
+                                                                        0.0,
+                                                                        8.0,
+                                                                        8.0,
+                                                                        0.0),
+                                                                child:
+                                                                    AddressSelectionButton(
+                                                                  isDarkTheme:
+                                                                      isDarkTheme,
+                                                                  onPressed: () =>
+                                                                      showAddressList(
+                                                                          context,
+                                                                          isDarkTheme),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          : SizedBox.shrink(),
+                                                      orElse: () =>
+                                                          SizedBox.shrink());
+                                            }),
+                                          ],
+                                        ),
+                                      )
+                                    : SliverToBoxAdapter(
+                                        child: SizedBox.shrink()),
+                                isSmallScreen
+                                    ? SliverToBoxAdapter(
+                                        child: AccountSelectionButton(
+                                          isDarkTheme: isDarkTheme,
+                                          onPressed: () => showAccountList(
+                                              context, isDarkTheme),
+                                        ),
+                                      )
+                                    : SliverToBoxAdapter(
+                                        child: SizedBox.shrink()),
+                                isSmallScreen
+                                    ? Builder(builder: (context) {
+                                        return context
+                                            .read<ShellStateCubit>()
+                                            .state
+                                            .maybeWhen(
+                                                success: (state) => state
+                                                            .addresses.length >
+                                                        1
+                                                    ? SliverToBoxAdapter(
+                                                        child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .fromLTRB(8.0,
+                                                                8.0, 8.0, 0.0),
+                                                        child:
+                                                            AddressSelectionButton(
+                                                          isDarkTheme:
+                                                              isDarkTheme,
+                                                          onPressed: () =>
+                                                              showAddressList(
+                                                                  context,
+                                                                  isDarkTheme),
+                                                        ),
+                                                      ))
+                                                    : SliverToBoxAdapter(
+                                                        child:
+                                                            SizedBox.shrink()),
+                                                orElse: () =>
+                                                    SliverToBoxAdapter(
+                                                        child:
+                                                            SizedBox.shrink()));
+                                      })
+                                    : SliverToBoxAdapter(
+                                        child: SizedBox.shrink()),
+                                SliverToBoxAdapter(
+                                    child: Builder(builder: (context) {
+                                  final dashboardActivityFeedBloc = BlocProvider
+                                      .of<DashboardActivityFeedBloc>(context);
+                                  return AddressActions(
+                                    isDarkTheme: isDarkTheme,
+                                    dashboardActivityFeedBloc:
+                                        dashboardActivityFeedBloc,
+                                    accountUuid: widget.accountUuid,
+                                    currentAddress: widget.currentAddress,
+                                    screenWidth: screenWidth,
+                                  );
+                                })),
+                                SliverStack(children: [
+                                  SliverPositioned.fill(
+                                    child: Container(
+                                      margin:
+                                          const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                                      decoration: BoxDecoration(
+                                        color: backgroundColorInner,
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
+                                      ),
+                                    ),
+                                  ),
+                                  SliverPadding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    sliver: BalancesDisplay(
+                                        accountUuid: widget.accountUuid,
+                                        isDarkTheme: isDarkTheme,
+                                        addresses: [widget.currentAddress]),
+                                  ),
+                                ]),
+                                SliverStack(children: [
+                                  SliverPositioned.fill(
+                                    child: Container(
+                                      margin:
+                                          const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                      decoration: BoxDecoration(
+                                        color: backgroundColorInner,
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
+                                      ),
+                                    ),
+                                  ),
+                                  SliverPadding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    sliver: DashboardActivityFeedScreen(
+                                      addresses: [widget.currentAddress],
+                                    ),
+                                  ),
+                                ])
+                              ]),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 }
