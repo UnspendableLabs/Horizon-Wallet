@@ -27,7 +27,7 @@ const lightThemeInputColor = Color.fromRGBO(242, 245, 249, 1);
 const lightThemeInputLabelColor = Color.fromRGBO(157, 159, 177, 1);
 
 // In-app Colors
-const blueDarkThemeGradiantColor = Color.fromARGB(255, 48, 60, 97);
+const blueDarkThemeGradiantColor = Color.fromRGBO(23, 23, 46, 1);
 const noBackgroundColor = Colors.transparent;
 const onboardingQuoteLightThemeColor = Color.fromRGBO(220, 220, 220, 1);
 const onboardingQuoteDarkThemeColor = Color.fromRGBO(100, 100, 100, 1);

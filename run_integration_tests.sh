@@ -23,7 +23,7 @@ run_tests() {
             --driver=test_driver/integration_test.dart \
             --target="$test_file" \
             -d chrome
-        
+
         # Check if the test failed
         if [ $? -ne 0 ]; then
             echo "Test $test_name failed"

@@ -34,7 +34,6 @@ import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.d
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
-import 'package:horizon/presentation/shell/view/shell.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/setup.dart';
@@ -189,7 +188,7 @@ class AppRouter {
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationShell) {
-              return Shell(navigationShell);
+              return navigationShell;
             },
             branches: [
               StatefulShellBranch(
@@ -358,6 +357,12 @@ class MyApp extends StatelessWidget {
     brightness: Brightness.light,
     appBarTheme: const AppBarTheme(
         backgroundColor: whiteLightTheme, scrolledUnderElevation: 0.0),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: noBackgroundColor,
+    ),
+    bottomAppBarTheme: const BottomAppBarTheme(
+      color: noBackgroundColor,
+    ),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(227, 237, 254, 1),
@@ -469,6 +474,12 @@ class MyApp extends StatelessWidget {
     appBarTheme: const AppBarTheme(
       backgroundColor: lightNavyDarkTheme,
       scrolledUnderElevation: 0.0,
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: noBackgroundColor,
+    ),
+    bottomAppBarTheme: const BottomAppBarTheme(
+      color: noBackgroundColor,
     ),
     primaryColor: Colors.white,
     buttonTheme: const ButtonThemeData(

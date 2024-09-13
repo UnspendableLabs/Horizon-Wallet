@@ -20,164 +20,166 @@ import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
-import 'package:horizon/presentation/shell/view/address_dropdown.dart';
-import 'package:horizon/presentation/common/footer.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-class ResponsiveAccountSidebar extends StatefulWidget {
-  const ResponsiveAccountSidebar({super.key});
+class AccountSidebar extends StatefulWidget {
+  const AccountSidebar({super.key});
   @override
-  State<ResponsiveAccountSidebar> createState() =>
-      _ResponsiveAccountSidebarState();
+  State<AccountSidebar> createState() => _AccountSidebarState();
 }
 
-class _ResponsiveAccountSidebarState extends State<ResponsiveAccountSidebar> {
+class _AccountSidebarState extends State<AccountSidebar> {
   final TextEditingController accountController = TextEditingController();
   Account? selectedAccount;
 
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
-    final screenWidth = MediaQuery.of(context).size.width;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
-
-    if (screenWidth >= 768.0) {
-      // Sidebar for wider screens
-      return Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
-            child: Container(
-              width: 200,
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: shell.state.maybeWhen(
-                success: (state) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 16.0),
-                          child: ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount: state.accounts.length,
-                            itemBuilder: (context, index) {
-                              final account = state.accounts[index];
-                              return Column(
-                                children: [
-                                  ListTile(
-                                    title: Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                                      child: Row(
-                                        children: [
-                                          const SizedBox(
-                                              width:
-                                                  16.0), // Add some left padding
-                                          const Icon(Icons
-                                              .account_balance_wallet_rounded),
-                                          const SizedBox(width: 16.0),
-                                          Expanded(
-                                            child: Text(
-                                              account.name,
-                                              textAlign: TextAlign.left,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 4, 16),
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        child: shell.state.maybeWhen(
+          success: (state) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 554,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: state.accounts.length,
+                      itemBuilder: (context, index) {
+                        final account = state.accounts[index];
+                        return Column(
+                          children: [
+                            ListTile(
+                              title: Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                child: Row(
+                                  children: [
+                                    const SizedBox(
+                                        width: 16.0), // Add some left padding
+                                    const Icon(
+                                        Icons.account_balance_wallet_rounded),
+                                    const SizedBox(width: 16.0),
+                                    Expanded(
+                                      child: Text(
+                                        account.name,
+                                        textAlign: TextAlign.left,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
-                                    hoverColor:
-                                        Colors.transparent, // No hover effect
-                                    selected: account.uuid ==
-                                        state.currentAccountUuid,
-                                    onTap: () {
-                                      setState(() => selectedAccount = account);
-                                      context
-                                          .read<ShellStateCubit>()
-                                          .onAccountChanged(account);
-                                      GoRouter.of(context).go('/dashboard');
-                                    },
-                                  ),
-                                  if (index !=
-                                      state.accounts.length -
-                                          1) // Avoid underline for the last element
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 4.0),
-                                      child: Divider(
-                                        thickness: 1.0,
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero,
-                            ),
-                            elevation: 0, // No shadow
-                          ),
-                          onPressed: () {
-                            HorizonDialog.show(
-                              context: context,
-                              body: const HorizonDialog(
-                                title: "Add an account",
-                                body: Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: AddAccountForm(),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
-                          child: const Text("Add Account",
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
-                        ),
+                              hoverColor: Colors.transparent, // No hover effect
+                              selected:
+                                  account.uuid == state.currentAccountUuid,
+                              onTap: () {
+                                setState(() => selectedAccount = account);
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAccountChanged(account);
+                                GoRouter.of(context).go('/dashboard');
+                              },
+                            ),
+                            if (index !=
+                                state.accounts.length -
+                                    1) // Avoid underline for the last element
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4.0),
+                                child: Divider(
+                                  thickness: 1.0,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
-                        child: Text(
-                          "POWERED BY\nUNSPENDABLE LABS",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 10.0, fontWeight: FontWeight.bold),
+                      elevation: 0, // No shadow
+                    ),
+                    onPressed: () {
+                      HorizonDialog.show(
+                        context: context,
+                        body: const HorizonDialog(
+                          title: "Add an account",
+                          body: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            child: AddAccountForm(),
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
-                orElse: () => const Text(""),
-              ),
-            ),
-          ),
-        ],
-      );
-    } else {
-      // Return blank text for narrower screens
-      return const Text("");
-    }
+                      );
+                    },
+                    child: const Text("Add Account",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
+                  child: Text(
+                    "POWERED BY\nUNSPENDABLE LABS",
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+          orElse: () => const Text(""),
+        ),
+      ),
+    );
   }
 }
 
-class Shell extends StatelessWidget {
-  const Shell(this.navigationShell, {super.key});
+class TransparentHorizonSliverAppBar extends StatelessWidget {
+  final double expandedHeight;
 
-  final StatefulNavigationShell navigationShell;
+  const TransparentHorizonSliverAppBar({
+    super.key,
+    this.expandedHeight = kToolbarHeight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: expandedHeight,
+      // floating: true,
+      // snap: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: const FlexibleSpaceBar(
+        background: HorizonAppBarContent(),
+      ),
+    );
+  }
+}
+
+class HorizonAppBarContent extends StatelessWidget {
+  const HorizonAppBarContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -190,188 +192,160 @@ class Shell extends StatelessWidget {
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: isDarkTheme
-            ? RadialGradient(
-                center: Alignment.topRight,
-                radius: 1.0,
-                colors: [
-                  blueDarkThemeGradiantColor,
-                  backgroundColor,
-                ],
-              )
-            : null,
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 0.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 926, maxHeight: 845),
-            child: Scaffold(
-              backgroundColor: noBackgroundColor,
-              bottomNavigationBar: const Footer(),
-              appBar: AppBar(
-                backgroundColor: noBackgroundColor,
-                title: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Center(
-                              child: isDarkTheme
-                                  ? SvgPicture.asset(
-                                      'assets/logo-white.svg',
-                                      width: 35,
-                                      height: 35,
-                                    )
-                                  : SvgPicture.asset(
-                                      'assets/logo-black.svg',
-                                      width: 35,
-                                      height: 35,
-                                    ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text('Horizon',
-                                style: TextStyle(
-                                  fontSize: isSmallScreen ? 25 : 30,
-                                  fontWeight: FontWeight.w700,
-                                )),
-                            if (!isSmallScreen) const SizedBox(width: 8),
-                            if (!isSmallScreen)
-                              const Text('Wallet',
-                                  style: TextStyle(
-                                    color: neonBlueDarkTheme,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w700,
-                                  )),
-                            if (!isSmallScreen) const SizedBox(width: 12),
-                            if (!isSmallScreen)
-                              const Text('BETA',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  )),
-                            if (!isSmallScreen) const SizedBox(width: 12),
-                            if (!isSmallScreen)
-                              shell.state.maybeWhen(
-                                success: (state) => state.addresses.length > 1
-                                    ? Flexible(
-                                        child: AddressDropdown(
-                                          key:
-                                              Key(state.currentAddress.address),
-                                          isDarkTheme: isDarkTheme,
-                                          addresses: state.addresses,
-                                          currentAddress: state.currentAddress,
-                                          onChange: shell.onAddressChanged,
-                                        ),
-                                      )
-                                    : const SizedBox.shrink(),
-                                orElse: () => const SizedBox.shrink(),
-                              ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                actions: [
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 80,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      border: Border.all(
-                          color: isDarkTheme
-                              ? darkNavyDarkTheme
-                              : Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (isDarkTheme) {
-                                context
-                                    .read<ThemeBloc>()
-                                    .add(ThemeEvent.toggle);
-                              }
-                            },
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isDarkTheme
-                                    ? backgroundColor
-                                    : selectedColor,
-                              ),
-                              child: Icon(
-                                Icons.wb_sunny,
-                                size: 20,
-                                color: isDarkTheme
-                                    ? unselectedColor
-                                    : Colors.white,
-                              ),
-                            ),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Center(
+                    child: isDarkTheme
+                        ? SvgPicture.asset(
+                            'assets/logo-white.svg',
+                            width: 35,
+                            height: 35,
+                          )
+                        : SvgPicture.asset(
+                            'assets/logo-black.svg',
+                            width: 35,
+                            height: 35,
                           ),
-                        ),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (!isDarkTheme) {
-                                context
-                                    .read<ThemeBloc>()
-                                    .add(ThemeEvent.toggle);
-                              }
-                            },
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isDarkTheme
-                                    ? selectedColor
-                                    : backgroundColor,
-                              ),
-                              child: Icon(
-                                Icons.dark_mode,
-                                size: 20,
-                                color: isDarkTheme
-                                    ? neonBlueDarkTheme
-                                    : unselectedColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                   const SizedBox(width: 8),
-                  BlocProvider(
-                    create: (context) => LogoutBloc(
-                      walletRepository: GetIt.I.get<WalletRepository>(),
-                      accountRepository: GetIt.I.get<AccountRepository>(),
-                      addressRepository: GetIt.I.get<AddressRepository>(),
-                      cacheProvider: GetIt.I.get<CacheProvider>(),
-                    ),
-                    child: BlocConsumer<LogoutBloc, LogoutState>(
-                      listener: (context, state) {
-                        if (state.logoutState is LoggedOut) {
-                          final shell = context.read<ShellStateCubit>();
-                          shell.onOnboarding();
-                        }
-                      },
-                      builder: (context, state) => Container(
+                  Text('Horizon',
+                      style: TextStyle(
+                        color: isDarkTheme ? Colors.white : Colors.black,
+                        fontSize: isSmallScreen ? 25 : 30,
+                        fontWeight: FontWeight.w700,
+                      )),
+                  if (!isSmallScreen) ...[
+                    const SizedBox(width: 8),
+                    const Text('Wallet',
+                        style: TextStyle(
+                          color: neonBlueDarkTheme,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                        )),
+                    const SizedBox(width: 12),
+                    Text('BETA',
+                        style: TextStyle(
+                          color: isDarkTheme ? Colors.white : Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        )),
+                    const SizedBox(width: 12),
+                    if (!isSmallScreen)
+                      shell.state.maybeWhen(
+                        success: (state) => state.addresses.length > 1
+                            ? Flexible(
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(7, 7, 7, 7),
+                                  child: AddressSelectionButton(
+                                    isDarkTheme: isDarkTheme,
+                                    onPressed: () {
+                                      showAddressList(context, isDarkTheme);
+                                    },
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
+                  ],
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                Container(
+                  width: 80,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    border: Border.all(
+                        color: isDarkTheme
+                            ? darkNavyDarkTheme
+                            : Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (isDarkTheme) {
+                              context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                            }
+                          },
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  isDarkTheme ? backgroundColor : selectedColor,
+                            ),
+                            child: Icon(
+                              Icons.wb_sunny,
+                              size: 20,
+                              color:
+                                  isDarkTheme ? unselectedColor : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (!isDarkTheme) {
+                              context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                            }
+                          },
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  isDarkTheme ? selectedColor : backgroundColor,
+                            ),
+                            child: Icon(
+                              Icons.dark_mode,
+                              size: 20,
+                              color: isDarkTheme
+                                  ? neonBlueDarkTheme
+                                  : unselectedColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                BlocProvider(
+                  create: (context) => LogoutBloc(
+                    walletRepository: GetIt.I.get<WalletRepository>(),
+                    accountRepository: GetIt.I.get<AccountRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    cacheProvider: GetIt.I.get<CacheProvider>(),
+                  ),
+                  child: BlocConsumer<LogoutBloc, LogoutState>(
+                    listener: (context, state) {
+                      if (state.logoutState is LoggedOut) {
+                        final shell = context.read<ShellStateCubit>();
+                        shell.onOnboarding();
+                      }
+                    },
+                    builder: (context, state) => Container(
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
@@ -442,71 +416,12 @@ class Shell extends StatelessWidget {
                               child: Text('Reset wallet'),
                             ),
                           ],
-                        ),
-                      ),
-                    ),
+                        )),
                   ),
-                  const SizedBox(width: 8),
-                ],
-              ),
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    if (isSmallScreen)
-                      shell.state.maybeWhen(
-                        success: (state) => state.addresses.length > 1
-                            ? Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: AddressSelectionButton(
-                                  isDarkTheme: isDarkTheme,
-                                  onPressed: () =>
-                                      showAddressList(context, isDarkTheme),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                        orElse: () => const SizedBox.shrink(),
-                      ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const ResponsiveAccountSidebar(),
-                          Expanded(
-                            child: Scaffold(
-                              backgroundColor: noBackgroundColor,
-                              body: shell.state.when(
-                                initial: () => const Text("Loading..."),
-                                onboarding: (state) => const Text("onboarding"),
-                                loading: () => const Text("Loading..."),
-                                error: (state) => const Text("error"),
-                                success: (state) {
-                                  return Builder(
-                                    builder: (context) => navigationShell,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (MediaQuery.of(context).size.width < 768.0)
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
-                        child: Text(
-                          "POWERED BY\nUNSPENDABLE LABS",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 10.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                  ],
                 ),
-              ),
+              ],
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -516,9 +431,11 @@ class Shell extends StatelessWidget {
 class AddressSelectionButton extends StatelessWidget {
   final bool isDarkTheme;
   final VoidCallback onPressed;
+  final EdgeInsets padding;
 
   const AddressSelectionButton({
     super.key,
+    this.padding = const EdgeInsets.all(12.0),
     required this.isDarkTheme,
     required this.onPressed,
   });
@@ -529,6 +446,7 @@ class AddressSelectionButton extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 70),
           elevation: 0,
           backgroundColor:
               isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
@@ -538,9 +456,9 @@ class AddressSelectionButton extends StatelessWidget {
         ),
         onPressed: onPressed,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: padding,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
