@@ -116,6 +116,32 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
               padding: const EdgeInsets.all(8.0),
               child: SelectableText('An error occurred: $msg')),
           initial: () {
+            void handleInitialSubmit() {
+              if (_formKey.currentState!.validate()) {
+                // TODO: wrap this in function and write some tests
+                Decimal input = Decimal.parse(quantityController.text);
+
+                int quantity;
+
+                if (isDivisible) {
+                  quantity =
+                      (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+                } else {
+                  quantity = (input).toBigInt().toInt();
+                }
+
+                context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
+                      sourceAddress: widget.address.address,
+                      name: nameController.text,
+                      quantity: quantity,
+                      description: descriptionController.text,
+                      divisible: isDivisible,
+                      lock: isLocked,
+                      reset: isReset,
+                    ));
+              }
+            }
+
             return state.balancesState.when(
               initial: () => const SizedBox.shrink(),
               loading: () => const SizedBox.shrink(),
@@ -139,6 +165,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         HorizonTextFormField(
+                          onFieldSubmitted: (_) => handleInitialSubmit(),
                           enabled: false,
                           controller: fromAddressController,
                           label: "Source",
@@ -160,6 +187,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                                 }
                                 return null;
                               },
+                              onFieldSubmitted: (_) => handleInitialSubmit(),
                             ),
                             Positioned(
                               right: 0,
@@ -195,12 +223,13 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                             }
                             return null;
                           },
+                          onFieldSubmitted: (_) => handleInitialSubmit(),
                         ),
                         const SizedBox(height: 16.0),
                         HorizonTextFormField(
-                          controller: descriptionController,
-                          label: 'Description (optional)',
-                        ),
+                            controller: descriptionController,
+                            label: 'Description (optional)',
+                            onFieldSubmitted: (_) => handleInitialSubmit()),
                         const SizedBox(height: 16.0),
                         Column(
                           children: [
@@ -293,35 +322,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           ],
                         ),
                         HorizonDialogSubmitButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              // TODO: wrap this in function and write some tests
-                              Decimal input =
-                                  Decimal.parse(quantityController.text);
-
-                              int quantity;
-
-                              if (isDivisible) {
-                                quantity = (input * Decimal.fromInt(100000000))
-                                    .toBigInt()
-                                    .toInt();
-                              } else {
-                                quantity = (input).toBigInt().toInt();
-                              }
-
-                              context
-                                  .read<ComposeIssuanceBloc>()
-                                  .add(ComposeTransactionEvent(
-                                    sourceAddress: widget.address.address,
-                                    name: nameController.text,
-                                    quantity: quantity,
-                                    description: descriptionController.text,
-                                    divisible: isDivisible,
-                                    lock: isLocked,
-                                    reset: isReset,
-                                  ));
-                            }
-                          },
+                          onPressed: handleInitialSubmit,
                         ),
                       ],
                     ),
@@ -337,6 +338,16 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
           orElse: () => const SizedBox.shrink(),
           finalizing: (finalizingState) {
             final passwordFormKey = GlobalKey<FormState>();
+            void handlePasswordSubmit() {
+              if (passwordFormKey.currentState!.validate()) {
+                context.read<ComposeIssuanceBloc>().add(
+                      SignAndBroadcastTransactionEvent(
+                        password: passwordController.text,
+                      ),
+                    );
+              }
+            }
+
             return Form(
                 key: passwordFormKey,
                 child: Column(
@@ -353,6 +364,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                         }
                         return null;
                       },
+                      onFieldSubmitted: (_) => handlePasswordSubmit(),
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -372,15 +384,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                           buttonText: 'BACK',
                         ),
                         HorizonContinueButton(
-                          onPressed: () {
-                            if (passwordFormKey.currentState!.validate()) {
-                              context.read<ComposeIssuanceBloc>().add(
-                                    SignAndBroadcastTransactionEvent(
-                                      password: passwordController.text,
-                                    ),
-                                  );
-                            }
-                          },
+                          onPressed: handlePasswordSubmit,
                           buttonText: 'SIGN AND BROADCAST',
                         ),
                       ],

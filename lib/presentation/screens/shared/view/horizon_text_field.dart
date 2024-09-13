@@ -58,6 +58,7 @@ class HorizonTextFormField extends StatelessWidget {
   final Widget? suffix;
   final void Function(String)? onChanged;
   final void Function()? onEditingComplete;
+  final void Function(String)? onFieldSubmitted;
   final String? Function(String?)? validator;
   final bool? obscureText;
   final bool? enableSuggestions;
@@ -76,6 +77,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.suffix,
     this.onChanged,
     this.onEditingComplete,
+    this.onFieldSubmitted,
     this.validator,
     this.obscureText,
     this.enableSuggestions,
@@ -124,6 +126,7 @@ class HorizonTextFormField extends StatelessWidget {
       enabled: enabled ?? true,
       onChanged: onChanged,
       onEditingComplete: onEditingComplete,
+      onFieldSubmitted: onFieldSubmitted,
       validator: validator,
       obscureText: obscureText ?? false,
       enableSuggestions: enableSuggestions ?? false,
