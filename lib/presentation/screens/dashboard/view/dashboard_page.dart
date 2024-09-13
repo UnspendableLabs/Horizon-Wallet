@@ -594,7 +594,7 @@ class SliverToWidgetConverter extends StatelessWidget {
   const SliverToWidgetConverter({
     super.key,
     required this.sliver,
-    this.height = 300, // Default height, adjust as needed
+    this.height = 300,
   });
 
   @override
@@ -975,12 +975,11 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color:
-                                          backgroundColorWrapper, // Use your desired background color
+                                          backgroundColorWrapper,
                                       borderRadius: BorderRadius.circular(30.0),
                                     ),
                                     child: Column(
                                       children: [
-                                        // Add your new widgets here
                                         Builder(builder: (context) {
                                           final dashboardActivityFeedBloc =
                                               BlocProvider.of<
@@ -1003,7 +1002,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                                 8, 4, 8, 8),
                                             decoration: BoxDecoration(
                                               color:
-                                                  backgroundColorInner, // Use your desired background color
+                                                  backgroundColorInner,
                                               borderRadius:
                                                   BorderRadius.circular(30.0),
                                             ),
@@ -1031,7 +1030,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                                 8, 4, 8, 8),
                                             decoration: BoxDecoration(
                                               color:
-                                                  backgroundColorInner, // Use your desired background color
+                                                  backgroundColorInner,
                                               borderRadius:
                                                   BorderRadius.circular(30.0),
                                             ),
