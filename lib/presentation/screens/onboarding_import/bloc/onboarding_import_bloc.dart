@@ -103,13 +103,14 @@ class OnboardingImportBloc
 
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
+      final password = event.password;
       try {
         switch (state.importFormat) {
           case ImportFormat.horizon:
             Wallet wallet =
-                await walletService.deriveRoot(state.mnemonic, state.password!);
+                await walletService.deriveRoot(state.mnemonic, password);
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             //m/84'/1'/0'/0
             Account account0 = Account(
@@ -140,10 +141,10 @@ class OnboardingImportBloc
 
           case ImportFormat.freewallet:
             Wallet wallet = await walletService.deriveRootFreewallet(
-                state.mnemonic, state.password!);
+                state.mnemonic, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             // create an account to house
             Account account = Account(
@@ -185,10 +186,10 @@ class OnboardingImportBloc
             break;
           case ImportFormat.counterwallet:
             Wallet wallet = await walletService.deriveRootCounterwallet(
-                state.mnemonic, state.password!);
+                state.mnemonic, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
             Account account = Account(

@@ -32,4 +32,7 @@ class PKSubmit extends OnboardingImportPKEvent {
   PKSubmit({required this.importFormat, required this.pk});
 }
 
-class ImportWallet extends OnboardingImportPKEvent {}
+class ImportWallet extends OnboardingImportPKEvent {
+  final String password;
+  ImportWallet({required this.password});
+}

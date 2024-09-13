@@ -46,12 +46,13 @@ class OnboardingCreateBloc
     on<CreateWallet>((event, emit) async {
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));
+      final password = event.password;
       try {
         Wallet wallet = await walletService.deriveRoot(
-            state.mnemonicState.mnemonic, state.password!);
+            state.mnemonicState.mnemonic, password);
 
-        String decryptedPrivKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, state.password!);
+        String decryptedPrivKey =
+            await encryptionService.decrypt(wallet.encryptedPrivKey, password);
 
         Account account = Account(
             name: 'ACCOUNT 1',

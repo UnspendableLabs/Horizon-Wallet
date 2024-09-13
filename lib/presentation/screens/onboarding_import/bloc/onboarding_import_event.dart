@@ -40,4 +40,7 @@ class AddressMapChanged extends OnboardingImportEvent {
   AddressMapChanged({required this.address, required this.isChecked});
 }
 
-class ImportWallet extends OnboardingImportEvent {}
+class ImportWallet extends OnboardingImportEvent {
+  final String password;
+  ImportWallet({required this.password});
+}

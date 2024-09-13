@@ -31,10 +31,6 @@ class OnboardingImportPage_ extends StatefulWidget {
 }
 
 class _OnboardingImportPageState extends State<OnboardingImportPage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
   final TextEditingController _importFormat =
@@ -109,56 +105,15 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                     mnemonicErrorState: state.mnemonicError,
                                   )
                                 : PasswordPrompt(
-                                    passwordController: _passwordController,
-                                    passwordConfirmationController:
-                                        _passwordConfirmationController,
                                     state: state,
-                                    onPasswordChanged: (value) {
-                                      String? error = validatePassword(value,
-                                          _passwordConfirmationController.text);
-                                      if (error == null) {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordChanged(
-                                                password: value));
-                                      } else {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(error: error));
-                                      }
-                                    },
-                                    onPasswordConfirmationChanged: (value) {
-                                      String? error = validatePassword(
-                                          _passwordController.text, value);
-                                      if (error == null) {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordConfirmationChanged(
-                                                passwordConfirmation: value));
-                                      } else {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(error: error));
-                                      }
-                                    },
                                     onPressedBack: () {
                                       final shell =
                                           context.read<ShellStateCubit>();
                                       shell.onOnboarding();
                                     },
-                                    onPressedContinue: () {
-                                      String? error = validatePasswordOnSubmit(
-                                          _passwordController.text,
-                                          _passwordConfirmationController.text);
-                                      if (error == null) {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(ImportWallet());
-                                      } else {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(error: error));
-                                      }
+                                    onPressedContinue: (password) {
+                                      context.read<OnboardingImportBloc>().add(
+                                          ImportWallet(password: password));
                                     },
                                     backButtonText: 'CANCEL',
                                     continueButtonText: 'LOGIN',

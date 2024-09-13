@@ -172,60 +172,28 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                       mnemonicErrorState: state.mnemonicError,
                                     ),
                                   _ => PasswordPrompt(
-                                      passwordController: _passwordController,
-                                      passwordConfirmationController:
-                                          _passwordConfirmationController,
                                       state: state,
-                                      onPasswordChanged: (value) {
-                                        String? error = validatePassword(
-                                            value,
-                                            _passwordConfirmationController
-                                                .text);
-                                        if (error == null) {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordChanged(
-                                                  password: value));
-                                        } else {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordError(error: error));
-                                        }
-                                      },
-                                      onPasswordConfirmationChanged: (value) {
-                                        String? error = validatePassword(
-                                            _passwordController.text, value);
-                                        if (error == null) {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordConfirmationChanged(
-                                                  passwordConfirmation: value));
-                                        } else {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordError(error: error));
-                                        }
-                                      },
                                       onPressedBack: () {
                                         final shell =
                                             context.read<ShellStateCubit>();
                                         shell.onOnboarding();
                                       },
-                                      onPressedContinue: () {
-                                        String? error =
-                                            validatePasswordOnSubmit(
-                                                _passwordController.text,
-                                                _passwordConfirmationController
-                                                    .text);
-                                        if (error == null) {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(CreateWallet());
-                                        } else {
-                                          context
-                                              .read<OnboardingCreateBloc>()
-                                              .add(PasswordError(error: error));
-                                        }
+                                      onPressedContinue: (password) {
+                                        //   String? error =
+                                        //       validatePasswordOnSubmit(
+                                        //           _passwordController.text,
+                                        //           _passwordConfirmationController
+                                        //               .text);
+                                        //   if (error == null) {
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(CreateWallet(
+                                                password: password));
+                                        //   } else {
+                                        //     context
+                                        //         .read<OnboardingCreateBloc>()
+                                        //         .add(PasswordError(error: error));
+                                        //   }
                                       },
                                       backButtonText: 'CANCEL',
                                       continueButtonText: 'CONTINUE',
@@ -281,7 +249,6 @@ class _MnemonicState extends State<Mnemonic> {
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreenWidth = screenSize.width < 768;
-    final screenHeight = screenSize.height;
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {

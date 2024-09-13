@@ -105,75 +105,35 @@ class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
                                 pkErrorState: state.pkError,
                               )
                             : PasswordPrompt(
-                                passwordController: _passwordController,
-                                passwordConfirmationController:
-                                    _passwordConfirmationController,
                                 state: state,
-                                onPasswordChanged: (value) {
-                                  String? error = validatePassword(value,
-                                      _passwordConfirmationController.text);
-                                  if (error == null) {
-                                    context
-                                        .read<OnboardingImportPKBloc>()
-                                        .add(PasswordChanged(password: value));
-                                  } else {
-                                    context
-                                        .read<OnboardingImportPKBloc>()
-                                        .add(PasswordError(error: error));
-                                  }
-                                },
-                                onPasswordConfirmationChanged: (value) {
-                                  String? error = validatePassword(
-                                      _passwordController.text, value);
-                                  if (error == null) {
-                                    context.read<OnboardingImportPKBloc>().add(
-                                        PasswordConfirmationChanged(
-                                            passwordConfirmation: value));
-                                  } else {
-                                    context
-                                        .read<OnboardingImportPKBloc>()
-                                        .add(PasswordError(error: error));
-                                  }
-                                },
                                 onPressedBack: () {
                                   final shell = context.read<ShellStateCubit>();
                                   shell.onOnboarding();
                                 },
-                                onPressedContinue: () {
-                                  String? error = validatePasswordOnSubmit(
-                                      _passwordController.text,
-                                      _passwordConfirmationController.text);
-                                  if (error == null) {
-                                    context
-                                        .read<OnboardingImportPKBloc>()
-                                        .add(ImportWallet());
-                                  } else {
-                                    context
-                                        .read<OnboardingImportPKBloc>()
-                                        .add(PasswordError(error: error));
-                                  }
+                                onPressedContinue: (password) {
+                                  context
+                                      .read<OnboardingImportPKBloc>()
+                                      .add(ImportWallet(password: password));
                                 },
                                 backButtonText: 'CANCEL',
                                 continueButtonText: 'LOGIN',
-                                optionalErrorWiget: state.importState
-                                        is ImportStateError
-                                    ? Positioned(
-                                        top: 0, // Adjust the position as needed
-                                        left:
-                                            0, // Adjust the position as needed
-                                        right:
-                                            0, // Adjust the position as needed
-                                        child: Align(
-                                          child: Center(
-                                            child: SelectableText(
-                                              state.importState.message,
-                                              style: const TextStyle(
-                                                  color: redErrorText),
+                                optionalErrorWiget:
+                                    state.importState is ImportStateError
+                                        ? Positioned(
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            child: Align(
+                                              child: Center(
+                                                child: SelectableText(
+                                                  state.importState.message,
+                                                  style: const TextStyle(
+                                                      color: redErrorText),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                      )
-                                    : null,
+                                          )
+                                        : null,
                               ),
                       ),
                     ],

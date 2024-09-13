@@ -40,4 +40,7 @@ class MnemonicSubmit extends OnboardingCreateEvent {
   MnemonicSubmit({required this.mnemonic});
 }
 
-class CreateWallet extends OnboardingCreateEvent {}
+class CreateWallet extends OnboardingCreateEvent {
+  final String password;
+  CreateWallet({required this.password});
+}
