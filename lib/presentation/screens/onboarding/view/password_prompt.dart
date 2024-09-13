@@ -49,7 +49,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
     final screenSize = MediaQuery.of(context).size;
 
     final isSmallScreen = screenSize.width < 768;
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     return SingleChildScrollView(
       child: SizedBox(
@@ -58,7 +58,7 @@ class _PasswordPromptState extends State<PasswordPrompt> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
-              key: _formKey,
+              key: formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -94,10 +94,9 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                             ? screenSize.width
                             : screenSize.width / 3,
                         child: TextFormField(
-                          validator: (value) => validatePassword(
-                              value, passwordConfirmationController.text),
+                          validator: (value) => validatePassword(value),
                           onFieldSubmitted: (_) {
-                            if (_formKey.currentState!.validate()) {
+                            if (formKey.currentState!.validate()) {
                               widget.onPressedContinue(passwordController.text);
                             }
                           },
@@ -147,11 +146,11 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                             ? screenSize.width
                             : screenSize.width / 3,
                         child: TextFormField(
-                          validator: (value) => validatePasswordOnSubmit(
+                          validator: (value) => validatePasswordConfirmation(
                               passwordController.text,
                               passwordConfirmationController.text),
                           onFieldSubmitted: (_) {
-                            if (_formKey.currentState!.validate()) {
+                            if (formKey.currentState!.validate()) {
                               widget.onPressedContinue(passwordController.text);
                             }
                           },
@@ -208,12 +207,12 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                     isSmallScreenWidth: isSmallScreen,
                     onPressedBack: widget.onPressedBack,
                     onPressedContinue: () {
-                      if (_formKey.currentState!.validate()) {
+                      if (formKey.currentState!.validate()) {
                         widget.onPressedContinue(passwordController.text);
                       }
                     },
-                    backButtonText: 'CANCEL',
-                    continueButtonText: 'CONTINUE',
+                    backButtonText: widget.backButtonText,
+                    continueButtonText: widget.continueButtonText,
                   ),
                 ],
               ),
@@ -225,26 +224,24 @@ class _PasswordPromptState extends State<PasswordPrompt> {
   }
 }
 
-String? validatePassword(String? password, String? confirmation) {
+String? validatePassword(String? password) {
   if (password == null || password.isEmpty) {
     return "Password cannot be empty";
   } else if (password.length < 8) {
     return "Password must be at least 8 characters";
-  } else if (confirmation != '' && password != confirmation) {
-    return "Passwords do not match";
   }
   return null;
 }
 
-String? validatePasswordOnSubmit(String? password, String? confirmation) {
-  if (password == null || password.isEmpty) {
-    return "Password cannot be empty";
-  } else if (password.length < 8) {
-    return "Password must be at least 8 characters";
-  } else if (confirmation == null || confirmation.isEmpty) {
-    return "Please confirm your password";
-  } else if (password != confirmation) {
-    return "Passwords do not match";
+String? validatePasswordConfirmation(String? password, String? confirmation) {
+  if (password != null && password.isNotEmpty) {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters";
+    } else if (confirmation == null || confirmation.isEmpty) {
+      return "Please confirm your password";
+    } else if (password != confirmation) {
+      return "Passwords do not match";
+    }
   }
   return null;
 }

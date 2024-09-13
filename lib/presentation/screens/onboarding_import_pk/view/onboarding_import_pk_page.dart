@@ -29,10 +29,6 @@ class OnboardingImportPKPage_ extends StatefulWidget {
 }
 
 class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
   final TextEditingController _importFormat =
