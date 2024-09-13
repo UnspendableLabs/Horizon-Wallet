@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import "package:horizon/presentation/colors.dart";
 import 'package:go_router/go_router.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BottomAppBar(
-      color: Colors.transparent, // Make the background transparent
-      elevation: 0, // Remove the shadow
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDarkTheme ? darkNavyDarkTheme : greyLightTheme,
+      ),
       child: SizedBox(
-        height: 60,
+        height: 30,
         child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class NoData extends StatelessWidget {
@@ -6,14 +5,14 @@ class NoData extends StatelessWidget {
   final IconData? icon;
 
   const NoData({
-    Key? key,
+    super.key,
     required this.title,
     this.icon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 200, // Increased height
       child: Center(
         child: Padding(
@@ -23,7 +22,7 @@ class NoData extends StatelessWidget {
             children: [
               if (icon != null) ...[
                 Icon(icon, size: 64, color: Colors.grey[400]),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
               ],
               Text(
                 title,
@@ -41,4 +40,3 @@ class NoData extends StatelessWidget {
     );
   }
 }
-

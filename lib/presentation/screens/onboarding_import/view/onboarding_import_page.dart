@@ -325,151 +325,161 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     );
   }
 
-Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      if (isSmallScreen) {
-        return SingleChildScrollView(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  children: List.generate(6, (index) => buildCompactInputField(index, isDarkMode)),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: List.generate(6, (index) => buildCompactInputField(index + 6, isDarkMode)),
-                ),
-              ),
-            ],
-          ),
-        );
-      } else {
-        // Existing code for larger screens
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight,
-            ),
-            child: IntrinsicHeight(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(2, (columnIndex) {
-                      return Expanded(
-                        child: Column(
-                          children: List.generate(6, (rowIndex) {
-                            int index = columnIndex * 6 + rowIndex;
-                            return buildInputField(index, isDarkMode);
-                          }),
-                        ),
-                      );
-                    }),
+  Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (isSmallScreen) {
+          return SingleChildScrollView(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: List.generate(6,
+                        (index) => buildCompactInputField(index, isDarkMode)),
                   ),
-                ],
+                ),
+                Expanded(
+                  child: Column(
+                    children: List.generate(
+                        6,
+                        (index) =>
+                            buildCompactInputField(index + 6, isDarkMode)),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Existing code for larger screens
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(2, (columnIndex) {
+                        return Expanded(
+                          child: Column(
+                            children: List.generate(6, (rowIndex) {
+                              int index = columnIndex * 6 + rowIndex;
+                              return buildInputField(index, isDarkMode);
+                            }),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget buildCompactInputField(int index, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            child: Text(
+              "${index + 1}.",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+                color: isDarkMode ? mainTextWhite : mainTextBlack,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: SizedBox(
+              height: 40,
+              child: TextField(
+                controller: controllers[index],
+                focusNode: focusNodes[index],
+                onChanged: (value) => handleInput(value, index),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor:
+                      isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                  hintText: 'Word ${index + 1}',
+                  hintStyle: TextStyle(
+                    fontSize: 14,
+                    color: isDarkMode
+                        ? darkThemeInputLabelColor
+                        : lightThemeInputLabelColor,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
           ),
-        );
-      }
-    },
-  );
-}
+        ],
+      ),
+    );
+  }
 
-Widget buildCompactInputField(int index, bool isDarkMode) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 20,
-          child: Text(
-            "${index + 1}.",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
-              color: isDarkMode ? mainTextWhite : mainTextBlack,
+  Widget buildInputField(int index, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text(
+              "${index + 1}. ",
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                color: isDarkMode ? mainTextWhite : mainTextBlack,
+              ),
+              textAlign: TextAlign.right,
             ),
-            textAlign: TextAlign.right,
           ),
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: SizedBox(
-            height: 40,
+          const SizedBox(width: 4),
+          Expanded(
             child: TextField(
               controller: controllers[index],
               focusNode: focusNodes[index],
               onChanged: (value) => handleInput(value, index),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                hintText: 'Word ${index + 1}',
-                hintStyle: TextStyle(
-                  fontSize: 14,
-                  color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor,
+                fillColor:
+                    isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                labelText: 'Word ${index + 1}',
+                labelStyle: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  color: isDarkMode
+                      ? darkThemeInputLabelColor
+                      : lightThemeInputLabelColor,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide.none,
                 ),
               ),
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget buildInputField(int index, bool isDarkMode) {
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 24,
-          child: Text(
-            "${index + 1}. ",
-            style: TextStyle(
-              fontWeight: FontWeight.normal,
-              color: isDarkMode ? mainTextWhite : mainTextBlack,
-            ),
-            textAlign: TextAlign.right,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: TextField(
-            controller: controllers[index],
-            focusNode: focusNodes[index],
-            onChanged: (value) => handleInput(value, index),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
-              labelText: 'Word ${index + 1}',
-              labelStyle: TextStyle(
-                fontWeight: FontWeight.normal,
-                color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            style: const TextStyle(fontSize: 16),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 
   void handleInput(String value, int index) {
     var words = value.split(RegExp(r'\s+'));

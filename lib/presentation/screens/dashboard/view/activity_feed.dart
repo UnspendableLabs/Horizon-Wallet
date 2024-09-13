@@ -7,7 +7,10 @@ import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/presentation/common/no_data.dart'; import 'package:horizon/domain/entities/bitcoin_tx.dart'; import 'package:horizon/presentation/common/tx_hash_display.dart'; import 'package:horizon/common/format.dart';
+import 'package:horizon/presentation/common/no_data.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/presentation/common/tx_hash_display.dart';
+import 'package:horizon/common/format.dart';
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -500,5 +503,4 @@ class _DashboardActivityFeedScreenState
 
     throw Exception('Invalid state: $state');
   }
-
 }

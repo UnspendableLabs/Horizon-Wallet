@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:fpdart/fpdart.dart' as fp;
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -21,8 +20,6 @@ import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
-import 'package:horizon/presentation/shell/view/address_dropdown.dart';
-import 'package:horizon/presentation/common/footer.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class AccountSidebar extends StatefulWidget {
@@ -162,9 +159,9 @@ class TransparentHorizonSliverAppBar extends StatelessWidget {
   final double expandedHeight;
 
   const TransparentHorizonSliverAppBar({
-    Key? key,
+    super.key,
     this.expandedHeight = kToolbarHeight,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +171,7 @@ class TransparentHorizonSliverAppBar extends StatelessWidget {
       // snap: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      flexibleSpace: FlexibleSpaceBar(
+      flexibleSpace: const FlexibleSpaceBar(
         background: HorizonAppBarContent(),
       ),
     );
@@ -182,6 +179,8 @@ class TransparentHorizonSliverAppBar extends StatelessWidget {
 }
 
 class HorizonAppBarContent extends StatelessWidget {
+  const HorizonAppBarContent({super.key});
+
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
@@ -244,8 +243,8 @@ class HorizonAppBarContent extends StatelessWidget {
                         success: (state) => state.addresses.length > 1
                             ? Flexible(
                                 child: Container(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(7, 7, 7, 7),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(7, 7, 7, 7),
                                   child: AddressSelectionButton(
                                     isDarkTheme: isDarkTheme,
                                     onPressed: () {

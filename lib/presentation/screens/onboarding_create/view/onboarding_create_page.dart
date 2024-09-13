@@ -21,7 +21,7 @@ class NumberedWordGrid extends StatelessWidget {
   final EdgeInsets itemMargin;
 
   const NumberedWordGrid({
-    Key? key,
+    super.key,
     required this.text,
     this.rowsPerColumn = 6,
     this.backgroundColor = mediumNavyDarkTheme,
@@ -30,7 +30,7 @@ class NumberedWordGrid extends StatelessWidget {
     this.padding = const EdgeInsets.all(16.0),
     this.itemMargin =
         const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +65,7 @@ class NumberedWordGrid extends StatelessWidget {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(borderRadius),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Text(
               '$index. $word',
               style: TextStyle(
@@ -283,102 +283,74 @@ class _MnemonicState extends State<Mnemonic> {
     final isSmallScreenWidth = screenSize.width < 768;
     final screenHeight = screenSize.height;
 
-    final boxHeight = (screenHeight / 10)
-        .clamp(20.0, 70.0); // Adjust height based on screen height
-
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
         return Container(
           color: scaffoldBackgroundColor,
-          child: Center(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-              child: Column(
-                children: [
-                  SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (state.mnemonicState is GenerateMnemonicStateLoading)
-                          const CircularProgressIndicator()
-                        else if (state.mnemonicState
-                                is GenerateMnemonicStateGenerated ||
-                            state.mnemonicState
-                                is GenerateMnemonicStateUnconfirmed)
-                          Container(
-                            constraints: BoxConstraints(
-                                maxWidth: isSmallScreenWidth
-                                    ? screenSize.width
-                                    : screenSize.width / 2),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                SizedBox(
-                                    height: isSmallScreenWidth ||
-                                            screenSize.height < 700
-                                        ? 16
-                                        : boxHeight),
-                                NumberedWordGrid(
-                                  text: state.mnemonicState.mnemonic,
-                                ),
-                                SizedBox(
-                                    height: isSmallScreenWidth ||
-                                            screenSize.height < 700
-                                        ? 16
-                                        : boxHeight),
-                                ElevatedButton.icon(
-                                  icon: const Icon(
-                                    Icons.copy,
-                                  ),
-                                  label: const Text('COPY'),
-                                  onPressed: () {
-                                    Clipboard.setData(ClipboardData(
-                                        text: state.mnemonicState.mnemonic));
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Seed phrase copied to clipboard'),
-                                        duration: Duration(seconds: 2),
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                        child: Column(
+                          children: [
+                            if (state.mnemonicState
+                                is GenerateMnemonicStateLoading)
+                              const CircularProgressIndicator()
+                            else if (state.mnemonicState
+                                    is GenerateMnemonicStateGenerated ||
+                                state.mnemonicState
+                                    is GenerateMnemonicStateUnconfirmed)
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    _buildMnemonicText(
+                                        state.mnemonicState.mnemonic,
+                                        isSmallScreenWidth),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w300,
+                                        fontSize: 16,
                                       ),
-                                    );
-                                  },
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  textAlign: TextAlign.center,
-                                  'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
+                              ),
+                            const SizedBox(height: 16),
+                            BackContinueButtons(
+                              isDarkMode: isDarkMode,
+                              isSmallScreenWidth: isSmallScreenWidth,
+                              onPressedBack: () {
+                                final shell = context.read<ShellStateCubit>();
+                                shell.onOnboarding();
+                              },
+                              onPressedContinue: () {
+                                context
+                                    .read<OnboardingCreateBloc>()
+                                    .add(UnconfirmMnemonic());
+                              },
+                              backButtonText: 'BACK',
+                              continueButtonText: 'CONTINUE',
                             ),
-                          ),
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  SafeArea(
-                      child: BackContinueButtons(
-                    isDarkMode: isDarkMode,
-                    isSmallScreenWidth: isSmallScreenWidth,
-                    onPressedBack: () {
-                      final shell = context.read<ShellStateCubit>();
-                      shell.onOnboarding();
-                    },
-                    onPressedContinue: () {
-                      context
-                          .read<OnboardingCreateBloc>()
-                          .add(UnconfirmMnemonic());
-                    },
-                    backButtonText: 'BACK',
-                    continueButtonText: 'CONTINUE',
-                  )),
-                ],
-              ),
+                );
+              },
             ),
           ),
         );
