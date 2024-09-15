@@ -381,23 +381,6 @@ class _MnemonicState extends State<Mnemonic> {
             fontSize: fontSize,
           ),
         ),
-        const SizedBox(
-            height: 16), // Add some space between the text and button
-        ElevatedButton.icon(
-          icon: const Icon(
-            Icons.copy,
-          ),
-          label: const Text('COPY'),
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: mnemonic));
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Seed phrase copied to clipboard'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          },
-        ),
       ],
     );
   }
