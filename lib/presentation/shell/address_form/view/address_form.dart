@@ -44,6 +44,22 @@ class _AddAccountFormState extends State<AddAddressForm> {
         await Future.delayed(const Duration(milliseconds: 500));
       });
     }, builder: (context, state) {
+      void handleSubmit() {
+        // Validate will return true if the form is valid, or false if
+        // the form is invalid.
+        if (_formKey.currentState!.validate()) {
+          if (state == const RemoteDataState.loading()) {
+            return;
+          }
+          String password = passwordController.text;
+
+          context.read<AddressFormBloc>().add(Submit(
+                accountUuid: widget.accountUuid,
+                password: password,
+              ));
+        }
+      }
+
       return Form(
         key: _formKey,
         child: Column(
@@ -62,6 +78,9 @@ class _AddAccountFormState extends State<AddAddressForm> {
                 }
 
                 return null;
+              },
+              onFieldSubmitted: (value) {
+                handleSubmit();
               },
             ),
             const SizedBox(height: 16.0), // Spacing between inputs
@@ -84,21 +103,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
                           height: 45,
                           width: double.infinity,
                           child: FilledButton(
-                            onPressed: () {
-                              // Validate will return true if the form is valid, or false if
-                              // the form is invalid.
-                              if (_formKey.currentState!.validate()) {
-                                if (state == const RemoteDataState.loading()) {
-                                  return;
-                                }
-                                String password = passwordController.text;
-
-                                context.read<AddressFormBloc>().add(Submit(
-                                      accountUuid: widget.accountUuid,
-                                      password: password,
-                                    ));
-                              }
-                            },
+                            onPressed: handleSubmit,
                             child: state.maybeWhen(
                                 loading: () => const SizedBox(
                                     width: 20,
