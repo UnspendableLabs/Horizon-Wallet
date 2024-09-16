@@ -195,7 +195,7 @@ void main() {
         const RemoteDataState<Map<String, dynamic>>.loading(),
         isA<RemoteDataState<Map<String, dynamic>>>().having(
           (state) => state.whenOrNull(
-            success: (addresses) => addresses.length,
+            success: (data) => data['newAddresses'].length,
           ),
           'address count',
           2,
@@ -273,10 +273,10 @@ void main() {
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<List<Address>>.loading(),
-        isA<RemoteDataState<List<Address>>>().having(
+        const RemoteDataState<Map<String, dynamic>>.loading(),
+        isA<RemoteDataState<Map<String, dynamic>>>().having(
           (state) => state.whenOrNull(
-            success: (addresses) => addresses.length,
+            success: (data) => data['newAddresses'].length,
           ),
           'address count',
           2,
