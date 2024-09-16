@@ -21,6 +21,9 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/shell/account_form/bloc/account_form_state.dart";
+import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 
 class AccountSidebar extends StatefulWidget {
   const AccountSidebar({super.key});
@@ -122,13 +125,27 @@ class _AccountSidebarState extends State<AccountSidebar> {
                     onPressed: () {
                       HorizonDialog.show(
                         context: context,
-                        body: const HorizonDialog(
-                          title: "Add an account",
-                          body: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            child: AddAccountForm(),
-                          ),
-                        ),
+                        body: Builder(builder: (context) {
+                          final bloc = context.watch<AccountFormBloc>();
+
+                          final cb = switch (bloc.state) {
+                            AccountFormStep2() => () {
+                                bloc.add(Reset());
+                              },
+                            _ => () {
+                                Navigator.of(context).pop();
+                              },
+                          };
+
+                          return HorizonDialog(
+                            onBackButtonPressed: cb,
+                            title: "Add an account",
+                            body: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              child: AddAccountForm(),
+                            ),
+                          );
+                        }),
                       );
                     },
                     child: const Text("Add Account",

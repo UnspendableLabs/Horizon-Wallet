@@ -7,6 +7,7 @@ class HorizonDialog extends StatelessWidget {
   final bool? includeBackButton;
   final bool? includeCloseButton;
   final Alignment? titleAlign;
+  final void Function()? onBackButtonPressed;
 
   const HorizonDialog({
     super.key,
@@ -15,6 +16,7 @@ class HorizonDialog extends StatelessWidget {
     this.includeBackButton = true,
     this.includeCloseButton = false,
     this.titleAlign,
+    this.onBackButtonPressed,
   });
 
   @override
@@ -39,9 +41,8 @@ class HorizonDialog extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 15.0, left: 10.0),
                         child: IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () => onBackButtonPressed?.call()),
                       ),
                     ),
                   Align(

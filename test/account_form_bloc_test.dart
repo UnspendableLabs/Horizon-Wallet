@@ -121,30 +121,28 @@ void main() {
         password: password,
       )),
       expect: () => [
-        const AccountFormState.loading(),
-        isA<AccountFormState>().having(
-          (state) => state.whenOrNull(
-            success: (account) => account,
-          ),
-          'account',
-          isA<Account>()
+
+       isA<AccountFormStep2>().having(
+          (state) => state.state,
+          'state',
+          isA<Step2Loading>(),
+        ),
+
+      isA<AccountFormStep2>().having(
+          (state) => state.state,
+          'state',
+          isA<Step2Success>().having(
+            (success) => success.account,
+            'account',
+            isA<Account>()
               .having((a) => a.name, 'name', 'Test Account')
               .having((a) => a.walletUuid, 'walletUuid', walletUuid)
               .having((a) => a.purpose, 'purpose', '84\'')
               .having((a) => a.coinType, 'coinType', '0\'')
               .having((a) => a.accountIndex, 'accountIndex', '0\'')
-              .having(
-                  (a) => a.importFormat, 'importFormat', ImportFormat.horizon),
+              .having((a) => a.importFormat, 'importFormat', ImportFormat.horizon),
+          ),
         ),
-        // AccountFormState<Account>.success(Account(
-        //   uuid: any(named: "uuid"),
-        //   name: any(named: "name"),
-        //   walletUuid: walletUuid,
-        //   purpose: '84\'',
-        //   coinType: '0\'',
-        //   accountIndex: '1\'',
-        //   importFormat: ImportFormat.horizon,
-        // )),
       ],
       verify: (_) {
         verify(() => mockAddressService.deriveAddressSegwit(

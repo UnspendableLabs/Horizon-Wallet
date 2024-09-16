@@ -1,13 +1,40 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/account.dart';
 
-part 'account_form_state.freezed.dart';
+sealed class AccountFormState {}
 
-@freezed
-class AccountFormState with _$AccountFormState {
-  const factory AccountFormState.initial() = _Initial;
-  const factory AccountFormState.loading() = _Loading;
-  const factory AccountFormState.success(Account account) = _Success;
-  const factory AccountFormState.finalize() = _Finalize;
-  const factory AccountFormState.error(String error) = _Error;
+class AccountFormStep1 extends AccountFormState {}
+
+class AccountFormStep2 extends AccountFormState {
+  final Step2State state;
+  AccountFormStep2({required this.state});
 }
+
+abstract class Step2State {}
+
+class Step2Initial extends Step2State {}
+
+class Step2Loading extends Step2State {}
+
+class Step2Error extends Step2State {
+  final String error;
+  Step2Error(this.error);
+}
+
+class Step2Success extends Step2State {
+  final Account account;
+  Step2Success(this.account);
+}
+
+// class AccountFormLoading extends AccountFormState {
+//   const AccountFormLoading();
+// }
+//
+// class AccountFormSuccess extends AccountFormState {
+//   final Account account;
+//   const AccountFormSuccess(this.account);
+// }
+//
+// class AccountFormError extends AccountFormState {
+//   final String error;
+//   const AccountFormError(this.error);
+// }

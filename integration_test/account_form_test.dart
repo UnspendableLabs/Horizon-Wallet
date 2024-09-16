@@ -19,7 +19,7 @@ import 'package:mocktail/mocktail.dart';
 
 class MockAccountFormBloc extends Mock implements AccountFormBloc {
   final _stateController = StreamController<AccountFormState>.broadcast();
-  AccountFormState _currentState = const AccountFormState.initial();
+  AccountFormState _currentState = AccountFormStep1();
 
   MockAccountFormBloc() {
     when(() => stream).thenAnswer((_) => _stateController.stream);
@@ -27,14 +27,15 @@ class MockAccountFormBloc extends Mock implements AccountFormBloc {
     when(() => add(any())).thenAnswer((invocation) {
       final event = invocation.positionalArguments[0] as AccountFormEvent;
       if (event is Finalize) {
-        _currentState = const AccountFormState.finalize();
+        _currentState = AccountFormStep2(state: Step2Initial());
         _stateController.add(_currentState);
       } else if (event is Submit) {
-        _currentState = const AccountFormState.loading();
+        _currentState = AccountFormStep2(state: Step2Loading());
         _stateController.add(_currentState);
         // Simulate async operation
         Future.delayed(const Duration(milliseconds: 500), () {
-          _currentState = AccountFormState.success(Account(
+          _currentState = AccountFormStep2(
+              state: Step2Success(Account(
             uuid: 'test-account-uuid',
             name: 'Test Account',
             walletUuid: 'test-wallet-uuid',
@@ -42,7 +43,7 @@ class MockAccountFormBloc extends Mock implements AccountFormBloc {
             coinType: "0'",
             accountIndex: "0'",
             importFormat: ImportFormat.counterwallet,
-          ));
+          )));
           _stateController.add(_currentState);
         });
       }
