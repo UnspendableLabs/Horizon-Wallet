@@ -842,8 +842,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                   flex: 3,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color:
-                                          backgroundColorWrapper,
+                                      color: backgroundColorWrapper,
                                       borderRadius: BorderRadius.circular(30.0),
                                     ),
                                     child: Column(
@@ -869,8 +868,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                             margin: const EdgeInsets.fromLTRB(
                                                 8, 4, 8, 8),
                                             decoration: BoxDecoration(
-                                              color:
-                                                  backgroundColorInner,
+                                              color: backgroundColorInner,
                                               borderRadius:
                                                   BorderRadius.circular(30.0),
                                             ),
@@ -897,8 +895,7 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                             margin: const EdgeInsets.fromLTRB(
                                                 8, 4, 8, 8),
                                             decoration: BoxDecoration(
-                                              color:
-                                                  backgroundColorInner,
+                                              color: backgroundColorInner,
                                               borderRadius:
                                                   BorderRadius.circular(30.0),
                                             ),
@@ -1204,9 +1201,11 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                                                 ),
                                                               ),
                                                             )
-                                                          : const SizedBox.shrink(),
+                                                          : const SizedBox
+                                                              .shrink(),
                                                       orElse: () =>
-                                                          const SizedBox.shrink());
+                                                          const SizedBox
+                                                              .shrink());
                                             }),
                                           ],
                                         ),
