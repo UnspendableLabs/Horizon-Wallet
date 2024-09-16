@@ -16,8 +16,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$OnboardingCreateState {
-  String? get password => throw _privateConstructorUsedError;
-  String? get passwordError => throw _privateConstructorUsedError;
   MnemonicErrorState? get mnemonicError => throw _privateConstructorUsedError;
   dynamic get mnemonicState => throw _privateConstructorUsedError;
   dynamic get createState => throw _privateConstructorUsedError;
@@ -34,9 +32,7 @@ abstract class $OnboardingCreateStateCopyWith<$Res> {
       _$OnboardingCreateStateCopyWithImpl<$Res, OnboardingCreateState>;
   @useResult
   $Res call(
-      {String? password,
-      String? passwordError,
-      MnemonicErrorState? mnemonicError,
+      {MnemonicErrorState? mnemonicError,
       dynamic mnemonicState,
       dynamic createState});
 }
@@ -55,21 +51,11 @@ class _$OnboardingCreateStateCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? password = freezed,
-    Object? passwordError = freezed,
     Object? mnemonicError = freezed,
     Object? mnemonicState = freezed,
     Object? createState = freezed,
   }) {
     return _then(_value.copyWith(
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      passwordError: freezed == passwordError
-          ? _value.passwordError
-          : passwordError // ignore: cast_nullable_to_non_nullable
-              as String?,
       mnemonicError: freezed == mnemonicError
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
@@ -96,9 +82,7 @@ abstract class _$$OnboardingCreateStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? password,
-      String? passwordError,
-      MnemonicErrorState? mnemonicError,
+      {MnemonicErrorState? mnemonicError,
       dynamic mnemonicState,
       dynamic createState});
 }
@@ -115,21 +99,11 @@ class __$$OnboardingCreateStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? password = freezed,
-    Object? passwordError = freezed,
     Object? mnemonicError = freezed,
     Object? mnemonicState = freezed,
     Object? createState = freezed,
   }) {
     return _then(_$OnboardingCreateStateImpl(
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      passwordError: freezed == passwordError
-          ? _value.passwordError
-          : passwordError // ignore: cast_nullable_to_non_nullable
-              as String?,
       mnemonicError: freezed == mnemonicError
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
@@ -145,16 +119,10 @@ class __$$OnboardingCreateStateImplCopyWithImpl<$Res>
 
 class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
   const _$OnboardingCreateStateImpl(
-      {this.password,
-      this.passwordError,
-      this.mnemonicError = null,
+      {this.mnemonicError = null,
       this.mnemonicState = GenerateMnemonicStateNotAsked,
       this.createState = CreateStateNotAsked});
 
-  @override
-  final String? password;
-  @override
-  final String? passwordError;
   @override
   @JsonKey()
   final MnemonicErrorState? mnemonicError;
@@ -167,7 +135,7 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
 
   @override
   String toString() {
-    return 'OnboardingCreateState(password: $password, passwordError: $passwordError, mnemonicError: $mnemonicError, mnemonicState: $mnemonicState, createState: $createState)';
+    return 'OnboardingCreateState(mnemonicError: $mnemonicError, mnemonicState: $mnemonicState, createState: $createState)';
   }
 
   @override
@@ -175,10 +143,6 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$OnboardingCreateStateImpl &&
-            (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.passwordError, passwordError) ||
-                other.passwordError == passwordError) &&
             (identical(other.mnemonicError, mnemonicError) ||
                 other.mnemonicError == mnemonicError) &&
             const DeepCollectionEquality()
@@ -190,8 +154,6 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      password,
-      passwordError,
       mnemonicError,
       const DeepCollectionEquality().hash(mnemonicState),
       const DeepCollectionEquality().hash(createState));
@@ -206,16 +168,10 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
 
 abstract class _OnboardingCreateState implements OnboardingCreateState {
   const factory _OnboardingCreateState(
-      {final String? password,
-      final String? passwordError,
-      final MnemonicErrorState? mnemonicError,
+      {final MnemonicErrorState? mnemonicError,
       final dynamic mnemonicState,
       final dynamic createState}) = _$OnboardingCreateStateImpl;
 
-  @override
-  String? get password;
-  @override
-  String? get passwordError;
   @override
   MnemonicErrorState? get mnemonicError;
   @override

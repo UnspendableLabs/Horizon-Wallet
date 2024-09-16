@@ -9,8 +9,6 @@ part 'onboarding_import_state.freezed.dart';
 @freezed
 class OnboardingImportState with _$OnboardingImportState {
   const factory OnboardingImportState({
-    String? password,
-    String? passwordError,
     @Default("") String mnemonic,
     @Default(null) String? mnemonicError,
     @Default(ImportFormat.horizon) importFormat,

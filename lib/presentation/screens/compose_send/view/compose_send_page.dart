@@ -207,82 +207,87 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         error: (msg) => Padding(
             padding: const EdgeInsets.all(8.0),
             child: SelectableText('An error occurred: $msg')),
-        initial: () => Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                HorizonTextFormField(
-                  enabled: false,
-                  controller: fromAddressController,
-                  label: "Source",
-                ),
-                const SizedBox(height: 16.0),
-                HorizonTextFormField(
-                    controller: destinationAddressController,
-                    label: "Destination",
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a destination address';
-                      }
-                      return null;
-                    }),
-                const SizedBox(height: 16.0),
-                if (widget.screenWidth > 768)
-                  Row(children: _buildQuantityAndAssetInputsForRow(state)),
-                if (widget.screenWidth <= 768)
-                  Column(children: [
-                    _buildQuantityInput(state),
-                    const SizedBox(height: 16.0),
-                    _buildAssetInput(state)
-                  ]),
-                HorizonDialogSubmitButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      // TODO: wrap this in function and write some tests
-                      Decimal input = Decimal.parse(quantityController.text);
+        initial: () {
+          void handleInitialSubmit() {
+            if (_formKey.currentState!.validate()) {
+              // TODO: wrap this in function and write some tests
+              Decimal input = Decimal.parse(quantityController.text);
 
-                      Balance? balance = balance_;
+              Balance? balance = balance_;
 
-                      int quantity;
+              int quantity;
 
-                      if (balance == null) {
-                        throw Exception(
-                            "invariant: No balance found for asset");
-                      }
+              if (balance == null) {
+                throw Exception("invariant: No balance found for asset");
+              }
 
-                      if (balance.assetInfo.divisible) {
-                        quantity = (input * Decimal.fromInt(100000000))
-                            .toBigInt()
-                            .toInt();
-                      } else {
-                        quantity = (input).toBigInt().toInt();
-                      }
+              if (balance.assetInfo.divisible) {
+                quantity =
+                    (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+              } else {
+                quantity = (input).toBigInt().toInt();
+              }
 
-                      if (asset == null) {
-                        throw Exception("no asset");
-                      }
+              if (asset == null) {
+                throw Exception("no asset");
+              }
 
-                      context
-                          .read<ComposeSendBloc>()
-                          .add(ComposeTransactionEvent(
-                            sourceAddress: widget.address.address,
-                            destinationAddress:
-                                destinationAddressController.text,
-                            asset: asset!,
-                            quantity: quantity,
-                          ));
-                    }
-                  },
-                ),
-              ],
+              context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
+                    sourceAddress: widget.address.address,
+                    destinationAddress: destinationAddressController.text,
+                    asset: asset!,
+                    quantity: quantity,
+                  ));
+            }
+          }
+
+          return Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  HorizonTextFormField(
+                    enabled: false,
+                    controller: fromAddressController,
+                    label: "Source",
+                    onFieldSubmitted: (value) {
+                      handleInitialSubmit();
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+                  HorizonTextFormField(
+                      controller: destinationAddressController,
+                      label: "Destination",
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a destination address';
+                        }
+                        return null;
+                      },
+                      onFieldSubmitted: (value) {
+                        handleInitialSubmit();
+                      }),
+                  const SizedBox(height: 16.0),
+                  if (widget.screenWidth > 768)
+                    Row(
+                        children: _buildQuantityAndAssetInputsForRow(
+                            state, handleInitialSubmit)),
+                  if (widget.screenWidth <= 768)
+                    Column(children: [
+                      _buildQuantityInput(state, handleInitialSubmit),
+                      const SizedBox(height: 16.0),
+                      _buildAssetInput(state)
+                    ]),
+                  HorizonDialogSubmitButton(
+                    onPressed: handleInitialSubmit,
+                  ),
+                ],
+              ),
             ),
-          ),
-
-          // },
-        ),
+          );
+        },
         composing: (composeSendState) {
           return ConfirmationPage(
             composeSendState: composeSendState,
@@ -292,6 +297,26 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         finalizing: (finalizingState) {
           TextEditingController passwordController = TextEditingController();
           final passwordFormKey = GlobalKey<FormState>();
+          void handlePasswordSubmit() {
+            if (passwordFormKey.currentState!.validate()) {
+              try {
+                final password = passwordController.text;
+                if (password.isEmpty) {
+                  throw Exception('Password cannot be empty');
+                }
+
+                context.read<ComposeSendBloc>().add(
+                      SignAndBroadcastTransactionEvent(
+                        password: password,
+                      ),
+                    );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}')),
+                );
+              }
+            }
+          }
 
           return Form(
               key: passwordFormKey,
@@ -299,6 +324,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(children: [
                   HorizonTextFormField(
+                    onFieldSubmitted: (_) => handlePasswordSubmit(),
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
@@ -328,28 +354,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
                         buttonText: 'BACK',
                       ),
                       HorizonContinueButton(
-                        onPressed: () {
-                          print("onPressed");
-                          if (passwordFormKey.currentState!.validate()) {
-                            try {
-                              final password = passwordController.text;
-                              if (password.isEmpty) {
-                                throw Exception('Password cannot be empty');
-                              }
-
-                              context.read<ComposeSendBloc>().add(
-                                    SignAndBroadcastTransactionEvent(
-                                      password: password,
-                                    ),
-                                  );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text('Error: ${e.toString()}')),
-                              );
-                            }
-                          }
-                        },
+                        onPressed: handlePasswordSubmit,
                         buttonText: 'SIGN AND BROADCAST',
                       ),
                     ],
@@ -362,9 +367,10 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
     });
   }
 
-  Widget _buildQuantityInput(ComposeSendState state) {
+  Widget _buildQuantityInput(
+      ComposeSendState state, void Function() handleInitialSubmit) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildQuantityInputField(null);
+      return _buildQuantityInputField(null, handleInitialSubmit);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonTextFormField(
@@ -381,11 +387,12 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         );
       }
 
-      return _buildQuantityInputField(balance);
+      return _buildQuantityInputField(balance, handleInitialSubmit);
     });
   }
 
-  Widget _buildQuantityInputField(Balance? balance) {
+  Widget _buildQuantityInputField(
+      Balance? balance, void Function() handleInitialSubmit) {
     return Stack(
       children: [
         HorizonTextFormField(
@@ -414,6 +421,9 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
             });
 
             return null;
+          },
+          onFieldSubmitted: (value) {
+            handleInitialSubmit();
           },
         ),
         Positioned(
@@ -483,12 +493,13 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
         });
   }
 
-  List<Widget> _buildQuantityAndAssetInputsForRow(ComposeSendState state) {
+  List<Widget> _buildQuantityAndAssetInputsForRow(
+      ComposeSendState state, void Function() handleInitialSubmit) {
     return [
       Expanded(
           // TODO: make his type of input it's own component ( e.g. BalanceInput )
           child: Builder(builder: (context) {
-        return _buildQuantityInput(state);
+        return _buildQuantityInput(state, handleInitialSubmit);
       })),
       const SizedBox(width: 16.0),
       Expanded(

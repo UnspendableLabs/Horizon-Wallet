@@ -1,5 +1,7 @@
 abstract class AddressFormEvent {}
 
+class Reset extends AddressFormEvent {}
+
 class Submit extends AddressFormEvent {
   final String accountUuid;
   final String password;

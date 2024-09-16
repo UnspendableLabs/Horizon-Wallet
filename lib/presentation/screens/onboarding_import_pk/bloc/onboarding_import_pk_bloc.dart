@@ -28,18 +28,6 @@ class OnboardingImportPKBloc
   final Config config = GetIt.I<Config>();
 
   OnboardingImportPKBloc() : super(const OnboardingImportPKState()) {
-    on<PasswordChanged>((event, emit) {
-      emit(state.copyWith(password: event.password, passwordError: null));
-    });
-
-    on<PasswordConfirmationChanged>((event, emit) {
-      emit(state.copyWith(passwordError: null));
-    });
-
-    on<PasswordError>((event, emit) {
-      emit(state.copyWith(passwordError: event.error));
-    });
-
     on<PKChanged>((event, emit) async {
       if (event.pk.isEmpty) {
         emit(state.copyWith(pkError: "PK is required", pk: event.pk));
@@ -74,14 +62,14 @@ class OnboardingImportPKBloc
 
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
+      final password = event.password;
       try {
         switch (state.importFormat) {
           case ImportFormat.horizon:
-            Wallet wallet =
-                await walletService.fromBase58(state.pk, state.password!);
+            Wallet wallet = await walletService.fromBase58(state.pk, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             //m/84'/1'/0'/0
             Account account0 = Account(
@@ -111,11 +99,10 @@ class OnboardingImportPKBloc
             break;
 
           case ImportFormat.freewallet:
-            Wallet wallet =
-                await walletService.fromBase58(state.pk, state.password!);
+            Wallet wallet = await walletService.fromBase58(state.pk, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             // create an account to house
             Account account = Account(
@@ -160,11 +147,10 @@ class OnboardingImportPKBloc
 
             break;
           case ImportFormat.counterwallet:
-            Wallet wallet =
-                await walletService.fromBase58(state.pk, state.password!);
+            Wallet wallet = await walletService.fromBase58(state.pk, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
             Account account = Account(

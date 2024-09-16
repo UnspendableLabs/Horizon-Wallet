@@ -31,27 +31,16 @@ class OnboardingCreateBloc
   final addressService = GetIt.I<AddressService>();
 
   OnboardingCreateBloc() : super(const OnboardingCreateState()) {
-    on<PasswordChanged>((event, emit) {
-      emit(state.copyWith(password: event.password, passwordError: null));
-    });
-
-    on<PasswordConfirmationChanged>((event, emit) {
-      emit(state.copyWith(passwordError: null));
-    });
-
-    on<PasswordError>((event, emit) {
-      emit(state.copyWith(passwordError: event.error));
-    });
-
     on<CreateWallet>((event, emit) async {
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));
+      final password = event.password;
       try {
         Wallet wallet = await walletService.deriveRoot(
-            state.mnemonicState.mnemonic, state.password!);
+            state.mnemonicState.mnemonic, password);
 
-        String decryptedPrivKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, state.password!);
+        String decryptedPrivKey =
+            await encryptionService.decrypt(wallet.encryptedPrivKey, password);
 
         Account account = Account(
             name: 'ACCOUNT 1',

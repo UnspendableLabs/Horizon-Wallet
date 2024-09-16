@@ -16,8 +16,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$OnboardingImportPKState {
-  String? get password => throw _privateConstructorUsedError;
-  String? get passwordError => throw _privateConstructorUsedError;
   String? get pkError => throw _privateConstructorUsedError;
   String get pk => throw _privateConstructorUsedError;
   dynamic get importFormat => throw _privateConstructorUsedError;
@@ -35,12 +33,7 @@ abstract class $OnboardingImportPKStateCopyWith<$Res> {
       _$OnboardingImportPKStateCopyWithImpl<$Res, OnboardingImportPKState>;
   @useResult
   $Res call(
-      {String? password,
-      String? passwordError,
-      String? pkError,
-      String pk,
-      dynamic importFormat,
-      dynamic importState});
+      {String? pkError, String pk, dynamic importFormat, dynamic importState});
 }
 
 /// @nodoc
@@ -57,22 +50,12 @@ class _$OnboardingImportPKStateCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? password = freezed,
-    Object? passwordError = freezed,
     Object? pkError = freezed,
     Object? pk = null,
     Object? importFormat = freezed,
     Object? importState = freezed,
   }) {
     return _then(_value.copyWith(
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      passwordError: freezed == passwordError
-          ? _value.passwordError
-          : passwordError // ignore: cast_nullable_to_non_nullable
-              as String?,
       pkError: freezed == pkError
           ? _value.pkError
           : pkError // ignore: cast_nullable_to_non_nullable
@@ -103,12 +86,7 @@ abstract class _$$OnboardingImportPKStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? password,
-      String? passwordError,
-      String? pkError,
-      String pk,
-      dynamic importFormat,
-      dynamic importState});
+      {String? pkError, String pk, dynamic importFormat, dynamic importState});
 }
 
 /// @nodoc
@@ -124,22 +102,12 @@ class __$$OnboardingImportPKStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? password = freezed,
-    Object? passwordError = freezed,
     Object? pkError = freezed,
     Object? pk = null,
     Object? importFormat = freezed,
     Object? importState = freezed,
   }) {
     return _then(_$OnboardingImportPKStateImpl(
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      passwordError: freezed == passwordError
-          ? _value.passwordError
-          : passwordError // ignore: cast_nullable_to_non_nullable
-              as String?,
       pkError: freezed == pkError
           ? _value.pkError
           : pkError // ignore: cast_nullable_to_non_nullable
@@ -159,17 +127,11 @@ class __$$OnboardingImportPKStateImplCopyWithImpl<$Res>
 
 class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
   const _$OnboardingImportPKStateImpl(
-      {this.password,
-      this.passwordError,
-      this.pkError,
+      {this.pkError,
       this.pk = "",
       this.importFormat = ImportFormat.horizon,
       this.importState = ImportStateNotAsked});
 
-  @override
-  final String? password;
-  @override
-  final String? passwordError;
   @override
   final String? pkError;
   @override
@@ -184,7 +146,7 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
 
   @override
   String toString() {
-    return 'OnboardingImportPKState(password: $password, passwordError: $passwordError, pkError: $pkError, pk: $pk, importFormat: $importFormat, importState: $importState)';
+    return 'OnboardingImportPKState(pkError: $pkError, pk: $pk, importFormat: $importFormat, importState: $importState)';
   }
 
   @override
@@ -192,10 +154,6 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$OnboardingImportPKStateImpl &&
-            (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.passwordError, passwordError) ||
-                other.passwordError == passwordError) &&
             (identical(other.pkError, pkError) || other.pkError == pkError) &&
             (identical(other.pk, pk) || other.pk == pk) &&
             const DeepCollectionEquality()
@@ -207,8 +165,6 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      password,
-      passwordError,
       pkError,
       pk,
       const DeepCollectionEquality().hash(importFormat),
@@ -224,17 +180,11 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
 
 abstract class _OnboardingImportPKState implements OnboardingImportPKState {
   const factory _OnboardingImportPKState(
-      {final String? password,
-      final String? passwordError,
-      final String? pkError,
+      {final String? pkError,
       final String pk,
       final dynamic importFormat,
       final dynamic importState}) = _$OnboardingImportPKStateImpl;
 
-  @override
-  String? get password;
-  @override
-  String? get passwordError;
   @override
   String? get pkError;
   @override

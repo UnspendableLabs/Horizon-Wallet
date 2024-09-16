@@ -14,7 +14,7 @@ import "package:horizon/presentation/shell/address_form/bloc/address_form_event.
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
 class AddressFormBloc
-    extends Bloc<AddressFormEvent, RemoteDataState<List<Address>>> {
+    extends Bloc<AddressFormEvent, RemoteDataState<Map<String, dynamic>>> {
   final walletRepository = GetIt.I<WalletRepository>();
   final walletService = GetIt.I<WalletService>();
   final encryptionService = GetIt.I<EncryptionService>();
@@ -93,7 +93,10 @@ class AddressFormBloc
 
             await addressRepository.insertMany(newAddresses);
 
-            emit(RemoteDataState.success(newAddresses));
+            emit(RemoteDataState.success({
+              'newAddresses': newAddresses,
+              'accountUuid': event.accountUuid
+            }));
             break;
 
           case ImportFormat.counterwallet:
@@ -121,20 +124,21 @@ class AddressFormBloc
               end: maxIndex + 1,
             );
             final newAddresses = [bech32Addresses[0], legacyAddresses[0]];
-
             await addressRepository.insertMany(newAddresses);
 
-            emit(RemoteDataState.success(newAddresses));
+            emit(RemoteDataState.success({
+              'newAddresses': newAddresses,
+              'accountUuid': event.accountUuid
+            }));
             break;
         }
-
-        // // this is a bit of a hack to reset the form after success
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        emit(const RemoteDataState.initial());
       } catch (e) {
         emit(RemoteDataState.error(e.toString()));
       }
+    });
+
+    on<Reset>((event, emit) {
+      emit(const RemoteDataState.initial());
     });
   }
 }

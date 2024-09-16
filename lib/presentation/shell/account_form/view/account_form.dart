@@ -24,6 +24,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final passwordFormKey = GlobalKey<FormState>();
+  final nativeHorizonAccountBlurb =
+      "An account is a grouping for your balances. You can only spend from one account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account.";
+  final importAccountBlurb =
+      "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. You can generate multiple addresses for each account. If you don't see an address that should be there, generate additional addresses in the \"Receive\" dialog.";
 
   @override
   void initState() {
@@ -80,68 +84,105 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
     return BlocConsumer<AccountFormBloc, AccountFormState>(
       listener: (context, state) {
-        state.whenOrNull(error: (msg) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: SelectableText(msg),
-          ));
-        }, success: (account) async {
-          // update accounts in shell
-          shell.refresh();
+        state.whenOrNull(
+          error: (msg) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: SelectableText(msg),
+            ));
+          },
+          success: (account) {
+            // Move the navigation and snackbar show here
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Success"),
+            ));
 
-          Navigator.of(context).pop();
-
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Success"),
-          ));
-
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
+            // Update accounts in shell
+            shell.refresh();
+          },
+        );
       },
       builder: (context, state) {
         return state.maybeWhen(
-          initial: () => Column(
-            children: [
-              SelectableText(
-                  currentHighestIndexAccount.importFormat ==
-                          ImportFormat.horizon
-                      ? "An account is a grouping for your balances. You can only spend from one account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account."
-                      : "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. You can generate multiple addresses for each account. If you don't see an address that should be there, generate additional addresses in the \"Receive\" dialog.",
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 16.0),
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    HorizonTextFormField(
-                      controller: nameController,
-                      label: "Name",
-                      validator: (String? value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a name for your account';
-                        }
-                        return null;
-                      },
-                    ),
-                    HorizonDialogSubmitButton(
-                      textChild: const Text('CONTINUE'),
-                      onPressed: () {
-                        // Validate will return true if the form is valid, or false if
-                        // the form is invalid.
-                        if (_formKey.currentState!.validate()) {
-                          if (state == const AccountFormState.loading()) {
-                            return;
+          error: (msg) {
+            return SelectableText(msg);
+          },
+          initial: () {
+            void handleSubmit() {
+              // Validate will return true if the form is valid, or false if
+              // the form is invalid.
+              if (_formKey.currentState!.validate()) {
+                if (state == const AccountFormState.loading()) {
+                  return;
+                }
+                context.read<AccountFormBloc>().add(Finalize());
+              }
+            }
+
+            return Column(
+              children: [
+                SelectableText(
+                    currentHighestIndexAccount.importFormat ==
+                            ImportFormat.horizon
+                        ? nativeHorizonAccountBlurb
+                        : importAccountBlurb,
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 16.0),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      HorizonTextFormField(
+                        controller: nameController,
+                        label: "Name",
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a name for your account';
                           }
-                          context.read<AccountFormBloc>().add(Finalize());
-                        }
-                      },
-                    )
-                  ],
+                          return null;
+                        },
+                        onEditingComplete: handleSubmit,
+                      ),
+                      HorizonDialogSubmitButton(
+                        textChild: const Text('CONTINUE'),
+                        onPressed: handleSubmit,
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            );
+          },
           orElse: () {
+            void handleSubmit() {
+              // Validate will return true if the form is valid, or false if
+              // the form is invalid.
+              if (passwordFormKey.currentState!.validate()) {
+                if (state == const AccountFormState.loading()) {
+                  return;
+                }
+
+                // get name field from form
+
+                String name = nameController.text;
+                String purpose = currentHighestIndexAccount.purpose;
+                String coinType = currentHighestIndexAccount.coinType;
+                String accountIndex = "$newAccountIndex";
+                String walletUuid = currentHighestIndexAccount.walletUuid;
+                String password = passwordController.text;
+
+                context.read<AccountFormBloc>().add(Submit(
+                    name: name,
+                    purpose: purpose,
+                    coinType: coinType,
+                    accountIndex: "$accountIndex'",
+                    walletUuid: walletUuid,
+                    password: password,
+                    importFormat: currentHighestIndexAccount.importFormat));
+              }
+            }
+
             return Form(
               key: passwordFormKey,
               child: Column(
@@ -160,6 +201,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
                       return null;
                     },
+                    onEditingComplete: handleSubmit,
                   ),
                   HorizonDialogSubmitButton(
                     textChild: state.maybeWhen(
@@ -172,35 +214,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                             height: 20,
                             child: CircularProgressIndicator()),
                         orElse: () => const Text('SUBMIT')),
-                    onPressed: () {
-                      // Validate will return true if the form is valid, or false if
-                      // the form is invalid.
-                      if (passwordFormKey.currentState!.validate()) {
-                        if (state == const AccountFormState.loading()) {
-                          return;
-                        }
-
-                        // get name field from form
-
-                        String name = nameController.text;
-                        String purpose = currentHighestIndexAccount.purpose;
-                        String coinType = currentHighestIndexAccount.coinType;
-                        String accountIndex = "$newAccountIndex";
-                        String walletUuid =
-                            currentHighestIndexAccount.walletUuid;
-                        String password = passwordController.text;
-
-                        context.read<AccountFormBloc>().add(Submit(
-                            name: name,
-                            purpose: purpose,
-                            coinType: coinType,
-                            accountIndex: "$accountIndex'",
-                            walletUuid: walletUuid,
-                            password: password,
-                            importFormat:
-                                currentHighestIndexAccount.importFormat));
-                      }
-                    },
+                    onPressed: handleSubmit,
                   )
                 ],
               ),

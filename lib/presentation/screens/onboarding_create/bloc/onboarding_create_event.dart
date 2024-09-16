@@ -1,29 +1,10 @@
 abstract class OnboardingCreateEvent {}
 
-class PasswordChanged extends OnboardingCreateEvent {
-  final String password;
-  final String? passwordConfirmation;
-  PasswordChanged({
-    required this.password,
-    this.passwordConfirmation,
-  });
-}
-
-class PasswordConfirmationChanged extends OnboardingCreateEvent {
-  final String passwordConfirmation;
-  PasswordConfirmationChanged({required this.passwordConfirmation});
-}
-
 class GoBackToMnemonic extends OnboardingCreateEvent {}
 
 class GenerateMnemonic extends OnboardingCreateEvent {}
 
 class UnconfirmMnemonic extends OnboardingCreateEvent {}
-
-class PasswordError extends OnboardingCreateEvent {
-  final String error;
-  PasswordError({required this.error});
-}
 
 class ConfirmMnemonicChanged extends OnboardingCreateEvent {
   final String mnemonic;
@@ -40,4 +21,7 @@ class MnemonicSubmit extends OnboardingCreateEvent {
   MnemonicSubmit({required this.mnemonic});
 }
 
-class CreateWallet extends OnboardingCreateEvent {}
+class CreateWallet extends OnboardingCreateEvent {
+  final String password;
+  CreateWallet({required this.password});
+}

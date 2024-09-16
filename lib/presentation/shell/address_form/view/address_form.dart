@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart";
 import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
@@ -21,10 +20,16 @@ class _AddAccountFormState extends State<AddAddressForm> {
   final passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    context.read<AddressFormBloc>().add(Reset());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
 
-    return BlocConsumer<AddressFormBloc, RemoteDataState<List<Address>>>(
+    return BlocConsumer<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
         listener: (context, state) {
       state.whenOrNull(error: (msg) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -32,10 +37,10 @@ class _AddAccountFormState extends State<AddAddressForm> {
         ));
       }, success: (addresses) async {
         // update accounts in shell
-
-        shell.refreshAndSelectNewAddress(addresses.first.address);
-
         Navigator.of(context).pop();
+
+        shell.refreshAndSelectNewAddress(
+            addresses['newAddresses'].first.address, addresses['accountUuid']);
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),
@@ -44,6 +49,22 @@ class _AddAccountFormState extends State<AddAddressForm> {
         await Future.delayed(const Duration(milliseconds: 500));
       });
     }, builder: (context, state) {
+      void handleSubmit() {
+        // Validate will return true if the form is valid, or false if
+        // the form is invalid.
+        if (_formKey.currentState!.validate()) {
+          if (state == const RemoteDataState.loading()) {
+            return;
+          }
+          String password = passwordController.text;
+
+          context.read<AddressFormBloc>().add(Submit(
+                accountUuid: widget.accountUuid,
+                password: password,
+              ));
+        }
+      }
+
       return Form(
         key: _formKey,
         child: Column(
@@ -62,6 +83,9 @@ class _AddAccountFormState extends State<AddAddressForm> {
                 }
 
                 return null;
+              },
+              onFieldSubmitted: (value) {
+                handleSubmit();
               },
             ),
             const SizedBox(height: 16.0), // Spacing between inputs
@@ -84,21 +108,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
                           height: 45,
                           width: double.infinity,
                           child: FilledButton(
-                            onPressed: () {
-                              // Validate will return true if the form is valid, or false if
-                              // the form is invalid.
-                              if (_formKey.currentState!.validate()) {
-                                if (state == const RemoteDataState.loading()) {
-                                  return;
-                                }
-                                String password = passwordController.text;
-
-                                context.read<AddressFormBloc>().add(Submit(
-                                      accountUuid: widget.accountUuid,
-                                      password: password,
-                                    ));
-                              }
-                            },
+                            onPressed: handleSubmit,
                             child: state.maybeWhen(
                                 loading: () => const SizedBox(
                                     width: 20,
