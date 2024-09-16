@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -213,8 +214,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               decimal: true, signed: false),
                           inputFormatters: [
                             isDivisible == true
-                                ? FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d*$'))
+                                ? DecimalTextInputFormatter(decimalRange: 8)
                                 : FilteringTextInputFormatter.digitsOnly,
                           ],
                           validator: (value) {

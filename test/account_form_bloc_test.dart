@@ -121,26 +121,25 @@ void main() {
         password: password,
       )),
       expect: () => [
-
-       isA<AccountFormStep2>().having(
+        isA<AccountFormStep2>().having(
           (state) => state.state,
           'state',
           isA<Step2Loading>(),
         ),
-
-      isA<AccountFormStep2>().having(
+        isA<AccountFormStep2>().having(
           (state) => state.state,
           'state',
           isA<Step2Success>().having(
             (success) => success.account,
             'account',
             isA<Account>()
-              .having((a) => a.name, 'name', 'Test Account')
-              .having((a) => a.walletUuid, 'walletUuid', walletUuid)
-              .having((a) => a.purpose, 'purpose', '84\'')
-              .having((a) => a.coinType, 'coinType', '0\'')
-              .having((a) => a.accountIndex, 'accountIndex', '0\'')
-              .having((a) => a.importFormat, 'importFormat', ImportFormat.horizon),
+                .having((a) => a.name, 'name', 'Test Account')
+                .having((a) => a.walletUuid, 'walletUuid', walletUuid)
+                .having((a) => a.purpose, 'purpose', '84\'')
+                .having((a) => a.coinType, 'coinType', '0\'')
+                .having((a) => a.accountIndex, 'accountIndex', '0\'')
+                .having((a) => a.importFormat, 'importFormat',
+                    ImportFormat.horizon),
           ),
         ),
       ],

@@ -3,6 +3,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/common/fee_estimation.dart';
@@ -400,7 +401,7 @@ class _ComposeSendPageState extends State<_ComposeSendPage_> {
           label: 'Quantity',
           inputFormatters: [
             balance?.assetInfo.divisible == true
-                ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
+                ? DecimalTextInputFormatter(decimalRange: 8)
                 : FilteringTextInputFormatter.digitsOnly,
           ],
           keyboardType: const TextInputType.numberWithOptions(
