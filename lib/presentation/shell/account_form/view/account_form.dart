@@ -84,143 +84,175 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
     return BlocConsumer<AccountFormBloc, AccountFormState>(
       listener: (context, state) {
-        state.whenOrNull(
-          error: (msg) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: SelectableText(msg),
-            ));
-          },
-          success: (account) {
-            // Move the navigation and snackbar show here
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text("Success"),
-            ));
+        final cb = switch (state) {
+          AccountFormStep2(state: var _state) when _state is Step2Success =>
+            () {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text("Success"),
+              ));
 
-            // Update accounts in shell
-            shell.refresh();
-          },
-        );
+              // Update accounts in shell
+              shell.refresh();
+            },
+          _ => () => {} // TODO: add noop util
+        };
+
+        cb();
       },
       builder: (context, state) {
-        return state.maybeWhen(
-          error: (msg) {
-            return SelectableText(msg);
-          },
-          initial: () {
-            void handleSubmit() {
-              // Validate will return true if the form is valid, or false if
-              // the form is invalid.
-              if (_formKey.currentState!.validate()) {
-                if (state == const AccountFormState.loading()) {
-                  return;
+        return switch (state) {
+          AccountFormStep1() => Builder(builder: (context) {
+              void handleSubmit() {
+                // Validate will return true if the form is valid, or false if
+                // the form is invalid.
+                if (_formKey.currentState!.validate()) {
+                  context.read<AccountFormBloc>().add(Finalize());
                 }
-                context.read<AccountFormBloc>().add(Finalize());
               }
-            }
 
-            return Column(
-              children: [
-                SelectableText(
-                    currentHighestIndexAccount.importFormat ==
-                            ImportFormat.horizon
-                        ? nativeHorizonAccountBlurb
-                        : importAccountBlurb,
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 16.0),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      HorizonTextFormField(
-                        controller: nameController,
-                        label: "Name",
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a name for your account';
-                          }
-                          return null;
-                        },
-                        onEditingComplete: handleSubmit,
-                      ),
-                      HorizonDialogSubmitButton(
-                        textChild: const Text('CONTINUE'),
-                        onPressed: handleSubmit,
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-          orElse: () {
-            void handleSubmit() {
-              // Validate will return true if the form is valid, or false if
-              // the form is invalid.
-              if (passwordFormKey.currentState!.validate()) {
-                if (state == const AccountFormState.loading()) {
-                  return;
-                }
-
-                // get name field from form
-
-                String name = nameController.text;
-                String purpose = currentHighestIndexAccount.purpose;
-                String coinType = currentHighestIndexAccount.coinType;
-                String accountIndex = "$newAccountIndex";
-                String walletUuid = currentHighestIndexAccount.walletUuid;
-                String password = passwordController.text;
-
-                context.read<AccountFormBloc>().add(Submit(
-                    name: name,
-                    purpose: purpose,
-                    coinType: coinType,
-                    accountIndex: "$accountIndex'",
-                    walletUuid: walletUuid,
-                    password: password,
-                    importFormat: currentHighestIndexAccount.importFormat));
-              }
-            }
-
-            return Form(
-              key: passwordFormKey,
-              child: Column(
+              return Column(
                 children: [
-                  HorizonTextFormField(
-                    enabled: state != const AccountFormState.loading(),
-                    controller: passwordController,
-                    obscureText: true,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    label: 'Password',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-
-                      return null;
-                    },
-                    onEditingComplete: handleSubmit,
+                  SelectableText(
+                      currentHighestIndexAccount.importFormat ==
+                              ImportFormat.horizon
+                          ? nativeHorizonAccountBlurb
+                          : importAccountBlurb,
+                      textAlign: TextAlign.center),
+                  const SizedBox(height: 16.0),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        HorizonTextFormField(
+                          controller: nameController,
+                          label: "Name",
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a name for your account';
+                            }
+                            return null;
+                          },
+                          onEditingComplete: handleSubmit,
+                        ),
+                        HorizonDialogSubmitButton(
+                          textChild: const Text('CONTINUE'),
+                          onPressed: handleSubmit,
+                        )
+                      ],
+                    ),
                   ),
-                  HorizonDialogSubmitButton(
-                    textChild: state.maybeWhen(
-                        loading: () => const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator()),
-                        success: (_) => const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator()),
-                        orElse: () => const Text('SUBMIT')),
-                    onPressed: handleSubmit,
-                  )
                 ],
-              ),
-            );
-          },
-        );
+              );
+            }),
+          AccountFormStep2(state: var _state) => Builder(builder: (context) {
+              void handleSubmit() {
+                // Validate will return true if the form is valid, or false if
+                // the form is invalid.
+                if (passwordFormKey.currentState!.validate()) {
+                  if (_state == Step2Loading()) {
+                    return;
+                  }
+
+                  // get name field from form
+
+                  String name = nameController.text;
+                  String purpose = currentHighestIndexAccount.purpose;
+                  String coinType = currentHighestIndexAccount.coinType;
+                  String accountIndex = "$newAccountIndex";
+                  String walletUuid = currentHighestIndexAccount.walletUuid;
+                  String password = passwordController.text;
+
+                  context.read<AccountFormBloc>().add(Submit(
+                      name: name,
+                      purpose: purpose,
+                      coinType: coinType,
+                      accountIndex: "$accountIndex'",
+                      walletUuid: walletUuid,
+                      password: password,
+                      importFormat: currentHighestIndexAccount.importFormat));
+                }
+              }
+
+              return Form(
+                key: passwordFormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    HorizonTextFormField(
+                      enabled: _state is! Step2Loading,
+                      controller: passwordController,
+                      obscureText: true,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      label: 'Password',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                      onEditingComplete: handleSubmit,
+                    ),
+                    if (_state is Step2Error)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          _state.error,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    SizedBox(height: 16),
+                    HorizonDialogSubmitButton(
+                      textChild: _state is Step2Loading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(),
+                            )
+                          : const Text('SUBMIT'),
+                      onPressed: _state is Step2Loading ? () {} : handleSubmit,
+                    )
+                  ],
+                ),
+              );
+
+              return Form(
+                key: passwordFormKey,
+                child: Column(
+                  children: [
+                    HorizonTextFormField(
+                      enabled: _state != Step2Loading(),
+                      controller: passwordController,
+                      obscureText: true,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      label: 'Password',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+
+                        return null;
+                      },
+                      onEditingComplete: handleSubmit,
+                    ),
+                    HorizonDialogSubmitButton(
+                      textChild: switch (_state) {
+                        Step2Loading() => const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator()),
+                        _ => const Text('SUBMIT')
+                      },
+                      onPressed: handleSubmit,
+                    )
+                  ],
+                ),
+              );
+            }),
+        };
       },
     );
   }

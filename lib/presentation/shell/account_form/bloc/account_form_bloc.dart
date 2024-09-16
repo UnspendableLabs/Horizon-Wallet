@@ -22,14 +22,13 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
   final addressService = GetIt.I<AddressService>();
   final addressRepository = GetIt.I<AddressRepository>();
 
-  AccountFormBloc() : super(const AccountFormState.initial()) {
+  AccountFormBloc() : super(AccountFormStep1()) {
     on<Finalize>((event, emit) async {
-      emit(const AccountFormState.finalize());
+      emit(AccountFormStep2(state: Step2Initial()));
     });
 
     on<Submit>((event, emit) async {
-      emit(const AccountFormState.loading());
-
+      emit(AccountFormStep2(state: Step2Loading()));
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -37,11 +36,19 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
           throw Exception("invariant: wallet is null");
         }
 
-        String decryptedPrivKey = await encryptionService.decrypt(
+
+        late String decryptedPrivKey;
+        try {
+        decryptedPrivKey = await encryptionService.decrypt(
             wallet.encryptedPrivKey, event.password);
+        } catch (e){
+            emit(AccountFormStep2(state: Step2Error("Invalid password")));
+            return;
+        }
 
         Wallet compareWallet = await walletService.fromPrivateKey(
             decryptedPrivKey, wallet.chainCodeHex);
+
 
         if (wallet.publicKey != compareWallet.publicKey) {
           throw Exception("invalid password");
@@ -133,14 +140,14 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
             throw Exception("invalid import format");
         }
 
-        emit(AccountFormState.success(account));
+        emit(AccountFormStep2(state: Step2Success(account)));
       } catch (e) {
-        emit(AccountFormState.error(e.toString()));
+        emit(AccountFormStep2(state: Step2Error(e.toString())));
       }
     });
 
     on<Reset>((event, emit) {
-      emit(const AccountFormState.initial());
+      emit(AccountFormStep1());
     });
   }
 }
