@@ -31,8 +31,8 @@ import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
-
-
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:flutter/gestures.dart';
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -618,6 +618,7 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
 
 class _BalancesSliverState extends State<BalancesSliver> {
   bool _viewAll = false;
+  final Config _config = GetIt.I<Config>();
 
   @override
   Widget build(BuildContext context) {
@@ -663,6 +664,15 @@ class _BalancesSliverState extends State<BalancesSliver> {
 
         List<Widget> widgets = displayedEntries.expand((entry) {
           final isLastEntry = entry == orderedEntries.last;
+
+          final isClickable = entry.key != 'BTC';
+
+          final Color textColor = isClickable
+              ? (widget.isDarkTheme ? Colors.blue[300]! : Colors.blue[700]!)
+              : (widget.isDarkTheme
+                  ? greyDashboardTextDarkTheme
+                  : greyDashboardTextLightTheme);
+
           return [
             Padding(
               padding:
@@ -672,18 +682,16 @@ class _BalancesSliverState extends State<BalancesSliver> {
                 children: [
                   SelectableText.rich(
                     TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '${entry.key} ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: widget.isDarkTheme
-                                ? greyDashboardTextDarkTheme
-                                : greyDashboardTextLightTheme,
-                          ),
-                        ),
-                      ],
+                      text: '${entry.key} ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                      recognizer: isClickable
+                          ? (TapGestureRecognizer()
+                            ..onTap = () => _launchAssetUrl(entry.key))
+                          : null,
                     ),
                   ),
                   SelectableText(
@@ -722,6 +730,17 @@ class _BalancesSliverState extends State<BalancesSliver> {
         )
       ],
     );
+  }
+
+  Future<void> _launchAssetUrl(String asset) async {
+    final url = "${_config.horizonExplorerBase}/assets/$asset";
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not launch $url')),
+      );
+    }
   }
 
   List<Widget> _buildContent(BalancesState state) {
