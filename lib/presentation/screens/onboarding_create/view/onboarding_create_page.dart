@@ -281,7 +281,6 @@ class _MnemonicState extends State<Mnemonic> {
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreenWidth = screenSize.width < 768;
-    final screenHeight = screenSize.height;
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
@@ -370,15 +369,17 @@ class _MnemonicState extends State<Mnemonic> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SelectableText(
-          mnemonic,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? mainTextWhite
-                : mainTextBlack,
-            fontWeight: FontWeight.bold,
-            fontSize: fontSize,
+        SelectionArea(
+          child: Text(
+            mnemonic,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? mainTextWhite
+                  : mainTextBlack,
+              fontWeight: FontWeight.bold,
+              fontSize: fontSize,
+            ),
           ),
         ),
       ],
