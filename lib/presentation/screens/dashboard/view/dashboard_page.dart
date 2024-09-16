@@ -30,6 +30,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'dart:math';
+import 'package:url_launcher/url_launcher.dart';
+
+
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -583,29 +586,6 @@ class QRCodeDialog extends StatelessWidget {
           };
         })
       ],
-    );
-  }
-}
-
-class SliverToWidgetConverter extends StatelessWidget {
-  final Widget sliver;
-  final double height;
-
-  const SliverToWidgetConverter({
-    super.key,
-    required this.sliver,
-    this.height = 300,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: sliver),
-        ],
-      ),
     );
   }
 }
