@@ -30,6 +30,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'dart:math';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:flutter/gestures.dart';
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -336,21 +339,6 @@ class AddressActions extends StatelessWidget {
   }
 }
 
-class Balances extends StatefulWidget {
-  final bool isDarkTheme;
-  final List<Address> addresses;
-  final String accountUuid;
-
-  const Balances(
-      {super.key,
-      required this.isDarkTheme,
-      required this.addresses,
-      required this.accountUuid});
-
-  @override
-  State<Balances> createState() => _BalancesState();
-}
-
 class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
   final List<Address> addresses;
@@ -587,29 +575,6 @@ class QRCodeDialog extends StatelessWidget {
   }
 }
 
-class SliverToWidgetConverter extends StatelessWidget {
-  final Widget sliver;
-  final double height;
-
-  const SliverToWidgetConverter({
-    super.key,
-    required this.sliver,
-    this.height = 300,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: sliver),
-        ],
-      ),
-    );
-  }
-}
-
 class _BalancesDisplayState extends State<BalancesDisplay> {
   late BalancesBloc _balancesBloc;
 
@@ -638,6 +603,7 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
 
 class _BalancesSliverState extends State<BalancesSliver> {
   bool _viewAll = false;
+  final Config _config = GetIt.I<Config>();
 
   @override
   Widget build(BuildContext context) {
@@ -683,6 +649,15 @@ class _BalancesSliverState extends State<BalancesSliver> {
 
         List<Widget> widgets = displayedEntries.expand((entry) {
           final isLastEntry = entry == orderedEntries.last;
+
+          final isClickable = entry.key != 'BTC';
+
+          final Color textColor = isClickable
+              ? (widget.isDarkTheme ? Colors.blue[300]! : Colors.blue[700]!)
+              : (widget.isDarkTheme
+                  ? greyDashboardTextDarkTheme
+                  : greyDashboardTextLightTheme);
+
           return [
             Padding(
               padding:
@@ -692,18 +667,16 @@ class _BalancesSliverState extends State<BalancesSliver> {
                 children: [
                   SelectableText.rich(
                     TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '${entry.key} ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: widget.isDarkTheme
-                                ? greyDashboardTextDarkTheme
-                                : greyDashboardTextLightTheme,
-                          ),
-                        ),
-                      ],
+                      text: '${entry.key} ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                      recognizer: isClickable
+                          ? (TapGestureRecognizer()
+                            ..onTap = () => _launchAssetUrl(entry.key))
+                          : null,
                     ),
                   ),
                   SelectableText(
@@ -744,6 +717,17 @@ class _BalancesSliverState extends State<BalancesSliver> {
     );
   }
 
+  Future<void> _launchAssetUrl(String asset) async {
+    final url = "${_config.horizonExplorerBase}/assets/$asset";
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not launch $url')),
+      );
+    }
+  }
+
   List<Widget> _buildContent(BalancesState state) {
     return state.when(
       initial: () => [const SizedBox.shrink()],
@@ -755,122 +739,6 @@ class _BalancesSliverState extends State<BalancesSliver> {
       ],
       complete: (result) => _buildBalanceList(result),
       reloading: (result) => _buildBalanceList(result),
-    );
-  }
-}
-
-class _BalancesState extends State<Balances> {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<BalancesBloc, BalancesState>(builder: (context, state) {
-      return state.when(
-        initial: () => const Text(""),
-        loading: () => const CircularProgressIndicator(),
-        complete: (result) => _resultToBalanceList(result, widget.isDarkTheme),
-        reloading: (result) => _resultToBalanceList(result, widget.isDarkTheme),
-      );
-    });
-  }
-
-  List<Widget> _balanceList(Result result, bool isDarkMode) {
-    return result.when(
-      ok: (balances, aggregated) {
-        if (balances.isEmpty) {
-          return [
-            const NoData(
-              title: 'No Balances',
-            )
-          ];
-        }
-
-        final entries = aggregated.entries.toList();
-
-        // Find BTC and XCP entries
-        final btcEntry = entries.where((e) => e.key == 'BTC').singleOrNull;
-        final xcpEntry = entries.where((e) => e.key == 'XCP').singleOrNull;
-
-        // Remove BTC and XCP from the original list if they exist
-        entries.removeWhere((e) => e.key == 'BTC' || e.key == 'XCP');
-
-        // Create a new list with BTC and XCP at the beginning, if they exist
-        final orderedEntries = [
-          if (btcEntry != null) btcEntry,
-          if (xcpEntry != null) xcpEntry,
-          ...entries,
-        ];
-
-        final balanceWidgets = orderedEntries.asMap().entries.map((mapEntry) {
-          final index = mapEntry.key;
-          final entry = mapEntry.value;
-          final isLastEntry = index == orderedEntries.length - 1;
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SelectableText.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: '${entry.key} ',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: isDarkMode
-                                    ? greyDashboardTextDarkTheme
-                                    : greyDashboardTextLightTheme),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SelectableText(
-                      entry.value.quantityNormalized,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              if (!isLastEntry)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Divider(),
-                ),
-            ],
-          );
-        }).toList();
-        return balanceWidgets;
-      },
-      error: (error) => [SelectableText('Error: $error')],
-    );
-  }
-
-  Widget _resultToBalanceList(Result result, bool isDarkTheme) {
-    Color backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxHeight: 275,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(30.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: _balanceList(result, widget.isDarkTheme),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
