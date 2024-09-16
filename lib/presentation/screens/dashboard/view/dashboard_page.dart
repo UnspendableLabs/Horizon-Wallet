@@ -33,6 +33,9 @@ import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:flutter/gestures.dart';
+import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/shell/account_form/bloc/account_form_state.dart";
+import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -99,14 +102,28 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                             Navigator.of(modalSheetContext).pop();
                             HorizonDialog.show(
                               context: context,
-                              body: const HorizonDialog(
-                                title: "Add an account",
-                                body: Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: AddAccountForm(),
-                                ),
-                              ),
+                              body: Builder(builder: (context) {
+                                final bloc = context.watch<AccountFormBloc>();
+
+                                final cb = switch (bloc.state) {
+                                  AccountFormStep2() => () {
+                                      bloc.add(Reset());
+                                    },
+                                  _ => () {
+                                      Navigator.of(context).pop();
+                                    },
+                                };
+
+                                return HorizonDialog(
+                                  onBackButtonPressed: cb,
+                                  title: "Add an account",
+                                  body: const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: AddAccountForm(),
+                                  ),
+                                );
+                              }),
                             );
                           },
                           child: const Text("Add Account",

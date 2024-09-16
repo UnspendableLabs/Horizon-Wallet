@@ -4,7 +4,10 @@ abstract class AccountFormEvent {}
 
 class Finalize extends AccountFormEvent {}
 
-class Reset extends AccountFormEvent {}
+class Reset extends AccountFormEvent {
+  final String? name;
+  Reset({this.name});
+}
 
 class Submit extends AccountFormEvent {
   final String name;

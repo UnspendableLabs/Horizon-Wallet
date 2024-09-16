@@ -85,7 +85,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     return BlocConsumer<AccountFormBloc, AccountFormState>(
       listener: (context, state) {
         final cb = switch (state) {
-          AccountFormStep2(state: var _state) when _state is Step2Success =>
+          AccountFormStep2(state: var state) when state is Step2Success =>
             () {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -146,12 +146,12 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 ],
               );
             }),
-          AccountFormStep2(state: var _state) => Builder(builder: (context) {
+          AccountFormStep2(state: var state) => Builder(builder: (context) {
               void handleSubmit() {
                 // Validate will return true if the form is valid, or false if
                 // the form is invalid.
                 if (passwordFormKey.currentState!.validate()) {
-                  if (_state == Step2Loading()) {
+                  if (state == Step2Loading()) {
                     return;
                   }
 
@@ -181,7 +181,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     HorizonTextFormField(
-                      enabled: _state is! Step2Loading,
+                      enabled: state is! Step2Loading,
                       controller: passwordController,
                       obscureText: true,
                       enableSuggestions: false,
@@ -195,58 +195,24 @@ class _AddAccountFormState extends State<AddAccountForm> {
                       },
                       onEditingComplete: handleSubmit,
                     ),
-                    if (_state is Step2Error)
+                    if (state is Step2Error)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
-                          _state.error,
-                          style: TextStyle(color: Colors.red),
+                          state.error,
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     HorizonDialogSubmitButton(
-                      textChild: _state is Step2Loading
+                      textChild: state is Step2Loading
                           ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(),
                             )
                           : const Text('SUBMIT'),
-                      onPressed: _state is Step2Loading ? () {} : handleSubmit,
-                    )
-                  ],
-                ),
-              );
-
-              return Form(
-                key: passwordFormKey,
-                child: Column(
-                  children: [
-                    HorizonTextFormField(
-                      enabled: _state != Step2Loading(),
-                      controller: passwordController,
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      label: 'Password',
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-
-                        return null;
-                      },
-                      onEditingComplete: handleSubmit,
-                    ),
-                    HorizonDialogSubmitButton(
-                      textChild: switch (_state) {
-                        Step2Loading() => const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator()),
-                        _ => const Text('SUBMIT')
-                      },
-                      onPressed: handleSubmit,
+                      onPressed: state is Step2Loading ? () {} : handleSubmit,
                     )
                   ],
                 ),

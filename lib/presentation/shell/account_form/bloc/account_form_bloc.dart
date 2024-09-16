@@ -36,19 +36,17 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
           throw Exception("invariant: wallet is null");
         }
 
-
         late String decryptedPrivKey;
         try {
-        decryptedPrivKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, event.password);
-        } catch (e){
-            emit(AccountFormStep2(state: Step2Error("Invalid password")));
-            return;
+          decryptedPrivKey = await encryptionService.decrypt(
+              wallet.encryptedPrivKey, event.password);
+        } catch (e) {
+          emit(AccountFormStep2(state: Step2Error("Invalid password")));
+          return;
         }
 
         Wallet compareWallet = await walletService.fromPrivateKey(
             decryptedPrivKey, wallet.chainCodeHex);
-
 
         if (wallet.publicKey != compareWallet.publicKey) {
           throw Exception("invalid password");
