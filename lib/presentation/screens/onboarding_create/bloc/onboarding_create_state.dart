@@ -5,8 +5,6 @@ part 'onboarding_create_state.freezed.dart';
 @freezed
 class OnboardingCreateState with _$OnboardingCreateState {
   const factory OnboardingCreateState({
-    String? password,
-    String? passwordError,
     @Default(null) MnemonicErrorState? mnemonicError,
     @Default(GenerateMnemonicStateNotAsked) mnemonicState,
     @Default(CreateStateNotAsked) createState,

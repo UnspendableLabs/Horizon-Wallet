@@ -8,15 +8,7 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockOnboardingState extends Mock {
-  String? _passwordError;
-
-  String? get passwordError => _passwordError;
-
-  set passwordError(String? value) {
-    _passwordError = value;
-  }
-}
+class MockOnboardingState extends Mock {}
 
 class MockOnboardingCreateBloc extends Mock implements OnboardingCreateBloc {}
 
@@ -25,8 +17,6 @@ class FakeOnboardingCreateEvent extends Fake implements OnboardingCreateEvent {}
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeOnboardingCreateEvent());
-    registerFallbackValue(PasswordChanged(password: ''));
-    registerFallbackValue(PasswordError(error: ''));
     registerFallbackValue(CreateWallet(password: ''));
   });
 
@@ -82,29 +72,6 @@ void main() {
         expect(find.byType(TextField), findsNWidgets(2));
         expect(find.text('Back'), findsOneWidget);
         expect(find.text('Continue'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'PasswordPrompt shows error message',
-      (WidgetTester tester) async {
-        mockState.passwordError = 'Password error';
-
-        await tester.pumpWidget(
-          buildTestableWidget(
-            PasswordPrompt(
-              state: mockState,
-              onPressedBack: () {},
-              onPressedContinue: (password) {},
-              backButtonText: 'Back',
-              continueButtonText: 'Continue',
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        expect(find.text('Password error'), findsOneWidget);
       },
     );
   });

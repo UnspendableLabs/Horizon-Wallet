@@ -24,6 +24,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final passwordFormKey = GlobalKey<FormState>();
+  final nativeHorizonAccountBlurb =
+      "An account is a grouping for your balances. You can only spend from one account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account.";
+  final importAccountBlurb =
+      "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. You can generate multiple addresses for each account. If you don't see an address that should be there, generate additional addresses in the \"Receive\" dialog.";
 
   @override
   void initState() {
@@ -80,22 +84,23 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
     return BlocConsumer<AccountFormBloc, AccountFormState>(
       listener: (context, state) {
-        state.whenOrNull(error: (msg) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: SelectableText(msg),
-          ));
-        }, success: (account) async {
-          // update accounts in shell
-          shell.refresh();
+        state.whenOrNull(
+          error: (msg) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: SelectableText(msg),
+            ));
+          },
+          success: (account) {
+            // Move the navigation and snackbar show here
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Success"),
+            ));
 
-          Navigator.of(context).pop();
-
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Success"),
-          ));
-
-          await Future.delayed(const Duration(milliseconds: 500));
-        });
+            // Update accounts in shell
+            shell.refresh();
+          },
+        );
       },
       builder: (context, state) {
         return state.maybeWhen(
@@ -119,8 +124,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 SelectableText(
                     currentHighestIndexAccount.importFormat ==
                             ImportFormat.horizon
-                        ? "An account is a grouping for your balances. You can only spend from one account at a time, but you can of course move assets from one account to another. Native Horizon Wallets only support one Bitcoin address per account."
-                        : "An account is a grouping for your balances. You can only spend from account at a time, but you can of course move assets from one account to another. You can generate multiple addresses for each account. If you don't see an address that should be there, generate additional addresses in the \"Receive\" dialog.",
+                        ? nativeHorizonAccountBlurb
+                        : importAccountBlurb,
                     textAlign: TextAlign.center),
                 const SizedBox(height: 16.0),
                 Form(

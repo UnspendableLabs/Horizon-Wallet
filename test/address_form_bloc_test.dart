@@ -115,7 +115,7 @@ void main() {
               ]);
     }
 
-    blocTest<AddressFormBloc, RemoteDataState<List<Address>>>(
+    blocTest<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
       'does nothing for horizon',
       build: () {
         setupCommonMocks(
@@ -131,8 +131,8 @@ void main() {
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<List<Address>>.loading(),
-        const RemoteDataState<List<Address>>.initial(),
+        const RemoteDataState<Map<String, dynamic>>.loading(),
+        const RemoteDataState<Map<String, dynamic>>.initial(),
       ],
       verify: (_) {
         verifyNever(() => mockAddressService.deriveAddressSegwit(
@@ -148,7 +148,7 @@ void main() {
       },
     );
 
-    blocTest<AddressFormBloc, RemoteDataState<List<Address>>>(
+    blocTest<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
       'submits form with Freewallet import format',
       build: () {
         setupCommonMocks(
@@ -192,8 +192,8 @@ void main() {
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<List<Address>>.loading(),
-        isA<RemoteDataState<List<Address>>>().having(
+        const RemoteDataState<Map<String, dynamic>>.loading(),
+        isA<RemoteDataState<Map<String, dynamic>>>().having(
           (state) => state.whenOrNull(
             success: (addresses) => addresses.length,
           ),
@@ -229,7 +229,7 @@ void main() {
       },
     );
 
-    blocTest<AddressFormBloc, RemoteDataState<List<Address>>>(
+    blocTest<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
       'submits form with Counterwallet import format',
       build: () {
         setupCommonMocks(

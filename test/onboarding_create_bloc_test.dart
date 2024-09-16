@@ -134,9 +134,8 @@ void main() {
       },
       seed: () => OnboardingCreateState(
         mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
-        password: password,
       ),
-      act: (bloc) => bloc.add(CreateWallet()),
+      act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
             (state) => state.createState is CreateStateLoading),
@@ -171,9 +170,8 @@ void main() {
       },
       seed: () => OnboardingCreateState(
         mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
-        password: password,
       ),
-      act: (bloc) => bloc.add(CreateWallet()),
+      act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
             (state) => state.createState is CreateStateLoading),
@@ -201,9 +199,8 @@ void main() {
       },
       seed: () => OnboardingCreateState(
         mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
-        password: password,
       ),
-      act: (bloc) => bloc.add(CreateWallet()),
+      act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
             (state) => state.createState is CreateStateLoading),

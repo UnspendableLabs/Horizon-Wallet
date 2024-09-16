@@ -8,8 +8,6 @@ part 'onboarding_import_pk_state.freezed.dart';
 @freezed
 class OnboardingImportPKState with _$OnboardingImportPKState {
   const factory OnboardingImportPKState({
-    String? password,
-    String? passwordError,
     String? pkError,
     @Default("") String pk,
     @Default(ImportFormat.horizon) importFormat,

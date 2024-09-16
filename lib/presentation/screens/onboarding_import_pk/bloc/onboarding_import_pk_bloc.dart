@@ -28,18 +28,6 @@ class OnboardingImportPKBloc
   final Config config = GetIt.I<Config>();
 
   OnboardingImportPKBloc() : super(const OnboardingImportPKState()) {
-    on<PasswordChanged>((event, emit) {
-      emit(state.copyWith(password: event.password, passwordError: null));
-    });
-
-    on<PasswordConfirmationChanged>((event, emit) {
-      emit(state.copyWith(passwordError: null));
-    });
-
-    on<PasswordError>((event, emit) {
-      emit(state.copyWith(passwordError: event.error));
-    });
-
     on<PKChanged>((event, emit) async {
       if (event.pk.isEmpty) {
         emit(state.copyWith(pkError: "PK is required", pk: event.pk));

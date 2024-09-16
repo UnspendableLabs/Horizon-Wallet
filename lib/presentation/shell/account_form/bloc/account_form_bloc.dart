@@ -134,12 +134,6 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
         }
 
         emit(AccountFormState.success(account));
-
-        // this is a bit of a hack to reset the form after success
-
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        emit(const AccountFormState.initial());
       } catch (e) {
         emit(AccountFormState.error(e.toString()));
       }

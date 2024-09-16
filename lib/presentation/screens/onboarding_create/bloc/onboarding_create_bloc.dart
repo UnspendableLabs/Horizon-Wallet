@@ -31,18 +31,6 @@ class OnboardingCreateBloc
   final addressService = GetIt.I<AddressService>();
 
   OnboardingCreateBloc() : super(const OnboardingCreateState()) {
-    on<PasswordChanged>((event, emit) {
-      emit(state.copyWith(password: event.password, passwordError: null));
-    });
-
-    on<PasswordConfirmationChanged>((event, emit) {
-      emit(state.copyWith(passwordError: null));
-    });
-
-    on<PasswordError>((event, emit) {
-      emit(state.copyWith(passwordError: event.error));
-    });
-
     on<CreateWallet>((event, emit) async {
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));

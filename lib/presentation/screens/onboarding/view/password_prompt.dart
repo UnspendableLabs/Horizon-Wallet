@@ -194,13 +194,6 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                   widget.optionalErrorWiget != null
                       ? widget.optionalErrorWiget!
                       : const SizedBox.shrink(),
-                  widget.state.passwordError != null
-                      ? SelectableText(widget.state.passwordError!,
-                          style: TextStyle(
-                            color: redErrorText,
-                            fontSize: isSmallScreen ? 12 : 16,
-                          ))
-                      : const Text(""),
                   const Spacer(),
                   BackContinueButtons(
                     isDarkMode: isDarkMode,

@@ -192,8 +192,8 @@ void main() {
           return OnboardingImportBloc();
         },
         seed: () => OnboardingImportState(
-            importFormat: importFormat, password: password, mnemonic: mnemonic),
-        act: (bloc) => bloc.add(ImportWallet()),
+            importFormat: importFormat, mnemonic: mnemonic),
+        act: (bloc) => bloc.add(ImportWallet(password: password)),
         expect: () => [
           predicate<OnboardingImportState>(
               (state) => state.importState is ImportStateLoading),

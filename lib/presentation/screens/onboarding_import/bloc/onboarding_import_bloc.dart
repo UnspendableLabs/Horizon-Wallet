@@ -28,18 +28,6 @@ class OnboardingImportBloc
   final encryptionService = GetIt.I<EncryptionService>();
 
   OnboardingImportBloc() : super(const OnboardingImportState()) {
-    on<PasswordChanged>((event, emit) {
-      emit(state.copyWith(password: event.password, passwordError: null));
-    });
-
-    on<PasswordConfirmationChanged>((event, emit) {
-      emit(state.copyWith(passwordError: null));
-    });
-
-    on<PasswordError>((event, emit) {
-      emit(state.copyWith(passwordError: event.error));
-    });
-
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
         emit(state.copyWith(
