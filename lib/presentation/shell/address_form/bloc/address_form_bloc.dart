@@ -35,14 +35,19 @@ class AddressFormBloc
           throw Exception("invariant: wallet is null");
         }
 
-        String decryptedPrivKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, event.password);
+        String decryptedPrivKey;
+        try {
+          decryptedPrivKey = await encryptionService.decrypt(
+              wallet.encryptedPrivKey, event.password);
+        } catch (e) {
+          throw Exception("Incorrect password");
+        }
 
         Wallet compareWallet = await walletService.fromPrivateKey(
             decryptedPrivKey, wallet.chainCodeHex);
 
         if (wallet.publicKey != compareWallet.publicKey) {
-          throw Exception("invalid password");
+          throw Exception("Incorrect password");
         }
 
         Account? account =

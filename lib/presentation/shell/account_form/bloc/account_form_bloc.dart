@@ -41,7 +41,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
           decryptedPrivKey = await encryptionService.decrypt(
               wallet.encryptedPrivKey, event.password);
         } catch (e) {
-          emit(AccountFormStep2(state: Step2Error("Invalid password")));
+          emit(AccountFormStep2(state: Step2Error("Incorrect password")));
           return;
         }
 
