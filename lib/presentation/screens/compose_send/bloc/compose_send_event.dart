@@ -8,10 +8,6 @@ class FetchFormData extends ComposeSendEvent {
   FetchFormData({required this.currentAddress});
 }
 
-class FetchBalances extends ComposeSendEvent {
-  String address;
-  FetchBalances({required this.address});
-}
 
 class ComposeTransactionEvent extends ComposeSendEvent {
   final String sourceAddress;

@@ -11,4 +11,12 @@ class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
     v2_api.Response<String> res = await api.createTransaction(signedHex);
     return res.result!;
   }
+
+  @override
+  Future<int> estimateSmartFee({required int confirmationTarget}) async {
+    v2_api.Response<int> res = await api.estimateSmartFee(confirmationTarget);
+    return res.result!;
+  }
+
+
 }

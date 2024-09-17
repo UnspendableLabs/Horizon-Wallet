@@ -1557,6 +1557,38 @@ class _V2Api implements V2Api {
   String? baseUrl;
 
   @override
+  Future<Response<int>> estimateSmartFee(int confirmationTarget) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'conf_target': confirmationTarget
+    };
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/estimatesmartfee',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<int>.fromJson(
+      _result.data!,
+      (json) => json as int,
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<String>> createTransaction(String signedhex) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'signedhex': signedhex};

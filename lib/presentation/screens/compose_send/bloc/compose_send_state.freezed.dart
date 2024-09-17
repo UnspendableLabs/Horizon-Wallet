@@ -18,6 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$ComposeSendState {
   dynamic get balancesState => throw _privateConstructorUsedError;
   dynamic get submitState => throw _privateConstructorUsedError;
+  dynamic get feeState => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ComposeSendStateCopyWith<ComposeSendState> get copyWith =>
@@ -30,7 +31,7 @@ abstract class $ComposeSendStateCopyWith<$Res> {
           ComposeSendState value, $Res Function(ComposeSendState) then) =
       _$ComposeSendStateCopyWithImpl<$Res, ComposeSendState>;
   @useResult
-  $Res call({dynamic balancesState, dynamic submitState});
+  $Res call({dynamic balancesState, dynamic submitState, dynamic feeState});
 }
 
 /// @nodoc
@@ -48,6 +49,7 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
   $Res call({
     Object? balancesState = freezed,
     Object? submitState = freezed,
+    Object? feeState = freezed,
   }) {
     return _then(_value.copyWith(
       balancesState: freezed == balancesState
@@ -57,6 +59,10 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
       submitState: freezed == submitState
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
+              as dynamic,
+      feeState: freezed == feeState
+          ? _value.feeState
+          : feeState // ignore: cast_nullable_to_non_nullable
               as dynamic,
     ) as $Val);
   }
@@ -70,7 +76,7 @@ abstract class _$$ComposeSendStateImplCopyWith<$Res>
       __$$ComposeSendStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({dynamic balancesState, dynamic submitState});
+  $Res call({dynamic balancesState, dynamic submitState, dynamic feeState});
 }
 
 /// @nodoc
@@ -86,11 +92,13 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
   $Res call({
     Object? balancesState = freezed,
     Object? submitState = freezed,
+    Object? feeState = freezed,
   }) {
     return _then(_$ComposeSendStateImpl(
       balancesState:
           freezed == balancesState ? _value.balancesState! : balancesState,
       submitState: freezed == submitState ? _value.submitState! : submitState,
+      feeState: freezed == feeState ? _value.feeState! : feeState,
     ));
   }
 }
@@ -100,7 +108,8 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
 class _$ComposeSendStateImpl implements _ComposeSendState {
   const _$ComposeSendStateImpl(
       {this.balancesState = const BalancesState.initial(),
-      this.submitState = const SubmitState.initial()});
+      this.submitState = const SubmitState.initial(),
+      this.feeState = const FeeState.initial()});
 
   @override
   @JsonKey()
@@ -108,10 +117,13 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
   @override
   @JsonKey()
   final dynamic submitState;
+  @override
+  @JsonKey()
+  final dynamic feeState;
 
   @override
   String toString() {
-    return 'ComposeSendState(balancesState: $balancesState, submitState: $submitState)';
+    return 'ComposeSendState(balancesState: $balancesState, submitState: $submitState, feeState: $feeState)';
   }
 
   @override
@@ -122,14 +134,16 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
             const DeepCollectionEquality()
                 .equals(other.balancesState, balancesState) &&
             const DeepCollectionEquality()
-                .equals(other.submitState, submitState));
+                .equals(other.submitState, submitState) &&
+            const DeepCollectionEquality().equals(other.feeState, feeState));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
       const DeepCollectionEquality().hash(balancesState),
-      const DeepCollectionEquality().hash(submitState));
+      const DeepCollectionEquality().hash(submitState),
+      const DeepCollectionEquality().hash(feeState));
 
   @JsonKey(ignore: true)
   @override
@@ -142,12 +156,15 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
 abstract class _ComposeSendState implements ComposeSendState {
   const factory _ComposeSendState(
       {final dynamic balancesState,
-      final dynamic submitState}) = _$ComposeSendStateImpl;
+      final dynamic submitState,
+      final dynamic feeState}) = _$ComposeSendStateImpl;
 
   @override
   dynamic get balancesState;
   @override
   dynamic get submitState;
+  @override
+  dynamic get feeState;
   @override
   @JsonKey(ignore: true)
   _$$ComposeSendStateImplCopyWith<_$ComposeSendStateImpl> get copyWith =>
@@ -750,6 +767,596 @@ abstract class _BalanceError implements BalancesState {
   String get error;
   @JsonKey(ignore: true)
   _$$BalanceErrorImplCopyWith<_$BalanceErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$FeeState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(FeeEstimates feeEstimates) success,
+    required TResult Function(String error) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(FeeEstimates feeEstimates)? success,
+    TResult? Function(String error)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(FeeEstimates feeEstimates)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FeeInitial value) initial,
+    required TResult Function(_FeeLoading value) loading,
+    required TResult Function(_FeeSuccess value) success,
+    required TResult Function(_FeeError value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FeeInitial value)? initial,
+    TResult? Function(_FeeLoading value)? loading,
+    TResult? Function(_FeeSuccess value)? success,
+    TResult? Function(_FeeError value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FeeInitial value)? initial,
+    TResult Function(_FeeLoading value)? loading,
+    TResult Function(_FeeSuccess value)? success,
+    TResult Function(_FeeError value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $FeeStateCopyWith<$Res> {
+  factory $FeeStateCopyWith(FeeState value, $Res Function(FeeState) then) =
+      _$FeeStateCopyWithImpl<$Res, FeeState>;
+}
+
+/// @nodoc
+class _$FeeStateCopyWithImpl<$Res, $Val extends FeeState>
+    implements $FeeStateCopyWith<$Res> {
+  _$FeeStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$FeeInitialImplCopyWith<$Res> {
+  factory _$$FeeInitialImplCopyWith(
+          _$FeeInitialImpl value, $Res Function(_$FeeInitialImpl) then) =
+      __$$FeeInitialImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$FeeInitialImplCopyWithImpl<$Res>
+    extends _$FeeStateCopyWithImpl<$Res, _$FeeInitialImpl>
+    implements _$$FeeInitialImplCopyWith<$Res> {
+  __$$FeeInitialImplCopyWithImpl(
+      _$FeeInitialImpl _value, $Res Function(_$FeeInitialImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$FeeInitialImpl implements _FeeInitial {
+  const _$FeeInitialImpl();
+
+  @override
+  String toString() {
+    return 'FeeState.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$FeeInitialImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(FeeEstimates feeEstimates) success,
+    required TResult Function(String error) error,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(FeeEstimates feeEstimates)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(FeeEstimates feeEstimates)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FeeInitial value) initial,
+    required TResult Function(_FeeLoading value) loading,
+    required TResult Function(_FeeSuccess value) success,
+    required TResult Function(_FeeError value) error,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FeeInitial value)? initial,
+    TResult? Function(_FeeLoading value)? loading,
+    TResult? Function(_FeeSuccess value)? success,
+    TResult? Function(_FeeError value)? error,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FeeInitial value)? initial,
+    TResult Function(_FeeLoading value)? loading,
+    TResult Function(_FeeSuccess value)? success,
+    TResult Function(_FeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FeeInitial implements FeeState {
+  const factory _FeeInitial() = _$FeeInitialImpl;
+}
+
+/// @nodoc
+abstract class _$$FeeLoadingImplCopyWith<$Res> {
+  factory _$$FeeLoadingImplCopyWith(
+          _$FeeLoadingImpl value, $Res Function(_$FeeLoadingImpl) then) =
+      __$$FeeLoadingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$FeeLoadingImplCopyWithImpl<$Res>
+    extends _$FeeStateCopyWithImpl<$Res, _$FeeLoadingImpl>
+    implements _$$FeeLoadingImplCopyWith<$Res> {
+  __$$FeeLoadingImplCopyWithImpl(
+      _$FeeLoadingImpl _value, $Res Function(_$FeeLoadingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$FeeLoadingImpl implements _FeeLoading {
+  const _$FeeLoadingImpl();
+
+  @override
+  String toString() {
+    return 'FeeState.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$FeeLoadingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(FeeEstimates feeEstimates) success,
+    required TResult Function(String error) error,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(FeeEstimates feeEstimates)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(FeeEstimates feeEstimates)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FeeInitial value) initial,
+    required TResult Function(_FeeLoading value) loading,
+    required TResult Function(_FeeSuccess value) success,
+    required TResult Function(_FeeError value) error,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FeeInitial value)? initial,
+    TResult? Function(_FeeLoading value)? loading,
+    TResult? Function(_FeeSuccess value)? success,
+    TResult? Function(_FeeError value)? error,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FeeInitial value)? initial,
+    TResult Function(_FeeLoading value)? loading,
+    TResult Function(_FeeSuccess value)? success,
+    TResult Function(_FeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FeeLoading implements FeeState {
+  const factory _FeeLoading() = _$FeeLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$FeeSuccessImplCopyWith<$Res> {
+  factory _$$FeeSuccessImplCopyWith(
+          _$FeeSuccessImpl value, $Res Function(_$FeeSuccessImpl) then) =
+      __$$FeeSuccessImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({FeeEstimates feeEstimates});
+}
+
+/// @nodoc
+class __$$FeeSuccessImplCopyWithImpl<$Res>
+    extends _$FeeStateCopyWithImpl<$Res, _$FeeSuccessImpl>
+    implements _$$FeeSuccessImplCopyWith<$Res> {
+  __$$FeeSuccessImplCopyWithImpl(
+      _$FeeSuccessImpl _value, $Res Function(_$FeeSuccessImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? feeEstimates = null,
+  }) {
+    return _then(_$FeeSuccessImpl(
+      null == feeEstimates
+          ? _value.feeEstimates
+          : feeEstimates // ignore: cast_nullable_to_non_nullable
+              as FeeEstimates,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$FeeSuccessImpl implements _FeeSuccess {
+  const _$FeeSuccessImpl(this.feeEstimates);
+
+  @override
+  final FeeEstimates feeEstimates;
+
+  @override
+  String toString() {
+    return 'FeeState.success(feeEstimates: $feeEstimates)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FeeSuccessImpl &&
+            (identical(other.feeEstimates, feeEstimates) ||
+                other.feeEstimates == feeEstimates));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, feeEstimates);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
+      __$$FeeSuccessImplCopyWithImpl<_$FeeSuccessImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(FeeEstimates feeEstimates) success,
+    required TResult Function(String error) error,
+  }) {
+    return success(feeEstimates);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(FeeEstimates feeEstimates)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return success?.call(feeEstimates);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(FeeEstimates feeEstimates)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(feeEstimates);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FeeInitial value) initial,
+    required TResult Function(_FeeLoading value) loading,
+    required TResult Function(_FeeSuccess value) success,
+    required TResult Function(_FeeError value) error,
+  }) {
+    return success(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FeeInitial value)? initial,
+    TResult? Function(_FeeLoading value)? loading,
+    TResult? Function(_FeeSuccess value)? success,
+    TResult? Function(_FeeError value)? error,
+  }) {
+    return success?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FeeInitial value)? initial,
+    TResult Function(_FeeLoading value)? loading,
+    TResult Function(_FeeSuccess value)? success,
+    TResult Function(_FeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FeeSuccess implements FeeState {
+  const factory _FeeSuccess(final FeeEstimates feeEstimates) = _$FeeSuccessImpl;
+
+  FeeEstimates get feeEstimates;
+  @JsonKey(ignore: true)
+  _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$FeeErrorImplCopyWith<$Res> {
+  factory _$$FeeErrorImplCopyWith(
+          _$FeeErrorImpl value, $Res Function(_$FeeErrorImpl) then) =
+      __$$FeeErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String error});
+}
+
+/// @nodoc
+class __$$FeeErrorImplCopyWithImpl<$Res>
+    extends _$FeeStateCopyWithImpl<$Res, _$FeeErrorImpl>
+    implements _$$FeeErrorImplCopyWith<$Res> {
+  __$$FeeErrorImplCopyWithImpl(
+      _$FeeErrorImpl _value, $Res Function(_$FeeErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$FeeErrorImpl(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$FeeErrorImpl implements _FeeError {
+  const _$FeeErrorImpl(this.error);
+
+  @override
+  final String error;
+
+  @override
+  String toString() {
+    return 'FeeState.error(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FeeErrorImpl &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
+      __$$FeeErrorImplCopyWithImpl<_$FeeErrorImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(FeeEstimates feeEstimates) success,
+    required TResult Function(String error) error,
+  }) {
+    return error(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(FeeEstimates feeEstimates)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return error?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(FeeEstimates feeEstimates)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FeeInitial value) initial,
+    required TResult Function(_FeeLoading value) loading,
+    required TResult Function(_FeeSuccess value) success,
+    required TResult Function(_FeeError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FeeInitial value)? initial,
+    TResult? Function(_FeeLoading value)? loading,
+    TResult? Function(_FeeSuccess value)? success,
+    TResult? Function(_FeeError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FeeInitial value)? initial,
+    TResult Function(_FeeLoading value)? loading,
+    TResult Function(_FeeSuccess value)? success,
+    TResult Function(_FeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FeeError implements FeeState {
+  const factory _FeeError(final String error) = _$FeeErrorImpl;
+
+  String get error;
+  @JsonKey(ignore: true)
+  _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

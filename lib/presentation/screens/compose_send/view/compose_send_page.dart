@@ -21,6 +21,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation.dart';
+import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -277,6 +278,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             }
           }
 
+          final width = MediaQuery.of(context).size.width;
+
           return Form(
             key: _formKey,
             child: Padding(
@@ -306,16 +309,31 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                         handleInitialSubmit();
                       }),
                   const SizedBox(height: 16.0),
-                  if (widget.screenWidth > 768)
+                  if (width > 768)
                     Row(
                         children: _buildQuantityAndAssetInputsForRow(
                             state, handleInitialSubmit)),
-                  if (widget.screenWidth <= 768)
+                  if (width <= 768)
                     Column(children: [
                       _buildQuantityInput(state, handleInitialSubmit),
                       const SizedBox(height: 16.0),
                       _buildAssetInput(state)
                     ]),
+                  const SizedBox(height: 16.0),
+                  FeeSelectionV2(
+                    feeEstimates: state.feeState.maybeWhen(
+                      success: (feeEsimates) {
+                          return FeeEstimateSuccess(feeEstimates: feeEsimates);
+                      },
+                      orElse: () => FeeEstimateLoading(),
+                    ),
+                    onSelected: (fee) {
+                      print("fee $fee");
+                    },
+                    layout: widget.screenWidth > 768
+                        ? FeeSelectionLayout.row
+                        : FeeSelectionLayout.column,
+                  ),
                   HorizonDialogSubmitButton(
                     onPressed: handleInitialSubmit,
                   ),
@@ -504,7 +522,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           });
 
           return SizedBox(
-            height: 48.0,
+            height: 48,
             child: AssetDropdown(
               asset: asset,
               balances: balances,

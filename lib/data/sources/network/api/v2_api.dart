@@ -2089,6 +2089,11 @@ class UTXO {
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 
+  @GET("/bitcoin/estimatesmartfee")
+  Future<Response<int>> estimateSmartFee(
+    @Query("conf_target") int confirmationTarget
+  );
+
   @POST("/bitcoin/transactions")
   Future<Response<String>> createTransaction(
     @Query("signedhex") String signedhex,

@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -18,6 +19,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 
@@ -56,32 +58,41 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           balancesState: BalancesState.loading(),
           submitState: SubmitState.initial()));
 
+      late List<Balance> balances;
+      late FeeEstimates feeEstimates;
       try {
         List<Address> addresses = [event.currentAddress];
 
-        List<Balance> balances =
+        balances =
             await balanceRepository.getBalancesForAddress(addresses[0].address);
-        emit(ComposeSendState(
-            balancesState: BalancesState.success(balances),
-            submitState: const SubmitState.initial()));
       } catch (e) {
         emit(ComposeSendState(
             balancesState: BalancesState.error(e.toString()),
             submitState: const SubmitState.initial()));
+        return;
       }
-    });
 
-    on<FetchBalances>((event, emit) async {
-      emit(state.copyWith(balancesState: const BalancesState.loading()));
       try {
-        List<Balance> balances =
-            await balanceRepository.getBalancesForAddress(event.address);
-        emit(state.copyWith(balancesState: BalancesState.success(balances)));
-      } catch (e) {
-        emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-      }
-    });
+        feeEstimates = await GetFeeEstimates(
+          targets: (1, 3, 6),
+          bitcoindService: bitcoindService,
+        ).call();
 
+
+      } catch (e) {
+        emit(ComposeSendState(
+            feeState: FeeState.error(e.toString()),
+            submitState: const SubmitState.initial()));
+        return;
+      }
+
+
+      print("feeEstimates $feeEstimates");
+      emit(ComposeSendState(
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          submitState: const SubmitState.initial()));
+    });
     on<ComposeTransactionEvent>((event, emit) async {
       emit(state.copyWith(submitState: const SubmitState.loading()));
       try {

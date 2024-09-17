@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 
 part 'compose_send_state.freezed.dart';
 
@@ -9,6 +10,7 @@ class ComposeSendState with _$ComposeSendState {
   const factory ComposeSendState({
     @Default(BalancesState.initial()) balancesState,
     @Default(SubmitState.initial()) submitState,
+    @Default(FeeState.initial()) feeState
   }) = _ComposeSendState;
 }
 
@@ -19,6 +21,16 @@ class BalancesState with _$BalancesState {
   const factory BalancesState.success(List<Balance> balances) = _BalanceSuccess;
   const factory BalancesState.error(String error) = _BalanceError;
 }
+
+
+@freezed 
+class FeeState with _$FeeState {
+  const factory FeeState.initial() = _FeeInitial;
+  const factory FeeState.loading() = _FeeLoading;
+  const factory FeeState.success(FeeEstimates feeEstimates) = _FeeSuccess;
+  const factory FeeState.error(String error) = _FeeError;
+}
+
 
 @freezed
 class SubmitState with _$SubmitState {
