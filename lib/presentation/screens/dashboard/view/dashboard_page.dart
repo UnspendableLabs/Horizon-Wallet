@@ -476,8 +476,8 @@ class QRCodeDialog extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         child: SelectableText(
                           currentAddress.address,
-                          style:
-                              const TextStyle(overflow: TextOverflow.ellipsis),
+                          style: const TextStyle(
+                              overflow: TextOverflow.ellipsis, fontSize: 16),
                         ),
                       ),
                     ),
@@ -569,21 +569,22 @@ class QRCodeDialog extends StatelessWidget {
             _ => TextButton(
                 child: const Text("Add a new address"),
                 onPressed: () {
-                  // 1) close receive modal
-                  Navigator.of(context).pop();
-
-                  // 2) open add address modal
                   HorizonDialog.show(
-                      context: context,
-                      body: HorizonDialog(
-                        title: "Add an address",
-                        body: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: AddAddressForm(
-                            accountUuid: accountUuid,
-                          ),
+                    context: context,
+                    body: HorizonDialog(
+                      title: "Add a new address\nto ${account.name}",
+                      titleAlign: Alignment.center,
+                      body: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: AddAddressForm(
+                          accountUuid: accountUuid,
                         ),
-                      ));
+                      ),
+                      onBackButtonPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  );
                 })
           };
         })
@@ -793,6 +794,12 @@ class _DashboardPage_State extends State<_DashboardPage> {
 
     final isSmallScreen = screenWidth < 768;
 
+    final account = context.read<ShellStateCubit>().state.maybeWhen(
+          success: (state) => state.accounts
+              .firstWhere((account) => account.uuid == widget.accountUuid),
+          orElse: () => null,
+        );
+
     if (!isSmallScreen) {
       return Scaffold(
           bottomNavigationBar: const Footer(),
@@ -935,177 +942,9 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                             ),
                                           ),
                                         ),
-
-                                        // Add more widgets as needed
                                       ],
                                     ),
-                                  )
-
-                                  // MultiSliver(children: [
-                                  //   !isSmallScreen
-                                  //       ? SliverToBoxAdapter(
-                                  //           child: Row(
-                                  //             children: [
-                                  //               Expanded(
-                                  //                 child:
-                                  //                     AccountSelectionButton(
-                                  //                   isDarkTheme:
-                                  //                       isDarkTheme,
-                                  //                   onPressed: () =>
-                                  //                       showAccountList(
-                                  //                           context,
-                                  //                           isDarkTheme),
-                                  //                 ),
-                                  //               ),
-                                  //               Builder(builder: (context) {
-                                  //                 return context
-                                  //                     .read<
-                                  //                         ShellStateCubit>()
-                                  //                     .state
-                                  //                     .maybeWhen(
-                                  //                         success: (state) =>
-                                  //                             state.addresses
-                                  //                                         .length >
-                                  //                                     1
-                                  //                                 ? Expanded(
-                                  //                                     child:
-                                  //                                         Padding(
-                                  //                                       padding: const EdgeInsets.fromLTRB(
-                                  //                                           0.0,
-                                  //                                           8.0,
-                                  //                                           8.0,
-                                  //                                           0.0),
-                                  //                                       child:
-                                  //                                           AddressSelectionButton(
-                                  //                                         isDarkTheme: isDarkTheme,
-                                  //                                         onPressed: () => showAddressList(context, isDarkTheme),
-                                  //                                       ),
-                                  //                                     ),
-                                  //                                   )
-                                  //                                 : SizedBox
-                                  //                                     .shrink(),
-                                  //                         orElse: () =>
-                                  //                             SizedBox
-                                  //                                 .shrink());
-                                  //               }),
-                                  //             ],
-                                  //           ),
-                                  //         )
-                                  //       : SliverToBoxAdapter(
-                                  //           child: SizedBox.shrink()),
-                                  //   isSmallScreen
-                                  //       ? SliverToBoxAdapter(
-                                  //           child: AccountSelectionButton(
-                                  //             isDarkTheme: isDarkTheme,
-                                  //             onPressed: () =>
-                                  //                 showAccountList(
-                                  //                     context, isDarkTheme),
-                                  //           ),
-                                  //         )
-                                  //       : SliverToBoxAdapter(
-                                  //           child: SizedBox.shrink()),
-                                  //   isSmallScreen
-                                  //       ? Builder(builder: (context) {
-                                  //           return context
-                                  //               .read<ShellStateCubit>()
-                                  //               .state
-                                  //               .maybeWhen(
-                                  //                   success: (state) => state
-                                  //                               .addresses
-                                  //                               .length >
-                                  //                           1
-                                  //                       ? SliverToBoxAdapter(
-                                  //                           child: Padding(
-                                  //                           padding:
-                                  //                               const EdgeInsets
-                                  //                                   .fromLTRB(
-                                  //                                   8.0,
-                                  //                                   8.0,
-                                  //                                   8.0,
-                                  //                                   0.0),
-                                  //                           child:
-                                  //                               AddressSelectionButton(
-                                  //                             isDarkTheme:
-                                  //                                 isDarkTheme,
-                                  //                             onPressed: () =>
-                                  //                                 showAddressList(
-                                  //                                     context,
-                                  //                                     isDarkTheme),
-                                  //                           ),
-                                  //                         ))
-                                  //                       : SliverToBoxAdapter(
-                                  //                           child: SizedBox
-                                  //                               .shrink()),
-                                  //                   orElse: () =>
-                                  //                       SliverToBoxAdapter(
-                                  //                           child: SizedBox
-                                  //                               .shrink()));
-                                  //         })
-                                  //       : SliverToBoxAdapter(
-                                  //           child: SizedBox.shrink()),
-                                  //   SliverToBoxAdapter(
-                                  //       child: Builder(builder: (context) {
-                                  //     final dashboardActivityFeedBloc =
-                                  //         BlocProvider.of<
-                                  //                 DashboardActivityFeedBloc>(
-                                  //             context);
-                                  //     return AddressActions(
-                                  //       isDarkTheme: isDarkTheme,
-                                  //       dashboardActivityFeedBloc:
-                                  //           dashboardActivityFeedBloc,
-                                  //       accountUuid: widget.accountUuid,
-                                  //       currentAddress:
-                                  //           widget.currentAddress,
-                                  //       screenWidth: screenWidth,
-                                  //     );
-                                  //   })),
-                                  //   SliverStack(children: [
-                                  //     SliverPositioned.fill(
-                                  //       child: Container(
-                                  //         margin: const EdgeInsets.fromLTRB(
-                                  //             8, 4, 8, 0),
-                                  //         decoration: BoxDecoration(
-                                  //           color: backgroundColorInner,
-                                  //           borderRadius:
-                                  //               BorderRadius.circular(30.0),
-                                  //         ),
-                                  //       ),
-                                  //     ),
-                                  //     SliverPadding(
-                                  //       padding: const EdgeInsets.all(8.0),
-                                  //       sliver: BalancesDisplay(
-                                  //           accountUuid: widget.accountUuid,
-                                  //           isDarkTheme: isDarkTheme,
-                                  //           addresses: [
-                                  //             widget.currentAddress
-                                  //           ]),
-                                  //     ),
-                                  //   ]),
-                                  //   SliverStack(children: [
-                                  //     SliverPositioned.fill(
-                                  //       child: Container(
-                                  //         margin: const EdgeInsets.fromLTRB(
-                                  //             8, 8, 8, 0),
-                                  //         decoration: BoxDecoration(
-                                  //           color: backgroundColorInner,
-                                  //           borderRadius:
-                                  //               BorderRadius.circular(30.0),
-                                  //         ),
-                                  //       ),
-                                  //     ),
-                                  //     SliverPadding(
-                                  //       padding: const EdgeInsets.all(8.0),
-                                  //       sliver: DashboardActivityFeedScreen(
-                                  //         addresses: [
-                                  //           widget.currentAddress
-                                  //         ],
-                                  //       ),
-                                  //     ),
-                                  //   ])
-                                  // ]
-
-                                  // ),
-                                  ),
+                                  )),
                             ])))
                       ],
                     ),
@@ -1214,7 +1053,8 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                                                   onPressed: () =>
                                                                       showAddressList(
                                                                           context,
-                                                                          isDarkTheme),
+                                                                          isDarkTheme,
+                                                                          account),
                                                                 ),
                                                               ),
                                                             )
@@ -1261,7 +1101,8 @@ class _DashboardPage_State extends State<_DashboardPage> {
                                                           onPressed: () =>
                                                               showAddressList(
                                                                   context,
-                                                                  isDarkTheme),
+                                                                  isDarkTheme,
+                                                                  account),
                                                         ),
                                                       ))
                                                     : const SliverToBoxAdapter(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart";
 import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
@@ -8,7 +9,9 @@ import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
 class AddAddressForm extends StatefulWidget {
   final String accountUuid;
-  const AddAddressForm({super.key, required this.accountUuid});
+  final BuildContext? modalContext;
+  const AddAddressForm(
+      {super.key, required this.accountUuid, this.modalContext});
 
   @override
   State<AddAddressForm> createState() => _AddAccountFormState();
@@ -16,6 +19,7 @@ class AddAddressForm extends StatefulWidget {
 
 class _AddAccountFormState extends State<AddAddressForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String error = '';
 
   final passwordController = TextEditingController();
 
@@ -32,12 +36,19 @@ class _AddAccountFormState extends State<AddAddressForm> {
     return BlocConsumer<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
         listener: (context, state) {
       state.whenOrNull(error: (msg) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: SelectableText(msg),
-        ));
+        setState(() {
+          error = msg;
+        });
       }, success: (addresses) async {
-        // update accounts in shell
+        // pop address form modal
         Navigator.of(context).pop();
+
+        // if opened from another modal, pop that too
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        } else if (widget.modalContext != null) {
+          Navigator.of(widget.modalContext!).pop();
+        }
 
         shell.refreshAndSelectNewAddress(
             addresses['newAddresses'].first.address, addresses['accountUuid']);
@@ -88,7 +99,9 @@ class _AddAccountFormState extends State<AddAddressForm> {
                 handleSubmit();
               },
             ),
-            const SizedBox(height: 16.0), // Spacing between inputs
+            if (error.isNotEmpty)
+              Text(error, style: const TextStyle(color: redErrorText)),
+            const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
               child: Column(

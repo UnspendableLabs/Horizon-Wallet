@@ -112,7 +112,13 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
       );
     }, builder: (context, state) {
       return state.submitState.maybeWhen(
-          loading: () => const CircularProgressIndicator(),
+          loading: () => const Center(
+                child: SizedBox(
+                  width: 24.0,
+                  height: 24.0,
+                  child: CircularProgressIndicator(),
+                ),
+              ),
           error: (msg) => Padding(
               padding: const EdgeInsets.all(8.0),
               child: SelectableText('An error occurred: $msg')),
