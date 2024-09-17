@@ -159,8 +159,13 @@ class ComposeIssuanceBloc
         Account? account =
             await accountRepository.getAccountByUuid(address!.accountUuid);
         Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
-        String decryptedRootPrivKey =
-            await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+        String? decryptedRootPrivKey;
+        try {
+          decryptedRootPrivKey = await encryptionService.decrypt(
+              wallet!.encryptedPrivKey, password);
+        } catch (e) {
+          throw Exception("Incorrect password");
+        }
         String addressPrivKey = await addressService.deriveAddressPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: wallet.chainCodeHex,
