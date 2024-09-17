@@ -20,7 +20,10 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
@@ -52,27 +55,58 @@ class ComposeIssuanceBloc
     required this.transactionRepository,
     required this.transactionLocalRepository,
     required this.bitcoinRepository,
-  }) : super(const ComposeIssuanceState()) {
-    on<FetchFormData>((event, emit) async {
-      emit(const ComposeIssuanceState(
-          addressesState: AddressesState.loading(),
+  }) : super( ComposeIssuanceState(feeOption: FeeOption.Medium())){
+    on<ChangeFeeOption>((event, emit) async {
+      final value = event.value;
+      emit(state.copyWith(feeOption: value));
+    });
+on<FetchFormData>((event, emit) async { emit(state.copyWith(
           balancesState: BalancesState.loading(),
           submitState: SubmitState.initial()));
 
+      late List<Balance> balances;
+      late FeeEstimates feeEstimates;
+
       try {
         List<Address> addresses = [event.currentAddress];
-        List<Balance> balances =
+
+        balances =
             await balanceRepository.getBalancesForAddress(addresses[0].address);
-        emit(ComposeIssuanceState(
-          addressesState: AddressesState.success(addresses),
-          balancesState: BalancesState.success(balances),
-        ));
       } catch (e) {
-        emit(ComposeIssuanceState(
-          addressesState: AddressesState.error(e.toString()),
+        emit(state.copyWith(
           balancesState: BalancesState.error(e.toString()),
         ));
+        return;
       }
+
+      try {
+        feeEstimates = await GetFeeEstimates(
+          targets: (1, 3, 6),
+          bitcoindService: bitcoindService,
+        ).call();
+      } catch (e) {
+        emit(state.copyWith(feeState: FeeState.error(e.toString())));
+        return;
+      }
+
+      emit(state.copyWith(
+        balancesState: BalancesState.success(balances),
+        feeState: FeeState.success(feeEstimates),
+      ));
+
+      // try {
+      //   List<Address> addresses = [event.currentAddress];
+      //   List<Balance> balances =
+      //       await balanceRepository.getBalancesForAddress(addresses[0].address);
+      //   emit(state.copyWith(
+      //     balancesState: BalancesState.success(balances),
+      //   ));
+      // } catch (e) {
+      //   //TODO: should not be same error
+      //   emit(state.copyWith(
+      //     balancesState: BalancesState.error(e.toString()),
+      //   ));
+      // }
     });
 
     on<FetchBalances>((event, emit) async {
@@ -87,6 +121,12 @@ class ComposeIssuanceBloc
     });
 
     on<ComposeTransactionEvent>((event, emit) async {
+      FeeEstimates? feeEstimates = state.feeState
+          .maybeWhen(success: (value) => value, orElse: () => null);
+
+      if (feeEstimates == null) {
+        return;
+      }
       emit(state.copyWith(submitState: const SubmitState.loading()));
       final source = event.sourceAddress;
       final quantity = event.quantity;
@@ -95,6 +135,12 @@ class ComposeIssuanceBloc
       final lock = event.lock;
       final reset = event.reset;
       final description = event.description;
+      final feeRate = switch (state.feeOption) {
+        FeeOption.Fast() => feeEstimates.fast,
+        FeeOption.Medium() => feeEstimates.medium,
+        FeeOption.Slow() => feeEstimates.slow,
+        FeeOption.Custom(fee: var fee) => fee,
+      };
       // final transferDestination = event.transferDestination;
 
       emit(state.copyWith(submitState: const SubmitState.loading()));
@@ -106,17 +152,20 @@ class ComposeIssuanceBloc
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
 
-        final feeEstimatesE = await bitcoinRepository.getFeeEstimates();
+        final totalFee = virtualSize * feeRate;
 
-        final feeEstimates = feeEstimatesE.fold(
-            (l) => throw Exception("Error getting fee estimates"), (r) => r);
+        ComposeIssuanceVerbose issuanceActual =
+            await composeRepository.composeIssuanceVerbose(source, name,
+                quantity, divisible, lock, reset, description, null, true, totalFee);
+
 
         emit(state.copyWith(
             submitState: SubmitState.composing(SubmitStateComposingIssuance(
-                composeIssuance: issuance,
+                composeIssuance: issuanceActual,
                 virtualSize: virtualSize,
-                feeEstimates: feeEstimates,
-                confirmationTarget: feeEstimates.keys.first))));
+                fee: totalFee,
+                feeRate: feeRate
+            ))));
       } catch (error) {
         emit(state.copyWith(submitState: SubmitState.error(error.toString())));
       }

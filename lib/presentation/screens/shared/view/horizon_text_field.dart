@@ -67,6 +67,7 @@ class HorizonTextFormField extends StatelessWidget {
   final TextCapitalization? textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
   final bool? enabled;
+  final String? initialValue;
 
   const HorizonTextFormField({
     super.key,
@@ -86,6 +87,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.textCapitalization,
     this.inputFormatters,
     this.enabled,
+    this.initialValue,
   });
 
   @override
@@ -122,6 +124,7 @@ class HorizonTextFormField extends StatelessWidget {
 
     return TextFormField(
       controller: controller,
+      initialValue: initialValue,
       focusNode: focusNode,
       enabled: enabled ?? true,
       onChanged: onChanged,

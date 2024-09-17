@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
+
 
 enum FeeSelectionLayout { row, column }
 
@@ -21,57 +23,10 @@ class FeeEstimateError extends FeeEstimateState {
   FeeEstimateError(this.error);
 }
 
-sealed class FeeOption {
-  String get label;
 
-  String toString() => switch (this) {
-        Fast() => 'Fast()',
-        Medium() => 'Medium()',
-        Slow() => 'Slow()',
-        Custom(fee: var fee) => 'Custom(fee: $fee)',
-      };
-
-  String toInputValue() => switch (this) {
-        Fast() => 'fast',
-        Medium() => 'medium',
-        Slow() => 'slow',
-        Custom() => 'custom',
-      };
-
-  static FeeOption fromString(String value, {int? customFee}) =>
-      switch (value) {
-        'fast' => Fast(),
-        'medium' => Medium(),
-        'slow' => Slow(),
-        'custom' => Custom(customFee ?? 0),
-        _ => Medium(),
-      };
-}
-
-class Fast extends FeeOption {
-  @override
-  String get label => 'Fast';
-}
-
-class Medium extends FeeOption {
-  @override
-  String get label => 'Medium';
-}
-
-class Slow extends FeeOption {
-  @override
-  String get label => 'Slow';
-}
-
-class Custom extends FeeOption {
-  final int fee;
-  Custom(this.fee);
-
-  @override
-  String get label => 'Custom';
-}
 
 class FeeSelectionV2 extends StatefulWidget {
+  final FeeOption value;
   final FeeEstimateState feeEstimates;
   final FeeSelectionLayout layout;
   final Function(FeeOption) onSelected;
@@ -80,6 +35,7 @@ class FeeSelectionV2 extends StatefulWidget {
     required this.feeEstimates,
     required this.layout,
     required this.onSelected,
+    required this.value,
   }) : super(key: key);
 
   @override
@@ -87,8 +43,6 @@ class FeeSelectionV2 extends StatefulWidget {
 }
 
 class _FeeSelectionV2State extends State<FeeSelectionV2> {
-  FeeOption _selectedFeeOption = Medium();
-  TextEditingController _customFeeController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +82,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
     final fillColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
 
     return DropdownButtonFormField<String>(
-      value: _selectedFeeOption.toInputValue(),
+      value: widget.value.toInputValue(),
       decoration: InputDecoration(
         fillColor: fillColor,
         filled: true,
@@ -157,12 +111,12 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
       onChanged: (String? value) {
         if (value != null) {
           final newOption = FeeOption.fromString(value,
-              customFee: _selectedFeeOption is Custom
-                  ? (_selectedFeeOption as Custom).fee
+              customFee: widget.value is Custom
+                  ? ( widget.value as Custom).fee
                   : null);
-          setState(() {
-            _selectedFeeOption = newOption;
-          });
+          // setState(() {
+          //   _selectedFeeOption = newOption;
+          // });
           widget.onSelected(newOption);
         }
       },
@@ -185,11 +139,12 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
         Text(option.label),
         SizedBox(width: 16),
         if (widget.feeEstimates is FeeEstimateSuccess)
-          Text(
-            _getFeeEstimate(option,
-                (widget.feeEstimates as FeeEstimateSuccess).feeEstimates),
-            style: TextStyle(
-              fontSize: 12,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+            child: Text(
+              _getFeeEstimate(option,
+                  (widget.feeEstimates as FeeEstimateSuccess).feeEstimates),
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ),
       ],
@@ -198,12 +153,11 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
 
   Widget _buildCustomInput() {
     return Visibility(
-      visible: _selectedFeeOption is Custom,
+      visible: widget.value is Custom,
       maintainState: true,
       maintainAnimation: true,
       maintainSize: false,
       child: TextField(
-        controller: _customFeeController,
         decoration: InputDecoration(
           labelText: 'Custom fee (sats/vbyte)',
           hintText: 'Enter custom fee rate',
@@ -214,12 +168,12 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
           FilteringTextInputFormatter.digitsOnly,
         ],
         onChanged: (value) {
-          if (_selectedFeeOption is Custom) {
+          if ( widget.value is Custom) {
             final fee = int.tryParse(value) ?? 0;
             final newOption = Custom(fee);
-            setState(() {
-              _selectedFeeOption = newOption;
-            });
+            // setState(() {
+            //   _selectedFeeOption = newOption;
+            // });
             widget.onSelected(newOption);
           }
         },
@@ -229,7 +183,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
 
   @override
   void dispose() {
-    _customFeeController.dispose();
+    // _customFeeController.dispose();
     super.dispose();
   }
 }

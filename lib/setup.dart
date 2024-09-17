@@ -6,6 +6,7 @@ import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
@@ -69,21 +70,42 @@ Future<void> setup() async {
   ));
 
   dio.interceptors.addAll([
+    // RetryInterceptor(dio: dio, maxRetries: 3, initialDelayMs: 500),
     TimeoutInterceptor(),
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
-    BadCertificateInterceptor()
+    BadCertificateInterceptor(),
+    RetryInterceptor(
+      dio: dio,
+      retries: 3,
+      retryableExtraStatuses: {400}, // to handle backend bug with compose
+      retryDelays: const [
+        // set delays between retries (optional)
+        Duration(seconds: 1), // wait 1 sec before first retry
+        Duration(seconds: 2), // wait 2 sec before second retry
+        Duration(seconds: 3), // wait 3 sec before third retry
+        Duration(seconds: 5), // wait 3 sec before third retryh
+      ],
+    ), // Add the RetryInterceptor here
   ]);
 
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
 
-  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-      esploraApi: EsploraApi(
-          dio: Dio(BaseOptions(
+  final esploraDio = Dio(BaseOptions(
     baseUrl: config.esploraBase,
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
-  )))));
+  ));
+
+  esploraDio.interceptors.addAll([
+    TimeoutInterceptor(),
+    ConnectionErrorInterceptor(),
+    BadResponseInterceptor(),
+    BadCertificateInterceptor(),
+  ]);
+
+  injector.registerSingleton<BitcoinRepository>(
+      BitcoinRepositoryImpl(esploraApi: EsploraApi(dio: esploraDio)));
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 

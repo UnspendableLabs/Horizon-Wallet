@@ -2,16 +2,27 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 
 part 'compose_issuance_state.freezed.dart';
 
 @freezed
 class ComposeIssuanceState with _$ComposeIssuanceState {
   const factory ComposeIssuanceState({
-    @Default(AddressesState.initial()) addressesState,
     @Default(SubmitState.initial()) submitState,
+    @Default(FeeState.initial()) feeState,
     @Default(BalancesState.initial()) balancesState,
+    required FeeOption feeOption,
   }) = _ComposeIssuanceState;
+}
+
+@freezed
+class FeeState with _$FeeState {
+  const factory FeeState.initial() = _FeeInitial;
+  const factory FeeState.loading() = _FeeLoading;
+  const factory FeeState.success(FeeEstimates feeEstimates) = _FeeSuccess;
+  const factory FeeState.error(String error) = _FeeError;
 }
 
 @freezed
@@ -48,13 +59,14 @@ class SubmitState with _$SubmitState {
 class SubmitStateComposingIssuance {
   final ComposeIssuanceVerbose composeIssuance;
   final int virtualSize;
-  final Map<String, double> feeEstimates;
-  final String confirmationTarget;
-  SubmitStateComposingIssuance(
-      {required this.composeIssuance,
-      required this.virtualSize,
-      required this.feeEstimates,
-      required this.confirmationTarget});
+  final int fee;
+  final int feeRate;
+  SubmitStateComposingIssuance({
+    required this.composeIssuance,
+    required this.virtualSize,
+    required this.fee,
+    required this.feeRate,
+  });
 }
 
 class SubmitStateFinalizing {

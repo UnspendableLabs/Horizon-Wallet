@@ -2417,6 +2417,7 @@ class _V2Api implements V2Api {
     int quantity, [
     bool? allowUnconfirmedInputs,
     int? fee,
+    int? feePerKB,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2425,6 +2426,7 @@ class _V2Api implements V2Api {
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'fee': fee,
+      r'fee_per_kb': feePerKB,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

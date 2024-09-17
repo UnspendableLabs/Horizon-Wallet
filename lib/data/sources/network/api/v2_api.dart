@@ -2309,6 +2309,8 @@ abstract class V2Api {
     @Query("quantity") int quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("fee") int? fee,
+    @Query("fee_per_kb") int? feePerKB,
+    
   ]);
 
   @GET("/addresses/{address}/sends")

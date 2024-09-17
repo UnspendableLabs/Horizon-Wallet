@@ -20,6 +20,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation.dart';
+import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
@@ -31,6 +32,8 @@ import 'package:horizon/presentation/screens/shared/view/horizon_continue_button
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
+
 import 'dart:math';
 
 class ComposeIssuancePageWrapper extends StatelessWidget {
@@ -111,6 +114,8 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final width = MediaQuery.of(context).size.width;
     return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
         listener: (context, state) {
       state.submitState.maybeWhen(
@@ -354,6 +359,30 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
                                 ),
                               ],
                             ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
+                              child: Divider(
+                                thickness: 1.0,
+                              ),
+                            ),
+                            FeeSelectionV2(
+                              value: state.feeOption,
+                              feeEstimates: state.feeState.maybeWhen(
+                                success: (feeEsimates) {
+                                  return FeeEstimateSuccess(
+                                      feeEstimates: feeEsimates);
+                                },
+                                orElse: () => FeeEstimateLoading(),
+                              ),
+                              onSelected: (fee) {
+                                context
+                                    .read<ComposeIssuanceBloc>()
+                                    .add(ChangeFeeOption(value: fee));
+                              },
+                              layout: width > 768
+                                  ? FeeSelectionLayout.row
+                                  : FeeSelectionLayout.column,
+                            ),
                           ],
                         ),
                         HorizonDialogSubmitButton(
@@ -452,11 +481,7 @@ class _ComposeIssuanceConfirmationPageState
   void initState() {
     super.initState();
 
-    // initialize fee
-    fee = (widget.composeIssuanceState.virtualSize *
-            widget.composeIssuanceState.feeEstimates[
-                widget.composeIssuanceState.feeEstimates.keys.first]!)
-        .ceil();
+    fee = widget.composeIssuanceState.fee;
   }
 
   @override
@@ -529,17 +554,24 @@ class _ComposeIssuanceConfirmationPageState
                   text: issueParams.reset == true ? 'true' : 'false'),
               enabled: false,
             ),
+            HorizonTextFormField(
+              label: "Fee",
+              controller: TextEditingController(
+                  text:
+                      "${widget.composeIssuanceState.fee.toString()} sats ( ${widget.composeIssuanceState.feeRate} sats/vbyte )"),
+              enabled: false,
+            ),
             Column(
               children: [
                 const SizedBox(height: 16.0),
-                FeeEstimation(
-                    feeMap: widget.composeIssuanceState.feeEstimates,
-                    virtualSize: widget.composeIssuanceState.virtualSize,
-                    onChanged: (v) {
-                      setState(() {
-                        fee = v.toInt();
-                      });
-                    }),
+                // FeeEstimation(
+                //     feeMap: widget.composeIssuanceState.feeEstimates,
+                //     virtualSize: widget.composeIssuanceState.virtualSize,
+                //     onChanged: (v) {
+                //       setState(() {
+                //         fee = v.toInt();
+                //       });
+                //     }),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Divider(

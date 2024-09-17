@@ -19,6 +19,14 @@ mixin _$ComposeSendState {
   dynamic get balancesState => throw _privateConstructorUsedError;
   dynamic get submitState => throw _privateConstructorUsedError;
   dynamic get feeState => throw _privateConstructorUsedError;
+  dynamic get maxValue => throw _privateConstructorUsedError;
+  bool get sendMax => throw _privateConstructorUsedError;
+  FeeOption get feeOption => throw _privateConstructorUsedError;
+  Address? get source => throw _privateConstructorUsedError; // TODO: smell
+  String? get destination => throw _privateConstructorUsedError;
+  String? get asset => throw _privateConstructorUsedError;
+  String get quantity => throw _privateConstructorUsedError;
+  String? get composeSendError => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ComposeSendStateCopyWith<ComposeSendState> get copyWith =>
@@ -31,7 +39,18 @@ abstract class $ComposeSendStateCopyWith<$Res> {
           ComposeSendState value, $Res Function(ComposeSendState) then) =
       _$ComposeSendStateCopyWithImpl<$Res, ComposeSendState>;
   @useResult
-  $Res call({dynamic balancesState, dynamic submitState, dynamic feeState});
+  $Res call(
+      {dynamic balancesState,
+      dynamic submitState,
+      dynamic feeState,
+      dynamic maxValue,
+      bool sendMax,
+      FeeOption feeOption,
+      Address? source,
+      String? destination,
+      String? asset,
+      String quantity,
+      String? composeSendError});
 }
 
 /// @nodoc
@@ -50,6 +69,14 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
     Object? balancesState = freezed,
     Object? submitState = freezed,
     Object? feeState = freezed,
+    Object? maxValue = freezed,
+    Object? sendMax = null,
+    Object? feeOption = null,
+    Object? source = freezed,
+    Object? destination = freezed,
+    Object? asset = freezed,
+    Object? quantity = null,
+    Object? composeSendError = freezed,
   }) {
     return _then(_value.copyWith(
       balancesState: freezed == balancesState
@@ -64,6 +91,38 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
           ? _value.feeState
           : feeState // ignore: cast_nullable_to_non_nullable
               as dynamic,
+      maxValue: freezed == maxValue
+          ? _value.maxValue
+          : maxValue // ignore: cast_nullable_to_non_nullable
+              as dynamic,
+      sendMax: null == sendMax
+          ? _value.sendMax
+          : sendMax // ignore: cast_nullable_to_non_nullable
+              as bool,
+      feeOption: null == feeOption
+          ? _value.feeOption
+          : feeOption // ignore: cast_nullable_to_non_nullable
+              as FeeOption,
+      source: freezed == source
+          ? _value.source
+          : source // ignore: cast_nullable_to_non_nullable
+              as Address?,
+      destination: freezed == destination
+          ? _value.destination
+          : destination // ignore: cast_nullable_to_non_nullable
+              as String?,
+      asset: freezed == asset
+          ? _value.asset
+          : asset // ignore: cast_nullable_to_non_nullable
+              as String?,
+      quantity: null == quantity
+          ? _value.quantity
+          : quantity // ignore: cast_nullable_to_non_nullable
+              as String,
+      composeSendError: freezed == composeSendError
+          ? _value.composeSendError
+          : composeSendError // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -76,7 +135,18 @@ abstract class _$$ComposeSendStateImplCopyWith<$Res>
       __$$ComposeSendStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({dynamic balancesState, dynamic submitState, dynamic feeState});
+  $Res call(
+      {dynamic balancesState,
+      dynamic submitState,
+      dynamic feeState,
+      dynamic maxValue,
+      bool sendMax,
+      FeeOption feeOption,
+      Address? source,
+      String? destination,
+      String? asset,
+      String quantity,
+      String? composeSendError});
 }
 
 /// @nodoc
@@ -93,12 +163,49 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
     Object? balancesState = freezed,
     Object? submitState = freezed,
     Object? feeState = freezed,
+    Object? maxValue = freezed,
+    Object? sendMax = null,
+    Object? feeOption = null,
+    Object? source = freezed,
+    Object? destination = freezed,
+    Object? asset = freezed,
+    Object? quantity = null,
+    Object? composeSendError = freezed,
   }) {
     return _then(_$ComposeSendStateImpl(
       balancesState:
           freezed == balancesState ? _value.balancesState! : balancesState,
       submitState: freezed == submitState ? _value.submitState! : submitState,
       feeState: freezed == feeState ? _value.feeState! : feeState,
+      maxValue: freezed == maxValue ? _value.maxValue! : maxValue,
+      sendMax: null == sendMax
+          ? _value.sendMax
+          : sendMax // ignore: cast_nullable_to_non_nullable
+              as bool,
+      feeOption: null == feeOption
+          ? _value.feeOption
+          : feeOption // ignore: cast_nullable_to_non_nullable
+              as FeeOption,
+      source: freezed == source
+          ? _value.source
+          : source // ignore: cast_nullable_to_non_nullable
+              as Address?,
+      destination: freezed == destination
+          ? _value.destination
+          : destination // ignore: cast_nullable_to_non_nullable
+              as String?,
+      asset: freezed == asset
+          ? _value.asset
+          : asset // ignore: cast_nullable_to_non_nullable
+              as String?,
+      quantity: null == quantity
+          ? _value.quantity
+          : quantity // ignore: cast_nullable_to_non_nullable
+              as String,
+      composeSendError: freezed == composeSendError
+          ? _value.composeSendError
+          : composeSendError // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -109,7 +216,15 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
   const _$ComposeSendStateImpl(
       {this.balancesState = const BalancesState.initial(),
       this.submitState = const SubmitState.initial(),
-      this.feeState = const FeeState.initial()});
+      this.feeState = const FeeState.initial(),
+      this.maxValue = const MaxValueState.initial(),
+      this.sendMax = false,
+      required this.feeOption,
+      this.source,
+      this.destination,
+      this.asset,
+      this.quantity = "",
+      this.composeSendError});
 
   @override
   @JsonKey()
@@ -120,10 +235,30 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
   @override
   @JsonKey()
   final dynamic feeState;
+  @override
+  @JsonKey()
+  final dynamic maxValue;
+  @override
+  @JsonKey()
+  final bool sendMax;
+  @override
+  final FeeOption feeOption;
+  @override
+  final Address? source;
+// TODO: smell
+  @override
+  final String? destination;
+  @override
+  final String? asset;
+  @override
+  @JsonKey()
+  final String quantity;
+  @override
+  final String? composeSendError;
 
   @override
   String toString() {
-    return 'ComposeSendState(balancesState: $balancesState, submitState: $submitState, feeState: $feeState)';
+    return 'ComposeSendState(balancesState: $balancesState, submitState: $submitState, feeState: $feeState, maxValue: $maxValue, sendMax: $sendMax, feeOption: $feeOption, source: $source, destination: $destination, asset: $asset, quantity: $quantity, composeSendError: $composeSendError)';
   }
 
   @override
@@ -135,7 +270,19 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
                 .equals(other.balancesState, balancesState) &&
             const DeepCollectionEquality()
                 .equals(other.submitState, submitState) &&
-            const DeepCollectionEquality().equals(other.feeState, feeState));
+            const DeepCollectionEquality().equals(other.feeState, feeState) &&
+            const DeepCollectionEquality().equals(other.maxValue, maxValue) &&
+            (identical(other.sendMax, sendMax) || other.sendMax == sendMax) &&
+            (identical(other.feeOption, feeOption) ||
+                other.feeOption == feeOption) &&
+            (identical(other.source, source) || other.source == source) &&
+            (identical(other.destination, destination) ||
+                other.destination == destination) &&
+            (identical(other.asset, asset) || other.asset == asset) &&
+            (identical(other.quantity, quantity) ||
+                other.quantity == quantity) &&
+            (identical(other.composeSendError, composeSendError) ||
+                other.composeSendError == composeSendError));
   }
 
   @override
@@ -143,7 +290,15 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
       runtimeType,
       const DeepCollectionEquality().hash(balancesState),
       const DeepCollectionEquality().hash(submitState),
-      const DeepCollectionEquality().hash(feeState));
+      const DeepCollectionEquality().hash(feeState),
+      const DeepCollectionEquality().hash(maxValue),
+      sendMax,
+      feeOption,
+      source,
+      destination,
+      asset,
+      quantity,
+      composeSendError);
 
   @JsonKey(ignore: true)
   @override
@@ -157,7 +312,15 @@ abstract class _ComposeSendState implements ComposeSendState {
   const factory _ComposeSendState(
       {final dynamic balancesState,
       final dynamic submitState,
-      final dynamic feeState}) = _$ComposeSendStateImpl;
+      final dynamic feeState,
+      final dynamic maxValue,
+      final bool sendMax,
+      required final FeeOption feeOption,
+      final Address? source,
+      final String? destination,
+      final String? asset,
+      final String quantity,
+      final String? composeSendError}) = _$ComposeSendStateImpl;
 
   @override
   dynamic get balancesState;
@@ -166,8 +329,616 @@ abstract class _ComposeSendState implements ComposeSendState {
   @override
   dynamic get feeState;
   @override
+  dynamic get maxValue;
+  @override
+  bool get sendMax;
+  @override
+  FeeOption get feeOption;
+  @override
+  Address? get source;
+  @override // TODO: smell
+  String? get destination;
+  @override
+  String? get asset;
+  @override
+  String get quantity;
+  @override
+  String? get composeSendError;
+  @override
   @JsonKey(ignore: true)
   _$$ComposeSendStateImplCopyWith<_$ComposeSendStateImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$MaxValueState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int maxValue) success,
+    required TResult Function(String error) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int maxValue)? success,
+    TResult? Function(String error)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int maxValue)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueLoading value) loading,
+    required TResult Function(_MaxValueSuccess value) success,
+    required TResult Function(_MaxValueError value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueLoading value)? loading,
+    TResult? Function(_MaxValueSuccess value)? success,
+    TResult? Function(_MaxValueError value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueLoading value)? loading,
+    TResult Function(_MaxValueSuccess value)? success,
+    TResult Function(_MaxValueError value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $MaxValueStateCopyWith<$Res> {
+  factory $MaxValueStateCopyWith(
+          MaxValueState value, $Res Function(MaxValueState) then) =
+      _$MaxValueStateCopyWithImpl<$Res, MaxValueState>;
+}
+
+/// @nodoc
+class _$MaxValueStateCopyWithImpl<$Res, $Val extends MaxValueState>
+    implements $MaxValueStateCopyWith<$Res> {
+  _$MaxValueStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$MaxValueInitalImplCopyWith<$Res> {
+  factory _$$MaxValueInitalImplCopyWith(_$MaxValueInitalImpl value,
+          $Res Function(_$MaxValueInitalImpl) then) =
+      __$$MaxValueInitalImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$MaxValueInitalImplCopyWithImpl<$Res>
+    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueInitalImpl>
+    implements _$$MaxValueInitalImplCopyWith<$Res> {
+  __$$MaxValueInitalImplCopyWithImpl(
+      _$MaxValueInitalImpl _value, $Res Function(_$MaxValueInitalImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$MaxValueInitalImpl implements _MaxValueInital {
+  const _$MaxValueInitalImpl();
+
+  @override
+  String toString() {
+    return 'MaxValueState.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$MaxValueInitalImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int maxValue) success,
+    required TResult Function(String error) error,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int maxValue)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int maxValue)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueLoading value) loading,
+    required TResult Function(_MaxValueSuccess value) success,
+    required TResult Function(_MaxValueError value) error,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueLoading value)? loading,
+    TResult? Function(_MaxValueSuccess value)? success,
+    TResult? Function(_MaxValueError value)? error,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueLoading value)? loading,
+    TResult Function(_MaxValueSuccess value)? success,
+    TResult Function(_MaxValueError value)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _MaxValueInital implements MaxValueState {
+  const factory _MaxValueInital() = _$MaxValueInitalImpl;
+}
+
+/// @nodoc
+abstract class _$$MaxValueLoadingImplCopyWith<$Res> {
+  factory _$$MaxValueLoadingImplCopyWith(_$MaxValueLoadingImpl value,
+          $Res Function(_$MaxValueLoadingImpl) then) =
+      __$$MaxValueLoadingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$MaxValueLoadingImplCopyWithImpl<$Res>
+    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueLoadingImpl>
+    implements _$$MaxValueLoadingImplCopyWith<$Res> {
+  __$$MaxValueLoadingImplCopyWithImpl(
+      _$MaxValueLoadingImpl _value, $Res Function(_$MaxValueLoadingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$MaxValueLoadingImpl implements _MaxValueLoading {
+  const _$MaxValueLoadingImpl();
+
+  @override
+  String toString() {
+    return 'MaxValueState.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$MaxValueLoadingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int maxValue) success,
+    required TResult Function(String error) error,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int maxValue)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int maxValue)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueLoading value) loading,
+    required TResult Function(_MaxValueSuccess value) success,
+    required TResult Function(_MaxValueError value) error,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueLoading value)? loading,
+    TResult? Function(_MaxValueSuccess value)? success,
+    TResult? Function(_MaxValueError value)? error,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueLoading value)? loading,
+    TResult Function(_MaxValueSuccess value)? success,
+    TResult Function(_MaxValueError value)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _MaxValueLoading implements MaxValueState {
+  const factory _MaxValueLoading() = _$MaxValueLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$MaxValueSuccessImplCopyWith<$Res> {
+  factory _$$MaxValueSuccessImplCopyWith(_$MaxValueSuccessImpl value,
+          $Res Function(_$MaxValueSuccessImpl) then) =
+      __$$MaxValueSuccessImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({int maxValue});
+}
+
+/// @nodoc
+class __$$MaxValueSuccessImplCopyWithImpl<$Res>
+    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueSuccessImpl>
+    implements _$$MaxValueSuccessImplCopyWith<$Res> {
+  __$$MaxValueSuccessImplCopyWithImpl(
+      _$MaxValueSuccessImpl _value, $Res Function(_$MaxValueSuccessImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? maxValue = null,
+  }) {
+    return _then(_$MaxValueSuccessImpl(
+      null == maxValue
+          ? _value.maxValue
+          : maxValue // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$MaxValueSuccessImpl implements _MaxValueSuccess {
+  const _$MaxValueSuccessImpl(this.maxValue);
+
+  @override
+  final int maxValue;
+
+  @override
+  String toString() {
+    return 'MaxValueState.success(maxValue: $maxValue)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MaxValueSuccessImpl &&
+            (identical(other.maxValue, maxValue) ||
+                other.maxValue == maxValue));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, maxValue);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MaxValueSuccessImplCopyWith<_$MaxValueSuccessImpl> get copyWith =>
+      __$$MaxValueSuccessImplCopyWithImpl<_$MaxValueSuccessImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int maxValue) success,
+    required TResult Function(String error) error,
+  }) {
+    return success(maxValue);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int maxValue)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return success?.call(maxValue);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int maxValue)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(maxValue);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueLoading value) loading,
+    required TResult Function(_MaxValueSuccess value) success,
+    required TResult Function(_MaxValueError value) error,
+  }) {
+    return success(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueLoading value)? loading,
+    TResult? Function(_MaxValueSuccess value)? success,
+    TResult? Function(_MaxValueError value)? error,
+  }) {
+    return success?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueLoading value)? loading,
+    TResult Function(_MaxValueSuccess value)? success,
+    TResult Function(_MaxValueError value)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _MaxValueSuccess implements MaxValueState {
+  const factory _MaxValueSuccess(final int maxValue) = _$MaxValueSuccessImpl;
+
+  int get maxValue;
+  @JsonKey(ignore: true)
+  _$$MaxValueSuccessImplCopyWith<_$MaxValueSuccessImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$MaxValueErrorImplCopyWith<$Res> {
+  factory _$$MaxValueErrorImplCopyWith(
+          _$MaxValueErrorImpl value, $Res Function(_$MaxValueErrorImpl) then) =
+      __$$MaxValueErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String error});
+}
+
+/// @nodoc
+class __$$MaxValueErrorImplCopyWithImpl<$Res>
+    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueErrorImpl>
+    implements _$$MaxValueErrorImplCopyWith<$Res> {
+  __$$MaxValueErrorImplCopyWithImpl(
+      _$MaxValueErrorImpl _value, $Res Function(_$MaxValueErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$MaxValueErrorImpl(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$MaxValueErrorImpl implements _MaxValueError {
+  const _$MaxValueErrorImpl(this.error);
+
+  @override
+  final String error;
+
+  @override
+  String toString() {
+    return 'MaxValueState.error(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MaxValueErrorImpl &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MaxValueErrorImplCopyWith<_$MaxValueErrorImpl> get copyWith =>
+      __$$MaxValueErrorImplCopyWithImpl<_$MaxValueErrorImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int maxValue) success,
+    required TResult Function(String error) error,
+  }) {
+    return error(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int maxValue)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return error?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int maxValue)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueLoading value) loading,
+    required TResult Function(_MaxValueSuccess value) success,
+    required TResult Function(_MaxValueError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueLoading value)? loading,
+    TResult? Function(_MaxValueSuccess value)? success,
+    TResult? Function(_MaxValueError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueLoading value)? loading,
+    TResult Function(_MaxValueSuccess value)? success,
+    TResult Function(_MaxValueError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _MaxValueError implements MaxValueState {
+  const factory _MaxValueError(final String error) = _$MaxValueErrorImpl;
+
+  String get error;
+  @JsonKey(ignore: true)
+  _$$MaxValueErrorImplCopyWith<_$MaxValueErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
