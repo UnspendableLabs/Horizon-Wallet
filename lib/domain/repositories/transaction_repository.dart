@@ -2,8 +2,6 @@ import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 
-// TODO: rename transction info to transction verbose
-
 abstract class TransactionRepository {
   Future<TransactionUnpacked> unpack(String raw);
   Future<TransactionUnpackedVerbose> unpackVerbose(String raw);

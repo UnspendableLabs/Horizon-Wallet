@@ -21,10 +21,10 @@ import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'dart:math';
 
-class ComposeIssuancePage extends StatelessWidget {
+class ComposeIssuancePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
-  const ComposeIssuancePage({
+  const ComposeIssuancePageWrapper({
     required this.dashboardActivityFeedBloc,
     super.key,
   });
@@ -37,7 +37,7 @@ class ComposeIssuancePage extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeIssuanceBloc()
           ..add(FetchFormData(currentAddress: state.currentAddress)),
-        child: _ComposeIssuancePage_(
+        child: ComposeIssuancePage(
           address: state.currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
@@ -47,17 +47,20 @@ class ComposeIssuancePage extends StatelessWidget {
   }
 }
 
-class _ComposeIssuancePage_ extends StatefulWidget {
+class ComposeIssuancePage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  const _ComposeIssuancePage_(
-      {required this.address, required this.dashboardActivityFeedBloc});
+  const ComposeIssuancePage({
+    super.key,
+    required this.address,
+    required this.dashboardActivityFeedBloc,
+  });
 
   @override
-  _ComposeIssuancePageState createState() => _ComposeIssuancePageState();
+  ComposeIssuancePageState createState() => ComposeIssuancePageState();
 }
 
-class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
+class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   final balanceRepository = GetIt.I.get<BalanceRepository>();
   final _formKey = GlobalKey<FormState>();
   TextEditingController nameController = UpperCaseTextEditingController();

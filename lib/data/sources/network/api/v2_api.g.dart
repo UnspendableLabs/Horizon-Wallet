@@ -2177,11 +2177,18 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<Info>> getTransactionInfo(String rawtransaction) async {
+  Future<Response<Info>> getTransactionInfo(
+    String rawtransaction, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'rawtransaction': rawtransaction
+      r'rawtransaction': rawtransaction,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
     };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio
@@ -2210,11 +2217,17 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<InfoVerbose>> getTransactionInfoVerbose(
-      String rawtransaction) async {
+    String rawtransaction, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'rawtransaction': rawtransaction
+      r'rawtransaction': rawtransaction,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
     };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -2243,9 +2256,17 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<TransactionUnpacked>> unpackTransaction(
-      String datahex) async {
+    String datahex, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'datahex': datahex};
+    final queryParameters = <String, dynamic>{
+      r'datahex': datahex,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -2274,9 +2295,17 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
-      String datahex) async {
+    String datahex, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'datahex': datahex};
+    final queryParameters = <String, dynamic>{
+      r'datahex': datahex,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(

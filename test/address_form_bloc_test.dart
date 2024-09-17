@@ -11,8 +11,8 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_event.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:mocktail/mocktail.dart';
 

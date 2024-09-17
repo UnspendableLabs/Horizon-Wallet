@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -23,22 +22,35 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_even
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 
 class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
-  // TODO: pass these in constructor to the bloc
-  final addressRepository = GetIt.I.get<AddressRepository>();
-  final balanceRepository = GetIt.I.get<BalanceRepository>();
-  final composeRepository = GetIt.I.get<ComposeRepository>();
-  final utxoRepository = GetIt.I.get<UtxoRepository>();
-  final transactionService = GetIt.I.get<TransactionService>();
-  final bitcoindService = GetIt.I.get<BitcoindService>();
-  final accountRepository = GetIt.I.get<AccountRepository>();
-  final walletRepository = GetIt.I.get<WalletRepository>();
-  final encryptionService = GetIt.I.get<EncryptionService>();
-  final addressService = GetIt.I.get<AddressService>();
-  final transactionRepository = GetIt.I.get<TransactionRepository>();
-  final transactionLocalRepository = GetIt.I.get<TransactionLocalRepository>();
-  final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
+  final AddressRepository addressRepository;
+  final BalanceRepository balanceRepository;
+  final ComposeRepository composeRepository;
+  final UtxoRepository utxoRepository;
+  final TransactionService transactionService;
+  final BitcoindService bitcoindService;
+  final AccountRepository accountRepository;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final TransactionRepository transactionRepository;
+  final TransactionLocalRepository transactionLocalRepository;
+  final BitcoinRepository bitcoinRepository;
 
-  ComposeSendBloc() : super(const ComposeSendState()) {
+  ComposeSendBloc({
+    required this.addressRepository,
+    required this.balanceRepository,
+    required this.composeRepository,
+    required this.utxoRepository,
+    required this.transactionService,
+    required this.bitcoindService,
+    required this.accountRepository,
+    required this.walletRepository,
+    required this.encryptionService,
+    required this.addressService,
+    required this.transactionRepository,
+    required this.transactionLocalRepository,
+    required this.bitcoinRepository,
+  }) : super(const ComposeSendState()) {
     on<FetchFormData>((event, emit) async {
       emit(const ComposeSendState(
           balancesState: BalancesState.loading(),
@@ -152,7 +164,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             purpose: account.purpose,
             coin: account.coinType,
             account: account.accountIndex,
-            change: '0', // TODO make sure change is stored
+            change: '0',
             index: address.index,
             importFormat: account.importFormat);
 

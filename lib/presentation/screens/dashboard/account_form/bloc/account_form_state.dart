@@ -24,17 +24,3 @@ class Step2Success extends Step2State {
   final Account account;
   Step2Success(this.account);
 }
-
-// class AccountFormLoading extends AccountFormState {
-//   const AccountFormLoading();
-// }
-//
-// class AccountFormSuccess extends AccountFormState {
-//   final Account account;
-//   const AccountFormSuccess(this.account);
-// }
-//
-// class AccountFormError extends AccountFormState {
-//   final String error;
-//   const AccountFormError(this.error);
-// }

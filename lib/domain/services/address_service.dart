@@ -3,7 +3,6 @@ import 'package:horizon/domain/entities/address.dart';
 
 enum AddressType { bech32, legacy }
 
-// TODO: define mnemonic type
 abstract class AddressService {
   Future<Address> deriveAddressSegwit(
       {required String privKey,

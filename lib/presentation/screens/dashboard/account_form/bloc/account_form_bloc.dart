@@ -11,8 +11,8 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 
 class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
   final accountRepository = GetIt.I<AccountRepository>();
@@ -118,7 +118,6 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
                     start: 0,
                     end: 0);
 
-            // TODO: fix misnomer method
             List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
                     type: AddressType.legacy,

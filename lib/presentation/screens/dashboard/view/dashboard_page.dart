@@ -20,12 +20,12 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
+import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
-import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
-import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/view/shell.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -33,9 +33,9 @@ import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:flutter/gestures.dart';
-import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_state.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -312,7 +312,7 @@ class AddressActions extends StatelessWidget {
               isDarkTheme: isDarkTheme,
               dialog: HorizonDialog(
                 title: "Compose Send",
-                body: ComposeSendPage(
+                body: ComposeSendPageWrapper(
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                   screenWidth: screenWidth,
                 ),
@@ -327,7 +327,7 @@ class AddressActions extends StatelessWidget {
               isDarkTheme: isDarkTheme,
               dialog: HorizonDialog(
                 title: "Compose Issuance",
-                body: ComposeIssuancePage(
+                body: ComposeIssuancePageWrapper(
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -368,7 +368,7 @@ class BalancesDisplay extends StatefulWidget {
       required this.accountUuid});
 
   @override
-  _BalancesDisplayState createState() => _BalancesDisplayState();
+  BalancesDisplayState createState() => BalancesDisplayState();
 }
 
 class BalancesSliver extends StatefulWidget {
@@ -383,7 +383,7 @@ class BalancesSliver extends StatefulWidget {
       this.initialItemCount = 3});
 
   @override
-  _BalancesSliverState createState() => _BalancesSliverState();
+  BalancesSliverState createState() => BalancesSliverState();
 }
 
 class DashboardPage extends StatelessWidget {
@@ -593,7 +593,7 @@ class QRCodeDialog extends StatelessWidget {
   }
 }
 
-class _BalancesDisplayState extends State<BalancesDisplay> {
+class BalancesDisplayState extends State<BalancesDisplay> {
   late BalancesBloc _balancesBloc;
 
   @override
@@ -619,7 +619,7 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
   }
 }
 
-class _BalancesSliverState extends State<BalancesSliver> {
+class BalancesSliverState extends State<BalancesSliver> {
   bool _viewAll = false;
   final Config _config = GetIt.I<Config>();
 

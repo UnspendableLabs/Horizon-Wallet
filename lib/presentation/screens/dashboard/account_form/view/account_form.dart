@@ -4,9 +4,9 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
-import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 final validAccount = RegExp(r"^\d\'$");
@@ -45,9 +45,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
-
-    // TODO: the fact that we have to do all these paranoid checks
-    // is a smell.
 
     List<Account>? accounts = shell.state
         .maybeWhen(success: (state) => state.accounts, orElse: () => null);

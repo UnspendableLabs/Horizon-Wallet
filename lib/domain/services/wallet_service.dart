@@ -1,7 +1,6 @@
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 
-// TODO: define mnemonic type
 abstract class WalletService {
   EncryptionService encryptionService;
 

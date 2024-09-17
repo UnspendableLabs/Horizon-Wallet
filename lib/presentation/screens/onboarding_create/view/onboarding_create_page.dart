@@ -90,17 +90,17 @@ class OnboardingCreateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => OnboardingCreateBloc(),
-        child: const OnboardingCreatePage_());
+        child: const OnboardingCreatePage());
   }
 }
 
-class OnboardingCreatePage_ extends StatefulWidget {
-  const OnboardingCreatePage_({super.key});
+class OnboardingCreatePage extends StatefulWidget {
+  const OnboardingCreatePage({super.key});
   @override
-  _OnboardingCreatePageState createState() => _OnboardingCreatePageState();
+  OnboardingCreatePageState createState() => OnboardingCreatePageState();
 }
 
-class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
+class OnboardingCreatePageState extends State<OnboardingCreatePage> {
   final TextEditingController _passwordController =
       TextEditingController(text: "");
   final TextEditingController _passwordConfirmationController =
@@ -189,8 +189,6 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                       backButtonText: 'CANCEL',
                                       continueButtonText: 'CONTINUE',
                                     ),
-                                  Object() => const Text(''),
-                                  null => throw UnimplementedError(),
                                 };
                               },
                             ),

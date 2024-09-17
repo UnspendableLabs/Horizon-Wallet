@@ -3,8 +3,8 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
-import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
 import 'package:logger/logger.dart';
 
 class LogoutBloc extends Bloc<LogoutEvent, LogoutState> {

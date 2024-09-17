@@ -167,7 +167,7 @@ class ComposeIssuanceBloc
             purpose: account.purpose,
             coin: account.coinType,
             account: account.accountIndex,
-            change: '0', // TODO make sure change is stored
+            change: '0',
             index: address.index,
             importFormat: account.importFormat);
 

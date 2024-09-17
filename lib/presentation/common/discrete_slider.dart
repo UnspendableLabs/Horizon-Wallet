@@ -8,10 +8,10 @@ class DiscreteSlider extends StatefulWidget {
       {super.key, required this.valueMap, required this.onChanged});
 
   @override
-  _DiscreteSliderState createState() => _DiscreteSliderState();
+  DiscreteSliderState createState() => DiscreteSliderState();
 }
 
-class _DiscreteSliderState extends State<DiscreteSlider> {
+class DiscreteSliderState extends State<DiscreteSlider> {
   late List<String> _keys;
   late double _currentValue;
 

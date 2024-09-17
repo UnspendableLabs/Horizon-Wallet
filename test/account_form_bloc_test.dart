@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_event.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';

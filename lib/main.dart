@@ -20,17 +20,14 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
-import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
-import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
@@ -212,32 +209,6 @@ class AppRouter {
                       })
                 ],
               ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                      path: "/settings",
-                      builder: (context, state) {
-                        final shell = context.watch<ShellStateCubit>();
-                        // final accountSettingsRepository =
-                        //     GetIt.I<AccountSettingsRepository>();
-
-                        return shell.state.maybeWhen(
-                          success: (state) {
-                            return SettingsPage();
-                          },
-                          orElse: () => const SizedBox.shrink(),
-                        );
-                      })
-                ],
-              ),
-              // StatefulShellBranch(
-              //   routes: [
-              //     GoRoute(
-              //       path: "/settings",
-              //       builder: (context, state) => const SettingsPage(),
-              //     )
-              //   ],
-              // ),
             ])
       ],
       errorBuilder: (context, state) => ErrorScreen(
@@ -590,13 +561,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<PasswordPromptBloc>(
-          create: (context) => PasswordPromptBloc(
-            walletService: GetIt.I<WalletService>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-          ),
-        ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
               walletRepository: GetIt.I<WalletRepository>(),

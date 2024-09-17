@@ -13,8 +13,6 @@ import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
-// TODO: implement some sort of cache
-
 class AddressServiceImpl extends AddressService {
   final Config config;
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
