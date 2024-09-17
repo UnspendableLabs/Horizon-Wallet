@@ -12,7 +12,7 @@ class ConfirmMnemonicChanged extends OnboardingCreateEvent {
 }
 
 class ConfirmMnemonic extends OnboardingCreateEvent {
-  final String mnemonic;
+  final List<String> mnemonic;
   ConfirmMnemonic({required this.mnemonic});
 }
 
