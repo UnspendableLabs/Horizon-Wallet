@@ -121,11 +121,13 @@ class HorizonDialog extends StatelessWidget {
 class HorizonDialogSubmitButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget? textChild;
+  final bool loading;
 
   const HorizonDialogSubmitButton({
     super.key,
     required this.onPressed,
     this.textChild = const Text('SUBMIT'),
+    this.loading = false,
   });
 
   @override
@@ -144,8 +146,30 @@ class HorizonDialogSubmitButton extends StatelessWidget {
                 height: 45,
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: onPressed,
-                  child: textChild,
+                  onPressed: loading ? null : onPressed,
+                  child: loading
+                      ? Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              textChild != null
+                                  ? textChild!
+                                  : const SizedBox.shrink()
+                            ],
+                          ),
+                        )
+                      : textChild,
                 ),
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 
 abstract class ComposeIssuanceEvent {}
 
@@ -49,4 +50,9 @@ class SignAndBroadcastTransactionEvent extends ComposeIssuanceEvent {
   SignAndBroadcastTransactionEvent({
     required this.password,
   });
+}
+
+class ChangeFeeOption extends ComposeIssuanceEvent {
+  final FeeOption value;
+  ChangeFeeOption({required this.value});
 }
