@@ -209,6 +209,13 @@ class HorizonAppBarContent extends StatelessWidget {
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
 
+    final account = shell.state.maybeWhen(
+      success: (state) => state.accounts.firstWhere(
+        (account) => account.uuid == state.currentAccountUuid,
+      ),
+      orElse: () => null,
+    );
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -265,7 +272,8 @@ class HorizonAppBarContent extends StatelessWidget {
                                   child: AddressSelectionButton(
                                     isDarkTheme: isDarkTheme,
                                     onPressed: () {
-                                      showAddressList(context, isDarkTheme);
+                                      showAddressList(
+                                          context, isDarkTheme, account);
                                     },
                                   ),
                                 ),
@@ -509,7 +517,7 @@ class AddressSelectionButton extends StatelessWidget {
   }
 }
 
-void showAddressList(BuildContext context, bool isDarkTheme) {
+void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
   const double pagePadding = 16.0;
 
   WoltModalSheet.show<void>(
@@ -571,21 +579,26 @@ void showAddressList(BuildContext context, bool isDarkTheme) {
                             elevation: 0,
                           ),
                           onPressed: () {
-                            Navigator.of(modalSheetContext).pop();
                             HorizonDialog.show(
                               context: context,
                               body: HorizonDialog(
-                                title: "Add an address",
+                                title:
+                                    "Add a new address\nto ${account?.name} ",
+                                titleAlign: Alignment.center,
                                 body: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: AddAddressForm(
-                                      accountUuid: state.currentAccountUuid),
+                                      accountUuid: state.currentAccountUuid,
+                                      modalContext: modalSheetContext),
                                 ),
+                                onBackButtonPressed: () {
+                                  Navigator.of(context).pop();
+                                },
                               ),
                             );
                           },
-                          child: const Text("Add address",
+                          child: const Text("Add a new address",
                               style: TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                         ),

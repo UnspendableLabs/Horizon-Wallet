@@ -85,8 +85,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     return BlocConsumer<AccountFormBloc, AccountFormState>(
       listener: (context, state) {
         final cb = switch (state) {
-          AccountFormStep2(state: var state) when state is Step2Success =>
-            () {
+          AccountFormStep2(state: var state) when state is Step2Success => () {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text("Success"),

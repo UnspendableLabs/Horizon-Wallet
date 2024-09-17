@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -111,7 +112,13 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
       );
     }, builder: (context, state) {
       return state.submitState.maybeWhen(
-          loading: () => const CircularProgressIndicator(),
+          loading: () => const Center(
+                child: SizedBox(
+                  width: 24.0,
+                  height: 24.0,
+                  child: CircularProgressIndicator(),
+                ),
+              ),
           error: (msg) => Padding(
               padding: const EdgeInsets.all(8.0),
               child: SelectableText('An error occurred: $msg')),
@@ -213,8 +220,7 @@ class _ComposeIssuancePageState extends State<_ComposeIssuancePage_> {
                               decimal: true, signed: false),
                           inputFormatters: [
                             isDivisible == true
-                                ? FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d*$'))
+                                ? DecimalTextInputFormatter(decimalRange: 8)
                                 : FilteringTextInputFormatter.digitsOnly,
                           ],
                           validator: (value) {
