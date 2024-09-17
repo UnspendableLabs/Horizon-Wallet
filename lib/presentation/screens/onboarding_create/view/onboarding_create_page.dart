@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
@@ -23,9 +25,9 @@ class NumberedWordGrid extends StatelessWidget {
   const NumberedWordGrid({
     super.key,
     required this.text,
+    required this.backgroundColor,
+    required this.textColor,
     this.rowsPerColumn = 6,
-    this.backgroundColor = mediumNavyDarkTheme,
-    this.textColor = Colors.white,
     this.borderRadius = 8.0,
     this.padding = const EdgeInsets.all(16.0),
     this.itemMargin =
@@ -238,6 +240,7 @@ class _MnemonicState extends State<Mnemonic> {
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreenWidth = screenSize.width < 768;
+    final Config config = GetIt.I<Config>();
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
@@ -269,9 +272,35 @@ class _MnemonicState extends State<Mnemonic> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
-                                    _buildMnemonicText(
-                                        state.mnemonicState.mnemonic,
-                                        isSmallScreenWidth),
+                                    NumberedWordGrid(
+                                      text: state.mnemonicState.mnemonic,
+                                      backgroundColor: isDarkMode
+                                          ? darkThemeInputColor
+                                          : lightThemeInputColor,
+                                      textColor: isDarkMode
+                                          ? mainTextWhite
+                                          : mainTextBlack,
+                                    ),
+                                    if (config.network == Network.testnet)
+                                      ElevatedButton.icon(
+                                        icon: const Icon(
+                                          Icons.copy,
+                                        ),
+                                        label: const Text('COPY'),
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(
+                                              text: state
+                                                  .mnemonicState.mnemonic));
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Seed phrase copied to clipboard'),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     const SizedBox(height: 16),
                                     const Text(
                                       'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
@@ -311,50 +340,6 @@ class _MnemonicState extends State<Mnemonic> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildMnemonicText(String mnemonic, bool isSmallScreen) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    const minFontSize = 20.0;
-    const maxFontSize = 40.0;
-    final fontSize =
-        ((screenWidth / 1000) * (maxFontSize - minFontSize) + minFontSize)
-            .clamp(minFontSize, maxFontSize);
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SelectableText(
-          mnemonic,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? mainTextWhite
-                : mainTextBlack,
-            fontWeight: FontWeight.bold,
-            fontSize: fontSize,
-          ),
-        ),
-        const SizedBox(
-            height: 16), // Add some space between the text and button
-        ElevatedButton.icon(
-          icon: const Icon(
-            Icons.copy,
-          ),
-          label: const Text('COPY'),
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: mnemonic));
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Seed phrase copied to clipboard'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          },
-        ),
-      ],
     );
   }
 }
@@ -458,11 +443,9 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               },
               onPressedContinue: () {
                 context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
-                      mnemonic: controllers
-                          .map((controller) => controller.text)
-                          .join(' ')
-                          .trim(),
-                    ));
+                    mnemonic: controllers
+                        .map((controller) => controller.text)
+                        .toList()));
               },
               backButtonText: 'BACK',
               continueButtonText: 'CONTINUE',
