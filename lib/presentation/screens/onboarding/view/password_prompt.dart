@@ -30,6 +30,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
   bool _isPasswordConfirmationObscured = true;
   final passwordController = TextEditingController();
   final passwordConfirmationController = TextEditingController();
+  final FocusNode passwordFocusNode = FocusNode();
+  final FocusNode passwordConfirmationFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -41,6 +43,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
     super.dispose();
     passwordController.dispose();
     passwordConfirmationController.dispose();
+    passwordFocusNode.dispose();
+    passwordConfirmationFocusNode.dispose();
   }
 
   @override
@@ -118,6 +122,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
                                     enableSuggestions: false,
                                     autocorrect: false,
                                     controller: passwordController,
+                                    focusNode: passwordFocusNode,
+                                    keyboardType: TextInputType.visiblePassword,
                                     decoration: InputDecoration(
                                       filled: true,
                                       fillColor: isDarkMode
@@ -173,6 +179,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
                                     enableSuggestions: false,
                                     autocorrect: false,
                                     controller: passwordConfirmationController,
+                                    focusNode: passwordConfirmationFocusNode,
+                                    keyboardType: TextInputType.visiblePassword,
                                     decoration: InputDecoration(
                                       filled: true,
                                       fillColor: isDarkMode
