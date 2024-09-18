@@ -80,86 +80,87 @@ class PasswordPromptState extends State<PasswordPrompt> {
             ),
           ),
           const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: isSmallScreen ? screenSize.width : screenSize.width / 3,
-              child: TextFormField(
-                validator: (value) => validatePassword(value),
-                onFieldSubmitted: (_) {
-                  if (formKey.currentState!.validate()) {
-                    widget.onPressedContinue(passwordController.text);
-                  }
-                },
-                obscureText: _isPasswordObscured,
-                enableSuggestions: false,
-                autocorrect: false,
-                controller: passwordController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordObscured = !_isPasswordObscured;
-                      });
+          Column(
+            children: [
+              Center(
+                child: SizedBox(
+                  width: isSmallScreen ? screenSize.width : screenSize.width / 3,
+                  child: TextFormField(
+                    validator: (value) => validatePassword(value),
+                    onFieldSubmitted: (_) {
+                      if (formKey.currentState!.validate()) {
+                        widget.onPressedContinue(passwordController.text);
+                      }
                     },
-                    focusNode: FocusNode(skipTraversal: true),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            constraints: const BoxConstraints(minHeight: 48, minWidth: double.infinity),
-            child: Center(
-              child: SizedBox(
-                width: isSmallScreen ? screenSize.width : screenSize.width / 3,
-                child: TextFormField(
-                  validator: (value) =>
-                      validatePasswordConfirmation(passwordController.text, passwordConfirmationController.text),
-                  onFieldSubmitted: (_) {
-                    if (formKey.currentState!.validate()) {
-                      widget.onPressedContinue(passwordController.text);
-                    }
-                  },
-                  obscureText: _isPasswordConfirmationObscured,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  controller: passwordConfirmationController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
-                    labelText: 'Confirm Password',
-                    labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordConfirmationObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    obscureText: _isPasswordObscured,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                      labelText: 'Password',
+                      labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide.none,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordConfirmationObscured = !_isPasswordConfirmationObscured;
-                        });
-                      },
-                      focusNode: FocusNode(skipTraversal: true),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordObscured = !_isPasswordObscured;
+                          });
+                        },
+                        focusNode: FocusNode(skipTraversal: true),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: isSmallScreen ? screenSize.width : screenSize.width / 3,
+                  child: TextFormField(
+                    validator: (value) =>
+                        validatePasswordConfirmation(passwordController.text, passwordConfirmationController.text),
+                    onFieldSubmitted: (_) {
+                      if (formKey.currentState!.validate()) {
+                        widget.onPressedContinue(passwordController.text);
+                      }
+                    },
+                    obscureText: _isPasswordConfirmationObscured,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    controller: passwordConfirmationController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                      labelText: 'Confirm Password',
+                      labelStyle: TextStyle(color: isDarkMode ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordConfirmationObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordConfirmationObscured = !_isPasswordConfirmationObscured;
+                          });
+                        },
+                        focusNode: FocusNode(skipTraversal: true),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           widget.optionalErrorWiget != null ? widget.optionalErrorWiget! : const SizedBox.shrink(),
           const Spacer(),
