@@ -110,6 +110,7 @@ class WalletServiceImpl implements WalletService {
         chainCodeHex: hex.encode(root.chainCode.toDart));
   }
 
+  // TODO: this is only used for now to validate password
   // so we can use dummy fields for uuid, name,
   // encryptedPK.  we just want to make sure that
   // the generated public key matched current wallet.
