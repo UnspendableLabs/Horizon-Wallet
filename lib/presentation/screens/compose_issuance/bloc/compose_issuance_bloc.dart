@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -25,27 +24,35 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
-  ComposeIssuanceBloc() : super(const ComposeIssuanceState()) {
-    final AddressRepository addressRepository =
-        GetIt.I.get<AddressRepository>();
-    final BalanceRepository balanceRepository =
-        GetIt.I.get<BalanceRepository>();
-    final composeRepository = GetIt.I.get<ComposeRepository>();
-    final UtxoRepository utxoRepository = GetIt.I.get<UtxoRepository>();
-    final AccountRepository accountRepository =
-        GetIt.I.get<AccountRepository>();
-    final WalletRepository walletRepository = GetIt.I.get<WalletRepository>();
-    final EncryptionService encryptionService =
-        GetIt.I.get<EncryptionService>();
-    final AddressService addressService = GetIt.I.get<AddressService>();
-    final TransactionService transactionService =
-        GetIt.I.get<TransactionService>();
-    final BitcoindService bitcoindService = GetIt.I.get<BitcoindService>();
-    final transactionRepository = GetIt.I.get<TransactionRepository>();
-    final transactionLocalRepository =
-        GetIt.I.get<TransactionLocalRepository>();
-    final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
+  final AddressRepository addressRepository;
+  final BalanceRepository balanceRepository;
+  final ComposeRepository composeRepository;
+  final UtxoRepository utxoRepository;
+  final AccountRepository accountRepository;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final TransactionService transactionService;
+  final BitcoindService bitcoindService;
+  final TransactionRepository transactionRepository;
+  final TransactionLocalRepository transactionLocalRepository;
+  final BitcoinRepository bitcoinRepository;
 
+  ComposeIssuanceBloc({
+    required this.addressRepository,
+    required this.balanceRepository,
+    required this.composeRepository,
+    required this.utxoRepository,
+    required this.accountRepository,
+    required this.walletRepository,
+    required this.encryptionService,
+    required this.addressService,
+    required this.transactionService,
+    required this.bitcoindService,
+    required this.transactionRepository,
+    required this.transactionLocalRepository,
+    required this.bitcoinRepository,
+  }) : super(const ComposeIssuanceState()) {
     on<FetchFormData>((event, emit) async {
       emit(const ComposeIssuanceState(
           addressesState: AddressesState.loading(),

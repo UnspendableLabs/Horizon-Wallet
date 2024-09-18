@@ -14,6 +14,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
+// ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE", "DISPENSE"];
 
 class DashboardActivityFeedBloc

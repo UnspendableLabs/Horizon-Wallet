@@ -189,7 +189,16 @@ void main() {
               setupMocksCounterwallet(network, expectedCoinType);
               break;
           }
-          return OnboardingImportBloc();
+          return OnboardingImportBloc(
+            config: mockConfig,
+            accountRepository: mockAccountRepository,
+            addressRepository: mockAddressRepository,
+            walletRepository: mockWalletRepository,
+            walletService: mockWalletService,
+            addressService: mockAddressService,
+            mnemonicService: mockMnemonicService,
+            encryptionService: mockEncryptionService,
+          );
         },
         seed: () => OnboardingImportState(
             importFormat: importFormat, mnemonic: mnemonic),

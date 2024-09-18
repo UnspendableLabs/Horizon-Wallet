@@ -12,34 +12,49 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 
-class OnboardingImportPage extends StatelessWidget {
-  const OnboardingImportPage({super.key});
+class OnboardingImportPageWrapper extends StatelessWidget {
+  const OnboardingImportPageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => OnboardingImportBloc(),
-        child: const OnboardingImportPage_());
+        create: (context) => OnboardingImportBloc(
+              config: GetIt.I<Config>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>(),
+              walletRepository: GetIt.I<WalletRepository>(),
+              walletService: GetIt.I<WalletService>(),
+              addressService: GetIt.I<AddressService>(),
+              mnemonicService: GetIt.I<MnemonicService>(),
+              encryptionService: GetIt.I<EncryptionService>(),
+            ),
+        child: const OnboardingImportPage());
   }
 }
 
-class OnboardingImportPage_ extends StatefulWidget {
-  const OnboardingImportPage_({super.key});
+class OnboardingImportPage extends StatefulWidget {
+  const OnboardingImportPage({super.key});
   @override
-  _OnboardingImportPageState createState() => _OnboardingImportPageState();
+  OnboardingImportPageState createState() => OnboardingImportPageState();
 }
 
-class _OnboardingImportPageState extends State<OnboardingImportPage_> {
+class OnboardingImportPageState extends State<OnboardingImportPage> {
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
-  final TextEditingController _importFormat =
-      TextEditingController(text: ImportFormat.horizon.name);
 
   @override
   dispose() {
     _seedPhraseController.dispose();
-    _importFormat.dispose();
     super.dispose();
   }
 
@@ -166,6 +181,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         return KeyEventResult.ignored;
       };
     }
+    context
+        .read<OnboardingImportBloc>()
+        .add(ImportFormatChanged(importFormat: selectedFormat!));
   }
 
   @override

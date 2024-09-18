@@ -1,5 +1,3 @@
-// TODO: research part of / equatable
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/common/constants.dart';
 

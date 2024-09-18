@@ -215,9 +215,10 @@ class PrivacyPolicy extends StatelessWidget {
     );
   }
 
-  void _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+  Future<void> _launchURL(String urlString) async {
+    final url = Uri.parse(urlString);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     } else {
       throw 'Could not launch $url';
     }

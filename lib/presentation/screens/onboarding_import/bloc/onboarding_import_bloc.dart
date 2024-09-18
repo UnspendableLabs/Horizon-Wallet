@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -18,16 +17,25 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
-  final Config config = GetIt.I<Config>();
-  final accountRepository = GetIt.I<AccountRepository>();
-  final addressRepository = GetIt.I<AddressRepository>();
-  final walletRepository = GetIt.I<WalletRepository>();
-  final walletService = GetIt.I<WalletService>();
-  final addressService = GetIt.I<AddressService>();
-  final mnemonicService = GetIt.I<MnemonicService>();
-  final encryptionService = GetIt.I<EncryptionService>();
+  final Config config;
+  final AccountRepository accountRepository;
+  final AddressRepository addressRepository;
+  final WalletRepository walletRepository;
+  final WalletService walletService;
+  final AddressService addressService;
+  final MnemonicService mnemonicService;
+  final EncryptionService encryptionService;
 
-  OnboardingImportBloc() : super(const OnboardingImportState()) {
+  OnboardingImportBloc({
+    required this.config,
+    required this.accountRepository,
+    required this.addressRepository,
+    required this.walletRepository,
+    required this.walletService,
+    required this.addressService,
+    required this.mnemonicService,
+    required this.encryptionService,
+  }) : super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
         emit(state.copyWith(
@@ -40,10 +48,7 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        // TODO: bug. the import formats should always be stored consistently
-        if (state.importFormat == "Horizon" ||
-            state.importFormat == "Freewallet" ||
-            state.importFormat == ImportFormat.horizon ||
+        if (state.importFormat == ImportFormat.horizon ||
             state.importFormat == ImportFormat.freewallet) {
           bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
           if (!validMnemonic) {
@@ -58,7 +63,13 @@ class OnboardingImportBloc
     });
 
     on<ImportFormatChanged>((event, emit) async {
-      emit(state.copyWith(importFormat: event.importFormat));
+      final importFormat = switch (event.importFormat) {
+        "Horizon" => ImportFormat.horizon,
+        "Freewallet" => ImportFormat.freewallet,
+        "Counterwallet" => ImportFormat.counterwallet,
+        _ => throw Exception('Invariant: Invalid import format')
+      };
+      emit(state.copyWith(importFormat: importFormat));
     });
 
     on<MnemonicSubmit>((event, emit) async {
@@ -188,10 +199,6 @@ class OnboardingImportBloc
                 accountIndex: '0\'',
                 uuid: uuid.v4(),
                 importFormat: ImportFormat.counterwallet);
-
-            // `deriveAddressFreewalle` is misnomer now
-            // it just descripes addresses with path
-            // m/segment/segment/segment
 
             List<Address> addressesBech32 =
                 await addressService.deriveAddressFreewalletRange(

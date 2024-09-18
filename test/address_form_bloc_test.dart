@@ -124,7 +124,14 @@ void main() {
           coinType: '0\'',
           accountIndex: '0\'',
         );
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,
@@ -185,7 +192,14 @@ void main() {
         when(() => mockAddressRepository.insertMany(any()))
             .thenAnswer((_) async {});
 
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,
@@ -266,7 +280,14 @@ void main() {
         when(() => mockAddressRepository.insertMany(any()))
             .thenAnswer((_) async {});
 
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,

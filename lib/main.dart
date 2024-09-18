@@ -20,6 +20,7 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
@@ -160,7 +161,7 @@ class AppRouter {
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: const OnboardingCreateScreen(),
+              child: const OnboardingCreatePageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -168,8 +169,7 @@ class AppRouter {
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPage(), // TODO: be consistent with screen / page
+              child: const OnboardingImportPageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -177,8 +177,7 @@ class AppRouter {
           path: "/onboarding/import-pk",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPKPage(), // TODO: be consistent with screen / page
+              child: const OnboardingImportPKPageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -200,7 +199,7 @@ class AppRouter {
                         // success
                         return shell.state.maybeWhen(
                           success: (state) {
-                            return DashboardPage(
+                            return DashboardPageWrapper(
                                 key: Key(
                                     "${state.currentAccountUuid}:${state.currentAddress.address}"));
                           },
@@ -569,10 +568,24 @@ class MyApp extends StatelessWidget {
             ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
-          create: (context) => AccountFormBloc(),
+          create: (context) => AccountFormBloc(
+            accountRepository: GetIt.I<AccountRepository>(),
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressService: GetIt.I<AddressService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+          ),
         ),
         BlocProvider<AddressFormBloc>(
-          create: (context) => AddressFormBloc(),
+          create: (context) => AddressFormBloc(
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+            accountRepository: GetIt.I<AccountRepository>(),
+            addressService: GetIt.I<AddressService>(),
+          ),
         ),
         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),

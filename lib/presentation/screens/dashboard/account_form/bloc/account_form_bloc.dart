@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -15,14 +14,21 @@ import "package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 
 class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
-  final accountRepository = GetIt.I<AccountRepository>();
-  final walletRepository = GetIt.I<WalletRepository>();
-  final walletService = GetIt.I<WalletService>();
-  final encryptionService = GetIt.I<EncryptionService>();
-  final addressService = GetIt.I<AddressService>();
-  final addressRepository = GetIt.I<AddressRepository>();
+  final AccountRepository accountRepository;
+  final WalletRepository walletRepository;
+  final WalletService walletService;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final AddressRepository addressRepository;
 
-  AccountFormBloc() : super(AccountFormStep1()) {
+  AccountFormBloc({
+    required this.accountRepository,
+    required this.walletRepository,
+    required this.walletService,
+    required this.encryptionService,
+    required this.addressService,
+    required this.addressRepository,
+  }) : super(AccountFormStep1()) {
     on<Finalize>((event, emit) async {
       emit(AccountFormStep2(state: Step2Initial()));
     });
