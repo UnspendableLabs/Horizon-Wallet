@@ -50,6 +50,7 @@ void main() {
     mockAddressRepository = MockAddressRepository();
   });
   setUpAll(() {
+    registerFallbackValue(FakeWallet());
     registerFallbackValue(FakeAccount());
     registerFallbackValue(FakeAddress());
   });

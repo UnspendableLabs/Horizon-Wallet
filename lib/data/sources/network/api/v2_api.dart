@@ -1794,7 +1794,7 @@ class Info {
     }
   }
 
-  // TODO: this doesnt actually show all the send data ?
+  // TODO: this doesnt actually show all the send data
   Map<String, dynamic> toJson() => _$InfoToJson(this);
 }
 
