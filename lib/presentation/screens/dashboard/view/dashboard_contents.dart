@@ -402,7 +402,7 @@ class HorizonAppBarContent extends StatelessWidget {
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
                                               textAlign: TextAlign.center,
-                                              'This will result in deletion of all wallet data. To log back in, you will need to use your seed phrase.',
+                                              'This operation will result in the deletion of all wallet configuration data. You will be able to recover your funds only with your seed phrase. If you have created multiple accounts, you will need to recreate them manually after recovery. (Please note how many you have.)',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
