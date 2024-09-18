@@ -83,6 +83,10 @@ class _AddAccountFormState extends State<AddAddressForm> {
           children: <Widget>[
             const SizedBox(height: 16.0),
             HorizonTextFormField(
+              enabled: state.maybeWhen(
+                  loading: () => false,
+                  success: (_) => false,
+                  orElse: () => true),
               controller: passwordController,
               obscureText: true,
               enableSuggestions: false,
