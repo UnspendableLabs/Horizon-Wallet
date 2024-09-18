@@ -114,7 +114,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                             _isPasswordObscured = !_isPasswordObscured;
                           });
                         },
-                        focusNode: FocusNode(skipTraversal: true),
+                        // focusNode: FocusNode(skipTraversal: true),
                       ),
                     ),
                   ),
@@ -154,7 +154,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                             _isPasswordConfirmationObscured = !_isPasswordConfirmationObscured;
                           });
                         },
-                        focusNode: FocusNode(skipTraversal: true),
+                        // focusNode: FocusNode(skipTraversal: true),
                       ),
                     ),
                   ),
