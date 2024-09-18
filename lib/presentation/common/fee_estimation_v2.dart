@@ -158,10 +158,8 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
       maintainAnimation: true,
       maintainSize: false,
       child: TextField(
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Custom fee (sats/vbyte)',
-          hintText: 'Enter custom fee rate',
-          border: OutlineInputBorder(),
         ),
         keyboardType: TextInputType.number,
         inputFormatters: [
