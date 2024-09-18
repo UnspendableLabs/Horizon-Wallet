@@ -26,6 +26,8 @@ class PasswordPrompt extends StatefulWidget {
 }
 
 class PasswordPromptState extends State<PasswordPrompt> {
+  final formKey = GlobalKey<FormState>();
+
   bool _isPasswordObscured = true;
   bool _isPasswordConfirmationObscured = true;
   final passwordController = TextEditingController();
@@ -49,7 +51,6 @@ class PasswordPromptState extends State<PasswordPrompt> {
     final screenSize = MediaQuery.of(context).size;
 
     final isSmallScreen = screenSize.width < 768;
-    final formKey = GlobalKey<FormState>();
 
     return SingleChildScrollView(
       child: SizedBox(

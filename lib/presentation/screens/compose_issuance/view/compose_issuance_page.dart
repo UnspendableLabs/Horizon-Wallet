@@ -88,6 +88,7 @@ class ComposeIssuancePage extends StatefulWidget {
 class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   final balanceRepository = GetIt.I.get<BalanceRepository>();
   final _formKey = GlobalKey<FormState>();
+  final passwordFormKey = GlobalKey<FormState>();
   TextEditingController nameController = UpperCaseTextEditingController();
   TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
@@ -371,7 +372,6 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
               ),
           orElse: () => const SizedBox.shrink(),
           finalizing: (finalizingState) {
-            final passwordFormKey = GlobalKey<FormState>();
             void handlePasswordSubmit() {
               if (passwordFormKey.currentState!.validate()) {
                 context.read<ComposeIssuanceBloc>().add(

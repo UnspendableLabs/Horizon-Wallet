@@ -203,6 +203,7 @@ _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
 
 class ComposeSendPageState extends State<ComposeSendPage> {
   final _formKey = GlobalKey<FormState>();
+  final passwordFormKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
@@ -331,7 +332,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         },
         finalizing: (finalizingState) {
           TextEditingController passwordController = TextEditingController();
-          final passwordFormKey = GlobalKey<FormState>();
           void handlePasswordSubmit() {
             if (passwordFormKey.currentState!.validate()) {
               try {
