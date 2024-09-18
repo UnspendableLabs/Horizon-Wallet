@@ -22,10 +22,10 @@ class PasswordPrompt extends StatefulWidget {
   final dynamic state;
 
   @override
-  _PasswordPromptState createState() => _PasswordPromptState();
+  PasswordPromptState createState() => PasswordPromptState();
 }
 
-class _PasswordPromptState extends State<PasswordPrompt> {
+class PasswordPromptState extends State<PasswordPrompt> {
   bool _isPasswordObscured = true;
   bool _isPasswordConfirmationObscured = true;
   final passwordController = TextEditingController();
@@ -87,50 +87,48 @@ class _PasswordPromptState extends State<PasswordPrompt> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Container(
-                    child: Center(
-                      child: SizedBox(
-                        width: isSmallScreen
-                            ? screenSize.width
-                            : screenSize.width / 3,
-                        child: TextFormField(
-                          validator: (value) => validatePassword(value),
-                          onFieldSubmitted: (_) {
-                            if (formKey.currentState!.validate()) {
-                              widget.onPressedContinue(passwordController.text);
-                            }
-                          },
-                          obscureText: _isPasswordObscured,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          controller: passwordController,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? darkThemeInputColor
-                                : lightThemeInputColor,
-                            labelText: 'Password',
-                            labelStyle: TextStyle(
-                                color: isDarkMode
-                                    ? darkThemeInputLabelColor
-                                    : lightThemeInputLabelColor),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              borderSide: BorderSide.none,
+                  Center(
+                    child: SizedBox(
+                      width: isSmallScreen
+                          ? screenSize.width
+                          : screenSize.width / 3,
+                      child: TextFormField(
+                        validator: (value) => validatePassword(value),
+                        onFieldSubmitted: (_) {
+                          if (formKey.currentState!.validate()) {
+                            widget.onPressedContinue(passwordController.text);
+                          }
+                        },
+                        obscureText: _isPasswordObscured,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        controller: passwordController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDarkMode
+                              ? darkThemeInputColor
+                              : lightThemeInputColor,
+                          labelText: 'Password',
+                          labelStyle: TextStyle(
+                              color: isDarkMode
+                                  ? darkThemeInputLabelColor
+                                  : lightThemeInputLabelColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordObscured
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
                             ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isPasswordObscured
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isPasswordObscured = !_isPasswordObscured;
-                                });
-                              },
-                              focusNode: FocusNode(skipTraversal: true),
-                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordObscured = !_isPasswordObscured;
+                              });
+                            },
+                            focusNode: FocusNode(skipTraversal: true),
                           ),
                         ),
                       ),

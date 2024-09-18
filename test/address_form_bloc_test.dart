@@ -11,8 +11,8 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_event.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -124,7 +124,14 @@ void main() {
           coinType: '0\'',
           accountIndex: '0\'',
         );
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,
@@ -185,7 +192,14 @@ void main() {
         when(() => mockAddressRepository.insertMany(any()))
             .thenAnswer((_) async {});
 
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,
@@ -266,7 +280,14 @@ void main() {
         when(() => mockAddressRepository.insertMany(any()))
             .thenAnswer((_) async {});
 
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,

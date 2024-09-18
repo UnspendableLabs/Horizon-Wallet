@@ -20,10 +20,11 @@ class TxHashDisplay extends StatefulWidget {
   });
 
   @override
-  _TxHashDisplayState createState() => _TxHashDisplayState();
+  TxHashDisplayState createState() => TxHashDisplayState();
 }
 
-class _TxHashDisplayState extends State<TxHashDisplay> {
+class TxHashDisplayState extends State<TxHashDisplay> {
+  // ignore: unused_field
   bool _copied = false;
 
   String get shortenedHash {
@@ -44,16 +45,6 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch $uri');
     }
-  }
-
-  String _getUrl() {
-    final uri = switch (widget.uriType) {
-      URIType.btcexplorer =>
-        Uri.parse("${widget.config.btcExplorerBase}/tx/${widget.hash}"),
-      URIType.hoex =>
-        Uri.parse("${widget.config.horizonExplorerBase}/tx/${widget.hash}")
-    };
-    return uri.toString();
   }
 
   void _copyToClipboard() {

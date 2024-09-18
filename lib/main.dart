@@ -26,11 +26,9 @@ import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dar
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
-import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
-import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
@@ -163,7 +161,7 @@ class AppRouter {
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: const OnboardingCreateScreen(),
+              child: const OnboardingCreatePageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -171,8 +169,7 @@ class AppRouter {
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPage(), // TODO: be consistent with screen / page
+              child: const OnboardingImportPageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -180,8 +177,7 @@ class AppRouter {
           path: "/onboarding/import-pk",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPKPage(), // TODO: be consistent with screen / page
+              child: const OnboardingImportPKPageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -203,7 +199,7 @@ class AppRouter {
                         // success
                         return shell.state.maybeWhen(
                           success: (state) {
-                            return DashboardPage(
+                            return DashboardPageWrapper(
                                 key: Key(
                                     "${state.currentAccountUuid}:${state.currentAddress.address}"));
                           },
@@ -212,32 +208,6 @@ class AppRouter {
                       })
                 ],
               ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                      path: "/settings",
-                      builder: (context, state) {
-                        final shell = context.watch<ShellStateCubit>();
-                        // final accountSettingsRepository =
-                        //     GetIt.I<AccountSettingsRepository>();
-
-                        return shell.state.maybeWhen(
-                          success: (state) {
-                            return SettingsPage();
-                          },
-                          orElse: () => const SizedBox.shrink(),
-                        );
-                      })
-                ],
-              ),
-              // StatefulShellBranch(
-              //   routes: [
-              //     GoRoute(
-              //       path: "/settings",
-              //       builder: (context, state) => const SettingsPage(),
-              //     )
-              //   ],
-              // ),
             ])
       ],
       errorBuilder: (context, state) => ErrorScreen(
@@ -590,13 +560,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<PasswordPromptBloc>(
-          create: (context) => PasswordPromptBloc(
-            walletService: GetIt.I<WalletService>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-          ),
-        ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
               walletRepository: GetIt.I<WalletRepository>(),
@@ -605,10 +568,24 @@ class MyApp extends StatelessWidget {
             ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
-          create: (context) => AccountFormBloc(),
+          create: (context) => AccountFormBloc(
+            accountRepository: GetIt.I<AccountRepository>(),
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressService: GetIt.I<AddressService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+          ),
         ),
         BlocProvider<AddressFormBloc>(
-          create: (context) => AddressFormBloc(),
+          create: (context) => AddressFormBloc(
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+            accountRepository: GetIt.I<AccountRepository>(),
+            addressService: GetIt.I<AddressService>(),
+          ),
         ),
         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),

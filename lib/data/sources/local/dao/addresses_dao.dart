@@ -17,7 +17,6 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
       (select(addresses)..where((tbl) => tbl.accountUuid.equals(accountUuid)))
           .get();
 
-  // TODO: why does this return an int?
   Future<int> insertAddress(AddressModel address) {
     return into(addresses).insert(address);
   }

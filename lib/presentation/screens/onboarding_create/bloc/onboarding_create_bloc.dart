@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -19,18 +18,27 @@ import 'package:logger/logger.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
-  final Config config = GetIt.I<Config>();
-
   final Logger logger = Logger();
-  final mnmonicService = GetIt.I<MnemonicService>();
-  final accountRepository = GetIt.I<AccountRepository>();
-  final addressRepository = GetIt.I<AddressRepository>();
-  final walletRepository = GetIt.I<WalletRepository>();
-  final encryptionService = GetIt.I<EncryptionService>();
-  final walletService = GetIt.I<WalletService>();
-  final addressService = GetIt.I<AddressService>();
 
-  OnboardingCreateBloc() : super(const OnboardingCreateState()) {
+  final Config config;
+  final MnemonicService mnmonicService;
+  final AccountRepository accountRepository;
+  final AddressRepository addressRepository;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final WalletService walletService;
+  final AddressService addressService;
+
+  OnboardingCreateBloc({
+    required this.config,
+    required this.mnmonicService,
+    required this.walletRepository,
+    required this.walletService,
+    required this.accountRepository,
+    required this.addressRepository,
+    required this.encryptionService,
+    required this.addressService,
+  }) : super(const OnboardingCreateState()) {
     on<CreateWallet>((event, emit) async {
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));

@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import "package:horizon/common/constants.dart";
 import "package:horizon/domain/entities/account.dart";
 import "package:horizon/domain/entities/address.dart";
@@ -10,19 +9,26 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import "package:horizon/presentation/shell/address_form/bloc/address_form_event.dart";
+import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
 class AddressFormBloc
     extends Bloc<AddressFormEvent, RemoteDataState<Map<String, dynamic>>> {
-  final walletRepository = GetIt.I<WalletRepository>();
-  final walletService = GetIt.I<WalletService>();
-  final encryptionService = GetIt.I<EncryptionService>();
-  final addressRepository = GetIt.I<AddressRepository>();
-  final accountRepository = GetIt.I<AccountRepository>();
-  final addressService = GetIt.I<AddressService>();
+  final WalletRepository walletRepository;
+  final WalletService walletService;
+  final EncryptionService encryptionService;
+  final AddressRepository addressRepository;
+  final AccountRepository accountRepository;
+  final AddressService addressService;
 
-  AddressFormBloc() : super(const RemoteDataState.initial()) {
+  AddressFormBloc({
+    required this.walletRepository,
+    required this.walletService,
+    required this.encryptionService,
+    required this.addressRepository,
+    required this.accountRepository,
+    required this.addressService,
+  }) : super(const RemoteDataState.initial()) {
     on<Submit>((event, emit) async {
       final currentState = state;
 

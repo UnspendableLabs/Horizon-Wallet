@@ -6,8 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/address_tx_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
@@ -20,22 +23,22 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
+import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
-import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
-import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/view/shell.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'dart:math';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:flutter/gestures.dart';
-import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_state.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -312,7 +315,7 @@ class AddressActions extends StatelessWidget {
               isDarkTheme: isDarkTheme,
               dialog: HorizonDialog(
                 title: "Compose Send",
-                body: ComposeSendPage(
+                body: ComposeSendPageWrapper(
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                   screenWidth: screenWidth,
                 ),
@@ -327,7 +330,7 @@ class AddressActions extends StatelessWidget {
               isDarkTheme: isDarkTheme,
               dialog: HorizonDialog(
                 title: "Compose Issuance",
-                body: ComposeIssuancePage(
+                body: ComposeIssuancePageWrapper(
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -368,7 +371,7 @@ class BalancesDisplay extends StatefulWidget {
       required this.accountUuid});
 
   @override
-  _BalancesDisplayState createState() => _BalancesDisplayState();
+  BalancesDisplayState createState() => BalancesDisplayState();
 }
 
 class BalancesSliver extends StatefulWidget {
@@ -383,11 +386,11 @@ class BalancesSliver extends StatefulWidget {
       this.initialItemCount = 3});
 
   @override
-  _BalancesSliverState createState() => _BalancesSliverState();
+  BalancesSliverState createState() => BalancesSliverState();
 }
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+class DashboardPageWrapper extends StatelessWidget {
+  const DashboardPageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -401,6 +404,10 @@ class DashboardPage extends StatelessWidget {
               providers: [
                 BlocProvider<BalancesBloc>(
                   create: (context) => BalancesBloc(
+                    balanceRepository: GetIt.I.get<BalanceRepository>(),
+                    accountRepository: GetIt.I.get<AccountRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    addressTxRepository: GetIt.I.get<AddressTxRepository>(),
                     currentAddress: data.currentAddress,
                   )..add(Start(pollingInterval: const Duration(seconds: 60))),
                 ),
@@ -416,7 +423,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                 ),
               ],
-              child: _DashboardPage(
+              child: DashboardPage(
                 key: Key(
                     "${data.currentAccountUuid}:${data.currentAddress.address}"),
                 accountUuid: data.currentAccountUuid,
@@ -550,7 +557,6 @@ class QRCodeDialog extends StatelessWidget {
           },
         ),
         Builder(builder: (context) {
-          // TODO: this is a bit smelly
           final accountUuid = context.read<ShellStateCubit>().state.maybeWhen(
                 success: (state) => state.currentAccountUuid,
                 orElse: () => throw Exception("invariant: no account"),
@@ -593,7 +599,7 @@ class QRCodeDialog extends StatelessWidget {
   }
 }
 
-class _BalancesDisplayState extends State<BalancesDisplay> {
+class BalancesDisplayState extends State<BalancesDisplay> {
   late BalancesBloc _balancesBloc;
 
   @override
@@ -619,7 +625,7 @@ class _BalancesDisplayState extends State<BalancesDisplay> {
   }
 }
 
-class _BalancesSliverState extends State<BalancesSliver> {
+class BalancesSliverState extends State<BalancesSliver> {
   bool _viewAll = false;
   final Config _config = GetIt.I<Config>();
 
@@ -737,9 +743,10 @@ class _BalancesSliverState extends State<BalancesSliver> {
 
   Future<void> _launchAssetUrl(String asset) async {
     final url = "${_config.horizonExplorerBase}/assets/$asset";
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
     } else {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not launch $url')),
       );
@@ -761,18 +768,18 @@ class _BalancesSliverState extends State<BalancesSliver> {
   }
 }
 
-class _DashboardPage extends StatefulWidget {
+class DashboardPage extends StatefulWidget {
   final String accountUuid;
   final Address currentAddress;
 
-  const _DashboardPage(
+  const DashboardPage(
       {super.key, required this.accountUuid, required this.currentAddress});
 
   @override
-  _DashboardPage_State createState() => _DashboardPage_State();
+  DashboardPageState createState() => DashboardPageState();
 }
 
-class _DashboardPage_State extends State<_DashboardPage> {
+class DashboardPageState extends State<DashboardPage> {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
 
   final _scrollController = ScrollController();

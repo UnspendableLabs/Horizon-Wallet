@@ -1,4 +1,3 @@
-// https://medium.com/@antonio.tioypedro1234/flutter-go-router-the-essential-guide-349ef39ec5b3
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -10,20 +9,20 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
-import 'package:horizon/presentation/screens/settings/bloc/logout_bloc.dart';
-import 'package:horizon/presentation/screens/settings/bloc/logout_event.dart';
-import 'package:horizon/presentation/screens/settings/bloc/logout_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
-import 'package:horizon/presentation/shell/account_form/view/account_form.dart';
-import 'package:horizon/presentation/shell/address_form/view/address_form.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-import "package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_state.dart";
-import "package:horizon/presentation/shell/account_form/bloc/account_form_event.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 
 class AccountSidebar extends StatefulWidget {
   const AccountSidebar({super.key});

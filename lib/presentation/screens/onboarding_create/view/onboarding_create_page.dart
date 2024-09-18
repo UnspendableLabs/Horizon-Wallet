@@ -1,17 +1,27 @@
+// ignore_for_file: type_literal_in_constant_pattern
+
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
-import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'dart:math';
 
 class NumberedWordGrid extends StatelessWidget {
   final String text;
@@ -83,24 +93,33 @@ class NumberedWordGrid extends StatelessWidget {
   }
 }
 
-class OnboardingCreateScreen extends StatelessWidget {
-  const OnboardingCreateScreen({super.key});
+class OnboardingCreatePageWrapper extends StatelessWidget {
+  const OnboardingCreatePageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => OnboardingCreateBloc(),
-        child: const OnboardingCreatePage_());
+        create: (context) => OnboardingCreateBloc(
+              config: GetIt.I<Config>(),
+              mnmonicService: GetIt.I<MnemonicService>(),
+              walletRepository: GetIt.I<WalletRepository>(),
+              walletService: GetIt.I<WalletService>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>(),
+              encryptionService: GetIt.I<EncryptionService>(),
+              addressService: GetIt.I<AddressService>(),
+            ),
+        child: const OnboardingCreatePage());
   }
 }
 
-class OnboardingCreatePage_ extends StatefulWidget {
-  const OnboardingCreatePage_({super.key});
+class OnboardingCreatePage extends StatefulWidget {
+  const OnboardingCreatePage({super.key});
   @override
-  _OnboardingCreatePageState createState() => _OnboardingCreatePageState();
+  OnboardingCreatePageState createState() => OnboardingCreatePageState();
 }
 
-class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
+class OnboardingCreatePageState extends State<OnboardingCreatePage> {
   final TextEditingController _passwordController =
       TextEditingController(text: "");
   final TextEditingController _passwordConfirmationController =
@@ -189,8 +208,6 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage_> {
                                       backButtonText: 'CANCEL',
                                       continueButtonText: 'CONTINUE',
                                     ),
-                                  Object() => const Text(''),
-                                  null => throw UnimplementedError(),
                                 };
                               },
                             ),

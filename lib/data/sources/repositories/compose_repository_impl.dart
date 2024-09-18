@@ -19,7 +19,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
         sourceAddress, destination, asset, quantity, allowUnconfirmedTx, fee);
 
     if (response.result == null) {
-      // TODO: handle errors
       throw Exception('Failed to compose send');
     }
     return RawTransaction(hex: response.result!.rawtransaction);
@@ -33,7 +32,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
         sourceAddress, destination, asset, quantity, allowUnconfirmedTx, fee);
 
     if (response.result == null) {
-      // TODO: handle errors
       throw Exception('Failed to compose send');
     }
 
@@ -66,7 +64,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final response = await api.composeIssuance(sourceAddress, name, quantity,
         transferDestination, divisible, lock, reset, description, true);
     if (response.result == null) {
-      // TODO: handle errors
       throw Exception('Failed to compose issuance');
     }
     return compose_issuance.ComposeIssuance(
@@ -107,7 +104,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
         unconfirmed,
         fee);
     if (response.result == null) {
-      // TODO: handle errors
       throw Exception('Failed to compose issuance');
     }
 

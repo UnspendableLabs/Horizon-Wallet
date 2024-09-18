@@ -10,8 +10,6 @@ import 'package:integration_test/integration_test.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const network = String.fromEnvironment('NETWORK', defaultValue: 'mainnet');
-
   const mnemonic =
       "stomach worry artefact bicycle finger doctor outdoor learn lecture powder agent body";
 
@@ -99,8 +97,6 @@ void main() {
 
       final decryptedMnemonic = await encryptionService.decrypt(
           encryptedMnemonic, 'securepassword123');
-
-      print("decryptedMnemonic: $decryptedMnemonic");
 
       expect(decryptedMnemonic, mnemonic);
 

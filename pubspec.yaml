@@ -76,6 +76,8 @@ dependencies:
   url_launcher: ^6.3.0
   dargon2_flutter: ^3.3.0
   sliver_tools: ^0.2.12
+  json_annotation: ^4.9.0
+  hex: ^0.2.0
 
 
 dev_dependencies:

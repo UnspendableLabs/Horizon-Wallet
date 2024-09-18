@@ -3,9 +3,23 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
@@ -20,11 +34,11 @@ import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.d
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
-class ComposeSendPage extends StatelessWidget {
+class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final double screenWidth;
 
-  const ComposeSendPage({
+  const ComposeSendPageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.screenWidth,
     super.key,
@@ -36,9 +50,22 @@ class ComposeSendPage extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeSendBloc()
-          ..add(FetchFormData(currentAddress: state.currentAddress)),
-        child: _ComposeSendPage_(
+        create: (context) => ComposeSendBloc(
+          addressRepository: GetIt.I.get<AddressRepository>(),
+          balanceRepository: GetIt.I.get<BalanceRepository>(),
+          composeRepository: GetIt.I.get<ComposeRepository>(),
+          utxoRepository: GetIt.I.get<UtxoRepository>(),
+          transactionService: GetIt.I.get<TransactionService>(),
+          bitcoindService: GetIt.I.get<BitcoindService>(),
+          accountRepository: GetIt.I.get<AccountRepository>(),
+          walletRepository: GetIt.I.get<WalletRepository>(),
+          encryptionService: GetIt.I.get<EncryptionService>(),
+          addressService: GetIt.I.get<AddressService>(),
+          transactionRepository: GetIt.I.get<TransactionRepository>(),
+          transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+          bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+        )..add(FetchFormData(currentAddress: state.currentAddress)),
+        child: ComposeSendPage(
           address: state.currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
           screenWidth: screenWidth,
@@ -49,17 +76,18 @@ class ComposeSendPage extends StatelessWidget {
   }
 }
 
-class _ComposeSendPage_ extends StatefulWidget {
+class ComposeSendPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
   final double screenWidth;
-  const _ComposeSendPage_(
-      {required this.dashboardActivityFeedBloc,
+  const ComposeSendPage(
+      {super.key,
+      required this.dashboardActivityFeedBloc,
       required this.address,
       required this.screenWidth});
 
   @override
-  _ComposeSendPageState createState() => _ComposeSendPageState();
+  ComposeSendPageState createState() => ComposeSendPageState();
 }
 
 class AssetDropdownLoading extends StatelessWidget {
@@ -173,7 +201,7 @@ _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
       balances[0];
 }
 
-class _ComposeSendPageState extends State<_ComposeSendPage_> {
+class ComposeSendPageState extends State<ComposeSendPage> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();

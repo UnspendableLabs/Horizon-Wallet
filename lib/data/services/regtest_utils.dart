@@ -5,7 +5,7 @@ import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/wallet.dart' as entity;
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/js/bip32.dart' as bip32;
-import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
+import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import "encryption_service_impl.dart";
 

@@ -387,11 +387,11 @@ class DashboardActivityFeedScreen extends StatefulWidget {
   const DashboardActivityFeedScreen({super.key, required this.addresses});
 
   @override
-  _DashboardActivityFeedScreenState createState() =>
-      _DashboardActivityFeedScreenState();
+  DashboardActivityFeedScreenState createState() =>
+      DashboardActivityFeedScreenState();
 }
 
-class _DashboardActivityFeedScreenState
+class DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
   static int displayedTransactionsCount = 4;

@@ -73,7 +73,6 @@ class TransactionServiceImpl implements TransactionService {
           );
         }
       } else {
-        // TODO: handle errors in UI
         throw Exception('Invariant: No utxo found for txHash: $txHash');
       }
     }

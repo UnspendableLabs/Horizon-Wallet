@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
@@ -11,24 +19,32 @@ import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboardin
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
-class OnboardingImportPKPage extends StatelessWidget {
-  const OnboardingImportPKPage({super.key});
+class OnboardingImportPKPageWrapper extends StatelessWidget {
+  const OnboardingImportPKPageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => OnboardingImportPKBloc(),
-        child: const OnboardingImportPKPage_());
+        create: (context) => OnboardingImportPKBloc(
+              walletRepository: GetIt.I<WalletRepository>(),
+              walletService: GetIt.I<WalletService>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>(),
+              addressService: GetIt.I<AddressService>(),
+              encryptionService: GetIt.I<EncryptionService>(),
+              config: GetIt.I<Config>(),
+            ),
+        child: const OnboardingImportPKPage());
   }
 }
 
-class OnboardingImportPKPage_ extends StatefulWidget {
-  const OnboardingImportPKPage_({super.key});
+class OnboardingImportPKPage extends StatefulWidget {
+  const OnboardingImportPKPage({super.key});
   @override
-  _OnboardingImportPKPageState createState() => _OnboardingImportPKPageState();
+  OnboardingImportPKPageState createState() => OnboardingImportPKPageState();
 }
 
-class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
+class OnboardingImportPKPageState extends State<OnboardingImportPKPage> {
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
   final TextEditingController _importFormat =

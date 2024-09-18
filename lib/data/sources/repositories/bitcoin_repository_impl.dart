@@ -159,7 +159,6 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {
-      print('IS THIS THE ERROR? $e');
       return Left(UnexpectedFailure(message: e.toString()));
     }
   }

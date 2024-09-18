@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -11,23 +10,28 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
 
 class OnboardingImportPKBloc
     extends Bloc<OnboardingImportPKEvent, OnboardingImportPKState> {
-  final accountRepository = GetIt.I<AccountRepository>();
-  final addressRepository = GetIt.I<AddressRepository>();
-  final walletRepository = GetIt.I<WalletRepository>();
-  final walletService = GetIt.I<WalletService>();
-  final addressService = GetIt.I<AddressService>();
-  final mnemonicService = GetIt.I<MnemonicService>();
-  final encryptionService = GetIt.I<EncryptionService>();
-  final Config config = GetIt.I<Config>();
-
-  OnboardingImportPKBloc() : super(const OnboardingImportPKState()) {
+  final WalletRepository walletRepository;
+  final WalletService walletService;
+  final AccountRepository accountRepository;
+  final AddressRepository addressRepository;
+  final AddressService addressService;
+  final EncryptionService encryptionService;
+  final Config config;
+  OnboardingImportPKBloc({
+    required this.walletRepository,
+    required this.walletService,
+    required this.accountRepository,
+    required this.addressRepository,
+    required this.addressService,
+    required this.encryptionService,
+    required this.config,
+  }) : super(const OnboardingImportPKState()) {
     on<PKChanged>((event, emit) async {
       if (event.pk.isEmpty) {
         emit(state.copyWith(pkError: "PK is required", pk: event.pk));

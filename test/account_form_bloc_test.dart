@@ -1,10 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_state.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:get_it/get_it.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_event.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -42,12 +41,6 @@ void main() {
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
 
-  setUpAll(() {
-    registerFallbackValue(FakeWallet());
-    registerFallbackValue(FakeAccount());
-    registerFallbackValue(FakeAddress());
-  });
-
   setUp(() {
     mockWalletService = MockWalletService();
     mockEncryptionService = MockEncryptionService();
@@ -55,17 +48,11 @@ void main() {
     mockWalletRepository = MockWalletRepository();
     mockAccountRepository = MockAccountRepository();
     mockAddressRepository = MockAddressRepository();
-
-    GetIt.I.registerSingleton<WalletService>(mockWalletService);
-    GetIt.I.registerSingleton<EncryptionService>(mockEncryptionService);
-    GetIt.I.registerSingleton<AddressService>(mockAddressService);
-    GetIt.I.registerSingleton<WalletRepository>(mockWalletRepository);
-    GetIt.I.registerSingleton<AccountRepository>(mockAccountRepository);
-    GetIt.I.registerSingleton<AddressRepository>(mockAddressRepository);
   });
-
-  tearDown(() {
-    GetIt.I.reset();
+  setUpAll(() {
+    registerFallbackValue(FakeWallet());
+    registerFallbackValue(FakeAccount());
+    registerFallbackValue(FakeAddress());
   });
 
   group('AccountFormBloc', () {
@@ -109,7 +96,14 @@ void main() {
               change: '0',
               index: 0,
             )).thenAnswer((_) async => FakeAddress());
-        return AccountFormBloc();
+        return AccountFormBloc(
+          accountRepository: mockAccountRepository,
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressService: mockAddressService,
+          addressRepository: mockAddressRepository,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         name: 'Test Account',
