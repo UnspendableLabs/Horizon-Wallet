@@ -24,7 +24,6 @@ class UtxoRepositoryImpl implements UtxoRepository {
           vout: a.vout,
           height: a.height,
           value: a.value,
-          confirmations: a.confirmations,
           amount: a.amount,
           txid: a.txid,
           address: address));
@@ -51,7 +50,6 @@ class UtxoRepositoryImpl implements UtxoRepository {
             vout: a.vout,
             height: a.height,
             value: a.value,
-            confirmations: a.confirmations,
             amount: a.amount,
             txid: a.txid,
             address: a.address!));
