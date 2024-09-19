@@ -10,24 +10,32 @@ class ImportFormatDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HorizonDropdownMenu(
-      controller: TextEditingController(),
-      onChanged: (String? value) {
-        if (value != null) {
-          onChanged(value);
-        }
-      },
-      selectedValue: selectedFormat,
-      items: [
-        buildDropdownMenuItem(
-            ImportFormat.horizon.name, ImportFormat.horizon.description),
-        buildDropdownMenuItem(
-          ImportFormat.freewallet.name,
-          ImportFormat.freewallet.description,
+    return Column(
+      children: [
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: SelectableText('Wallet Type'),
         ),
-        buildDropdownMenuItem(
-          ImportFormat.counterwallet.name,
-          ImportFormat.counterwallet.description,
+        HorizonDropdownMenu(
+          controller: TextEditingController(),
+          onChanged: (String? value) {
+            if (value != null) {
+              onChanged(value);
+            }
+          },
+          selectedValue: selectedFormat,
+          items: [
+            buildDropdownMenuItem(
+                ImportFormat.horizon.name, ImportFormat.horizon.description),
+            buildDropdownMenuItem(
+              ImportFormat.freewallet.name,
+              ImportFormat.freewallet.description,
+            ),
+            buildDropdownMenuItem(
+              ImportFormat.counterwallet.name,
+              ImportFormat.counterwallet.description,
+            ),
+          ],
         ),
       ],
     );
