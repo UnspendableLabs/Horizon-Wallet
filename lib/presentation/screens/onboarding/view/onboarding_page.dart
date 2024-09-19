@@ -75,7 +75,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                   Clip.none, // Ensure ALPHA is not clipped
                               children: [
                                 Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
@@ -95,18 +95,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       ),
                                     ),
                                   ],
-                                ),
-                                Positioned(
-                                  top: 95,
-                                  right: -50,
-                                  child: Text(
-                                    'BETA',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
                                 ),
                               ],
                             ),
@@ -291,7 +279,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                         clipBehavior: Clip.none, // Ensure ALPHA is not clipped
                         children: [
                           Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               SizedBox(height: 50),
@@ -312,19 +300,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                 ),
                               ),
                             ],
-                          ),
-                          Positioned(
-                            top: 145, // Adjust this value to move ALPHA down
-                            right:
-                                -50, // Adjust this value to position ALPHA correctly
-                            child: Text(
-                              'BETA',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
                           ),
                         ],
                       ),

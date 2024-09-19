@@ -254,13 +254,6 @@ class HorizonAppBarContent extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         )),
                     const SizedBox(width: 12),
-                    Text('BETA',
-                        style: TextStyle(
-                          color: isDarkTheme ? Colors.white : Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        )),
-                    const SizedBox(width: 12),
                     if (!isSmallScreen)
                       shell.state.maybeWhen(
                         success: (state) => state.addresses.length > 1
