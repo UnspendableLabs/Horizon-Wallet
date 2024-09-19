@@ -259,8 +259,52 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           FeeOption.Custom(fee: var fee) => fee,
         };
 
+        /* it's possible that we could bypass this step
+           by:
+           1) getting the utxo set for the source address
+           2) manualy compute the inputs
+           3) use formula which is f(inputs, outputs) => virtual_size
+
+           But note: not totally necessary to do this for now
+
+
+          What we do want to do NOW, is pass in the utxos
+          to the compose handler by txhash:vout  ( the utxo index)
+
+
+          1) get all of the utxos
+          2) use some algorithm to determine which ones to select ( talk to ouziel, adam )
+          3) pass in the utxos to the compose handler
+
+              
         final send = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, 1);
+            source, destination, asset, quantity, true, 1, selected_utxos);
+
+
+        ... late on somewhere
+
+                                                                KEY
+                                                                 |
+        utxoQueryStringParam = selected_utxos.map(u => `${u.txid}:${u.vout}`).join(',')
+
+
+        questions: 
+            - do we need to worry about the outputs? ( i don't think so) 
+            - should we prefer confirmed over unconfirmed? ( i assume yes )
+
+        */
+
+        // this is a dummy transaction that helps us to compute
+        // the transaction virtual size which we multiply
+        // by sats / vbyte to get the final fee
+        final send = await composeRepository.composeSendVerbose(
+            // this should be sped up because it doesn't need to pull all utxos
+            source,
+            destination,
+            asset,
+            quantity,
+            true,
+            1);
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
@@ -320,8 +364,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         final rawTx = send.rawtransaction;
 
-        final utxoResponse =
-            await utxoRepository.getUnspentForAddress(source, true);
+        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 
