@@ -295,7 +295,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           _buildFinalizingForm(context, composeSend, fee, loading, error),
         SubmitSuccess() => const SizedBox.shrink(),
       };
-
     });
   }
 
@@ -596,6 +595,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               layout: width > 768
                   ? FeeSelectionLayout.row
                   : FeeSelectionLayout.column,
+              onFieldSubmitted: () => handleInitialSubmit(),
             ),
             const SizedBox(height: 16.0),
             if (error != null)
