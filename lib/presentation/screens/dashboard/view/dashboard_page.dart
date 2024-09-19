@@ -317,7 +317,6 @@ class AddressActions extends StatelessWidget {
                 title: "Compose Send",
                 body: ComposeSendPageWrapper(
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                  screenWidth: screenWidth,
                 ),
                 includeBackButton: false,
                 includeCloseButton: true,

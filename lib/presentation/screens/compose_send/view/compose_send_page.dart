@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -20,7 +21,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/presentation/common/fee_estimation.dart';
+import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -36,11 +37,9 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final double screenWidth;
 
   const ComposeSendPageWrapper({
     required this.dashboardActivityFeedBloc,
-    required this.screenWidth,
     super.key,
   });
 
@@ -68,7 +67,6 @@ class ComposeSendPageWrapper extends StatelessWidget {
         child: ComposeSendPage(
           address: state.currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-          screenWidth: screenWidth,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -79,12 +77,11 @@ class ComposeSendPageWrapper extends StatelessWidget {
 class ComposeSendPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  final double screenWidth;
-  const ComposeSendPage(
-      {super.key,
-      required this.dashboardActivityFeedBloc,
-      required this.address,
-      required this.screenWidth});
+  const ComposeSendPage({
+    super.key,
+    required this.dashboardActivityFeedBloc,
+    required this.address,
+  });
 
   @override
   ComposeSendPageState createState() => ComposeSendPageState();
@@ -222,190 +219,112 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(
         listener: (context, state) {
-      state.submitState.maybeWhen(
-          success: (txHash, sourceAddress) {
-            // close modal
-            Navigator.of(context).pop();
-            // reload activity feed
-            widget.dashboardActivityFeedBloc
-                .add(const Load()); // show "N more transactions".
-          },
-          orElse: () => null);
-    }, builder: (context, state) {
-      return state.submitState.maybeWhen(
-        loading: () => const Center(
-          child: SizedBox(
-            width: 24.0,
-            height: 24.0,
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        error: (msg) => Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SelectableText('An error occurred: $msg')),
+      state.maxValue.maybeWhen(
         initial: () {
-          void handleInitialSubmit() {
-            if (_formKey.currentState!.validate()) {
-              // TODO: wrap this in function and write some tests
-              Decimal input = Decimal.parse(quantityController.text);
+          // print("maxValue initial");
+          // if (!state.sendMax) {
+          //   quantityController.text = state.quantity;
+          // }
+        },
+        loading: () {
+          if (state.sendMax) {
+            quantityController.text = '';
+          }
+        },
+        error: (_) {
+          quantityController.text = '';
+        },
+        success: (maxValue) {
+          if (state.sendMax) {
+            final formattedValue =
+                _formatMaxValue(state, maxValue, state.asset);
 
-              Balance? balance = balance_;
-
-              int quantity;
-
-              if (balance == null) {
-                throw Exception("invariant: No balance found for asset");
-              }
-
-              if (balance.assetInfo.divisible) {
-                quantity =
-                    (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-              } else {
-                quantity = (input).toBigInt().toInt();
-              }
-
-              if (asset == null) {
-                throw Exception("no asset");
-              }
-
-              context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
-                    sourceAddress: widget.address.address,
-                    destinationAddress: destinationAddressController.text,
-                    asset: asset!,
-                    quantity: quantity,
-                  ));
+            if (formattedValue != quantityController.text) {
+              quantityController.text = formattedValue;
             }
           }
-
-          return Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  HorizonTextFormField(
-                    enabled: false,
-                    controller: fromAddressController,
-                    label: "Source",
-                    onFieldSubmitted: (value) {
-                      handleInitialSubmit();
-                    },
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonTextFormField(
-                      controller: destinationAddressController,
-                      label: "Destination",
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a destination address';
-                        }
-                        return null;
-                      },
-                      onFieldSubmitted: (value) {
-                        handleInitialSubmit();
-                      }),
-                  const SizedBox(height: 16.0),
-                  if (widget.screenWidth > 768)
-                    Row(
-                        children: _buildQuantityAndAssetInputsForRow(
-                            state, handleInitialSubmit)),
-                  if (widget.screenWidth <= 768)
-                    Column(children: [
-                      _buildQuantityInput(state, handleInitialSubmit),
-                      const SizedBox(height: 16.0),
-                      _buildAssetInput(state)
-                    ]),
-                  HorizonDialogSubmitButton(
-                    onPressed: handleInitialSubmit,
-                  ),
-                ],
-              ),
-            ),
-          );
         },
-        composing: (composeSendState) {
-          return ConfirmationPage(
+        orElse: () {},
+      );
+
+      switch (state.submitState) {
+        // TODO: why aren' twe showing tx hash here?
+        case SubmitSuccess(transactionHex: var txHash):
+          // close modal
+          // reload activity feed
+          widget.dashboardActivityFeedBloc
+              .add(const Load()); // show "N more transactions".
+
+          Navigator.of(context).pop();
+
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Copy',
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: txHash));
+                },
+              ),
+              content: Text(txHash),
+              behavior: SnackBarBehavior.floating));
+
+        case _:
+          // Do nothing for other states
+          break;
+      }
+    }, builder: (context, state) {
+      return switch (state.submitState) {
+        SubmitInitial(error: var error, loading: var loading) =>
+          _buildInitialForm(context, state, error, loading),
+        // TODO: invalid
+        SubmitError(error: var msg) => Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SelectableText('An error occurred: $msg'),
+          ),
+        SubmitComposing(submitStateComposingSend: var composeSendState) =>
+          ConfirmationPage(
             composeSendState: composeSendState,
             address: widget.address,
-          );
-        },
-        finalizing: (finalizingState) {
-          TextEditingController passwordController = TextEditingController();
-          void handlePasswordSubmit() {
-            if (passwordFormKey.currentState!.validate()) {
-              try {
-                final password = passwordController.text;
-                if (password.isEmpty) {
-                  throw Exception('Password cannot be empty');
-                }
+          ),
+        SubmitFinalizing(
+          composeSend: var composeSend,
+          fee: var fee,
+          loading: var loading,
+          error: var error,
+        ) =>
+          _buildFinalizingForm(context, composeSend, fee, loading, error),
+        SubmitSuccess() => const SizedBox.shrink(),
+      };
 
-                context.read<ComposeSendBloc>().add(
-                      SignAndBroadcastTransactionEvent(
-                        password: password,
-                      ),
-                    );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: ${e.toString()}')),
-                );
-              }
-            }
-          }
-
-          return Form(
-              key: passwordFormKey,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: [
-                  HorizonTextFormField(
-                    onFieldSubmitted: (_) => handlePasswordSubmit(),
-                    obscureText: true,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    controller: passwordController,
-                    label: "Password",
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Divider(
-                      thickness: 1.0,
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      HorizonCancelButton(
-                        onPressed: () {
-                          context.read<ComposeSendBloc>().add(
-                              FetchFormData(currentAddress: widget.address));
-                        },
-                        buttonText: 'BACK',
-                      ),
-                      HorizonContinueButton(
-                        onPressed: handlePasswordSubmit,
-                        buttonText: 'SIGN AND BROADCAST',
-                      ),
-                    ],
-                  ),
-                ]),
-              ));
-        },
-        orElse: () => const SizedBox.shrink(),
-      );
     });
+  }
+
+  String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
+    // You may need to adjust this based on your asset's divisibility
+    final balance = _getBalanceForSelectedAsset(
+        state.balancesState.maybeWhen(
+          success: (balances) => balances,
+          orElse: () => [],
+        ),
+        asset ?? '');
+
+    if (balance?.assetInfo.divisible == true) {
+      final maxDecimal = Decimal.fromInt(maxValue);
+      final maxDecimalNormalized = maxDecimal / Decimal.fromInt(100000000);
+
+      return (Decimal.fromInt(maxValue) / Decimal.fromInt(100000000))
+          .toDecimal()
+          .round(scale: 8)
+          .toString();
+    } else {
+      return maxValue.toString();
+    }
   }
 
   Widget _buildQuantityInput(
       ComposeSendState state, void Function() handleInitialSubmit) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildQuantityInputField(null, handleInitialSubmit);
+      return _buildQuantityInputField(state, null, handleInitialSubmit);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonTextFormField(
@@ -422,16 +341,19 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         );
       }
 
-      return _buildQuantityInputField(balance, handleInitialSubmit);
+      return _buildQuantityInputField(state, balance, handleInitialSubmit);
     });
   }
 
-  Widget _buildQuantityInputField(
-      Balance? balance, void Function() handleInitialSubmit) {
+  Widget _buildQuantityInputField(ComposeSendState state, Balance? balance,
+      void Function() handleInitialSubmit) {
     return Stack(
       children: [
         HorizonTextFormField(
           controller: quantityController,
+          onChanged: (value) {
+            context.read<ComposeSendBloc>().add(ChangeQuantity(value: value));
+          },
           label: 'Quantity',
           inputFormatters: [
             balance?.assetInfo.divisible == true
@@ -446,39 +368,70 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             }
             Decimal input = Decimal.parse(value);
             Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
-
             if (input > max) {
               return "quantity exceeds max";
             }
-
             setState(() {
               balance_ = balance;
             });
-
             return null;
           },
           onFieldSubmitted: (value) {
             handleInitialSubmit();
           },
         ),
-        Positioned(
-          right: 0,
-          top: 0,
-          bottom: 0,
-          child: TextButton(
-            onPressed: balance != null
-                ? () {
-                    setState(() {
-                      quantityController.text = balance.quantityNormalized;
-                    });
-                  }
-                : null,
-            child: const Text('MAX',
-                style: TextStyle(
-                  fontSize: 14.0,
-                )),
-          ),
-        ),
+        state.sendMax
+            ? state.maxValue.maybeWhen(
+                loading: () => const Positioned(
+                  left: 12,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                ),
+                orElse: () => const SizedBox.shrink(),
+              )
+            : const SizedBox.shrink(),
+        state.balancesState.maybeWhen(orElse: () {
+          return const SizedBox.shrink();
+        }, success: (_) {
+          return asset != "BTC" && asset != null
+              ? Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Row(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 2.0),
+                        child: const Text('MAX',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            )),
+                      ),
+                      Transform.scale(
+                        scale: 0.8,
+                        child: Switch(
+                          activeColor: Colors.blue,
+                          value: state.sendMax,
+                          onChanged: (value) {
+                            context
+                                .read<ComposeSendBloc>()
+                                .add(ToggleSendMaxEvent(value: value));
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink();
+        }),
       ],
     );
   }
@@ -504,7 +457,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           });
 
           return SizedBox(
-            height: 48.0,
+            height: 48,
             child: AssetDropdown(
               asset: asset,
               balances: balances,
@@ -522,6 +475,10 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                   balance_ = balance;
                   quantityController.text = '';
                 });
+
+                context
+                    .read<ComposeSendBloc>()
+                    .add(ChangeAsset(asset: value, balance: balance));
               },
             ),
           );
@@ -543,6 +500,203 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         }),
       )
     ];
+  }
+
+  Widget _buildInitialForm(BuildContext context, ComposeSendState state,
+      String? error, bool loading) {
+    void handleInitialSubmit() {
+      if (_formKey.currentState!.validate()) {
+        Decimal input = Decimal.parse(quantityController.text);
+        Balance? balance = balance_;
+        int quantity;
+
+        if (balance == null) {
+          throw Exception("invariant: No balance found for asset");
+        }
+
+        if (balance.assetInfo.divisible) {
+          quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+        } else {
+          quantity = input.toBigInt().toInt();
+        }
+
+        if (asset == null) {
+          throw Exception("no asset");
+        }
+
+        context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
+              sourceAddress: widget.address.address,
+              destinationAddress: destinationAddressController.text,
+              asset: asset!,
+              quantity: quantity,
+            ));
+      }
+    }
+
+    final width = MediaQuery.of(context).size.width;
+
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            HorizonTextFormField(
+              enabled: false,
+              controller: fromAddressController,
+              label: "Source",
+              onFieldSubmitted: (value) {
+                handleInitialSubmit();
+              },
+            ),
+            const SizedBox(height: 16.0),
+            HorizonTextFormField(
+              controller: destinationAddressController,
+              label: "Destination",
+              onChanged: (value) {
+                context
+                    .read<ComposeSendBloc>()
+                    .add(ChangeDestination(value: value));
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a destination address';
+                }
+                return null;
+              },
+              onFieldSubmitted: (value) {
+                handleInitialSubmit();
+              },
+            ),
+            const SizedBox(height: 16.0),
+            if (width > 768)
+              Row(
+                  children: _buildQuantityAndAssetInputsForRow(
+                      state, handleInitialSubmit)),
+            if (width <= 768)
+              Column(children: [
+                _buildQuantityInput(state, handleInitialSubmit),
+                const SizedBox(height: 16.0),
+                _buildAssetInput(state)
+              ]),
+            const SizedBox(height: 16.0),
+            FeeSelectionV2(
+              value: state.feeOption,
+              feeEstimates: state.feeState.maybeWhen(
+                success: (feeEstimates) =>
+                    FeeEstimateSuccess(feeEstimates: feeEstimates),
+                orElse: () => FeeEstimateLoading(),
+              ),
+              onSelected: (fee) {
+                context
+                    .read<ComposeSendBloc>()
+                    .add(ChangeFeeOption(value: fee));
+              },
+              layout: width > 768
+                  ? FeeSelectionLayout.row
+                  : FeeSelectionLayout.column,
+            ),
+            const SizedBox(height: 16.0),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(error, style: const TextStyle(color: Colors.red)),
+              ),
+            // if (state.composeSendError != null)
+            //   Text(state.composeSendError!,
+            //       style: const TextStyle(color: Colors.red))
+            // else
+            //   SizedBox.shrink(),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                HorizonDialogSubmitButton(
+                  loading: loading,
+                  onPressed: handleInitialSubmit,
+                  textChild: Text(loading ? 'Submitting...' : 'Submit'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFinalizingForm(BuildContext context, ComposeSend composeSend,
+      int fee, bool loading, String? error) {
+    TextEditingController passwordController = TextEditingController();
+    void handlePasswordSubmit() {
+      if (passwordFormKey.currentState!.validate()) {
+        try {
+          final password = passwordController.text;
+          if (password.isEmpty) {
+            throw Exception('Password cannot be empty');
+          }
+
+          context.read<ComposeSendBloc>().add(
+                SignAndBroadcastTransactionEvent(
+                  password: password,
+                ),
+              );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.toString()}')),
+          );
+        }
+      }
+    }
+
+    return Form(
+      key: passwordFormKey,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(children: [
+          HorizonTextFormField(
+            onFieldSubmitted: (_) => handlePasswordSubmit(),
+            obscureText: true,
+            enableSuggestions: false,
+            autocorrect: false,
+            controller: passwordController,
+            label: "Password",
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your password';
+              }
+              return null;
+            },
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Divider(
+              thickness: 1.0,
+            ),
+          ),
+          error != null
+              ? Text(error, style: const TextStyle(color: Colors.red))
+              : const SizedBox.shrink(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              HorizonCancelButton(
+                onPressed: () {
+                  context
+                      .read<ComposeSendBloc>()
+                      .add(FetchFormData(currentAddress: widget.address));
+                },
+                buttonText: 'BACK',
+              ),
+              HorizonContinueButton(
+                loading: loading,
+                onPressed: handlePasswordSubmit,
+                buttonText: 'SIGN AND BROADCAST',
+              ),
+            ],
+          ),
+        ]),
+      ),
+    );
   }
 }
 
@@ -566,10 +720,7 @@ class ConfirmationPageState extends State<ConfirmationPage> {
     super.initState();
 
     // initialize fee
-    fee = (widget.composeSendState.virtualSize *
-            widget.composeSendState
-                .feeEstimates[widget.composeSendState.feeEstimates.keys.first]!)
-        .ceil();
+    fee = widget.composeSendState.fee;
   }
 
   @override
@@ -623,15 +774,14 @@ class ConfirmationPageState extends State<ConfirmationPage> {
                 ),
               ],
             ),
+            HorizonTextFormField(
+              label: "Fee",
+              controller: TextEditingController(
+                  text:
+                      "${widget.composeSendState.fee.toString()} sats ( ${widget.composeSendState.feeRate} sats/vbyte )"),
+              enabled: false,
+            ),
             const SizedBox(height: 16.0),
-            FeeEstimation(
-                feeMap: widget.composeSendState.feeEstimates,
-                virtualSize: widget.composeSendState.virtualSize,
-                onChanged: (v) {
-                  setState(() {
-                    fee = v.toInt();
-                  });
-                }),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16.0),
               child: Divider(

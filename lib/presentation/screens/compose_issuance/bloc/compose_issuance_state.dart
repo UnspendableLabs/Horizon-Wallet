@@ -2,16 +2,27 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 
 part 'compose_issuance_state.freezed.dart';
 
 @freezed
 class ComposeIssuanceState with _$ComposeIssuanceState {
   const factory ComposeIssuanceState({
-    @Default(AddressesState.initial()) addressesState,
-    @Default(SubmitState.initial()) submitState,
+    @Default(FeeState.initial()) feeState,
     @Default(BalancesState.initial()) balancesState,
+    required FeeOption feeOption,
+    required SubmitState submitState,
   }) = _ComposeIssuanceState;
+}
+
+@freezed
+class FeeState with _$FeeState {
+  const factory FeeState.initial() = _FeeInitial;
+  const factory FeeState.loading() = _FeeLoading;
+  const factory FeeState.success(FeeEstimates feeEstimates) = _FeeSuccess;
+  const factory FeeState.error(String error) = _FeeError;
 }
 
 @freezed
@@ -32,29 +43,73 @@ class BalancesState with _$BalancesState {
   const factory BalancesState.error(String error) = _BalanceError;
 }
 
-@freezed
-class SubmitState with _$SubmitState {
-  const factory SubmitState.initial() = _SubmitInitial;
-  const factory SubmitState.loading() = _SubmitLoading;
-  const factory SubmitState.composing(
-          SubmitStateComposingIssuance submitStateComposingIssuance) =
-      _SubmitComposing;
-  const factory SubmitState.success(String transactionHex) = _SubmitSuccess;
-  const factory SubmitState.finalizing(
-      SubmitStateFinalizing submitStateFinalizing) = _SubmitFinalizing;
-  const factory SubmitState.error(String error) = _SubmitError;
+sealed class SubmitState {
+  const SubmitState();
+}
+
+class SubmitInitial extends SubmitState {
+  final bool loading;
+  final String? error;
+
+  const SubmitInitial({
+    this.loading = false,
+    this.error,
+  });
+}
+
+class SubmitComposing extends SubmitState {
+  final SubmitStateComposingIssuance submitStateComposingIssuance;
+  const SubmitComposing(this.submitStateComposingIssuance);
+}
+
+class SubmitSuccess extends SubmitState {
+  final String transactionHex;
+  const SubmitSuccess({required this.transactionHex});
+}
+
+class SubmitFinalizing extends SubmitState {
+  final ComposeIssuanceVerbose composeIssuance;
+  final int fee;
+  final bool loading;
+  final String? error;
+
+  SubmitFinalizing(
+      {required this.loading,
+      required this.error,
+      required this.composeIssuance,
+      required this.fee});
+
+  SubmitFinalizing copyWith({
+    required ComposeIssuanceVerbose composeIssuance,
+    required int fee,
+    required bool loading,
+    required String? error,
+  }) {
+    return SubmitFinalizing(
+      composeIssuance: composeIssuance,
+      fee: fee,
+      loading: loading,
+      error: error,
+    );
+  }
+}
+
+class SubmitError extends SubmitState {
+  final String error;
+  const SubmitError(this.error);
 }
 
 class SubmitStateComposingIssuance {
   final ComposeIssuanceVerbose composeIssuance;
   final int virtualSize;
-  final Map<String, double> feeEstimates;
-  final String confirmationTarget;
-  SubmitStateComposingIssuance(
-      {required this.composeIssuance,
-      required this.virtualSize,
-      required this.feeEstimates,
-      required this.confirmationTarget});
+  final int fee;
+  final int feeRate;
+  SubmitStateComposingIssuance({
+    required this.composeIssuance,
+    required this.virtualSize,
+    required this.fee,
+    required this.feeRate,
+  });
 }
 
 class SubmitStateFinalizing {

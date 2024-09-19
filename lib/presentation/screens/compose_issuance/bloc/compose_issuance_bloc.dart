@@ -20,7 +20,10 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
@@ -52,27 +55,47 @@ class ComposeIssuanceBloc
     required this.transactionRepository,
     required this.transactionLocalRepository,
     required this.bitcoinRepository,
-  }) : super(const ComposeIssuanceState()) {
+  }) : super(ComposeIssuanceState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium())) {
+    on<ChangeFeeOption>((event, emit) async {
+      final value = event.value;
+      emit(state.copyWith(feeOption: value));
+    });
     on<FetchFormData>((event, emit) async {
-      emit(const ComposeIssuanceState(
-          addressesState: AddressesState.loading(),
-          balancesState: BalancesState.loading(),
-          submitState: SubmitState.initial()));
+      emit(state.copyWith(
+          balancesState: const BalancesState.loading(),
+          submitState: const SubmitInitial()));
+
+      late List<Balance> balances;
+      late FeeEstimates feeEstimates;
 
       try {
         List<Address> addresses = [event.currentAddress];
-        List<Balance> balances =
+
+        balances =
             await balanceRepository.getBalancesForAddress(addresses[0].address);
-        emit(ComposeIssuanceState(
-          addressesState: AddressesState.success(addresses),
-          balancesState: BalancesState.success(balances),
-        ));
       } catch (e) {
-        emit(ComposeIssuanceState(
-          addressesState: AddressesState.error(e.toString()),
+        emit(state.copyWith(
           balancesState: BalancesState.error(e.toString()),
         ));
+        return;
       }
+
+      try {
+        feeEstimates = await GetFeeEstimates(
+          targets: (1, 3, 6),
+          bitcoindService: bitcoindService,
+        ).call();
+      } catch (e) {
+        emit(state.copyWith(feeState: FeeState.error(e.toString())));
+        return;
+      }
+
+      emit(state.copyWith(
+        balancesState: BalancesState.success(balances),
+        feeState: FeeState.success(feeEstimates),
+      ));
     });
 
     on<FetchBalances>((event, emit) async {
@@ -87,7 +110,14 @@ class ComposeIssuanceBloc
     });
 
     on<ComposeTransactionEvent>((event, emit) async {
-      emit(state.copyWith(submitState: const SubmitState.loading()));
+      FeeEstimates? feeEstimates = state.feeState
+          .maybeWhen(success: (value) => value, orElse: () => null);
+
+      if (feeEstimates == null) {
+        return;
+      }
+      emit(state.copyWith(submitState: const SubmitInitial(loading: true)));
+
       final source = event.sourceAddress;
       final quantity = event.quantity;
       final name = event.name;
@@ -95,9 +125,14 @@ class ComposeIssuanceBloc
       final lock = event.lock;
       final reset = event.reset;
       final description = event.description;
+      final feeRate = switch (state.feeOption) {
+        FeeOption.Fast() => feeEstimates.fast,
+        FeeOption.Medium() => feeEstimates.medium,
+        FeeOption.Slow() => feeEstimates.slow,
+        FeeOption.Custom(fee: var fee) => fee,
+      };
       // final transferDestination = event.transferDestination;
 
-      emit(state.copyWith(submitState: const SubmitState.loading()));
       try {
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(source, name,
@@ -106,52 +141,73 @@ class ComposeIssuanceBloc
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
 
-        final feeEstimatesE = await bitcoinRepository.getFeeEstimates();
+        final totalFee = virtualSize * feeRate;
 
-        final feeEstimates = feeEstimatesE.fold(
-            (l) => throw Exception("Error getting fee estimates"), (r) => r);
+        ComposeIssuanceVerbose issuanceActual =
+            await composeRepository.composeIssuanceVerbose(
+                source,
+                name,
+                quantity,
+                divisible,
+                lock,
+                reset,
+                description,
+                null,
+                true,
+                totalFee);
 
         emit(state.copyWith(
-            submitState: SubmitState.composing(SubmitStateComposingIssuance(
-                composeIssuance: issuance,
+            submitState: SubmitComposing(SubmitStateComposingIssuance(
+                composeIssuance: issuanceActual,
                 virtualSize: virtualSize,
-                feeEstimates: feeEstimates,
-                confirmationTarget: feeEstimates.keys.first))));
+                fee: totalFee,
+                feeRate: feeRate))));
       } catch (error) {
-        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
+        emit(state.copyWith(
+            submitState:
+                SubmitInitial(loading: false, error: error.toString())));
       }
     });
 
     on<FinalizeTransactionEvent>((event, emit) async {
       emit(state.copyWith(
-          submitState: SubmitState.finalizing(SubmitStateFinalizing(
+          submitState: SubmitFinalizing(
+        loading: false,
+        error: null,
         composeIssuance: event.composeIssuance,
         fee: event.fee,
-      ))));
+      )));
     });
 
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
-      final finalizingState = state.submitState.maybeWhen(
-          finalizing: (finalizing) => finalizing,
-          orElse: () => throw Exception("Invariant: state not found"));
+      if (state.submitState is! SubmitFinalizing) {
+        return;
+      }
 
-      emit(state.copyWith(submitState: const SubmitState.loading()));
+      final issuanceParams =
+          (state.submitState as SubmitFinalizing).composeIssuance;
+      final fee = (state.submitState as SubmitFinalizing).fee;
 
-      final composeIssuance = finalizingState.composeIssuance;
-      final source = composeIssuance.params.source;
-      final fee = finalizingState.fee;
+      emit(state.copyWith(
+          submitState: SubmitFinalizing(
+              loading: true,
+              error: null,
+              composeIssuance: issuanceParams,
+              fee: fee)));
+
+      final source = issuanceParams.params.source;
       final password = event.password;
 
       try {
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
-                composeIssuance.params.source,
-                composeIssuance.params.asset,
-                composeIssuance.params.quantity,
-                composeIssuance.params.divisible,
-                composeIssuance.params.lock,
-                composeIssuance.params.reset,
-                composeIssuance.params.description,
+                issuanceParams.params.source,
+                issuanceParams.params.asset,
+                issuanceParams.params.quantity,
+                issuanceParams.params.divisible,
+                issuanceParams.params.lock,
+                issuanceParams.params.reset,
+                issuanceParams.params.description,
                 null,
                 true,
                 fee);
@@ -195,9 +251,18 @@ class ComposeIssuanceBloc
           hash: txHash,
         ));
 
-        emit(state.copyWith(submitState: SubmitState.success(txHex)));
+        emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex)));
       } catch (error) {
-        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
+        final issuanceParams =
+            (state.submitState as SubmitFinalizing).composeIssuance;
+        final fee = (state.submitState as SubmitFinalizing).fee;
+
+        emit(state.copyWith(
+            submitState: SubmitFinalizing(
+                loading: false,
+                error: error.toString(),
+                composeIssuance: issuanceParams,
+                fee: fee)));
       }
     });
   }
