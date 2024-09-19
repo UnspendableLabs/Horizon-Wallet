@@ -56,6 +56,8 @@ import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
+import 'package:horizon/data/sources/network/esplora_client.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -139,8 +141,8 @@ Future<void> setup() async {
       AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<ComposeRepository>(
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
-  injector.registerSingleton<UtxoRepository>(
-      UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
+      api: GetIt.I.get<V2Api>(), esploraApi: EsploraApi(dio: esploraDio)));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),

@@ -1,62 +1,30 @@
-import 'package:horizon/data/models/cursor.dart' as cursor_model;
-import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:logger/logger.dart';
+import 'package:horizon/data/sources/network/esplora_client.dart';
 
 final logger = Logger();
 
 class UtxoRepositoryImpl implements UtxoRepository {
   final V2Api api;
+  final EsploraApi _esploraApi;
 
-  UtxoRepositoryImpl({required this.api});
-
-  @override
-  Future<List<Utxo>> getUnspentForAddress(String address,
-      [bool? unconfirmed, String? unspentTxHash, bool? verbose]) async {
-    final response =
-        await api.getUnspentUTXOs(address, unconfirmed, unspentTxHash, verbose);
-
-    final List<Utxo> utxos = [];
-    for (var a in response.result ?? []) {
-      utxos.add(Utxo(
-          vout: a.vout,
-          height: a.height,
-          value: a.value,
-          amount: a.amount,
-          txid: a.txid,
-          address: address));
-    }
-    return utxos;
-  }
+  UtxoRepositoryImpl({required this.api, required EsploraApi esploraApi})
+      : _esploraApi = esploraApi;
 
   @override
-  Future<List<Utxo>> getUnspentForAddresses(List<String> addresses,
-      [bool? unconfirmed, String? unspentTxHash, bool? verbose]) async {
-    List<Utxo> utxos = [];
-    int limit = 50;
-    cursor_entity.Cursor? cursor;
+  Future<List<Utxo>> getUnspentForAddress(String address) async {
+    final esploraUtxos = await _esploraApi.getUtxosForAddress(address);
 
-    do {
-      final response = await api.getUnspentUTXOsByAddresses(
-          addresses.join(','),
-          unconfirmed,
-          verbose,
-          limit,
-          cursor_model.CursorMapper.toData(cursor));
-      for (UTXO a in response.result ?? []) {
-        utxos.add(Utxo(
-            vout: a.vout,
-            height: a.height,
-            value: a.value,
-            amount: a.amount,
-            txid: a.txid,
-            address: a.address!));
-      }
-      cursor = cursor_model.CursorMapper.toDomain(response.nextCursor);
-    } while (cursor != null);
-
-    return utxos;
+    return esploraUtxos.map((a) {
+      return Utxo(
+        vout: a.vout,
+        height: a.status.blockHeight,
+        value: a.value,
+        txid: a.txid,
+        address: address,
+      );
+    }).toList();
   }
 }

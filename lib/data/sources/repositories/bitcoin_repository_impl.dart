@@ -1,11 +1,9 @@
-import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:horizon/data/models/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/entities/address_info.dart';
-import 'package:horizon/data/models/address_info.dart';
+import 'package:horizon/data/sources/network/esplora_client.dart';
 
 class BitcoinRepositoryImpl extends BitcoinRepository {
   final EsploraApi _esploraApi;
@@ -238,131 +236,6 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
 //     return allTransactions;
 //   }
 //
-}
-
-class EsploraApi {
-  final Dio _dio;
-  final _confirmedTxCache = <String, List<BitcoinTxModel>>{};
-
-  EsploraApi({required Dio dio}) : _dio = dio;
-
-  Future<List<BitcoinTxModel>> getTransactionsForAddress(String address) async {
-    try {
-      final response = await _dio.get('/address/$address/txs');
-      final List<dynamic> txList = response.data as List<dynamic>;
-      return txList
-          .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
-          .toList();
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Future<List<BitcoinTxModel>> getMempoolTransactionsForAddress(
-      String address) async {
-    try {
-      final response = await _dio.get('/address/$address/txs/mempool');
-      final List<dynamic> txList = response.data as List<dynamic>;
-      return txList
-          .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
-          .toList();
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Future<List<BitcoinTxModel>> getConfirmedTransactionsForAddress(
-      String address,
-      {String? lastSeenTxid}) async {
-    try {
-      String url = '/address/$address/txs/chain';
-      if (lastSeenTxid != null) {
-        url += '/$lastSeenTxid';
-        final cacheKey = '$address:$lastSeenTxid';
-        if (_confirmedTxCache.containsKey(cacheKey)) {
-          return _confirmedTxCache[cacheKey]!;
-        }
-      }
-      final response = await _dio.get(url);
-      final List<dynamic> txList = response.data as List<dynamic>;
-      final transactions = txList
-          .map((tx) => BitcoinTxModel.fromJson(tx as Map<String, dynamic>))
-          .toList();
-
-      if (lastSeenTxid != null) {
-        final cacheKey = '$address:$lastSeenTxid';
-        _confirmedTxCache[cacheKey] = transactions;
-      }
-
-      return transactions;
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Future<BitcoinTx> getTransaction(String txid) async {
-    try {
-      final response = await _dio.get('/tx/$txid');
-      final tx = BitcoinTxModel.fromJson(response.data as Map<String, dynamic>);
-      return tx.toDomain();
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Future<String> getTransactionHex(String txid) async {
-    try {
-      final response = await _dio.get('/tx/$txid/hex');
-      return response.data as String;
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Future<Map<String, double>> getFeeEstimates() async {
-    try {
-      final response = await _dio.get('/fee-estimates');
-      final Map<String, dynamic> data = response.data as Map<String, dynamic>;
-
-      // Convert the dynamic values to double
-      return data.map((key, value) => MapEntry(key, (value as num).toDouble()));
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Future<AddressInfoModel> getAddressInfo(String address) async {
-    try {
-      final response = await _dio.get('/address/$address');
-      return AddressInfoModel.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Future<int> getBlockHeight() async {
-    try {
-      final response = await _dio.get('/blocks/tip/height');
-      return int.parse(response.data);
-    } on DioException catch (e) {
-      _handleDioException(e);
-    }
-  }
-
-  Never _handleDioException(DioException e) {
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.sendTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
-      throw const NetworkFailure(message: 'Connection timed out');
-    } else if (e.response != null) {
-      throw ServerFailure(
-          message: 'Server error: ${e.response?.statusCode}',
-          statusCode: e.response?.statusCode);
-    } else {
-      throw UnexpectedFailure(
-          message: 'An unexpected error occurred: ${e.message}');
-    }
-  }
 }
 
 // class BlockCypherApi {

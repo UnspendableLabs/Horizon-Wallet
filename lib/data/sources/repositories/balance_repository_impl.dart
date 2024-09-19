@@ -1,4 +1,3 @@
-
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
