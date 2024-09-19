@@ -44,7 +44,7 @@ class OnboardingImportBloc
         return;
       } else if (event.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(
-            mnemonicError: "Invalid seed phrase length",
+            mnemonicError: "Seed phrase must be twelve words",
             mnemonic: event.mnemonic));
         return;
       } else {
@@ -77,7 +77,7 @@ class OnboardingImportBloc
         emit(state.copyWith(mnemonicError: "Seed phrase is required"));
         return;
       } else if (state.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(mnemonicError: "Invalid seed phrase length"));
+        emit(state.copyWith(mnemonicError: "Seed phrase must be twelve words"));
         return;
       } else if (event.importFormat == "Horizon" ||
           event.importFormat == "Freewallet") {
