@@ -430,7 +430,6 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
         listener: (context, state) {
       switch (state.submitState) {
