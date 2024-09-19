@@ -320,7 +320,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         final rawTx = send.rawtransaction;
 
-
         final utxoResponse =
             await utxoRepository.getUnspentForAddress(source, true);
 

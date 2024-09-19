@@ -295,7 +295,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           _buildFinalizingForm(context, composeSend, fee, loading, error),
         SubmitSuccess() => const SizedBox.shrink(),
       };
-
     });
   }
 

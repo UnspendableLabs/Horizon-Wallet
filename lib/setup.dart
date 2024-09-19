@@ -102,10 +102,36 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
+    RetryInterceptor(
+      dio: dio,
+      retries: 4,
+      retryDelays: const [
+        Duration(seconds: 1), // wait 1 sec before first retry
+        Duration(seconds: 2), // wait 2 sec before second retry
+        Duration(seconds: 3), // wait 3 sec before third retry
+        Duration(seconds: 5), // wait 3 sec before third retryh
+      ],
+    ), // Add the RetryInterceptor here
   ]);
 
-  injector.registerSingleton<BitcoinRepository>(
-      BitcoinRepositoryImpl(esploraApi: EsploraApi(dio: esploraDio)));
+//   final blockCypherDio = Dio(BaseOptions(
+//       baseUrl: config.blockCypherBase,
+//       connectTimeout: const Duration(seconds: 5),
+//       receiveTimeout: const Duration(seconds: 5)));
+//
+//
+//   blockCypherDio.interceptors.add(InterceptorsWrapper(
+//   onRequest: (options, handler) {
+//     // Add the API key to all requests
+//     options.queryParameters['token'] = <key>;
+//     return handler.next(options);
+//   },
+// ));
+
+  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
+    esploraApi: EsploraApi(dio: esploraDio),
+    // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
+  ));
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
@@ -117,7 +143,8 @@ Future<void> setup() async {
       UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
-      utxoRepository: GetIt.I.get<UtxoRepository>()));
+      utxoRepository: GetIt.I.get<UtxoRepository>(),
+      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
 
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));

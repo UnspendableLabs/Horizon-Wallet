@@ -36,6 +36,13 @@ class EnvironmentConfig implements Config {
       };
 
   @override
+  String get blockCypherBase => switch (network) {
+        Network.mainnet => "https://api.blockcypher.com/v1/btc/main",
+        Network.testnet => "https://api.blockcypher.com/v1/btc/test3",
+        Network.regtest => throw UnimplementedError()
+      };
+
+  @override
   String get btcExplorerBase => switch (network) {
         Network.mainnet => "https://mempool.space",
         Network.testnet => "https://mempool.space/testnet",
