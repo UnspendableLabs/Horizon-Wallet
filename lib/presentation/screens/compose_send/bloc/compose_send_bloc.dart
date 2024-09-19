@@ -259,7 +259,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           FeeOption.Custom(fee: var fee) => fee,
         };
 
-
         /* it's possible that we could bypass this step
            by:
            1) getting the utxo set for the source address
@@ -295,12 +294,17 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         */
 
-
         // this is a dummy transaction that helps us to compute
         // the transaction virtual size which we multiply
         // by sats / vbyte to get the final fee
-        final send = await composeRepository.composeSendVerbose(    // this should be sped up because it doesn't need to pull all utxos 
-            source, destination, asset, quantity, true, 1);
+        final send = await composeRepository.composeSendVerbose(
+            // this should be sped up because it doesn't need to pull all utxos
+            source,
+            destination,
+            asset,
+            quantity,
+            true,
+            1);
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
@@ -360,8 +364,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         final rawTx = send.rawtransaction;
 
-        final utxoResponse =
-            await utxoRepository.getUnspentForAddress(source);
+        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 

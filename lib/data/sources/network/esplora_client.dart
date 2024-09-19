@@ -3,16 +3,6 @@ import 'package:horizon/data/models/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/data/models/address_info.dart';
-//
-// {
-//   "txid": "aa48d35f43db46927286fea5cd480e1ddb5997438aabcc4927ea70326e9ba6a7",
-//   "vout": 0,
-//   "status": {
-//     "confirmed": false
-//   },
-//   "value": 11048358
-// }
-//
 
 class EsploraUtxoStatus {
   final bool confirmed;
