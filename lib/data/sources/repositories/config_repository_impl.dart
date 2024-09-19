@@ -35,12 +35,12 @@ class EnvironmentConfig implements Config {
         Network.regtest => "http://127.0.0.1:3000",
       };
 
-  @override
-  String get blockCypherBase => switch (network) {
-        Network.mainnet => "https://api.blockcypher.com/v1/btc/main",
-        Network.testnet => "https://api.blockcypher.com/v1/btc/test3",
-        Network.regtest => throw UnimplementedError()
-      };
+  // @override
+  // String get blockCypherBase => switch (network) {
+  //       Network.mainnet => "https://api.blockcypher.com/v1/btc/main",
+  //       Network.testnet => "https://api.blockcypher.com/v1/btc/test3",
+  //       Network.regtest => throw UnimplementedError()
+  //     };
 
   @override
   String get btcExplorerBase => switch (network) {
