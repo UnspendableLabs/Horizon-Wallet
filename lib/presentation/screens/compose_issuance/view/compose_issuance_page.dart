@@ -405,6 +405,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
                       layout: width > 768
                           ? FeeSelectionLayout.row
                           : FeeSelectionLayout.column,
+                      onFieldSubmitted: () => handleInitialSubmit(),
                     ),
                   ],
                 ),
@@ -429,9 +430,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final width = MediaQuery.of(context).size.width;
     return BlocConsumer<ComposeIssuanceBloc, ComposeIssuanceState>(
         listener: (context, state) {
       switch (state.submitState) {

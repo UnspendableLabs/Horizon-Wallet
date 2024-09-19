@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 
 enum FeeSelectionLayout { row, column }
 
@@ -27,12 +28,14 @@ class FeeSelectionV2 extends StatefulWidget {
   final FeeEstimateState feeEstimates;
   final FeeSelectionLayout layout;
   final Function(FeeOption) onSelected;
+  final Function() onFieldSubmitted;
   const FeeSelectionV2({
     super.key,
     required this.feeEstimates,
     required this.layout,
     required this.onSelected,
     required this.value,
+    required this.onFieldSubmitted,
   });
 
   @override
@@ -149,10 +152,8 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
       maintainState: true,
       maintainAnimation: true,
       maintainSize: false,
-      child: TextField(
-        decoration: const InputDecoration(
-          labelText: 'Custom fee (sats/vbyte)',
-        ),
+      child: HorizonTextFormField(
+        label: 'Custom fee (sats/vbyte)',
         keyboardType: TextInputType.number,
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
@@ -161,11 +162,19 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
           if (widget.value is Custom) {
             final fee = int.tryParse(value) ?? 0;
             final newOption = Custom(fee);
-            // setState(() {
-            //   _selectedFeeOption = newOption;
-            // });
             widget.onSelected(newOption);
           }
+        },
+        validator: (value) {
+          if (widget.value is Custom) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a fee';
+            }
+          }
+          return null;
+        },
+        onFieldSubmitted: (value) {
+          widget.onFieldSubmitted();
         },
       ),
     );
