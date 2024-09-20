@@ -8,7 +8,7 @@ abstract class ComposeRepository {
       [bool? allowUnconfirmedTx, int? fee]);
   Future<ComposeSend> composeSendVerbose(
       String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx, int? fee, int? feeRate]);
+      [bool? allowUnconfirmedTx, int? fee, int? feeRate, String? inputsSet]);
   Future<ComposeIssuance> composeIssuance(
       String sourceAddress, String name, int quantity,
       [bool? divisible,

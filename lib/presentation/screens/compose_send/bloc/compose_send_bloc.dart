@@ -276,7 +276,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           2) use some algorithm to determine which ones to select ( talk to ouziel, adam )
           3) pass in the utxos to the compose handler
 
-              
+
         final send = await composeRepository.composeSendVerbose(
             source, destination, asset, quantity, true, 1, selected_utxos);
 
@@ -288,11 +288,15 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         utxoQueryStringParam = selected_utxos.map(u => `${u.txid}:${u.vout}`).join(',')
 
 
-        questions: 
-            - do we need to worry about the outputs? ( i don't think so) 
+        questions:
+            - do we need to worry about the outputs? ( i don't think so)
             - should we prefer confirmed over unconfirmed? ( i assume yes )
 
         */
+
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+        print('SOURCE: $source');
+        final utxoQueryStringParam = utxos.map((u) => "${u.txid}:${u.vout}").join(',');
 
         // this is a dummy transaction that helps us to compute
         // the transaction virtual size which we multiply
@@ -304,14 +308,17 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             asset,
             quantity,
             true,
-            1);
+            1,
+            null,
+            utxoQueryStringParam);
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
         final totalFee = virtualSize * feeRate;
 
         final sendActual = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, totalFee);
+            source, destination, asset, quantity, true, totalFee, null, utxoQueryStringParam);
+
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingSend(
@@ -357,14 +364,16 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final quantity = sendParams.params.quantity;
         final asset = sendParams.params.asset;
         final password = event.password;
+        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
+
+        final utxoQueryStringParam = utxoResponse.map((u) => "${u.txid}:${u.vout}").join(',');
 
         // Compose a new tx with user specified fee
         final send = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, fee);
+            source, destination, asset, quantity, true, fee, null, utxoQueryStringParam);
 
         final rawTx = send.rawtransaction;
 
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 

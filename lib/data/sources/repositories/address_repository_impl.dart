@@ -55,7 +55,7 @@ class AddressRepositoryImpl implements AddressRepository {
 
     entityAddresses.sort(addressSortComparator);
 
-    return entityAddresses;
+    // return entityAddresses;
   }
 
   @override

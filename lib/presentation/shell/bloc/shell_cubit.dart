@@ -40,12 +40,14 @@ class ShellStateCubit extends Cubit<ShellState> {
 
       List<Address> addresses =
           await addressRepository.getAllByAccountUuid(currentAccount.uuid);
+      print(addresses);
 
       if (addresses.isEmpty) {
         throw Exception("invariant: no addresses for this account");
       }
 
       Address currentAddress = addresses.first;
+      print(currentAddress.address);
 
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
