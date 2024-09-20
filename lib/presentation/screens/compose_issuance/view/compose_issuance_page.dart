@@ -581,7 +581,7 @@ class _ComposeIssuanceConfirmationPageState
               label: "Fee",
               controller: TextEditingController(
                   text:
-                      "${widget.composeIssuanceState.fee.toString()} sats ( ${widget.composeIssuanceState.feeRate} sats/vbyte )"),
+                      "${widget.composeIssuanceState.fee.toString()} sats ( ${widget.composeIssuanceState.feeRate / 1000} sats/vbyte )"),
               enabled: false,
             ),
             Column(

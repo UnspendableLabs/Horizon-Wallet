@@ -140,9 +140,13 @@ class ComposeIssuanceBloc
 
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
+        print('feeRate: ${feeRate}');
+        print('virtualSize: $virtualSize');
 
-        final totalFee = virtualSize * feeRate;
+        // fee rate is in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
+        final totalFee = virtualSize * feeRate ~/ 1000;
 
+        print('totalFee: $totalFee');
         ComposeIssuanceVerbose issuanceActual =
             await composeRepository.composeIssuanceVerbose(
                 source,
@@ -170,6 +174,7 @@ class ComposeIssuanceBloc
     });
 
     on<FinalizeTransactionEvent>((event, emit) async {
+      print('finalize transaction event: ${event.fee}');
       emit(state.copyWith(
           submitState: SubmitFinalizing(
         loading: false,
@@ -184,6 +189,7 @@ class ComposeIssuanceBloc
         return;
       }
 
+
       final issuanceParams =
           (state.submitState as SubmitFinalizing).composeIssuance;
       final fee = (state.submitState as SubmitFinalizing).fee;
@@ -197,7 +203,7 @@ class ComposeIssuanceBloc
 
       final source = issuanceParams.params.source;
       final password = event.password;
-
+      print('fee: $fee');
       try {
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
