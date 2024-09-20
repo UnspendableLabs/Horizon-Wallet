@@ -276,7 +276,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           2) use some algorithm to determine which ones to select ( talk to ouziel, adam )
           3) pass in the utxos to the compose handler
 
-              
+
         final send = await composeRepository.composeSendVerbose(
             source, destination, asset, quantity, true, 1, selected_utxos);
 
@@ -288,8 +288,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         utxoQueryStringParam = selected_utxos.map(u => `${u.txid}:${u.vout}`).join(',')
 
 
-        questions: 
-            - do we need to worry about the outputs? ( i don't think so) 
+        questions:
+            - do we need to worry about the outputs? ( i don't think so)
             - should we prefer confirmed over unconfirmed? ( i assume yes )
 
         */
@@ -307,9 +307,12 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             1);
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
+        print('virtualSize: $virtualSize');
 
-        final totalFee = virtualSize * feeRate;
+        // fee rate is currently in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
+        final int totalFee = virtualSize * feeRate ~/ 1000;
 
+        print('totalFee: $totalFee');
         final sendActual = await composeRepository.composeSendVerbose(
             source, destination, asset, quantity, true, totalFee);
 
@@ -328,6 +331,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
     });
 
     on<FinalizeTransactionEvent>((event, emit) async {
+      print('finalize transaction event: ${event.fee}');
       emit(state.copyWith(
           submitState: SubmitFinalizing(
               loading: false,
@@ -344,6 +348,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         final sendParams = (state.submitState as SubmitFinalizing).composeSend;
         final fee = (state.submitState as SubmitFinalizing).fee;
+
+        print('fee: $fee');
 
         emit(state.copyWith(
             submitState: SubmitFinalizing(
