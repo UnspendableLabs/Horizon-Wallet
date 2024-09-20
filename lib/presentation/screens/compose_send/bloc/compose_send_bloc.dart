@@ -307,12 +307,10 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             1);
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
-        print('virtualSize: $virtualSize');
 
         // fee rate is currently in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
         final int totalFee = virtualSize * feeRate ~/ 1000;
 
-        print('totalFee: $totalFee');
         final sendActual = await composeRepository.composeSendVerbose(
             source, destination, asset, quantity, true, totalFee);
 
@@ -331,7 +329,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
     });
 
     on<FinalizeTransactionEvent>((event, emit) async {
-      print('finalize transaction event: ${event.fee}');
       emit(state.copyWith(
           submitState: SubmitFinalizing(
               loading: false,
@@ -348,8 +345,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         final sendParams = (state.submitState as SubmitFinalizing).composeSend;
         final fee = (state.submitState as SubmitFinalizing).fee;
-
-        print('fee: $fee');
 
         emit(state.copyWith(
             submitState: SubmitFinalizing(

@@ -15,7 +15,6 @@ class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
   @override
   Future<int> estimateSmartFee({required int confirmationTarget}) async {
     v2_api.Response<int> res = await api.estimateSmartFee(confirmationTarget);
-    print("estimateSmartFee: ${res.result}");
     return res.result!;
   }
 }
