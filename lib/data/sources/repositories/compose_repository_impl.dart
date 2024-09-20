@@ -91,6 +91,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     String? transferDestination,
     bool? unconfirmed,
     int? fee,
+    String? inputsSet,
   ]) async {
     final response = await api.composeIssuanceVerbose(
         sourceAddress,
@@ -102,7 +103,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         reset,
         description,
         unconfirmed,
-        fee);
+        fee,
+        inputsSet);
     if (response.result == null) {
       throw Exception('Failed to compose issuance');
     }

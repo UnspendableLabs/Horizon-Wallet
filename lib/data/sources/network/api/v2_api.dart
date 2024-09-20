@@ -2351,6 +2351,7 @@ abstract class V2Api {
     @Query("description") String? description,
     @Query("unconfirmed") bool? unconfirmed,
     @Query("fee") int? fee,
+    @Query("inputs_set") String? inputsSet,
   ]);
 
   @GET("/addresses/{address}/transactions")
