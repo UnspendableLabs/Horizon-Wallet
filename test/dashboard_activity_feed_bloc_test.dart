@@ -284,6 +284,10 @@ void main() {
 
   when(() => defaultBitcoinRepository.getConfirmedTransactions(any()))
       .thenAnswer((_) async => const Right([]));
+
+  when(() => defaultBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
+      .thenAnswer((_) async => const Right([]));
+
   final Cursor cursor = Cursor.fromInt(1);
 
   when(() => defaultBitcoinRepository.getBlockHeight())
@@ -328,7 +332,8 @@ void main() {
           );
         },
         act: (bloc) =>
-            bloc.add(const StartPolling(interval: Duration(seconds: 5))),
+            bloc.add(const StartPolling(interval: Duration(seconds: 2))),
+        wait: const Duration(seconds: 2),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               isA<DashboardActivityFeedState>()
@@ -422,6 +427,7 @@ void main() {
               bitcoinRepository: defaultBitcoinRepository);
         },
         act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(seconds: 2),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               isA<DashboardActivityFeedState>()
@@ -467,6 +473,7 @@ void main() {
             mostRecentCounterpartyEventHash: null,
             mostRecentBitcoinTxHash: null),
         act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(seconds: 2),
         expect: () => [
               const DashboardActivityFeedStateReloadingOk(
                 transactions: [],
@@ -513,6 +520,7 @@ void main() {
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
         act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(seconds: 2),
         expect: () => [
               const DashboardActivityFeedStateReloadingError(
                 error: "error",
@@ -557,6 +565,7 @@ void main() {
         seed: () =>
             const DashboardActivityFeedStateCompleteError(error: "error"),
         act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(seconds: 2),
         expect: () => [
               const DashboardActivityFeedStateReloadingError(
                 error: "error",
@@ -621,6 +630,7 @@ void main() {
               eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(seconds: 2),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
@@ -690,6 +700,8 @@ void main() {
               .thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
               .thenAnswer((_) async => const Right([]));
+          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
+              .thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getBlockHeight())
               .thenAnswer((_) async => const Right(100));
 
@@ -702,6 +714,7 @@ void main() {
               eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(seconds: 2),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
@@ -769,6 +782,8 @@ void main() {
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
               .thenAnswer((_) async => const Right([]));
 
+          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
+              .thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getBlockHeight())
               .thenAnswer((_) async => const Right(100));
 
@@ -781,6 +796,7 @@ void main() {
               eventsRepository: mockEventsRepository);
         },
         act: (bloc) => bloc.add(const Load()),
+        wait: const Duration(seconds: 2),
         expect: () => [
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
@@ -1137,6 +1153,8 @@ void main() {
 
             when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
                 .thenAnswer((_) async => const Right([]));
+            when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
+                .thenAnswer((_) async => const Right([]));
             when(() => mockBitcoinRepository.getBlockHeight())
                 .thenAnswer((_) async => const Right(100));
 
@@ -1164,6 +1182,7 @@ void main() {
                 eventsRepository: mockEventsRepository);
           },
           act: (bloc) => bloc..add(const Load()),
+          wait: const Duration(seconds: 2),
           expect: () => [
                 DashboardActivityFeedStateLoading(),
                 DashboardActivityFeedStateCompleteOk(
@@ -1204,6 +1223,9 @@ void main() {
             when(() => mockBitcoinRepository.getMempoolTransactions(any()))
                 .thenAnswer((_) async => const Right([]));
 
+            when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
+                .thenAnswer((_) async => Right(mockedBtcConfirmed));
+
             when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
                 .thenAnswer((_) async => Right(mockedBtcConfirmed));
             // cp event mocks
@@ -1233,6 +1255,7 @@ void main() {
                 eventsRepository: mockEventsRepository);
           },
           act: (bloc) => bloc..add(const Load()),
+          wait: const Duration(seconds: 2),
           expect: () => [
                 DashboardActivityFeedStateLoading(),
                 DashboardActivityFeedStateCompleteOk(

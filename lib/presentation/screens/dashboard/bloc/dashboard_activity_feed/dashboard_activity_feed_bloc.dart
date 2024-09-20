@@ -331,6 +331,7 @@ class DashboardActivityFeedBloc
     if (_isLoading) return; // Skip if already loading
     _isLoading = true;
 
+
     final nextState = switch (state) {
       DashboardActivityFeedStateCompleteOk completeOk =>
         DashboardActivityFeedStateReloadingOk(
