@@ -137,10 +137,21 @@ class ComposeIssuanceBloc
         print('SOURCE: $source');
         final utxos = await utxoRepository.getUnspentForAddress(source);
 
-        final utxoQueryStringParam = utxos.map((u) => "${u.txid}:${u.vout}").join(',');
+        final utxoQueryStringParam =
+            utxos.map((u) => "${u.txid}:${u.vout}").join(',');
         ComposeIssuanceVerbose issuance =
-            await composeRepository.composeIssuanceVerbose(source, name,
-                quantity, divisible, lock, reset, description, null, true, 1, utxoQueryStringParam);
+            await composeRepository.composeIssuanceVerbose(
+                source,
+                name,
+                quantity,
+                divisible,
+                lock,
+                reset,
+                description,
+                null,
+                true,
+                1,
+                utxoQueryStringParam);
 
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
@@ -205,7 +216,8 @@ class ComposeIssuanceBloc
 
       try {
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
-        final utxoQueryStringParam = utxoResponse.map((u) => "${u.txid}:${u.vout}").join(',');
+        final utxoQueryStringParam =
+            utxoResponse.map((u) => "${u.txid}:${u.vout}").join(',');
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
@@ -222,7 +234,6 @@ class ComposeIssuanceBloc
                 utxoQueryStringParam);
 
         final rawTx = issuance.rawtransaction;
-
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 

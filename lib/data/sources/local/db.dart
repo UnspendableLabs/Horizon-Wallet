@@ -3,6 +3,7 @@
 import 'package:drift/drift.dart';
 import 'package:horizon/data/sources/local/tables/accounts_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
+import 'package:horizon/data/sources/local/tables/locked_utxo_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
 import "package:horizon/data/sources/local/tables/transactions_table.dart";
 import 'schema_versions.dart';
@@ -12,12 +13,13 @@ part "db.g.dart";
 // TODO: read from env
 const ENV = "dev";
 
-@DriftDatabase(tables: [Wallets, Accounts, Addresses, Transactions])
+@DriftDatabase(
+    tables: [Wallets, Accounts, Addresses, Transactions, LockedUtxos])
 class DB extends _$DB {
   DB(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -89,6 +91,9 @@ class DB extends _$DB {
                         schema.transactions.unpackedData.cast<String>()
                   },
                 ));
+              },
+              from3To4: (m, schema) async {
+                await m.createTable(schema.lockedUtxos);
               },
             ));
 

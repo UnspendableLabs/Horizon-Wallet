@@ -1422,16 +1422,384 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   }
 }
 
+class $LockedUtxosTable extends LockedUtxos
+    with TableInfo<$LockedUtxosTable, LockedUtxo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LockedUtxosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _txHashMeta = const VerificationMeta('txHash');
+  @override
+  late final GeneratedColumn<String> txHash = GeneratedColumn<String>(
+      'tx_hash', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _txidMeta = const VerificationMeta('txid');
+  @override
+  late final GeneratedColumn<String> txid = GeneratedColumn<String>(
+      'txid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _voutMeta = const VerificationMeta('vout');
+  @override
+  late final GeneratedColumn<int> vout = GeneratedColumn<int>(
+      'vout', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _addressMeta =
+      const VerificationMeta('address');
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<int> value = GeneratedColumn<int>(
+      'value', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _lockedAtMeta =
+      const VerificationMeta('lockedAt');
+  @override
+  late final GeneratedColumn<DateTime> lockedAt = GeneratedColumn<DateTime>(
+      'locked_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, txHash, txid, vout, address, value, lockedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'locked_utxos';
+  @override
+  VerificationContext validateIntegrity(Insertable<LockedUtxo> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('tx_hash')) {
+      context.handle(_txHashMeta,
+          txHash.isAcceptableOrUnknown(data['tx_hash']!, _txHashMeta));
+    } else if (isInserting) {
+      context.missing(_txHashMeta);
+    }
+    if (data.containsKey('txid')) {
+      context.handle(
+          _txidMeta, txid.isAcceptableOrUnknown(data['txid']!, _txidMeta));
+    } else if (isInserting) {
+      context.missing(_txidMeta);
+    }
+    if (data.containsKey('vout')) {
+      context.handle(
+          _voutMeta, vout.isAcceptableOrUnknown(data['vout']!, _voutMeta));
+    } else if (isInserting) {
+      context.missing(_voutMeta);
+    }
+    if (data.containsKey('address')) {
+      context.handle(_addressMeta,
+          address.isAcceptableOrUnknown(data['address']!, _addressMeta));
+    } else if (isInserting) {
+      context.missing(_addressMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    if (data.containsKey('locked_at')) {
+      context.handle(_lockedAtMeta,
+          lockedAt.isAcceptableOrUnknown(data['locked_at']!, _lockedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LockedUtxo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LockedUtxo(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      txHash: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}tx_hash'])!,
+      txid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}txid'])!,
+      vout: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}vout'])!,
+      address: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}value'])!,
+      lockedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}locked_at'])!,
+    );
+  }
+
+  @override
+  $LockedUtxosTable createAlias(String alias) {
+    return $LockedUtxosTable(attachedDatabase, alias);
+  }
+}
+
+class LockedUtxo extends DataClass implements Insertable<LockedUtxo> {
+  final String id;
+  final String txHash;
+  final String txid;
+  final int vout;
+  final String address;
+  final int value;
+  final DateTime lockedAt;
+  const LockedUtxo(
+      {required this.id,
+      required this.txHash,
+      required this.txid,
+      required this.vout,
+      required this.address,
+      required this.value,
+      required this.lockedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['tx_hash'] = Variable<String>(txHash);
+    map['txid'] = Variable<String>(txid);
+    map['vout'] = Variable<int>(vout);
+    map['address'] = Variable<String>(address);
+    map['value'] = Variable<int>(value);
+    map['locked_at'] = Variable<DateTime>(lockedAt);
+    return map;
+  }
+
+  LockedUtxosCompanion toCompanion(bool nullToAbsent) {
+    return LockedUtxosCompanion(
+      id: Value(id),
+      txHash: Value(txHash),
+      txid: Value(txid),
+      vout: Value(vout),
+      address: Value(address),
+      value: Value(value),
+      lockedAt: Value(lockedAt),
+    );
+  }
+
+  factory LockedUtxo.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LockedUtxo(
+      id: serializer.fromJson<String>(json['id']),
+      txHash: serializer.fromJson<String>(json['txHash']),
+      txid: serializer.fromJson<String>(json['txid']),
+      vout: serializer.fromJson<int>(json['vout']),
+      address: serializer.fromJson<String>(json['address']),
+      value: serializer.fromJson<int>(json['value']),
+      lockedAt: serializer.fromJson<DateTime>(json['lockedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'txHash': serializer.toJson<String>(txHash),
+      'txid': serializer.toJson<String>(txid),
+      'vout': serializer.toJson<int>(vout),
+      'address': serializer.toJson<String>(address),
+      'value': serializer.toJson<int>(value),
+      'lockedAt': serializer.toJson<DateTime>(lockedAt),
+    };
+  }
+
+  LockedUtxo copyWith(
+          {String? id,
+          String? txHash,
+          String? txid,
+          int? vout,
+          String? address,
+          int? value,
+          DateTime? lockedAt}) =>
+      LockedUtxo(
+        id: id ?? this.id,
+        txHash: txHash ?? this.txHash,
+        txid: txid ?? this.txid,
+        vout: vout ?? this.vout,
+        address: address ?? this.address,
+        value: value ?? this.value,
+        lockedAt: lockedAt ?? this.lockedAt,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('LockedUtxo(')
+          ..write('id: $id, ')
+          ..write('txHash: $txHash, ')
+          ..write('txid: $txid, ')
+          ..write('vout: $vout, ')
+          ..write('address: $address, ')
+          ..write('value: $value, ')
+          ..write('lockedAt: $lockedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, txHash, txid, vout, address, value, lockedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LockedUtxo &&
+          other.id == this.id &&
+          other.txHash == this.txHash &&
+          other.txid == this.txid &&
+          other.vout == this.vout &&
+          other.address == this.address &&
+          other.value == this.value &&
+          other.lockedAt == this.lockedAt);
+}
+
+class LockedUtxosCompanion extends UpdateCompanion<LockedUtxo> {
+  final Value<String> id;
+  final Value<String> txHash;
+  final Value<String> txid;
+  final Value<int> vout;
+  final Value<String> address;
+  final Value<int> value;
+  final Value<DateTime> lockedAt;
+  final Value<int> rowid;
+  const LockedUtxosCompanion({
+    this.id = const Value.absent(),
+    this.txHash = const Value.absent(),
+    this.txid = const Value.absent(),
+    this.vout = const Value.absent(),
+    this.address = const Value.absent(),
+    this.value = const Value.absent(),
+    this.lockedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LockedUtxosCompanion.insert({
+    required String id,
+    required String txHash,
+    required String txid,
+    required int vout,
+    required String address,
+    required int value,
+    this.lockedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        txHash = Value(txHash),
+        txid = Value(txid),
+        vout = Value(vout),
+        address = Value(address),
+        value = Value(value);
+  static Insertable<LockedUtxo> custom({
+    Expression<String>? id,
+    Expression<String>? txHash,
+    Expression<String>? txid,
+    Expression<int>? vout,
+    Expression<String>? address,
+    Expression<int>? value,
+    Expression<DateTime>? lockedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (txHash != null) 'tx_hash': txHash,
+      if (txid != null) 'txid': txid,
+      if (vout != null) 'vout': vout,
+      if (address != null) 'address': address,
+      if (value != null) 'value': value,
+      if (lockedAt != null) 'locked_at': lockedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LockedUtxosCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? txHash,
+      Value<String>? txid,
+      Value<int>? vout,
+      Value<String>? address,
+      Value<int>? value,
+      Value<DateTime>? lockedAt,
+      Value<int>? rowid}) {
+    return LockedUtxosCompanion(
+      id: id ?? this.id,
+      txHash: txHash ?? this.txHash,
+      txid: txid ?? this.txid,
+      vout: vout ?? this.vout,
+      address: address ?? this.address,
+      value: value ?? this.value,
+      lockedAt: lockedAt ?? this.lockedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (txHash.present) {
+      map['tx_hash'] = Variable<String>(txHash.value);
+    }
+    if (txid.present) {
+      map['txid'] = Variable<String>(txid.value);
+    }
+    if (vout.present) {
+      map['vout'] = Variable<int>(vout.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<int>(value.value);
+    }
+    if (lockedAt.present) {
+      map['locked_at'] = Variable<DateTime>(lockedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LockedUtxosCompanion(')
+          ..write('id: $id, ')
+          ..write('txHash: $txHash, ')
+          ..write('txid: $txid, ')
+          ..write('vout: $vout, ')
+          ..write('address: $address, ')
+          ..write('value: $value, ')
+          ..write('lockedAt: $lockedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $AddressesTable addresses = $AddressesTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $LockedUtxosTable lockedUtxos = $LockedUtxosTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [wallets, accounts, addresses, transactions];
+      [wallets, accounts, addresses, transactions, lockedUtxos];
 }

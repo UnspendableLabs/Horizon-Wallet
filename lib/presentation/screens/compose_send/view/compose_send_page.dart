@@ -13,6 +13,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/locked_utxo_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -63,6 +64,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
           transactionRepository: GetIt.I.get<TransactionRepository>(),
           transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
           bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+          lockedUtxoRepository: GetIt.I.get<LockedUtxoRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeSendPage(
           address: state.currentAddress,

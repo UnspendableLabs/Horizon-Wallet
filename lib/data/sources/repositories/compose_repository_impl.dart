@@ -27,7 +27,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
   @override
   Future<compose_send.ComposeSend> composeSendVerbose(
       String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx, int? fee, int? feeRate, String? inputsSet]) async {
+      [bool? allowUnconfirmedTx,
+      int? fee,
+      int? feeRate,
+      String? inputsSet]) async {
     final response = await api.composeSendVerbose(sourceAddress, destination,
         asset, quantity, allowUnconfirmedTx, fee, feeRate, inputsSet);
 
