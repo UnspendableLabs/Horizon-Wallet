@@ -778,7 +778,7 @@ class ConfirmationPageState extends State<ConfirmationPage> {
               label: "Fee",
               controller: TextEditingController(
                   text:
-                      "${widget.composeSendState.fee.toString()} sats ( ${widget.composeSendState.feeRate} sats/vbyte )"),
+                      "${widget.composeSendState.fee.toString()} sats ( ${widget.composeSendState.feeRate / 1000} sats/vbyte )"),
               enabled: false,
             ),
             const SizedBox(height: 16.0),
