@@ -13,6 +13,7 @@ import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/repositories/locked_utxo_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/presentation/common/footer.dart';
 import 'package:horizon/presentation/common/no_data.dart';
@@ -418,6 +419,7 @@ class DashboardPageWrapper extends StatelessWidget {
                     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
                     transactionLocalRepository:
                         GetIt.I.get<TransactionLocalRepository>(),
+                    lockedUtxoRepository: GetIt.I.get<LockedUtxoRepository>(),
                     pageSize: 10,
                   ),
                 ),

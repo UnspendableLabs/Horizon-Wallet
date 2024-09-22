@@ -134,9 +134,24 @@ class ComposeIssuanceBloc
       // final transferDestination = event.transferDestination;
 
       try {
+        print('SOURCE: $source');
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+
+        final utxoQueryStringParam =
+            utxos.map((u) => "${u.txid}:${u.vout}").join(',');
         ComposeIssuanceVerbose issuance =
-            await composeRepository.composeIssuanceVerbose(source, name,
-                quantity, divisible, lock, reset, description, null, true, 1);
+            await composeRepository.composeIssuanceVerbose(
+                source,
+                name,
+                quantity,
+                divisible,
+                lock,
+                reset,
+                description,
+                null,
+                true,
+                1,
+                utxoQueryStringParam);
 
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
@@ -155,7 +170,8 @@ class ComposeIssuanceBloc
                 description,
                 null,
                 true,
-                totalFee);
+                totalFee,
+                utxoQueryStringParam);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingIssuance(
@@ -200,6 +216,10 @@ class ComposeIssuanceBloc
       final password = event.password;
 
       try {
+        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
+        final utxoQueryStringParam =
+            utxoResponse.map((u) => "${u.txid}:${u.vout}").join(',');
+
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
                 issuanceParams.params.source,
@@ -211,11 +231,10 @@ class ComposeIssuanceBloc
                 issuanceParams.params.description,
                 null,
                 true,
-                fee);
+                fee,
+                utxoQueryStringParam);
 
         final rawTx = issuance.rawtransaction;
-
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
 

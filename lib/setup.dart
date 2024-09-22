@@ -11,6 +11,7 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
+import 'package:horizon/data/sources/local/dao/locked_utxo_dao.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
@@ -19,6 +20,7 @@ import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/locked_utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -27,6 +29,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/locked_utxo_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -141,8 +144,14 @@ Future<void> setup() async {
       AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<ComposeRepository>(
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
+
+  injector.registerSingleton<LockedUtxoRepository>(LockedUtxoRepositoryImpl(
+    lockedUtxoDao: LockedUtxoDao(injector.get<DatabaseManager>().database),
+  ));
   injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
-      api: GetIt.I.get<V2Api>(), esploraApi: EsploraApi(dio: esploraDio)));
+      api: GetIt.I.get<V2Api>(),
+      esploraApi: EsploraApi(dio: esploraDio),
+      lockedUtxoRepository: GetIt.I.get<LockedUtxoRepository>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),

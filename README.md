@@ -1,6 +1,6 @@
 # horizon
 
-A bip39 wallet for XCP and bitcoin. Supports importing from Freewallet and Counterwallet.
+A wallet for XCP and bitcoin. Supports loading seed phrases from Freewallet and Counterwallet.
 
 ## Prerequisites
 
@@ -15,18 +15,10 @@ To run locally on the web:
 1. Install dependencies:
    `flutter pub get`
 
-2. Add a .env file to the root of the application which includes:
-
-```
-TEST=false
-```
-
-to run in testnet mode, set TEST=true
-
-3. Much of the web app relies on code generation. To generate the necessary code, run:
+2. Much of the web app relies on code generation. To generate the necessary code, run:
    `flutter pub run build_runner build`
 
-4. Run the app
+3. Run the app
 
    - To run the application as a web app
 
@@ -89,6 +81,10 @@ to run in testnet mode, set TEST=true
 #### sources
 
 - https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
+
+### unit tests
+
+- run with `flutter test` or `flutter test test/target_file.dart`
 
 #### integration_test
 

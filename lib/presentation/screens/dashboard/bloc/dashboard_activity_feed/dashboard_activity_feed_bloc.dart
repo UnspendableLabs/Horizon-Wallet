@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/cursor.dart';
+import 'package:horizon/domain/repositories/locked_utxo_repository.dart';
 import 'dart:async';
 
 import "dashboard_activity_feed_event.dart";
@@ -26,6 +27,7 @@ class DashboardActivityFeedBloc
   EventsRepository eventsRepository;
   AddressRepository addressRepository;
   BitcoinRepository bitcoinRepository;
+  LockedUtxoRepository lockedUtxoRepository;
   bool _isLoading = false; // New flag to track loading state
   bool _isCancelled = false;
 
@@ -35,7 +37,8 @@ class DashboardActivityFeedBloc
       required this.pageSize,
       required this.transactionLocalRepository,
       required this.addressRepository,
-      required this.bitcoinRepository})
+      required this.bitcoinRepository,
+      required this.lockedUtxoRepository})
       : super(DashboardActivityFeedStateInitial()) {
     on<StartPolling>(_onStartPolling);
     on<StopPolling>(_onStopPolling);
@@ -461,6 +464,9 @@ class DashboardActivityFeedBloc
                 blockHeight, activityFeedItem.getBlockIndex()!);
             confirmedActivityFeedItems.add(activityFeedItem);
             seenHashes.add(event.txHash);
+
+            // delete any locked utxos since transaction is confirmed
+            await lockedUtxoRepository.deleteLockedUtxoByTxHash(event.txHash);
           }
         }
 
@@ -472,6 +478,9 @@ class DashboardActivityFeedBloc
                 blockHeight, activityFeedItem.getBlockIndex()!);
             confirmedActivityFeedItems.add(activityFeedItem);
             seenHashes.add(btx.txid);
+
+            // delete any locked utxos since transaction is confirmed
+            await lockedUtxoRepository.deleteLockedUtxoByTxHash(btx.txid);
           }
         }
 

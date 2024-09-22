@@ -27,9 +27,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   @override
   Future<compose_send.ComposeSend> composeSendVerbose(
       String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx, int? fee, int? feeRate]) async {
+      [bool? allowUnconfirmedTx,
+      int? fee,
+      int? feeRate,
+      String? inputsSet]) async {
     final response = await api.composeSendVerbose(sourceAddress, destination,
-        asset, quantity, allowUnconfirmedTx, fee, feeRate);
+        asset, quantity, allowUnconfirmedTx, fee, feeRate, inputsSet);
 
     if (response.result == null) {
       throw Exception('Failed to compose send');
@@ -91,6 +94,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     String? transferDestination,
     bool? unconfirmed,
     int? fee,
+    String? inputsSet,
   ]) async {
     final response = await api.composeIssuanceVerbose(
         sourceAddress,
@@ -102,7 +106,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         reset,
         description,
         unconfirmed,
-        fee);
+        fee,
+        inputsSet);
     if (response.result == null) {
       throw Exception('Failed to compose issuance');
     }
