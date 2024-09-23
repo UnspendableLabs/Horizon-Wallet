@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -299,6 +300,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         */
 
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
+
         final utxoQueryStringParam = utxoResponse
             .where((u) => u.confirmed)
             .map((u) => "${u.txid}:${u.vout}")
@@ -378,7 +380,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final asset = sendParams.params.asset;
         final password = event.password;
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
-        // **Lock the selected UTXOs before composing the transaction**
 
         final utxoQueryStringParam = utxoResponse
             .where((u) => u.confirmed)
@@ -451,17 +452,18 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           ));
 
           // Lock the selected UTXOs
-          for (var utxo in utxoResponse) {
-            await lockedUtxoRepository.insertLockedUtxo(LockedUtxo(
-              id: '${utxo.txid}:${utxo.vout}',
-              txHash: txHash,
-              txid: utxo.txid,
-              vout: utxo.vout,
-              address: utxo.address,
-              value: utxo.value,
-              lockedAt: DateTime.now(),
-            ));
-          }
+        }
+                  for (var utxo in utxoResponse) {
+
+          await lockedUtxoRepository.insertLockedUtxo(LockedUtxo(
+            id: '${utxo.txid}:${utxo.vout}',
+            txHash: txHash,
+            txid: utxo.txid,
+            vout: utxo.vout,
+            address: utxo.address,
+            value: utxo.value,
+            lockedAt: DateTime.now(),
+          ));
         }
 
         emit(state.copyWith(

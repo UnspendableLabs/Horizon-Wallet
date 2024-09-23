@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/locked_utxo.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -10,6 +12,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/locked_utxo_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -40,6 +43,7 @@ class ComposeIssuanceBloc
   final TransactionRepository transactionRepository;
   final TransactionLocalRepository transactionLocalRepository;
   final BitcoinRepository bitcoinRepository;
+  final LockedUtxoRepository lockedUtxoRepository;
 
   ComposeIssuanceBloc({
     required this.addressRepository,
@@ -55,6 +59,7 @@ class ComposeIssuanceBloc
     required this.transactionRepository,
     required this.transactionLocalRepository,
     required this.bitcoinRepository,
+    required this.lockedUtxoRepository,
   }) : super(ComposeIssuanceState(
             submitState: const SubmitInitial(),
             feeOption: FeeOption.Medium())) {
@@ -139,6 +144,7 @@ class ComposeIssuanceBloc
 
         final utxoQueryStringParam =
             utxos.map((u) => "${u.txid}:${u.vout}").join(',');
+
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
                 source,
@@ -270,6 +276,18 @@ class ComposeIssuanceBloc
         await transactionLocalRepository.insertVerbose(txInfo.copyWith(
           hash: txHash,
         ));
+        // Lock the selected UTXOs
+        for (var utxo in utxoResponse) {
+          await lockedUtxoRepository.insertLockedUtxo(LockedUtxo(
+            id: '${utxo.txid}:${utxo.vout}',
+            txHash: txHash,
+            txid: utxo.txid,
+            vout: utxo.vout,
+            address: utxo.address,
+            value: utxo.value,
+            lockedAt: DateTime.now(),
+          ));
+        }
 
         emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex)));
       } catch (error) {
