@@ -101,6 +101,33 @@ class TransactionServiceImpl implements TransactionService {
   }
 
   @override
+  bool validateFee(
+      {required String rawtransaction,
+      required int expectedFee,
+      required Map<String, Utxo> utxoMap}) {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(rawtransaction);
+
+    int ins = 0;
+    int outs = 0;
+
+    for (final input in transaction.ins.toDart) {
+      var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+      var prev = utxoMap[txHash];
+      if (prev == null) {
+        throw Exception('Invariant: No utxo found for txHash: $txHash');
+      }
+      ins += prev.value;
+    }
+
+    for (final output in transaction.outs.toDart) {
+      outs += output.value;
+    }
+
+    return ins - outs == expectedFee;
+  }
+
+  @override
   bool validateBTCAmount({
     required String rawtransaction,
     required String source,

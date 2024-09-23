@@ -11,4 +11,9 @@ abstract class TransactionService {
     required String source,
     required int expectedBTC,
   });
+
+  bool validateFee(
+      {required String rawtransaction,
+      required int expectedFee,
+      required Map<String, Utxo> utxoMap});
 }
