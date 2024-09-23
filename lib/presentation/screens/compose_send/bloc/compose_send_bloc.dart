@@ -422,8 +422,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             fee: 0, // dummy values
             data: "",
           ));
-
-          // Lock the selected UTXOs
         }
 
         emit(state.copyWith(
