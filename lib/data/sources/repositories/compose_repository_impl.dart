@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/compose_issuance.dart'
     as compose_issuance;
 import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
 import 'package:horizon/domain/entities/raw_transaction.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
 class ComposeRepositoryImpl extends ComposeRepository {
@@ -27,9 +28,16 @@ class ComposeRepositoryImpl extends ComposeRepository {
   @override
   Future<compose_send.ComposeSend> composeSendVerbose(
       String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx, int? fee, int? feeRate]) async {
+      [bool? allowUnconfirmedTx,
+      int? fee,
+      int? feeRate,
+      List<Utxo>? inputsSet]) async {
+
+    final inputsSetString =
+        inputsSet?.map((e) => "${e.txid}:${e.vout}").join(',');
+
     final response = await api.composeSendVerbose(sourceAddress, destination,
-        asset, quantity, allowUnconfirmedTx, fee, feeRate);
+        asset, quantity, allowUnconfirmedTx, fee, feeRate, inputsSetString);
 
     if (response.result == null) {
       throw Exception('Failed to compose send');
@@ -91,7 +99,15 @@ class ComposeRepositoryImpl extends ComposeRepository {
     String? transferDestination,
     bool? unconfirmed,
     int? fee,
+    List<Utxo>? inputsSet,
   ]) async {
+
+    if (inputsSet != null && inputsSet.isEmpty) {
+      throw Exception('Balance is too low');
+    }
+
+    final inputsSetString =
+        inputsSet?.map((e) => "${e.txid}:${e.vout}").join(',');
     final response = await api.composeIssuanceVerbose(
         sourceAddress,
         name,
@@ -102,7 +118,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         reset,
         description,
         unconfirmed,
-        fee);
+        fee,
+        inputsSetString);
     if (response.result == null) {
       throw Exception('Failed to compose issuance');
     }

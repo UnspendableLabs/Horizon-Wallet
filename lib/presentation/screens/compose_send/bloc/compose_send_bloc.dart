@@ -294,6 +294,9 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         */
 
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+        final inputsSet = utxos.isEmpty ? null : utxos;
+
         // this is a dummy transaction that helps us to compute
         // the transaction virtual size which we multiply
         // by sats / vbyte to get the final fee
@@ -304,15 +307,18 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             asset,
             quantity,
             true,
-            1);
+            1,
+            null,
+            inputsSet);
+
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
         // fee rate is currently in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
         final int totalFee = virtualSize * feeRate ~/ 1000;
 
-        final sendActual = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, totalFee);
+        final sendActual = await composeRepository.composeSendVerbose(source,
+            destination, asset, quantity, true, totalFee, null, inputsSet);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingSend(
@@ -358,16 +364,17 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final quantity = sendParams.params.quantity;
         final asset = sendParams.params.asset;
         final password = event.password;
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+
+        final inputsSet = utxos.isEmpty ? null : utxos;
 
         // Compose a new tx with user specified fee
-        final send = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, fee);
+        final send = await composeRepository.composeSendVerbose(source,
+            destination, asset, quantity, true, fee, null, inputsSet);
 
         final rawTx = send.rawtransaction;
 
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
-
-        Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
+        Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
         Address? address = await addressRepository.getAddress(source);
         Account? account =

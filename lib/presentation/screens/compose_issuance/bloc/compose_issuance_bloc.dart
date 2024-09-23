@@ -134,9 +134,22 @@ class ComposeIssuanceBloc
       // final transferDestination = event.transferDestination;
 
       try {
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+        final inputsSet = utxos.isEmpty ? null : utxos;
+
         ComposeIssuanceVerbose issuance =
-            await composeRepository.composeIssuanceVerbose(source, name,
-                quantity, divisible, lock, reset, description, null, true, 1);
+            await composeRepository.composeIssuanceVerbose(
+                source,
+                name,
+                quantity,
+                divisible,
+                lock,
+                reset,
+                description,
+                null,
+                true,
+                1,
+                inputsSet);
 
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
@@ -155,7 +168,8 @@ class ComposeIssuanceBloc
                 description,
                 null,
                 true,
-                totalFee);
+                totalFee,
+                inputsSet);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingIssuance(
@@ -200,6 +214,9 @@ class ComposeIssuanceBloc
       final password = event.password;
 
       try {
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+        final inputsSet = utxos.isEmpty ? null : utxos;
+
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
                 issuanceParams.params.source,
@@ -211,13 +228,12 @@ class ComposeIssuanceBloc
                 issuanceParams.params.description,
                 null,
                 true,
-                fee);
+                fee,
+                inputsSet);
 
         final rawTx = issuance.rawtransaction;
 
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
-
-        Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
+        Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
         Address? address = await addressRepository.getAddress(source);
         Account? account =
