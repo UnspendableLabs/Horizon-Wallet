@@ -510,6 +510,7 @@ class DashboardActivityFeedBloc
       return;
     }
 
+    _isCancelled = false;
     timer?.cancel();
     timer = Timer.periodic(event.interval, (_) {
       add(const LoadQuiet());
