@@ -414,9 +414,9 @@ Map<String, dynamic> _$NewTransactionEventToJson(
 
 AssetIssuanceParams _$AssetIssuanceParamsFromJson(Map<String, dynamic> json) =>
     AssetIssuanceParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
     );
 
@@ -432,12 +432,12 @@ Map<String, dynamic> _$AssetIssuanceParamsToJson(
 VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
         Map<String, dynamic> json) =>
     VerboseAssetIssuanceParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
       blockTime: (json['block_time'] as num).toInt(),
-      quantityNormalized: json['quantity_normalized'] as String,
+      quantityNormalized: json['quantity_normalized'] as String?,
       feePaidNormalized: json['fee_paid_normalized'] as String,
     );
 
