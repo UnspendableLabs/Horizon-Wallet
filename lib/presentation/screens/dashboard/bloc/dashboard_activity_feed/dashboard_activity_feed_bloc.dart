@@ -408,7 +408,6 @@ class DashboardActivityFeedBloc
           _isCancelled = false;
           break;
         }
-        await Future.delayed(const Duration(seconds: 1));
         final transactionsE = await bitcoinRepository
             .getConfirmedTransactionsPaginated(addresses[0], lastSeenTxId);
 
@@ -510,6 +509,7 @@ class DashboardActivityFeedBloc
       return;
     }
 
+    _isCancelled = false;
     timer?.cancel();
     timer = Timer.periodic(event.interval, (_) {
       add(const LoadQuiet());
