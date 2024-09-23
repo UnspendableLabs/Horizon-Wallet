@@ -65,7 +65,7 @@ class DashboardActivityFeedBloc
     // emit(nextState);
 
     try {
-      List<String> addresses = [currentAddress.address];
+      String address= currentAddress.address;
 
       String? mostRecentCounterpartyEventHash =
           currentState.mostRecentCounterpartyEventHash;
@@ -79,8 +79,8 @@ class DashboardActivityFeedBloc
         //     need to fetch all in order to dedupe by
         //     by txhash
 
-        newCounterpartyEvents = await eventsRepository.getAllByAddressesVerbose(
-            addresses: addresses,
+        newCounterpartyEvents = await eventsRepository.getAllByAddressVerbose(
+            address: address,
             unconfirmed: true,
             whitelist: DEFAULT_WHITELIST);
       } else {
@@ -90,8 +90,8 @@ class DashboardActivityFeedBloc
         Cursor? nextCursor;
         while (!found) {
           final (remoteEvents, nextCursor_, _) =
-              await eventsRepository.getByAddressesVerbose(
-                  addresses: addresses,
+              await eventsRepository.getByAddressVerbose(
+                  address: address,
                   limit: pageSize,
                   unconfirmed: true,
                   cursor: nextCursor,
@@ -117,25 +117,25 @@ class DashboardActivityFeedBloc
       List<BitcoinTx> newBitcoinTransactions = [];
       if (mostRecentBitcoinTxHash == null) {
         // 2a) if null list of new btc transactions equal to all of them
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions([ address  ]);
 
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
         newBitcoinTransactions = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx(addresses),
+              (tx) => !tx.isCounterpartyTx([ address  ]),
             )
             .toList();
       } else {
         // 2b otherwise, bitcoin transactions are all above last seen
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions([ address ]);
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx(addresses),
+              (tx) => !tx.isCounterpartyTx([ address ]),
             )
             .toList();
 
@@ -356,8 +356,8 @@ class DashboardActivityFeedBloc
           await transactionLocalRepository.getAllByAddressesVerbose(addresses);
 
       final counterpartyEvents =
-          await eventsRepository.getAllByAddressesVerbose(
-              addresses: addresses,
+          await eventsRepository.getAllByAddressVerbose(
+              address: currentAddress.address,
               // limit: pageSize,
               unconfirmed: true,
               whitelist: DEFAULT_WHITELIST);
