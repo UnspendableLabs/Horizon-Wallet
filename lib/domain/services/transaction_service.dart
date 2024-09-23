@@ -5,4 +5,10 @@ abstract class TransactionService {
       String sourceAddress, Map<String, Utxo> utxoMap);
 
   int getVirtualSize(String unsignedTransaction);
+
+  bool validateBTCAmount({
+    required String rawtransaction,
+    required String source,
+    required int expectedBTC,
+  });
 }

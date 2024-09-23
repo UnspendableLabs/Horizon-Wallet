@@ -523,7 +523,6 @@ class EventsRepositoryImpl implements EventsRepository {
       cacheKey = _generateCacheKey(address, limit, cursor);
     }
 
-    print("this is the cacheKey $cacheKey");
 
     if (cacheKey != null && _cache.containsKey(cacheKey)) {
       return _cache[cacheKey]!;

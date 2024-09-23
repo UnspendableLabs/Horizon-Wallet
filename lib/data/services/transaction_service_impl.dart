@@ -100,6 +100,37 @@ class TransactionServiceImpl implements TransactionService {
     return transaction.virtualSize();
   }
 
+  @override
+  bool validateBTCAmount({
+    required String rawtransaction,
+    required String source,
+    required int expectedBTC,
+  }) {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(rawtransaction);
+
+    int actualBTC = 0;
+    for (final output in transaction.outs.toDart) {
+      if (_isOpReturn(output.script)) {
+        continue;
+      }
+      final address =
+          bitcoinjs.Address.fromOutputScript(output.script, _getNetwork())
+              .toString();
+      final amount = output.value;
+
+      if (address != source) {
+        actualBTC += amount;
+      }
+    }
+    return actualBTC == expectedBTC;
+  }
+
+  bool _isOpReturn(JSUint8Array script) {
+    // OP_RETURN is represented by 0x6a
+    return script.toDart.isNotEmpty && script.toDart[0] == 0x6a;
+  }
+
   _getNetwork() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin,
         Network.testnet => ecpair.testnet,

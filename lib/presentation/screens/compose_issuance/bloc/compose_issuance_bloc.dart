@@ -214,23 +214,14 @@ class ComposeIssuanceBloc
 
       try {
         final utxos = await utxoRepository.getUnspentForAddress(source);
-        final inputsSet = utxos.isEmpty ? null : utxos;
 
-        ComposeIssuanceVerbose issuance =
-            await composeRepository.composeIssuanceVerbose(
-                issuanceParams.params.source,
-                issuanceParams.params.asset,
-                issuanceParams.params.quantity,
-                issuanceParams.params.divisible,
-                issuanceParams.params.lock,
-                issuanceParams.params.reset,
-                issuanceParams.params.description,
-                null,
-                true,
-                fee,
-                inputsSet);
+        final rawTx = issuanceParams.rawtransaction;
 
-        final rawTx = issuance.rawtransaction;
+        if (!transactionService.validateBTCAmount(
+            rawtransaction: rawTx, source: source, expectedBTC: 0)) {
+          throw Exception(
+              "Error validation transaction: outputs do not much expected");
+        }
 
         Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
@@ -283,3 +274,6 @@ class ComposeIssuanceBloc
     });
   }
 }
+
+
+

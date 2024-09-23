@@ -24,7 +24,7 @@ class EnvironmentConfig implements Config {
   @override
   String get esploraBase => switch (network) {
         Network.mainnet => "https://api.counterparty.io:3000",
-        Network.testnet => "https://api.counterparty.io:13000/",
+        Network.testnet => "https://api.counterparty.io:3001",
         Network.regtest => "http://127.0.0.1:3002",
       };
 

@@ -365,13 +365,20 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final password = event.password;
         final utxos = await utxoRepository.getUnspentForAddress(source);
 
-        final inputsSet = utxos.isEmpty ? null : utxos;
-
+        // final inputsSet = utxos.isEmpty ? null : utxos;
         // Compose a new tx with user specified fee
-        final send = await composeRepository.composeSendVerbose(source,
-            destination, asset, quantity, true, fee, null, inputsSet);
+        // final send = await composeRepository.composeSendVerbose(source,
+        //     destination, asset, quantity, true, fee, null, inputsSet);
 
-        final rawTx = send.rawtransaction;
+        final rawTx = sendParams.rawtransaction;
+
+        final btcAmount = asset == "BTC" ? quantity : 0;
+
+        if (!transactionService.validateBTCAmount(
+            rawtransaction: rawTx, source: source, expectedBTC: btcAmount)) {
+          throw Exception(
+              "Error validation transaction: outputs do not much expected");
+        } 
 
         Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
