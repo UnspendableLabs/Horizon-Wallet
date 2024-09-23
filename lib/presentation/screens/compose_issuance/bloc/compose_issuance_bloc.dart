@@ -154,8 +154,7 @@ class ComposeIssuanceBloc
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
 
-        // fee rate is in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
-        final totalFee = virtualSize * feeRate ~/ 1000;
+        final totalFee = virtualSize * feeRate;
 
         ComposeIssuanceVerbose issuanceActual =
             await composeRepository.composeIssuanceVerbose(

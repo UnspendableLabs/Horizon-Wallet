@@ -16,10 +16,11 @@ class GetFeeEstimates {
       bitcoindService.estimateSmartFee(confirmationTarget: slowTarget),
     ]);
 
+    // kbytes to bytes
     return FeeEstimates(
-      fast: results[0],
-      medium: results[1],
-      slow: results[2],
+      fast: results[0] ~/ 1000,
+      medium: results[1] ~/ 1000,
+      slow: results[2] ~/ 1000 ,
     );
   }
 }

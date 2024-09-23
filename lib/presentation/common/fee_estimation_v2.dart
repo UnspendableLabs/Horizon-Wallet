@@ -120,10 +120,9 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
 
   String _getFeeEstimate(FeeOption option, FeeEstimates estimates) {
     return switch (option) {
-      // estimates are returned in sats / kbyte, so we divide by 1000 to get sats / byte
-      Fast() => "${estimates.fast / 1000} sat/vbyte",
-      Medium() => "${estimates.medium / 1000} sat/vbyte",
-      Slow() => "${estimates.slow / 1000} sat/vbyte",
+      Fast() => "${estimates.fast} sat/vbyte",
+      Medium() => "${estimates.medium} sat/vbyte",
+      Slow() => "${estimates.slow} sat/vbyte",
       Custom() => "",
     };
   }

@@ -314,8 +314,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
-        // fee rate is currently in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
-        final int totalFee = virtualSize * feeRate ~/ 1000;
+        final int totalFee = virtualSize * feeRate;
 
         final sendActual = await composeRepository.composeSendVerbose(source,
             destination, asset, quantity, true, totalFee, null, inputsSet);
