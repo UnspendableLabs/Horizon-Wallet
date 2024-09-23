@@ -452,7 +452,7 @@ class NewTransactionEvent extends Event {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AssetIssuanceParams {
-  final String asset;
+  final String? asset;
   final String? assetLongname;
   // final int blockIndex;
   // final int callDate;
@@ -463,7 +463,7 @@ class AssetIssuanceParams {
   // final int feePaid;
   // final String issuer;
   // final bool locked;
-  final int quantity;
+  final int? quantity;
   // final bool reset;
   final String source;
   // final String status;
@@ -472,7 +472,7 @@ class AssetIssuanceParams {
   // final int txIndex;
 
   AssetIssuanceParams({
-    required this.asset,
+    this.asset,
     this.assetLongname,
     // required this.blockIndex,
     // required this.callDate,
@@ -500,7 +500,7 @@ class AssetIssuanceParams {
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
   final int blockTime;
   // final AssetInfo assetInfo;
-  final String quantityNormalized;
+  final String? quantityNormalized;
   final String feePaidNormalized;
 
   VerboseAssetIssuanceParams({
@@ -510,7 +510,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.feePaid,
     // required super.issuer,
     // required super.locked,
-    required super.quantity,
+    super.quantity,
     // required super.reset,
     required super.source,
     // required super.status,
@@ -519,7 +519,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.txIndex,
     required this.blockTime,
     // required this.assetInfo,
-    required this.quantityNormalized,
+    this.quantityNormalized,
     required this.feePaidNormalized,
   });
 

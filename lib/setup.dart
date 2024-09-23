@@ -58,6 +58,10 @@ import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
 import 'package:horizon/data/sources/network/esplora_client.dart';
 
+import 'package:logger/logger.dart';
+
+final logger = Logger();
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -77,6 +81,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -104,6 +109,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -222,6 +228,8 @@ class TimeoutInterceptor extends Interceptor {
             'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
       );
+      logger.d(formattedError.toString());
+
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -241,6 +249,7 @@ class ConnectionErrorInterceptor extends Interceptor {
             'Connection Error — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
+      logger.d(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -260,6 +269,7 @@ class BadResponseInterceptor extends Interceptor {
             : "Bad Response",
         type: DioExceptionType.badResponse,
       );
+      logger.d('${formattedError.toString()} -- $requestPath');
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -278,9 +288,37 @@ class BadCertificateInterceptor extends Interceptor {
             'Bad Certificate — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
       );
+      logger.d(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
     }
+  }
+}
+
+class SimpleLogInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final requestInfo = '${options.method} ${options.uri}';
+    logger.d('Request: $requestInfo');
+    handler.next(options);
+  }
+
+  @override
+  void onResponse(response, ResponseInterceptorHandler handler) {
+    final responseInfo = '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
+    logger.d('Response: $responseInfo');
+    handler.next(response);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    final errorInfo = '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
+    logger.d('Error: $errorInfo');
+    if (err.response != null) {
+      final responseData = err.response?.data;
+      logger.d('Response data: $responseData');
+    }
+    handler.next(err);
   }
 }

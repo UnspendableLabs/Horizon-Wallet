@@ -349,7 +349,7 @@ class VerboseNewTransactionEvent extends VerboseEvent {
 }
 
 class AssetIssuanceParams {
-  final String asset;
+  final String? asset;
   final String? assetLongname;
   // final int? blockIndex;
   // final int callDate;
@@ -360,7 +360,7 @@ class AssetIssuanceParams {
   // final int feePaid;
   // final String issuer;
   // final bool locked;
-  final int quantity;
+  final int? quantity;
   // final bool reset;
   final String source;
   // final String status;
@@ -369,7 +369,7 @@ class AssetIssuanceParams {
   // final int txIndex;
 
   AssetIssuanceParams({
-    required this.asset,
+    this.asset,
     this.assetLongname,
     // this.blockIndex,
     // required this.callDate,
@@ -380,7 +380,7 @@ class AssetIssuanceParams {
     // required this.feePaid,
     // required this.issuer,
     // required this.locked,
-    required this.quantity,
+    this.quantity,
     // required this.reset,
     required this.source,
     // required this.status,
@@ -406,7 +406,7 @@ class AssetIssuanceEvent extends Event {
 
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
   final int blockTime;
-  final String quantityNormalized;
+  final String? quantityNormalized;
   final String feePaidNormalized;
   VerboseAssetIssuanceParams({
     required super.asset,
@@ -427,7 +427,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.txHash,
     // required super.txIndex,
     required this.blockTime,
-    required this.quantityNormalized,
+    this.quantityNormalized,
     required this.feePaidNormalized,
   });
 }

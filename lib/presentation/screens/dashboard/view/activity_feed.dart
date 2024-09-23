@@ -11,6 +11,7 @@ import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -200,7 +201,10 @@ class ActivityFeedListItem extends StatelessWidget {
           asset: params.asset,
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
-        SelectableText("Issue ${params.quantityNormalized} ${params.asset}"),
+        params.asset == null || params.quantityNormalized == null
+            ? const SelectableText('Issue (INVALID)', style: TextStyle(color: redErrorText))
+            : SelectableText(
+                "Issue ${params.quantityNormalized} ${params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       _ => SelectableText(
