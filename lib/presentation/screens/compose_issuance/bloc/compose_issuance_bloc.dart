@@ -135,6 +135,7 @@ class ComposeIssuanceBloc
 
       try {
         final utxos = await utxoRepository.getUnspentForAddress(source);
+        final inputsSet = utxos.isEmpty ? null : utxos;
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
@@ -148,7 +149,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 1,
-                utxos);
+                inputsSet);
 
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
@@ -168,7 +169,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 totalFee,
-                utxos);
+                inputsSet);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingIssuance(
@@ -214,6 +215,7 @@ class ComposeIssuanceBloc
 
       try {
         final utxos = await utxoRepository.getUnspentForAddress(source);
+        final inputsSet = utxos.isEmpty ? null : utxos;
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
@@ -227,7 +229,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 fee,
-                utxos);
+                inputsSet);
 
         final rawTx = issuance.rawtransaction;
 

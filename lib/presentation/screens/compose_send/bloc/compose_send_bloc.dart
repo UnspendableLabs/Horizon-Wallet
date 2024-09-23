@@ -295,6 +295,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         */
 
         final utxos = await utxoRepository.getUnspentForAddress(source);
+        final inputsSet = utxos.isEmpty ? null : utxos;
 
         // this is a dummy transaction that helps us to compute
         // the transaction virtual size which we multiply
@@ -308,7 +309,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             true,
             1,
             null,
-            utxos);
+            inputsSet);
 
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
@@ -317,7 +318,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final int totalFee = virtualSize * feeRate ~/ 1000;
 
         final sendActual = await composeRepository.composeSendVerbose(source,
-            destination, asset, quantity, true, totalFee, null, utxos);
+            destination, asset, quantity, true, totalFee, null, inputsSet);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingSend(
@@ -365,9 +366,11 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final password = event.password;
         final utxos = await utxoRepository.getUnspentForAddress(source);
 
+        final inputsSet = utxos.isEmpty ? null : utxos;
+
         // Compose a new tx with user specified fee
         final send = await composeRepository.composeSendVerbose(source,
-            destination, asset, quantity, true, fee, null, utxos);
+            destination, asset, quantity, true, fee, null, inputsSet);
 
         final rawTx = send.rawtransaction;
 
