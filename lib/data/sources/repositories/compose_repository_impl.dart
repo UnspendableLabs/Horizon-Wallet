@@ -32,6 +32,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
       int? fee,
       int? feeRate,
       List<Utxo>? inputsSet]) async {
+
+    if (inputsSet != null && inputsSet.isEmpty) {
+      throw Exception('Balance is too low');
+    }
+
     final inputsSetString =
         inputsSet?.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -100,6 +105,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
     int? fee,
     List<Utxo>? inputsSet,
   ]) async {
+
+    if (inputsSet != null && inputsSet.isEmpty) {
+      throw Exception('Balance is too low');
+    }
+
     final inputsSetString =
         inputsSet?.map((e) => "${e.txid}:${e.vout}").join(',');
     final response = await api.composeIssuanceVerbose(

@@ -134,7 +134,7 @@ class ComposeIssuanceBloc
       // final transferDestination = event.transferDestination;
 
       try {
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
+        final utxos = await utxoRepository.getUnspentForAddress(source);
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
@@ -148,7 +148,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 1,
-                utxoResponse);
+                utxos);
 
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
@@ -168,7 +168,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 totalFee,
-                utxoResponse);
+                utxos);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingIssuance(
@@ -213,7 +213,7 @@ class ComposeIssuanceBloc
       final password = event.password;
 
       try {
-        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
+        final utxos = await utxoRepository.getUnspentForAddress(source);
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
@@ -227,11 +227,11 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 fee,
-                utxoResponse);
+                utxos);
 
         final rawTx = issuance.rawtransaction;
 
-        Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
+        Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
         Address? address = await addressRepository.getAddress(source);
         Account? account =
