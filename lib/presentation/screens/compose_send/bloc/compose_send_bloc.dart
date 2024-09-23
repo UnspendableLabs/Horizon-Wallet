@@ -296,10 +296,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
-        final utxoQueryStringParam = utxoResponse
-            .map((u) => "${u.txid}:${u.vout}")
-            .join(',');
-
         // this is a dummy transaction that helps us to compute
         // the transaction virtual size which we multiply
         // by sats / vbyte to get the final fee
@@ -312,22 +308,16 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             true,
             1,
             null,
-            utxoQueryStringParam);
+            utxoResponse);
+
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
         // fee rate is currently in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
         final int totalFee = virtualSize * feeRate ~/ 1000;
 
-        final sendActual = await composeRepository.composeSendVerbose(
-            source,
-            destination,
-            asset,
-            quantity,
-            true,
-            totalFee,
-            null,
-            utxoQueryStringParam);
+        final sendActual = await composeRepository.composeSendVerbose(source,
+            destination, asset, quantity, true, totalFee, null, utxoResponse);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingSend(
@@ -375,20 +365,9 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final password = event.password;
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
-        final utxoQueryStringParam = utxoResponse
-            .map((u) => "${u.txid}:${u.vout}")
-            .join(',');
-
         // Compose a new tx with user specified fee
-        final send = await composeRepository.composeSendVerbose(
-            source,
-            destination,
-            asset,
-            quantity,
-            true,
-            fee,
-            null,
-            utxoQueryStringParam);
+        final send = await composeRepository.composeSendVerbose(source,
+            destination, asset, quantity, true, fee, null, utxoResponse);
 
         final rawTx = send.rawtransaction;
 
@@ -446,7 +425,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
           // Lock the selected UTXOs
         }
-        
+
         emit(state.copyWith(
             submitState:
                 SubmitSuccess(transactionHex: txHash, sourceAddress: source)));

@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/raw_transaction.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
   Future<RawTransaction> composeSend(
@@ -8,7 +9,10 @@ abstract class ComposeRepository {
       [bool? allowUnconfirmedTx, int? fee]);
   Future<ComposeSend> composeSendVerbose(
       String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx, int? fee, int? feeRate, String? inputsSet]);
+      [bool? allowUnconfirmedTx,
+      int? fee,
+      int? feeRate,
+      List<Utxo>? inputsSet]);
   Future<ComposeIssuance> composeIssuance(
       String sourceAddress, String name, int quantity,
       [bool? divisible,
@@ -25,5 +29,5 @@ abstract class ComposeRepository {
       String? transferDestination,
       bool? unconfirmed,
       int? fee,
-      String? inputsSet]);
+      List<Utxo>? inputsSet]);
 }

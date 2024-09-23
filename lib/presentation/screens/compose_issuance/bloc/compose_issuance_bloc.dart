@@ -134,11 +134,7 @@ class ComposeIssuanceBloc
       // final transferDestination = event.transferDestination;
 
       try {
-        print('SOURCE: $source');
-        final utxos = await utxoRepository.getUnspentForAddress(source);
-
-        final utxoQueryStringParam =
-            utxos.map((u) => "${u.txid}:${u.vout}").join(',');
+        final utxoResponse = await utxoRepository.getUnspentForAddress(source);
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
@@ -152,7 +148,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 1,
-                utxoQueryStringParam);
+                utxoResponse);
 
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
@@ -172,7 +168,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 totalFee,
-                utxoQueryStringParam);
+                utxoResponse);
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingIssuance(
@@ -218,8 +214,6 @@ class ComposeIssuanceBloc
 
       try {
         final utxoResponse = await utxoRepository.getUnspentForAddress(source);
-        final utxoQueryStringParam =
-            utxoResponse.map((u) => "${u.txid}:${u.vout}").join(',');
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
@@ -233,7 +227,7 @@ class ComposeIssuanceBloc
                 null,
                 true,
                 fee,
-                utxoQueryStringParam);
+                utxoResponse);
 
         final rawTx = issuance.rawtransaction;
 
