@@ -65,3 +65,9 @@ extension type PaymentOptions._(JSObject o) implements JSObject {
   // external int get a;
   // external int get b;
 }
+
+@JS('address')
+extension type Address._(JSObject _) implements JSObject {
+  external static String fromOutputScript(
+      JSUint8Array script, JSObject network);
+}

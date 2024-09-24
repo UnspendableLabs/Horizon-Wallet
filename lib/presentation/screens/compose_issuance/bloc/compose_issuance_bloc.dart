@@ -154,8 +154,7 @@ class ComposeIssuanceBloc
         final virtualSize =
             transactionService.getVirtualSize(issuance.rawtransaction);
 
-        // fee rate is in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
-        final totalFee = virtualSize * feeRate ~/ 1000;
+        final totalFee = virtualSize * feeRate;
 
         ComposeIssuanceVerbose issuanceActual =
             await composeRepository.composeIssuanceVerbose(
@@ -215,23 +214,8 @@ class ComposeIssuanceBloc
 
       try {
         final utxos = await utxoRepository.getUnspentForAddress(source);
-        final inputsSet = utxos.isEmpty ? null : utxos;
 
-        ComposeIssuanceVerbose issuance =
-            await composeRepository.composeIssuanceVerbose(
-                issuanceParams.params.source,
-                issuanceParams.params.asset,
-                issuanceParams.params.quantity,
-                issuanceParams.params.divisible,
-                issuanceParams.params.lock,
-                issuanceParams.params.reset,
-                issuanceParams.params.description,
-                null,
-                true,
-                fee,
-                inputsSet);
-
-        final rawTx = issuance.rawtransaction;
+        final rawTx = issuanceParams.rawtransaction;
 
         Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
@@ -284,3 +268,6 @@ class ComposeIssuanceBloc
     });
   }
 }
+
+
+

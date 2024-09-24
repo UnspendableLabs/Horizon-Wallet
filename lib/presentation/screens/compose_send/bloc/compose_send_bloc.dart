@@ -314,8 +314,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
-        // fee rate is currently in sats / kbyte, and fee is in sats / byte, which is why we divide by 1000
-        final int totalFee = virtualSize * feeRate ~/ 1000;
+        final int totalFee = virtualSize * feeRate;
 
         final sendActual = await composeRepository.composeSendVerbose(source,
             destination, asset, quantity, true, totalFee, null, inputsSet);
@@ -366,13 +365,12 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         final password = event.password;
         final utxos = await utxoRepository.getUnspentForAddress(source);
 
-        final inputsSet = utxos.isEmpty ? null : utxos;
-
+        // final inputsSet = utxos.isEmpty ? null : utxos;
         // Compose a new tx with user specified fee
-        final send = await composeRepository.composeSendVerbose(source,
-            destination, asset, quantity, true, fee, null, inputsSet);
+        // final send = await composeRepository.composeSendVerbose(source,
+        //     destination, asset, quantity, true, fee, null, inputsSet);
 
-        final rawTx = send.rawtransaction;
+        final rawTx = sendParams.rawtransaction;
 
         Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
