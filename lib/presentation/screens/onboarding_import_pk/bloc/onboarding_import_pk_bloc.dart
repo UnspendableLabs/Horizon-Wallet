@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -7,52 +6,32 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 class OnboardingImportPKBloc
     extends Bloc<OnboardingImportPKEvent, OnboardingImportPKState> {
-  final accountRepository = GetIt.I<AccountRepository>();
-  final addressRepository = GetIt.I<AddressRepository>();
-  final walletRepository = GetIt.I<WalletRepository>();
-  final walletService = GetIt.I<WalletService>();
-  final addressService = GetIt.I<AddressService>();
-  final mnemonicService = GetIt.I<MnemonicService>();
-  final encryptionService = GetIt.I<EncryptionService>();
-  final Config config = GetIt.I<Config>();
-
-  OnboardingImportPKBloc() : super(const OnboardingImportPKState()) {
-    on<PasswordChanged>((event, emit) {
-      if (event.password.length < 8) {
-        emit(state.copyWith(
-            passwordError: "Password must be at least 8 characters."));
-      } else if (event.passwordConfirmation != null &&
-          event.passwordConfirmation!.isNotEmpty &&
-          event.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(password: event.password, passwordError: null));
-      }
-    });
-
-    on<PasswordConfirmationChanged>((event, emit) {
-      if (state.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(passwordError: null));
-      }
-    });
-
-    on<PasswordError>((event, emit) {
-      emit(state.copyWith(passwordError: event.error));
-    });
-
+  final WalletRepository walletRepository;
+  final WalletService walletService;
+  final AccountRepository accountRepository;
+  final AddressRepository addressRepository;
+  final AddressService addressService;
+  final EncryptionService encryptionService;
+  final Config config;
+  OnboardingImportPKBloc({
+    required this.walletRepository,
+    required this.walletService,
+    required this.accountRepository,
+    required this.addressRepository,
+    required this.addressService,
+    required this.encryptionService,
+    required this.config,
+  }) : super(const OnboardingImportPKState()) {
     on<PKChanged>((event, emit) async {
       if (event.pk.isEmpty) {
         emit(state.copyWith(pkError: "PK is required", pk: event.pk));
@@ -87,14 +66,14 @@ class OnboardingImportPKBloc
 
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
+      final password = event.password;
       try {
         switch (state.importFormat) {
           case ImportFormat.horizon:
-            Wallet wallet =
-                await walletService.fromBase58(state.pk, state.password!);
+            Wallet wallet = await walletService.fromBase58(state.pk, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             //m/84'/1'/0'/0
             Account account0 = Account(
@@ -124,11 +103,10 @@ class OnboardingImportPKBloc
             break;
 
           case ImportFormat.freewallet:
-            Wallet wallet =
-                await walletService.fromBase58(state.pk, state.password!);
+            Wallet wallet = await walletService.fromBase58(state.pk, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             // create an account to house
             Account account = Account(
@@ -173,11 +151,10 @@ class OnboardingImportPKBloc
 
             break;
           case ImportFormat.counterwallet:
-            Wallet wallet =
-                await walletService.fromBase58(state.pk, state.password!);
+            Wallet wallet = await walletService.fromBase58(state.pk, password);
 
             String decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, state.password!);
+                wallet.encryptedPrivKey, password);
 
             // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
             Account account = Account(

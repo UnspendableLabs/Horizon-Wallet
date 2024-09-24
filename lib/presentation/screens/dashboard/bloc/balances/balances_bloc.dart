@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -56,17 +55,21 @@ Map<String, Balance> aggregateAndSortBalancesByAsset(List<Balance> balances) {
 }
 
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
-  final BalanceRepository balanceRepository = GetIt.I.get<BalanceRepository>();
-  final AccountRepository accountRepository = GetIt.I.get<AccountRepository>();
-  final AddressRepository addressRepository = GetIt.I.get<AddressRepository>();
-  final AddressTxRepository addressTxRepository =
-      GetIt.I.get<AddressTxRepository>();
+  final BalanceRepository balanceRepository;
+  final AccountRepository accountRepository;
+  final AddressRepository addressRepository;
+  final AddressTxRepository addressTxRepository;
+  final Address currentAddress;
 
   Timer? _timer;
-  Address currentAddress;
 
-  BalancesBloc({required this.currentAddress})
-      : super(const BalancesState.initial()) {
+  BalancesBloc({
+    required this.balanceRepository,
+    required this.accountRepository,
+    required this.addressRepository,
+    required this.addressTxRepository,
+    required this.currentAddress,
+  }) : super(const BalancesState.initial()) {
     on<Start>(_onStart);
     on<Stop>(_onStop);
     on<Fetch>(_onFetch);
@@ -109,7 +112,8 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
       emit(BalancesState.complete(Result.ok(balances, aggregated)));
     } catch (e) {
-      emit(BalancesState.complete(Result.error(e.toString())));
+      emit(BalancesState.complete(Result.error(
+          "Error fetching balances for ${currentAddress.address}")));
     }
   }
 }

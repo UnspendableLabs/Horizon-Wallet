@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
@@ -11,38 +12,49 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 
-class OnboardingImportPage extends StatelessWidget {
-  const OnboardingImportPage({super.key});
+class OnboardingImportPageWrapper extends StatelessWidget {
+  const OnboardingImportPageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => OnboardingImportBloc(),
-        child: const OnboardingImportPage_());
+        create: (context) => OnboardingImportBloc(
+              config: GetIt.I<Config>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>(),
+              walletRepository: GetIt.I<WalletRepository>(),
+              walletService: GetIt.I<WalletService>(),
+              addressService: GetIt.I<AddressService>(),
+              mnemonicService: GetIt.I<MnemonicService>(),
+              encryptionService: GetIt.I<EncryptionService>(),
+            ),
+        child: const OnboardingImportPage());
   }
 }
 
-class OnboardingImportPage_ extends StatefulWidget {
-  const OnboardingImportPage_({super.key});
+class OnboardingImportPage extends StatefulWidget {
+  const OnboardingImportPage({super.key});
   @override
-  _OnboardingImportPageState createState() => _OnboardingImportPageState();
+  OnboardingImportPageState createState() => OnboardingImportPageState();
 }
 
-class _OnboardingImportPageState extends State<OnboardingImportPage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
+class OnboardingImportPageState extends State<OnboardingImportPage> {
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
-  final TextEditingController _importFormat =
-      TextEditingController(text: ImportFormat.horizon.name);
 
   @override
   dispose() {
     _seedPhraseController.dispose();
-    _importFormat.dispose();
     super.dispose();
   }
 
@@ -108,51 +120,15 @@ class _OnboardingImportPageState extends State<OnboardingImportPage_> {
                                     mnemonicErrorState: state.mnemonicError,
                                   )
                                 : PasswordPrompt(
-                                    passwordController: _passwordController,
-                                    passwordConfirmationController:
-                                        _passwordConfirmationController,
                                     state: state,
-                                    onPasswordChanged: (value) {
-                                      context.read<OnboardingImportBloc>().add(
-                                          PasswordChanged(
-                                              password: value,
-                                              passwordConfirmation:
-                                                  _passwordConfirmationController
-                                                      .text));
-                                    },
-                                    onPasswordConfirmationChanged: (value) {
-                                      context.read<OnboardingImportBloc>().add(
-                                          PasswordConfirmationChanged(
-                                              passwordConfirmation: value));
-                                    },
                                     onPressedBack: () {
                                       final shell =
                                           context.read<ShellStateCubit>();
                                       shell.onOnboarding();
                                     },
-                                    onPressedContinue: () {
-                                      if (_passwordController.text == '' ||
-                                          _passwordConfirmationController
-                                                  .text ==
-                                              '') {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(
-                                                error:
-                                                    'Password cannot be empty'));
-                                      } else if (_passwordController.text !=
-                                          _passwordConfirmationController
-                                              .text) {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(PasswordError(
-                                                error:
-                                                    'Passwords do not match'));
-                                      } else {
-                                        context
-                                            .read<OnboardingImportBloc>()
-                                            .add(ImportWallet());
-                                      }
+                                    onPressedContinue: (password) {
+                                      context.read<OnboardingImportBloc>().add(
+                                          ImportWallet(password: password));
                                     },
                                     backButtonText: 'CANCEL',
                                     continueButtonText: 'LOGIN',
@@ -205,6 +181,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         return KeyEventResult.ignored;
       };
     }
+    context
+        .read<OnboardingImportBloc>()
+        .add(ImportFormatChanged(importFormat: selectedFormat!));
   }
 
   @override
@@ -243,7 +222,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                       children: [
                         const Icon(Icons.info, color: redErrorText),
                         const SizedBox(width: 4),
-                        Text(
+                        SelectableText(
                           widget.mnemonicErrorState!,
                           style: const TextStyle(color: redErrorText),
                         ),
@@ -260,7 +239,18 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 : buildInputFields(isSmallScreen, isDarkMode),
           ),
           if (isSmallScreen) const SizedBox(height: 16),
-          buildDropdownButton(isDarkMode),
+          ImportFormatDropdown(
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedFormat = newValue;
+              });
+              context
+                  .read<OnboardingImportBloc>()
+                  .add(ImportFormatChanged(importFormat: newValue!));
+              updateMnemonic();
+            },
+            selectedFormat: selectedFormat!,
+          ),
           BackContinueButtons(
             isDarkMode: isDarkMode,
             isSmallScreenWidth: isSmallScreen,
@@ -293,7 +283,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                         children: [
                           const Icon(Icons.info, color: redErrorText),
                           const SizedBox(width: 4),
-                          Text(
+                          SelectableText(
                             widget.mnemonicErrorState!,
                             style: const TextStyle(color: redErrorText),
                           ),
@@ -312,67 +302,29 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (isSmallScreen) {
-          return Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: List.generate(12, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                child: Text(
-                                  "${index + 1}. ",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: isDarkMode
-                                          ? mainTextWhite
-                                          : mainTextBlack),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: TextField(
-                                  controller: controllers[index],
-                                  focusNode: focusNodes[index],
-                                  onChanged: (value) =>
-                                      handleInput(value, index),
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: isDarkMode
-                                        ? darkThemeInputColor
-                                        : lightThemeInputColor,
-                                    labelText: 'Word ${index + 1}',
-                                    labelStyle: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        color: isDarkMode
-                                            ? darkThemeInputLabelColor
-                                            : lightThemeInputLabelColor),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ),
+          return SingleChildScrollView(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: List.generate(6,
+                        (index) => buildCompactInputField(index, isDarkMode)),
                   ),
-                ],
-              ),
-            ],
+                ),
+                Expanded(
+                  child: Column(
+                    children: List.generate(
+                        6,
+                        (index) =>
+                            buildCompactInputField(index + 6, isDarkMode)),
+                  ),
+                ),
+              ],
+            ),
           );
         } else {
+          // Existing code for larger screens
           return SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -388,52 +340,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                           child: Column(
                             children: List.generate(6, (rowIndex) {
                               int index = columnIndex * 6 + rowIndex;
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 24,
-                                      child: Text(
-                                        "${index + 1}. ",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.normal,
-                                            color: isDarkMode
-                                                ? mainTextWhite
-                                                : mainTextBlack),
-                                        textAlign: TextAlign.right,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: controllers[index],
-                                        focusNode: focusNodes[index],
-                                        onChanged: (value) =>
-                                            handleInput(value, index),
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor: isDarkMode
-                                              ? darkThemeInputColor
-                                              : lightThemeInputColor,
-                                          labelText: 'Word ${index + 1}',
-                                          labelStyle: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: isDarkMode
-                                                  ? darkThemeInputLabelColor
-                                                  : lightThemeInputLabelColor),
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                        ),
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                              return buildInputField(index, isDarkMode);
                             }),
                           ),
                         );
@@ -449,63 +356,100 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     );
   }
 
-  Widget buildDropdownButton(bool isDarkMode) {
-    final dropdownBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-
+  Widget buildCompactInputField(int index, bool isDarkMode) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 12, 0),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: dropdownBackgroundColor,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
-            child: DropdownButton<String>(
-              isExpanded: true,
-              value: selectedFormat,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedFormat = newValue;
-                });
-                context
-                    .read<OnboardingImportBloc>()
-                    .add(ImportFormatChanged(importFormat: newValue!));
-                updateMnemonic();
-              },
-              dropdownColor: dropdownBackgroundColor,
-              items: [
-                _buildDropdownMenuItem(ImportFormat.horizon.name,
-                    ImportFormat.horizon.description, dropdownBackgroundColor),
-                _buildDropdownMenuItem(
-                    ImportFormat.counterwallet.name,
-                    ImportFormat.counterwallet.description,
-                    dropdownBackgroundColor),
-                _buildDropdownMenuItem(
-                    ImportFormat.freewallet.name,
-                    ImportFormat.freewallet.description,
-                    dropdownBackgroundColor),
-              ],
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            child: Text(
+              "${index + 1}.",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+                color: isDarkMode ? mainTextWhite : mainTextBlack,
+              ),
+              textAlign: TextAlign.right,
             ),
           ),
-        ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: SizedBox(
+              height: 40,
+              child: TextField(
+                controller: controllers[index],
+                focusNode: focusNodes[index],
+                onChanged: (value) => handleInput(value, index),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor:
+                      isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                  hintText: 'Word ${index + 1}',
+                  hintStyle: TextStyle(
+                    fontSize: 14,
+                    color: isDarkMode
+                        ? darkThemeInputLabelColor
+                        : lightThemeInputLabelColor,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  DropdownMenuItem<String> _buildDropdownMenuItem(
-      String value, String description, Color backgroundColor) {
-    return DropdownMenuItem<String>(
-      value: value,
-      child: MouseRegion(
-        onEnter: (_) {},
-        onExit: (_) {},
-        onHover: (_) {},
-        child: Text(description,
-            style: const TextStyle(fontWeight: FontWeight.w500)),
+  Widget buildInputField(int index, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text(
+              "${index + 1}. ",
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                color: isDarkMode ? mainTextWhite : mainTextBlack,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: TextField(
+              controller: controllers[index],
+              focusNode: focusNodes[index],
+              onChanged: (value) => handleInput(value, index),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor:
+                    isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                labelText: 'Word ${index + 1}',
+                labelStyle: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  color: isDarkMode
+                      ? darkThemeInputLabelColor
+                      : lightThemeInputLabelColor,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+        ],
       ),
     );
   }

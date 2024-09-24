@@ -1,5 +1,3 @@
-// TODO: research part of / equatable
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -9,11 +7,9 @@ part 'onboarding_import_state.freezed.dart';
 @freezed
 class OnboardingImportState with _$OnboardingImportState {
   const factory OnboardingImportState({
-    String? password,
-    String? passwordError,
     @Default("") String mnemonic,
     @Default(null) String? mnemonicError,
-    @Default(ImportFormat.horizon) importFormat,
+    @Default(ImportFormat.horizon) ImportFormat importFormat,
     @Default(GetAddressesStateNotAsked) getAddressesState,
     @Default({}) Map<Address, bool> isCheckedMap,
     @Default(ImportStateNotAsked) importState,

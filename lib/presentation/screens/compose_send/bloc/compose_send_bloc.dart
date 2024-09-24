@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -19,128 +20,347 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
+import 'package:logger/logger.dart';
 
 class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
-  // TODO: pass these in constructor to the bloc
-  final addressRepository = GetIt.I.get<AddressRepository>();
-  final balanceRepository = GetIt.I.get<BalanceRepository>();
-  final composeRepository = GetIt.I.get<ComposeRepository>();
-  final utxoRepository = GetIt.I.get<UtxoRepository>();
-  final transactionService = GetIt.I.get<TransactionService>();
-  final bitcoindService = GetIt.I.get<BitcoindService>();
-  final accountRepository = GetIt.I.get<AccountRepository>();
-  final walletRepository = GetIt.I.get<WalletRepository>();
-  final encryptionService = GetIt.I.get<EncryptionService>();
-  final addressService = GetIt.I.get<AddressService>();
-  final transactionRepository = GetIt.I.get<TransactionRepository>();
-  final transactionLocalRepository = GetIt.I.get<TransactionLocalRepository>();
-  final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
+  final Logger logger = Logger();
+  final AddressRepository addressRepository;
+  final BalanceRepository balanceRepository;
+  final ComposeRepository composeRepository;
+  final UtxoRepository utxoRepository;
+  final TransactionService transactionService;
+  final BitcoindService bitcoindService;
+  final AccountRepository accountRepository;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final TransactionRepository transactionRepository;
+  final TransactionLocalRepository transactionLocalRepository;
+  final BitcoinRepository bitcoinRepository;
 
-  ComposeSendBloc() : super(const ComposeSendState()) {
+  ComposeSendBloc({
+    required this.addressRepository,
+    required this.balanceRepository,
+    required this.composeRepository,
+    required this.utxoRepository,
+    required this.transactionService,
+    required this.bitcoindService,
+    required this.accountRepository,
+    required this.walletRepository,
+    required this.encryptionService,
+    required this.addressService,
+    required this.transactionRepository,
+    required this.transactionLocalRepository,
+    required this.bitcoinRepository,
+  }) : super(ComposeSendState(
+            feeOption: FeeOption.Medium(),
+            submitState: const SubmitInitial())) {
+    on<ChangeFeeOption>(
+      (event, emit) async {
+        final value = event.value;
+        emit(state.copyWith(feeOption: value, composeSendError: null));
+
+        if (!state.sendMax) return;
+
+        FeeEstimates? feeEstimates = state.feeState
+            .maybeWhen(success: (value) => value, orElse: () => null);
+        if (feeEstimates == null) {
+          return;
+        }
+
+        if (state.destination == null) {
+          emit(state.copyWith(
+              sendMax: false,
+              submitState: const SubmitInitial(),
+              composeSendError: "Set destination",
+              maxValue: const MaxValueState.initial()));
+          return;
+        }
+
+        emit(state.copyWith(maxValue: const MaxValueState.loading()));
+
+        try {
+          final source = state.source!.address;
+          final asset = state.asset ?? "BTC";
+          final feeRate = switch (state.feeOption) {
+            FeeOption.Fast() => feeEstimates.fast,
+            FeeOption.Medium() => feeEstimates.medium,
+            FeeOption.Slow() => feeEstimates.slow,
+            FeeOption.Custom(fee: var fee) => fee,
+          };
+
+          final max = await GetMaxSendQuantity(
+            source: source,
+            // destination: state.destination!,
+            asset: asset,
+            feeRate: feeRate,
+            balanceRepository: balanceRepository,
+            composeRepository: composeRepository,
+            transactionService: transactionService,
+          ).call();
+
+          emit(state.copyWith(maxValue: MaxValueState.success(max)));
+        } catch (e) {
+          emit(state.copyWith(
+              sendMax: false,
+              composeSendError: "Insufficient funds",
+              maxValue: MaxValueState.error(e.toString())));
+        }
+      },
+    );
+
+    on<ToggleSendMaxEvent>(
+      (event, emit) async {
+        // return early if fee estimates haven't loaded
+        FeeEstimates? feeEstimates = state.feeState
+            .maybeWhen(success: (value) => value, orElse: () => null);
+        if (feeEstimates == null) {
+          return;
+        }
+
+        // if (state.destination == null) {
+        //   emit(state.copyWith(
+        //       sendMax: false,
+        //       composeSendError: "Set destination",
+        //       maxValue: MaxValueState.initial()));
+        //   return;
+        // }
+
+        final value = event.value;
+        emit(state.copyWith(
+            submitState: const SubmitInitial(),
+            sendMax: value,
+            composeSendError: null));
+
+        if (!value) {
+          emit(state.copyWith(maxValue: const MaxValueState.initial()));
+        }
+
+        emit(state.copyWith(maxValue: const MaxValueState.loading()));
+
+        try {
+          final source = state.source!.address;
+          final asset = state.asset ?? "BTC";
+          final feeRate = switch (state.feeOption) {
+            FeeOption.Fast() => feeEstimates.fast,
+            FeeOption.Medium() => feeEstimates.medium,
+            FeeOption.Slow() => feeEstimates.slow,
+            FeeOption.Custom(fee: var fee) => fee,
+          };
+
+          final max = await GetMaxSendQuantity(
+            source: source,
+            // destination: state.destination!,
+            asset: asset,
+            feeRate: feeRate,
+            balanceRepository: balanceRepository,
+            composeRepository: composeRepository,
+            transactionService: transactionService,
+          ).call();
+
+          emit(state.copyWith(maxValue: MaxValueState.success(max)));
+        } catch (e) {
+          emit(state.copyWith(
+              sendMax: false,
+              composeSendError: "Insufficient funds",
+              maxValue: MaxValueState.error(e.toString())));
+        }
+      },
+    );
+
+    on<ChangeAsset>((event, emit) async {
+      final asset = event.asset;
+      emit(state.copyWith(
+          submitState: const SubmitInitial(),
+          asset: asset,
+          sendMax: false,
+          quantity: "",
+          composeSendError: null,
+          feeOption: FeeOption.Medium()));
+    });
+
+    on<ChangeDestination>((event, emit) async {
+      final destination = event.value;
+      emit(state.copyWith(
+          submitState: const SubmitInitial(),
+          destination: destination,
+          composeSendError: null));
+    });
+
+    on<ChangeQuantity>((event, emit) async {
+      final quantity = event.value;
+
+      emit(state.copyWith(
+          submitState: const SubmitInitial(),
+          quantity: quantity,
+          sendMax: false,
+          composeSendError: null,
+          maxValue: const MaxValueState.initial()));
+    });
+
     on<FetchFormData>((event, emit) async {
-      emit(const ComposeSendState(
-          balancesState: BalancesState.loading(),
-          submitState: SubmitState.initial()));
+      emit(state.copyWith(
+        balancesState: const BalancesState.loading(),
+        submitState: const SubmitInitial(),
+        source: event.currentAddress, // TODO: setting address this way is smell
+      ));
 
+      late List<Balance> balances;
+      late FeeEstimates feeEstimates;
       try {
         List<Address> addresses = [event.currentAddress];
 
-        List<Balance> balances =
+        balances =
             await balanceRepository.getBalancesForAddress(addresses[0].address);
-        emit(ComposeSendState(
-            balancesState: BalancesState.success(balances),
-            submitState: const SubmitState.initial()));
       } catch (e) {
-        emit(ComposeSendState(
+        emit(state.copyWith(
             balancesState: BalancesState.error(e.toString()),
-            submitState: const SubmitState.initial()));
+            submitState: const SubmitInitial()));
+        return;
       }
-    });
-
-    on<FetchBalances>((event, emit) async {
-      emit(state.copyWith(balancesState: const BalancesState.loading()));
       try {
-        List<Balance> balances =
-            await balanceRepository.getBalancesForAddress(event.address);
-        emit(state.copyWith(balancesState: BalancesState.success(balances)));
+        feeEstimates = await GetFeeEstimates(
+          targets: (1, 3, 6),
+          bitcoindService: bitcoindService,
+        ).call();
       } catch (e) {
-        emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
+        emit(state.copyWith(
+            feeState: FeeState.error(e.toString()),
+            submitState: const SubmitInitial()));
+        return;
       }
-    });
 
+      emit(state.copyWith(
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          submitState: const SubmitInitial()));
+    });
     on<ComposeTransactionEvent>((event, emit) async {
-      emit(state.copyWith(submitState: const SubmitState.loading()));
+      FeeEstimates? feeEstimates = state.feeState
+          .maybeWhen(success: (value) => value, orElse: () => null);
+
+      if (feeEstimates == null) {
+        return;
+      }
+      // TODO: figure out what to do
+      emit(state.copyWith(submitState: const SubmitInitial(loading: true)));
+
       try {
         final source = event.sourceAddress;
         final destination = event.destinationAddress;
         final quantity = event.quantity;
         final asset = event.asset;
+        final feeRate = switch (state.feeOption) {
+          FeeOption.Fast() => feeEstimates.fast,
+          FeeOption.Medium() => feeEstimates.medium,
+          FeeOption.Slow() => feeEstimates.slow,
+          FeeOption.Custom(fee: var fee) => fee,
+        };
 
-        // We use lowest fee possible here ( 1 sat )
-        // so we can calculate the virtual size of the transaction
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+        final inputsSet = utxos.isEmpty ? null : utxos;
+
+        // this is a dummy transaction that helps us to compute
+        // the transaction virtual size which we multiply
+        // by sats / vbyte to get the final fee
         final send = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, 1);
+            // this should be sped up because it doesn't need to pull all utxos
+            source,
+            destination,
+            asset,
+            quantity,
+            true,
+            1,
+            null,
+            inputsSet);
 
         final virtualSize =
             transactionService.getVirtualSize(send.rawtransaction);
 
-        final feeEstimatesE = await bitcoinRepository.getFeeEstimates();
+        final int totalFee = virtualSize * feeRate;
 
-        final feeEstimates = feeEstimatesE.fold(
-            (l) => throw Exception("Error getting fee estimates"), (r) => r);
+        final sendActual = await composeRepository.composeSendVerbose(source,
+            destination, asset, quantity, true, totalFee, null, inputsSet);
+
+        logger.d('rawTx: ${sendActual.rawtransaction}');
 
         emit(state.copyWith(
-            submitState: SubmitState.composing(SubmitStateComposingSend(
-                composeSend: send,
-                virtualSize: virtualSize,
-                feeEstimates: feeEstimates,
-                confirmationTarget: feeEstimates.keys.first))));
+            submitState: SubmitComposing(SubmitStateComposingSend(
+          composeSend: sendActual,
+          virtualSize: virtualSize,
+          fee: totalFee,
+          feeRate: feeRate,
+        ))));
       } catch (error) {
-        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
+        emit(state.copyWith(
+            submitState:
+                SubmitInitial(loading: false, error: error.toString())));
       }
     });
 
+    on<FinalizeTransactionEvent>((event, emit) async {
+      emit(state.copyWith(
+          submitState: SubmitFinalizing(
+              loading: false,
+              error: null,
+              composeSend: event.composeSend,
+              fee: event.fee)));
+    });
+
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
-      emit(state.copyWith(submitState: const SubmitState.loading()));
-
       try {
-        final sendParams = event.composeSend.params;
-        final source = sendParams.source;
-        final destination = sendParams.destination;
-        final quantity = sendParams.quantity;
-        final asset = sendParams.asset;
+        if (state.submitState is! SubmitFinalizing) {
+          return;
+        }
+
+        final sendParams = (state.submitState as SubmitFinalizing).composeSend;
+        final fee = (state.submitState as SubmitFinalizing).fee;
+
+        emit(state.copyWith(
+            submitState: SubmitFinalizing(
+                loading: true,
+                error: null,
+                composeSend: sendParams,
+                fee: fee)));
+
+        final source = sendParams.params.source;
+        final destination = sendParams.params.destination;
+        final quantity = sendParams.params.quantity;
+        final asset = sendParams.params.asset;
         final password = event.password;
-        final fee = event.fee;
+        final utxos = await utxoRepository.getUnspentForAddress(source);
 
+        // final inputsSet = utxos.isEmpty ? null : utxos;
         // Compose a new tx with user specified fee
-        final send = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, fee);
+        // final send = await composeRepository.composeSendVerbose(source,
+        //     destination, asset, quantity, true, fee, null, inputsSet);
 
-        final rawTx = send.rawtransaction;
+        final rawTx = sendParams.rawtransaction;
 
-        // final memo = event.memo;
-        // final memoIsHex = event.memoIsHex;
-
-        final utxoResponse =
-            await utxoRepository.getUnspentForAddress(source, true);
-
-        Map<String, Utxo> utxoMap = {for (var e in utxoResponse) e.txid: e};
+        Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
         Address? address = await addressRepository.getAddress(source);
         Account? account =
             await accountRepository.getAccountByUuid(address!.accountUuid);
         Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
-        String decryptedRootPrivKey =
-            await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+        String? decryptedRootPrivKey;
+        try {
+          decryptedRootPrivKey = await encryptionService.decrypt(
+              wallet!.encryptedPrivKey, password);
+        } catch (e) {
+          throw Exception("Incorrect password");
+        }
         String addressPrivKey = await addressService.deriveAddressPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: wallet.chainCodeHex,
             purpose: account.purpose,
             coin: account.coinType,
             account: account.accountIndex,
-            change: '0', // TODO make sure change is stored
+            change: '0',
             index: address.index,
             importFormat: account.importFormat);
 
@@ -174,9 +394,21 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           ));
         }
 
-        emit(state.copyWith(submitState: SubmitState.success(txHash, source)));
+        logger.d('send broadcasted txHash: ${txHash}');
+
+        emit(state.copyWith(
+            submitState:
+                SubmitSuccess(transactionHex: txHash, sourceAddress: source)));
       } catch (error) {
-        emit(state.copyWith(submitState: SubmitState.error(error.toString())));
+        final sendParams = (state.submitState as SubmitFinalizing).composeSend;
+        final fee = (state.submitState as SubmitFinalizing).fee;
+
+        emit(state.copyWith(
+            submitState: SubmitFinalizing(
+                loading: false,
+                error: error.toString(),
+                composeSend: sendParams,
+                fee: fee)));
       }
     });
   }

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:get_it/get_it.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_event.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -14,7 +14,6 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 
@@ -42,12 +41,6 @@ void main() {
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
 
-  setUpAll(() {
-    registerFallbackValue(FakeWallet());
-    registerFallbackValue(FakeAccount());
-    registerFallbackValue(FakeAddress());
-  });
-
   setUp(() {
     mockWalletService = MockWalletService();
     mockEncryptionService = MockEncryptionService();
@@ -55,17 +48,11 @@ void main() {
     mockWalletRepository = MockWalletRepository();
     mockAccountRepository = MockAccountRepository();
     mockAddressRepository = MockAddressRepository();
-
-    GetIt.I.registerSingleton<WalletService>(mockWalletService);
-    GetIt.I.registerSingleton<EncryptionService>(mockEncryptionService);
-    GetIt.I.registerSingleton<AddressService>(mockAddressService);
-    GetIt.I.registerSingleton<WalletRepository>(mockWalletRepository);
-    GetIt.I.registerSingleton<AccountRepository>(mockAccountRepository);
-    GetIt.I.registerSingleton<AddressRepository>(mockAddressRepository);
   });
-
-  tearDown(() {
-    GetIt.I.reset();
+  setUpAll(() {
+    registerFallbackValue(FakeWallet());
+    registerFallbackValue(FakeAccount());
+    registerFallbackValue(FakeAddress());
   });
 
   group('AccountFormBloc', () {
@@ -95,7 +82,7 @@ void main() {
     }
 
     // this test isn't super helpful as args are just passed through
-    blocTest<AccountFormBloc, RemoteDataState<Account>>(
+    blocTest<AccountFormBloc, AccountFormState>(
       'submits form with Horizon import format',
       build: () {
         setupCommonMocks();
@@ -109,7 +96,14 @@ void main() {
               change: '0',
               index: 0,
             )).thenAnswer((_) async => FakeAddress());
-        return AccountFormBloc();
+        return AccountFormBloc(
+          accountRepository: mockAccountRepository,
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressService: mockAddressService,
+          addressRepository: mockAddressRepository,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         name: 'Test Account',
@@ -121,30 +115,27 @@ void main() {
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<Account>.loading(),
-        isA<RemoteDataState<Account>>().having(
-          (state) => state.whenOrNull(
-            success: (account) => account,
-          ),
-          'account',
-          isA<Account>()
-              .having((a) => a.name, 'name', 'Test Account')
-              .having((a) => a.walletUuid, 'walletUuid', walletUuid)
-              .having((a) => a.purpose, 'purpose', '84\'')
-              .having((a) => a.coinType, 'coinType', '0\'')
-              .having((a) => a.accountIndex, 'accountIndex', '0\'')
-              .having(
-                  (a) => a.importFormat, 'importFormat', ImportFormat.horizon),
+        isA<AccountFormStep2>().having(
+          (state) => state.state,
+          'state',
+          isA<Step2Loading>(),
         ),
-        // RemoteDataState<Account>.success(Account(
-        //   uuid: any(named: "uuid"),
-        //   name: any(named: "name"),
-        //   walletUuid: walletUuid,
-        //   purpose: '84\'',
-        //   coinType: '0\'',
-        //   accountIndex: '1\'',
-        //   importFormat: ImportFormat.horizon,
-        // )),
+        isA<AccountFormStep2>().having(
+          (state) => state.state,
+          'state',
+          isA<Step2Success>().having(
+            (success) => success.account,
+            'account',
+            isA<Account>()
+                .having((a) => a.name, 'name', 'Test Account')
+                .having((a) => a.walletUuid, 'walletUuid', walletUuid)
+                .having((a) => a.purpose, 'purpose', '84\'')
+                .having((a) => a.coinType, 'coinType', '0\'')
+                .having((a) => a.accountIndex, 'accountIndex', '0\'')
+                .having((a) => a.importFormat, 'importFormat',
+                    ImportFormat.horizon),
+          ),
+        ),
       ],
       verify: (_) {
         verify(() => mockAddressService.deriveAddressSegwit(

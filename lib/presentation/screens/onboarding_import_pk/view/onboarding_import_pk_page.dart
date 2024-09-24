@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_bloc.dart';
@@ -10,28 +19,32 @@ import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboardin
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
-class OnboardingImportPKPage extends StatelessWidget {
-  const OnboardingImportPKPage({super.key});
+class OnboardingImportPKPageWrapper extends StatelessWidget {
+  const OnboardingImportPKPageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => OnboardingImportPKBloc(),
-        child: const OnboardingImportPKPage_());
+        create: (context) => OnboardingImportPKBloc(
+              walletRepository: GetIt.I<WalletRepository>(),
+              walletService: GetIt.I<WalletService>(),
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<AddressRepository>(),
+              addressService: GetIt.I<AddressService>(),
+              encryptionService: GetIt.I<EncryptionService>(),
+              config: GetIt.I<Config>(),
+            ),
+        child: const OnboardingImportPKPage());
   }
 }
 
-class OnboardingImportPKPage_ extends StatefulWidget {
-  const OnboardingImportPKPage_({super.key});
+class OnboardingImportPKPage extends StatefulWidget {
+  const OnboardingImportPKPage({super.key});
   @override
-  _OnboardingImportPKPageState createState() => _OnboardingImportPKPageState();
+  OnboardingImportPKPageState createState() => OnboardingImportPKPageState();
 }
 
-class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
+class OnboardingImportPKPageState extends State<OnboardingImportPKPage> {
   final TextEditingController _seedPhraseController =
       TextEditingController(text: "");
   final TextEditingController _importFormat =
@@ -104,66 +117,35 @@ class _OnboardingImportPKPageState extends State<OnboardingImportPKPage_> {
                                 pkErrorState: state.pkError,
                               )
                             : PasswordPrompt(
-                                passwordController: _passwordController,
-                                passwordConfirmationController:
-                                    _passwordConfirmationController,
                                 state: state,
-                                onPasswordChanged: (value) {
-                                  context.read<OnboardingImportPKBloc>().add(
-                                      PasswordChanged(
-                                          password: value,
-                                          passwordConfirmation:
-                                              _passwordConfirmationController
-                                                  .text));
-                                },
-                                onPasswordConfirmationChanged: (value) {
-                                  context.read<OnboardingImportPKBloc>().add(
-                                      PasswordConfirmationChanged(
-                                          passwordConfirmation: value));
-                                },
                                 onPressedBack: () {
                                   final shell = context.read<ShellStateCubit>();
                                   shell.onOnboarding();
                                 },
-                                onPressedContinue: () {
-                                  if (_passwordController.text == '' ||
-                                      _passwordConfirmationController.text ==
-                                          '') {
-                                    context.read<OnboardingImportPKBloc>().add(
-                                        PasswordError(
-                                            error: 'Password cannot be empty'));
-                                  } else if (_passwordController.text !=
-                                      _passwordConfirmationController.text) {
-                                    context.read<OnboardingImportPKBloc>().add(
-                                        PasswordError(
-                                            error: 'Passwords do not match'));
-                                  } else {
-                                    context
-                                        .read<OnboardingImportPKBloc>()
-                                        .add(ImportWallet());
-                                  }
+                                onPressedContinue: (password) {
+                                  context
+                                      .read<OnboardingImportPKBloc>()
+                                      .add(ImportWallet(password: password));
                                 },
                                 backButtonText: 'CANCEL',
                                 continueButtonText: 'LOGIN',
-                                optionalErrorWiget: state.importState
-                                        is ImportStateError
-                                    ? Positioned(
-                                        top: 0, // Adjust the position as needed
-                                        left:
-                                            0, // Adjust the position as needed
-                                        right:
-                                            0, // Adjust the position as needed
-                                        child: Align(
-                                          child: Center(
-                                            child: Text(
-                                              state.importState.message,
-                                              style: const TextStyle(
-                                                  color: redErrorText),
+                                optionalErrorWiget:
+                                    state.importState is ImportStateError
+                                        ? Positioned(
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            child: Align(
+                                              child: Center(
+                                                child: SelectableText(
+                                                  state.importState.message,
+                                                  style: const TextStyle(
+                                                      color: redErrorText),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                      )
-                                    : null,
+                                          )
+                                        : null,
                               ),
                       ),
                     ],
@@ -243,9 +225,9 @@ class _PKFieldState extends State<PKField> {
                   if (widget.pkErrorState != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
+                      child: SelectableText(
                         widget.pkErrorState!,
-                        style: const TextStyle(color: Colors.red),
+                        style: const TextStyle(color: redErrorText),
                       ),
                     ),
                 ],
@@ -253,7 +235,17 @@ class _PKFieldState extends State<PKField> {
             ),
           )),
           if (isSmallScreen) const SizedBox(height: 16),
-          buildDropdownButton(isDarkMode),
+          ImportFormatDropdown(
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedFormat = newValue;
+              });
+              context
+                  .read<OnboardingImportPKBloc>()
+                  .add(ImportFormatChanged(importFormat: newValue!));
+            },
+            selectedFormat: selectedFormat!,
+          ),
           BackContinueButtons(
               isDarkMode: isDarkMode,
               isSmallScreenWidth: isSmallScreen,
@@ -270,66 +262,6 @@ class _PKFieldState extends State<PKField> {
               backButtonText: 'CANCEL',
               continueButtonText: 'CONTINUE'),
         ],
-      ),
-    );
-  }
-
-  Widget buildDropdownButton(bool isDarkMode) {
-    final dropdownBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 12, 0),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: dropdownBackgroundColor,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
-            child: DropdownButton<String>(
-              isExpanded: true,
-              value: selectedFormat,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedFormat = newValue;
-                });
-                context
-                    .read<OnboardingImportPKBloc>()
-                    .add(ImportFormatChanged(importFormat: newValue!));
-              },
-              dropdownColor: dropdownBackgroundColor,
-              items: [
-                _buildDropdownMenuItem(ImportFormat.horizon.name,
-                    ImportFormat.horizon.description, dropdownBackgroundColor),
-                _buildDropdownMenuItem(
-                    ImportFormat.freewallet.name,
-                    ImportFormat.freewallet.description,
-                    dropdownBackgroundColor),
-                _buildDropdownMenuItem(
-                    ImportFormat.counterwallet.name,
-                    ImportFormat.counterwallet.description,
-                    dropdownBackgroundColor),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  DropdownMenuItem<String> _buildDropdownMenuItem(
-      String value, String description, Color backgroundColor) {
-    return DropdownMenuItem<String>(
-      value: value,
-      child: MouseRegion(
-        onEnter: (_) {},
-        onExit: (_) {},
-        onHover: (_) {},
-        child: Text(description,
-            style: const TextStyle(fontWeight: FontWeight.normal)),
       ),
     );
   }

@@ -152,7 +152,7 @@ class ShellStateCubit extends Cubit<ShellState> {
     }
   }
 
-  void refreshAndSelectNewAddress(String address) async {
+  void refreshAndSelectNewAddress(String address, String accountUuid) async {
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -168,22 +168,29 @@ class ShellStateCubit extends Cubit<ShellState> {
         throw Exception("invariant: no accounts for this wallet");
       }
 
+      Account? account = await accountRepository.getAccountByUuid(accountUuid);
+
+      if (account == null) {
+        throw Exception("invariant: no account for this uuid");
+      }
+
       List<Address> addresses =
-          await addressRepository.getAllByAccountUuid(accounts.last.uuid);
+          await addressRepository.getAllByAccountUuid(account.uuid);
 
       if (addresses.isEmpty) {
         throw Exception("invariant: no addresses for this account");
       }
 
-      Address newAddress =
-          addresses.firstWhere((element) => element.address == address);
+      Address newAddress = addresses.firstWhere((element) {
+        return element.address == address;
+      });
 
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
         wallet: wallet,
         accounts: accounts,
         addresses: addresses,
-        currentAccountUuid: accounts.last.uuid,
+        currentAccountUuid: account.uuid,
         currentAddress: newAddress,
       )));
     } catch (error) {

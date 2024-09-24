@@ -6,6 +6,7 @@ import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
@@ -55,6 +56,12 @@ import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
+import 'package:horizon/data/sources/network/esplora_client.dart';
+
+import 'package:logger/logger.dart';
+
+final logger = Logger();
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -69,21 +76,70 @@ Future<void> setup() async {
   ));
 
   dio.interceptors.addAll([
+    // RetryInterceptor(dio: dio, maxRetries: 3, initialDelayMs: 500),
     TimeoutInterceptor(),
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
-    BadCertificateInterceptor()
+    BadCertificateInterceptor(),
+    SimpleLogInterceptor(),
+    RetryInterceptor(
+      dio: dio,
+      retries: 4,
+      retryableExtraStatuses: {400}, // to handle backend bug with compose
+      retryDelays: const [
+        // set delays between retries (optional)
+        Duration(seconds: 1), // wait 1 sec before first retry
+        Duration(seconds: 2), // wait 2 sec before second retry
+        Duration(seconds: 3), // wait 3 sec before third retry
+        Duration(seconds: 5), // wait 3 sec before third retryh
+      ],
+    ), // Add the RetryInterceptor here
   ]);
 
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
 
-  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-      esploraApi: EsploraApi(
-          dio: Dio(BaseOptions(
+  final esploraDio = Dio(BaseOptions(
     baseUrl: config.esploraBase,
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
-  )))));
+  ));
+
+  esploraDio.interceptors.addAll([
+    TimeoutInterceptor(),
+    ConnectionErrorInterceptor(),
+    BadResponseInterceptor(),
+    BadCertificateInterceptor(),
+    SimpleLogInterceptor(),
+    RetryInterceptor(
+      dio: dio,
+      retries: 4,
+      retryDelays: const [
+        Duration(seconds: 1), // wait 1 sec before first retry
+        Duration(seconds: 2), // wait 2 sec before second retry
+        Duration(seconds: 3), // wait 3 sec before third retry
+        Duration(seconds: 5), // wait 3 sec before third retryh
+      ],
+    ), // Add the RetryInterceptor here
+  ]);
+
+//   final blockCypherDio = Dio(BaseOptions(
+//       baseUrl: config.blockCypherBase,
+//       connectTimeout: const Duration(seconds: 5),
+//       receiveTimeout: const Duration(seconds: 5)));
+//
+//
+//   blockCypherDio.interceptors.add(InterceptorsWrapper(
+//   onRequest: (options, handler) {
+//     // Add the API key to all requests
+//     options.queryParameters['token'] = <key>;
+//     return handler.next(options);
+//   },
+// ));
+
+  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
+    esploraApi: EsploraApi(dio: esploraDio),
+    // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
+  ));
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
@@ -91,11 +147,12 @@ Future<void> setup() async {
       AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<ComposeRepository>(
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
-  injector.registerSingleton<UtxoRepository>(
-      UtxoRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
+      api: GetIt.I.get<V2Api>(), esploraApi: EsploraApi(dio: esploraDio)));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
-      utxoRepository: GetIt.I.get<UtxoRepository>()));
+      utxoRepository: GetIt.I.get<UtxoRepository>(),
+      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
 
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
@@ -168,9 +225,11 @@ class TimeoutInterceptor extends Interceptor {
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath',
+            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
       );
+      logger.d(formattedError.toString());
+
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -186,9 +245,11 @@ class ConnectionErrorInterceptor extends Interceptor {
       final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
-        error: 'Connection Error — Request Failed $requestPath',
+        error:
+            'Connection Error — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
+      logger.d(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -203,9 +264,12 @@ class BadResponseInterceptor extends Interceptor {
       final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
-        error: 'Bad Response — Request Failed $requestPath',
+        error: err.response?.data?['error'] != null
+            ? "${err.response?.data?['error']}"
+            : "Bad Response",
         type: DioExceptionType.badResponse,
       );
+      logger.d('${formattedError.toString()} -- $requestPath');
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -220,12 +284,43 @@ class BadCertificateInterceptor extends Interceptor {
       final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
-        error: 'Bad Certificate — Request Failed $requestPath',
+        error:
+            'Bad Certificate — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
       );
+      logger.d(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
     }
+  }
+}
+
+class SimpleLogInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final requestInfo = '${options.method} ${options.uri}';
+    logger.d('Request: $requestInfo');
+    handler.next(options);
+  }
+
+  @override
+  void onResponse(response, ResponseInterceptorHandler handler) {
+    final responseInfo =
+        '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
+    logger.d('Response: $responseInfo');
+    handler.next(response);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    final errorInfo =
+        '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
+    logger.d('Error: $errorInfo');
+    if (err.response != null) {
+      final responseData = err.response?.data;
+      logger.d('Response data: $responseData');
+    }
+    handler.next(err);
   }
 }

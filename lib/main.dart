@@ -26,15 +26,14 @@ import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dar
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
-import "package:horizon/presentation/screens/settings/bloc/password_prompt_bloc.dart";
-import 'package:horizon/presentation/screens/settings/view/settings_page.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/shell/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
-import 'package:horizon/presentation/shell/view/shell.dart';
+import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
 
@@ -135,6 +134,22 @@ class AppRouter {
                     (context, animation, secondaryAnimation, child) => child),
           ),
         GoRoute(
+          path: "/privacy-policy",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const PrivacyPolicy(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
+        GoRoute(
+          path: "/tos",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const TermsOfService(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
+        GoRoute(
           path: "/onboarding",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
@@ -146,7 +161,7 @@ class AppRouter {
           path: "/onboarding/create",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: const OnboardingCreateScreen(),
+              child: const OnboardingCreatePageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -154,8 +169,7 @@ class AppRouter {
           path: "/onboarding/import",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPage(), // TODO: be consistent with screen / page
+              child: const OnboardingImportPageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
@@ -163,15 +177,14 @@ class AppRouter {
           path: "/onboarding/import-pk",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child:
-                  const OnboardingImportPKPage(), // TODO: be consistent with screen / page
+              child: const OnboardingImportPKPageWrapper(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationShell) {
-              return Shell(navigationShell);
+              return navigationShell;
             },
             branches: [
               StatefulShellBranch(
@@ -186,7 +199,7 @@ class AppRouter {
                         // success
                         return shell.state.maybeWhen(
                           success: (state) {
-                            return DashboardPage(
+                            return DashboardPageWrapper(
                                 key: Key(
                                     "${state.currentAccountUuid}:${state.currentAddress.address}"));
                           },
@@ -195,32 +208,6 @@ class AppRouter {
                       })
                 ],
               ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                      path: "/settings",
-                      builder: (context, state) {
-                        final shell = context.watch<ShellStateCubit>();
-                        // final accountSettingsRepository =
-                        //     GetIt.I<AccountSettingsRepository>();
-
-                        return shell.state.maybeWhen(
-                          success: (state) {
-                            return SettingsPage();
-                          },
-                          orElse: () => const SizedBox.shrink(),
-                        );
-                      })
-                ],
-              ),
-              // StatefulShellBranch(
-              //   routes: [
-              //     GoRoute(
-              //       path: "/settings",
-              //       builder: (context, state) => const SettingsPage(),
-              //     )
-              //   ],
-              // ),
             ])
       ],
       errorBuilder: (context, state) => ErrorScreen(
@@ -228,6 +215,14 @@ class AppRouter {
             onGoHome: () => context.go('/dashboard'),
           ),
       redirect: (context, state) async {
+        if (state.matchedLocation == "/privacy-policy") {
+          return "/privacy-policy";
+        }
+
+        if (state.matchedLocation == "/tos") {
+          return "/tos";
+        }
+
         final shell = context.read<ShellStateCubit>();
 
         final path = shell.state.maybeWhen(
@@ -332,6 +327,12 @@ class MyApp extends StatelessWidget {
     brightness: Brightness.light,
     appBarTheme: const AppBarTheme(
         backgroundColor: whiteLightTheme, scrolledUnderElevation: 0.0),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: noBackgroundColor,
+    ),
+    bottomAppBarTheme: const BottomAppBarTheme(
+      color: noBackgroundColor,
+    ),
     primaryColor: const Color.fromRGBO(68, 69, 99, 1),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color.fromRGBO(227, 237, 254, 1),
@@ -383,7 +384,23 @@ class MyApp extends StatelessWidget {
       contentTextStyle: TextStyle(color: mainTextBlack),
       backgroundColor: dialogBackgroundColorLightTheme,
     ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      modalBackgroundColor: dialogBackgroundColorLightTheme,
+      backgroundColor: dialogBackgroundColorLightTheme,
+    ),
+    popupMenuTheme: const PopupMenuThemeData(
+      color: dialogBackgroundColorLightTheme,
+    ),
     inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: lightThemeInputColor,
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      labelStyle: const TextStyle(
+          fontWeight: FontWeight.normal, color: lightThemeInputLabelColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide.none,
+      ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: const BorderSide(color: redErrorText),
@@ -401,6 +418,16 @@ class MyApp extends StatelessWidget {
         },
       ),
     ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: lightThemeInputLabelColor,
+        backgroundColor: noBackgroundColor,
+        textStyle: const TextStyle(
+          color: lightThemeInputLabelColor,
+        ),
+      ),
+    ),
+    dividerColor: greyLightThemeUnderlineColor,
     cardTheme: CardTheme(
       color: lightThemeInputColor,
       shape: RoundedRectangleBorder(
@@ -417,6 +444,12 @@ class MyApp extends StatelessWidget {
     appBarTheme: const AppBarTheme(
       backgroundColor: lightNavyDarkTheme,
       scrolledUnderElevation: 0.0,
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: noBackgroundColor,
+    ),
+    bottomAppBarTheme: const BottomAppBarTheme(
+      color: noBackgroundColor,
     ),
     primaryColor: Colors.white,
     buttonTheme: const ButtonThemeData(
@@ -469,7 +502,23 @@ class MyApp extends StatelessWidget {
       contentTextStyle: TextStyle(color: mainTextWhite),
       backgroundColor: dialogBackgroundColorDarkTheme,
     ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      modalBackgroundColor: dialogBackgroundColorDarkTheme,
+      backgroundColor: dialogBackgroundColorDarkTheme,
+    ),
+    popupMenuTheme: const PopupMenuThemeData(
+      color: darkNavyDarkTheme,
+    ),
     inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: darkThemeInputColor,
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      labelStyle: const TextStyle(
+          fontWeight: FontWeight.normal, color: darkThemeInputLabelColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide.none,
+      ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: const BorderSide(color: redErrorText),
@@ -487,6 +536,16 @@ class MyApp extends StatelessWidget {
         },
       ),
     ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: darkThemeInputLabelColor,
+        backgroundColor: noBackgroundColor,
+        textStyle: const TextStyle(
+          color: darkThemeInputLabelColor,
+        ),
+      ),
+    ),
+    dividerColor: greyDarkThemeUnderlineColor,
     cardTheme: CardTheme(
       color: darkThemeInputColor,
       shape: RoundedRectangleBorder(
@@ -501,13 +560,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<PasswordPromptBloc>(
-          create: (context) => PasswordPromptBloc(
-            walletService: GetIt.I<WalletService>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-          ),
-        ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
               walletRepository: GetIt.I<WalletRepository>(),
@@ -516,10 +568,24 @@ class MyApp extends StatelessWidget {
             ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
-          create: (context) => AccountFormBloc(),
+          create: (context) => AccountFormBloc(
+            accountRepository: GetIt.I<AccountRepository>(),
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressService: GetIt.I<AddressService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+          ),
         ),
         BlocProvider<AddressFormBloc>(
-          create: (context) => AddressFormBloc(),
+          create: (context) => AddressFormBloc(
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+            accountRepository: GetIt.I<AccountRepository>(),
+            addressService: GetIt.I<AddressService>(),
+          ),
         ),
         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),

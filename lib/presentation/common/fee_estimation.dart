@@ -46,21 +46,22 @@ class FeeEstimationState extends State<FeeEstimation> {
               Expanded(
                 child: Row(
                   children: [
-                    Text(
+                    SelectableText(
                         "$_confirmationTarget block${int.parse(_confirmationTarget) > 1 ? "s" : ""}",
                         style: Theme.of(context).textTheme.labelLarge),
                     const SizedBox(width: 4),
-                    Text(
+                    SelectableText(
                       "(${widget.feeMap[_confirmationTarget]!.toStringAsFixed(4)} sats/vbyte)",
                     ),
                   ],
                 ),
               ),
               Row(children: [
-                Text("${satoshisToBtc(_getTotalSats()).toString()} BTC",
+                SelectableText(
+                    "${satoshisToBtc(_getTotalSats()).toString()} BTC",
                     style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(width: 4),
-                Text(
+                SelectableText(
                   "${_getTotalSats().toString()} sats",
                 ),
               ]),

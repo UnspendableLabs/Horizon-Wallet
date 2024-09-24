@@ -1,5 +1,6 @@
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 
 abstract class ComposeIssuanceEvent {}
 
@@ -33,14 +34,25 @@ class ComposeTransactionEvent extends ComposeIssuanceEvent {
   });
 }
 
-class SignAndBroadcastTransactionEvent extends ComposeIssuanceEvent {
+class FinalizeTransactionEvent extends ComposeIssuanceEvent {
   final ComposeIssuanceVerbose composeIssuance;
-  final String password;
   final int fee;
 
-  SignAndBroadcastTransactionEvent({
+  FinalizeTransactionEvent({
     required this.composeIssuance,
-    required this.password,
     required this.fee,
   });
+}
+
+class SignAndBroadcastTransactionEvent extends ComposeIssuanceEvent {
+  final String password;
+
+  SignAndBroadcastTransactionEvent({
+    required this.password,
+  });
+}
+
+class ChangeFeeOption extends ComposeIssuanceEvent {
+  final FeeOption value;
+  ChangeFeeOption({required this.value});
 }

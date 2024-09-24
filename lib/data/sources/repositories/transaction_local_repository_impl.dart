@@ -82,8 +82,6 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       throw Exception("Cannot save transaction that was not created locally");
     }
 
-    print("transactionInfo about to be saved: $transactionInfo");
-
     String? unpacked = switch (transactionInfo) {
       TransactionInfoEnhancedSendVerbose(
         unpackedData: EnhancedSendUnpackedVerbose unpacked

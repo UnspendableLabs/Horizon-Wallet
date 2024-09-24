@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -19,52 +18,37 @@ import 'package:logger/logger.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
-  final Config config = GetIt.I<Config>();
-
   final Logger logger = Logger();
-  final mnmonicService = GetIt.I<MnemonicService>();
-  final accountRepository = GetIt.I<AccountRepository>();
-  final addressRepository = GetIt.I<AddressRepository>();
-  final walletRepository = GetIt.I<WalletRepository>();
-  final encryptionService = GetIt.I<EncryptionService>();
-  final walletService = GetIt.I<WalletService>();
-  final addressService = GetIt.I<AddressService>();
 
-  OnboardingCreateBloc() : super(const OnboardingCreateState()) {
-    on<PasswordChanged>((event, emit) {
-      if (event.password.length < 8) {
-        emit(state.copyWith(
-            passwordError: "Password must be at least 8 characters."));
-      } else if (event.passwordConfirmation != null &&
-          event.passwordConfirmation!.isNotEmpty &&
-          event.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(password: event.password, passwordError: null));
-      }
-    });
+  final Config config;
+  final MnemonicService mnmonicService;
+  final AccountRepository accountRepository;
+  final AddressRepository addressRepository;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final WalletService walletService;
+  final AddressService addressService;
 
-    on<PasswordConfirmationChanged>((event, emit) {
-      if (state.password != event.passwordConfirmation) {
-        emit(state.copyWith(passwordError: "Passwords do not match"));
-      } else {
-        emit(state.copyWith(passwordError: null));
-      }
-    });
-
-    on<PasswordError>((event, emit) {
-      emit(state.copyWith(passwordError: event.error));
-    });
-
+  OnboardingCreateBloc({
+    required this.config,
+    required this.mnmonicService,
+    required this.walletRepository,
+    required this.walletService,
+    required this.accountRepository,
+    required this.addressRepository,
+    required this.encryptionService,
+    required this.addressService,
+  }) : super(const OnboardingCreateState()) {
     on<CreateWallet>((event, emit) async {
       logger.d('Processing CreateWallet event');
       emit(state.copyWith(createState: CreateStateLoading()));
+      final password = event.password;
       try {
         Wallet wallet = await walletService.deriveRoot(
-            state.mnemonicState.mnemonic, state.password!);
+            state.mnemonicState.mnemonic, password);
 
-        String decryptedPrivKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, state.password!);
+        String decryptedPrivKey =
+            await encryptionService.decrypt(wallet.encryptedPrivKey, password);
 
         Account account = Account(
             name: 'ACCOUNT 1',
@@ -133,7 +117,7 @@ class OnboardingCreateBloc
         }
         emit(state.copyWith(
             mnemonicError: MnemonicErrorState(
-                message: 'Seed does not match',
+                message: 'Seed phrase does not match',
                 incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(mnemonicError: null));
@@ -141,17 +125,22 @@ class OnboardingCreateBloc
     });
 
     on<ConfirmMnemonic>((event, emit) {
-      if (state.mnemonicState.mnemonic != event.mnemonic) {
+      if (event.mnemonic.isEmpty) {
+        emit(state.copyWith(
+            mnemonicError: MnemonicErrorState(
+                message: 'Seed phrase is required', incorrectIndexes: [])));
+        return;
+      }
+      if (state.mnemonicState.mnemonic != event.mnemonic.join(' ')) {
         List<int> incorrectIndexes = [];
         for (int i = 0; i < 12; i++) {
-          if (state.mnemonicState.mnemonic.split(' ')[i] !=
-              event.mnemonic.split(' ')[i]) {
+          if (state.mnemonicState.mnemonic.split(' ')[i] != event.mnemonic[i]) {
             incorrectIndexes.add(i);
           }
         }
         emit(state.copyWith(
             mnemonicError: MnemonicErrorState(
-                message: 'Seed does not match',
+                message: 'Seed phrase does not match',
                 incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(
@@ -160,7 +149,8 @@ class OnboardingCreateBloc
     });
 
     on<GoBackToMnemonic>((event, emit) {
-      emit(state.copyWith(createState: CreateStateNotAsked));
+      emit(state.copyWith(
+          createState: CreateStateNotAsked, mnemonicError: null));
     });
   }
 

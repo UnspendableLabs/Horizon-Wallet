@@ -189,11 +189,20 @@ void main() {
               setupMocksCounterwallet(network, expectedCoinType);
               break;
           }
-          return OnboardingImportBloc();
+          return OnboardingImportBloc(
+            config: mockConfig,
+            accountRepository: mockAccountRepository,
+            addressRepository: mockAddressRepository,
+            walletRepository: mockWalletRepository,
+            walletService: mockWalletService,
+            addressService: mockAddressService,
+            mnemonicService: mockMnemonicService,
+            encryptionService: mockEncryptionService,
+          );
         },
         seed: () => OnboardingImportState(
-            importFormat: importFormat, password: password, mnemonic: mnemonic),
-        act: (bloc) => bloc.add(ImportWallet()),
+            importFormat: importFormat, mnemonic: mnemonic),
+        act: (bloc) => bloc.add(ImportWallet(password: password)),
         expect: () => [
           predicate<OnboardingImportState>(
               (state) => state.importState is ImportStateLoading),

@@ -20,10 +20,11 @@ class TxHashDisplay extends StatefulWidget {
   });
 
   @override
-  _TxHashDisplayState createState() => _TxHashDisplayState();
+  TxHashDisplayState createState() => TxHashDisplayState();
 }
 
-class _TxHashDisplayState extends State<TxHashDisplay> {
+class TxHashDisplayState extends State<TxHashDisplay> {
+  // ignore: unused_field
   bool _copied = false;
 
   String get shortenedHash {
@@ -46,16 +47,6 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
     }
   }
 
-  String _getUrl() {
-    final uri = switch (widget.uriType) {
-      URIType.btcexplorer =>
-        Uri.parse("${widget.config.btcExplorerBase}/tx/${widget.hash}"),
-      URIType.hoex =>
-        Uri.parse("${widget.config.horizonExplorerBase}/tx/${widget.hash}")
-    };
-    return uri.toString();
-  }
-
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: widget.hash));
     setState(() {
@@ -73,27 +64,21 @@ class _TxHashDisplayState extends State<TxHashDisplay> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onLongPress: _copyToClipboard,
-      onTap: _launchUrl,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Tooltip(
-          message: _getUrl(),
-          child: RichText(
-            text: TextSpan(
-              style: DefaultTextStyle.of(context).style,
-              children: [
-                TextSpan(
-                  text: shortenedHash,
-                  style: const TextStyle(
-                    decoration: TextDecoration.underline,
-                  ),
+        onLongPress: _copyToClipboard,
+        onTap: _launchUrl,
+        child: RichText(
+          text: TextSpan(
+            style: DefaultTextStyle.of(context).style,
+            children: [
+              TextSpan(
+                mouseCursor: WidgetStateMouseCursor.clickable,
+                text: shortenedHash,
+                style: const TextStyle(
+                  decoration: TextDecoration.underline,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ),
-      ),
-    );
+        ));
   }
 }

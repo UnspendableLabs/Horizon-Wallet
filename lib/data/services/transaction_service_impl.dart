@@ -73,7 +73,6 @@ class TransactionServiceImpl implements TransactionService {
           );
         }
       } else {
-        // TODO: handle errors in UI
         throw Exception('Invariant: No utxo found for txHash: $txHash');
       }
     }
@@ -99,6 +98,64 @@ class TransactionServiceImpl implements TransactionService {
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
     return transaction.virtualSize();
+  }
+
+  @override
+  bool validateFee(
+      {required String rawtransaction,
+      required int expectedFee,
+      required Map<String, Utxo> utxoMap}) {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(rawtransaction);
+
+    int ins = 0;
+    int outs = 0;
+
+    for (final input in transaction.ins.toDart) {
+      var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+      var prev = utxoMap[txHash];
+      if (prev == null) {
+        throw Exception('Invariant: No utxo found for txHash: $txHash');
+      }
+      ins += prev.value;
+    }
+
+    for (final output in transaction.outs.toDart) {
+      outs += output.value;
+    }
+
+    return ins - outs == expectedFee;
+  }
+
+  @override
+  bool validateBTCAmount({
+    required String rawtransaction,
+    required String source,
+    required int expectedBTC,
+  }) {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(rawtransaction);
+
+    int actualBTC = 0;
+    for (final output in transaction.outs.toDart) {
+      if (_isOpReturn(output.script)) {
+        continue;
+      }
+      final address =
+          bitcoinjs.Address.fromOutputScript(output.script, _getNetwork())
+              .toString();
+      final amount = output.value;
+
+      if (address != source) {
+        actualBTC += amount;
+      }
+    }
+    return actualBTC == expectedBTC;
+  }
+
+  bool _isOpReturn(JSUint8Array script) {
+    // OP_RETURN is represented by 0x6a
+    return script.toDart.isNotEmpty && script.toDart[0] == 0x6a;
   }
 
   _getNetwork() => switch (config.network) {

@@ -11,8 +11,8 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/shell/address_form/bloc/address_form_event.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -115,7 +115,7 @@ void main() {
               ]);
     }
 
-    blocTest<AddressFormBloc, RemoteDataState<List<Address>>>(
+    blocTest<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
       'does nothing for horizon',
       build: () {
         setupCommonMocks(
@@ -124,15 +124,22 @@ void main() {
           coinType: '0\'',
           accountIndex: '0\'',
         );
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<List<Address>>.loading(),
-        const RemoteDataState<List<Address>>.initial(),
+        const RemoteDataState<Map<String, dynamic>>.loading(),
+        const RemoteDataState<Map<String, dynamic>>.initial(),
       ],
       verify: (_) {
         verifyNever(() => mockAddressService.deriveAddressSegwit(
@@ -148,7 +155,7 @@ void main() {
       },
     );
 
-    blocTest<AddressFormBloc, RemoteDataState<List<Address>>>(
+    blocTest<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
       'submits form with Freewallet import format',
       build: () {
         setupCommonMocks(
@@ -185,17 +192,24 @@ void main() {
         when(() => mockAddressRepository.insertMany(any()))
             .thenAnswer((_) async {});
 
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<List<Address>>.loading(),
-        isA<RemoteDataState<List<Address>>>().having(
+        const RemoteDataState<Map<String, dynamic>>.loading(),
+        isA<RemoteDataState<Map<String, dynamic>>>().having(
           (state) => state.whenOrNull(
-            success: (addresses) => addresses.length,
+            success: (data) => data['newAddresses'].length,
           ),
           'address count',
           2,
@@ -229,7 +243,7 @@ void main() {
       },
     );
 
-    blocTest<AddressFormBloc, RemoteDataState<List<Address>>>(
+    blocTest<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
       'submits form with Counterwallet import format',
       build: () {
         setupCommonMocks(
@@ -266,17 +280,24 @@ void main() {
         when(() => mockAddressRepository.insertMany(any()))
             .thenAnswer((_) async {});
 
-        return AddressFormBloc();
+        return AddressFormBloc(
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          encryptionService: mockEncryptionService,
+          addressRepository: mockAddressRepository,
+          accountRepository: mockAccountRepository,
+          addressService: mockAddressService,
+        );
       },
       act: (bloc) => bloc.add(Submit(
         accountUuid: accountUuid,
         password: password,
       )),
       expect: () => [
-        const RemoteDataState<List<Address>>.loading(),
-        isA<RemoteDataState<List<Address>>>().having(
+        const RemoteDataState<Map<String, dynamic>>.loading(),
+        isA<RemoteDataState<Map<String, dynamic>>>().having(
           (state) => state.whenOrNull(
-            success: (addresses) => addresses.length,
+            success: (data) => data['newAddresses'].length,
           ),
           'address count',
           2,

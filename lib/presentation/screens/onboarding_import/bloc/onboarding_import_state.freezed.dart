@@ -16,11 +16,9 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$OnboardingImportState {
-  String? get password => throw _privateConstructorUsedError;
-  String? get passwordError => throw _privateConstructorUsedError;
   String get mnemonic => throw _privateConstructorUsedError;
   String? get mnemonicError => throw _privateConstructorUsedError;
-  dynamic get importFormat => throw _privateConstructorUsedError;
+  ImportFormat get importFormat => throw _privateConstructorUsedError;
   dynamic get getAddressesState => throw _privateConstructorUsedError;
   Map<Address, bool> get isCheckedMap => throw _privateConstructorUsedError;
   dynamic get importState => throw _privateConstructorUsedError;
@@ -37,11 +35,9 @@ abstract class $OnboardingImportStateCopyWith<$Res> {
       _$OnboardingImportStateCopyWithImpl<$Res, OnboardingImportState>;
   @useResult
   $Res call(
-      {String? password,
-      String? passwordError,
-      String mnemonic,
+      {String mnemonic,
       String? mnemonicError,
-      dynamic importFormat,
+      ImportFormat importFormat,
       dynamic getAddressesState,
       Map<Address, bool> isCheckedMap,
       dynamic importState});
@@ -61,24 +57,14 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? password = freezed,
-    Object? passwordError = freezed,
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
-    Object? importFormat = freezed,
+    Object? importFormat = null,
     Object? getAddressesState = freezed,
     Object? isCheckedMap = null,
     Object? importState = freezed,
   }) {
     return _then(_value.copyWith(
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      passwordError: freezed == passwordError
-          ? _value.passwordError
-          : passwordError // ignore: cast_nullable_to_non_nullable
-              as String?,
       mnemonic: null == mnemonic
           ? _value.mnemonic
           : mnemonic // ignore: cast_nullable_to_non_nullable
@@ -87,10 +73,10 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
-      importFormat: freezed == importFormat
+      importFormat: null == importFormat
           ? _value.importFormat
           : importFormat // ignore: cast_nullable_to_non_nullable
-              as dynamic,
+              as ImportFormat,
       getAddressesState: freezed == getAddressesState
           ? _value.getAddressesState
           : getAddressesState // ignore: cast_nullable_to_non_nullable
@@ -117,11 +103,9 @@ abstract class _$$OnboardingImportStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? password,
-      String? passwordError,
-      String mnemonic,
+      {String mnemonic,
       String? mnemonicError,
-      dynamic importFormat,
+      ImportFormat importFormat,
       dynamic getAddressesState,
       Map<Address, bool> isCheckedMap,
       dynamic importState});
@@ -139,24 +123,14 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? password = freezed,
-    Object? passwordError = freezed,
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
-    Object? importFormat = freezed,
+    Object? importFormat = null,
     Object? getAddressesState = freezed,
     Object? isCheckedMap = null,
     Object? importState = freezed,
   }) {
     return _then(_$OnboardingImportStateImpl(
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      passwordError: freezed == passwordError
-          ? _value.passwordError
-          : passwordError // ignore: cast_nullable_to_non_nullable
-              as String?,
       mnemonic: null == mnemonic
           ? _value.mnemonic
           : mnemonic // ignore: cast_nullable_to_non_nullable
@@ -165,8 +139,10 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
-      importFormat:
-          freezed == importFormat ? _value.importFormat! : importFormat,
+      importFormat: null == importFormat
+          ? _value.importFormat
+          : importFormat // ignore: cast_nullable_to_non_nullable
+              as ImportFormat,
       getAddressesState: freezed == getAddressesState
           ? _value.getAddressesState!
           : getAddressesState,
@@ -183,9 +159,7 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
 
 class _$OnboardingImportStateImpl implements _OnboardingImportState {
   const _$OnboardingImportStateImpl(
-      {this.password,
-      this.passwordError,
-      this.mnemonic = "",
+      {this.mnemonic = "",
       this.mnemonicError = null,
       this.importFormat = ImportFormat.horizon,
       this.getAddressesState = GetAddressesStateNotAsked,
@@ -194,10 +168,6 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       : _isCheckedMap = isCheckedMap;
 
   @override
-  final String? password;
-  @override
-  final String? passwordError;
-  @override
   @JsonKey()
   final String mnemonic;
   @override
@@ -205,7 +175,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
   final String? mnemonicError;
   @override
   @JsonKey()
-  final dynamic importFormat;
+  final ImportFormat importFormat;
   @override
   @JsonKey()
   final dynamic getAddressesState;
@@ -224,7 +194,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
 
   @override
   String toString() {
-    return 'OnboardingImportState(password: $password, passwordError: $passwordError, mnemonic: $mnemonic, mnemonicError: $mnemonicError, importFormat: $importFormat, getAddressesState: $getAddressesState, isCheckedMap: $isCheckedMap, importState: $importState)';
+    return 'OnboardingImportState(mnemonic: $mnemonic, mnemonicError: $mnemonicError, importFormat: $importFormat, getAddressesState: $getAddressesState, isCheckedMap: $isCheckedMap, importState: $importState)';
   }
 
   @override
@@ -232,16 +202,12 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$OnboardingImportStateImpl &&
-            (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.passwordError, passwordError) ||
-                other.passwordError == passwordError) &&
             (identical(other.mnemonic, mnemonic) ||
                 other.mnemonic == mnemonic) &&
             (identical(other.mnemonicError, mnemonicError) ||
                 other.mnemonicError == mnemonicError) &&
-            const DeepCollectionEquality()
-                .equals(other.importFormat, importFormat) &&
+            (identical(other.importFormat, importFormat) ||
+                other.importFormat == importFormat) &&
             const DeepCollectionEquality()
                 .equals(other.getAddressesState, getAddressesState) &&
             const DeepCollectionEquality()
@@ -253,11 +219,9 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      password,
-      passwordError,
       mnemonic,
       mnemonicError,
-      const DeepCollectionEquality().hash(importFormat),
+      importFormat,
       const DeepCollectionEquality().hash(getAddressesState),
       const DeepCollectionEquality().hash(_isCheckedMap),
       const DeepCollectionEquality().hash(importState));
@@ -272,25 +236,19 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
 
 abstract class _OnboardingImportState implements OnboardingImportState {
   const factory _OnboardingImportState(
-      {final String? password,
-      final String? passwordError,
-      final String mnemonic,
+      {final String mnemonic,
       final String? mnemonicError,
-      final dynamic importFormat,
+      final ImportFormat importFormat,
       final dynamic getAddressesState,
       final Map<Address, bool> isCheckedMap,
       final dynamic importState}) = _$OnboardingImportStateImpl;
 
   @override
-  String? get password;
-  @override
-  String? get passwordError;
-  @override
   String get mnemonic;
   @override
   String? get mnemonicError;
   @override
-  dynamic get importFormat;
+  ImportFormat get importFormat;
   @override
   dynamic get getAddressesState;
   @override

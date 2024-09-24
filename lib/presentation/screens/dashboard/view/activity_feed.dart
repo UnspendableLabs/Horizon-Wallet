@@ -7,11 +7,11 @@ import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
-
 import 'package:horizon/presentation/common/tx_hash_display.dart';
-
 import 'package:horizon/common/format.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -24,7 +24,7 @@ class SendTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text("Send $quantityNormalized $asset");
+    return SelectableText("Send $quantityNormalized $asset");
   }
 }
 
@@ -39,7 +39,7 @@ class ReceiveTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text("Receive $quantityNormalized $asset");
+    return SelectableText("Receive $quantityNormalized $asset");
   }
 }
 
@@ -67,7 +67,7 @@ class TransactionStatusPill extends StatelessWidget {
         color: _getBackgroundColor(),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(
+      child: SelectableText(
         _getText(),
         style: TextStyle(
           color: _getTextColor(),
@@ -117,7 +117,7 @@ class NewTransactionsBanner extends StatelessWidget {
         color: Colors.blue,
         padding: const EdgeInsets.all(8.0),
         child: Center(
-          child: Text(
+          child: SelectableText(
             '$count new transaction${count > 1 ? 's' : ''}',
             style: const TextStyle(color: Colors.white),
           ),
@@ -155,7 +155,7 @@ class ActivityFeedListItem extends StatelessWidget {
     } else if (item.bitcoinTx != null) {
       return _buildBitcoinTxTitle(item.bitcoinTx!);
     } else {
-      return const Text('No details available');
+      return const SelectableText('No details available');
     }
   }
 
@@ -182,7 +182,7 @@ class ActivityFeedListItem extends StatelessWidget {
           asset: 'BTC',
         ),
       TransactionType.neither =>
-        const Text('Invariant: account neither sender or receiver')
+        const SelectableText('Invariant: account neither sender or receiver')
     };
   }
 
@@ -201,11 +201,15 @@ class ActivityFeedListItem extends StatelessWidget {
           asset: params.asset,
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
-        Text("Issue ${params.quantityNormalized} ${params.asset}"),
-      VerboseDispenseEvent(params: var params) => Text(
+        params.asset == null || params.quantityNormalized == null
+            ? const SelectableText('Issue (INVALID)',
+                style: TextStyle(color: redErrorText))
+            : SelectableText(
+                "Issue ${params.quantityNormalized} ${params.asset}"),
+      VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
-      _ =>
-        Text('Invariant: title unsupported event type: ${event.runtimeType}'),
+      _ => SelectableText(
+          'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
   }
 
@@ -220,7 +224,8 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoIssuanceVerbose(
         unpackedData: var unpackedData,
       ) =>
-        Text("Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+        SelectableText(
+            "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       // btc send
       TransactionInfoVerbose(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
@@ -228,7 +233,7 @@ class ActivityFeedListItem extends StatelessWidget {
           quantityNormalized: satoshisToBtc(btcAmount).toString(),
           asset: 'BTC',
         ),
-      _ => Text(
+      _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
   }
@@ -254,7 +259,7 @@ class ActivityFeedListItem extends StatelessWidget {
     } else if (item.bitcoinTx != null) {
       return _buildBitcoinTxSubtitle(item.bitcoinTx!);
     } else {
-      return const Text('No details available');
+      return const SelectableText('No details available');
     }
   }
 
@@ -266,7 +271,7 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseDispenseEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      _ => Text(
+      _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
   }
@@ -387,14 +392,15 @@ class DashboardActivityFeedScreen extends StatefulWidget {
   const DashboardActivityFeedScreen({super.key, required this.addresses});
 
   @override
-  _DashboardActivityFeedScreenState createState() =>
-      _DashboardActivityFeedScreenState();
+  DashboardActivityFeedScreenState createState() =>
+      DashboardActivityFeedScreenState();
 }
 
-class _DashboardActivityFeedScreenState
+class DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
-  final ScrollController _scrollController = ScrollController();
+  static int displayedTransactionsCount = 4;
+  static const int pageSize = 20;
 
   @override
   void initState() {
@@ -416,6 +422,14 @@ class _DashboardActivityFeedScreenState
     super.dispose();
   }
 
+  Widget _buildNewTransactionsBanner(DashboardActivityFeedState state) {
+    final newTransactionCount = (state as dynamic).newTransactionCount as int;
+    if (newTransactionCount > 0) {
+      return NewTransactionsBanner(count: newTransactionCount);
+    }
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardActivityFeedBloc, DashboardActivityFeedState>(
@@ -423,39 +437,75 @@ class _DashboardActivityFeedScreenState
         // print('DashboardActivityFeedBloc state changed: $state');
       },
       builder: (context, state) {
-        if (state is DashboardActivityFeedStateInitial ||
-            state is DashboardActivityFeedStateLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is DashboardActivityFeedStateCompleteError) {
-          return Center(child: SelectableText('Error: ${state.error}'));
-        } else if (state is DashboardActivityFeedStateCompleteOk ||
-            state is DashboardActivityFeedStateReloadingOk) {
-          final transactions =
-              (state as dynamic).transactions as List<ActivityFeedItem>;
-          final newTransactionCount =
-              (state as dynamic).newTransactionCount as int;
-          return Column(
-            children: [
-              if (newTransactionCount > 0)
-                NewTransactionsBanner(count: newTransactionCount),
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: transactions.length,
-                  itemBuilder: (context, index) {
-                    return ActivityFeedListItem(
-                      key: ValueKey(transactions[index].hash),
-                      item: transactions[index],
-                      addresses: widget.addresses,
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
+        return SliverList(
+            delegate: SliverChildListDelegate([
+          if (state is DashboardActivityFeedStateCompleteOk ||
+              state is DashboardActivityFeedStateReloadingOk)
+            _buildNewTransactionsBanner(state),
+          ..._buildContent(state),
+          state is DashboardActivityFeedStateCompleteOk &&
+                  state.transactions.length > displayedTransactionsCount
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        displayedTransactionsCount =
+                            displayedTransactionsCount + pageSize;
+                      });
+                    },
+                    child: const Text("View More"),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ]));
       },
     );
+  }
+
+  List<Widget> _buildContent(DashboardActivityFeedState state) {
+    if (state is DashboardActivityFeedStateInitial ||
+        state is DashboardActivityFeedStateLoading) {
+      return [
+        const SizedBox(
+          height: 200, // Adjust as needed
+          child: Center(child: CircularProgressIndicator()),
+        )
+      ];
+    } else if (state is DashboardActivityFeedStateCompleteError) {
+      return [
+        SizedBox(
+          height: 200, // Adjust as needed
+          child: Center(child: Text('Error: ${state.error}')),
+        )
+      ];
+    } else if (state is DashboardActivityFeedStateCompleteOk ||
+        state is DashboardActivityFeedStateReloadingOk) {
+      final transactions =
+          (state as dynamic).transactions as List<ActivityFeedItem>;
+
+      if (transactions.isEmpty) {
+        return [
+          const NoData(
+            title: 'No Transactions',
+          )
+        ];
+      }
+
+      final displayedTransactions =
+          transactions.take(displayedTransactionsCount).toList();
+
+      final List<Widget> widgets = displayedTransactions
+          .map((transaction) => ActivityFeedListItem(
+                key: ValueKey(transaction.hash),
+                item: transaction,
+                addresses: widget.addresses,
+              ))
+          .toList();
+
+      return widgets.toList();
+    }
+
+    throw Exception('Invalid state: $state');
   }
 }

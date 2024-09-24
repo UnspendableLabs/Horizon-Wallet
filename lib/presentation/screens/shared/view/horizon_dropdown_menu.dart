@@ -1,39 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
 
-class HorizonDropdownMenu extends StatelessWidget {
-  final bool isDarkMode;
-  final List<DropdownMenuItem<String>> items;
-  final Function(String?) onChanged;
+class HorizonDropdownMenu<T> extends StatelessWidget {
+  final List<DropdownMenuItem<T>> items;
+  final Function(T?) onChanged;
   final String? label;
   final TextEditingController? controller;
-  final String? selectedValue;
+  final T? selectedValue;
+  final Icon? icon;
+  final double? borderRadius;
 
   const HorizonDropdownMenu({
     super.key,
-    required this.isDarkMode,
     required this.items,
     required this.onChanged,
     this.label,
     this.controller,
     this.selectedValue,
+    this.icon,
+    this.borderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
-    final dropdownBackgroundColor =
-        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
-
     return InputDecorator(
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-            color: isDarkMode
-                ? darkThemeInputLabelColor
-                : lightThemeInputLabelColor),
-        floatingLabelBehavior: FloatingLabelBehavior.auto,
-        filled: true,
-        fillColor: dropdownBackgroundColor,
+        floatingLabelBehavior: FloatingLabelBehavior.never,
         contentPadding: const EdgeInsets.symmetric(
             horizontal: 12.0, vertical: 8.0), // Adjust padding here
         border: OutlineInputBorder(
@@ -42,12 +34,13 @@ class HorizonDropdownMenu extends StatelessWidget {
         ),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
+        child: DropdownButton<T>(
           isExpanded: true,
           value: selectedValue ?? items.first.value,
           onChanged: onChanged,
-          dropdownColor: dropdownBackgroundColor,
           items: items,
+          borderRadius: BorderRadius.circular(borderRadius ?? 10),
+          icon: icon,
         ),
       ),
     );

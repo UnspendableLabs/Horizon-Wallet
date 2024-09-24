@@ -35,10 +35,9 @@ class EventMapper {
             apiEvent as api.AssetIssuanceEvent);
       case "DISPENSE":
         return DispenseEventMapper.toDomain(apiEvent as api.DispenseEvent);
-
       // case 'NEW_TRANSACTION':
       //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
-      // case 'ASSET_ISSUANCE': return AssetIssuanceEventMapper.toDomain(apiEvent as api.AssetIssuanceEvent);
+
       default:
         // Return a generic Event for unknown types
 
@@ -70,20 +69,12 @@ class VerboseEventMapper {
       case "DISPENSE":
         return VerboseDispenseEventMapper.toDomain(
             apiEvent as api.VerboseDispenseEvent);
-
-      // case 'ASSET_ISSUANCE':
-      //   return VerboseAssetIssuanceEventMapper.toDomain(
-      //       apiEvent as api.VerboseAssetIssuanceEvent);
       case 'ASSET_ISSUANCE':
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
-      case 'DISPENSE': // case 'ASSET_ISSUANCE': return VerboseAssetIssuanceEventMapper.toDomain(
-      //       apiEvent as api.VerboseAssetIssuanceEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);
-      // case 'ASSET_ISSUANCE':
-      //   return VerboseAssetIssuanceEventMapper.toDomain(apiEvent as ApiVerboseAssetIssuanceEvent);
       default:
         return VerboseEvent(
           state: StateMapper.getVerbose(apiEvent),
@@ -503,57 +494,15 @@ class VerboseNewTransactionParamsMapper {
 
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
+  final _cache = <String, (List<VerboseEvent>, cursor_entity.Cursor?, int?)>{};
 
   EventsRepositoryImpl({
     required this.api_,
   });
 
-  @override
-  Future<(List<Event>, cursor_entity.Cursor? nextCursor, int? resultCount)>
-      getByAddresses({
-    required List<String> addresses,
-    cursor_entity.Cursor? cursor,
-    int? limit,
-    bool? unconfirmed = false,
-    List<String>? whitelist,
-  }) async {
-    final addressesParam = addresses.join(',');
-
-    final whitelist_ = whitelist?.join(",");
-
-    final response = await api_.getEventsByAddresses(
-        addressesParam,
-        cursor_model.CursorMapper.toData(cursor),
-        limit,
-        unconfirmed,
-        whitelist_);
-
-    if (response.error != null) {
-      throw Exception("Error getting events by addresses: ${response.error}");
-    }
-
-    cursor_entity.Cursor? nextCursor =
-        cursor_model.CursorMapper.toDomain(response.nextCursor);
-
-    List<Event> events = response.result!.map((event) {
-      return EventMapper.toDomain(event);
-    }).toList();
-
-    return (events, nextCursor, response.resultCount);
-  }
-
-  @override
-  Future<List<Event>> getAllByAddresses({
-    required List<String> addresses,
-    bool? unconfirmed = false,
-    List<String>? whitelist,
-  }) async {
-    final futures = addresses.map(
-        (address) => _getAllEventsForAddress(address, unconfirmed, whitelist));
-
-    final results = await Future.wait(futures);
-
-    return results.expand((events) => events).toList();
+  String _generateCacheKey(
+      String address, int limit, cursor_entity.Cursor cursor) {
+    return '$address|$limit|${cursor_model.CursorMapper.toData(cursor)?.toJson()}';
   }
 
   @override
@@ -562,14 +511,23 @@ class EventsRepositoryImpl implements EventsRepository {
         List<VerboseEvent>,
         cursor_entity.Cursor? nextCursor,
         int? resultCount
-      )> getByAddressesVerbose({
-    required List<String> addresses,
+      )> getByAddressVerbose({
+    required String address,
     cursor_entity.Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
     List<String>? whitelist,
   }) async {
-    final addressesParam = addresses.join(',');
+    String? cacheKey;
+    if (limit != null && cursor != null) {
+      cacheKey = _generateCacheKey(address, limit, cursor);
+    }
+
+    if (cacheKey != null && _cache.containsKey(cacheKey)) {
+      return _cache[cacheKey]!;
+    }
+
+    final addressesParam = address;
 
     final whitelist_ = whitelist?.join(",");
 
@@ -589,47 +547,27 @@ class EventsRepositoryImpl implements EventsRepository {
       return VerboseEventMapper.toDomain(event);
     }).toList();
 
+    if (cacheKey != null) {
+      _cache[cacheKey] = (events, nextCursor, response.resultCount);
+    }
+
     return (events, nextCursor, response.resultCount);
   }
 
   @override
-  Future<List<VerboseEvent>> getAllByAddressesVerbose({
-    required List<String> addresses,
+  Future<List<VerboseEvent>> getAllByAddressVerbose({
+    required String address,
     bool? unconfirmed = false,
     List<String>? whitelist,
   }) async {
+    final addresses = [address];
+
     final futures = addresses.map((address) =>
         _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
 
     final results = await Future.wait(futures);
 
     return results.expand((events) => events).toList();
-  }
-
-  Future<List<Event>> _getAllEventsForAddress(
-      String address, bool? unconfirmed, List<String>? whitelist) async {
-    final allEvents = <Event>[];
-    Cursor? cursor;
-    bool hasMore = true;
-
-    while (hasMore) {
-      final (events, nextCursor, _) = await getByAddresses(
-        addresses: [address],
-        cursor: cursor,
-        unconfirmed: unconfirmed,
-        whitelist: whitelist,
-      );
-
-      allEvents.addAll(events);
-
-      if (nextCursor == null) {
-        hasMore = false;
-      } else {
-        cursor = nextCursor;
-      }
-    }
-
-    return allEvents;
   }
 
   Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
@@ -639,8 +577,9 @@ class EventsRepositoryImpl implements EventsRepository {
     bool hasMore = true;
 
     while (hasMore) {
-      final (events, nextCursor, _) = await getByAddressesVerbose(
-        addresses: [address],
+      final (events, nextCursor, _) = await getByAddressVerbose(
+        address: address,
+        limit: 1000,
         cursor: cursor,
         unconfirmed: unconfirmed,
         whitelist: whitelist,

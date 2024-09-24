@@ -452,7 +452,7 @@ class NewTransactionEvent extends Event {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AssetIssuanceParams {
-  final String asset;
+  final String? asset;
   final String? assetLongname;
   // final int blockIndex;
   // final int callDate;
@@ -463,7 +463,7 @@ class AssetIssuanceParams {
   // final int feePaid;
   // final String issuer;
   // final bool locked;
-  final int quantity;
+  final int? quantity;
   // final bool reset;
   final String source;
   // final String status;
@@ -472,7 +472,7 @@ class AssetIssuanceParams {
   // final int txIndex;
 
   AssetIssuanceParams({
-    required this.asset,
+    this.asset,
     this.assetLongname,
     // required this.blockIndex,
     // required this.callDate,
@@ -500,7 +500,7 @@ class AssetIssuanceParams {
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
   final int blockTime;
   // final AssetInfo assetInfo;
-  final String quantityNormalized;
+  final String? quantityNormalized;
   final String feePaidNormalized;
 
   VerboseAssetIssuanceParams({
@@ -510,7 +510,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.feePaid,
     // required super.issuer,
     // required super.locked,
-    required super.quantity,
+    super.quantity,
     // required super.reset,
     required super.source,
     // required super.status,
@@ -519,7 +519,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.txIndex,
     required this.blockTime,
     // required this.assetInfo,
-    required this.quantityNormalized,
+    this.quantityNormalized,
     required this.feePaidNormalized,
   });
 
@@ -1983,8 +1983,6 @@ class EnhancedSendInfoVerbose extends InfoVerbose {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class IssuanceUnpackedVerbose extends TransactionUnpackedVerbose {
-  // TODO: should eventually include normalized
-
   final int assetId;
   final String asset;
   final String? subassetLongname;
@@ -2091,6 +2089,10 @@ class UTXO {
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
 
+  @GET("/bitcoin/estimatesmartfee")
+  Future<Response<int>> estimateSmartFee(
+      @Query("conf_target") int confirmationTarget);
+
   @POST("/bitcoin/transactions")
   Future<Response<String>> createTransaction(
     @Query("signedhex") String signedhex,
@@ -2133,7 +2135,7 @@ abstract class V2Api {
   Future<Response<List<Block>>> getBlocks(
     @Query("limit") int limit,
     @Query("last") int last,
-    @Query("verbose") bool verbose, // TODO: validate bool parsing
+    @Query("verbose") bool verbose,
   );
   //     Get Block
   @GET("/blocks/{block_index}")
@@ -2226,38 +2228,34 @@ abstract class V2Api {
 
   @GET("/transactions/info")
   Future<Response<Info>> getTransactionInfo(
-    @Query("rawtransaction") String rawtransaction,
-    // TODO: add these back and make optional
-    // @Query("block_index") int blockIndex,
-    // @Query("verbose") bool verbose,
-  );
+    @Query("rawtransaction") String rawtransaction, [
+    @Query("block_index") int? blockIndex,
+    @Query("verbose") bool? verbose,
+  ]);
 
   @GET("/transactions/info?verbose=true")
   Future<Response<InfoVerbose>> getTransactionInfoVerbose(
-    @Query("rawtransaction") String rawtransaction,
-    // TODO: add these back and make optional
-    // @Query("block_index") int blockIndex,
-    // @Query("verbose") bool verbose,
-  );
+    @Query("rawtransaction") String rawtransaction, [
+    @Query("block_index") int? blockIndex,
+    @Query("verbose") bool? verbose,
+  ]);
 
   //     Unpack
 // https://api.counterparty.io/transactions/unpack{?datahex}{&block_index}{&verbose}
 
   @GET("/transactions/unpack")
   Future<Response<TransactionUnpacked>> unpackTransaction(
-    @Query("datahex") String datahex,
-    // TODO: add these back and make optional
-    // @Query("block_index") int blockIndex,
-    // @Query("verbose") bool verbose,
-  );
+    @Query("datahex") String datahex, [
+    @Query("block_index") int? blockIndex,
+    @Query("verbose") bool? verbose,
+  ]);
 
   @GET("/transactions/unpack?verbose=true")
   Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
-    @Query("datahex") String datahex,
-    // TODO: add these back and make optional
-    // @Query("block_index") int blockIndex,
-    // @Query("verbose") bool verbose,
-  );
+    @Query("datahex") String datahex, [
+    @Query("block_index") int? blockIndex,
+    @Query("verbose") bool? verbose,
+  ]);
 
   //     Get Transaction By Hash
   // Addresses
@@ -2292,7 +2290,6 @@ abstract class V2Api {
 // GET
 // https://api.counterparty.io/addresses/{address}/compose/send{?destination}{&asset}{&quantity}{&memo}{&memo_is_hex}{&use_enhanced_send}{&encoding}{&fee_per_kb}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&verbose}
 
-// TODO add all query params
   @GET("/addresses/{address}/compose/send")
   Future<Response<SendTx>> composeSend(
     @Path("address") String address,
@@ -2303,7 +2300,6 @@ abstract class V2Api {
     @Query("fee") int? fee,
   ]);
 
-// TODO add all query params
   @GET("/addresses/{address}/compose/send?verbose=true")
   Future<Response<SendTxVerbose>> composeSendVerbose(
     @Path("address") String address,
@@ -2311,7 +2307,9 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("fee") int? fee,
+    @Query("exact_fee") int? fee,
+    @Query("fee_per_kb") int? feePerKB,
+    @Query("inputs_set") String? inputsSet,
   ]);
 
   @GET("/addresses/{address}/sends")
@@ -2352,7 +2350,8 @@ abstract class V2Api {
     @Query("reset") bool? reset,
     @Query("description") String? description,
     @Query("unconfirmed") bool? unconfirmed,
-    @Query("fee") int? fee,
+    @Query("exact_fee") int? fee,
+    @Query("inputs_set") String? inputsSet,
   ]);
 
   @GET("/addresses/{address}/transactions")

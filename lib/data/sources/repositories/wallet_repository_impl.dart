@@ -1,4 +1,3 @@
-import 'package:horizon/common/uuid.dart';
 import "package:horizon/data/models/wallet.dart";
 import "package:horizon/data/sources/local/dao/wallets_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
@@ -6,6 +5,7 @@ import "package:horizon/domain/entities/wallet.dart" as entity;
 import "package:horizon/domain/repositories/wallet_repository.dart";
 
 class WalletRepositoryImpl implements WalletRepository {
+  // ignore: unused_field
   final local.DB _db;
   final WalletsDao _walletDao;
 
@@ -14,7 +14,7 @@ class WalletRepositoryImpl implements WalletRepository {
   @override
   Future<void> insert(entity.Wallet wallet) async {
     await _walletDao.insertWallet(WalletModel(
-        uuid: wallet.uuid ?? uuid.v4(),
+        uuid: wallet.uuid,
         name: wallet.name,
         encryptedPrivKey: wallet.encryptedPrivKey,
         encryptedMnemonic: wallet.encryptedMnemonic,

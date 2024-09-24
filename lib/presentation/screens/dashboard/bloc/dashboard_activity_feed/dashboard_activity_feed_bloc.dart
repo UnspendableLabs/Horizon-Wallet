@@ -14,6 +14,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
+// ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE", "DISPENSE"];
 
 class DashboardActivityFeedBloc
@@ -25,6 +26,8 @@ class DashboardActivityFeedBloc
   EventsRepository eventsRepository;
   AddressRepository addressRepository;
   BitcoinRepository bitcoinRepository;
+  bool _isLoading = false; // New flag to track loading state
+  bool _isCancelled = false;
 
   DashboardActivityFeedBloc(
       {required this.currentAddress,
@@ -44,6 +47,9 @@ class DashboardActivityFeedBloc
   void _onLoadQuiet(
       LoadQuiet event, Emitter<DashboardActivityFeedState> emit) async {
     // just do a standard load if we are in any state other than complete ok
+
+    if (_isLoading) return;
+
     if (state is! DashboardActivityFeedStateCompleteOk) {
       add(const Load());
       return;
@@ -59,7 +65,7 @@ class DashboardActivityFeedBloc
     // emit(nextState);
 
     try {
-      List<String> addresses = [currentAddress.address];
+      String address = currentAddress.address;
 
       String? mostRecentCounterpartyEventHash =
           currentState.mostRecentCounterpartyEventHash;
@@ -73,10 +79,8 @@ class DashboardActivityFeedBloc
         //     need to fetch all in order to dedupe by
         //     by txhash
 
-        newCounterpartyEvents = await eventsRepository.getAllByAddressesVerbose(
-            addresses: addresses,
-            unconfirmed: true,
-            whitelist: DEFAULT_WHITELIST);
+        newCounterpartyEvents = await eventsRepository.getAllByAddressVerbose(
+            address: address, unconfirmed: true, whitelist: DEFAULT_WHITELIST);
       } else {
         // 1b) otherwise, we need to get the list of all events
         //     above the most recent counterparty event hash
@@ -84,8 +88,8 @@ class DashboardActivityFeedBloc
         Cursor? nextCursor;
         while (!found) {
           final (remoteEvents, nextCursor_, _) =
-              await eventsRepository.getByAddressesVerbose(
-                  addresses: addresses,
+              await eventsRepository.getByAddressVerbose(
+                  address: address,
                   limit: pageSize,
                   unconfirmed: true,
                   cursor: nextCursor,
@@ -111,25 +115,25 @@ class DashboardActivityFeedBloc
       List<BitcoinTx> newBitcoinTransactions = [];
       if (mostRecentBitcoinTxHash == null) {
         // 2a) if null list of new btc transactions equal to all of them
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions([address]);
 
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
         newBitcoinTransactions = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx(addresses),
+              (tx) => !tx.isCounterpartyTx([address]),
             )
             .toList();
       } else {
         // 2b otherwise, bitcoin transactions are all above last seen
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions([address]);
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx(addresses),
+              (tx) => !tx.isCounterpartyTx([address]),
             )
             .toList();
 
@@ -322,6 +326,9 @@ class DashboardActivityFeedBloc
   // }
 
   void _onLoad(event, Emitter<DashboardActivityFeedState> emit) async {
+    if (_isLoading) return; // Skip if already loading
+    _isLoading = true;
+
     final nextState = switch (state) {
       DashboardActivityFeedStateCompleteOk completeOk =>
         DashboardActivityFeedStateReloadingOk(
@@ -346,12 +353,11 @@ class DashboardActivityFeedBloc
       final localTransactions =
           await transactionLocalRepository.getAllByAddressesVerbose(addresses);
 
-      final counterpartyEvents =
-          await eventsRepository.getAllByAddressesVerbose(
-              addresses: addresses,
-              // limit: pageSize,
-              unconfirmed: true,
-              whitelist: DEFAULT_WHITELIST);
+      final counterpartyEvents = await eventsRepository.getAllByAddressVerbose(
+          address: currentAddress.address,
+          // limit: pageSize,
+          unconfirmed: true,
+          whitelist: DEFAULT_WHITELIST);
 
       // factor out counterparty events by unconfirmed / confirmed
       List<VerboseEvent> counterpartyMempool = [];
@@ -387,103 +393,120 @@ class DashboardActivityFeedBloc
 
       final btcMempoolMap = {for (var tx in btcMempoolList) tx.txid: tx};
 
-      final btcConfirmedE =
-          await bitcoinRepository.getConfirmedTransactions(addresses);
-
-      final btcConfirmedList = btcConfirmedE
-          .getOrElse((left) => throw left)
-          .where(
-            (tx) => !tx.isCounterpartyTx(addresses),
-          )
-          .toList();
-
-      final btcConfirmedMap = {for (var tx in btcConfirmedList) tx.txid: tx};
+      String? lastSeenTxId;
+      bool hasMore = true;
+      List allBTCConfirmed = [];
 
       final blockHeightE = await bitcoinRepository.getBlockHeight();
       final blockHeight = blockHeightE.getOrElse((left) => throw left);
 
-      List<ActivityFeedItem> localActivityFeedItems = localTransactions
-          .where((tx) =>
-              !counterpartyMempoolByHash.keys.contains(tx.hash) &&
-              !counterpartyConfirmedByHash.keys.contains(tx.hash) &&
-              !btcConfirmedMap.keys.contains(tx.hash) &&
-              !btcMempoolMap.keys.contains(tx.hash))
-          .map((tx) {
-        return ActivityFeedItem(hash: tx.hash, info: tx);
-      }).toList();
-
-      // mempool transactions are the set of txs in ( preferring counterparty events over btc):
-      //  1) counterpartry mempool
-      //  2) btc mempool
-      List<ActivityFeedItem> mempoolActivityFeedItems = [];
-
-      // don't add btc mempool if it's in the counterparty mempoool
-      for (final tx in btcMempoolList) {
-        mempoolActivityFeedItems
-            .add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
-      }
-
-      for (final tx in counterpartyMempool) {
-        mempoolActivityFeedItems
-            .add(ActivityFeedItem(hash: tx.txHash, event: tx));
-      }
-
-      // add btc confirmed, preferring counterparty events
-      // where there are conflicts and sorting by blockIndex
-
-      List<ActivityFeedItem> confirmedActivityFeedItems = [];
-      final seenHashes = <String>{};
-      for (final event in counterpartyConfirmed) {
-        if (!seenHashes.contains(event.txHash)) {
-          final activityFeedItem =
-              ActivityFeedItem(hash: event.txHash, event: event);
-
-          activityFeedItem.confirmations =
-              _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
-          confirmedActivityFeedItems.add(activityFeedItem);
-          seenHashes.add(event.txHash);
+      while (hasMore) {
+        if (_isCancelled) {
+          _isCancelled = false;
+          break;
         }
-      }
+        final transactionsE = await bitcoinRepository
+            .getConfirmedTransactionsPaginated(addresses[0], lastSeenTxId);
 
-      for (final btx in btcConfirmedList) {
-        if (!seenHashes.contains(btx.txid)) {
-          final activityFeedItem =
-              ActivityFeedItem(hash: btx.txid, bitcoinTx: btx);
-          activityFeedItem.confirmations =
-              _getConfirmations(blockHeight, activityFeedItem.getBlockIndex()!);
-          confirmedActivityFeedItems.add(activityFeedItem);
-          seenHashes.add(btx.txid);
+        final btcConfirmedList = transactionsE.getOrElse((left) => throw left);
+
+        if (btcConfirmedList.isEmpty) {
+          hasMore = false;
+        } else {
+          lastSeenTxId = btcConfirmedList.last.txid;
         }
+
+        allBTCConfirmed.addAll(btcConfirmedList);
+
+        final btcConfirmedMap = {for (var tx in allBTCConfirmed) tx.txid: tx};
+
+        List<ActivityFeedItem> localActivityFeedItems = localTransactions
+            .where((tx) =>
+                !counterpartyMempoolByHash.keys.contains(tx.hash) &&
+                !counterpartyConfirmedByHash.keys.contains(tx.hash) &&
+                !btcConfirmedMap.keys.contains(tx.hash) &&
+                !btcMempoolMap.keys.contains(tx.hash))
+            .map((tx) {
+          return ActivityFeedItem(hash: tx.hash, info: tx);
+        }).toList();
+
+        List<ActivityFeedItem> mempoolActivityFeedItems = [];
+
+        // don't add btc mempool if it's in the counterparty mempoool
+        for (final tx in btcMempoolList) {
+          mempoolActivityFeedItems
+              .add(ActivityFeedItem(hash: tx.txid, bitcoinTx: tx));
+        }
+
+        for (final tx in counterpartyMempool) {
+          mempoolActivityFeedItems
+              .add(ActivityFeedItem(hash: tx.txHash, event: tx));
+        }
+
+        // add btc confirmed, preferring counterparty events
+        // where there are conflicts and sorting by blockIndex
+
+        List<ActivityFeedItem> confirmedActivityFeedItems = [];
+        final seenHashes = <String>{};
+        for (final event in counterpartyConfirmed) {
+          if (!seenHashes.contains(event.txHash)) {
+            final activityFeedItem =
+                ActivityFeedItem(hash: event.txHash, event: event);
+
+            activityFeedItem.confirmations = _getConfirmations(
+                blockHeight, activityFeedItem.getBlockIndex()!);
+            confirmedActivityFeedItems.add(activityFeedItem);
+            seenHashes.add(event.txHash);
+          }
+        }
+
+        for (final btx in allBTCConfirmed) {
+          if (!seenHashes.contains(btx.txid)) {
+            final activityFeedItem =
+                ActivityFeedItem(hash: btx.txid, bitcoinTx: btx);
+            activityFeedItem.confirmations = _getConfirmations(
+                blockHeight, activityFeedItem.getBlockIndex()!);
+            confirmedActivityFeedItems.add(activityFeedItem);
+            seenHashes.add(btx.txid);
+          }
+        }
+
+        confirmedActivityFeedItems.sort((a, b) {
+          final aIndex = a.getBlockIndex();
+          final bIndex = b.getBlockIndex();
+          return (bIndex ?? -1).compareTo(aIndex ?? -1);
+        });
+
+        final transactions = [
+          ...localActivityFeedItems,
+          ...mempoolActivityFeedItems,
+          ...confirmedActivityFeedItems,
+        ];
+
+        emit(DashboardActivityFeedStateCompleteOk(
+            nextCursor: null,
+            newTransactionCount: 0,
+            mostRecentBitcoinTxHash:
+                allBTCConfirmed.isNotEmpty ? allBTCConfirmed[0].txid : null,
+            mostRecentCounterpartyEventHash: counterpartyEvents.isNotEmpty
+                ? counterpartyEvents[0].txHash
+                : null,
+            transactions: transactions));
       }
-
-      confirmedActivityFeedItems.sort((a, b) {
-        final aIndex = a.getBlockIndex();
-        final bIndex = b.getBlockIndex();
-        return (bIndex ?? -1).compareTo(aIndex ?? -1);
-      });
-
-      final transactions = [
-        ...localActivityFeedItems,
-        ...mempoolActivityFeedItems,
-        ...confirmedActivityFeedItems,
-      ];
-
-      emit(DashboardActivityFeedStateCompleteOk(
-          nextCursor: null,
-          newTransactionCount: 0,
-          mostRecentBitcoinTxHash:
-              btcConfirmedList.isNotEmpty ? btcConfirmedList[0].txid : null,
-          mostRecentCounterpartyEventHash: counterpartyEvents.isNotEmpty
-              ? counterpartyEvents[0].txHash
-              : null,
-          transactions: transactions));
     } catch (e) {
       emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
+    } finally {
+      _isLoading = false;
     }
   }
 
   void _onStartPolling(
       StartPolling event, Emitter<DashboardActivityFeedState> emit) {
+    if (timer != null) {
+      return;
+    }
+
+    _isCancelled = false;
     timer?.cancel();
     timer = Timer.periodic(event.interval, (_) {
       add(const LoadQuiet());
@@ -495,6 +518,7 @@ class DashboardActivityFeedBloc
       StopPolling event, Emitter<DashboardActivityFeedState> emit) {
     timer?.cancel();
     timer = null;
+    _isCancelled = true;
   }
 
   int _getConfirmations(int blockHeight, int blockIndex) {

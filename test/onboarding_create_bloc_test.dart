@@ -130,13 +130,21 @@ void main() {
       'emits correct states when creating wallet for mainnet',
       build: () {
         setupMocks(Network.mainnet, '0');
-        return OnboardingCreateBloc();
+        return OnboardingCreateBloc(
+          config: mockConfig,
+          mnmonicService: mockMnemonicService,
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          accountRepository: mockAccountRepository,
+          addressRepository: mockAddressRepository,
+          encryptionService: mockEncryptionService,
+          addressService: mockAddressService,
+        );
       },
       seed: () => OnboardingCreateState(
         mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
-        password: password,
       ),
-      act: (bloc) => bloc.add(CreateWallet()),
+      act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
             (state) => state.createState is CreateStateLoading),
@@ -167,13 +175,21 @@ void main() {
       'emits correct states when creating wallet for testnet',
       build: () {
         setupMocks(Network.testnet, '1');
-        return OnboardingCreateBloc();
+        return OnboardingCreateBloc(
+          config: mockConfig,
+          mnmonicService: mockMnemonicService,
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          accountRepository: mockAccountRepository,
+          addressRepository: mockAddressRepository,
+          encryptionService: mockEncryptionService,
+          addressService: mockAddressService,
+        );
       },
       seed: () => OnboardingCreateState(
         mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
-        password: password,
       ),
-      act: (bloc) => bloc.add(CreateWallet()),
+      act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
             (state) => state.createState is CreateStateLoading),
@@ -197,13 +213,21 @@ void main() {
       'emits correct states when creating wallet for regtest',
       build: () {
         setupMocks(Network.regtest, '1');
-        return OnboardingCreateBloc();
+        return OnboardingCreateBloc(
+          config: mockConfig,
+          mnmonicService: mockMnemonicService,
+          walletRepository: mockWalletRepository,
+          walletService: mockWalletService,
+          accountRepository: mockAccountRepository,
+          addressRepository: mockAddressRepository,
+          encryptionService: mockEncryptionService,
+          addressService: mockAddressService,
+        );
       },
       seed: () => OnboardingCreateState(
         mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
-        password: password,
       ),
-      act: (bloc) => bloc.add(CreateWallet()),
+      act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
             (state) => state.createState is CreateStateLoading),

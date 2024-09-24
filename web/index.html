@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+<!doctype html>
 <html style="height: 600px; width: 600px">
-<head>
-  <!--
+  <head>
+    <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
 
@@ -14,49 +14,47 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="$FLUTTER_BASE_HREF">
+    <base href="$FLUTTER_BASE_HREF" />
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta name="description" content="Horizon Wallet" />
 
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="horizon">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <!-- iOS meta tags & icons -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="horizon" />
+    <link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+    <link href="favicon.svg" rel="icon" />
 
-  <!-- Add SVG assets -->
-  <link rel="preload" href="../assets/logo-black.svg" as="image">
-  <link rel="preload" href="../assets/logo-white.svg" as="image">
-  <link rel="preload" href="../assets/open-quote.svg" as="image">
-  <link rel="preload" href="../assets/closed-quote.svg" as="image">
+    <!-- Add SVG assets -->
+    <link rel="preload" href="../assets/logo-black.svg" as="image" />
+    <link rel="preload" href="../assets/logo-white.svg" as="image" />
+    <link rel="preload" href="../assets/open-quote.svg" as="image" />
+    <link rel="preload" href="../assets/closed-quote.svg" as="image" />
 
+    <title>horizon</title>
+    <link rel="manifest" href="manifest.json" />
 
-  <title>horizon</title>
-  <link rel="manifest" href="manifest.json">
-
-  <script src="./assets/mnemonic.js" type="application/javascript"></script>
-  <script src="./assets/buffer.js" type="application/javascript"></script>
-  <script src="./assets/tiny_secp256k1.js" type="application/javascript"></script>
-  <script src="./assets/ecpair.js" type="application/javascript"></script>
-  <script src="./assets/bip32.js" type="application/javascript"></script>
-  <script src="./assets/bip39.js" type="application/javascript"></script>
-  <script src="./assets/bech32.js" type="application/javascript"></script>
-  <script src="./assets/bitcoinjs.js" type="application/javascript"></script>
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    var serviceWorkerVersion = {{flutter_service_worker_version}};
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-</head>
-<body>
-
-  <script src="main.dart.js" type="application/javascript"></script>
-
-
-</body>
+    <script src="./assets/mnemonic.js" type="application/javascript"></script>
+    <script src="./assets/buffer.js" type="application/javascript"></script>
+    <script
+      src="./assets/tiny_secp256k1.js"
+      type="application/javascript"
+    ></script>
+    <script src="./assets/ecpair.js" type="application/javascript"></script>
+    <script src="./assets/bip32.js" type="application/javascript"></script>
+    <script src="./assets/bip39.js" type="application/javascript"></script>
+    <script src="./assets/bech32.js" type="application/javascript"></script>
+    <script src="./assets/bitcoinjs.js" type="application/javascript"></script>
+    <script>
+      // The value below is injected by flutter build, do not touch.
+      var serviceWorkerVersion = {{flutter_service_worker_version}};
+    </script>
+    <!-- This script adds the flutter initialization JS code -->
+  </head>
+  <body>
+    <script src="main.dart.js" type="application/javascript"></script>
+  </body>
 </html>

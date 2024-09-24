@@ -1,13 +1,12 @@
-import 'package:collection/collection.dart' as _;
-import 'package:decimal/decimal.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
-import 'package:horizon/domain/entities/utxo.dart' as entity;
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger();
@@ -15,13 +14,17 @@ final logger = Logger();
 class BalanceRepositoryImpl implements BalanceRepository {
   final V2Api api;
   final UtxoRepository utxoRepository;
+  final BitcoinRepository bitcoinRepository;
 
-  BalanceRepositoryImpl({required this.api, required this.utxoRepository});
+  BalanceRepositoryImpl(
+      {required this.api,
+      required this.utxoRepository,
+      required this.bitcoinRepository});
 
   @override
   Future<List<b.Balance>> getBalancesForAddress(String address) async {
     final List<b.Balance> balances = [];
-    balances.addAll(await _getBtcBalances([address]));
+    balances.addAll([await _getBtcBalance(address: address)]);
     balances.addAll(await _fetchBalances(address));
     return balances;
   }
@@ -30,7 +33,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
   Future<List<b.Balance>> getBalancesForAddresses(
       List<String> addresses) async {
     final List<b.Balance> balances = [];
-    balances.addAll(await _getBtcBalances(addresses));
+    balances.addAll([await _getBtcBalance(address: addresses.first)]);
     balances.addAll(await _fetchBalancesByAllAddresses(addresses));
     return balances;
   }
@@ -94,33 +97,27 @@ class BalanceRepositoryImpl implements BalanceRepository {
     return balances;
   }
 
-  Future<List<b.Balance>> _getBtcBalances(List<String> addresses) async {
-    final List<b.Balance> balances = [];
+  Future<b.Balance> _getBtcBalance({required String address}) async {
+    final info = await bitcoinRepository.getAddressInfo(address);
+    return info.fold((failure) {
+      throw Exception('Failed to get address info for $address: $failure');
+    }, (success) {
+      final funded = success.chainStats.fundedTxoSum;
+      final spent = success.chainStats.spentTxoSum;
+      final quantity = funded - spent;
+      final quantityNormalized = satoshisToBtc(quantity).toString();
 
-    List<entity.Utxo> utxos =
-        await utxoRepository.getUnspentForAddresses(addresses);
-    Map<String, List<entity.Utxo>> utxosByAddress =
-        _.groupBy(utxos, (utxo) => utxo.address);
-
-    utxosByAddress.forEach((address, utxos) {
-      int sum = utxos.fold(0, (sum, utxo) => sum + utxo.value);
-      Decimal normalized = utxos.fold(Decimal.zero,
-          (sum, utxo) => sum + Decimal.parse(utxo.amount.toString()));
-      balances.add(b.Balance(
-          asset: 'BTC',
-          quantity: sum,
-          quantityNormalized: normalized.toString(),
+      return b.Balance(
           address: address,
-          // this is a bit of a hack admittedly
+          quantity: quantity,
+          quantityNormalized: quantityNormalized,
+          asset: 'BTC',
+          // TODO: this is a bit of a hack
           assetInfo: const ai.AssetInfo(
             assetLongname: 'Bitcoin',
             description: 'Bitcoin',
-            // issuer: 'Bitcoin',
             divisible: true,
-            // locked: false,
-          )));
+          ));
     });
-
-    return balances;
   }
 }

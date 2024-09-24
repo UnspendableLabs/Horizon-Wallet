@@ -15,16 +15,26 @@ class EnvironmentConfig implements Config {
   }
 
   @override
-  String get counterpartyApiBase => switch (network) {
+  String get counterpartyApiBase {
+    const envValue = String.fromEnvironment('COUNTERPARTY_API_BASE');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiBase;
+  }
+
+  String get _defaultCounterpartyApiBase => switch (network) {
         Network.mainnet => 'https://api.counterparty.io:4000/v2',
         Network.testnet => 'https://api.counterparty.io:14000/v2',
         Network.regtest => 'http://localhost:24000/v2'
       };
 
   @override
-  String get esploraBase => switch (network) {
-        Network.mainnet => "https://blockstream.info/api",
-        Network.testnet => "https://blockstream.info/testnet/api",
+  String get esploraBase {
+    const envValue = String.fromEnvironment('ESPLORA_BASE');
+    return envValue.isNotEmpty ? envValue : _defaultEsploraBase;
+  }
+
+  String get _defaultEsploraBase => switch (network) {
+        Network.mainnet => "https://api.counterparty.io:3000",
+        Network.testnet => "https://api.counterparty.io:3001",
         Network.regtest => "http://127.0.0.1:3002",
       };
 
@@ -49,6 +59,6 @@ class EnvironmentConfig implements Config {
 
   @override
   String toString() {
-    return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase)';
+    return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase, horizonExplorerBase: $horizonExplorerBase, btcExplorerBase: $btcExplorerBase, isDatabaseViewerEnabled: $isDatabaseViewerEnabled)';
   }
 }

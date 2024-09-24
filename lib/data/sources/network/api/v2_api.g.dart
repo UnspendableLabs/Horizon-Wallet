@@ -414,9 +414,9 @@ Map<String, dynamic> _$NewTransactionEventToJson(
 
 AssetIssuanceParams _$AssetIssuanceParamsFromJson(Map<String, dynamic> json) =>
     AssetIssuanceParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
     );
 
@@ -432,12 +432,12 @@ Map<String, dynamic> _$AssetIssuanceParamsToJson(
 VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
         Map<String, dynamic> json) =>
     VerboseAssetIssuanceParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
       blockTime: (json['block_time'] as num).toInt(),
-      quantityNormalized: json['quantity_normalized'] as String,
+      quantityNormalized: json['quantity_normalized'] as String?,
       feePaidNormalized: json['fee_paid_normalized'] as String,
     );
 
@@ -1557,6 +1557,38 @@ class _V2Api implements V2Api {
   String? baseUrl;
 
   @override
+  Future<Response<int>> estimateSmartFee(int confirmationTarget) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'conf_target': confirmationTarget
+    };
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/estimatesmartfee',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<int>.fromJson(
+      _result.data!,
+      (json) => json as int,
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<String>> createTransaction(String signedhex) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'signedhex': signedhex};
@@ -2177,11 +2209,18 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<Info>> getTransactionInfo(String rawtransaction) async {
+  Future<Response<Info>> getTransactionInfo(
+    String rawtransaction, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'rawtransaction': rawtransaction
+      r'rawtransaction': rawtransaction,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
     };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio
@@ -2210,11 +2249,17 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<InfoVerbose>> getTransactionInfoVerbose(
-      String rawtransaction) async {
+    String rawtransaction, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'rawtransaction': rawtransaction
+      r'rawtransaction': rawtransaction,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
     };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -2243,9 +2288,17 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<TransactionUnpacked>> unpackTransaction(
-      String datahex) async {
+    String datahex, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'datahex': datahex};
+    final queryParameters = <String, dynamic>{
+      r'datahex': datahex,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -2274,9 +2327,17 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
-      String datahex) async {
+    String datahex, [
+    int? blockIndex,
+    bool? verbose,
+  ]) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'datahex': datahex};
+    final queryParameters = <String, dynamic>{
+      r'datahex': datahex,
+      r'block_index': blockIndex,
+      r'verbose': verbose,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -2356,6 +2417,8 @@ class _V2Api implements V2Api {
     int quantity, [
     bool? allowUnconfirmedInputs,
     int? fee,
+    int? feePerKB,
+    String? inputsSet,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2363,7 +2426,9 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'fee': fee,
+      r'exact_fee': fee,
+      r'fee_per_kb': feePerKB,
+      r'inputs_set': inputsSet,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -2539,6 +2604,7 @@ class _V2Api implements V2Api {
     String? description,
     bool? unconfirmed,
     int? fee,
+    String? inputsSet,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2550,7 +2616,8 @@ class _V2Api implements V2Api {
       r'reset': reset,
       r'description': description,
       r'unconfirmed': unconfirmed,
-      r'fee': fee,
+      r'exact_fee': fee,
+      r'inputs_set': inputsSet,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

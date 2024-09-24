@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/main.dart';
@@ -12,8 +9,6 @@ import 'package:integration_test/integration_test.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
-  const network = String.fromEnvironment('NETWORK', defaultValue: 'mainnet');
 
   const mnemonic =
       "stomach worry artefact bicycle finger doctor outdoor learn lecture powder agent body";
@@ -46,14 +41,14 @@ void main() {
       // Wait for the app to settle
       await tester.pumpAndSettle();
 
-      // Find and tap the "IMPORT SEED" button
-      final importSeedButton = find.text('IMPORT SEED');
+      // Find and tap the "LOAD SEED" button
+      final importSeedButton = find.text('LOAD SEED PHRASE');
       expect(importSeedButton, findsOneWidget);
       await tester.tap(importSeedButton);
       await tester.pumpAndSettle();
 
       // Enter the seed phrase into the first field
-      final seedPhrase = mnemonic;
+      const seedPhrase = mnemonic;
       final firstWordField = find.byType(TextField).first;
       await tester.enterText(firstWordField, seedPhrase);
       await tester.pumpAndSettle();
@@ -102,8 +97,6 @@ void main() {
 
       final decryptedMnemonic = await encryptionService.decrypt(
           encryptedMnemonic, 'securepassword123');
-
-      print("decryptedMnemonic: $decryptedMnemonic");
 
       expect(decryptedMnemonic, mnemonic);
 
