@@ -217,18 +217,7 @@ class ComposeIssuanceBloc
 
         final rawTx = issuanceParams.rawtransaction;
 
-        if (!transactionService.validateBTCAmount(
-            rawtransaction: rawTx, source: source, expectedBTC: 0)) {
-          throw Exception(
-              "Error validation transaction: btc amount is incorrect");
-        }
-
         Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
-
-        if (!transactionService.validateFee(
-            rawtransaction: rawTx, expectedFee: fee, utxoMap: utxoMap)) {
-          throw Exception("Error validation transaction: fee is incorrect");
-        }
 
         Address? address = await addressRepository.getAddress(source);
         Account? account =
