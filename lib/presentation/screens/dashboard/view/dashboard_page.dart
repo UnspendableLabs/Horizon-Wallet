@@ -734,7 +734,7 @@ class BalancesSliverState extends State<BalancesSliver> {
       error: (error) => [
         SizedBox(
           height: 200,
-          child: Center(child: Text('Error: $error')),
+          child: Center(child: Text(error)),
         )
       ],
     );

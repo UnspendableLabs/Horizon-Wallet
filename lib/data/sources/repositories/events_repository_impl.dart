@@ -523,7 +523,6 @@ class EventsRepositoryImpl implements EventsRepository {
       cacheKey = _generateCacheKey(address, limit, cursor);
     }
 
-
     if (cacheKey != null && _cache.containsKey(cacheKey)) {
       return _cache[cacheKey]!;
     }

@@ -20,7 +20,7 @@ class GetFeeEstimates {
     return FeeEstimates(
       fast: results[0] ~/ 1000,
       medium: results[1] ~/ 1000,
-      slow: results[2] ~/ 1000 ,
+      slow: results[2] ~/ 1000,
     );
   }
 }
