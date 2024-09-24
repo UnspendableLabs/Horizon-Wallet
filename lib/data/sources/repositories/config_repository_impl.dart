@@ -15,14 +15,24 @@ class EnvironmentConfig implements Config {
   }
 
   @override
-  String get counterpartyApiBase => switch (network) {
+  String get counterpartyApiBase {
+    const envValue = String.fromEnvironment('COUNTERPARTY_API_BASE');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiBase;
+  }
+
+  String get _defaultCounterpartyApiBase => switch (network) {
         Network.mainnet => 'https://api.counterparty.io:4000/v2',
         Network.testnet => 'https://api.counterparty.io:14000/v2',
         Network.regtest => 'http://localhost:24000/v2'
       };
 
   @override
-  String get esploraBase => switch (network) {
+  String get esploraBase {
+    const envValue = String.fromEnvironment('ESPLORA_BASE');
+    return envValue.isNotEmpty ? envValue : _defaultEsploraBase;
+  }
+
+  String get _defaultEsploraBase => switch (network) {
         Network.mainnet => "https://api.counterparty.io:3000",
         Network.testnet => "https://api.counterparty.io:3001",
         Network.regtest => "http://127.0.0.1:3002",
@@ -34,13 +44,6 @@ class EnvironmentConfig implements Config {
         Network.testnet => "https://testnet-explorer.unspendablelabs.com",
         Network.regtest => "http://127.0.0.1:3000",
       };
-
-  // @override
-  // String get blockCypherBase => switch (network) {
-  //       Network.mainnet => "https://api.blockcypher.com/v1/btc/main",
-  //       Network.testnet => "https://api.blockcypher.com/v1/btc/test3",
-  //       Network.regtest => throw UnimplementedError()
-  //     };
 
   @override
   String get btcExplorerBase => switch (network) {
@@ -56,6 +59,6 @@ class EnvironmentConfig implements Config {
 
   @override
   String toString() {
-    return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase)';
+    return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase, horizonExplorerBase: $horizonExplorerBase, btcExplorerBase: $btcExplorerBase, isDatabaseViewerEnabled: $isDatabaseViewerEnabled)';
   }
 }
