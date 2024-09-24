@@ -14,7 +14,7 @@ class TermsOfService extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              const SelectableText(
                 'Terms of Service',
                 style: TextStyle(
                   fontSize: 28,
@@ -41,7 +41,7 @@ class TermsOfService extends StatelessWidget {
                   'Your use of Horizon Wallet is also governed by our ',
                   trailingWidget: GestureDetector(
                     onTap: () => context.go('/privacy-policy'),
-                    child: const Text(
+                    child: const SelectableText(
                       'Privacy Policy',
                       style: TextStyle(
                           color: Colors.blue,
@@ -71,7 +71,7 @@ class TermsOfService extends StatelessWidget {
                   trailingWidget: InkWell(
                     onTap: () =>
                         _launchURL('mailto:contact@unspendablelabs.com'),
-                    child: const Text(
+                    child: const SelectableText(
                       'contact@unspendablelabs.com',
                       style: TextStyle(
                           color: Colors.blue,
@@ -97,7 +97,7 @@ class TermsOfService extends StatelessWidget {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            SelectableText(
               '${index + 1}.',
               style: const TextStyle(
                   color: Colors.white, fontWeight: FontWeight.bold),
@@ -114,7 +114,7 @@ class TermsOfService extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        SelectableText(
           title,
           style: const TextStyle(
             fontSize: 20,
@@ -123,8 +123,8 @@ class TermsOfService extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        RichText(
-          text: TextSpan(
+        SelectableText.rich(
+          TextSpan(
             style: const TextStyle(color: Colors.white70),
             children: [
               TextSpan(text: content),

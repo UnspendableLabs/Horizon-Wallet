@@ -13,7 +13,7 @@ class PrivacyPolicy extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              const SelectableText(
                 'Privacy Policy',
                 style: TextStyle(
                   fontSize: 28,
@@ -22,12 +22,12 @@ class PrivacyPolicy extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              const SelectableText(
                 'Last Updated: September 10, 2024',
                 style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 16),
-              const Text(
+              const SelectableText(
                 'Horizon Wallet, a product of Unspendable Labs Inc., a Delaware Corporation ("we", "our", "us"), is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the service.',
                 style: TextStyle(color: Colors.white70),
               ),
@@ -35,7 +35,7 @@ class PrivacyPolicy extends StatelessWidget {
               _buildSection(
                 '1. Information We Collect',
                 [
-                  const Text(
+                  const SelectableText(
                     'We collect various types of information in connection with the services we provide, as detailed below:',
                     style: TextStyle(color: Colors.white70),
                   ),
@@ -87,7 +87,7 @@ class PrivacyPolicy extends StatelessWidget {
               _buildSection(
                 '2. How We Use Your Information',
                 [
-                  const Text(
+                  const SelectableText(
                     'We use the information we collect in the following ways:',
                     style: TextStyle(color: Colors.white70),
                   ),
@@ -104,7 +104,7 @@ class PrivacyPolicy extends StatelessWidget {
               _buildSection(
                 '10. Contact Us',
                 [
-                  const Text(
+                  const SelectableText(
                     'If you have any questions about this Privacy Policy, please contact us:',
                     style: TextStyle(color: Colors.white70),
                   ),
@@ -114,7 +114,7 @@ class PrivacyPolicy extends StatelessWidget {
                     trailingWidget: InkWell(
                       onTap: () =>
                           _launchURL('mailto:contact@unspendablelabs.com'),
-                      child: const Text(
+                      child: const SelectableText(
                         'contact@unspendablelabs.com',
                         style: TextStyle(color: Colors.blue),
                       ),
@@ -133,7 +133,7 @@ class PrivacyPolicy extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        SelectableText(
           title,
           style: const TextStyle(
             fontSize: 24,
@@ -152,7 +152,7 @@ class PrivacyPolicy extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        SelectableText(
           title,
           style: const TextStyle(
             fontSize: 20,
@@ -174,7 +174,7 @@ class PrivacyPolicy extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(color: Colors.white70)),
+          const SelectableText('• ', style: TextStyle(color: Colors.white70)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +183,7 @@ class PrivacyPolicy extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Text(text,
+                      child: SelectableText(text,
                           style: const TextStyle(color: Colors.white70)),
                     ),
                     if (trailingWidget != null) trailingWidget,
@@ -196,10 +196,10 @@ class PrivacyPolicy extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('- ',
+                            const SelectableText('- ',
                                 style: TextStyle(color: Colors.white70)),
                             Expanded(
-                              child: Text(subPoint,
+                              child: SelectableText(subPoint,
                                   style:
                                       const TextStyle(color: Colors.white70)),
                             ),
