@@ -355,34 +355,34 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
                       ],
                     ),
                     const SizedBox(width: 16.0),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: isReset,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              isReset = value ?? false;
-                            });
-                          },
-                        ),
-                        // Text('Reset',
-                        //     style: TextStyle(
-                        //         fontWeight: FontWeight.bold,
-                        //         color: isDarkMode
-                        //             ? mainTextWhite
-                        //             : mainTextBlack)),
-                      ],
-                    ),
-                    const Row(
-                      children: [
-                        SizedBox(width: 30.0),
-                        Expanded(
-                          child: Text(
-                            'Whether this issuance should reset any existing supply. Defaults to false.',
-                          ),
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   children: [
+                    //     Checkbox(
+                    //       value: isReset,
+                    //       onChanged: (bool? value) {
+                    //         setState(() {
+                    //           isReset = value ?? false;
+                    //         });
+                    //       },
+                    //     ),
+                    //     // Text('Reset',
+                    //     //     style: TextStyle(
+                    //     //         fontWeight: FontWeight.bold,
+                    //     //         color: isDarkMode
+                    //     //             ? mainTextWhite
+                    //     //             : mainTextBlack)),
+                    //   ],
+                    // ),
+                    // const Row(
+                    //   children: [
+                    //     SizedBox(width: 30.0),
+                    //     Expanded(
+                    //       child: Text(
+                    //         'Whether this issuance should reset any existing supply. Defaults to false.',
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.0),
                       child: Divider(
