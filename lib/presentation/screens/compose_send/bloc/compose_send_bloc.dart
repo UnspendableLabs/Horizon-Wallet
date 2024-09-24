@@ -2,10 +2,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -23,9 +24,10 @@ import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
-import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:logger/logger.dart';
 
 class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
+  final Logger logger = Logger();
   final AddressRepository addressRepository;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
@@ -259,41 +261,6 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           FeeOption.Custom(fee: var fee) => fee,
         };
 
-        /* it's possible that we could bypass this step
-           by:
-           1) getting the utxo set for the source address
-           2) manualy compute the inputs
-           3) use formula which is f(inputs, outputs) => virtual_size
-
-           But note: not totally necessary to do this for now
-
-
-          What we do want to do NOW, is pass in the utxos
-          to the compose handler by txhash:vout  ( the utxo index)
-
-
-          1) get all of the utxos
-          2) use some algorithm to determine which ones to select ( talk to ouziel, adam )
-          3) pass in the utxos to the compose handler
-
-
-        final send = await composeRepository.composeSendVerbose(
-            source, destination, asset, quantity, true, 1, selected_utxos);
-
-
-        ... late on somewhere
-
-                                                                KEY
-                                                                 |
-        utxoQueryStringParam = selected_utxos.map(u => `${u.txid}:${u.vout}`).join(',')
-
-
-        questions:
-            - do we need to worry about the outputs? ( i don't think so)
-            - should we prefer confirmed over unconfirmed? ( i assume yes )
-
-        */
-
         final utxos = await utxoRepository.getUnspentForAddress(source);
         final inputsSet = utxos.isEmpty ? null : utxos;
 
@@ -318,6 +285,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         final sendActual = await composeRepository.composeSendVerbose(source,
             destination, asset, quantity, true, totalFee, null, inputsSet);
+
+        logger.d('rawTx: ${sendActual.rawtransaction}');
 
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingSend(
@@ -424,6 +393,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
             data: "",
           ));
         }
+
+        logger.d('send broadcasted txHash: ${txHash}');
 
         emit(state.copyWith(
             submitState:

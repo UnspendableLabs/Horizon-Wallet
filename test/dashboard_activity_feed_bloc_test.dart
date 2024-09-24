@@ -282,8 +282,8 @@ void main() {
   when(() => defaultBitcoinRepository.getMempoolTransactions(any()))
       .thenAnswer((_) async => const Right([]));
 
-  when(() => defaultBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
-      .thenAnswer((_) async => const Right([]));
+  when(() => defaultBitcoinRepository.getConfirmedTransactionsPaginated(
+      any(), any())).thenAnswer((_) async => const Right([]));
 
   final Cursor cursor = Cursor.fromInt(1);
 
@@ -687,8 +687,8 @@ void main() {
               )).thenAnswer((_) async => mockedRemote);
 
           final mockBitcoinRepository = MockBitcoinRepository();
-          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
-              .thenAnswer((_) async => const Right([]));
+          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
+              any(), any())).thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
               .thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getBlockHeight())
@@ -764,8 +764,8 @@ void main() {
                 address: "0x123",
               )).thenAnswer((_) async => mockedRemote);
 
-          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
-              .thenAnswer((_) async => const Right([]));
+          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
+              any(), any())).thenAnswer((_) async => const Right([]));
 
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
               .thenAnswer((_) async => const Right([]));
@@ -1136,8 +1136,8 @@ void main() {
             when(() => mockBitcoinRepository.getMempoolTransactions(any()))
                 .thenAnswer((_) async => Right(mockedBtcMempool));
 
-            when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
-                .thenAnswer((_) async => const Right([]));
+            when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
+                any(), any())).thenAnswer((_) async => const Right([]));
             when(() => mockBitcoinRepository.getBlockHeight())
                 .thenAnswer((_) async => const Right(100));
 
@@ -1210,8 +1210,7 @@ void main() {
                 .thenAnswer((_) async => Right(mockedBtcConfirmed));
 
             when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
-                    "0x123", "btx_1"))
-                .thenAnswer((_) async => Right([]));
+                "0x123", "btx_1")).thenAnswer((_) async => Right([]));
 
             // cp event mocks
             final mockEventsRepository = MockEventsRepository();
