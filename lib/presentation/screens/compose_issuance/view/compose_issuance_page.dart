@@ -365,12 +365,12 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
                             });
                           },
                         ),
-                        Text('Reset',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: isDarkMode
-                                    ? mainTextWhite
-                                    : mainTextBlack)),
+                        // Text('Reset',
+                        //     style: TextStyle(
+                        //         fontWeight: FontWeight.bold,
+                        //         color: isDarkMode
+                        //             ? mainTextWhite
+                        //             : mainTextBlack)),
                       ],
                     ),
                     const Row(

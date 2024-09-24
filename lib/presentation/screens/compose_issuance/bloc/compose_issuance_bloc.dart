@@ -24,9 +24,11 @@ import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_fee_estimates.dart';
+import 'package:logger/logger.dart';
 
 class ComposeIssuanceBloc
     extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
+  final Logger logger = Logger();
   final AddressRepository addressRepository;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
@@ -170,6 +172,8 @@ class ComposeIssuanceBloc
                 totalFee,
                 inputsSet);
 
+        logger.d('rawTx: ${issuanceActual.rawtransaction}');
+
         emit(state.copyWith(
             submitState: SubmitComposing(SubmitStateComposingIssuance(
                 composeIssuance: issuanceActual,
@@ -251,6 +255,8 @@ class ComposeIssuanceBloc
         await transactionLocalRepository.insertVerbose(txInfo.copyWith(
           hash: txHash,
         ));
+
+        logger.d('issue broadcasted txHash: ${txHash}');
 
         emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex)));
       } catch (error) {
