@@ -23,7 +23,7 @@ class PrivacyPolicy extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const SelectableText(
-                'Last Updated: September 10, 2024',
+                'Last Updated: September 24, 2024',
                 style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 16),
@@ -100,9 +100,17 @@ class PrivacyPolicy extends StatelessWidget {
                       'To Monitor and Fix Errors: Using Sentry to track and resolve client and server-side exceptions.'),
                 ],
               ),
-              // Add more sections here...
               _buildSection(
-                '10. Contact Us',
+                '3. Changes to This Privacy Policy',
+                [
+                  const SelectableText(
+                    'We may update this Privacy Policy from time to time. Any changes will be effective immediately upon posting of the revised policy on our website. We encourage you to review this Privacy Policy periodically for any updates. Your continued use of the service after any changes to the policy will constitute your acceptance of those changes.',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ),
+              _buildSection(
+                '4. Contact Us',
                 [
                   const SelectableText(
                     'If you have any questions about this Privacy Policy, please contact us:',
