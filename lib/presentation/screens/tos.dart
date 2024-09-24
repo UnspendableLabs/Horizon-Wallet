@@ -92,7 +92,7 @@ class TermsOfService extends StatelessWidget {
                 ),
                 _buildSection(
                   'Governing Law and Jurisdiction',
-                  'These Terms and any disputes arising out of or related to them will be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of law rules. Any legal actions or proceedings arising out of or relating to these Terms shall be brought exclusively in the federal or state courts located in [Specific County], Delaware, and you consent to the jurisdiction of such courts.',
+                  'These Terms and any disputes arising out of or related to them will be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of law rules. Any legal actions or proceedings arising out of or relating to these Terms shall be brought exclusively in the federal or state courts located in Kent County, Delaware, and you consent to the jurisdiction of such courts.',
                 ),
                 _buildSection(
                   'Entire Agreement',
