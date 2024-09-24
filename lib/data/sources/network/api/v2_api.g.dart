@@ -2426,7 +2426,7 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'fee': fee,
+      r'exact_fee': fee,
       r'fee_per_kb': feePerKB,
       r'inputs_set': inputsSet,
     };
@@ -2616,7 +2616,7 @@ class _V2Api implements V2Api {
       r'reset': reset,
       r'description': description,
       r'unconfirmed': unconfirmed,
-      r'fee': fee,
+      r'exact_fee': fee,
       r'inputs_set': inputsSet,
     };
     queryParameters.removeWhere((k, v) => v == null);
