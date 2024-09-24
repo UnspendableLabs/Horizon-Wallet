@@ -18,9 +18,9 @@ class GetFeeEstimates {
 
     // kbytes to bytes
     return FeeEstimates(
-      fast: results[0] ~/ 1000,
-      medium: results[1] ~/ 1000,
-      slow: results[2] ~/ 1000,
+      fast: (results[0] / 1000).ceil(),
+      medium: (results[1] / 1000).ceil(),
+      slow: (results[2] / 1000).ceil(),
     );
   }
 }

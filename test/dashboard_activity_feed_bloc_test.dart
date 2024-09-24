@@ -282,8 +282,9 @@ void main() {
   when(() => defaultBitcoinRepository.getMempoolTransactions(any()))
       .thenAnswer((_) async => const Right([]));
 
-  when(() => defaultBitcoinRepository.getConfirmedTransactions(any()))
+  when(() => defaultBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
       .thenAnswer((_) async => const Right([]));
+
   final Cursor cursor = Cursor.fromInt(1);
 
   when(() => defaultBitcoinRepository.getBlockHeight())
@@ -305,15 +306,15 @@ void main() {
 
           final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
-                addresses: ["0x123"],
+          when(() => mockEventsRepository.getByAddressVerbose(
+                address: "0x123",
                 limit: 10,
                 unconfirmed: false,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
-                addresses: ["0x123"],
+          when(() => mockEventsRepository.getAllByAddressVerbose(
+                address: "0x123",
                 unconfirmed: true,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => []);
@@ -353,16 +354,16 @@ void main() {
 
           final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
-                  addresses: ["0x123"],
+          when(() => mockEventsRepository.getByAddressVerbose(
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false,
                   whitelist: DEFAULT_WHITELIST))
               .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
+          when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 unconfirmed: true,
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
@@ -400,15 +401,15 @@ void main() {
 
           final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                   whitelist: DEFAULT_WHITELIST,
-                  addresses: ["0x123"],
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
-                addresses: ["0x123"],
+          when(() => mockEventsRepository.getAllByAddressVerbose(
+                address: "0x123",
                 whitelist: DEFAULT_WHITELIST,
                 unconfirmed: true,
               )).thenAnswer((_) async => <VerboseEvent>[]);
@@ -440,15 +441,15 @@ void main() {
 
           final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                   whitelist: DEFAULT_WHITELIST,
-                  addresses: ["0x123"],
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
+          when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 unconfirmed: true,
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
@@ -489,16 +490,16 @@ void main() {
 
           final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                   whitelist: DEFAULT_WHITELIST,
-                  addresses: ["0x123"],
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
+          when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 unconfirmed: true,
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
@@ -533,16 +534,16 @@ void main() {
 
           final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                   whitelist: DEFAULT_WHITELIST,
-                  addresses: ["0x123"],
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], cursor, 0));
 
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
+          when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 unconfirmed: true,
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
@@ -599,16 +600,16 @@ void main() {
 
           final mockEventsRepository = MockEventsRepository();
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                   whitelist: DEFAULT_WHITELIST,
-                  addresses: ["0x123"],
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], cursor, 3));
 
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
+          when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 unconfirmed: true,
               )).thenAnswer((_) async => mockedRemote);
 
@@ -672,21 +673,21 @@ void main() {
             ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
           ]);
 
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                   whitelist: DEFAULT_WHITELIST,
-                  addresses: ["0x123"],
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => (<VerboseEvent>[], cursor, 2));
 
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
+          when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 unconfirmed: true,
               )).thenAnswer((_) async => mockedRemote);
 
           final mockBitcoinRepository = MockBitcoinRepository();
-          when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
+          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
               .thenAnswer((_) async => const Right([]));
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
               .thenAnswer((_) async => const Right([]));
@@ -749,21 +750,21 @@ void main() {
           ]);
 
           // Return the most recent confirmed transaction
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                   whitelist: DEFAULT_WHITELIST,
-                  addresses: ["0x123"],
+                  address: "0x123",
                   limit: 10,
                   unconfirmed: false))
               .thenAnswer((_) async => ([mockedRemote[1]], cursor, 2));
 
           // Return all transactions
-          when(() => mockEventsRepository.getAllByAddressesVerbose(
+          when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
                 unconfirmed: true,
-                addresses: ["0x123"],
+                address: "0x123",
               )).thenAnswer((_) async => mockedRemote);
 
-          when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
+          when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
               .thenAnswer((_) async => const Right([]));
 
           when(() => mockBitcoinRepository.getMempoolTransactions(any()))
@@ -838,9 +839,9 @@ void main() {
           ]);
 
           // `LoadMore`
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                 unconfirmed: true,
-                addresses: ["0x123"],
+                address: "0x123",
                 cursor: null,
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
@@ -931,9 +932,9 @@ void main() {
           ]);
 
           // `LoadMore`
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                 unconfirmed: true,
-                addresses: ["0x123"],
+                address: "0x123",
                 cursor: null,
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
@@ -1035,9 +1036,9 @@ void main() {
           ]);
 
           // `LoadMore`
-          when(() => mockEventsRepository.getByAddressesVerbose(
+          when(() => mockEventsRepository.getByAddressVerbose(
                 unconfirmed: true,
-                addresses: ["0x123"],
+                address: "0x123",
                 cursor: null,
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
@@ -1135,7 +1136,7 @@ void main() {
             when(() => mockBitcoinRepository.getMempoolTransactions(any()))
                 .thenAnswer((_) async => Right(mockedBtcMempool));
 
-            when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
+            when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(any(), any()))
                 .thenAnswer((_) async => const Right([]));
             when(() => mockBitcoinRepository.getBlockHeight())
                 .thenAnswer((_) async => const Right(100));
@@ -1143,16 +1144,16 @@ void main() {
             // cp event mocks
             final mockEventsRepository = MockEventsRepository();
 
-            when(() => mockEventsRepository.getByAddressesVerbose(
+            when(() => mockEventsRepository.getByAddressVerbose(
                     whitelist: DEFAULT_WHITELIST,
-                    addresses: ["0x123"],
+                    address: "0x123",
                     limit: 10,
                     unconfirmed: false))
                 .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
 
-            when(() => mockEventsRepository.getAllByAddressesVerbose(
+            when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 unconfirmed: true)).thenAnswer((_) async => <VerboseEvent>[]);
 
             return DashboardActivityFeedBloc(
@@ -1204,21 +1205,27 @@ void main() {
             when(() => mockBitcoinRepository.getMempoolTransactions(any()))
                 .thenAnswer((_) async => const Right([]));
 
-            when(() => mockBitcoinRepository.getConfirmedTransactions(any()))
+            when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
+                    "0x123", null))
                 .thenAnswer((_) async => Right(mockedBtcConfirmed));
+
+            when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
+                    "0x123", "btx_1"))
+                .thenAnswer((_) async => Right([]));
+
             // cp event mocks
             final mockEventsRepository = MockEventsRepository();
 
-            when(() => mockEventsRepository.getByAddressesVerbose(
+            when(() => mockEventsRepository.getByAddressVerbose(
                     whitelist: DEFAULT_WHITELIST,
-                    addresses: ["0x123"],
+                    address: "0x123",
                     limit: 10,
                     unconfirmed: false))
                 .thenAnswer((_) async => (<VerboseEvent>[], null, 3));
 
-            when(() => mockEventsRepository.getAllByAddressesVerbose(
+            when(() => mockEventsRepository.getAllByAddressVerbose(
                 whitelist: DEFAULT_WHITELIST,
-                addresses: ["0x123"],
+                address: "0x123",
                 // limit: 10,
                 unconfirmed: true)).thenAnswer((_) async => <VerboseEvent>[]);
             when(() => mockBitcoinRepository.getBlockHeight())
