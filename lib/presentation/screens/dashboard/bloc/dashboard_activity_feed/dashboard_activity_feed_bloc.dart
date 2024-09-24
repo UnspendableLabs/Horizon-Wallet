@@ -65,7 +65,7 @@ class DashboardActivityFeedBloc
     // emit(nextState);
 
     try {
-      String address= currentAddress.address;
+      String address = currentAddress.address;
 
       String? mostRecentCounterpartyEventHash =
           currentState.mostRecentCounterpartyEventHash;
@@ -80,9 +80,7 @@ class DashboardActivityFeedBloc
         //     by txhash
 
         newCounterpartyEvents = await eventsRepository.getAllByAddressVerbose(
-            address: address,
-            unconfirmed: true,
-            whitelist: DEFAULT_WHITELIST);
+            address: address, unconfirmed: true, whitelist: DEFAULT_WHITELIST);
       } else {
         // 1b) otherwise, we need to get the list of all events
         //     above the most recent counterparty event hash
@@ -117,25 +115,25 @@ class DashboardActivityFeedBloc
       List<BitcoinTx> newBitcoinTransactions = [];
       if (mostRecentBitcoinTxHash == null) {
         // 2a) if null list of new btc transactions equal to all of them
-        final bitcoinTxsE = await bitcoinRepository.getTransactions([ address  ]);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions([address]);
 
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
         newBitcoinTransactions = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx([ address  ]),
+              (tx) => !tx.isCounterpartyTx([address]),
             )
             .toList();
       } else {
         // 2b otherwise, bitcoin transactions are all above last seen
-        final bitcoinTxsE = await bitcoinRepository.getTransactions([ address ]);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions([address]);
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx([ address ]),
+              (tx) => !tx.isCounterpartyTx([address]),
             )
             .toList();
 
@@ -355,12 +353,11 @@ class DashboardActivityFeedBloc
       final localTransactions =
           await transactionLocalRepository.getAllByAddressesVerbose(addresses);
 
-      final counterpartyEvents =
-          await eventsRepository.getAllByAddressVerbose(
-              address: currentAddress.address,
-              // limit: pageSize,
-              unconfirmed: true,
-              whitelist: DEFAULT_WHITELIST);
+      final counterpartyEvents = await eventsRepository.getAllByAddressVerbose(
+          address: currentAddress.address,
+          // limit: pageSize,
+          unconfirmed: true,
+          whitelist: DEFAULT_WHITELIST);
 
       // factor out counterparty events by unconfirmed / confirmed
       List<VerboseEvent> counterpartyMempool = [];

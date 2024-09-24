@@ -306,14 +306,16 @@ class SimpleLogInterceptor extends Interceptor {
 
   @override
   void onResponse(response, ResponseInterceptorHandler handler) {
-    final responseInfo = '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
+    final responseInfo =
+        '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
     logger.d('Response: $responseInfo');
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    final errorInfo = '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
+    final errorInfo =
+        '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
     logger.d('Error: $errorInfo');
     if (err.response != null) {
       final responseData = err.response?.data;
