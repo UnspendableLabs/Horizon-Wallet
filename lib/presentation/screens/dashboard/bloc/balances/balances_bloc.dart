@@ -112,7 +112,8 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
       emit(BalancesState.complete(Result.ok(balances, aggregated)));
     } catch (e) {
-      emit(BalancesState.complete(Result.error(e.toString())));
+      emit(BalancesState.complete(Result.error(
+          "Error fetching balances for ${currentAddress.address}")));
     }
   }
 }
