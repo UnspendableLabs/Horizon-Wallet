@@ -406,67 +406,25 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
     final scaffoldBackgroundColor =
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
 
-    return Container(
-      color: scaffoldBackgroundColor,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: Text(
-              textAlign: TextAlign.center,
-              'Please confirm your seed phrase',
-              style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w600,
-                  color: isDarkMode ? mainTextWhite : mainTextBlack),
-            ),
-          ),
-          isSmallScreen && widget.mnemonicErrorState != null
-              ? Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: redErrorTextTransparent,
-                      borderRadius: BorderRadius.circular(40.0),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.info, color: redErrorText),
-                        const SizedBox(width: 4),
-                        SelectableText(
-                          widget.mnemonicErrorState!.message,
-                          style: const TextStyle(color: redErrorText),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : const Text(""),
-          Expanded(
-            child: isSmallScreen
-                ? SingleChildScrollView(
-                    child: buildInputFields(isSmallScreen, isDarkMode),
-                  )
-                : buildInputFields(isSmallScreen, isDarkMode),
-          ),
-          if (isSmallScreen) const SizedBox(height: 16),
-          BackContinueButtons(
-              isDarkMode: isDarkMode,
-              isSmallScreenWidth: isSmallScreen,
-              onPressedBack: () {
-                context.read<OnboardingCreateBloc>().add(GoBackToMnemonic());
-              },
-              onPressedContinue: () {
-                context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
-                    mnemonic: controllers
-                        .map((controller) => controller.text)
-                        .toList()));
-              },
-              backButtonText: 'BACK',
-              continueButtonText: 'CONTINUE',
-              errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
+    return Scaffold(
+      backgroundColor: scaffoldBackgroundColor,
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Text(
+                  textAlign: TextAlign.center,
+                  'Please confirm your seed phrase',
+                  style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w600,
+                      color: isDarkMode ? mainTextWhite : mainTextBlack),
+                ),
+              ),
+              isSmallScreen && widget.mnemonicErrorState != null
                   ? Align(
                       alignment: Alignment.center,
                       child: Container(
@@ -488,68 +446,94 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                         ),
                       ),
                     )
-                  : null),
-        ],
+                  : const Text(""),
+              buildInputFields(isSmallScreen, isDarkMode),
+              if (isSmallScreen) const SizedBox(height: 16),
+              BackContinueButtons(
+                  isDarkMode: isDarkMode,
+                  isSmallScreenWidth: isSmallScreen,
+                  onPressedBack: () {
+                    context
+                        .read<OnboardingCreateBloc>()
+                        .add(GoBackToMnemonic());
+                  },
+                  onPressedContinue: () {
+                    context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
+                        mnemonic: controllers
+                            .map((controller) => controller.text)
+                            .toList()));
+                  },
+                  backButtonText: 'BACK',
+                  continueButtonText: 'CONTINUE',
+                  errorWidget: !isSmallScreen &&
+                          widget.mnemonicErrorState != null
+                      ? Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: redErrorTextTransparent,
+                              borderRadius: BorderRadius.circular(40.0),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.info, color: redErrorText),
+                                const SizedBox(width: 4),
+                                SelectableText(
+                                  widget.mnemonicErrorState!.message,
+                                  style: const TextStyle(color: redErrorText),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : null),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (isSmallScreen) {
-          return SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: List.generate(6,
-                        (index) => buildCompactInputField(index, isDarkMode)),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: List.generate(
-                        6,
-                        (index) =>
-                            buildCompactInputField(index + 6, isDarkMode)),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          // Existing code for larger screens...
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
-              child: IntrinsicHeight(
+    if (isSmallScreen) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
                 child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(2, (columnIndex) {
-                        return Expanded(
-                          child: Column(
-                            children: List.generate(6, (rowIndex) {
-                              int index = columnIndex * 6 + rowIndex;
-                              return buildInputField(index, isDarkMode);
-                            }),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
+                  children: List.generate(
+                      6, (index) => buildCompactInputField(index, isDarkMode)),
                 ),
               ),
+              Expanded(
+                child: Column(
+                  children: List.generate(6,
+                      (index) => buildCompactInputField(index + 6, isDarkMode)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else {
+      // Existing code for larger screens
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(2, (columnIndex) {
+          return Expanded(
+            child: Column(
+              children: List.generate(6, (rowIndex) {
+                int index = columnIndex * 6 + rowIndex;
+                return buildInputField(index, isDarkMode);
+              }),
             ),
           );
-        }
-      },
-    );
+        }),
+      );
+    }
   }
 
   Widget buildCompactInputField(int index, bool isDarkMode) {
@@ -723,8 +707,8 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   }
 
   void updateMnemonic() {
-    String mnemonic =
-        controllers.map((controller) => controller.text).join(' ').trim();
+    List<String> mnemonic =
+        controllers.map((controller) => controller.text).toList();
     context
         .read<OnboardingCreateBloc>()
         .add(ConfirmMnemonicChanged(mnemonic: mnemonic));

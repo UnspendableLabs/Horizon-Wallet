@@ -107,11 +107,10 @@ class OnboardingCreateBloc
     });
 
     on<ConfirmMnemonicChanged>((event, emit) {
-      if (state.mnemonicState.mnemonic != event.mnemonic) {
+      if (state.mnemonicState.mnemonic != event.mnemonic.join(' ')) {
         List<int> incorrectIndexes = [];
         for (int i = 0; i < 12; i++) {
-          if (state.mnemonicState.mnemonic.split(' ')[i] !=
-              event.mnemonic.split(' ')[i]) {
+          if (state.mnemonicState.mnemonic.split(' ')[i] != event.mnemonic[i]) {
             incorrectIndexes.add(i);
           }
         }

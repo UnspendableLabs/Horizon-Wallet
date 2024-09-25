@@ -205,155 +205,133 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          isSmallScreen && widget.mnemonicErrorState != null
-              ? Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: redErrorTextTransparent,
-                      borderRadius: BorderRadius.circular(40.0),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.info, color: redErrorText),
-                        const SizedBox(width: 4),
-                        SelectableText(
-                          widget.mnemonicErrorState!,
-                          style: const TextStyle(color: redErrorText),
-                        ),
-                      ],
-                    ),
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            if (isSmallScreen && widget.mnemonicErrorState != null)
+              Align(
+                alignment: Alignment.center,
+                child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: redErrorTextTransparent,
+                    borderRadius: BorderRadius.circular(40.0),
                   ),
-                )
-              : const Text(""),
-          Expanded(
-            child: isSmallScreen
-                ? SingleChildScrollView(
-                    child: buildInputFields(isSmallScreen, isDarkMode),
-                  )
-                : buildInputFields(isSmallScreen, isDarkMode),
-          ),
-          if (isSmallScreen) const SizedBox(height: 16),
-          ImportFormatDropdown(
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedFormat = newValue;
-              });
-              context
-                  .read<OnboardingImportBloc>()
-                  .add(ImportFormatChanged(importFormat: newValue!));
-              updateMnemonic();
-            },
-            selectedFormat: selectedFormat!,
-          ),
-          BackContinueButtons(
-            isDarkMode: isDarkMode,
-            isSmallScreenWidth: isSmallScreen,
-            backButtonText: 'CANCEL',
-            continueButtonText: 'CONTINUE',
-            onPressedBack: () {
-              final shell = context.read<ShellStateCubit>();
-              shell.onOnboarding();
-            },
-            onPressedContinue: () {
-              context.read<OnboardingImportBloc>().add(MnemonicSubmit(
-                    mnemonic: controllers
-                        .map((controller) => controller.text)
-                        .join(' ')
-                        .trim(),
-                    importFormat: selectedFormat!,
-                  ));
-            },
-            errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
-                ? Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: redErrorTextTransparent,
-                        borderRadius: BorderRadius.circular(40.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.info, color: redErrorText),
+                      const SizedBox(width: 4),
+                      SelectableText(
+                        widget.mnemonicErrorState!,
+                        style: const TextStyle(color: redErrorText),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.info, color: redErrorText),
-                          const SizedBox(width: 4),
-                          SelectableText(
-                            widget.mnemonicErrorState!,
-                            style: const TextStyle(color: redErrorText),
-                          ),
-                        ],
+                    ],
+                  ),
+                ),
+              ),
+            buildInputFields(isSmallScreen, isDarkMode),
+            const SizedBox(height: 16),
+            ImportFormatDropdown(
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedFormat = newValue;
+                });
+                context
+                    .read<OnboardingImportBloc>()
+                    .add(ImportFormatChanged(importFormat: newValue!));
+                updateMnemonic();
+              },
+              selectedFormat: selectedFormat!,
+            ),
+            BackContinueButtons(
+              isDarkMode: isDarkMode,
+              isSmallScreenWidth: isSmallScreen,
+              backButtonText: 'CANCEL',
+              continueButtonText: 'CONTINUE',
+              onPressedBack: () {
+                final shell = context.read<ShellStateCubit>();
+                shell.onOnboarding();
+              },
+              onPressedContinue: () {
+                context.read<OnboardingImportBloc>().add(MnemonicSubmit(
+                      mnemonic: controllers
+                          .map((controller) => controller.text)
+                          .join(' ')
+                          .trim(),
+                      importFormat: selectedFormat!,
+                    ));
+              },
+              errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: redErrorTextTransparent,
+                          borderRadius: BorderRadius.circular(40.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.info, color: redErrorText),
+                            const SizedBox(width: 4),
+                            SelectableText(
+                              widget.mnemonicErrorState!,
+                              style: const TextStyle(color: redErrorText),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-                : null,
-          ),
-        ],
+                    )
+                  : null,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (isSmallScreen) {
-          return SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: List.generate(6,
-                        (index) => buildCompactInputField(index, isDarkMode)),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: List.generate(
-                        6,
-                        (index) =>
-                            buildCompactInputField(index + 6, isDarkMode)),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          // Existing code for larger screens
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
-              child: IntrinsicHeight(
+    if (isSmallScreen) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
                 child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(2, (columnIndex) {
-                        return Expanded(
-                          child: Column(
-                            children: List.generate(6, (rowIndex) {
-                              int index = columnIndex * 6 + rowIndex;
-                              return buildInputField(index, isDarkMode);
-                            }),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
+                  children: List.generate(
+                      6, (index) => buildCompactInputField(index, isDarkMode)),
                 ),
               ),
+              Expanded(
+                child: Column(
+                  children: List.generate(6,
+                      (index) => buildCompactInputField(index + 6, isDarkMode)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else {
+      // Existing code for larger screens
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(2, (columnIndex) {
+          return Expanded(
+            child: Column(
+              children: List.generate(6, (rowIndex) {
+                int index = columnIndex * 6 + rowIndex;
+                return buildInputField(index, isDarkMode);
+              }),
             ),
           );
-        }
-      },
-    );
+        }),
+      );
+    }
   }
 
   Widget buildCompactInputField(int index, bool isDarkMode) {
