@@ -256,7 +256,7 @@ class ComposeIssuanceBloc
           hash: txHash,
         ));
 
-        logger.d('issue broadcasted txHash: ${txHash}');
+        logger.d('issue broadcasted txHash: $txHash');
 
         emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex)));
       } catch (error) {

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/presentation/common/footer.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-
-import 'package:horizon/presentation/common/footer.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -262,7 +261,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
               ],
             );
           } else {
-            return Center(
+            final mobileContent = Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
@@ -303,13 +302,29 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ],
                       ),
-                      Expanded(
-                        child: Image.asset(
-                          'assets/logo-blue-3d.png',
-                          width: 900,
-                          height: 900,
-                        ),
-                      ),
+                      constraints.maxHeight < 700
+                          ? AspectRatio(
+                              aspectRatio:
+                                  1, // This maintains a square aspect ratio
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Image.asset(
+                                    'assets/logo-blue-3d.png',
+                                    width: constraints.maxWidth,
+                                    height: constraints.maxWidth,
+                                    fit: BoxFit.contain,
+                                  );
+                                },
+                              ),
+                            )
+                          : Expanded(
+                              child: Image.asset(
+                                'assets/logo-blue-3d.png',
+                                width: constraints.maxWidth,
+                                height: constraints.maxWidth,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 40),
@@ -448,6 +463,11 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             );
+            if (constraints.maxHeight < 700) {
+              return SingleChildScrollView(child: mobileContent);
+            } else {
+              return mobileContent;
+            }
           }
         },
       ),
