@@ -30,6 +30,7 @@ extension type Transaction._(JSObject _) implements JSObject {
   external JSArray<TxOutput> outs;
   external String toHex();
   external int virtualSize();
+  external bool hasWitnesses();
 }
 
 extension type Psbt._(JSObject _) implements JSObject {

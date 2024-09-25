@@ -12,6 +12,10 @@ import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/domain/repositories/config_repository.dart';
 
+bool addressIsSegwit(String sourceAddress) {
+  return sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
+}
+
 class TransactionServiceImpl implements TransactionService {
   final Config config;
 
@@ -36,8 +40,7 @@ class TransactionServiceImpl implements TransactionService {
 
     dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
-    bool isSegwit =
-        sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
+    bool isSegwit = addressIsSegwit(sourceAddress);
 
     bitcoinjs.Payment script;
     if (isSegwit) {
@@ -97,7 +100,13 @@ class TransactionServiceImpl implements TransactionService {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
-    return transaction.virtualSize();
+    if (transaction.hasWitnesses()) {
+      return transaction.virtualSize();
+    } else {
+      return transaction.ins.toDart.length * 148 +
+          transaction.outs.toDart.length * 34 +
+          10;
+    }
   }
 
   @override

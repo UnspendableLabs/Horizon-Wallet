@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import "package:horizon/presentation/colors.dart";
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
@@ -30,11 +31,25 @@ class Footer extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 20), // Add some space between the links
+              const SizedBox(width: 20),
               TextButton(
                 onPressed: () => context.go("/privacy-policy"),
                 child: const Text(
                   'Privacy Policy',
+                  style: TextStyle(
+                    color: neonBlueDarkThemeButtonTextColor,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              TextButton(
+                onPressed: () {
+                  launchUrl(Uri.parse(
+                      'https://github.com/UnspendableLabs/Horizon-Wallet/tree/v1.0.0'));
+                },
+                child: const Text(
+                  'v1.0.0',
                   style: TextStyle(
                     color: neonBlueDarkThemeButtonTextColor,
                     fontSize: 16,
