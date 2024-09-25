@@ -394,7 +394,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
           ));
         }
 
-        logger.d('send broadcasted txHash: ${txHash}');
+        logger.d('send broadcasted txHash: $txHash');
 
         emit(state.copyWith(
             submitState:

@@ -1210,7 +1210,7 @@ void main() {
                 .thenAnswer((_) async => Right(mockedBtcConfirmed));
 
             when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
-                "0x123", "btx_1")).thenAnswer((_) async => Right([]));
+                "0x123", "btx_1")).thenAnswer((_) async => const Right([]));
 
             // cp event mocks
             final mockEventsRepository = MockEventsRepository();

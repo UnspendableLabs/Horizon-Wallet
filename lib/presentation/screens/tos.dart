@@ -44,7 +44,7 @@ class TermsOfService extends StatelessWidget {
                 _buildSection(
                   'Software License',
                   'Horizon Wallet is licensed under the terms available at ',
-                  trailingWidget: LinkText(
+                  trailingWidget: const LinkText(
                     'https://github.com/UnspendableLabs/Horizon-Wallet/blob/main/LICENSE.md',
                     'https://github.com/UnspendableLabs/Horizon-Wallet/blob/main/LICENSE.md',
                   ),
@@ -101,7 +101,7 @@ class TermsOfService extends StatelessWidget {
                 _buildSection(
                   'Contact Information',
                   'If you have any questions about these Terms of Service, please contact us at ',
-                  trailingWidget: LinkText(
+                  trailingWidget: const LinkText(
                     'contact@unspendablelabs.com',
                     'mailto:contact@unspendablelabs.com',
                   ),
@@ -168,7 +168,7 @@ class LinkText extends StatelessWidget {
   final String text;
   final String url;
 
-  const LinkText(this.text, this.url, {Key? key}) : super(key: key);
+  const LinkText(this.text, this.url, {super.key});
 
   @override
   Widget build(BuildContext context) {
