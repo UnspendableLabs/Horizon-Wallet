@@ -198,6 +198,8 @@ Future<void> setup() async {
     api_: GetIt.I.get<V2Api>(),
   ));
 
+
+
   injector.registerSingleton<TransactionLocalRepository>(
       TransactionLocalRepositoryImpl(
           addressRepository: GetIt.I.get<AddressRepository>(),
