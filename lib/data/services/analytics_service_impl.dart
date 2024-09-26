@@ -21,23 +21,22 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void _initialize() {
     try {
       if (!config.isAnalyticsEnabled) {
-        logger.i('Analytics is disabled. Skipping initialization.');
+        print('Analytics is disabled. Skipping initialization.');
         return;
       }
 
       if (_isInitialized) {
-        logger.i('Analytics already initialized. Skipping.');
+        print('Analytics already initialized. Skipping.');
         return;
       }
 
       if (apiKey == null) {
-        logger
-            .e('Posthog API Key is missing. Analytics initialization failed.');
+        print('Posthog API Key is missing. Analytics initialization failed.');
         return;
       }
 
       if (host == null) {
-        logger.e('Posthog host is missing. Analytics initialization failed.');
+        print('Posthog host is missing. Analytics initialization failed.');
         return;
       }
 
@@ -49,9 +48,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
       ]);
 
       _isInitialized = true;
-      logger.i('Analytics initialized successfully.');
+       print('Analytics initialized successfully.');
     } catch (e) {
-      logger.e("Error initializing analytics: $e");
+      print("Error initializing analytics: $e");
     }
   }
 
@@ -60,9 +59,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
       await Posthog().capture(eventName: eventName, properties: properties);
-      logger.i('Even capture: $eventName, $properties');
+      print('Even capture: $eventName, $properties');
     } catch (e) {
-      logger.e("Error tracking event: $e");
+      print("Error tracking event: $e");
     }
   }
 
@@ -71,9 +70,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
       await Posthog().identify(userId: userId);
-      logger.i('User identified: $userId');
+      print('User identified: $userId');
     } catch (e) {
-      logger.e("Error identifying user: $e");
+      print("Error identifying user: $e");
     }
   }
 
@@ -82,9 +81,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
       await Posthog().reset();
-      logger.d('Analytics reset.');
+      print('Analytics reset.');
     } catch (e) {
-      logger.e("Error resetting analytics: $e");
+      print("Error resetting analytics: $e");
     }
   }
 }

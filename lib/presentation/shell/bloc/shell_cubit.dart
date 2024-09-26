@@ -61,6 +61,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         currentAddress: currentAddress,
       )));
     } catch (error) {
+      rethrow;
       emit(ShellState.error(error.toString()));
     }
   }
