@@ -29,10 +29,12 @@ class DatabaseManager {
   late final DB database;
 
   factory DatabaseManager() {
+    print("db initiailzed");
     return _instance;
   }
 
   DatabaseManager._internal() {
+    print("db is nitialized here");
     database = DB(connectOnWeb());
   }
 

@@ -157,6 +157,7 @@ Future<void> setup() async {
   ));
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
+  print("after register db managerr");
 
   injector.registerSingleton<AddressTxRepository>(
       AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));

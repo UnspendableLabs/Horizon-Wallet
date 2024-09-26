@@ -292,6 +292,7 @@ void main() {
 
   // Catch uncaught asynchronous errors
   runZonedGuarded<Future<void>>(() async {
+    print("call ensure");
     WidgetsFlutterBinding.ensureInitialized();
     // await dotenv.load();
 
