@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -14,11 +15,13 @@ class LogoutBloc extends Bloc<LogoutEvent, LogoutState> {
   final AccountRepository accountRepository;
   final AddressRepository addressRepository;
   final CacheProvider cacheProvider;
+  final AnalyticsService analyticsService;
 
   LogoutBloc(
       {required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
+      required this.analyticsService,
       required this.cacheProvider})
       : super(const LogoutState()) {
     on<LogoutEvent>(_onLogout);
@@ -30,6 +33,8 @@ class LogoutBloc extends Bloc<LogoutEvent, LogoutState> {
     await accountRepository.deleteAllAccounts();
     await addressRepository.deleteAllAddresses();
     cacheProvider.removeAll();
+
+    analyticsService.reset();
 
     logger.d('emit logout state');
     emit(LogoutState(logoutState: LoggedOut()));

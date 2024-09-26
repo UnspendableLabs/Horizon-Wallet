@@ -18,6 +18,7 @@ import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
@@ -50,6 +51,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeSendBloc(
+          analyticsService: GetIt.I.get<AnalyticsService>(),
           addressRepository: GetIt.I.get<AddressRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),

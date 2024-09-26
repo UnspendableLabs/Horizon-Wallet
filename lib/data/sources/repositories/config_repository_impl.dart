@@ -1,6 +1,6 @@
 import 'package:horizon/domain/repositories/config_repository.dart';
 
-class EnvironmentConfig implements Config {
+class ConfigImpl implements Config {
   @override
   Network get network {
     // default to testnet for now
@@ -55,6 +55,11 @@ class EnvironmentConfig implements Config {
   @override
   bool get isDatabaseViewerEnabled {
     return const bool.fromEnvironment('ENABLE_DB_VIEWER', defaultValue: false);
+  }
+
+  @override
+  bool get isAnalyticsEnabled {
+    return const bool.fromEnvironment('ANALYTICS_ENABLED', defaultValue: false);
   }
 
   @override

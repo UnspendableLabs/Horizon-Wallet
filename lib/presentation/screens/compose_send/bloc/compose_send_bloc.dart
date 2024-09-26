@@ -20,6 +20,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
@@ -41,22 +42,24 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
   final TransactionRepository transactionRepository;
   final TransactionLocalRepository transactionLocalRepository;
   final BitcoinRepository bitcoinRepository;
+  final AnalyticsService analyticsService;
 
-  ComposeSendBloc({
-    required this.addressRepository,
-    required this.balanceRepository,
-    required this.composeRepository,
-    required this.utxoRepository,
-    required this.transactionService,
-    required this.bitcoindService,
-    required this.accountRepository,
-    required this.walletRepository,
-    required this.encryptionService,
-    required this.addressService,
-    required this.transactionRepository,
-    required this.transactionLocalRepository,
-    required this.bitcoinRepository,
-  }) : super(ComposeSendState(
+  ComposeSendBloc(
+      {required this.addressRepository,
+      required this.balanceRepository,
+      required this.composeRepository,
+      required this.utxoRepository,
+      required this.transactionService,
+      required this.bitcoindService,
+      required this.accountRepository,
+      required this.walletRepository,
+      required this.encryptionService,
+      required this.addressService,
+      required this.transactionRepository,
+      required this.transactionLocalRepository,
+      required this.bitcoinRepository,
+      required this.analyticsService})
+      : super(ComposeSendState(
             feeOption: FeeOption.Medium(),
             submitState: const SubmitInitial())) {
     on<ChangeFeeOption>(
@@ -399,6 +402,8 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         emit(state.copyWith(
             submitState:
                 SubmitSuccess(transactionHex: txHash, sourceAddress: source)));
+
+        analyticsService.trackEvent('broadcast_tx_send');
       } catch (error) {
         final sendParams = (state.submitState as SubmitFinalizing).composeSend;
         final fee = (state.submitState as SubmitFinalizing).fee;

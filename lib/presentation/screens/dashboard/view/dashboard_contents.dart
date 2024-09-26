@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_event.dart';
@@ -354,6 +355,7 @@ class HorizonAppBarContent extends StatelessWidget {
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     cacheProvider: GetIt.I.get<CacheProvider>(),
+                    analyticsService: GetIt.I.get<AnalyticsService>(),
                   ),
                   child: BlocConsumer<LogoutBloc, LogoutState>(
                     listener: (context, state) {

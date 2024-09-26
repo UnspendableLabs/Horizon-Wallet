@@ -58,6 +58,9 @@ import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
 import 'package:horizon/data/sources/network/esplora_client.dart';
 
+import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/data/services/analytics_service_impl.dart';
+
 import 'package:logger/logger.dart';
 
 final logger = Logger();
@@ -65,7 +68,7 @@ final logger = Logger();
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
-  Config config = EnvironmentConfig();
+  Config config = ConfigImpl();
 
   injector.registerLazySingleton<Config>(() => config);
 
@@ -135,6 +138,16 @@ Future<void> setup() async {
 //     return handler.next(options);
 //   },
 // ));
+
+  injector.registerSingleton<AnalyticsService>(PostHogWebAnalyticsService(
+    config,
+    const String.fromEnvironment('POSTHOG_API_KEY').isNotEmpty
+        ? const String.fromEnvironment('POSTHOG_API_KEY')
+        : null,
+    const String.fromEnvironment('POSTHOG_API_HOST').isNotEmpty
+        ? const String.fromEnvironment('POSTHOG_API_HOST')
+        : null,
+  ));
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraApi: EsploraApi(dio: esploraDio),
