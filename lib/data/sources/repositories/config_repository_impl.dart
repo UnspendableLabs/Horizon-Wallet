@@ -59,7 +59,7 @@ class ConfigImpl implements Config {
 
   @override
   bool get isAnalyticsEnabled {
-    return const bool.fromEnvironment('ANALYTICS_ENABLED', defaultValue: false);
+    return const String.fromEnvironment('ANALYTICS_ENABLED') == "true";
   }
 
   @override
