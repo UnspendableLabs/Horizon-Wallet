@@ -226,6 +226,8 @@ class AppRouter {
 
         final shell = context.read<ShellStateCubit>();
 
+        print("shell state: ${shell.state}");
+
         final path = shell.state.maybeWhen(
             onboarding: (onboarding) {
               return onboarding.when(
@@ -246,6 +248,8 @@ class AppRouter {
             },
             // if the shell state is not yet loaded, show a loading screen
             orElse: () => "/");
+
+
 
         return path;
       });
