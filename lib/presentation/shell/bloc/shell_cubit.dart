@@ -23,6 +23,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       : super(const ShellState.initial());
 
   void initialize() async {
+    print("call shell initialize");
     emit(const ShellState.loading());
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
@@ -52,6 +53,7 @@ class ShellStateCubit extends Cubit<ShellState> {
 
       Address currentAddress = addresses.first;
 
+      print("shell success");
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
         wallet: wallet,
@@ -61,12 +63,14 @@ class ShellStateCubit extends Cubit<ShellState> {
         currentAddress: currentAddress,
       )));
     } catch (error) {
+      print("shell error $error");
       rethrow;
       emit(ShellState.error(error.toString()));
     }
   }
 
   void initialized() {
+     print("initialized");
     final state_ = state.when(
         initial: () => state,
         loading: () => state,
@@ -79,18 +83,22 @@ class ShellStateCubit extends Cubit<ShellState> {
   }
 
   void onOnboarding() {
+    print("onboarding initial");
     emit(const ShellState.onboarding(Onboarding.initial()));
   }
 
   void onOnboardingCreate() {
+    print("onboarding create");
     emit(const ShellState.onboarding(Onboarding.create()));
   }
 
   void onOnboardingImport() {
+    print("onboarding impoirt");
     emit(const ShellState.onboarding(Onboarding.import()));
   }
 
   void onOnboardingImportPK() {
+    print("onboarding pk");
     emit(const ShellState.onboarding(Onboarding.importPK()));
   }
 
@@ -98,6 +106,7 @@ class ShellStateCubit extends Cubit<ShellState> {
     List<Address> addresses =
         await addressRepository.getAllByAccountUuid(account.uuid);
 
+    print("on account changed");
     final state_ = state.when(
         initial: () => state,
         loading: () => state,
@@ -112,6 +121,7 @@ class ShellStateCubit extends Cubit<ShellState> {
   }
 
   void onAddressChanged(Address address) {
+    print("on address changed");
     final state_ = state.when(
         initial: () => state,
         loading: () => state,
@@ -123,6 +133,7 @@ class ShellStateCubit extends Cubit<ShellState> {
   }
 
   void refresh() async {
+    print("refresh");
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -154,11 +165,14 @@ class ShellStateCubit extends Cubit<ShellState> {
         currentAddress: addresses.first,
       )));
     } catch (error) {
+      print("refresh error $error");
+      rethrow;
       emit(ShellState.error(error.toString()));
     }
   }
 
   void refreshAndSelectNewAddress(String address, String accountUuid) async {
+    print("refresh and sleect new address");
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -200,6 +214,9 @@ class ShellStateCubit extends Cubit<ShellState> {
         currentAddress: newAddress,
       )));
     } catch (error) {
+      print("refresh and select new address $error");
+      rethrow;
+
       emit(ShellState.error(error.toString()));
     }
   }
