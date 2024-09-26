@@ -19,6 +19,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
@@ -564,6 +565,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ShellStateCubit(
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
+              analyticsService: GetIt.I<AnalyticsService>(),
               addressRepository: GetIt.I<AddressRepository>())
             ..initialize(),
         ),

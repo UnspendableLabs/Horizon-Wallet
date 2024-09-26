@@ -18,6 +18,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -42,6 +43,7 @@ class ComposeIssuanceBloc
   final TransactionRepository transactionRepository;
   final TransactionLocalRepository transactionLocalRepository;
   final BitcoinRepository bitcoinRepository;
+  final AnalyticsService analyticsService;
 
   ComposeIssuanceBloc({
     required this.addressRepository,
@@ -57,6 +59,7 @@ class ComposeIssuanceBloc
     required this.transactionRepository,
     required this.transactionLocalRepository,
     required this.bitcoinRepository,
+    required this.analyticsService,
   }) : super(ComposeIssuanceState(
             submitState: const SubmitInitial(),
             feeOption: FeeOption.Medium())) {
@@ -259,6 +262,8 @@ class ComposeIssuanceBloc
         logger.d('issue broadcasted txHash: $txHash');
 
         emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex)));
+
+        analyticsService.trackEvent('broadcast_tx_issue');
       } catch (error) {
         final issuanceParams =
             (state.submitState as SubmitFinalizing).composeIssuance;
