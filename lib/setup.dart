@@ -66,6 +66,8 @@ import 'package:logger/logger.dart';
 final logger = Logger();
 
 Future<void> setup() async {
+  print("setup begin");
+
   GetIt injector = GetIt.I;
 
   Config config = ConfigImpl();
@@ -211,6 +213,8 @@ Future<void> setup() async {
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
+
+  print("setup end");
 }
 
 class CustomDioException extends DioException {
