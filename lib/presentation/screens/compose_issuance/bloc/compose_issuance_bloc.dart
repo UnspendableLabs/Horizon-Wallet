@@ -20,7 +20,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -183,8 +182,8 @@ class ComposeIssuanceBloc
         logger.d('rawTx: ${issuanceActual.rawtransaction}');
 
         emit(state.copyWith(
-            submitState: SubmitComposingIssuance(
-                composeIssuance: issuanceActual,
+            submitState: SubmitComposingTransaction<ComposeIssuanceVerbose>(
+                composeTransaction: issuanceActual,
                 virtualSize: virtualSize,
                 fee: totalFee,
                 feeRate: feeRate)));
@@ -197,28 +196,30 @@ class ComposeIssuanceBloc
 
     on<FinalizeTransactionEvent>((event, emit) async {
       emit(state.copyWith(
-          submitState: SubmitFinalizing(
+          submitState: SubmitFinalizing<ComposeIssuanceVerbose>(
         loading: false,
         error: null,
-        composeIssuance: event.composeIssuance,
+        composeTransaction: event.composeIssuance,
         fee: event.fee,
       )));
     });
 
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
-      if (state.submitState is! SubmitFinalizing) {
+      if (state.submitState is! SubmitFinalizing<ComposeIssuanceVerbose>) {
         return;
       }
 
       final issuanceParams =
-          (state.submitState as SubmitFinalizing).composeIssuance;
-      final fee = (state.submitState as SubmitFinalizing).fee;
+          (state.submitState as SubmitFinalizing<ComposeIssuanceVerbose>)
+              .composeTransaction;
+      final fee =
+          (state.submitState as SubmitFinalizing<ComposeIssuanceVerbose>).fee;
 
       emit(state.copyWith(
-          submitState: SubmitFinalizing(
+          submitState: SubmitFinalizing<ComposeIssuanceVerbose>(
               loading: true,
               error: null,
-              composeIssuance: issuanceParams,
+              composeTransaction: issuanceParams,
               fee: fee)));
 
       final source = issuanceParams.params.source;
@@ -273,14 +274,16 @@ class ComposeIssuanceBloc
         analyticsService.trackEvent('broadcast_tx_issue');
       } catch (error) {
         final issuanceParams =
-            (state.submitState as SubmitFinalizing).composeIssuance;
-        final fee = (state.submitState as SubmitFinalizing).fee;
+            (state.submitState as SubmitFinalizing<ComposeIssuanceVerbose>)
+                .composeTransaction;
+        final fee =
+            (state.submitState as SubmitFinalizing<ComposeIssuanceVerbose>).fee;
 
         emit(state.copyWith(
-            submitState: SubmitFinalizing(
+            submitState: SubmitFinalizing<ComposeIssuanceVerbose>(
                 loading: false,
                 error: error.toString(),
-                composeIssuance: issuanceParams,
+                composeTransaction: issuanceParams,
                 fee: fee)));
       }
     });

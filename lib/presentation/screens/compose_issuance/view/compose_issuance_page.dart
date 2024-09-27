@@ -22,7 +22,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
@@ -465,8 +465,8 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
             padding: const EdgeInsets.all(8.0),
             child: SelectableText('An error occurred: $msg'),
           ),
-        SubmitComposingIssuance(
-          composeIssuance: var composeIssuance,
+        SubmitComposingTransaction<ComposeIssuanceVerbose>(
+          composeTransaction: var composeIssuance,
           fee: var fee,
           feeRate: var feeRate,
           virtualSize: var virtualSize,
@@ -478,8 +478,8 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
             feeRate: feeRate,
             virtualSize: virtualSize,
           ),
-        SubmitFinalizing(
-          composeIssuance: var composeIssuance,
+        SubmitFinalizing<ComposeIssuanceVerbose>(
+          composeTransaction: var composeIssuance,
           fee: var fee,
           loading: var loading,
           error: var error,

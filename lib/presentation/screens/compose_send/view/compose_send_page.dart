@@ -23,7 +23,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -284,8 +284,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             padding: const EdgeInsets.all(8.0),
             child: SelectableText('An error occurred: $msg'),
           ),
-        SubmitComposingSend(
-          composeSend: var composeSend,
+        SubmitComposingTransaction<ComposeSend>(
+          composeTransaction: var composeSend,
           virtualSize: var virtualSize,
           fee: var fee,
           feeRate: var feeRate
@@ -297,8 +297,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             fee: fee,
             feeRate: feeRate,
           ),
-        SubmitFinalizingSend(
-          composeSend: var composeSend,
+        SubmitFinalizing<ComposeSend>(
+          composeTransaction: var composeSend,
           fee: var fee,
           loading: var loading,
           error: var error,

@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
 
 part 'compose_base_state.freezed.dart';
 
@@ -40,4 +39,77 @@ class MaxValueState with _$MaxValueState {
   const factory MaxValueState.loading() = _MaxValueLoading;
   const factory MaxValueState.success(int maxValue) = _MaxValueSuccess;
   const factory MaxValueState.error(String error) = _MaxValueError;
+}
+
+/// Abstract class for submit state, allows for different implementations.
+@immutable
+abstract class SubmitState {
+  const SubmitState();
+}
+
+/// Initial state before submission begins.
+class SubmitInitial extends SubmitState {
+  final bool loading;
+  final String? error;
+
+  const SubmitInitial({this.loading = false, this.error});
+}
+
+/// State when submission is in progress.
+class SubmitComposingTransaction<T> extends SubmitState {
+  final T composeTransaction;
+  final int virtualSize;
+  final int fee;
+  final int feeRate;
+  const SubmitComposingTransaction({
+    required this.composeTransaction,
+    required this.virtualSize,
+    required this.fee,
+    required this.feeRate,
+  });
+}
+
+/// State when submission is successful.
+class SubmitSuccess extends SubmitState {
+  final String transactionHex;
+  final String sourceAddress;
+
+  const SubmitSuccess({
+    required this.transactionHex,
+    required this.sourceAddress,
+  });
+}
+
+/// State when submission fails.
+class SubmitError extends SubmitState {
+  final String error;
+
+  const SubmitError(this.error);
+}
+
+class SubmitFinalizing<T> extends SubmitState {
+  final T composeTransaction;
+  final int fee;
+  final bool loading;
+  final String? error;
+
+  const SubmitFinalizing(
+      {required this.loading,
+      required this.error,
+      required this.composeTransaction,
+      required this.fee});
+
+  SubmitFinalizing copyWith({
+    required T composeTransaction,
+    required int fee,
+    required bool loading,
+    required String? error,
+  }) {
+    return SubmitFinalizing(
+      composeTransaction: composeTransaction,
+      fee: fee,
+      loading: loading,
+      error: error,
+    );
+  }
 }

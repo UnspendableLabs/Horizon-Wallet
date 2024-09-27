@@ -2,11 +2,9 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/compose_send.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
 
 part 'compose_send_state.freezed.dart';
 
@@ -40,32 +38,4 @@ class ComposeSendState with _$ComposeSendState, ComposeStateBase {
         sendMax: false,
         quantity: '',
       );
-}
-
-class SubmitComposingSend extends SubmitState {
-  final ComposeSend composeSend;
-  final int virtualSize;
-  final int fee;
-  final int feeRate;
-
-  const SubmitComposingSend({
-    required this.composeSend,
-    required this.virtualSize,
-    required this.fee,
-    required this.feeRate,
-  });
-}
-
-class SubmitFinalizingSend extends SubmitState {
-  final bool loading;
-  final String? error;
-  final ComposeSend composeSend;
-  final int fee;
-
-  const SubmitFinalizingSend({
-    required this.loading,
-    this.error,
-    required this.composeSend,
-    required this.fee,
-  });
 }
