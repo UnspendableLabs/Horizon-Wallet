@@ -23,6 +23,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -283,12 +284,20 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             padding: const EdgeInsets.all(8.0),
             child: SelectableText('An error occurred: $msg'),
           ),
-        SubmitComposing(submitStateComposingSend: var composeSendState) =>
+        SubmitComposingSend(
+          composeSend: var composeSend,
+          virtualSize: var virtualSize,
+          fee: var fee,
+          feeRate: var feeRate
+        ) =>
           ConfirmationPage(
-            composeSendState: composeSendState,
+            composeSend: composeSend,
             address: widget.address,
+            virtualSize: virtualSize,
+            fee: fee,
+            feeRate: feeRate,
           ),
-        SubmitFinalizing(
+        SubmitFinalizingSend(
           composeSend: var composeSend,
           fee: var fee,
           loading: var loading,
@@ -296,6 +305,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         ) =>
           _buildFinalizingForm(context, composeSend, fee, loading, error),
         SubmitSuccess() => const SizedBox.shrink(),
+        _ => const SizedBox.shrink(),
       };
     });
   }
@@ -703,11 +713,19 @@ class ComposeSendPageState extends State<ComposeSendPage> {
 }
 
 class ConfirmationPage extends StatefulWidget {
-  final SubmitStateComposingSend composeSendState;
+  final ComposeSend composeSend;
+  final int virtualSize;
+  final int fee;
+  final int feeRate;
   final Address address;
 
   const ConfirmationPage(
-      {super.key, required this.composeSendState, required this.address});
+      {super.key,
+      required this.composeSend,
+      required this.address,
+      required this.virtualSize,
+      required this.fee,
+      required this.feeRate});
 
   @override
   ConfirmationPageState createState() => ConfirmationPageState();
@@ -722,12 +740,12 @@ class ConfirmationPageState extends State<ConfirmationPage> {
     super.initState();
 
     // initialize fee
-    fee = widget.composeSendState.fee;
+    fee = widget.fee;
   }
 
   @override
   Widget build(BuildContext context) {
-    final sendParams = widget.composeSendState.composeSend.params;
+    final sendParams = widget.composeSend.params;
     return Form(
       key: _formKey,
       child: Padding(
@@ -780,7 +798,7 @@ class ConfirmationPageState extends State<ConfirmationPage> {
               label: "Fee",
               controller: TextEditingController(
                   text:
-                      "${widget.composeSendState.fee.toString()} sats ( ${widget.composeSendState.feeRate} sats/vbyte )"),
+                      "${fee.toString()} sats ( ${widget.feeRate} sats/vbyte )"),
               enabled: false,
             ),
             const SizedBox(height: 16.0),
@@ -807,7 +825,7 @@ class ConfirmationPageState extends State<ConfirmationPage> {
                     if (_formKey.currentState!.validate()) {
                       context.read<ComposeSendBloc>().add(
                             FinalizeTransactionEvent(
-                              composeSend: widget.composeSendState.composeSend,
+                              composeSend: widget.composeSend,
                               fee: fee,
                             ),
                           );

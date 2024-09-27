@@ -23,6 +23,8 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_max_send_quantity.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:logger/logger.dart';
@@ -61,7 +63,12 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
       required this.analyticsService})
       : super(ComposeSendState(
             feeOption: FeeOption.Medium(),
-            submitState: const SubmitInitial())) {
+            submitState: const SubmitInitial(),
+            feeState: const FeeState.initial(),
+            balancesState: const BalancesState.initial(),
+            maxValue: const MaxValueState.initial(),
+            sendMax: false,
+            quantity: "")) {
     on<ChangeFeeOption>(
       (event, emit) async {
         final value = event.value;
@@ -292,12 +299,12 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
         logger.d('rawTx: ${sendActual.rawtransaction}');
 
         emit(state.copyWith(
-            submitState: SubmitComposing(SubmitStateComposingSend(
+            submitState: SubmitComposingSend(
           composeSend: sendActual,
           virtualSize: virtualSize,
           fee: totalFee,
           feeRate: feeRate,
-        ))));
+        )));
       } catch (error) {
         emit(state.copyWith(
             submitState:
@@ -307,7 +314,7 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
     on<FinalizeTransactionEvent>((event, emit) async {
       emit(state.copyWith(
-          submitState: SubmitFinalizing(
+          submitState: SubmitFinalizingSend(
               loading: false,
               error: null,
               composeSend: event.composeSend,
@@ -316,15 +323,16 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
     on<SignAndBroadcastTransactionEvent>((event, emit) async {
       try {
-        if (state.submitState is! SubmitFinalizing) {
+        if (state.submitState is! SubmitFinalizingSend) {
           return;
         }
 
-        final sendParams = (state.submitState as SubmitFinalizing).composeSend;
-        final fee = (state.submitState as SubmitFinalizing).fee;
+        final sendParams =
+            (state.submitState as SubmitFinalizingSend).composeSend;
+        final fee = (state.submitState as SubmitFinalizingSend).fee;
 
         emit(state.copyWith(
-            submitState: SubmitFinalizing(
+            submitState: SubmitFinalizingSend(
                 loading: true,
                 error: null,
                 composeSend: sendParams,
@@ -405,11 +413,12 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
 
         analyticsService.trackEvent('broadcast_tx_send');
       } catch (error) {
-        final sendParams = (state.submitState as SubmitFinalizing).composeSend;
-        final fee = (state.submitState as SubmitFinalizing).fee;
+        final sendParams =
+            (state.submitState as SubmitFinalizingSend).composeSend;
+        final fee = (state.submitState as SubmitFinalizingSend).fee;
 
         emit(state.copyWith(
-            submitState: SubmitFinalizing(
+            submitState: SubmitFinalizingSend(
                 loading: false,
                 error: error.toString(),
                 composeSend: sendParams,
