@@ -42,8 +42,6 @@ class ComposeSendState with _$ComposeSendState, ComposeStateBase {
       );
 }
 
-// lib/presentation/screens/compose_send/bloc/submit_state_send.dart
-
 class SubmitComposingSend extends SubmitState {
   final ComposeSend composeSend;
   final int virtualSize;
@@ -69,15 +67,5 @@ class SubmitFinalizingSend extends SubmitState {
     this.error,
     required this.composeSend,
     required this.fee,
-  });
-}
-
-class SubmitSuccessSend extends SubmitState {
-  final String transactionHex;
-  final String sourceAddress;
-
-  const SubmitSuccessSend({
-    required this.transactionHex,
-    required this.sourceAddress,
   });
 }

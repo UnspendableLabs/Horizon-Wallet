@@ -22,6 +22,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
@@ -464,12 +465,18 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
             padding: const EdgeInsets.all(8.0),
             child: SelectableText('An error occurred: $msg'),
           ),
-        SubmitComposing(
-          submitStateComposingIssuance: var composeIssuanceState
+        SubmitComposingIssuance(
+          composeIssuance: var composeIssuance,
+          fee: var fee,
+          feeRate: var feeRate,
+          virtualSize: var virtualSize,
         ) =>
           ComposeIssuanceConfirmationPage(
-            composeIssuanceState: composeIssuanceState,
+            composeIssuance: composeIssuance,
             address: widget.address,
+            fee: fee,
+            feeRate: feeRate,
+            virtualSize: virtualSize,
           ),
         SubmitFinalizing(
           composeIssuance: var composeIssuance,
@@ -479,17 +486,26 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
         ) =>
           _buildFinalizingForm(context, composeIssuance, fee, loading, error),
         SubmitSuccess() => const SizedBox.shrink(),
+        _ => const SizedBox.shrink(),
       };
     });
   }
 }
 
 class ComposeIssuanceConfirmationPage extends StatefulWidget {
-  final SubmitStateComposingIssuance composeIssuanceState;
+  final ComposeIssuanceVerbose composeIssuance;
   final Address address;
+  final int fee;
+  final int feeRate;
+  final int virtualSize;
 
   const ComposeIssuanceConfirmationPage(
-      {super.key, required this.composeIssuanceState, required this.address});
+      {super.key,
+      required this.composeIssuance,
+      required this.address,
+      required this.fee,
+      required this.feeRate,
+      required this.virtualSize});
 
   @override
   State<ComposeIssuanceConfirmationPage> createState() =>
@@ -506,12 +522,12 @@ class _ComposeIssuanceConfirmationPageState
   void initState() {
     super.initState();
 
-    fee = widget.composeIssuanceState.fee;
+    fee = widget.fee;
   }
 
   @override
   Widget build(BuildContext context) {
-    final issueParams = widget.composeIssuanceState.composeIssuance.params;
+    final issueParams = widget.composeIssuance.params;
     return Form(
       key: _formKey,
       child: Padding(
@@ -536,25 +552,23 @@ class _ComposeIssuanceConfirmationPageState
             const SizedBox(height: 16.0),
             HorizonTextFormField(
               label: "Token name",
-              controller: TextEditingController(
-                  text: widget.composeIssuanceState.composeIssuance.name),
+              controller:
+                  TextEditingController(text: widget.composeIssuance.name),
               enabled: false,
             ),
             const SizedBox(height: 16.0),
             HorizonTextFormField(
               label: "Quantity",
               controller: TextEditingController(
-                  text: widget.composeIssuanceState.composeIssuance.params
-                      .quantityNormalized),
+                  text: widget.composeIssuance.params.quantityNormalized),
               enabled: false,
             ),
             const SizedBox(height: 16.0),
-            widget.composeIssuanceState.composeIssuance.params.description != ''
+            widget.composeIssuance.params.description != ''
                 ? HorizonTextFormField(
                     label: "Description",
                     controller: TextEditingController(
-                        text: widget.composeIssuanceState.composeIssuance.params
-                            .description),
+                        text: widget.composeIssuance.params.description),
                     enabled: false,
                   )
                 : const SizedBox.shrink(),
@@ -583,7 +597,7 @@ class _ComposeIssuanceConfirmationPageState
               label: "Fee",
               controller: TextEditingController(
                   text:
-                      "${widget.composeIssuanceState.fee.toString()} sats ( ${widget.composeIssuanceState.feeRate} sats/vbyte )"),
+                      "${widget.fee.toString()} sats ( ${widget.feeRate} sats/vbyte )"),
               enabled: false,
             ),
             Column(
@@ -620,8 +634,7 @@ class _ComposeIssuanceConfirmationPageState
                         if (_formKey.currentState!.validate()) {
                           context.read<ComposeIssuanceBloc>().add(
                                 FinalizeTransactionEvent(
-                                  composeIssuance: widget
-                                      .composeIssuanceState.composeIssuance,
+                                  composeIssuance: widget.composeIssuance,
                                   fee: fee,
                                 ),
                               );

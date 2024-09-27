@@ -19,6 +19,8 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/submit_base_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -62,7 +64,10 @@ class ComposeIssuanceBloc
     required this.analyticsService,
   }) : super(ComposeIssuanceState(
             submitState: const SubmitInitial(),
-            feeOption: FeeOption.Medium())) {
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            quantity: '')) {
     on<ChangeFeeOption>((event, emit) async {
       final value = event.value;
       emit(state.copyWith(feeOption: value));
@@ -178,11 +183,11 @@ class ComposeIssuanceBloc
         logger.d('rawTx: ${issuanceActual.rawtransaction}');
 
         emit(state.copyWith(
-            submitState: SubmitComposing(SubmitStateComposingIssuance(
+            submitState: SubmitComposingIssuance(
                 composeIssuance: issuanceActual,
                 virtualSize: virtualSize,
                 fee: totalFee,
-                feeRate: feeRate))));
+                feeRate: feeRate)));
       } catch (error) {
         emit(state.copyWith(
             submitState:
@@ -261,7 +266,9 @@ class ComposeIssuanceBloc
 
         logger.d('issue broadcasted txHash: $txHash');
 
-        emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex)));
+        emit(state.copyWith(
+            submitState:
+                SubmitSuccess(transactionHex: txHash, sourceAddress: source)));
 
         analyticsService.trackEvent('broadcast_tx_issue');
       } catch (error) {
