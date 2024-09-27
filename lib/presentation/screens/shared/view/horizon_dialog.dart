@@ -107,7 +107,21 @@ class HorizonDialog extends StatelessWidget {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        builder: (BuildContext context) => body,
+        builder: (BuildContext context) => DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, controller) => SingleChildScrollView(
+            controller: controller,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: body,
+            ),
+          ),
+        ),
       );
     } else {
       showDialog(

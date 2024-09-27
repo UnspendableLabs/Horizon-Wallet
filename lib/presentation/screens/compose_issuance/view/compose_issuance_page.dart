@@ -455,29 +455,58 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
           break;
       }
     }, builder: (context, state) {
-      return switch (state.submitState) {
-        SubmitInitial(error: var error, loading: var loading) =>
-          _buildInitialForm(context, state, error, loading),
-        SubmitError(error: var msg) => Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SelectableText('An error occurred: $msg'),
-          ),
-        SubmitComposing(
-          submitStateComposingIssuance: var composeIssuanceState
-        ) =>
-          ComposeIssuanceConfirmationPage(
-            composeIssuanceState: composeIssuanceState,
-            address: widget.address,
-          ),
-        SubmitFinalizing(
-          composeIssuance: var composeIssuance,
-          fee: var fee,
-          loading: var loading,
-          error: var error,
-        ) =>
-          _buildFinalizingForm(context, composeIssuance, fee, loading, error),
-        SubmitSuccess() => const SizedBox.shrink(),
-      };
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: switch (state.submitState) {
+                          SubmitInitial(
+                            error: var error,
+                            loading: var loading
+                          ) =>
+                            _buildInitialForm(context, state, error, loading),
+                          SubmitError(error: var msg) => Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: SelectableText('An error occurred: $msg'),
+                            ),
+                          SubmitComposing(
+                            submitStateComposingIssuance:
+                                var composeIssuanceState
+                          ) =>
+                            ComposeIssuanceConfirmationPage(
+                              composeIssuanceState: composeIssuanceState,
+                              address: widget.address,
+                            ),
+                          SubmitFinalizing(
+                            composeIssuance: var composeIssuance,
+                            fee: var fee,
+                            loading: var loading,
+                            error: var error,
+                          ) =>
+                            _buildFinalizingForm(
+                                context, composeIssuance, fee, loading, error),
+                          SubmitSuccess() => const SizedBox.shrink(),
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
     });
   }
 }
@@ -510,128 +539,133 @@ class _ComposeIssuanceConfirmationPageState
   @override
   Widget build(BuildContext context) {
     final issueParams = widget.composeIssuanceState.composeIssuance.params;
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Please review your transaction details.',
-              style: TextStyle(
-                  fontSize: 16.0,
-                  color: mainTextWhite,
-                  fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Source Address",
-              controller: TextEditingController(text: issueParams.source),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Token name",
-              controller: TextEditingController(
-                  text: widget.composeIssuanceState.composeIssuance.name),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Quantity",
-              controller: TextEditingController(
-                  text: widget.composeIssuanceState.composeIssuance.params
-                      .quantityNormalized),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            widget.composeIssuanceState.composeIssuance.params.description != ''
-                ? HorizonTextFormField(
-                    label: "Description",
-                    controller: TextEditingController(
-                        text: widget.composeIssuanceState.composeIssuance.params
-                            .description),
-                    enabled: false,
-                  )
-                : const SizedBox.shrink(),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Divisible",
-              controller: TextEditingController(
-                  text: issueParams.divisible == true ? 'true' : 'false'),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Lock",
-              controller: TextEditingController(
-                  text: issueParams.lock == true ? 'true' : 'false'),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Reset",
-              controller: TextEditingController(
-                  text: issueParams.reset == true ? 'true' : 'false'),
-              enabled: false,
-            ),
-            HorizonTextFormField(
-              label: "Fee",
-              controller: TextEditingController(
-                  text:
-                      "${widget.composeIssuanceState.fee.toString()} sats ( ${widget.composeIssuanceState.feeRate} sats/vbyte )"),
-              enabled: false,
-            ),
-            Column(
-              children: [
-                const SizedBox(height: 16.0),
-                // FeeEstimation(
-                //     feeMap: widget.composeIssuanceState.feeEstimates,
-                //     virtualSize: widget.composeIssuanceState.virtualSize,
-                //     onChanged: (v) {
-                //       setState(() {
-                //         fee = v.toInt();
-                //       });
-                //     }),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Divider(
-                    thickness: 1.0,
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                'Please review your transaction details.',
+                style: TextStyle(
+                    fontSize: 16.0,
+                    color: mainTextWhite,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16.0),
+              HorizonTextFormField(
+                label: "Source Address",
+                controller: TextEditingController(text: issueParams.source),
+                enabled: false,
+              ),
+              const SizedBox(height: 16.0),
+              HorizonTextFormField(
+                label: "Token name",
+                controller: TextEditingController(
+                    text: widget.composeIssuanceState.composeIssuance.name),
+                enabled: false,
+              ),
+              const SizedBox(height: 16.0),
+              HorizonTextFormField(
+                label: "Quantity",
+                controller: TextEditingController(
+                    text: widget.composeIssuanceState.composeIssuance.params
+                        .quantityNormalized),
+                enabled: false,
+              ),
+              const SizedBox(height: 16.0),
+              widget.composeIssuanceState.composeIssuance.params.description !=
+                      ''
+                  ? HorizonTextFormField(
+                      label: "Description",
+                      controller: TextEditingController(
+                          text: widget.composeIssuanceState.composeIssuance
+                              .params.description),
+                      enabled: false,
+                    )
+                  : const SizedBox.shrink(),
+              const SizedBox(height: 16.0),
+              HorizonTextFormField(
+                label: "Divisible",
+                controller: TextEditingController(
+                    text: issueParams.divisible == true ? 'true' : 'false'),
+                enabled: false,
+              ),
+              const SizedBox(height: 16.0),
+              HorizonTextFormField(
+                label: "Lock",
+                controller: TextEditingController(
+                    text: issueParams.lock == true ? 'true' : 'false'),
+                enabled: false,
+              ),
+              const SizedBox(height: 16.0),
+              HorizonTextFormField(
+                label: "Reset",
+                controller: TextEditingController(
+                    text: issueParams.reset == true ? 'true' : 'false'),
+                enabled: false,
+              ),
+              HorizonTextFormField(
+                label: "Fee",
+                controller: TextEditingController(
+                    text:
+                        "${widget.composeIssuanceState.fee.toString()} sats ( ${widget.composeIssuanceState.feeRate} sats/vbyte )"),
+                enabled: false,
+              ),
+              Column(
+                children: [
+                  const SizedBox(height: 16.0),
+                  // FeeEstimation(
+                  //     feeMap: widget.composeIssuanceState.feeEstimates,
+                  //     virtualSize: widget.composeIssuanceState.virtualSize,
+                  //     onChanged: (v) {
+                  //       setState(() {
+                  //         fee = v.toInt();
+                  //       });
+                  //     }),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Divider(
+                      thickness: 1.0,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    HorizonCancelButton(
-                      onPressed: () {
-                        context
-                            .read<ComposeIssuanceBloc>()
-                            .add(FetchFormData(currentAddress: widget.address));
-                      },
-                      buttonText: 'BACK',
-                    ),
-                    HorizonContinueButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
+                  const SizedBox(height: 16.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      HorizonCancelButton(
+                        onPressed: () {
                           context.read<ComposeIssuanceBloc>().add(
-                                FinalizeTransactionEvent(
-                                  composeIssuance: widget
-                                      .composeIssuanceState.composeIssuance,
-                                  fee: fee,
-                                ),
-                              );
-                        }
-                      },
-                      buttonText: 'CONTINUE',
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                              FetchFormData(currentAddress: widget.address));
+                        },
+                        buttonText: 'BACK',
+                      ),
+                      HorizonContinueButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            context.read<ComposeIssuanceBloc>().add(
+                                  FinalizeTransactionEvent(
+                                    composeIssuance: widget
+                                        .composeIssuanceState.composeIssuance,
+                                    fee: fee,
+                                  ),
+                                );
+                          }
+                        },
+                        buttonText: 'CONTINUE',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

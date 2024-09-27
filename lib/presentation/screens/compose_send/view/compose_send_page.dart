@@ -273,28 +273,34 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           break;
       }
     }, builder: (context, state) {
-      return switch (state.submitState) {
-        SubmitInitial(error: var error, loading: var loading) =>
-          _buildInitialForm(context, state, error, loading),
-        // TODO: invalid
-        SubmitError(error: var msg) => Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SelectableText('An error occurred: $msg'),
+      return SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        SubmitComposing(submitStateComposingSend: var composeSendState) =>
-          ConfirmationPage(
-            composeSendState: composeSendState,
-            address: widget.address,
-          ),
-        SubmitFinalizing(
-          composeSend: var composeSend,
-          fee: var fee,
-          loading: var loading,
-          error: var error,
-        ) =>
-          _buildFinalizingForm(context, composeSend, fee, loading, error),
-        SubmitSuccess() => const SizedBox.shrink(),
-      };
+          child: switch (state.submitState) {
+            SubmitInitial(error: var error, loading: var loading) =>
+              _buildInitialForm(context, state, error, loading),
+            SubmitError(error: var msg) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SelectableText('An error occurred: $msg'),
+              ),
+            SubmitComposing(submitStateComposingSend: var composeSendState) =>
+              ConfirmationPage(
+                composeSendState: composeSendState,
+                address: widget.address,
+              ),
+            SubmitFinalizing(
+              composeSend: var composeSend,
+              fee: var fee,
+              loading: var loading,
+              error: var error,
+            ) =>
+              _buildFinalizingForm(context, composeSend, fee, loading, error),
+            SubmitSuccess() => const SizedBox.shrink(),
+          },
+        ),
+      );
     });
   }
 
@@ -726,96 +732,106 @@ class ConfirmationPageState extends State<ConfirmationPage> {
   @override
   Widget build(BuildContext context) {
     final sendParams = widget.composeSendState.composeSend.params;
-    return Form(
-      key: _formKey,
+    return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Please review your transaction details.',
-              style: TextStyle(
-                  fontSize: 16.0,
-                  color: mainTextWhite,
-                  fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Source Address",
-              controller: TextEditingController(text: sendParams.source),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Destination Address",
-              controller: TextEditingController(text: sendParams.destination),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                Expanded(
-                  child: HorizonTextFormField(
-                    label: "Quantity",
-                    controller: TextEditingController(
-                        text: sendParams.quantityNormalized),
-                    enabled: false,
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const Text(
+                  'Please review your transaction details.',
+                  style: TextStyle(
+                      fontSize: 16.0,
+                      color: mainTextWhite,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16.0),
+                HorizonTextFormField(
+                  label: "Source Address",
+                  controller: TextEditingController(text: sendParams.source),
+                  enabled: false,
+                ),
+                const SizedBox(height: 16.0),
+                HorizonTextFormField(
+                  label: "Destination Address",
+                  controller:
+                      TextEditingController(text: sendParams.destination),
+                  enabled: false,
+                ),
+                const SizedBox(height: 16.0),
+                Row(
+                  children: [
+                    Expanded(
+                      child: HorizonTextFormField(
+                        label: "Quantity",
+                        controller: TextEditingController(
+                            text: sendParams.quantityNormalized),
+                        enabled: false,
+                      ),
+                    ),
+                    const SizedBox(width: 16.0), // Spacing between inputs
+                    Expanded(
+                      child: HorizonTextFormField(
+                        label: "Asset",
+                        controller:
+                            TextEditingController(text: sendParams.asset),
+                        enabled: false,
+                      ),
+                    ),
+                  ],
+                ),
+                HorizonTextFormField(
+                  label: "Fee",
+                  controller: TextEditingController(
+                      text:
+                          "${widget.composeSendState.fee.toString()} sats ( ${widget.composeSendState.feeRate} sats/vbyte )"),
+                  enabled: false,
+                ),
+                const SizedBox(height: 16.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Divider(
+                    thickness: 1.0,
                   ),
                 ),
-                const SizedBox(width: 16.0), // Spacing between inputs
-                Expanded(
-                  child: HorizonTextFormField(
-                    label: "Asset",
-                    controller: TextEditingController(text: sendParams.asset),
-                    enabled: false,
-                  ),
+                const SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    HorizonCancelButton(
+                      onPressed: () {
+                        context
+                            .read<ComposeSendBloc>()
+                            .add(FetchFormData(currentAddress: widget.address));
+                      },
+                      buttonText: 'BACK',
+                    ),
+                    HorizonContinueButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          context.read<ComposeSendBloc>().add(
+                                FinalizeTransactionEvent(
+                                  composeSend:
+                                      widget.composeSendState.composeSend,
+                                  fee: fee,
+                                ),
+                              );
+                        }
+                      },
+                      buttonText: 'CONTINUE',
+                    ),
+                  ],
                 ),
               ],
             ),
-            HorizonTextFormField(
-              label: "Fee",
-              controller: TextEditingController(
-                  text:
-                      "${widget.composeSendState.fee.toString()} sats ( ${widget.composeSendState.feeRate} sats/vbyte )"),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Divider(
-                thickness: 1.0,
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                HorizonCancelButton(
-                  onPressed: () {
-                    context
-                        .read<ComposeSendBloc>()
-                        .add(FetchFormData(currentAddress: widget.address));
-                  },
-                  buttonText: 'BACK',
-                ),
-                HorizonContinueButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      context.read<ComposeSendBloc>().add(
-                            FinalizeTransactionEvent(
-                              composeSend: widget.composeSendState.composeSend,
-                              fee: fee,
-                            ),
-                          );
-                    }
-                  },
-                  buttonText: 'CONTINUE',
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );

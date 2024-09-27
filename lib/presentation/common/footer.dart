@@ -16,7 +16,7 @@ class Footer extends StatelessWidget {
         color: isDarkTheme ? darkNavyDarkTheme : greyLightTheme,
       ),
       child: SizedBox(
-        height: 30,
+        height: 35,
         child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
