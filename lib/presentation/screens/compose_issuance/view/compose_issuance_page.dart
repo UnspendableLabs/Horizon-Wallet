@@ -22,6 +22,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
@@ -633,8 +634,9 @@ class _ComposeIssuanceConfirmationPageState
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           context.read<ComposeIssuanceBloc>().add(
-                                FinalizeTransactionEvent(
-                                  composeIssuance: widget.composeIssuance,
+                                FinalizeTransactionEvent<
+                                    ComposeIssuanceVerbose>(
+                                  composeTransaction: widget.composeIssuance,
                                   fee: fee,
                                 ),
                               );

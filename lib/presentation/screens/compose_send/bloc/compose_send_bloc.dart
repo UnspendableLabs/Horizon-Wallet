@@ -24,12 +24,13 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_max_send_quantity.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:logger/logger.dart';
 
-class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
+class ComposeSendBloc extends Bloc<ComposeBaseEvent, ComposeSendState> {
   final Logger logger = Logger();
   final AddressRepository addressRepository;
   final BalanceRepository balanceRepository;
@@ -312,12 +313,12 @@ class ComposeSendBloc extends Bloc<ComposeSendEvent, ComposeSendState> {
       }
     });
 
-    on<FinalizeTransactionEvent>((event, emit) async {
+    on<FinalizeTransactionEvent<ComposeSend>>((event, emit) async {
       emit(state.copyWith(
           submitState: SubmitFinalizing<ComposeSend>(
               loading: false,
               error: null,
-              composeTransaction: event.composeSend,
+              composeTransaction: event.composeTransaction,
               fee: event.fee)));
     });
 

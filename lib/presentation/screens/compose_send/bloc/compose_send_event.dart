@@ -1,14 +1,7 @@
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
 
-abstract class ComposeSendEvent {}
-
-class FetchFormData extends ComposeSendEvent {
-  Address currentAddress;
-  FetchFormData({required this.currentAddress});
-}
+abstract class ComposeSendEvent extends ComposeBaseEvent {}
 
 class ComposeTransactionEvent extends ComposeSendEvent {
   final String sourceAddress;
@@ -21,24 +14,6 @@ class ComposeTransactionEvent extends ComposeSendEvent {
     required this.destinationAddress,
     required this.quantity,
     required this.asset,
-  });
-}
-
-class FinalizeTransactionEvent extends ComposeSendEvent {
-  final ComposeSend composeSend;
-  final int fee;
-
-  FinalizeTransactionEvent({
-    required this.composeSend,
-    required this.fee,
-  });
-}
-
-class SignAndBroadcastTransactionEvent extends ComposeSendEvent {
-  final String password;
-
-  SignAndBroadcastTransactionEvent({
-    required this.password,
   });
 }
 
@@ -61,11 +36,6 @@ class ToggleSendMaxEvent extends ComposeSendEvent {
   final bool value;
 
   ToggleSendMaxEvent({required this.value});
-}
-
-class ChangeFeeOption extends ComposeSendEvent {
-  final FeeOption value;
-  ChangeFeeOption({required this.value});
 }
 
 // TODO: smell

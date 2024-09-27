@@ -19,6 +19,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
@@ -28,8 +29,7 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:logger/logger.dart';
 
-class ComposeIssuanceBloc
-    extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
+class ComposeIssuanceBloc extends Bloc<ComposeBaseEvent, ComposeIssuanceState> {
   final Logger logger = Logger();
   final AddressRepository addressRepository;
   final BalanceRepository balanceRepository;
@@ -194,12 +194,12 @@ class ComposeIssuanceBloc
       }
     });
 
-    on<FinalizeTransactionEvent>((event, emit) async {
+    on<FinalizeTransactionEvent<ComposeIssuanceVerbose>>((event, emit) async {
       emit(state.copyWith(
           submitState: SubmitFinalizing<ComposeIssuanceVerbose>(
         loading: false,
         error: null,
-        composeTransaction: event.composeIssuance,
+        composeTransaction: event.composeTransaction,
         fee: event.fee,
       )));
     });
