@@ -68,8 +68,18 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
             feeState: const FeeState.initial(),
             quantity: '')) {
     // Event handlers specific to issuance
-    on<ComposeTransactionEvent>(_onComposeTransactionEvent);
     on<FetchBalances>(_onFetchBalances);
+  }
+
+  _onFetchBalances(FetchBalances event, emit) async {
+    emit(state.copyWith(balancesState: const BalancesState.loading()));
+    try {
+      List<Balance> balances =
+          await balanceRepository.getBalancesForAddress(event.address);
+      emit(state.copyWith(balancesState: BalancesState.success(balances)));
+    } catch (e) {
+      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
+    }
   }
 
   @override
@@ -115,18 +125,11 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     ));
   }
 
-  _onFetchBalances(FetchBalances event, emit) async {
-    emit(state.copyWith(balancesState: const BalancesState.loading()));
-    try {
-      List<Balance> balances =
-          await balanceRepository.getBalancesForAddress(event.address);
-      emit(state.copyWith(balancesState: BalancesState.success(balances)));
-    } catch (e) {
-      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-    }
-  }
+  @override
+  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+    if (event.params is! ComposeIssuanceEventParams) return;
 
-  _onComposeTransactionEvent(ComposeTransactionEvent event, emit) async {
+    final params = event.params as ComposeIssuanceEventParams;
     FeeEstimates? feeEstimates =
         state.feeState.maybeWhen(success: (value) => value, orElse: () => null);
 
@@ -136,19 +139,18 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     emit(state.copyWith(submitState: const SubmitInitial(loading: true)));
 
     final source = event.sourceAddress;
-    final quantity = event.quantity;
-    final name = event.name;
-    final divisible = event.divisible;
-    final lock = event.lock;
-    final reset = event.reset;
-    final description = event.description;
+    final quantity = params.quantity;
+    final name = params.name;
+    final divisible = params.divisible;
+    final lock = params.lock;
+    final reset = params.reset;
+    final description = params.description;
     final feeRate = switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,
       FeeOption.Medium() => feeEstimates.medium,
       FeeOption.Slow() => feeEstimates.slow,
       FeeOption.Custom(fee: var fee) => fee,
     };
-    // final transferDestination = event.transferDestination;
 
     try {
       final utxos = await utxoRepository.getUnspentForAddress(source);

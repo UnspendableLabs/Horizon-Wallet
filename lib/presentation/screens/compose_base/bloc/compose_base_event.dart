@@ -13,6 +13,16 @@ class ChangeFeeOption extends ComposeBaseEvent {
   ChangeFeeOption({required this.value});
 }
 
+class ComposeTransactionEvent<T> extends ComposeBaseEvent {
+  final String sourceAddress;
+  final T params;
+
+  ComposeTransactionEvent({
+    required this.sourceAddress,
+    required this.params,
+  });
+}
+
 class FinalizeTransactionEvent<T> extends ComposeBaseEvent {
   final T composeTransaction;
   final int fee;

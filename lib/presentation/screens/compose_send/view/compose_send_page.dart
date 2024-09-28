@@ -538,9 +538,11 @@ class ComposeSendPageState extends State<ComposeSendPage> {
 
         context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
               sourceAddress: widget.address.address,
-              destinationAddress: destinationAddressController.text,
-              asset: asset!,
-              quantity: quantity,
+              params: ComposeSendEventParams(
+                destinationAddress: destinationAddressController.text,
+                asset: asset!,
+                quantity: quantity,
+              ),
             ));
       }
     }

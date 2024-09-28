@@ -5,6 +5,7 @@ import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_stat
 abstract interface class ComposeBaseBlocInterface<T extends ComposeStateBase> {
   void onFetchFormData(FetchFormData event, Emitter<T> emit);
   void onChangeFeeOption(ChangeFeeOption event, Emitter<T> emit);
+  void onComposeTransaction(ComposeTransactionEvent event, Emitter<T> emit);
   void onFinalizeTransaction(FinalizeTransactionEvent event, Emitter<T> emit);
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, Emitter<T> emit);
@@ -15,6 +16,7 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
   ComposeBaseBloc(super.initialState) {
     on<FetchFormData>(onFetchFormData);
     on<ChangeFeeOption>(onChangeFeeOption);
+    on<ComposeTransactionEvent>(onComposeTransaction);
     on<FinalizeTransactionEvent>(onFinalizeTransaction);
     on<SignAndBroadcastTransactionEvent>(onSignAndBroadcastTransaction);
   }
@@ -25,6 +27,8 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
   @override
   void onChangeFeeOption(ChangeFeeOption event, Emitter<T> emit);
 
+  @override
+  void onComposeTransaction(ComposeTransactionEvent event, Emitter<T> emit);
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, Emitter<T> emit);
 

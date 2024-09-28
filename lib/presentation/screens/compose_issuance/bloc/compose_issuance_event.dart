@@ -7,8 +7,7 @@ class FetchBalances extends ComposeIssuanceEvent {
   FetchBalances({required this.address});
 }
 
-class ComposeTransactionEvent extends ComposeIssuanceEvent {
-  final String sourceAddress;
+class ComposeIssuanceEventParams {
   final String name;
   final int quantity;
   final String description;
@@ -16,8 +15,7 @@ class ComposeTransactionEvent extends ComposeIssuanceEvent {
   final bool lock;
   final bool reset;
 
-  ComposeTransactionEvent({
-    required this.sourceAddress,
+  ComposeIssuanceEventParams({
     required this.name,
     required this.quantity,
     required this.description,

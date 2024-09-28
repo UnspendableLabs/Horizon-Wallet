@@ -202,12 +202,14 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
         context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
               sourceAddress: widget.address.address,
-              name: nameController.text,
-              quantity: quantity,
-              description: descriptionController.text,
-              divisible: isDivisible,
-              lock: isLocked,
-              reset: isReset,
+              params: ComposeIssuanceEventParams(
+                name: nameController.text,
+                quantity: quantity,
+                description: descriptionController.text,
+                divisible: isDivisible,
+                lock: isLocked,
+                reset: isReset,
+              ),
             ));
       }
     }

@@ -3,14 +3,12 @@ import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_even
 
 abstract class ComposeSendEvent extends ComposeBaseEvent {}
 
-class ComposeTransactionEvent extends ComposeSendEvent {
-  final String sourceAddress;
+class ComposeSendEventParams {
   final String destinationAddress;
   final int quantity;
   final String asset;
 
-  ComposeTransactionEvent({
-    required this.sourceAddress,
+  ComposeSendEventParams({
     required this.destinationAddress,
     required this.quantity,
     required this.asset,

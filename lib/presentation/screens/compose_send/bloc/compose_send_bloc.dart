@@ -75,8 +75,87 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     on<ChangeAsset>(_onChangeAsset);
     on<ChangeDestination>(_onChangeDestination);
     on<ChangeQuantity>(_onChangeQuantity);
-    on<ComposeTransactionEvent>(_onComposeTransactionEvent);
   }
+
+  _onChangeAsset(event, emit) async {
+    final asset = event.asset;
+    emit(state.copyWith(
+        submitState: const SubmitInitial(),
+        asset: asset,
+        sendMax: false,
+        quantity: "",
+        composeSendError: null,
+        feeOption: FeeOption.Medium()));
+  }
+
+  _onChangeDestination(event, emit) async {
+    final destination = event.value;
+    emit(state.copyWith(
+        submitState: const SubmitInitial(),
+        destination: destination,
+        composeSendError: null));
+  }
+
+  _onChangeQuantity(event, emit) async {
+    final quantity = event.value;
+
+    emit(state.copyWith(
+        submitState: const SubmitInitial(),
+        quantity: quantity,
+        sendMax: false,
+        composeSendError: null,
+        maxValue: const MaxValueState.initial()));
+  }
+
+  _onToggleSendMaxEvent(event, emit) async {
+    // return early if fee estimates haven't loaded
+    FeeEstimates? feeEstimates =
+        state.feeState.maybeWhen(success: (value) => value, orElse: () => null);
+    if (feeEstimates == null) {
+      return;
+    }
+
+    final value = event.value;
+    emit(state.copyWith(
+        submitState: const SubmitInitial(),
+        sendMax: value,
+        composeSendError: null));
+
+    if (!value) {
+      emit(state.copyWith(maxValue: const MaxValueState.initial()));
+    }
+
+    emit(state.copyWith(maxValue: const MaxValueState.loading()));
+
+    try {
+      final source = state.source!.address;
+      final asset = state.asset ?? "BTC";
+      final feeRate = switch (state.feeOption) {
+        FeeOption.Fast() => feeEstimates.fast,
+        FeeOption.Medium() => feeEstimates.medium,
+        FeeOption.Slow() => feeEstimates.slow,
+        FeeOption.Custom(fee: var fee) => fee,
+      };
+
+      final max = await GetMaxSendQuantity(
+        source: source,
+        // destination: state.destination!,
+        asset: asset,
+        feeRate: feeRate,
+        balanceRepository: balanceRepository,
+        composeRepository: composeRepository,
+        transactionService: transactionService,
+      ).call();
+
+      emit(state.copyWith(maxValue: MaxValueState.success(max)));
+    } catch (e) {
+      emit(state.copyWith(
+          sendMax: false,
+          composeSendError: "Insufficient funds",
+          maxValue: MaxValueState.error(e.toString())));
+    }
+  }
+
   @override
   onChangeFeeOption(event, emit) async {
     final value = event.value;
@@ -130,85 +209,6 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     }
   }
 
-  _onToggleSendMaxEvent(event, emit) async {
-    // return early if fee estimates haven't loaded
-    FeeEstimates? feeEstimates =
-        state.feeState.maybeWhen(success: (value) => value, orElse: () => null);
-    if (feeEstimates == null) {
-      return;
-    }
-
-    final value = event.value;
-    emit(state.copyWith(
-        submitState: const SubmitInitial(),
-        sendMax: value,
-        composeSendError: null));
-
-    if (!value) {
-      emit(state.copyWith(maxValue: const MaxValueState.initial()));
-    }
-
-    emit(state.copyWith(maxValue: const MaxValueState.loading()));
-
-    try {
-      final source = state.source!.address;
-      final asset = state.asset ?? "BTC";
-      final feeRate = switch (state.feeOption) {
-        FeeOption.Fast() => feeEstimates.fast,
-        FeeOption.Medium() => feeEstimates.medium,
-        FeeOption.Slow() => feeEstimates.slow,
-        FeeOption.Custom(fee: var fee) => fee,
-      };
-
-      final max = await GetMaxSendQuantity(
-        source: source,
-        // destination: state.destination!,
-        asset: asset,
-        feeRate: feeRate,
-        balanceRepository: balanceRepository,
-        composeRepository: composeRepository,
-        transactionService: transactionService,
-      ).call();
-
-      emit(state.copyWith(maxValue: MaxValueState.success(max)));
-    } catch (e) {
-      emit(state.copyWith(
-          sendMax: false,
-          composeSendError: "Insufficient funds",
-          maxValue: MaxValueState.error(e.toString())));
-    }
-  }
-
-  _onChangeAsset(event, emit) async {
-    final asset = event.asset;
-    emit(state.copyWith(
-        submitState: const SubmitInitial(),
-        asset: asset,
-        sendMax: false,
-        quantity: "",
-        composeSendError: null,
-        feeOption: FeeOption.Medium()));
-  }
-
-  _onChangeDestination(event, emit) async {
-    final destination = event.value;
-    emit(state.copyWith(
-        submitState: const SubmitInitial(),
-        destination: destination,
-        composeSendError: null));
-  }
-
-  _onChangeQuantity(event, emit) async {
-    final quantity = event.value;
-
-    emit(state.copyWith(
-        submitState: const SubmitInitial(),
-        quantity: quantity,
-        sendMax: false,
-        composeSendError: null,
-        maxValue: const MaxValueState.initial()));
-  }
-
   @override
   onFetchFormData(event, emit) async {
     emit(state.copyWith(
@@ -248,7 +248,21 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
         submitState: const SubmitInitial()));
   }
 
-  _onComposeTransactionEvent(event, emit) async {
+  @override
+  onFinalizeTransaction(event, emit) async {
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeSend>(
+            loading: false,
+            error: null,
+            composeTransaction: event.composeTransaction,
+            fee: event.fee)));
+  }
+
+  @override
+  onComposeTransaction(event, emit) async {
+    if (event.params is! ComposeSendEventParams) return;
+
+    final params = event.params as ComposeSendEventParams;
     FeeEstimates? feeEstimates =
         state.feeState.maybeWhen(success: (value) => value, orElse: () => null);
 
@@ -259,9 +273,9 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
     try {
       final source = event.sourceAddress;
-      final destination = event.destinationAddress;
-      final quantity = event.quantity;
-      final asset = event.asset;
+      final destination = params.destinationAddress;
+      final quantity = params.quantity;
+      final asset = params.asset;
       final feeRate = switch (state.feeOption) {
         FeeOption.Fast() => feeEstimates.fast,
         FeeOption.Medium() => feeEstimates.medium,
@@ -307,16 +321,6 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       emit(state.copyWith(
           submitState: SubmitInitial(loading: false, error: error.toString())));
     }
-  }
-
-  @override
-  onFinalizeTransaction(event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSend>(
-            loading: false,
-            error: null,
-            composeTransaction: event.composeTransaction,
-            fee: event.fee)));
   }
 
   @override
