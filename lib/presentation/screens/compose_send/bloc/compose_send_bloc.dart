@@ -1,12 +1,8 @@
-import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -25,6 +21,8 @@ import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/screens/compose_base/shared/compose_tx.dart';
+import 'package:horizon/presentation/screens/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:logger/logger.dart';
@@ -260,167 +258,37 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    if (event.params is! ComposeSendEventParams) return;
-
-    final params = event.params as ComposeSendEventParams;
-    FeeEstimates? feeEstimates =
-        state.feeState.maybeWhen(success: (value) => value, orElse: () => null);
-
-    if (feeEstimates == null) {
-      return;
-    }
-    emit(state.copyWith(submitState: const SubmitInitial(loading: true)));
-
-    try {
-      final source = event.sourceAddress;
-      final destination = params.destinationAddress;
-      final quantity = params.quantity;
-      final asset = params.asset;
-      final feeRate = switch (state.feeOption) {
-        FeeOption.Fast() => feeEstimates.fast,
-        FeeOption.Medium() => feeEstimates.medium,
-        FeeOption.Slow() => feeEstimates.slow,
-        FeeOption.Custom(fee: var fee) => fee,
-      };
-
-      final utxos = await utxoRepository.getUnspentForAddress(source);
-      final inputsSet = utxos.isEmpty ? null : utxos;
-
-      // this is a dummy transaction that helps us to compute
-      // the transaction virtual size which we multiply
-      // by sats / vbyte to get the final fee
-      final send = await composeRepository.composeSendVerbose(
-          // this should be sped up because it doesn't need to pull all utxos
-          source,
-          destination,
-          asset,
-          quantity,
-          true,
-          1,
-          null,
-          inputsSet);
-
-      final virtualSize =
-          transactionService.getVirtualSize(send.rawtransaction);
-
-      final int totalFee = virtualSize * feeRate;
-
-      final sendActual = await composeRepository.composeSendVerbose(source,
-          destination, asset, quantity, true, totalFee, null, inputsSet);
-
-      logger.d('rawTx: ${sendActual.rawtransaction}');
-
-      emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeSend>(
-        composeTransaction: sendActual,
-        virtualSize: virtualSize,
-        fee: totalFee,
-        feeRate: feeRate,
-      )));
-    } catch (error) {
-      emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: error.toString())));
-    }
+    await composeTransaction<ComposeSend, ComposeSendState,
+        ComposeSendEventParams>(
+      state: state,
+      emit: emit,
+      event: event,
+      utxoRepository: utxoRepository,
+      composeRepository: composeRepository,
+      transactionService: transactionService,
+      logger: logger,
+    );
   }
 
   @override
   onSignAndBroadcastTransaction(event, emit) async {
-    try {
-      if (state.submitState is! SubmitFinalizing<ComposeSend>) {
-        return;
-      }
-
-      final sendParams = (state.submitState as SubmitFinalizing<ComposeSend>)
-          .composeTransaction;
-      final fee = (state.submitState as SubmitFinalizing<ComposeSend>).fee;
-
-      emit(state.copyWith(
-          submitState: SubmitFinalizing<ComposeSend>(
-              loading: true,
-              error: null,
-              composeTransaction: sendParams,
-              fee: fee)));
-
-      final source = sendParams.params.source;
-      final destination = sendParams.params.destination;
-      final quantity = sendParams.params.quantity;
-      final asset = sendParams.params.asset;
-      final password = event.password;
-      final utxos = await utxoRepository.getUnspentForAddress(source);
-
-      final rawTx = sendParams.rawtransaction;
-
-      Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
-
-      Address? address = await addressRepository.getAddress(source);
-      Account? account =
-          await accountRepository.getAccountByUuid(address!.accountUuid);
-      Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
-      String? decryptedRootPrivKey;
-      try {
-        decryptedRootPrivKey =
-            await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
-      } catch (e) {
-        throw Exception("Incorrect password");
-      }
-      String addressPrivKey = await addressService.deriveAddressPrivateKey(
-          rootPrivKey: decryptedRootPrivKey,
-          chainCodeHex: wallet.chainCodeHex,
-          purpose: account.purpose,
-          coin: account.coinType,
-          account: account.accountIndex,
-          change: '0',
-          index: address.index,
-          importFormat: account.importFormat);
-
-      String txHex = await transactionService.signTransaction(
-          rawTx, addressPrivKey, source, utxoMap);
-
-      String txHash = await bitcoindService.sendrawtransaction(txHex);
-
-      // for now we don't track btc sends
-      if (asset.toLowerCase() != 'btc') {
-        TransactionInfoVerbose txInfo =
-            await transactionRepository.getInfoVerbose(txHex);
-
-        await transactionLocalRepository.insertVerbose(txInfo.copyWith(
-            hash: txHash,
-            source:
-                source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
-            ));
-      } else {
-        // TODO: this is a bit of a hack
-        transactionLocalRepository.insertVerbose(TransactionInfoVerbose(
-          hash: txHash,
-          source: source,
-          destination: destination,
-          btcAmount: quantity,
-          domain: TransactionInfoDomainLocal(
-              raw: txHex, submittedAt: DateTime.now()),
-          btcAmountNormalized: quantity.toString(), //TODO: this is temporary
-          fee: 0, // dummy values
-          data: "",
-        ));
-      }
-
-      logger.d('send broadcasted txHash: $txHash');
-
-      emit(state.copyWith(
-          submitState:
-              SubmitSuccess(transactionHex: txHash, sourceAddress: source)));
-
-      analyticsService.trackEvent('broadcast_tx_send');
-    } catch (error) {
-      final sendParams = (state.submitState as SubmitFinalizing<ComposeSend>)
-          .composeTransaction;
-      final fee = (state.submitState as SubmitFinalizing<ComposeSend>).fee;
-
-      emit(state.copyWith(
-          submitState: SubmitFinalizing<ComposeSend>(
-              loading: false,
-              error: error.toString(),
-              composeTransaction: sendParams,
-              fee: fee)));
-    }
+    await signAndBroadcastTransaction<ComposeSend, ComposeSendState>(
+      state: state,
+      emit: emit,
+      password: event.password,
+      addressRepository: addressRepository,
+      accountRepository: accountRepository,
+      walletRepository: walletRepository,
+      utxoRepository: utxoRepository,
+      encryptionService: encryptionService,
+      addressService: addressService,
+      transactionService: transactionService,
+      bitcoindService: bitcoindService,
+      composeRepository: composeRepository,
+      transactionRepository: transactionRepository,
+      transactionLocalRepository: transactionLocalRepository,
+      analyticsService: analyticsService,
+      logger: logger,
+    );
   }
 }
