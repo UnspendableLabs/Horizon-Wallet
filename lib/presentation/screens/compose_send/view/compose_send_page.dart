@@ -31,9 +31,6 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_even
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
-import 'package:horizon/presentation/screens/shared/view/horizon_cancel_button.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_continue_button.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -92,7 +89,6 @@ class ComposeSendPage extends StatefulWidget {
 }
 
 class ComposeSendPageState extends State<ComposeSendPage> {
-  final _formKey = GlobalKey<FormState>();
   final passwordFormKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
@@ -163,9 +159,10 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       return ComposeBasePage<ComposeSendBloc, ComposeSendState>(
         address: widget.address,
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-        buildInitialForm: _buildInitialForm,
-        buildFinalizingForm: (context, composeSend, fee, loading, error) =>
-            _buildFinalizingForm(context, composeSend, fee, loading, error),
+        buildInitialFormFields: (context, state, formKey, loading, error) =>
+            _buildInitialFormFields(context, state, formKey, loading, error),
+        onInitialCancel: (context) => _handleInitialSubmit(),
+        onInitialSubmit: (context, state) => _handleInitialSubmit(),
         buildConfirmationFormFields: _buildConfirmationDetails,
         onConfirmationBack: (context) => {
           context
@@ -180,8 +177,120 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                 ),
               )
         },
+        onFinalizeSubmit: (context, password) => {
+          context.read<ComposeSendBloc>().add(
+                SignAndBroadcastTransactionEvent(
+                  password: password,
+                ),
+              )
+        },
+        onFinalizeCancel: (context) {
+          context
+              .read<ComposeSendBloc>()
+              .add(FetchFormData(currentAddress: widget.address));
+        },
       );
     });
+  }
+
+  void _handleInitialSubmit() {
+    // form key is validated by parent
+    Decimal input = Decimal.parse(quantityController.text);
+    Balance? balance = balance_;
+    int quantity;
+
+    if (balance == null) {
+      throw Exception("invariant: No balance found for asset");
+    }
+
+    if (balance.assetInfo.divisible) {
+      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+    } else {
+      quantity = input.toBigInt().toInt();
+    }
+
+    if (asset == null) {
+      throw Exception("no asset");
+    }
+
+    context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
+          sourceAddress: widget.address.address,
+          params: ComposeSendEventParams(
+            destinationAddress: destinationAddressController.text,
+            asset: asset!,
+            quantity: quantity,
+          ),
+        ));
+  }
+
+  List<Widget> _buildInitialFormFields(
+      BuildContext context,
+      ComposeSendState state,
+      GlobalKey<FormState> formKey,
+      bool loading,
+      String? error) {
+    final width = MediaQuery.of(context).size.width;
+    return [
+      HorizonTextFormField(
+        enabled: false,
+        controller: fromAddressController,
+        label: "Source",
+        onFieldSubmitted: (value) {
+          _handleInitialSubmit();
+        },
+      ),
+      const SizedBox(height: 16.0),
+      HorizonTextFormField(
+        enabled: loading ? false : true,
+        controller: destinationAddressController,
+        label: "Destination",
+        onChanged: (value) {
+          context.read<ComposeSendBloc>().add(ChangeDestination(value: value));
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a destination address';
+          }
+          return null;
+        },
+        onFieldSubmitted: (value) {
+          _handleInitialSubmit();
+        },
+      ),
+      const SizedBox(height: 16.0),
+      if (width > 768)
+        Row(
+            children: _buildQuantityAndAssetInputsForRow(
+                state, _handleInitialSubmit, loading ? false : true)),
+      if (width <= 768)
+        Column(children: [
+          _buildQuantityInput(
+              state, _handleInitialSubmit, loading ? false : true),
+          const SizedBox(height: 16.0),
+          _buildAssetInput(state)
+        ]),
+      const SizedBox(height: 16.0),
+      FeeSelectionV2(
+        value: state.feeOption,
+        feeEstimates: state.feeState.maybeWhen(
+          success: (feeEstimates) =>
+              FeeEstimateSuccess(feeEstimates: feeEstimates),
+          orElse: () => FeeEstimateLoading(),
+        ),
+        onSelected: (fee) {
+          context.read<ComposeSendBloc>().add(ChangeFeeOption(value: fee));
+        },
+        layout:
+            width > 768 ? FeeSelectionLayout.row : FeeSelectionLayout.column,
+        onFieldSubmitted: () => _handleInitialSubmit(),
+      ),
+      const SizedBox(height: 16.0),
+      if (error != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Text(error, style: const TextStyle(color: Colors.red)),
+        ),
+    ];
   }
 
   String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
@@ -206,10 +315,11 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     }
   }
 
-  Widget _buildQuantityInput(
-      ComposeSendState state, void Function() handleInitialSubmit) {
+  Widget _buildQuantityInput(ComposeSendState state,
+      void Function() handleInitialSubmit, bool enabled) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildQuantityInputField(state, null, handleInitialSubmit);
+      return _buildQuantityInputField(
+          state, null, handleInitialSubmit, enabled);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonTextFormField(
@@ -226,12 +336,13 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         );
       }
 
-      return _buildQuantityInputField(state, balance, handleInitialSubmit);
+      return _buildQuantityInputField(
+          state, balance, handleInitialSubmit, enabled);
     });
   }
 
   Widget _buildQuantityInputField(ComposeSendState state, Balance? balance,
-      void Function() handleInitialSubmit) {
+      void Function() handleInitialSubmit, bool enabled) {
     return Stack(
       children: [
         HorizonTextFormField(
@@ -370,13 +481,13 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         });
   }
 
-  List<Widget> _buildQuantityAndAssetInputsForRow(
-      ComposeSendState state, void Function() handleInitialSubmit) {
+  List<Widget> _buildQuantityAndAssetInputsForRow(ComposeSendState state,
+      void Function() handleInitialSubmit, bool enabled) {
     return [
       Expanded(
           // TODO: make his type of input it's own component ( e.g. BalanceInput )
           child: Builder(builder: (context) {
-        return _buildQuantityInput(state, handleInitialSubmit);
+        return _buildQuantityInput(state, handleInitialSubmit, enabled);
       })),
       const SizedBox(width: 16.0),
       Expanded(
@@ -385,206 +496,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         }),
       )
     ];
-  }
-
-  Widget _buildInitialForm(BuildContext context, ComposeSendState state,
-      String? error, bool loading) {
-    void handleInitialSubmit() {
-      if (_formKey.currentState!.validate()) {
-        Decimal input = Decimal.parse(quantityController.text);
-        Balance? balance = balance_;
-        int quantity;
-
-        if (balance == null) {
-          throw Exception("invariant: No balance found for asset");
-        }
-
-        if (balance.assetInfo.divisible) {
-          quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-        } else {
-          quantity = input.toBigInt().toInt();
-        }
-
-        if (asset == null) {
-          throw Exception("no asset");
-        }
-
-        context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
-              sourceAddress: widget.address.address,
-              params: ComposeSendEventParams(
-                destinationAddress: destinationAddressController.text,
-                asset: asset!,
-                quantity: quantity,
-              ),
-            ));
-      }
-    }
-
-    final width = MediaQuery.of(context).size.width;
-
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            HorizonTextFormField(
-              enabled: false,
-              controller: fromAddressController,
-              label: "Source",
-              onFieldSubmitted: (value) {
-                handleInitialSubmit();
-              },
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              controller: destinationAddressController,
-              label: "Destination",
-              onChanged: (value) {
-                context
-                    .read<ComposeSendBloc>()
-                    .add(ChangeDestination(value: value));
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a destination address';
-                }
-                return null;
-              },
-              onFieldSubmitted: (value) {
-                handleInitialSubmit();
-              },
-            ),
-            const SizedBox(height: 16.0),
-            if (width > 768)
-              Row(
-                  children: _buildQuantityAndAssetInputsForRow(
-                      state, handleInitialSubmit)),
-            if (width <= 768)
-              Column(children: [
-                _buildQuantityInput(state, handleInitialSubmit),
-                const SizedBox(height: 16.0),
-                _buildAssetInput(state)
-              ]),
-            const SizedBox(height: 16.0),
-            FeeSelectionV2(
-              value: state.feeOption,
-              feeEstimates: state.feeState.maybeWhen(
-                success: (feeEstimates) =>
-                    FeeEstimateSuccess(feeEstimates: feeEstimates),
-                orElse: () => FeeEstimateLoading(),
-              ),
-              onSelected: (fee) {
-                context
-                    .read<ComposeSendBloc>()
-                    .add(ChangeFeeOption(value: fee));
-              },
-              layout: width > 768
-                  ? FeeSelectionLayout.row
-                  : FeeSelectionLayout.column,
-              onFieldSubmitted: () => handleInitialSubmit(),
-            ),
-            const SizedBox(height: 16.0),
-            if (error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Text(error, style: const TextStyle(color: Colors.red)),
-              ),
-            // if (state.composeSendError != null)
-            //   Text(state.composeSendError!,
-            //       style: const TextStyle(color: Colors.red))
-            // else
-            //   SizedBox.shrink(),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                HorizonDialogSubmitButton(
-                  loading: loading,
-                  onPressed: handleInitialSubmit,
-                  textChild: Text(loading ? 'Submitting...' : 'Submit'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFinalizingForm(BuildContext context, ComposeSend composeSend,
-      int fee, bool loading, String? error) {
-    TextEditingController passwordController = TextEditingController();
-    void handlePasswordSubmit() {
-      if (passwordFormKey.currentState!.validate()) {
-        try {
-          final password = passwordController.text;
-          if (password.isEmpty) {
-            throw Exception('Password cannot be empty');
-          }
-
-          context.read<ComposeSendBloc>().add(
-                SignAndBroadcastTransactionEvent(
-                  password: password,
-                ),
-              );
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${e.toString()}')),
-          );
-        }
-      }
-    }
-
-    return Form(
-      key: passwordFormKey,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(children: [
-          HorizonTextFormField(
-            onFieldSubmitted: (_) => handlePasswordSubmit(),
-            obscureText: true,
-            enableSuggestions: false,
-            autocorrect: false,
-            controller: passwordController,
-            label: "Password",
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your password';
-              }
-              return null;
-            },
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.0),
-            child: Divider(
-              thickness: 1.0,
-            ),
-          ),
-          error != null
-              ? Text(error, style: const TextStyle(color: Colors.red))
-              : const SizedBox.shrink(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              HorizonCancelButton(
-                onPressed: () {
-                  context
-                      .read<ComposeSendBloc>()
-                      .add(FetchFormData(currentAddress: widget.address));
-                },
-                buttonText: 'BACK',
-              ),
-              HorizonContinueButton(
-                loading: loading,
-                onPressed: handlePasswordSubmit,
-                buttonText: 'SIGN AND BROADCAST',
-              ),
-            ],
-          ),
-        ]),
-      ),
-    );
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {

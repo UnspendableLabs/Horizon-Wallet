@@ -8,6 +8,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final T? selectedValue;
   final Icon? icon;
   final double? borderRadius;
+  final bool enabled;
 
   const HorizonDropdownMenu({
     super.key,
@@ -18,6 +19,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
     this.selectedValue,
     this.icon,
     this.borderRadius,
+    this.enabled = true,
   });
 
   @override

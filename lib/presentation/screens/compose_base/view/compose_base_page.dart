@@ -13,24 +13,31 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
   final Address address;
-  final Widget Function(BuildContext, S, String?, bool) buildInitialForm;
-  final Widget Function(BuildContext, dynamic, int, bool, String?)
-      buildFinalizingForm;
+  final List<Widget> Function(
+          BuildContext, S, GlobalKey<FormState>, bool, String?)
+      buildInitialFormFields;
+  final void Function(BuildContext) onInitialCancel;
+  final void Function(BuildContext, S) onInitialSubmit;
   final List<Widget> Function(dynamic) buildConfirmationFormFields;
   final void Function(BuildContext) onConfirmationBack;
   final void Function(BuildContext, dynamic, int) onConfirmationContinue;
+  final void Function(BuildContext, String) onFinalizeSubmit;
+  final void Function(BuildContext) onFinalizeCancel;
 
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
   const ComposeBasePage({
     super.key,
     required this.address,
-    required this.buildInitialForm,
-    required this.buildFinalizingForm,
+    required this.buildInitialFormFields,
+    required this.onInitialCancel,
+    required this.onInitialSubmit,
     required this.dashboardActivityFeedBloc,
     required this.buildConfirmationFormFields,
     required this.onConfirmationBack,
     required this.onConfirmationContinue,
+    required this.onFinalizeSubmit,
+    required this.onFinalizeCancel,
   });
 
   @override
@@ -65,7 +72,17 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
       builder: (context, state) {
         return switch (state.submitState) {
           SubmitInitial(error: var error, loading: var loading) =>
-            widget.buildInitialForm(context, state, error, loading),
+            ComposeBaseInitialPage(
+              state: state,
+              error: error,
+              loading: loading,
+              buildInitialFormFields:
+                  (context, state, formKey, loading, error) =>
+                      widget.buildInitialFormFields(
+                          context, state, formKey, loading, error),
+              onCancel: widget.onInitialCancel,
+              onSubmit: widget.onInitialSubmit,
+            ),
           SubmitError(error: var msg) => Padding(
               padding: const EdgeInsets.all(8.0),
               child: SelectableText('An error occurred: $msg'),
@@ -90,15 +107,98 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
           SubmitFinalizing(
             composeTransaction: var composeTransaction,
             fee: var fee,
-            loading: var loading,
             error: var error,
+            loading: var loading
           ) =>
-            widget.buildFinalizingForm(
-                context, composeTransaction, fee, loading, error),
+            ComposeBaseFinalizePage(
+              state: state,
+              composeTransaction: composeTransaction,
+              fee: fee,
+              error: error,
+              loading: loading,
+              onSubmit: widget.onFinalizeSubmit,
+              onCancel: widget.onFinalizeCancel,
+            ),
           SubmitSuccess() => const SizedBox.shrink(),
           _ => const SizedBox.shrink(),
         };
       },
+    );
+  }
+}
+
+class ComposeBaseInitialPage<S extends ComposeStateBase>
+    extends StatefulWidget {
+  final S state;
+  final String? error;
+  final bool loading;
+  final List<Widget> Function(
+          BuildContext, S, GlobalKey<FormState>, bool, String?)
+      buildInitialFormFields;
+  final void Function(BuildContext) onCancel;
+  final void Function(BuildContext, S) onSubmit;
+
+  const ComposeBaseInitialPage({
+    super.key,
+    required this.state,
+    required this.error,
+    required this.loading,
+    required this.buildInitialFormFields,
+    required this.onCancel,
+    required this.onSubmit,
+  });
+
+  @override
+  ComposeBaseInitialPageState<S> createState() =>
+      ComposeBaseInitialPageState<S>();
+}
+
+class ComposeBaseInitialPageState<S extends ComposeStateBase>
+    extends State<ComposeBaseInitialPage<S>> {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            ...widget.buildInitialFormFields(
+                context, widget.state, _formKey, widget.loading, widget.error),
+            if (widget.error != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  widget.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            const SizedBox(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                HorizonCancelButton(
+                  onPressed: () => widget.onCancel(context),
+                  buttonText: 'CANCEL',
+                ),
+                HorizonContinueButton(
+                  onPressed: widget.loading
+                      ? () {}
+                      : () {
+                          if (_formKey.currentState!.validate()) {
+                            widget.onSubmit(context, widget.state);
+                          }
+                        },
+                  buttonText: 'SUBMIT',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -176,5 +276,100 @@ class ComposeBaseConfirmationPageState
         ),
       ),
     );
+  }
+}
+
+class ComposeBaseFinalizePage<S extends ComposeStateBase>
+    extends StatefulWidget {
+  final S state;
+  final dynamic composeTransaction;
+  final int fee;
+  final String? error;
+  final bool loading;
+  final void Function(BuildContext, String) onSubmit;
+  final void Function(BuildContext) onCancel;
+
+  const ComposeBaseFinalizePage({
+    super.key,
+    required this.state,
+    required this.composeTransaction,
+    required this.fee,
+    required this.error,
+    required this.loading,
+    required this.onSubmit,
+    required this.onCancel,
+  });
+
+  @override
+  ComposeBaseFinalizePageState<S> createState() =>
+      ComposeBaseFinalizePageState<S>();
+}
+
+class ComposeBaseFinalizePageState<S extends ComposeStateBase>
+    extends State<ComposeBaseFinalizePage<S>> {
+  final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            HorizonTextFormField(
+              enabled: widget.loading ? false : true,
+              controller: _passwordController,
+              label: "Password",
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                return null;
+              },
+              onFieldSubmitted: (value) {
+                if (_formKey.currentState!.validate()) {
+                  widget.onSubmit(context, value);
+                }
+              },
+            ),
+            const SizedBox(height: 16.0),
+            if (widget.error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(widget.error!,
+                    style: const TextStyle(color: Colors.red)),
+              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                HorizonCancelButton(
+                  onPressed: () => widget.onCancel(context),
+                  buttonText: 'BACK',
+                ),
+                HorizonContinueButton(
+                  onPressed: widget.loading
+                      ? () {}
+                      : () {
+                          if (_formKey.currentState!.validate()) {
+                            widget.onSubmit(context, _passwordController.text);
+                          }
+                        },
+                  buttonText: 'SIGN AND BROADCAST',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
   }
 }
