@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_cancel_button.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_continue_button.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
@@ -16,7 +17,7 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
   final Address address;
   final List<Widget> Function(
-          BuildContext, S, GlobalKey<FormState>, bool, String?)
+          BuildContext, S, bool, String?)
       buildInitialFormFields;
   final void Function(BuildContext) onInitialCancel;
   final void Function(BuildContext, S) onInitialSubmit;
@@ -57,16 +58,15 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
             widget.dashboardActivityFeedBloc.add(const Load());
             Navigator.of(context).pop();
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(
-                label: 'Copy',
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: txHash));
-                },
-              ),
-              content: Text(txHash),
-              behavior: SnackBarBehavior.floating,
-            ));
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: 'Copy',
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: txHash));
+                  },
+                ),
+                content: Text(txHash),
+                behavior: SnackBarBehavior.floating));
           case _:
             break;
         }
@@ -81,7 +81,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               buildInitialFormFields:
                   (context, state, formKey, loading, error) =>
                       widget.buildInitialFormFields(
-                          context, state, formKey, loading, error),
+                          context, state, loading, error),
               onCancel: widget.onInitialCancel,
               onSubmit: widget.onInitialSubmit,
             ),
@@ -360,7 +360,7 @@ class ComposeBaseFinalizePageState<S extends ComposeStateBase>
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(widget.error!,
-                    style: const TextStyle(color: Colors.red)),
+                    style: const TextStyle(color: redErrorText)),
               ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

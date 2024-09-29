@@ -104,6 +104,25 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     fromAddressController.text = widget.address.address;
   }
 
+    String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
+    // You may need to adjust this based on your asset's divisibility
+    final balance = _getBalanceForSelectedAsset(
+        state.balancesState.maybeWhen(
+          success: (balances) => balances,
+          orElse: () => [],
+        ),
+        asset ?? '');
+
+    if (balance?.assetInfo.divisible == true) {
+      final maxDecimal = Decimal.fromInt(maxValue);
+      final maxDecimalNormalized = maxDecimal / Decimal.fromInt(100000000);
+
+      return (Decimal.fromInt(maxValue) / Decimal.fromInt(100000000)).toDecimal().round(scale: 8).toString();
+    } else {
+      return maxValue.toString();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(
@@ -129,38 +148,12 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         },
         orElse: () {},
       );
-
-      switch (state.submitState) {
-        // TODO: why aren' twe showing tx hash here?
-        case SubmitSuccess(transactionHex: var txHash):
-          // close modal
-          // reload activity feed
-          widget.dashboardActivityFeedBloc
-              .add(const Load()); // show "N more transactions".
-
-          // Navigator.of(context).pop();
-
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(
-                label: 'Copy',
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: txHash));
-                },
-              ),
-              content: Text(txHash),
-              behavior: SnackBarBehavior.floating));
-
-        case _:
-          // Do nothing for other states
-          break;
-      }
     }, builder: (context, state) {
       return ComposeBasePage<ComposeSendBloc, ComposeSendState>(
         address: widget.address,
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-        buildInitialFormFields: (context, state, formKey, loading, error) =>
-            _buildInitialFormFields(context, state, formKey, loading, error),
+        buildInitialFormFields: (context, state, loading, error) =>
+            _buildInitialFormFields(context, state, loading, error),
         onInitialCancel: (context) => _handleInitialSubmit(),
         onInitialSubmit: (context, state) => _handleInitialSubmit(),
         buildConfirmationFormFields: _buildConfirmationDetails,
@@ -226,7 +219,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   List<Widget> _buildInitialFormFields(
       BuildContext context,
       ComposeSendState state,
-      GlobalKey<FormState> formKey,
       bool loading,
       String? error) {
     final width = MediaQuery.of(context).size.width;
@@ -292,33 +284,27 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     ];
   }
 
-  String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
-    // You may need to adjust this based on your asset's divisibility
-    final balance = _getBalanceForSelectedAsset(
-        state.balancesState.maybeWhen(
-          success: (balances) => balances,
-          orElse: () => [],
-        ),
-        asset ?? '');
-
-    if (balance?.assetInfo.divisible == true) {
-      final maxDecimal = Decimal.fromInt(maxValue);
-      final maxDecimalNormalized = maxDecimal / Decimal.fromInt(100000000);
-
-      return (Decimal.fromInt(maxValue) / Decimal.fromInt(100000000))
-          .toDecimal()
-          .round(scale: 8)
-          .toString();
-    } else {
-      return maxValue.toString();
-    }
+    List<Widget> _buildQuantityAndAssetInputsForRow(
+      ComposeSendState state, void Function() handleInitialSubmit, bool loading) {
+    return [
+      Expanded(
+          // TODO: make his type of input it's own component ( e.g. BalanceInput )
+          child: Builder(builder: (context) {
+        return _buildQuantityInput(state, handleInitialSubmit, loading);
+      })),
+      const SizedBox(width: 16.0),
+      Expanded(
+        child: Builder(builder: (context) {
+          return _buildAssetInput(state, loading);
+        }),
+      )
+    ];
   }
 
-  Widget _buildQuantityInput(ComposeSendState state,
-      void Function() handleInitialSubmit, bool loading) {
+
+  Widget _buildQuantityInput(ComposeSendState state, void Function() handleInitialSubmit, bool loading) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildQuantityInputField(
-          state, null, handleInitialSubmit, loading);
+      return _buildQuantityInputField(state, null, handleInitialSubmit, loading);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonTextFormField(
@@ -326,8 +312,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         );
       }
 
-      Balance? balance = balance_ ??
-          _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+      Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
       if (balance == null) {
         return const HorizonTextFormField(
@@ -335,13 +320,13 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         );
       }
 
-      return _buildQuantityInputField(
-          state, balance, handleInitialSubmit, loading);
+      return _buildQuantityInputField(state, balance, handleInitialSubmit, loading);
     });
   }
 
-  Widget _buildQuantityInputField(ComposeSendState state, Balance? balance,
-      void Function() handleInitialSubmit, bool loading) {
+
+  Widget _buildQuantityInputField(
+      ComposeSendState state, Balance? balance, void Function() handleInitialSubmit, bool loading) {
     return Stack(
       children: [
         HorizonTextFormField(
@@ -356,8 +341,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                 ? DecimalTextInputFormatter(decimalRange: 8)
                 : FilteringTextInputFormatter.digitsOnly,
           ],
-          keyboardType: const TextInputType.numberWithOptions(
-              decimal: true, signed: false),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
@@ -419,9 +403,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                           onChanged: loading
                               ? null
                               : (value) {
-                                  context
-                                      .read<ComposeSendBloc>()
-                                      .add(ToggleSendMaxEvent(value: value));
+                                  context.read<ComposeSendBloc>().add(ToggleSendMaxEvent(value: value));
                                 },
                         ),
                       ),
@@ -433,7 +415,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       ],
     );
   }
-
   Widget _buildAssetInput(ComposeSendState state, bool loading) {
     return state.balancesState.maybeWhen(
         orElse: () => const AssetDropdownLoading(),
@@ -462,8 +443,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               balances: balances,
               controller: assetController,
               onSelected: (String? value) {
-                Balance? balance =
-                    _getBalanceForSelectedAsset(balances, value!);
+                Balance? balance = _getBalanceForSelectedAsset(balances, value!);
 
                 if (balance == null) {
                   throw Exception("invariant: No balance found for asset");
@@ -475,30 +455,11 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                   quantityController.text = '';
                 });
 
-                context
-                    .read<ComposeSendBloc>()
-                    .add(ChangeAsset(asset: value, balance: balance));
+                context.read<ComposeSendBloc>().add(ChangeAsset(asset: value, balance: balance));
               },
             ),
           );
         });
-  }
-
-  List<Widget> _buildQuantityAndAssetInputsForRow(ComposeSendState state,
-      void Function() handleInitialSubmit, bool loading) {
-    return [
-      Expanded(
-          // TODO: make his type of input it's own component ( e.g. BalanceInput )
-          child: Builder(builder: (context) {
-        return _buildQuantityInput(state, handleInitialSubmit, loading);
-      })),
-      const SizedBox(width: 16.0),
-      Expanded(
-        child: Builder(builder: (context) {
-          return _buildAssetInput(state, loading);
-        }),
-      )
-    ];
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
