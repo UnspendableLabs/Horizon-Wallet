@@ -16,8 +16,7 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
   final Address address;
-  final List<Widget> Function(
-          BuildContext, S, bool, String?)
+  final List<Widget> Function(BuildContext, S, bool, String?)
       buildInitialFormFields;
   final void Function(BuildContext) onInitialCancel;
   final void Function(BuildContext, S) onInitialSubmit;
@@ -78,10 +77,9 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               state: state,
               error: error,
               loading: loading,
-              buildInitialFormFields:
-                  (context, state, formKey, loading, error) =>
-                      widget.buildInitialFormFields(
-                          context, state, loading, error),
+              buildInitialFormFields: (context, state, formKey, loading,
+                      error) =>
+                  widget.buildInitialFormFields(context, state, loading, error),
               onCancel: widget.onInitialCancel,
               onSubmit: widget.onInitialSubmit,
             ),
@@ -195,7 +193,12 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            const SizedBox(height: 16.0),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Divider(
+                thickness: 1.0,
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

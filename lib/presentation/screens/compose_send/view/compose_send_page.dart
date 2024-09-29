@@ -24,13 +24,11 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -89,7 +87,6 @@ class ComposeSendPage extends StatefulWidget {
 }
 
 class ComposeSendPageState extends State<ComposeSendPage> {
-  final passwordFormKey = GlobalKey<FormState>();
   TextEditingController destinationAddressController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
@@ -104,7 +101,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     fromAddressController.text = widget.address.address;
   }
 
-    String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
+  String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
     // You may need to adjust this based on your asset's divisibility
     final balance = _getBalanceForSelectedAsset(
         state.balancesState.maybeWhen(
@@ -117,7 +114,10 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       final maxDecimal = Decimal.fromInt(maxValue);
       final maxDecimalNormalized = maxDecimal / Decimal.fromInt(100000000);
 
-      return (Decimal.fromInt(maxValue) / Decimal.fromInt(100000000)).toDecimal().round(scale: 8).toString();
+      return (Decimal.fromInt(maxValue) / Decimal.fromInt(100000000))
+          .toDecimal()
+          .round(scale: 8)
+          .toString();
     } else {
       return maxValue.toString();
     }
@@ -154,7 +154,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
         buildInitialFormFields: (context, state, loading, error) =>
             _buildInitialFormFields(context, state, loading, error),
-        onInitialCancel: (context) => _handleInitialSubmit(),
+        onInitialCancel: (context) => _handleInitialCancel(),
         onInitialSubmit: (context, state) => _handleInitialSubmit(),
         buildConfirmationFormFields: _buildConfirmationDetails,
         onConfirmationBack: (context) => {
@@ -184,6 +184,12 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         },
       );
     });
+  }
+
+  void _handleInitialCancel() {
+    context
+        .read<ComposeSendBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
   }
 
   void _handleInitialSubmit() {
@@ -216,11 +222,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         ));
   }
 
-  List<Widget> _buildInitialFormFields(
-      BuildContext context,
-      ComposeSendState state,
-      bool loading,
-      String? error) {
+  List<Widget> _buildInitialFormFields(BuildContext context,
+      ComposeSendState state, bool loading, String? error) {
     final width = MediaQuery.of(context).size.width;
     return [
       HorizonTextFormField(
@@ -260,7 +263,12 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           const SizedBox(height: 16.0),
           _buildAssetInput(state, loading)
         ]),
-      const SizedBox(height: 16.0),
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: Divider(
+          thickness: 1.0,
+        ),
+      ),
       FeeSelectionV2(
         value: state.feeOption,
         feeEstimates: state.feeState.maybeWhen(
@@ -284,8 +292,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     ];
   }
 
-    List<Widget> _buildQuantityAndAssetInputsForRow(
-      ComposeSendState state, void Function() handleInitialSubmit, bool loading) {
+  List<Widget> _buildQuantityAndAssetInputsForRow(ComposeSendState state,
+      void Function() handleInitialSubmit, bool loading) {
     return [
       Expanded(
           // TODO: make his type of input it's own component ( e.g. BalanceInput )
@@ -301,10 +309,11 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     ];
   }
 
-
-  Widget _buildQuantityInput(ComposeSendState state, void Function() handleInitialSubmit, bool loading) {
+  Widget _buildQuantityInput(ComposeSendState state,
+      void Function() handleInitialSubmit, bool loading) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildQuantityInputField(state, null, handleInitialSubmit, loading);
+      return _buildQuantityInputField(
+          state, null, handleInitialSubmit, loading);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonTextFormField(
@@ -312,7 +321,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         );
       }
 
-      Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+      Balance? balance = balance_ ??
+          _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
       if (balance == null) {
         return const HorizonTextFormField(
@@ -320,13 +330,13 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         );
       }
 
-      return _buildQuantityInputField(state, balance, handleInitialSubmit, loading);
+      return _buildQuantityInputField(
+          state, balance, handleInitialSubmit, loading);
     });
   }
 
-
-  Widget _buildQuantityInputField(
-      ComposeSendState state, Balance? balance, void Function() handleInitialSubmit, bool loading) {
+  Widget _buildQuantityInputField(ComposeSendState state, Balance? balance,
+      void Function() handleInitialSubmit, bool loading) {
     return Stack(
       children: [
         HorizonTextFormField(
@@ -341,7 +351,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                 ? DecimalTextInputFormatter(decimalRange: 8)
                 : FilteringTextInputFormatter.digitsOnly,
           ],
-          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: false),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
@@ -403,7 +414,9 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                           onChanged: loading
                               ? null
                               : (value) {
-                                  context.read<ComposeSendBloc>().add(ToggleSendMaxEvent(value: value));
+                                  context
+                                      .read<ComposeSendBloc>()
+                                      .add(ToggleSendMaxEvent(value: value));
                                 },
                         ),
                       ),
@@ -415,6 +428,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       ],
     );
   }
+
   Widget _buildAssetInput(ComposeSendState state, bool loading) {
     return state.balancesState.maybeWhen(
         orElse: () => const AssetDropdownLoading(),
@@ -443,7 +457,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               balances: balances,
               controller: assetController,
               onSelected: (String? value) {
-                Balance? balance = _getBalanceForSelectedAsset(balances, value!);
+                Balance? balance =
+                    _getBalanceForSelectedAsset(balances, value!);
 
                 if (balance == null) {
                   throw Exception("invariant: No balance found for asset");
@@ -455,7 +470,9 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                   quantityController.text = '';
                 });
 
-                context.read<ComposeSendBloc>().add(ChangeAsset(asset: value, balance: balance));
+                context
+                    .read<ComposeSendBloc>()
+                    .add(ChangeAsset(asset: value, balance: balance));
               },
             ),
           );
