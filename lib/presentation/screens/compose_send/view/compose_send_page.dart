@@ -25,12 +25,12 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/screens/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
-import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_cancel_button.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_continue_button.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
@@ -91,117 +91,6 @@ class ComposeSendPage extends StatefulWidget {
   ComposeSendPageState createState() => ComposeSendPageState();
 }
 
-class AssetDropdownLoading extends StatelessWidget {
-  const AssetDropdownLoading({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(children: [
-      DropdownMenu(
-        expandedInsets: const EdgeInsets.all(0),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-        ),
-        initialSelection: "",
-        // enabled: false,
-        label: const Text('Asset'),
-        dropdownMenuEntries:
-            [const DropdownMenuEntry<String>(value: "", label: "")].toList(),
-        menuStyle: MenuStyle(
-          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-          ),
-          padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-            const EdgeInsets.symmetric(vertical: 8.0),
-          ),
-        ),
-      ),
-      const Positioned(
-        left: 12,
-        top: 0,
-        bottom: 0,
-        child: Center(
-          child: SizedBox(
-            width: 24.0,
-            height: 24.0,
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      ),
-    ]);
-  }
-}
-
-class AssetDropdown extends StatefulWidget {
-  final String? asset;
-  final List<Balance> balances;
-  final TextEditingController controller;
-  final void Function(String?) onSelected;
-
-  const AssetDropdown(
-      {super.key,
-      this.asset,
-      required this.balances,
-      required this.controller,
-      required this.onSelected});
-
-  @override
-  State<AssetDropdown> createState() => _AssetDropdownState();
-}
-
-class _AssetDropdownState extends State<AssetDropdown> {
-  late List<Balance> orderedBalances;
-
-  @override
-  void initState() {
-    super.initState();
-    orderedBalances = _orderBalances(widget.balances);
-    widget.controller.text = widget.asset ?? orderedBalances[0].asset;
-  }
-
-  List<Balance> _orderBalances(List<Balance> balances) {
-    final Balance? btcBalance =
-        balances.where((b) => b.asset == 'BTC').firstOrNull;
-
-    final Balance? xcpBalance =
-        balances.where((b) => b.asset == 'XCP').firstOrNull;
-
-    final otherBalances =
-        balances.where((b) => b.asset != 'BTC' && b.asset != 'XCP').toList();
-
-    return [
-      if (btcBalance != null) btcBalance,
-      if (xcpBalance != null) xcpBalance,
-      ...otherBalances,
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return HorizonDropdownMenu(
-      controller: widget.controller,
-      label: 'Asset',
-      onChanged: widget.onSelected,
-      selectedValue: widget.asset ?? orderedBalances[0].asset,
-      items: orderedBalances.map<DropdownMenuItem<String>>((balance) {
-        return buildDropdownMenuItem(balance.asset, balance.asset);
-      }).toList(),
-    );
-  }
-}
-
-_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
-  if (balances.isEmpty) {
-    return null;
-  }
-
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
-      balances[0];
-}
-
 class ComposeSendPageState extends State<ComposeSendPage> {
   final _formKey = GlobalKey<FormState>();
   final passwordFormKey = GlobalKey<FormState>();
@@ -224,12 +113,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     return BlocConsumer<ComposeSendBloc, ComposeSendState>(
         listener: (context, state) {
       state.maxValue.maybeWhen(
-        initial: () {
-          // print("maxValue initial");
-          // if (!state.sendMax) {
-          //   quantityController.text = state.quantity;
-          // }
-        },
         loading: () {
           if (state.sendMax) {
             quantityController.text = '';
@@ -259,7 +142,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           widget.dashboardActivityFeedBloc
               .add(const Load()); // show "N more transactions".
 
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
 
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               duration: const Duration(seconds: 5),
@@ -277,37 +160,27 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           break;
       }
     }, builder: (context, state) {
-      return switch (state.submitState) {
-        SubmitInitial(error: var error, loading: var loading) =>
-          _buildInitialForm(context, state, error, loading),
-        // TODO: invalid
-        SubmitError(error: var msg) => Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SelectableText('An error occurred: $msg'),
-          ),
-        SubmitComposingTransaction<ComposeSend>(
-          composeTransaction: var composeSend,
-          virtualSize: var virtualSize,
-          fee: var fee,
-          feeRate: var feeRate
-        ) =>
-          ConfirmationPage(
-            composeSend: composeSend,
-            address: widget.address,
-            virtualSize: virtualSize,
-            fee: fee,
-            feeRate: feeRate,
-          ),
-        SubmitFinalizing<ComposeSend>(
-          composeTransaction: var composeSend,
-          fee: var fee,
-          loading: var loading,
-          error: var error,
-        ) =>
-          _buildFinalizingForm(context, composeSend, fee, loading, error),
-        SubmitSuccess() => const SizedBox.shrink(),
-        _ => const SizedBox.shrink(),
-      };
+      return ComposeBasePage<ComposeSendBloc, ComposeSendState>(
+        address: widget.address,
+        dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+        buildInitialForm: _buildInitialForm,
+        buildFinalizingForm: (context, composeSend, fee, loading, error) =>
+            _buildFinalizingForm(context, composeSend, fee, loading, error),
+        buildConfirmationFormFields: _buildConfirmationDetails,
+        onConfirmationBack: (context) => {
+          context
+              .read<ComposeSendBloc>()
+              .add(FetchFormData(currentAddress: widget.address))
+        },
+        onConfirmationContinue: (context, composeSend, fee) => {
+          context.read<ComposeSendBloc>().add(
+                FinalizeTransactionEvent<ComposeSend>(
+                  composeTransaction: composeSend,
+                  fee: fee,
+                ),
+              )
+        },
+      );
     });
   }
 
@@ -713,134 +586,153 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       ),
     );
   }
+
+  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+    final params = (composeTransaction as ComposeSend).params;
+    return [
+      HorizonTextFormField(
+        label: "Source Address",
+        controller: TextEditingController(text: params.source),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonTextFormField(
+        label: "Destination Address",
+        controller: TextEditingController(text: params.destination),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      Row(
+        children: [
+          Expanded(
+            child: HorizonTextFormField(
+              label: "Quantity",
+              controller:
+                  TextEditingController(text: params.quantityNormalized),
+              enabled: false,
+            ),
+          ),
+          const SizedBox(width: 16.0), // Spacing between inputs
+          Expanded(
+            child: HorizonTextFormField(
+              label: "Asset",
+              controller: TextEditingController(text: params.asset),
+              enabled: false,
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
 }
 
-class ConfirmationPage extends StatefulWidget {
-  final ComposeSend composeSend;
-  final int virtualSize;
-  final int fee;
-  final int feeRate;
-  final Address address;
-
-  const ConfirmationPage(
-      {super.key,
-      required this.composeSend,
-      required this.address,
-      required this.virtualSize,
-      required this.fee,
-      required this.feeRate});
+class AssetDropdownLoading extends StatelessWidget {
+  const AssetDropdownLoading({super.key});
 
   @override
-  ConfirmationPageState createState() => ConfirmationPageState();
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      DropdownMenu(
+        expandedInsets: const EdgeInsets.all(0),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+        ),
+        initialSelection: "",
+        // enabled: false,
+        label: const Text('Asset'),
+        dropdownMenuEntries:
+            [const DropdownMenuEntry<String>(value: "", label: "")].toList(),
+        menuStyle: MenuStyle(
+          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+          padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+            const EdgeInsets.symmetric(vertical: 8.0),
+          ),
+        ),
+      ),
+      const Positioned(
+        left: 12,
+        top: 0,
+        bottom: 0,
+        child: Center(
+          child: SizedBox(
+            width: 24.0,
+            height: 24.0,
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      ),
+    ]);
+  }
 }
 
-class ConfirmationPageState extends State<ConfirmationPage> {
-  late int fee;
-  final _formKey = GlobalKey<FormState>();
+class AssetDropdown extends StatefulWidget {
+  final String? asset;
+  final List<Balance> balances;
+  final TextEditingController controller;
+  final void Function(String?) onSelected;
+
+  const AssetDropdown(
+      {super.key,
+      this.asset,
+      required this.balances,
+      required this.controller,
+      required this.onSelected});
+
+  @override
+  State<AssetDropdown> createState() => _AssetDropdownState();
+}
+
+class _AssetDropdownState extends State<AssetDropdown> {
+  late List<Balance> orderedBalances;
 
   @override
   void initState() {
     super.initState();
+    orderedBalances = _orderBalances(widget.balances);
+    widget.controller.text = widget.asset ?? orderedBalances[0].asset;
+  }
 
-    // initialize fee
-    fee = widget.fee;
+  List<Balance> _orderBalances(List<Balance> balances) {
+    final Balance? btcBalance =
+        balances.where((b) => b.asset == 'BTC').firstOrNull;
+
+    final Balance? xcpBalance =
+        balances.where((b) => b.asset == 'XCP').firstOrNull;
+
+    final otherBalances =
+        balances.where((b) => b.asset != 'BTC' && b.asset != 'XCP').toList();
+
+    return [
+      if (btcBalance != null) btcBalance,
+      if (xcpBalance != null) xcpBalance,
+      ...otherBalances,
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    final sendParams = widget.composeSend.params;
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Please review your transaction details.',
-              style: TextStyle(
-                  fontSize: 16.0,
-                  color: mainTextWhite,
-                  fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Source Address",
-              controller: TextEditingController(text: sendParams.source),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            HorizonTextFormField(
-              label: "Destination Address",
-              controller: TextEditingController(text: sendParams.destination),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                Expanded(
-                  child: HorizonTextFormField(
-                    label: "Quantity",
-                    controller: TextEditingController(
-                        text: sendParams.quantityNormalized),
-                    enabled: false,
-                  ),
-                ),
-                const SizedBox(width: 16.0), // Spacing between inputs
-                Expanded(
-                  child: HorizonTextFormField(
-                    label: "Asset",
-                    controller: TextEditingController(text: sendParams.asset),
-                    enabled: false,
-                  ),
-                ),
-              ],
-            ),
-            HorizonTextFormField(
-              label: "Fee",
-              controller: TextEditingController(
-                  text:
-                      "${fee.toString()} sats ( ${widget.feeRate} sats/vbyte )"),
-              enabled: false,
-            ),
-            const SizedBox(height: 16.0),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Divider(
-                thickness: 1.0,
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                HorizonCancelButton(
-                  onPressed: () {
-                    context
-                        .read<ComposeSendBloc>()
-                        .add(FetchFormData(currentAddress: widget.address));
-                  },
-                  buttonText: 'BACK',
-                ),
-                HorizonContinueButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      context.read<ComposeSendBloc>().add(
-                            FinalizeTransactionEvent<ComposeSend>(
-                              composeTransaction: widget.composeSend,
-                              fee: fee,
-                            ),
-                          );
-                    }
-                  },
-                  buttonText: 'CONTINUE',
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return HorizonDropdownMenu(
+      controller: widget.controller,
+      label: 'Asset',
+      onChanged: widget.onSelected,
+      selectedValue: widget.asset ?? orderedBalances[0].asset,
+      items: orderedBalances.map<DropdownMenuItem<String>>((balance) {
+        return buildDropdownMenuItem(balance.asset, balance.asset);
+      }).toList(),
     );
   }
+}
+
+_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
+  if (balances.isEmpty) {
+    return null;
+  }
+
+  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
+      balances[0];
 }
