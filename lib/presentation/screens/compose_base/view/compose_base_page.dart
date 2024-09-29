@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_cancel_button.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_continue_button.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
@@ -166,8 +168,25 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            ...widget.buildInitialFormFields(
-                context, widget.state, _formKey, widget.loading, widget.error),
+            ...widget
+                .buildInitialFormFields(context, widget.state, _formKey,
+                    widget.loading, widget.error)
+                .map((formWidget) {
+              if (formWidget is HorizonTextFormField) {
+                return widget.loading
+                    ? formWidget.copyWith(enabled: false)
+                    : formWidget;
+              } else if (formWidget is HorizonDropdownMenu<dynamic>) {
+                return widget.loading
+                    ? formWidget.copyWith(enabled: false)
+                    : formWidget;
+              } else if (formWidget is FeeSelectionV2) {
+                return widget.loading
+                    ? formWidget.copyWith(enabled: false)
+                    : formWidget;
+              }
+              return formWidget;
+            }),
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -185,6 +204,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                   buttonText: 'CANCEL',
                 ),
                 HorizonContinueButton(
+                  loading: widget.loading,
                   onPressed: widget.loading
                       ? () {}
                       : () {
@@ -350,6 +370,7 @@ class ComposeBaseFinalizePageState<S extends ComposeStateBase>
                   buttonText: 'BACK',
                 ),
                 HorizonContinueButton(
+                  loading: widget.loading,
                   onPressed: widget.loading
                       ? () {}
                       : () {

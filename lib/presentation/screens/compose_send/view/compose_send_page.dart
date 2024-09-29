@@ -261,13 +261,12 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       if (width > 768)
         Row(
             children: _buildQuantityAndAssetInputsForRow(
-                state, _handleInitialSubmit, loading ? false : true)),
+                state, _handleInitialSubmit, loading)),
       if (width <= 768)
         Column(children: [
-          _buildQuantityInput(
-              state, _handleInitialSubmit, loading ? false : true),
+          _buildQuantityInput(state, _handleInitialSubmit, loading),
           const SizedBox(height: 16.0),
-          _buildAssetInput(state)
+          _buildAssetInput(state, loading)
         ]),
       const SizedBox(height: 16.0),
       FeeSelectionV2(
@@ -316,10 +315,10 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   }
 
   Widget _buildQuantityInput(ComposeSendState state,
-      void Function() handleInitialSubmit, bool enabled) {
+      void Function() handleInitialSubmit, bool loading) {
     return state.balancesState.maybeWhen(orElse: () {
       return _buildQuantityInputField(
-          state, null, handleInitialSubmit, enabled);
+          state, null, handleInitialSubmit, loading);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonTextFormField(
@@ -337,16 +336,17 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       }
 
       return _buildQuantityInputField(
-          state, balance, handleInitialSubmit, enabled);
+          state, balance, handleInitialSubmit, loading);
     });
   }
 
   Widget _buildQuantityInputField(ComposeSendState state, Balance? balance,
-      void Function() handleInitialSubmit, bool enabled) {
+      void Function() handleInitialSubmit, bool loading) {
     return Stack(
       children: [
         HorizonTextFormField(
           controller: quantityController,
+          enabled: loading ? false : true,
           onChanged: (value) {
             context.read<ComposeSendBloc>().add(ChangeQuantity(value: value));
           },
@@ -416,11 +416,13 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                         child: Switch(
                           activeColor: Colors.blue,
                           value: state.sendMax,
-                          onChanged: (value) {
-                            context
-                                .read<ComposeSendBloc>()
-                                .add(ToggleSendMaxEvent(value: value));
-                          },
+                          onChanged: loading
+                              ? null
+                              : (value) {
+                                  context
+                                      .read<ComposeSendBloc>()
+                                      .add(ToggleSendMaxEvent(value: value));
+                                },
                         ),
                       ),
                     ],
@@ -432,7 +434,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     );
   }
 
-  Widget _buildAssetInput(ComposeSendState state) {
+  Widget _buildAssetInput(ComposeSendState state, bool loading) {
     return state.balancesState.maybeWhen(
         orElse: () => const AssetDropdownLoading(),
         success: (balances) {
@@ -455,6 +457,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           return SizedBox(
             height: 48,
             child: AssetDropdown(
+              loading: loading,
               asset: asset,
               balances: balances,
               controller: assetController,
@@ -482,17 +485,17 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   }
 
   List<Widget> _buildQuantityAndAssetInputsForRow(ComposeSendState state,
-      void Function() handleInitialSubmit, bool enabled) {
+      void Function() handleInitialSubmit, bool loading) {
     return [
       Expanded(
           // TODO: make his type of input it's own component ( e.g. BalanceInput )
           child: Builder(builder: (context) {
-        return _buildQuantityInput(state, handleInitialSubmit, enabled);
+        return _buildQuantityInput(state, handleInitialSubmit, loading);
       })),
       const SizedBox(width: 16.0),
       Expanded(
         child: Builder(builder: (context) {
-          return _buildAssetInput(state);
+          return _buildAssetInput(state, loading);
         }),
       )
     ];
@@ -586,13 +589,15 @@ class AssetDropdown extends StatefulWidget {
   final List<Balance> balances;
   final TextEditingController controller;
   final void Function(String?) onSelected;
+  final bool loading;
 
   const AssetDropdown(
       {super.key,
       this.asset,
       required this.balances,
       required this.controller,
-      required this.onSelected});
+      required this.onSelected,
+      required this.loading});
 
   @override
   State<AssetDropdown> createState() => _AssetDropdownState();
@@ -628,6 +633,7 @@ class _AssetDropdownState extends State<AssetDropdown> {
   @override
   Widget build(BuildContext context) {
     return HorizonDropdownMenu(
+      enabled: widget.loading ? false : true,
       controller: widget.controller,
       label: 'Asset',
       onChanged: widget.onSelected,

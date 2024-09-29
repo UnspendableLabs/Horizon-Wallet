@@ -147,4 +147,27 @@ class HorizonTextFormField extends StatelessWidget {
       ),
     );
   }
+
+  //  create a copy with updated properties
+  HorizonTextFormField copyWith({bool? enabled}) {
+    return HorizonTextFormField(
+      label: label,
+      hint: hint,
+      controller: controller,
+      focusNode: focusNode,
+      suffix: suffix,
+      onChanged: onChanged,
+      onEditingComplete: onEditingComplete,
+      onFieldSubmitted: onFieldSubmitted,
+      validator: validator,
+      obscureText: obscureText,
+      enableSuggestions: enableSuggestions,
+      autocorrect: autocorrect,
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      inputFormatters: inputFormatters,
+      enabled: enabled ?? this.enabled,
+      initialValue: initialValue,
+    );
+  }
 }
