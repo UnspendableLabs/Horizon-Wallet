@@ -1,5 +1,5 @@
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 
 abstract class ComposeSendEvent extends ComposeBaseEvent {}
 

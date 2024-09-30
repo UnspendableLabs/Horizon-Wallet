@@ -4,7 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 
 part 'compose_send_state.freezed.dart';
 

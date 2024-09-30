@@ -22,13 +22,13 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/screens/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
+import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
@@ -537,67 +537,6 @@ class AssetDropdownLoading extends StatelessWidget {
         ),
       ),
     ]);
-  }
-}
-
-class AssetDropdown extends StatefulWidget {
-  final String? asset;
-  final List<Balance> balances;
-  final TextEditingController controller;
-  final void Function(String?) onSelected;
-  final bool loading;
-
-  const AssetDropdown(
-      {super.key,
-      this.asset,
-      required this.balances,
-      required this.controller,
-      required this.onSelected,
-      required this.loading});
-
-  @override
-  State<AssetDropdown> createState() => _AssetDropdownState();
-}
-
-class _AssetDropdownState extends State<AssetDropdown> {
-  late List<Balance> orderedBalances;
-
-  @override
-  void initState() {
-    super.initState();
-    orderedBalances = _orderBalances(widget.balances);
-    widget.controller.text = widget.asset ?? orderedBalances[0].asset;
-  }
-
-  List<Balance> _orderBalances(List<Balance> balances) {
-    final Balance? btcBalance =
-        balances.where((b) => b.asset == 'BTC').firstOrNull;
-
-    final Balance? xcpBalance =
-        balances.where((b) => b.asset == 'XCP').firstOrNull;
-
-    final otherBalances =
-        balances.where((b) => b.asset != 'BTC' && b.asset != 'XCP').toList();
-
-    return [
-      if (btcBalance != null) btcBalance,
-      if (xcpBalance != null) xcpBalance,
-      ...otherBalances,
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return HorizonDropdownMenu(
-      enabled: !widget.loading,
-      controller: widget.controller,
-      label: 'Asset',
-      onChanged: widget.onSelected,
-      selectedValue: widget.asset ?? orderedBalances[0].asset,
-      items: orderedBalances.map<DropdownMenuItem<String>>((balance) {
-        return buildDropdownMenuItem(balance.asset, balance.asset);
-      }).toList(),
-    );
   }
 }
 

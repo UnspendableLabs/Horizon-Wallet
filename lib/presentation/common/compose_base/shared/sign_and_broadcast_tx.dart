@@ -18,7 +18,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:logger/logger.dart';
 
 Future<void> signAndBroadcastTransaction<T, S extends ComposeStateBase>({
