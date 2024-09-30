@@ -363,7 +363,7 @@ class ComposeBaseFinalizePageState<S extends ComposeStateBase>
         child: Column(
           children: [
             HorizonTextFormField(
-              enabled: widget.loading ? false : true,
+              enabled: !widget.loading,
               controller: _passwordController,
               label: "Password",
               obscureText: true,

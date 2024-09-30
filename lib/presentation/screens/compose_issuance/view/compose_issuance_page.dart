@@ -195,7 +195,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
           Stack(
             children: [
               HorizonTextFormField(
-                enabled: loading ? false : true,
+                enabled: !loading,
                 controller: nameController,
                 label: "Token name",
                 textCapitalization: TextCapitalization.characters,

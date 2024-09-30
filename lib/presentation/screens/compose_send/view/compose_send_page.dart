@@ -239,7 +239,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonTextFormField(
-        enabled: loading ? false : true,
+        enabled: !loading,
         controller: destinationAddressController,
         label: "Destination",
         onChanged: (value) {
@@ -319,7 +319,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       children: [
         HorizonTextFormField(
           controller: quantityController,
-          enabled: loading ? false : true,
+          enabled: !loading,
           onChanged: (value) {
             context.read<ComposeSendBloc>().add(ChangeQuantity(value: value));
           },
@@ -589,7 +589,7 @@ class _AssetDropdownState extends State<AssetDropdown> {
   @override
   Widget build(BuildContext context) {
     return HorizonDropdownMenu(
-      enabled: widget.loading ? false : true,
+      enabled: !widget.loading,
       controller: widget.controller,
       label: 'Asset',
       onChanged: widget.onSelected,
