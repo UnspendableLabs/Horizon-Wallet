@@ -21,7 +21,6 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
@@ -114,57 +113,61 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
     return ComposeBasePage<ComposeIssuanceBloc, ComposeIssuanceState>(
       address: widget.address,
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-      buildInitialFormFields: (context, state, loading, error) =>
-          _buildInitialFormFields(context, state, loading, error),
-      onInitialCancel: (context) => _handleInitialCancel(context),
-      onInitialSubmit: (context, state) => _handleInitialSubmit(context),
-      buildConfirmationFormFields: (composeTransaction) =>
+      onFeeChange: (fee) =>
+          context.read<ComposeIssuanceBloc>().add(ChangeFeeOption(value: fee)),
+      buildInitialFormFields: (state, loading, formKey) =>
+          _buildInitialFormFields(state, loading, formKey),
+      onInitialCancel: () => _handleInitialCancel(),
+      onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
+      buildConfirmationFormFields: (composeTransaction, formKey) =>
           _buildConfirmationDetails(composeTransaction),
-      onConfirmationBack: (context) => _onConfirmationBack(context),
-      onConfirmationContinue: (context, composeTransaction, fee) =>
-          _onConfirmationContinue(context, composeTransaction, fee),
-      onFinalizeSubmit: (context, password) =>
-          _onFinalizeSubmit(context, password),
-      onFinalizeCancel: (context) => _onFinalizeCancel(context),
+      onConfirmationBack: () => _onConfirmationBack(),
+      onConfirmationContinue: (composeTransaction, fee, formKey) {
+        _onConfirmationContinue(composeTransaction, fee, formKey);
+      },
+      onFinalizeSubmit: (password, formKey) {
+        _onFinalizeSubmit(password, formKey);
+      },
+      onFinalizeCancel: () => _onFinalizeCancel(),
     );
   }
 
-  void _handleInitialCancel(BuildContext context) {
+  void _handleInitialCancel() {
     context
         .read<ComposeIssuanceBloc>()
         .add(FetchFormData(currentAddress: widget.address));
   }
 
-  void _handleInitialSubmit(BuildContext context) {
-    // TODO: wrap this in function and write some tests
-    Decimal input = Decimal.parse(quantityController.text);
+  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      // TODO: wrap this in function and write some tests
+      Decimal input = Decimal.parse(quantityController.text);
 
-    int quantity;
+      int quantity;
 
-    if (isDivisible) {
-      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-    } else {
-      quantity = (input).toBigInt().toInt();
+      if (isDivisible) {
+        quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+      } else {
+        quantity = (input).toBigInt().toInt();
+      }
+
+      context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
+            sourceAddress: widget.address.address,
+            params: ComposeIssuanceEventParams(
+              name: nameController.text,
+              quantity: quantity,
+              description: descriptionController.text,
+              divisible: isDivisible,
+              lock: isLocked,
+              reset: isReset,
+            ),
+          ));
     }
-
-    context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
-          sourceAddress: widget.address.address,
-          params: ComposeIssuanceEventParams(
-            name: nameController.text,
-            quantity: quantity,
-            description: descriptionController.text,
-            divisible: isDivisible,
-            lock: isLocked,
-            reset: isReset,
-          ),
-        ));
   }
 
-  List<Widget> _buildInitialFormFields(BuildContext context,
-      ComposeIssuanceState state, bool loading, String? error) {
+  List<Widget> _buildInitialFormFields(
+      ComposeIssuanceState state, bool loading, GlobalKey<FormState> formKey) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    final width = MediaQuery.of(context).size.width;
 
     return state.balancesState.when(
       initial: () => [],
@@ -183,7 +186,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
         return [
           HorizonTextFormField(
-            onFieldSubmitted: (_) => _handleInitialSubmit(context),
+            onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
             enabled: false,
             controller: fromAddressController,
             label: "Source",
@@ -206,7 +209,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
                   }
                   return null;
                 },
-                onFieldSubmitted: (_) => _handleInitialSubmit(context),
+                onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
               ),
               Positioned(
                 right: 0,
@@ -240,13 +243,13 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
               }
               return null;
             },
-            onFieldSubmitted: (_) => _handleInitialSubmit(context),
+            onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
           ),
           const SizedBox(height: 16.0),
           HorizonTextFormField(
             controller: descriptionController,
             label: 'Description (optional)',
-            onFieldSubmitted: (_) => _handleInitialSubmit(context),
+            onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
           ),
           const SizedBox(height: 16.0),
           Column(
@@ -339,30 +342,6 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
               // ),
             ],
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.0),
-            child: Divider(
-              thickness: 1.0,
-            ),
-          ),
-          FeeSelectionV2(
-            value: state.feeOption,
-            feeEstimates: state.feeState.maybeWhen(
-              success: (feeEsimates) {
-                return FeeEstimateSuccess(feeEstimates: feeEsimates);
-              },
-              orElse: () => FeeEstimateLoading(),
-            ),
-            onSelected: (fee) {
-              context
-                  .read<ComposeIssuanceBloc>()
-                  .add(ChangeFeeOption(value: fee));
-            },
-            layout: width > 768
-                ? FeeSelectionLayout.row
-                : FeeSelectionLayout.column,
-            onFieldSubmitted: () => _handleInitialSubmit(context),
-          ),
         ];
       },
     );
@@ -420,31 +399,35 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
     ];
   }
 
-  _onConfirmationBack(BuildContext context) {
+  void _onConfirmationBack() {
     context
         .read<ComposeIssuanceBloc>()
         .add(FetchFormData(currentAddress: widget.address));
   }
 
-  _onConfirmationContinue(
-      BuildContext context, dynamic composeTransaction, int fee) {
-    context.read<ComposeIssuanceBloc>().add(
-          FinalizeTransactionEvent<ComposeIssuanceVerbose>(
-            composeTransaction: composeTransaction,
-            fee: fee,
-          ),
-        );
+  void _onConfirmationContinue(
+      dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      context.read<ComposeIssuanceBloc>().add(
+            FinalizeTransactionEvent<ComposeIssuanceVerbose>(
+              composeTransaction: composeTransaction,
+              fee: fee,
+            ),
+          );
+    }
   }
 
-  void _onFinalizeSubmit(BuildContext context, String password) {
-    context.read<ComposeIssuanceBloc>().add(
-          SignAndBroadcastTransactionEvent(
-            password: password,
-          ),
-        );
+  void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      context.read<ComposeIssuanceBloc>().add(
+            SignAndBroadcastTransactionEvent(
+              password: password,
+            ),
+          );
+    }
   }
 
-  void _onFinalizeCancel(BuildContext context) {
+  void _onFinalizeCancel() {
     context
         .read<ComposeIssuanceBloc>()
         .add(FetchFormData(currentAddress: widget.address));

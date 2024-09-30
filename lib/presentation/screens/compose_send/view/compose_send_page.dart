@@ -22,7 +22,6 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
@@ -152,36 +151,39 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       return ComposeBasePage<ComposeSendBloc, ComposeSendState>(
         address: widget.address,
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-        buildInitialFormFields: (context, state, loading, error) =>
-            _buildInitialFormFields(context, state, loading, error),
-        onInitialCancel: (context) => _handleInitialCancel(),
-        onInitialSubmit: (context, state) => _handleInitialSubmit(),
-        buildConfirmationFormFields: _buildConfirmationDetails,
-        onConfirmationBack: (context) => {
-          context
-              .read<ComposeSendBloc>()
-              .add(FetchFormData(currentAddress: widget.address))
+        onFeeChange: (fee) =>
+            context.read<ComposeSendBloc>().add(ChangeFeeOption(value: fee)),
+        buildInitialFormFields: (state, loading, formKey) =>
+            _buildInitialFormFields(state, loading, formKey),
+        onInitialCancel: () => _handleInitialCancel(),
+        onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
+        buildConfirmationFormFields: (composeTransaction, formKey) =>
+            _buildConfirmationDetails(composeTransaction),
+        onConfirmationBack: () => context
+            .read<ComposeSendBloc>()
+            .add(FetchFormData(currentAddress: widget.address)),
+        onConfirmationContinue: (composeSend, fee, formKey) {
+          if (formKey.currentState!.validate()) {
+            context.read<ComposeSendBloc>().add(
+                  FinalizeTransactionEvent<ComposeSend>(
+                    composeTransaction: composeSend,
+                    fee: fee,
+                  ),
+                );
+          }
         },
-        onConfirmationContinue: (context, composeSend, fee) => {
-          context.read<ComposeSendBloc>().add(
-                FinalizeTransactionEvent<ComposeSend>(
-                  composeTransaction: composeSend,
-                  fee: fee,
-                ),
-              )
+        onFinalizeSubmit: (password, formKey) {
+          if (formKey.currentState!.validate()) {
+            context.read<ComposeSendBloc>().add(
+                  SignAndBroadcastTransactionEvent(
+                    password: password,
+                  ),
+                );
+          }
         },
-        onFinalizeSubmit: (context, password) => {
-          context.read<ComposeSendBloc>().add(
-                SignAndBroadcastTransactionEvent(
-                  password: password,
-                ),
-              )
-        },
-        onFinalizeCancel: (context) {
-          context
-              .read<ComposeSendBloc>()
-              .add(FetchFormData(currentAddress: widget.address));
-        },
+        onFinalizeCancel: () => context
+            .read<ComposeSendBloc>()
+            .add(FetchFormData(currentAddress: widget.address)),
       );
     });
   }
@@ -192,38 +194,39 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         .add(FetchFormData(currentAddress: widget.address));
   }
 
-  void _handleInitialSubmit() {
-    // form key is validated by parent
-    Decimal input = Decimal.parse(quantityController.text);
-    Balance? balance = balance_;
-    int quantity;
+  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      Decimal input = Decimal.parse(quantityController.text);
+      Balance? balance = balance_;
+      int quantity;
 
-    if (balance == null) {
-      throw Exception("invariant: No balance found for asset");
+      if (balance == null) {
+        throw Exception("invariant: No balance found for asset");
+      }
+
+      if (balance.assetInfo.divisible) {
+        quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+      } else {
+        quantity = input.toBigInt().toInt();
+      }
+
+      if (asset == null) {
+        throw Exception("no asset");
+      }
+
+      context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
+            sourceAddress: widget.address.address,
+            params: ComposeSendEventParams(
+              destinationAddress: destinationAddressController.text,
+              asset: asset!,
+              quantity: quantity,
+            ),
+          ));
     }
-
-    if (balance.assetInfo.divisible) {
-      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-    } else {
-      quantity = input.toBigInt().toInt();
-    }
-
-    if (asset == null) {
-      throw Exception("no asset");
-    }
-
-    context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
-          sourceAddress: widget.address.address,
-          params: ComposeSendEventParams(
-            destinationAddress: destinationAddressController.text,
-            asset: asset!,
-            quantity: quantity,
-          ),
-        ));
   }
 
-  List<Widget> _buildInitialFormFields(BuildContext context,
-      ComposeSendState state, bool loading, String? error) {
+  List<Widget> _buildInitialFormFields(
+      ComposeSendState state, bool loading, GlobalKey<FormState> formKey) {
     final width = MediaQuery.of(context).size.width;
     return [
       HorizonTextFormField(
@@ -231,7 +234,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         controller: fromAddressController,
         label: "Source",
         onFieldSubmitted: (value) {
-          _handleInitialSubmit();
+          _handleInitialSubmit(formKey);
         },
       ),
       const SizedBox(height: 16.0),
@@ -249,46 +252,21 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           return null;
         },
         onFieldSubmitted: (value) {
-          _handleInitialSubmit();
+          _handleInitialSubmit(formKey);
         },
       ),
       const SizedBox(height: 16.0),
       if (width > 768)
         Row(
             children: _buildQuantityAndAssetInputsForRow(
-                state, _handleInitialSubmit, loading)),
+                state, () => _handleInitialSubmit(formKey), loading)),
       if (width <= 768)
         Column(children: [
-          _buildQuantityInput(state, _handleInitialSubmit, loading),
+          _buildQuantityInput(
+              state, () => _handleInitialSubmit(formKey), loading),
           const SizedBox(height: 16.0),
           _buildAssetInput(state, loading)
         ]),
-      const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0),
-        child: Divider(
-          thickness: 1.0,
-        ),
-      ),
-      FeeSelectionV2(
-        value: state.feeOption,
-        feeEstimates: state.feeState.maybeWhen(
-          success: (feeEstimates) =>
-              FeeEstimateSuccess(feeEstimates: feeEstimates),
-          orElse: () => FeeEstimateLoading(),
-        ),
-        onSelected: (fee) {
-          context.read<ComposeSendBloc>().add(ChangeFeeOption(value: fee));
-        },
-        layout:
-            width > 768 ? FeeSelectionLayout.row : FeeSelectionLayout.column,
-        onFieldSubmitted: () => _handleInitialSubmit(),
-      ),
-      const SizedBox(height: 16.0),
-      if (error != null)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: Text(error, style: const TextStyle(color: Colors.red)),
-        ),
     ];
   }
 

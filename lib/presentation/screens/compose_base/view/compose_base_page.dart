@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/screens/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_cancel_button.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_continue_button.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_divider.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
 import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
@@ -16,15 +18,18 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
   final Address address;
-  final List<Widget> Function(BuildContext, S, bool, String?)
+  final List<Widget> Function(S, bool, GlobalKey<FormState>)
       buildInitialFormFields;
-  final void Function(BuildContext) onInitialCancel;
-  final void Function(BuildContext, S) onInitialSubmit;
-  final List<Widget> Function(dynamic) buildConfirmationFormFields;
-  final void Function(BuildContext) onConfirmationBack;
-  final void Function(BuildContext, dynamic, int) onConfirmationContinue;
-  final void Function(BuildContext, String) onFinalizeSubmit;
-  final void Function(BuildContext) onFinalizeCancel;
+  final void Function(FeeOption) onFeeChange;
+  final void Function() onInitialCancel;
+  final void Function(GlobalKey<FormState>) onInitialSubmit;
+  final List<Widget> Function(dynamic, GlobalKey<FormState>)
+      buildConfirmationFormFields;
+  final void Function() onConfirmationBack;
+  final void Function(dynamic, int, GlobalKey<FormState>)
+      onConfirmationContinue;
+  final void Function(String, GlobalKey<FormState>) onFinalizeSubmit;
+  final void Function() onFinalizeCancel;
 
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
@@ -32,6 +37,7 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     super.key,
     required this.address,
     required this.buildInitialFormFields,
+    required this.onFeeChange,
     required this.onInitialCancel,
     required this.onInitialSubmit,
     required this.dashboardActivityFeedBloc,
@@ -77,11 +83,11 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               state: state,
               error: error,
               loading: loading,
-              buildInitialFormFields: (context, state, formKey, loading,
-                      error) =>
-                  widget.buildInitialFormFields(context, state, loading, error),
+              buildInitialFormFields: (state, loading, formKey) =>
+                  widget.buildInitialFormFields(state, loading, formKey),
+              onFeeChange: widget.onFeeChange,
               onCancel: widget.onInitialCancel,
-              onSubmit: widget.onInitialSubmit,
+              onSubmit: (formKey) => widget.onInitialSubmit(formKey),
             ),
           SubmitError(error: var msg) => Padding(
               padding: const EdgeInsets.all(8.0),
@@ -99,10 +105,12 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               fee: fee,
               feeRate: feeRate,
               virtualSize: virtualSize,
-              buildConfirmationFormFields: widget.buildConfirmationFormFields,
+              buildConfirmationFormFields: (composeTransaction, formKey) =>
+                  widget.buildConfirmationFormFields(
+                      composeTransaction, formKey),
               onBack: widget.onConfirmationBack,
-              onContinue: (context, composeTransaction, fee) => widget
-                  .onConfirmationContinue(context, composeTransaction, fee),
+              onContinue: (composeTransaction, fee, formKey) => widget
+                  .onConfirmationContinue(composeTransaction, fee, formKey),
             ),
           SubmitFinalizing(
             composeTransaction: var composeTransaction,
@@ -116,7 +124,8 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               fee: fee,
               error: error,
               loading: loading,
-              onSubmit: widget.onFinalizeSubmit,
+              onSubmit: (password, formKey) =>
+                  widget.onFinalizeSubmit(password, formKey),
               onCancel: widget.onFinalizeCancel,
             ),
           SubmitSuccess() => const SizedBox.shrink(),
@@ -132,11 +141,11 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
   final S state;
   final String? error;
   final bool loading;
-  final List<Widget> Function(
-          BuildContext, S, GlobalKey<FormState>, bool, String?)
+  final List<Widget> Function(S, bool, GlobalKey<FormState>)
       buildInitialFormFields;
-  final void Function(BuildContext) onCancel;
-  final void Function(BuildContext, S) onSubmit;
+  final void Function(FeeOption) onFeeChange;
+  final void Function() onCancel;
+  final void Function(GlobalKey<FormState>) onSubmit;
 
   const ComposeBaseInitialPage({
     super.key,
@@ -144,6 +153,7 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
     required this.error,
     required this.loading,
     required this.buildInitialFormFields,
+    required this.onFeeChange,
     required this.onCancel,
     required this.onSubmit,
   });
@@ -167,8 +177,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             ...widget
-                .buildInitialFormFields(context, widget.state, _formKey,
-                    widget.loading, widget.error)
+                .buildInitialFormFields(widget.state, widget.loading, _formKey)
                 .map((formWidget) {
               if (formWidget is HorizonTextFormField) {
                 return widget.loading
@@ -185,6 +194,23 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
               }
               return formWidget;
             }),
+            const HorizonDivider(),
+            FeeSelectionV2(
+              value: widget.state.feeOption,
+              feeEstimates: widget.state.feeState.maybeWhen(
+                success: (feeEstimates) =>
+                    FeeEstimateSuccess(feeEstimates: feeEstimates),
+                orElse: () => FeeEstimateLoading(),
+              ),
+              onSelected: widget.onFeeChange,
+              layout: MediaQuery.of(context).size.width > 768
+                  ? FeeSelectionLayout.row
+                  : FeeSelectionLayout.column,
+              onFieldSubmitted: () {
+                widget.onSubmit(_formKey);
+              },
+              enabled: !widget.loading,
+            ),
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -193,17 +219,12 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Divider(
-                thickness: 1.0,
-              ),
-            ),
+            const HorizonDivider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 HorizonCancelButton(
-                  onPressed: () => widget.onCancel(context),
+                  onPressed: widget.onCancel,
                   buttonText: 'CANCEL',
                 ),
                 HorizonContinueButton(
@@ -211,9 +232,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                   onPressed: widget.loading
                       ? () {}
                       : () {
-                          if (_formKey.currentState!.validate()) {
-                            widget.onSubmit(context, widget.state);
-                          }
+                          widget.onSubmit(_formKey);
                         },
                   buttonText: 'SUBMIT',
                 ),
@@ -232,9 +251,10 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
   final int fee;
   final int feeRate;
   final int virtualSize;
-  final List<Widget> Function(dynamic) buildConfirmationFormFields;
-  final void Function(BuildContext) onBack;
-  final void Function(BuildContext, dynamic, int) onContinue;
+  final List<Widget> Function(dynamic, GlobalKey<FormState>)
+      buildConfirmationFormFields;
+  final void Function() onBack;
+  final void Function(dynamic, int, GlobalKey<FormState>) onContinue;
 
   const ComposeBaseConfirmationPage({
     super.key,
@@ -272,7 +292,8 @@ class ComposeBaseConfirmationPageState
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16.0),
-            ...widget.buildConfirmationFormFields(widget.composeTransaction),
+            ...widget.buildConfirmationFormFields(
+                widget.composeTransaction, _formKey),
             HorizonTextFormField(
               label: "Fee",
               controller: TextEditingController(
@@ -280,17 +301,17 @@ class ComposeBaseConfirmationPageState
               ),
               enabled: false,
             ),
-            const SizedBox(height: 16.0),
+            const HorizonDivider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 HorizonCancelButton(
-                  onPressed: () => widget.onBack(context),
+                  onPressed: () => widget.onBack(),
                   buttonText: 'BACK',
                 ),
                 HorizonContinueButton(
                   onPressed: () => widget.onContinue(
-                      context, widget.composeTransaction, widget.fee),
+                      widget.composeTransaction, widget.fee, _formKey),
                   buttonText: 'CONTINUE',
                 ),
               ],
@@ -309,8 +330,8 @@ class ComposeBaseFinalizePage<S extends ComposeStateBase>
   final int fee;
   final String? error;
   final bool loading;
-  final void Function(BuildContext, String) onSubmit;
-  final void Function(BuildContext) onCancel;
+  final void Function(String, GlobalKey<FormState>) onSubmit;
+  final void Function() onCancel;
 
   const ComposeBaseFinalizePage({
     super.key,
@@ -353,23 +374,21 @@ class ComposeBaseFinalizePageState<S extends ComposeStateBase>
                 return null;
               },
               onFieldSubmitted: (value) {
-                if (_formKey.currentState!.validate()) {
-                  widget.onSubmit(context, value);
-                }
+                widget.onSubmit(value, _formKey);
               },
             ),
-            const SizedBox(height: 16.0),
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(widget.error!,
                     style: const TextStyle(color: redErrorText)),
               ),
+            const HorizonDivider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 HorizonCancelButton(
-                  onPressed: () => widget.onCancel(context),
+                  onPressed: widget.onCancel,
                   buttonText: 'BACK',
                 ),
                 HorizonContinueButton(
@@ -377,9 +396,7 @@ class ComposeBaseFinalizePageState<S extends ComposeStateBase>
                   onPressed: widget.loading
                       ? () {}
                       : () {
-                          if (_formKey.currentState!.validate()) {
-                            widget.onSubmit(context, _passwordController.text);
-                          }
+                          widget.onSubmit(_passwordController.text, _formKey);
                         },
                   buttonText: 'SIGN AND BROADCAST',
                 ),
