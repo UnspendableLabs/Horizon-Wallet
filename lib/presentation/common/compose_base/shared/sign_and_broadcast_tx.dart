@@ -1,11 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
-import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -38,6 +36,9 @@ Future<void> signAndBroadcastTransaction<T, S extends ComposeStateBase>({
   required TransactionLocalRepository transactionLocalRepository,
   required AnalyticsService analyticsService,
   required Logger logger,
+  required Function() extractParams,
+  required Function(String, String, String?, String?, int?, String?)
+      successAction,
 }) async {
   if (state.submitState is! SubmitFinalizing<T>) {
     return;
@@ -61,26 +62,7 @@ Future<void> signAndBroadcastTransaction<T, S extends ComposeStateBase>({
   late int quantity;
   late String asset;
 
-  switch (T) {
-    case ComposeSend:
-      final sendParams = params as ComposeSend;
-      source = sendParams.params.source;
-      rawTx = sendParams.rawtransaction;
-      destination = sendParams.params.destination;
-      quantity = sendParams.params.quantity;
-      asset = sendParams.params.asset;
-      break;
-    case ComposeIssuanceVerbose:
-      final issuanceParams = params as ComposeIssuanceVerbose;
-      source = issuanceParams.params.source;
-      rawTx = issuanceParams.rawtransaction;
-      destination = source; // For issuance, destination is the same as source
-      quantity = issuanceParams.params.quantity;
-      asset = issuanceParams.params.asset;
-      break;
-    default:
-      throw Exception("Unsupported transaction type");
-  }
+  (source, rawTx, destination, quantity, asset) = extractParams();
 
   try {
     final utxos = await utxoRepository.getUnspentForAddress(source);
@@ -113,28 +95,7 @@ Future<void> signAndBroadcastTransaction<T, S extends ComposeStateBase>({
         rawTx, addressPrivKey, source, utxoMap);
     String txHash = await bitcoindService.sendrawtransaction(txHex);
 
-    // Handle transaction storage
-    if (asset.toLowerCase() != 'btc') {
-      var txInfo = await transactionRepository.getInfoVerbose(txHex);
-      await transactionLocalRepository.insertVerbose(txInfo.copyWith(
-        hash: txHash,
-        source: source,
-      ));
-    } else {
-      await transactionLocalRepository.insertVerbose(TransactionInfoVerbose(
-        hash: txHash,
-        source: source,
-        destination: destination,
-        btcAmount: quantity,
-        domain: TransactionInfoDomainLocal(
-          raw: txHex,
-          submittedAt: DateTime.now(),
-        ),
-        btcAmountNormalized: quantity.toString(),
-        fee: 0,
-        data: "",
-      ));
-    }
+    await successAction(txHex, txHash, source, destination, quantity, asset);
 
     logger.d('Transaction broadcasted txHash: $txHash');
 

@@ -214,7 +214,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
+                child: SelectableText(
                   widget.error!,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
@@ -380,7 +380,7 @@ class ComposeBaseFinalizePageState<S extends ComposeStateBase>
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: Text(widget.error!,
+                child: SelectableText(widget.error!,
                     style: const TextStyle(color: redErrorText)),
               ),
             const HorizonDivider(),

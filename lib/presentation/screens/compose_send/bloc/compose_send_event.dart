@@ -3,18 +3,6 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 
 abstract class ComposeSendEvent extends ComposeBaseEvent {}
 
-class ComposeSendEventParams {
-  final String destinationAddress;
-  final int quantity;
-  final String asset;
-
-  ComposeSendEventParams({
-    required this.destinationAddress,
-    required this.quantity,
-    required this.asset,
-  });
-}
-
 // class ComputeMaxQuantityEvent extends ComposeSendEvent {
 //   final String? asset;
 //   final int? feeRate;

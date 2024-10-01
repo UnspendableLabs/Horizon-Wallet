@@ -24,7 +24,6 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
-import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/shared/colors.dart';

@@ -3,6 +3,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -26,6 +27,18 @@ import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadca
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:logger/logger.dart';
+
+class ComposeSendEventParams {
+  final String destinationAddress;
+  final int quantity;
+  final String asset;
+
+  ComposeSendEventParams({
+    required this.destinationAddress,
+    required this.quantity,
+    required this.asset,
+  });
+}
 
 class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   final Logger logger = Logger();
@@ -258,37 +271,106 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    await composeTransaction<ComposeSend, ComposeSendState,
-        ComposeSendEventParams>(
-      state: state,
-      emit: emit,
-      event: event,
-      utxoRepository: utxoRepository,
-      composeRepository: composeRepository,
-      transactionService: transactionService,
-      logger: logger,
-    );
+    await composeTransaction<ComposeSend, ComposeSendState>(
+        state: state,
+        emit: emit,
+        event: event,
+        utxoRepository: utxoRepository,
+        composeRepository: composeRepository,
+        transactionService: transactionService,
+        logger: logger,
+        transactionHandler: (inputsSet, feeRate) async {
+          final sendParams = event.params;
+          // Dummy transaction to compute virtual size
+          final send = await composeRepository.composeSendVerbose(
+            event.sourceAddress,
+            sendParams.destinationAddress,
+            sendParams.asset,
+            sendParams.quantity,
+            true,
+            1,
+            null,
+            inputsSet,
+          );
+
+          final virtualSize =
+              transactionService.getVirtualSize(send.rawtransaction);
+          final int totalFee = virtualSize * feeRate;
+
+          final composeTransaction = await composeRepository.composeSendVerbose(
+            event.sourceAddress,
+            sendParams.destinationAddress,
+            sendParams.asset,
+            sendParams.quantity,
+            true,
+            totalFee,
+            null,
+            inputsSet,
+          );
+
+          return (composeTransaction, virtualSize);
+        });
   }
 
   @override
   onSignAndBroadcastTransaction(event, emit) async {
     await signAndBroadcastTransaction<ComposeSend, ComposeSendState>(
-      state: state,
-      emit: emit,
-      password: event.password,
-      addressRepository: addressRepository,
-      accountRepository: accountRepository,
-      walletRepository: walletRepository,
-      utxoRepository: utxoRepository,
-      encryptionService: encryptionService,
-      addressService: addressService,
-      transactionService: transactionService,
-      bitcoindService: bitcoindService,
-      composeRepository: composeRepository,
-      transactionRepository: transactionRepository,
-      transactionLocalRepository: transactionLocalRepository,
-      analyticsService: analyticsService,
-      logger: logger,
-    );
+        state: state,
+        emit: emit,
+        password: event.password,
+        addressRepository: addressRepository,
+        accountRepository: accountRepository,
+        walletRepository: walletRepository,
+        utxoRepository: utxoRepository,
+        encryptionService: encryptionService,
+        addressService: addressService,
+        transactionService: transactionService,
+        bitcoindService: bitcoindService,
+        composeRepository: composeRepository,
+        transactionRepository: transactionRepository,
+        transactionLocalRepository: transactionLocalRepository,
+        analyticsService: analyticsService,
+        logger: logger,
+        extractParams: () {
+          final sendParams =
+              (state.submitState as SubmitFinalizing<ComposeSend>)
+                  .composeTransaction;
+
+          final source = sendParams.params.source;
+          final rawTx = sendParams.rawtransaction;
+          final destination = sendParams.params.destination;
+          final quantity = sendParams.params.quantity;
+          final asset = sendParams.params.asset;
+
+          return (source, rawTx, destination, quantity, asset);
+        },
+        successAction:
+            (txHex, txHash, source, destination, quantity, asset) async {
+          // for now we don't track btc sends
+          if (asset!.toLowerCase() != 'btc') {
+            TransactionInfoVerbose txInfo =
+                await transactionRepository.getInfoVerbose(txHex);
+
+            await transactionLocalRepository.insertVerbose(txInfo.copyWith(
+                hash: txHash,
+                source:
+                    source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
+                ));
+          } else {
+            // TODO: this is a bit of a hack
+            transactionLocalRepository.insertVerbose(TransactionInfoVerbose(
+              hash: txHash,
+              source: source!,
+              destination: destination,
+              btcAmount: quantity,
+              domain: TransactionInfoDomainLocal(
+                  raw: txHex, submittedAt: DateTime.now()),
+              btcAmountNormalized:
+                  quantity.toString(), //TODO: this is temporary
+              fee: 0, // dummy values
+              data: "",
+            ));
+          }
+        });
   }
 }
