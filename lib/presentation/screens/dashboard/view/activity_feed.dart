@@ -11,7 +11,7 @@ import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;

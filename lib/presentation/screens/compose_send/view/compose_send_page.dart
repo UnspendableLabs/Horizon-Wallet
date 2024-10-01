@@ -29,8 +29,8 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_even
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -229,7 +229,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       ComposeSendState state, bool loading, GlobalKey<FormState> formKey) {
     final width = MediaQuery.of(context).size.width;
     return [
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         enabled: false,
         controller: fromAddressController,
         label: "Source",
@@ -238,7 +238,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         },
       ),
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         enabled: !loading,
         controller: destinationAddressController,
         label: "Destination",
@@ -294,7 +294,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           state, null, handleInitialSubmit, loading);
     }, success: (balances) {
       if (balances.isEmpty) {
-        return const HorizonTextFormField(
+        return const HorizonUI.HorizonTextFormField(
           enabled: false,
         );
       }
@@ -303,7 +303,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
       if (balance == null) {
-        return const HorizonTextFormField(
+        return const HorizonUI.HorizonTextFormField(
           enabled: false,
         );
       }
@@ -317,7 +317,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       void Function() handleInitialSubmit, bool loading) {
     return Stack(
       children: [
-        HorizonTextFormField(
+        HorizonUI.HorizonTextFormField(
           controller: quantityController,
           enabled: !loading,
           onChanged: (value) {
@@ -412,7 +412,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         orElse: () => const AssetDropdownLoading(),
         success: (balances) {
           if (balances.isEmpty) {
-            return const HorizonTextFormField(
+            return const HorizonUI.HorizonTextFormField(
               enabled: false,
               label: "No assets",
             );
@@ -460,13 +460,13 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeSend).params;
     return [
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Source Address",
         controller: TextEditingController(text: params.source),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Destination Address",
         controller: TextEditingController(text: params.destination),
         enabled: false,
@@ -475,7 +475,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       Row(
         children: [
           Expanded(
-            child: HorizonTextFormField(
+            child: HorizonUI.HorizonTextFormField(
               label: "Quantity",
               controller:
                   TextEditingController(text: params.quantityNormalized),
@@ -484,7 +484,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           ),
           const SizedBox(width: 16.0), // Spacing between inputs
           Expanded(
-            child: HorizonTextFormField(
+            child: HorizonUI.HorizonTextFormField(
               label: "Asset",
               controller: TextEditingController(text: params.asset),
               enabled: false,

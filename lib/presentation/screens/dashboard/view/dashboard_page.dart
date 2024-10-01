@@ -24,10 +24,10 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_st
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -103,7 +103,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                           ),
                           onPressed: () {
                             Navigator.of(modalSheetContext).pop();
-                            HorizonDialog.show(
+                            HorizonUI.HorizonDialog.show(
                               context: context,
                               body: Builder(builder: (context) {
                                 final bloc = context.watch<AccountFormBloc>();
@@ -117,7 +117,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                     },
                                 };
 
-                                return HorizonDialog(
+                                return HorizonUI.HorizonDialog(
                                   onBackButtonPressed: cb,
                                   title: "Add an account",
                                   body: const Padding(
@@ -228,7 +228,7 @@ class AccountSelectionButton extends StatelessWidget {
 
 class AddressAction extends StatelessWidget {
   final bool isDarkTheme;
-  final HorizonDialog dialog;
+  final HorizonUI.HorizonDialog dialog;
   final IconData icon;
   final String text;
   final double? iconSize;
@@ -258,7 +258,7 @@ class AddressAction extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              HorizonDialog.show(context: context, body: dialog);
+              HorizonUI.HorizonDialog.show(context: context, body: dialog);
             },
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -313,7 +313,7 @@ class AddressActions extends StatelessWidget {
           children: [
             AddressAction(
               isDarkTheme: isDarkTheme,
-              dialog: HorizonDialog(
+              dialog: HorizonUI.HorizonDialog(
                 title: "Compose Send",
                 body: ComposeSendPageWrapper(
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -327,7 +327,7 @@ class AddressActions extends StatelessWidget {
             ),
             AddressAction(
               isDarkTheme: isDarkTheme,
-              dialog: HorizonDialog(
+              dialog: HorizonUI.HorizonDialog(
                 title: "Compose Issuance",
                 body: ComposeIssuancePageWrapper(
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -340,7 +340,7 @@ class AddressActions extends StatelessWidget {
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,
-                dialog: HorizonDialog(
+                dialog: HorizonUI.HorizonDialog(
                   title: "Receive",
                   body: QRCodeDialog(
                     currentAddress: currentAddress,
@@ -574,9 +574,9 @@ class QRCodeDialog extends StatelessWidget {
             _ => TextButton(
                 child: const Text("Add a new address"),
                 onPressed: () {
-                  HorizonDialog.show(
+                  HorizonUI.HorizonDialog.show(
                     context: context,
-                    body: HorizonDialog(
+                    body: HorizonUI.HorizonDialog(
                       title: "Add a new address\nto ${account.name}",
                       titleAlign: Alignment.center,
                       body: Padding(

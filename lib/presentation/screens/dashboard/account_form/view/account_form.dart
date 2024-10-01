@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
-import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 final validAccount = RegExp(r"^\d\'$");
@@ -121,7 +120,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        HorizonTextFormField(
+                        HorizonUI.HorizonTextFormField(
                           controller: nameController,
                           label: "Name",
                           validator: (String? value) {
@@ -132,7 +131,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                           },
                           onEditingComplete: handleSubmit,
                         ),
-                        HorizonDialogSubmitButton(
+                        HorizonUI.HorizonDialogSubmitButton(
                           textChild: const Text('CONTINUE'),
                           onPressed: handleSubmit,
                         )
@@ -176,7 +175,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    HorizonTextFormField(
+                    HorizonUI.HorizonTextFormField(
                       enabled: state is! Step2Loading,
                       controller: passwordController,
                       obscureText: true,
@@ -200,7 +199,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                         ),
                       ),
                     const SizedBox(height: 16),
-                    HorizonDialogSubmitButton(
+                    HorizonUI.HorizonDialogSubmitButton(
                       textChild: state is Step2Loading
                           ? const SizedBox(
                               width: 20,

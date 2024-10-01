@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ImportFormatDropdown extends StatelessWidget {
   final Function(String) onChanged;
@@ -16,7 +16,7 @@ class ImportFormatDropdown extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: SelectableText('Wallet Type'),
         ),
-        HorizonDropdownMenu(
+        HorizonUI.HorizonDropdownMenu(
           controller: TextEditingController(),
           onChanged: (String? value) {
             if (value != null) {
@@ -25,13 +25,13 @@ class ImportFormatDropdown extends StatelessWidget {
           },
           selectedValue: selectedFormat,
           items: [
-            buildDropdownMenuItem(
+            HorizonUI.buildDropdownMenuItem(
                 ImportFormat.horizon.name, ImportFormat.horizon.description),
-            buildDropdownMenuItem(
+            HorizonUI.buildDropdownMenuItem(
               ImportFormat.counterwallet.name,
               ImportFormat.counterwallet.description,
             ),
-            buildDropdownMenuItem(
+            HorizonUI.buildDropdownMenuItem(
               ImportFormat.freewallet.name,
               ImportFormat.freewallet.description,
             ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 enum FeeSelectionLayout { row, column }
 
@@ -170,7 +170,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
       maintainState: true,
       maintainAnimation: true,
       maintainSize: false,
-      child: HorizonTextFormField(
+      child: HorizonUI.HorizonTextFormField(
         label: 'Custom fee (sats/vbyte)',
         keyboardType: TextInputType.number,
         inputFormatters: [
