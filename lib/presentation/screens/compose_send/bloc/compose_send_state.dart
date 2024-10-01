@@ -1,5 +1,3 @@
-// lib/presentation/screens/compose_send/bloc/compose_send_state.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 

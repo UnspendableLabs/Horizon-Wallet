@@ -1,5 +1,3 @@
-// lib/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';

@@ -15,7 +15,6 @@ class AssetDropdownLoading extends StatelessWidget {
           floatingLabelBehavior: FloatingLabelBehavior.always,
         ),
         initialSelection: "",
-        // enabled: false,
         label: const Text('Asset'),
         dropdownMenuEntries:
             [const DropdownMenuEntry<String>(value: "", label: "")].toList(),
