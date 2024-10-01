@@ -1,11 +1,7 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -19,6 +15,11 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
+import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -27,8 +28,25 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:logger/logger.dart';
 
-class ComposeIssuanceBloc
-    extends Bloc<ComposeIssuanceEvent, ComposeIssuanceState> {
+class ComposeIssuanceEventParams {
+  final String name;
+  final int quantity;
+  final String description;
+  final bool divisible;
+  final bool lock;
+  final bool reset;
+
+  ComposeIssuanceEventParams({
+    required this.name,
+    required this.quantity,
+    required this.description,
+    required this.divisible,
+    required this.lock,
+    required this.reset,
+  });
+}
+
+class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   final Logger logger = Logger();
   final AddressRepository addressRepository;
   final BalanceRepository balanceRepository;
@@ -62,220 +80,171 @@ class ComposeIssuanceBloc
     required this.analyticsService,
   }) : super(ComposeIssuanceState(
             submitState: const SubmitInitial(),
-            feeOption: FeeOption.Medium())) {
-    on<ChangeFeeOption>((event, emit) async {
-      final value = event.value;
-      emit(state.copyWith(feeOption: value));
-    });
-    on<FetchFormData>((event, emit) async {
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            quantity: '')) {
+    // Event handlers specific to issuance
+    on<FetchBalances>(_onFetchBalances);
+  }
+
+  _onFetchBalances(FetchBalances event, emit) async {
+    emit(state.copyWith(balancesState: const BalancesState.loading()));
+    try {
+      List<Balance> balances =
+          await balanceRepository.getBalancesForAddress(event.address);
+      emit(state.copyWith(balancesState: BalancesState.success(balances)));
+    } catch (e) {
+      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
+    }
+  }
+
+  @override
+  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+    final value = event.value;
+    emit(state.copyWith(feeOption: value));
+  }
+
+  @override
+  void onFetchFormData(FetchFormData event, emit) async {
+    emit(state.copyWith(
+        balancesState: const BalancesState.loading(),
+        submitState: const SubmitInitial()));
+
+    late List<Balance> balances;
+    late FeeEstimates feeEstimates;
+
+    try {
+      List<Address> addresses = [event.currentAddress];
+
+      balances =
+          await balanceRepository.getBalancesForAddress(addresses[0].address);
+    } catch (e) {
       emit(state.copyWith(
-          balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial()));
-
-      late List<Balance> balances;
-      late FeeEstimates feeEstimates;
-
-      try {
-        List<Address> addresses = [event.currentAddress];
-
-        balances =
-            await balanceRepository.getBalancesForAddress(addresses[0].address);
-      } catch (e) {
-        emit(state.copyWith(
-          balancesState: BalancesState.error(e.toString()),
-        ));
-        return;
-      }
-
-      try {
-        feeEstimates = await GetFeeEstimates(
-          targets: (1, 3, 6),
-          bitcoindService: bitcoindService,
-        ).call();
-      } catch (e) {
-        emit(state.copyWith(feeState: FeeState.error(e.toString())));
-        return;
-      }
-
-      emit(state.copyWith(
-        balancesState: BalancesState.success(balances),
-        feeState: FeeState.success(feeEstimates),
+        balancesState: BalancesState.error(e.toString()),
       ));
-    });
+      return;
+    }
 
-    on<FetchBalances>((event, emit) async {
-      emit(state.copyWith(balancesState: const BalancesState.loading()));
-      try {
-        List<Balance> balances =
-            await balanceRepository.getBalancesForAddress(event.address);
-        emit(state.copyWith(balancesState: BalancesState.success(balances)));
-      } catch (e) {
-        emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-      }
-    });
+    try {
+      feeEstimates = await GetFeeEstimates(
+        targets: (1, 3, 6),
+        bitcoindService: bitcoindService,
+      ).call();
+    } catch (e) {
+      emit(state.copyWith(feeState: FeeState.error(e.toString())));
+      return;
+    }
 
-    on<ComposeTransactionEvent>((event, emit) async {
-      FeeEstimates? feeEstimates = state.feeState
-          .maybeWhen(success: (value) => value, orElse: () => null);
+    emit(state.copyWith(
+      balancesState: BalancesState.success(balances),
+      feeState: FeeState.success(feeEstimates),
+    ));
+  }
 
-      if (feeEstimates == null) {
-        return;
-      }
-      emit(state.copyWith(submitState: const SubmitInitial(loading: true)));
+  @override
+  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+    await composeTransaction<ComposeIssuanceVerbose, ComposeIssuanceState>(
+        state: state,
+        emit: emit,
+        event: event,
+        utxoRepository: utxoRepository,
+        composeRepository: composeRepository,
+        transactionService: transactionService,
+        logger: logger,
+        transactionHandler: (inputsSet, feeRate) async {
+          final issuanceParams = event.params;
+          // Dummy transaction to compute virtual size
+          final issuance = await composeRepository.composeIssuanceVerbose(
+            event.sourceAddress,
+            issuanceParams.name,
+            issuanceParams.quantity,
+            issuanceParams.divisible,
+            issuanceParams.lock,
+            issuanceParams.reset,
+            issuanceParams.description,
+            null,
+            true,
+            1,
+            inputsSet,
+          );
 
-      final source = event.sourceAddress;
-      final quantity = event.quantity;
-      final name = event.name;
-      final divisible = event.divisible;
-      final lock = event.lock;
-      final reset = event.reset;
-      final description = event.description;
-      final feeRate = switch (state.feeOption) {
-        FeeOption.Fast() => feeEstimates.fast,
-        FeeOption.Medium() => feeEstimates.medium,
-        FeeOption.Slow() => feeEstimates.slow,
-        FeeOption.Custom(fee: var fee) => fee,
-      };
-      // final transferDestination = event.transferDestination;
+          final virtualSize =
+              transactionService.getVirtualSize(issuance.rawtransaction);
+          final int totalFee = virtualSize * feeRate;
 
-      try {
-        final utxos = await utxoRepository.getUnspentForAddress(source);
-        final inputsSet = utxos.isEmpty ? null : utxos;
+          final composeTransaction =
+              await composeRepository.composeIssuanceVerbose(
+            event.sourceAddress,
+            issuanceParams.name,
+            issuanceParams.quantity,
+            issuanceParams.divisible,
+            issuanceParams.lock,
+            issuanceParams.reset,
+            issuanceParams.description,
+            null,
+            true,
+            totalFee,
+            inputsSet,
+          );
 
-        ComposeIssuanceVerbose issuance =
-            await composeRepository.composeIssuanceVerbose(
-                source,
-                name,
-                quantity,
-                divisible,
-                lock,
-                reset,
-                description,
-                null,
-                true,
-                1,
-                inputsSet);
+          return (composeTransaction, virtualSize);
+        });
+  }
 
-        final virtualSize =
-            transactionService.getVirtualSize(issuance.rawtransaction);
+  @override
+  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeIssuanceVerbose>(
+      loading: false,
+      error: null,
+      composeTransaction: event.composeTransaction,
+      fee: event.fee,
+    )));
+  }
 
-        final totalFee = virtualSize * feeRate;
+  @override
+  void onSignAndBroadcastTransaction(
+      SignAndBroadcastTransactionEvent event, emit) async {
+    await signAndBroadcastTransaction<ComposeIssuanceVerbose,
+            ComposeIssuanceState>(
+        state: state,
+        emit: emit,
+        password: event.password,
+        addressRepository: addressRepository,
+        accountRepository: accountRepository,
+        walletRepository: walletRepository,
+        utxoRepository: utxoRepository,
+        encryptionService: encryptionService,
+        addressService: addressService,
+        transactionService: transactionService,
+        bitcoindService: bitcoindService,
+        composeRepository: composeRepository,
+        transactionRepository: transactionRepository,
+        transactionLocalRepository: transactionLocalRepository,
+        analyticsService: analyticsService,
+        logger: logger,
+        extractParams: () {
+          final issuanceParams =
+              (state.submitState as SubmitFinalizing<ComposeIssuanceVerbose>)
+                  .composeTransaction;
+          final source = issuanceParams.params.source;
+          final rawTx = issuanceParams.rawtransaction;
+          final destination =
+              source; // For issuance, destination is the same as source
+          final quantity = issuanceParams.params.quantity;
+          final asset = issuanceParams.params.asset;
 
-        ComposeIssuanceVerbose issuanceActual =
-            await composeRepository.composeIssuanceVerbose(
-                source,
-                name,
-                quantity,
-                divisible,
-                lock,
-                reset,
-                description,
-                null,
-                true,
-                totalFee,
-                inputsSet);
+          return (source, rawTx, destination, quantity, asset);
+        },
+        successAction:
+            (txHex, txHash, source, destination, quantity, asset) async {
+          TransactionInfoVerbose txInfo =
+              await transactionRepository.getInfoVerbose(txHex);
 
-        logger.d('rawTx: ${issuanceActual.rawtransaction}');
-
-        emit(state.copyWith(
-            submitState: SubmitComposing(SubmitStateComposingIssuance(
-                composeIssuance: issuanceActual,
-                virtualSize: virtualSize,
-                fee: totalFee,
-                feeRate: feeRate))));
-      } catch (error) {
-        emit(state.copyWith(
-            submitState:
-                SubmitInitial(loading: false, error: error.toString())));
-      }
-    });
-
-    on<FinalizeTransactionEvent>((event, emit) async {
-      emit(state.copyWith(
-          submitState: SubmitFinalizing(
-        loading: false,
-        error: null,
-        composeIssuance: event.composeIssuance,
-        fee: event.fee,
-      )));
-    });
-
-    on<SignAndBroadcastTransactionEvent>((event, emit) async {
-      if (state.submitState is! SubmitFinalizing) {
-        return;
-      }
-
-      final issuanceParams =
-          (state.submitState as SubmitFinalizing).composeIssuance;
-      final fee = (state.submitState as SubmitFinalizing).fee;
-
-      emit(state.copyWith(
-          submitState: SubmitFinalizing(
-              loading: true,
-              error: null,
-              composeIssuance: issuanceParams,
-              fee: fee)));
-
-      final source = issuanceParams.params.source;
-      final password = event.password;
-
-      try {
-        final utxos = await utxoRepository.getUnspentForAddress(source);
-
-        final rawTx = issuanceParams.rawtransaction;
-
-        Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
-
-        Address? address = await addressRepository.getAddress(source);
-        Account? account =
-            await accountRepository.getAccountByUuid(address!.accountUuid);
-        Wallet? wallet = await walletRepository.getWallet(account!.walletUuid);
-        String? decryptedRootPrivKey;
-        try {
-          decryptedRootPrivKey = await encryptionService.decrypt(
-              wallet!.encryptedPrivKey, password);
-        } catch (e) {
-          throw Exception("Incorrect password");
-        }
-        String addressPrivKey = await addressService.deriveAddressPrivateKey(
-            rootPrivKey: decryptedRootPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            purpose: account.purpose,
-            coin: account.coinType,
-            account: account.accountIndex,
-            change: '0',
-            index: address.index,
-            importFormat: account.importFormat);
-
-        String txHex = await transactionService.signTransaction(
-            rawTx, addressPrivKey, source, utxoMap);
-
-        String txHash = await bitcoindService.sendrawtransaction(txHex);
-
-        TransactionInfoVerbose txInfo =
-            await transactionRepository.getInfoVerbose(txHex);
-
-        await transactionLocalRepository.insertVerbose(txInfo.copyWith(
-          hash: txHash,
-        ));
-
-        logger.d('issue broadcasted txHash: $txHash');
-
-        emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex)));
-
-        analyticsService.trackEvent('broadcast_tx_issue');
-      } catch (error) {
-        final issuanceParams =
-            (state.submitState as SubmitFinalizing).composeIssuance;
-        final fee = (state.submitState as SubmitFinalizing).fee;
-
-        emit(state.copyWith(
-            submitState: SubmitFinalizing(
-                loading: false,
-                error: error.toString(),
-                composeIssuance: issuanceParams,
-                fee: fee)));
-      }
-    });
+          await transactionLocalRepository.insertVerbose(txInfo.copyWith(
+            hash: txHash,
+          ));
+        });
   }
 }

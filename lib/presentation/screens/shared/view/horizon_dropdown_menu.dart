@@ -8,6 +8,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final T? selectedValue;
   final Icon? icon;
   final double? borderRadius;
+  final bool enabled;
 
   const HorizonDropdownMenu({
     super.key,
@@ -18,12 +19,14 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
     this.selectedValue,
     this.icon,
     this.borderRadius,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
       decoration: InputDecoration(
+        enabled: enabled,
         labelText: label,
         floatingLabelBehavior: FloatingLabelBehavior.never,
         contentPadding: const EdgeInsets.symmetric(
@@ -37,12 +40,25 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
         child: DropdownButton<T>(
           isExpanded: true,
           value: selectedValue ?? items.first.value,
-          onChanged: onChanged,
+          onChanged: enabled ? onChanged : null,
           items: items,
           borderRadius: BorderRadius.circular(borderRadius ?? 10),
           icon: icon,
         ),
       ),
+    );
+  }
+
+  HorizonDropdownMenu<T> copyWith({bool? enabled}) {
+    return HorizonDropdownMenu<T>(
+      items: items,
+      onChanged: onChanged,
+      label: label,
+      controller: controller,
+      selectedValue: selectedValue,
+      icon: icon,
+      borderRadius: borderRadius,
+      enabled: enabled ?? this.enabled,
     );
   }
 }

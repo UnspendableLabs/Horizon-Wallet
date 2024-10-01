@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/screens/shared/view/horizon_divider.dart';
 
 class HorizonDialog extends StatelessWidget {
   final String title;
@@ -73,7 +74,7 @@ class HorizonDialog extends StatelessWidget {
                 ],
               ),
             ),
-            _buildSeparator(),
+            const HorizonDivider(),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: body,
@@ -137,7 +138,7 @@ class HorizonDialogSubmitButton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSeparator(),
+          const HorizonDivider(),
           Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: ConstrainedBox(
@@ -178,13 +179,4 @@ class HorizonDialogSubmitButton extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _buildSeparator() {
-  return const Padding(
-    padding: EdgeInsets.all(0.0),
-    child: Divider(
-      thickness: 1.0,
-    ),
-  );
 }

@@ -1,5 +1,4 @@
 import 'package:posthog_flutter/posthog_flutter.dart';
-import 'package:js/js.dart';
 import 'package:logger/logger.dart';
 import 'dart:js' as js;
 import 'package:horizon/domain/services/analytics_service.dart';
