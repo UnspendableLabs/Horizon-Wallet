@@ -132,9 +132,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   }
 
   void _handleInitialCancel() {
-    context
-        .read<ComposeIssuanceBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    Navigator.of(context).pop();
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {

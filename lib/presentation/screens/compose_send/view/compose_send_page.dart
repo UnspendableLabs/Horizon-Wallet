@@ -189,9 +189,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   }
 
   void _handleInitialCancel() {
-    context
-        .read<ComposeSendBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    Navigator.of(context).pop();
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {

@@ -19,6 +19,30 @@ class AssetRepositoryImpl implements AssetRepository {
     return a.Asset(
         asset: asset.asset,
         assetLongname: asset.assetLongname,
-        divisible: asset.divisible);
+        divisible: asset.divisible,
+        issuer: asset.issuer,
+        owner: asset.owner,
+        supply: asset.supply);
+  }
+
+  @override
+  Future<List<a.Asset>> getValidAssetsByIssuer(String address) async {
+    final response = await api.getValidAssetsByIssuer(address);
+
+    if (response.result == null) {
+      return [];
+    }
+
+    final assets = response.result!;
+
+    return assets
+        .map((e) => a.Asset(
+            asset: e.asset,
+            assetLongname: e.assetLongname,
+            divisible: e.divisible,
+            issuer: e.issuer,
+            owner: e.owner,
+            supply: e.supply))
+        .toList();
   }
 }

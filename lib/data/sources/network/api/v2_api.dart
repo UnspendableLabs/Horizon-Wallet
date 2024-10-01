@@ -968,19 +968,28 @@ class EventCount {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Asset {
-  final String asset;
-  final String assetLongname;
-  final String description;
+  final String? asset;
+  final String? assetLongname;
+  final String? description;
   final String? issuer;
-  final bool divisible;
-  final bool locked;
+  final String? owner;
+  final bool? divisible;
+  final bool? locked;
+  final int? supply;
+  final bool? confirmed;
+  final String? supplyNormalized;
+
   const Asset({
-    required this.asset,
-    required this.assetLongname,
-    required this.description,
-    required this.divisible,
-    required this.locked,
-    this.issuer, // TODO: validate shape
+    this.asset,
+    this.assetLongname,
+    this.description,
+    this.divisible,
+    this.locked,
+    this.issuer,
+    this.owner,
+    this.supply,
+    this.confirmed,
+    this.supplyNormalized,
   });
   factory Asset.fromJson(Map<String, dynamic> json) => _$AssetFromJson(json);
 }
@@ -2359,6 +2368,18 @@ abstract class V2Api {
     @Path("address") String address, [
     @Query("verbose") bool? verbose,
     @Query("limit") int? limit,
+  ]);
+
+  @GET("/addresses/{address}/assets")
+  Future<Response<List<Asset>>> getValidAssetsByIssuer(
+    // ?named}{&cursor}{&limit}{&offset}{&verbose}{&show_unconfirmed}
+    @Path("address") String address, [
+    @Query("named") String? named,
+    @Query("verbose") bool? verbose,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   // @Verbose()

@@ -10,6 +10,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
+import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -39,6 +40,7 @@ import 'package:flutter/gestures.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
+import 'package:collection/collection.dart';
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -407,6 +409,7 @@ class DashboardPageWrapper extends StatelessWidget {
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     addressTxRepository: GetIt.I.get<AddressTxRepository>(),
+                    assetRepository: GetIt.I.get<AssetRepository>(),
                     currentAddress: data.currentAddress,
                   )..add(Start(pollingInterval: const Duration(seconds: 60))),
                 ),
@@ -641,7 +644,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated) {
+      ok: (balances, aggregated, assets) {
         if (balances.isEmpty) {
           return [
             const NoData(
@@ -672,7 +675,6 @@ class BalancesSliverState extends State<BalancesSliver> {
 
         List<Widget> widgets = displayedEntries.expand((entry) {
           final isLastEntry = entry == orderedEntries.last;
-
           final isClickable = entry.key != 'BTC';
 
           final Color textColor = isClickable
@@ -681,6 +683,16 @@ class BalancesSliverState extends State<BalancesSliver> {
                   ? greyDashboardTextDarkTheme
                   : greyDashboardTextLightTheme);
 
+          final currentAsset =
+              assets.firstWhereOrNull((asset) => asset.asset == entry.key);
+          print('Current asset: $currentAsset');
+          final bool isOwner = currentAsset?.owner ==
+              context.read<ShellStateCubit>().state.maybeWhen(
+                    success: (state) => state.currentAddress.address,
+                    orElse: () => throw Exception("invariant: no address"),
+                  );
+          print('Is owner: $isOwner');
+
           return [
             Padding(
               padding:
@@ -688,23 +700,102 @@ class BalancesSliverState extends State<BalancesSliver> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SelectableText.rich(
-                    TextSpan(
-                      text: '${entry.key} ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
+                  Expanded(
+                    child: SelectableText.rich(
+                      TextSpan(
+                        text: '${entry.key} ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                        recognizer: isClickable
+                            ? (TapGestureRecognizer()
+                              ..onTap = () => _launchAssetUrl(entry.key))
+                            : null,
                       ),
-                      recognizer: isClickable
-                          ? (TapGestureRecognizer()
-                            ..onTap = () => _launchAssetUrl(entry.key))
-                          : null,
                     ),
                   ),
                   SelectableText(
                     entry.value.quantityNormalized,
                     style: const TextStyle(fontSize: 14),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        iconSize: 16.0,
+                        icon: const Icon(Icons.send),
+                        onPressed: () {
+                          HorizonUI.HorizonDialog.show(
+                            context: context,
+                            body: HorizonUI.HorizonDialog(
+                              title: 'Compose Send',
+                              body: ComposeSendPageWrapper(
+                                dashboardActivityFeedBloc:
+                                    BlocProvider.of<DashboardActivityFeedBloc>(
+                                        context),
+                              ),
+                              includeBackButton: false,
+                              includeCloseButton: true,
+                            ),
+                          );
+                        },
+                      ),
+                      // if (isOwner)
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: (String result) {
+                          // Handle the selected action
+                          switch (result) {
+                            case 'reset':
+                              // Handle Reset Asset
+                              break;
+                            case 'lockDescription':
+                              // Handle Lock Description
+                              break;
+                            case 'lockQuantity':
+                              // Handle Lock Quantity
+                              break;
+                            case 'changeDescription':
+                              // Handle Change Description
+                              break;
+                            case 'issueMore':
+                              // Handle Issue More
+                              break;
+                            case 'issueSubasset':
+                              // Handle Issue Subasset
+                              break;
+                          }
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: 'reset',
+                            child: Text('Reset Asset'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'lockDescription',
+                            child: Text('Lock Description'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'lockQuantity',
+                            child: Text('Lock Quantity'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'changeDescription',
+                            child: Text('Change Description'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'issueMore',
+                            child: Text('Issue More'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'issueSubasset',
+                            child: Text('Issue Subasset'),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
