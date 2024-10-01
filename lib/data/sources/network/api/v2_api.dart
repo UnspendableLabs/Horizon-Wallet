@@ -1285,6 +1285,102 @@ class ComposeIssuanceVerboseParams extends ComposeIssuanceParams {
       _$ComposeIssuanceVerboseParamsFromJson(json);
 }
 
+@JsonSerializable()
+class ComposeDispenser {
+  final String rawtransaction;
+  final ComposeDispenserParams params;
+  final String name;
+
+  const ComposeDispenser({
+    required this.rawtransaction,
+    required this.params,
+    required this.name,
+  });
+
+  factory ComposeDispenser.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserFromJson(json);
+}
+
+// Params class for ComposeDispenser
+@JsonSerializable()
+class ComposeDispenserParams {
+  final String source;
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainRate;
+  final int status;
+  final String? openAddress;
+  final String? oracleAddress;
+  final AssetInfo assetInfo;
+  final String giveQuantityNormalized;
+  final String escrowQuantityNormalized;
+
+  ComposeDispenserParams({
+    required this.source,
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainRate,
+    required this.status,
+    this.openAddress,
+    this.oracleAddress,
+    required this.assetInfo,
+    required this.giveQuantityNormalized,
+    required this.escrowQuantityNormalized,
+  });
+
+  factory ComposeDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ComposeDispenserVerbose extends ComposeDispenser {
+  @override
+  final ComposeDispenserVerboseParams params;
+
+  ComposeDispenserVerbose({
+    required super.rawtransaction,
+    required super.name,
+    required this.params,
+  }) : super(params: params);
+
+  factory ComposeDispenserVerbose.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserVerboseFromJson(json);
+}
+
+// Verbose params class for ComposeDispenserVerbose
+@JsonSerializable()
+class ComposeDispenserVerboseParams extends ComposeDispenserParams {
+  final int btcIn;
+  final int btcOut;
+  final int btcChange;
+  final int btcFee;
+  final String data;
+  // final UnpackedData unpackedData;
+
+  ComposeDispenserVerboseParams({
+    required super.source,
+    required super.asset,
+    required super.giveQuantity,
+    required super.escrowQuantity,
+    required super.mainchainRate,
+    required super.status,
+    required super.assetInfo,
+    required super.giveQuantityNormalized,
+    required super.escrowQuantityNormalized,
+    required this.btcIn,
+    required this.btcOut,
+    required this.btcChange,
+    required this.btcFee,
+    required this.data,
+    // required this.unpackedData,
+  });
+
+  factory ComposeDispenserVerboseParams.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserVerboseParamsFromJson(json);
+}
+
 // Send
 // {
 //                 "tx_index": 2726604,
@@ -2353,6 +2449,26 @@ abstract class V2Api {
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
   ]);
+
+
+@GET("/addresses/{address}/compose/dispenser?verbose=true")
+Future<Response<ComposeDispenserVerbose>> composeDispenserVerbose(
+  @Path("address") String address,
+  @Query("asset") String asset,
+  @Query("give_quantity") int giveQuantity,
+  @Query("escrow_quantity") int escrowQuantity,
+  @Query("mainchainrate") int mainchainRate,
+  @Query("status") int status, [
+  @Query("open_address") String? openAddress,
+  @Query("oracle_address") String? oracleAddress,
+
+  @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+  @Query("exact_fee") int? exactFee,
+  @Query("inputs_set") String? inputsSet,
+  @Query("unconfirmed") bool? unconfirmed,
+]);
+
+
 
   @GET("/addresses/{address}/transactions")
   Future<Response<List<Transaction>>> getTransactionsByAddress(

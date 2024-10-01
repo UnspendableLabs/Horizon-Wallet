@@ -21,4 +21,17 @@ abstract class ComposeRepository {
       bool? unconfirmed,
       int? fee,
       List<Utxo>? inputsSet]);
+
+  Future<ComposeDispenserVerbose> composeDispenserVerbose(
+      String sourceAddress,
+      String asset,
+      int giveQuantity,
+      int escrowQuantity,
+      int mainchainRate,
+      int status,
+      [String? openAddress,
+      String? oracleAddress,
+      bool? allowUnconfirmedTx,
+      int? fee,
+      List<Utxo>? inputsSet]);
 }

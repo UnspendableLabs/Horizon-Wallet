@@ -1104,6 +1104,108 @@ Map<String, dynamic> _$ComposeIssuanceVerboseParamsToJson(
       'quantity_normalized': instance.quantityNormalized,
     };
 
+ComposeDispenser _$ComposeDispenserFromJson(Map<String, dynamic> json) =>
+    ComposeDispenser(
+      rawtransaction: json['rawtransaction'] as String,
+      params: ComposeDispenserParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+      name: json['name'] as String,
+    );
+
+Map<String, dynamic> _$ComposeDispenserToJson(ComposeDispenser instance) =>
+    <String, dynamic>{
+      'rawtransaction': instance.rawtransaction,
+      'params': instance.params,
+      'name': instance.name,
+    };
+
+ComposeDispenserParams _$ComposeDispenserParamsFromJson(
+        Map<String, dynamic> json) =>
+    ComposeDispenserParams(
+      source: json['source'] as String,
+      asset: json['asset'] as String,
+      giveQuantity: (json['giveQuantity'] as num).toInt(),
+      escrowQuantity: (json['escrowQuantity'] as num).toInt(),
+      mainchainRate: (json['mainchainRate'] as num).toInt(),
+      status: (json['status'] as num).toInt(),
+      openAddress: json['openAddress'] as String?,
+      oracleAddress: json['oracleAddress'] as String?,
+      assetInfo: AssetInfo.fromJson(json['assetInfo'] as Map<String, dynamic>),
+      giveQuantityNormalized: json['giveQuantityNormalized'] as String,
+      escrowQuantityNormalized: json['escrowQuantityNormalized'] as String,
+    );
+
+Map<String, dynamic> _$ComposeDispenserParamsToJson(
+        ComposeDispenserParams instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'asset': instance.asset,
+      'giveQuantity': instance.giveQuantity,
+      'escrowQuantity': instance.escrowQuantity,
+      'mainchainRate': instance.mainchainRate,
+      'status': instance.status,
+      'openAddress': instance.openAddress,
+      'oracleAddress': instance.oracleAddress,
+      'assetInfo': instance.assetInfo,
+      'giveQuantityNormalized': instance.giveQuantityNormalized,
+      'escrowQuantityNormalized': instance.escrowQuantityNormalized,
+    };
+
+ComposeDispenserVerbose _$ComposeDispenserVerboseFromJson(
+        Map<String, dynamic> json) =>
+    ComposeDispenserVerbose(
+      rawtransaction: json['rawtransaction'] as String,
+      name: json['name'] as String,
+      params: ComposeDispenserVerboseParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$ComposeDispenserVerboseToJson(
+        ComposeDispenserVerbose instance) =>
+    <String, dynamic>{
+      'rawtransaction': instance.rawtransaction,
+      'name': instance.name,
+      'params': instance.params,
+    };
+
+ComposeDispenserVerboseParams _$ComposeDispenserVerboseParamsFromJson(
+        Map<String, dynamic> json) =>
+    ComposeDispenserVerboseParams(
+      source: json['source'] as String,
+      asset: json['asset'] as String,
+      giveQuantity: (json['giveQuantity'] as num).toInt(),
+      escrowQuantity: (json['escrowQuantity'] as num).toInt(),
+      mainchainRate: (json['mainchainRate'] as num).toInt(),
+      status: (json['status'] as num).toInt(),
+      assetInfo: AssetInfo.fromJson(json['assetInfo'] as Map<String, dynamic>),
+      giveQuantityNormalized: json['giveQuantityNormalized'] as String,
+      escrowQuantityNormalized: json['escrowQuantityNormalized'] as String,
+      btcIn: (json['btcIn'] as num).toInt(),
+      btcOut: (json['btcOut'] as num).toInt(),
+      btcChange: (json['btcChange'] as num).toInt(),
+      btcFee: (json['btcFee'] as num).toInt(),
+      data: json['data'] as String,
+    );
+
+Map<String, dynamic> _$ComposeDispenserVerboseParamsToJson(
+        ComposeDispenserVerboseParams instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'asset': instance.asset,
+      'giveQuantity': instance.giveQuantity,
+      'escrowQuantity': instance.escrowQuantity,
+      'mainchainRate': instance.mainchainRate,
+      'status': instance.status,
+      'assetInfo': instance.assetInfo,
+      'giveQuantityNormalized': instance.giveQuantityNormalized,
+      'escrowQuantityNormalized': instance.escrowQuantityNormalized,
+      'btcIn': instance.btcIn,
+      'btcOut': instance.btcOut,
+      'btcChange': instance.btcChange,
+      'btcFee': instance.btcFee,
+      'data': instance.data,
+    };
+
 Send _$SendFromJson(Map<String, dynamic> json) => Send(
       txIndex: (json['tx_index'] as num).toInt(),
       txHash: json['tx_hash'] as String,
@@ -2642,6 +2744,62 @@ class _V2Api implements V2Api {
     final _value = Response<ComposeIssuanceVerbose>.fromJson(
       _result.data!,
       (json) => ComposeIssuanceVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeDispenserVerbose>> composeDispenserVerbose(
+    String address,
+    String asset,
+    int giveQuantity,
+    int escrowQuantity,
+    int mainchainRate,
+    int status, [
+    String? openAddress,
+    String? oracleAddress,
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'asset': asset,
+      r'give_quantity': giveQuantity,
+      r'escrow_quantity': escrowQuantity,
+      r'mainchainrate': mainchainRate,
+      r'status': status,
+      r'open_address': openAddress,
+      r'oracle_address': oracleAddress,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeDispenserVerbose>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/dispenser?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeDispenserVerbose>.fromJson(
+      _result.data!,
+      (json) => ComposeDispenserVerbose.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }
