@@ -62,7 +62,7 @@ class MockBitcoinTx extends Mock implements BitcoinTx {
   Decimal getAmountReceived(List<String> addresses) => Decimal.zero;
 
   @override
-  bool isCounterpartyTx(List<String> addresses) => false;
+  bool isCounterpartyTx() => false;
 }
 
 class MockStatus extends Mock implements Status {
