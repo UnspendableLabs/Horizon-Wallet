@@ -7,9 +7,9 @@ import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
@@ -210,7 +210,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: SelectableText(
+                child: Text(
                   widget.error!,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
@@ -376,7 +376,7 @@ class ComposeBaseFinalizePageState<S extends ComposeStateBase>
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: SelectableText(widget.error!,
+                child: Text(widget.error!,
                     style: const TextStyle(color: redErrorText)),
               ),
             const HorizonUI.HorizonDivider(),

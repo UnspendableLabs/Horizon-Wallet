@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import "package:horizon/presentation/colors.dart";
 import 'package:go_router/go_router.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Footer extends StatelessWidget {

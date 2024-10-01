@@ -26,8 +26,8 @@ import 'package:horizon/presentation/common/compose_base/view/compose_base_page.
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
+import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 import 'dart:math';
@@ -169,7 +169,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     final Widget assetNameField = state.balancesState.when(
-      initial: () => HorizonTextFormField(
+      initial: () => HorizonUI.HorizonTextFormField(
           enabled: false, controller: nameController, label: "Token name"),
       loading: () => Stack(
         children: [
@@ -210,7 +210,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
         return Stack(
           children: [
-            HorizonTextFormField(
+            HorizonUI.HorizonTextFormField(
               enabled: !loading,
               controller: nameController,
               label: "Token name",
@@ -246,7 +246,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
     );
 
     return [
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
         enabled: false,
         controller: fromAddressController,
@@ -255,7 +255,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
       const SizedBox(height: 16.0),
       assetNameField,
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         controller: quantityController,
         label: 'Quantity',
         keyboardType:
@@ -299,7 +299,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
             );
           }
 
-          return HorizonTextFormField(
+          return HorizonUI.HorizonTextFormField(
             controller: descriptionController,
             label: 'Description (optional)',
             onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
@@ -404,47 +404,47 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeIssuanceVerbose).params;
     return [
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Source Address",
         controller: TextEditingController(text: params.source),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Token name",
         controller: TextEditingController(text: composeTransaction.name),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Quantity",
         controller: TextEditingController(text: params.quantityNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       params.description != ''
-          ? HorizonTextFormField(
+          ? HorizonUI.HorizonTextFormField(
               label: "Description",
               controller: TextEditingController(text: params.description),
               enabled: false,
             )
           : const SizedBox.shrink(),
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Divisible",
         controller: TextEditingController(
             text: params.divisible == true ? 'true' : 'false'),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Lock",
         controller:
             TextEditingController(text: params.lock == true ? 'true' : 'false'),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      HorizonTextFormField(
+      HorizonUI.HorizonTextFormField(
         label: "Reset",
         controller: TextEditingController(
             text: params.reset == true ? 'true' : 'false'),

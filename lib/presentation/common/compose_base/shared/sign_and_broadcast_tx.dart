@@ -3,7 +3,6 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -96,15 +95,6 @@ Future<void> signAndBroadcastTransaction<T, S extends ComposeStateBase>({
     String txHash = await bitcoindService.sendrawtransaction(txHex);
 
     await successAction(txHex, txHash, source, destination, quantity, asset);
-
-    logger.d('Transaction broadcasted txHash: $txHash');
-
-    emit((state as dynamic).copyWith(
-      submitState: SubmitSuccess(transactionHex: txHash, sourceAddress: source),
-    ) as S);
-
-    analyticsService
-        .trackEvent('broadcast_tx_${T == ComposeSend ? 'send' : 'issue'}');
   } catch (error) {
     emit((state as dynamic).copyWith(
       submitState: SubmitFinalizing<T>(

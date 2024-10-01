@@ -7,11 +7,11 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:integration_test/integration_test.dart';
@@ -131,7 +131,7 @@ void main() {
 
       // Enter account name
       await tester.enterText(
-          find.byType(HorizonTextFormField).first, 'Test Account');
+          find.byType(HorizonUI.HorizonTextFormField).first, 'Test Account');
       await tester.pumpAndSettle();
 
       // Tap CONTINUE button
@@ -143,7 +143,7 @@ void main() {
 
       // Enter password
       await tester.enterText(
-          find.byType(HorizonTextFormField).last, 'password123');
+          find.byType(HorizonUI.HorizonTextFormField).last, 'password123');
       await tester.pumpAndSettle();
 
       // Tap SUBMIT button

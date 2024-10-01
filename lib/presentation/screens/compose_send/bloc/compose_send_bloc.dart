@@ -371,6 +371,13 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
               data: "",
             ));
           }
+          logger.d('send broadcasted txHash: $txHash');
+
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHash, sourceAddress: source!)));
+
+          analyticsService.trackEvent('broadcast_tx_send');
         });
   }
 }

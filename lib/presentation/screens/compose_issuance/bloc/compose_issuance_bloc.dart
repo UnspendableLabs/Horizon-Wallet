@@ -245,6 +245,14 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
           await transactionLocalRepository.insertVerbose(txInfo.copyWith(
             hash: txHash,
           ));
+
+          logger.d('issue broadcasted txHash: $txHash');
+
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex, sourceAddress: source!)));
+
+          analyticsService.trackEvent('broadcast_tx_issue');
         });
   }
 }

@@ -27,7 +27,7 @@ import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dar
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';

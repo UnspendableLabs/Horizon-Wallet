@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dropdown_menu.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class AssetDropdownLoading extends StatelessWidget {
   const AssetDropdownLoading({super.key});
@@ -93,14 +93,14 @@ class _AssetDropdownState extends State<AssetDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return HorizonDropdownMenu(
+    return HorizonUI.HorizonDropdownMenu(
       enabled: !widget.loading,
       controller: widget.controller,
       label: 'Asset',
       onChanged: widget.onSelected,
       selectedValue: widget.asset ?? orderedBalances[0].asset,
       items: orderedBalances.map<DropdownMenuItem<String>>((balance) {
-        return buildDropdownMenuItem(balance.asset, balance.asset);
+        return HorizonUI.buildDropdownMenuItem(balance.asset, balance.asset);
       }).toList(),
     );
   }

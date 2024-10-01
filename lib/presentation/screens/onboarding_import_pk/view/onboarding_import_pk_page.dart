@@ -16,7 +16,7 @@ import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dar
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingImportPKPageWrapper extends StatelessWidget {
