@@ -12,18 +12,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   ComposeRepositoryImpl({required this.api});
 
-  @override
-  Future<RawTransaction> composeSend(
-      String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx, int? fee]) async {
-    final response = await api.composeSend(
-        sourceAddress, destination, asset, quantity, allowUnconfirmedTx, fee);
-
-    if (response.result == null) {
-      throw Exception('Failed to compose send');
-    }
-    return RawTransaction(hex: response.result!.rawtransaction);
-  }
 
   @override
   Future<compose_send.ComposeSend> composeSendVerbose(
@@ -60,31 +48,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
         name: txVerbose.name);
   }
 
-  @override
-  Future<compose_issuance.ComposeIssuance> composeIssuance(
-      String sourceAddress, String name, int quantity,
-      [bool? divisible,
-      bool? lock,
-      bool? reset,
-      String? description,
-      String? transferDestination]) async {
-    final response = await api.composeIssuance(sourceAddress, name, quantity,
-        transferDestination, divisible, lock, reset, description, true);
-    if (response.result == null) {
-      throw Exception('Failed to compose issuance');
-    }
-    return compose_issuance.ComposeIssuance(
-        rawtransaction: response.result!.rawtransaction,
-        params: compose_issuance.ComposeIssuanceParams(
-            source: sourceAddress,
-            asset: name,
-            quantity: quantity,
-            divisible: divisible,
-            lock: lock,
-            description: description,
-            transferDestination: transferDestination),
-        name: name);
-  }
 
   @override
   Future<compose_issuance.ComposeIssuanceVerbose> composeIssuanceVerbose(
