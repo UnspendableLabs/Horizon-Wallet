@@ -1,3 +1,7 @@
+import 'dart:math';
+
+import 'package:collection/collection.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,34 +17,32 @@ import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
+import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
-import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
+import 'package:horizon/presentation/screens/dashboard/view/issuance_dialog.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-import 'dart:math';
-import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:flutter/gestures.dart';
-import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
-import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
-import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
-import 'package:collection/collection.dart';
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -734,6 +736,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                                 dashboardActivityFeedBloc:
                                     BlocProvider.of<DashboardActivityFeedBloc>(
                                         context),
+                                selectedAsset: currentAsset,
                               ),
                               includeBackButton: false,
                               includeCloseButton: true,
@@ -741,60 +744,46 @@ class BalancesSliverState extends State<BalancesSliver> {
                           );
                         },
                       ),
-                      // if (isOwner)
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: (String result) {
-                          // Handle the selected action
-                          switch (result) {
-                            case 'reset':
-                              // Handle Reset Asset
-                              break;
-                            case 'lockDescription':
-                              // Handle Lock Description
-                              break;
-                            case 'lockQuantity':
-                              // Handle Lock Quantity
-                              break;
-                            case 'changeDescription':
-                              // Handle Change Description
-                              break;
-                            case 'issueMore':
-                              // Handle Issue More
-                              break;
-                            case 'issueSubasset':
-                              // Handle Issue Subasset
-                              break;
-                          }
-                        },
-                        itemBuilder: (BuildContext context) =>
-                            <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'reset',
-                            child: Text('Reset Asset'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'lockDescription',
-                            child: Text('Lock Description'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'lockQuantity',
-                            child: Text('Lock Quantity'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'changeDescription',
-                            child: Text('Change Description'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'issueMore',
-                            child: Text('Issue More'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'issueSubasset',
-                            child: Text('Issue Subasset'),
-                          ),
-                        ],
-                      ),
+                      if (isOwner)
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          onSelected: (String result) {
+                            HorizonUI.HorizonDialog.show(
+                              context: context,
+                              body: IssuanceDialog(
+                                actionType: result,
+                                asset: currentAsset!,
+                              ),
+                            );
+                          },
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'reset',
+                              child: Text('Reset Asset'),
+                            ),
+                            // const PopupMenuItem<String>(
+                            //   value: 'lockDescription',
+                            //   child: Text('Lock Description'),
+                            // ),
+                            // const PopupMenuItem<String>(
+                            //   value: 'lockQuantity',
+                            //   child: Text('Lock Quantity'),
+                            // ),
+                            const PopupMenuItem<String>(
+                              value: 'changeDescription',
+                              child: Text('Change Description'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'issueMore',
+                              child: Text('Issue More'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'issueSubasset',
+                              child: Text('Issue Subasset'),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ],

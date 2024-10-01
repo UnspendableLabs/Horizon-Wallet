@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -34,9 +35,11 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final Asset? selectedAsset;
 
   const ComposeSendPageWrapper({
     required this.dashboardActivityFeedBloc,
+    this.selectedAsset,
     super.key,
   });
 
@@ -65,6 +68,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
         child: ComposeSendPage(
           address: state.currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+          selectedAsset: selectedAsset,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -75,10 +79,12 @@ class ComposeSendPageWrapper extends StatelessWidget {
 class ComposeSendPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
+  final Asset? selectedAsset;
   const ComposeSendPage({
     super.key,
     required this.dashboardActivityFeedBloc,
     required this.address,
+    this.selectedAsset,
   });
 
   @override
@@ -98,6 +104,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   void initState() {
     super.initState();
     fromAddressController.text = widget.address.address;
+    asset = widget.selectedAsset?.asset;
   }
 
   String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
@@ -424,6 +431,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               });
             }
           });
+          print('widget.selectedAsset: ${widget.selectedAsset}');
+          print('balances: $asset');
 
           return SizedBox(
             height: 48,
