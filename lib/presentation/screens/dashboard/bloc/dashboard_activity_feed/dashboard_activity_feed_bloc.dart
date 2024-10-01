@@ -122,7 +122,7 @@ class DashboardActivityFeedBloc
         newBitcoinTransactions = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx([address]),
+              (tx) => !tx.isCounterpartyTx(),
             )
             .toList();
       } else {
@@ -133,7 +133,7 @@ class DashboardActivityFeedBloc
         final bitcoinTxs = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx([address]),
+              (tx) => !tx.isCounterpartyTx(),
             )
             .toList();
 
@@ -387,7 +387,7 @@ class DashboardActivityFeedBloc
       final btcMempoolList = btcMempoolE
           .getOrElse((left) => throw left)
           .where(
-            (tx) => !tx.isCounterpartyTx(addresses),
+            (tx) => !tx.isCounterpartyTx(),
           )
           .toList();
 
