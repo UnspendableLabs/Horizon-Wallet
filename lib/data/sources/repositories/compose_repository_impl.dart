@@ -14,7 +14,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   ComposeRepositoryImpl({required this.api});
 
-
   @override
   Future<compose_send.ComposeSend> composeSendVerbose(
       String sourceAddress, String destination, String asset, int quantity,
@@ -49,7 +48,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
         rawtransaction: txVerbose.rawtransaction,
         name: txVerbose.name);
   }
-
 
   @override
   Future<compose_issuance.ComposeIssuanceVerbose> composeIssuanceVerbose(
@@ -109,7 +107,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
       String asset,
       int giveQuantity,
       int escrowQuantity,
-      int mainchainRate,
+      int mainchainrate,
       int status,
       [String? openAddress,
       String? oracleAddress,
@@ -124,7 +122,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         asset,
         giveQuantity,
         escrowQuantity,
-        mainchainRate,
+        mainchainrate,
         status,
         openAddress,
         oracleAddress,
@@ -139,22 +137,22 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final txVerbose = response.result!;
     return compose_dispenser.ComposeDispenserVerbose(
         rawtransaction: txVerbose.rawtransaction,
+        btcIn: txVerbose.btcIn,
+        btcOut: txVerbose.btcOut,
+        btcChange: txVerbose.btcChange,
+        btcFee: txVerbose.btcFee,
+        data: txVerbose.data,
         params: compose_dispenser.ComposeDispenserVerboseParams(
           source: txVerbose.params.source,
           asset: txVerbose.params.asset,
           giveQuantity: txVerbose.params.giveQuantity,
           escrowQuantity: txVerbose.params.escrowQuantity,
-          mainchainRate: txVerbose.params.mainchainRate,
+          mainchainrate: txVerbose.params.mainchainrate,
           status: txVerbose.params.status,
           openAddress: txVerbose.params.openAddress,
           oracleAddress: txVerbose.params.oracleAddress,
           giveQuantityNormalized: txVerbose.params.giveQuantityNormalized,
           escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
-          btcIn: txVerbose.params.btcIn,
-          btcOut: txVerbose.params.btcOut,
-          btcChange: txVerbose.params.btcChange,
-          btcFee: txVerbose.params.btcFee,
-          data: txVerbose.params.data,
         ),
         name: txVerbose.name);
   }

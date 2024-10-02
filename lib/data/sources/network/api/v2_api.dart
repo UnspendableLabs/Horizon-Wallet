@@ -1251,6 +1251,7 @@ class ComposeIssuanceParams {
       _$ComposeIssuanceParamsFromJson(json);
 }
 
+
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeIssuanceVerbose extends ComposeIssuance {
   @override
@@ -1302,13 +1303,13 @@ class ComposeDispenser {
 }
 
 // Params class for ComposeDispenser
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeDispenserParams {
   final String source;
   final String asset;
   final int giveQuantity;
   final int escrowQuantity;
-  final int mainchainRate;
+  final int mainchainrate;
   final int status;
   final String? openAddress;
   final String? oracleAddress;
@@ -1321,7 +1322,7 @@ class ComposeDispenserParams {
     required this.asset,
     required this.giveQuantity,
     required this.escrowQuantity,
-    required this.mainchainRate,
+    required this.mainchainrate,
     required this.status,
     this.openAddress,
     this.oracleAddress,
@@ -1338,11 +1339,21 @@ class ComposeDispenserParams {
 class ComposeDispenserVerbose extends ComposeDispenser {
   @override
   final ComposeDispenserVerboseParams params;
+  final int btcIn;
+  final int btcOut;
+  final int btcChange;
+  final int btcFee;
+  final String data;
 
   ComposeDispenserVerbose({
     required super.rawtransaction,
     required super.name,
     required this.params,
+    required this.btcIn,
+    required this.btcOut,
+    required this.btcChange,
+    required this.btcFee,
+    required this.data,
   }) : super(params: params);
 
   factory ComposeDispenserVerbose.fromJson(Map<String, dynamic> json) =>
@@ -1350,13 +1361,8 @@ class ComposeDispenserVerbose extends ComposeDispenser {
 }
 
 // Verbose params class for ComposeDispenserVerbose
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeDispenserVerboseParams extends ComposeDispenserParams {
-  final int btcIn;
-  final int btcOut;
-  final int btcChange;
-  final int btcFee;
-  final String data;
   // final UnpackedData unpackedData;
 
   ComposeDispenserVerboseParams({
@@ -1364,16 +1370,11 @@ class ComposeDispenserVerboseParams extends ComposeDispenserParams {
     required super.asset,
     required super.giveQuantity,
     required super.escrowQuantity,
-    required super.mainchainRate,
+    required super.mainchainrate,
     required super.status,
     required super.assetInfo,
     required super.giveQuantityNormalized,
     required super.escrowQuantityNormalized,
-    required this.btcIn,
-    required this.btcOut,
-    required this.btcChange,
-    required this.btcFee,
-    required this.data,
     // required this.unpackedData,
   });
 
@@ -2457,7 +2458,7 @@ Future<Response<ComposeDispenserVerbose>> composeDispenserVerbose(
   @Query("asset") String asset,
   @Query("give_quantity") int giveQuantity,
   @Query("escrow_quantity") int escrowQuantity,
-  @Query("mainchainrate") int mainchainRate,
+  @Query("mainchainrate") int mainchainrate,
   @Query("status") int status, [
   @Query("open_address") String? openAddress,
   @Query("oracle_address") String? oracleAddress,

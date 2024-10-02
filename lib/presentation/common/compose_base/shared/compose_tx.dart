@@ -58,6 +58,7 @@ Future<void> composeTransaction<T, S extends ComposeStateBase>({
       ),
     ) as S);
   } catch (error) {
+    rethrow;
     emit((state as dynamic).copyWith(
       submitState: SubmitInitial(loading: false, error: error.toString()),
     ) as S);

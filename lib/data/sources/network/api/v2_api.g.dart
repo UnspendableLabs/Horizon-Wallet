@@ -1124,15 +1124,15 @@ ComposeDispenserParams _$ComposeDispenserParamsFromJson(
     ComposeDispenserParams(
       source: json['source'] as String,
       asset: json['asset'] as String,
-      giveQuantity: (json['giveQuantity'] as num).toInt(),
-      escrowQuantity: (json['escrowQuantity'] as num).toInt(),
-      mainchainRate: (json['mainchainRate'] as num).toInt(),
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      escrowQuantity: (json['escrow_quantity'] as num).toInt(),
+      mainchainrate: (json['mainchainrate'] as num).toInt(),
       status: (json['status'] as num).toInt(),
-      openAddress: json['openAddress'] as String?,
-      oracleAddress: json['oracleAddress'] as String?,
-      assetInfo: AssetInfo.fromJson(json['assetInfo'] as Map<String, dynamic>),
-      giveQuantityNormalized: json['giveQuantityNormalized'] as String,
-      escrowQuantityNormalized: json['escrowQuantityNormalized'] as String,
+      openAddress: json['open_address'] as String?,
+      oracleAddress: json['oracle_address'] as String?,
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
     );
 
 Map<String, dynamic> _$ComposeDispenserParamsToJson(
@@ -1140,15 +1140,15 @@ Map<String, dynamic> _$ComposeDispenserParamsToJson(
     <String, dynamic>{
       'source': instance.source,
       'asset': instance.asset,
-      'giveQuantity': instance.giveQuantity,
-      'escrowQuantity': instance.escrowQuantity,
-      'mainchainRate': instance.mainchainRate,
+      'give_quantity': instance.giveQuantity,
+      'escrow_quantity': instance.escrowQuantity,
+      'mainchainrate': instance.mainchainrate,
       'status': instance.status,
-      'openAddress': instance.openAddress,
-      'oracleAddress': instance.oracleAddress,
-      'assetInfo': instance.assetInfo,
-      'giveQuantityNormalized': instance.giveQuantityNormalized,
-      'escrowQuantityNormalized': instance.escrowQuantityNormalized,
+      'open_address': instance.openAddress,
+      'oracle_address': instance.oracleAddress,
+      'asset_info': instance.assetInfo,
+      'give_quantity_normalized': instance.giveQuantityNormalized,
+      'escrow_quantity_normalized': instance.escrowQuantityNormalized,
     };
 
 ComposeDispenserVerbose _$ComposeDispenserVerboseFromJson(
@@ -1158,6 +1158,11 @@ ComposeDispenserVerbose _$ComposeDispenserVerboseFromJson(
       name: json['name'] as String,
       params: ComposeDispenserVerboseParams.fromJson(
           json['params'] as Map<String, dynamic>),
+      btcIn: (json['btc_in'] as num).toInt(),
+      btcOut: (json['btc_out'] as num).toInt(),
+      btcChange: (json['btc_change'] as num).toInt(),
+      btcFee: (json['btc_fee'] as num).toInt(),
+      data: json['data'] as String,
     );
 
 Map<String, dynamic> _$ComposeDispenserVerboseToJson(
@@ -1166,6 +1171,11 @@ Map<String, dynamic> _$ComposeDispenserVerboseToJson(
       'rawtransaction': instance.rawtransaction,
       'name': instance.name,
       'params': instance.params,
+      'btc_in': instance.btcIn,
+      'btc_out': instance.btcOut,
+      'btc_change': instance.btcChange,
+      'btc_fee': instance.btcFee,
+      'data': instance.data,
     };
 
 ComposeDispenserVerboseParams _$ComposeDispenserVerboseParamsFromJson(
@@ -1173,18 +1183,13 @@ ComposeDispenserVerboseParams _$ComposeDispenserVerboseParamsFromJson(
     ComposeDispenserVerboseParams(
       source: json['source'] as String,
       asset: json['asset'] as String,
-      giveQuantity: (json['giveQuantity'] as num).toInt(),
-      escrowQuantity: (json['escrowQuantity'] as num).toInt(),
-      mainchainRate: (json['mainchainRate'] as num).toInt(),
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      escrowQuantity: (json['escrow_quantity'] as num).toInt(),
+      mainchainrate: (json['mainchainrate'] as num).toInt(),
       status: (json['status'] as num).toInt(),
-      assetInfo: AssetInfo.fromJson(json['assetInfo'] as Map<String, dynamic>),
-      giveQuantityNormalized: json['giveQuantityNormalized'] as String,
-      escrowQuantityNormalized: json['escrowQuantityNormalized'] as String,
-      btcIn: (json['btcIn'] as num).toInt(),
-      btcOut: (json['btcOut'] as num).toInt(),
-      btcChange: (json['btcChange'] as num).toInt(),
-      btcFee: (json['btcFee'] as num).toInt(),
-      data: json['data'] as String,
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
     );
 
 Map<String, dynamic> _$ComposeDispenserVerboseParamsToJson(
@@ -1192,18 +1197,13 @@ Map<String, dynamic> _$ComposeDispenserVerboseParamsToJson(
     <String, dynamic>{
       'source': instance.source,
       'asset': instance.asset,
-      'giveQuantity': instance.giveQuantity,
-      'escrowQuantity': instance.escrowQuantity,
-      'mainchainRate': instance.mainchainRate,
+      'give_quantity': instance.giveQuantity,
+      'escrow_quantity': instance.escrowQuantity,
+      'mainchainrate': instance.mainchainrate,
       'status': instance.status,
-      'assetInfo': instance.assetInfo,
-      'giveQuantityNormalized': instance.giveQuantityNormalized,
-      'escrowQuantityNormalized': instance.escrowQuantityNormalized,
-      'btcIn': instance.btcIn,
-      'btcOut': instance.btcOut,
-      'btcChange': instance.btcChange,
-      'btcFee': instance.btcFee,
-      'data': instance.data,
+      'asset_info': instance.assetInfo,
+      'give_quantity_normalized': instance.giveQuantityNormalized,
+      'escrow_quantity_normalized': instance.escrowQuantityNormalized,
     };
 
 Send _$SendFromJson(Map<String, dynamic> json) => Send(
@@ -2754,7 +2754,7 @@ class _V2Api implements V2Api {
     String asset,
     int giveQuantity,
     int escrowQuantity,
-    int mainchainRate,
+    int mainchainrate,
     int status, [
     String? openAddress,
     String? oracleAddress,
@@ -2768,7 +2768,7 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'give_quantity': giveQuantity,
       r'escrow_quantity': escrowQuantity,
-      r'mainchainrate': mainchainRate,
+      r'mainchainrate': mainchainrate,
       r'status': status,
       r'open_address': openAddress,
       r'oracle_address': oracleAddress,

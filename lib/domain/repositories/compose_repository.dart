@@ -27,7 +27,7 @@ abstract class ComposeRepository {
       String asset,
       int giveQuantity,
       int escrowQuantity,
-      int mainchainRate,
+      int mainchainrate,
       int status,
       [String? openAddress,
       String? oracleAddress,
