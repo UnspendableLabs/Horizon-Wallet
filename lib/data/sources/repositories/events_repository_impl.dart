@@ -38,6 +38,9 @@ class EventMapper {
       case "OPEN_DISPENSER":
         return OpenDispenserEventMapper.toDomain(
             apiEvent as api.OpenDispenserEvent);
+      case "REFILL_DISPENSER":
+        return RefillDispenserEventMapper.toDomain(
+            apiEvent as api.RefillDispenserEvent);
       // case 'NEW_TRANSACTION':
       //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
 
@@ -78,6 +81,9 @@ class VerboseEventMapper {
       case 'OPEN_DISPENSER':
         return VerboseOpenDispenserEventMapper.toDomain(
             apiEvent as api.VerboseOpenDispenserEvent);
+      case "REFILL_DISPENSER":
+        return VerboseRefillDispenserEventMapper.toDomain(
+        apiEvent as api.VerboseRefillDispenserEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);
@@ -570,6 +576,68 @@ class VerboseOpenDispenserParamsMapper {
       // issuer: apiParams.issuer,
       // divisible: apiParams.divisible,
       // locked: apiParams.locked,
+    );
+  }
+}
+
+class RefillDispenserEventMapper {
+  static RefillDispenserEvent toDomain(api.RefillDispenserEvent apiEvent) {
+    return RefillDispenserEvent(
+      state: StateMapper.get(apiEvent),
+      event: "REFILL_DISPENSER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      params: RefillDispenserParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class RefillDispenserParamsMapper {
+  static RefillDispenserParams toDomain(api.RefillDispenserParams apiParams) {
+    return RefillDispenserParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      dispenseQuantity: apiParams.dispenseQuantity,
+      dispenserTxHash: apiParams.dispenserTxHash,
+      source: apiParams.source,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+    );
+  }
+}
+
+class VerboseRefillDispenserEventMapper {
+  static VerboseRefillDispenserEvent toDomain(
+      api.VerboseRefillDispenserEvent apiEvent) {
+    return VerboseRefillDispenserEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "REFILL_DISPENSER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseRefillDispenserParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseRefillDispenserParamsMapper {
+  static VerboseRefillDispenserParams toDomain(
+      api.VerboseRefillDispenserParams apiParams) {
+    return VerboseRefillDispenserParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      dispenseQuantity: apiParams.dispenseQuantity,
+      dispenserTxHash: apiParams.dispenserTxHash,
+      source: apiParams.source,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      dispenseQuantityNormalized: apiParams.dispenseQuantityNormalized,
+      // assetInfo: AssetInfoMapper.toDomain(
+      //     apiParams.assetInfo), // Assuming AssetInfoMapper exists
     );
   }
 }

@@ -690,6 +690,134 @@ class VerboseOpenDispenserParams extends OpenDispenserParams {
       _$VerboseOpenDispenserParamsFromJson(json);
 }
 
+// {
+//     "event_index": 17758284,
+//     "event": "REFILL_DISPENSER",
+//     "params": {
+//         "asset": "A4630460187535670455",
+//         "block_index": 863842,
+//         "destination": "bc1q0eapk4tyqa7r2vcta6z6v2mgnqcux3kfkmurzp",
+//         "dispense_quantity": 1,
+//         "dispenser_tx_hash": "609ac3187dd8ba65d484f945784cd3056f1c087aae766e773818d75b51e0e78b",
+//         "source": "bc1q0eapk4tyqa7r2vcta6z6v2mgnqcux3kfkmurzp",
+//         "tx_hash": "1dc0aa271c66b66a7f5a7222cbb950aeefebec1c4bcbae58f64beeefff2117d2",
+//         "tx_index": 2756307,
+//         "block_time": 1727894737,
+//         "asset_info": {
+//             "asset_longname": null,
+//             "description": "",
+//             "issuer": "bc1q0eapk4tyqa7r2vcta6z6v2mgnqcux3kfkmurzp",
+//             "divisible": true,
+//             "locked": false
+//         },
+//         "dispense_quantity_normalized": "0.00000001"
+//     },
+//     "tx_hash": "1dc0aa271c66b66a7f5a7222cbb950aeefebec1c4bcbae58f64beeefff2117d2",
+//     "block_index": 863842,
+//     "block_time": 1727894737
+// },
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RefillDispenserEvent extends Event {
+  final RefillDispenserParams params;
+
+  RefillDispenserEvent({
+    required int eventIndex,
+    required String event,
+    required String? txHash,
+    int? blockIndex,
+    required this.params,
+  }) : super(
+          eventIndex: eventIndex,
+          event: event,
+          txHash: txHash,
+          blockIndex: blockIndex,
+        );
+
+  factory RefillDispenserEvent.fromJson(Map<String, dynamic> json) =>
+      _$RefillDispenserEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RefillDispenserParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int dispenseQuantity;
+  final String dispenserTxHash;
+  final String source;
+  final String txHash;
+  final int txIndex;
+
+  RefillDispenserParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.dispenseQuantity,
+    required this.dispenserTxHash,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory RefillDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$RefillDispenserParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseRefillDispenserEvent extends VerboseEvent {
+  final VerboseRefillDispenserParams params;
+
+  VerboseRefillDispenserEvent({
+    required int eventIndex,
+    required String event,
+    required String txHash,
+    int? blockIndex,
+    required int blockTime,
+    required this.params,
+  }) : super(
+          eventIndex: eventIndex,
+          event: event,
+          txHash: txHash,
+          blockIndex: blockIndex,
+          blockTime: blockTime,
+        );
+
+  factory VerboseRefillDispenserEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseRefillDispenserEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseRefillDispenserParams extends RefillDispenserParams {
+  final String dispenseQuantityNormalized;
+  final AssetInfo assetInfo;
+
+  VerboseRefillDispenserParams({
+    required String asset,
+    required int blockIndex,
+    required String destination,
+    required int dispenseQuantity,
+    required String dispenserTxHash,
+    required String source,
+    required String txHash,
+    required int txIndex,
+    required this.dispenseQuantityNormalized,
+    required this.assetInfo,
+  }) : super(
+          asset: asset,
+          blockIndex: blockIndex,
+          destination: destination,
+          dispenseQuantity: dispenseQuantity,
+          dispenserTxHash: dispenserTxHash,
+          source: source,
+          txHash: txHash,
+          txIndex: txIndex,
+        );
+
+  factory VerboseRefillDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseRefillDispenserParamsFromJson(json);
+}
+
 @JsonSerializable(fieldRename: FieldRename.snake)
 class DispenseParams {
   final String asset;
@@ -986,6 +1114,8 @@ class VerboseEvent extends Event {
         return VerboseDispenseEvent.fromJson(json);
       case 'OPEN_DISPENSER':
         return VerboseOpenDispenserEvent.fromJson(json);
+      case 'REFILL_DISPENSER':
+        return VerboseRefillDispenserEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }

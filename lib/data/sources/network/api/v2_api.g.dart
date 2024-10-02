@@ -612,6 +612,107 @@ Map<String, dynamic> _$VerboseOpenDispenserParamsToJson(
       'satoshirate_normalized': instance.satoshirateNormalized,
     };
 
+RefillDispenserEvent _$RefillDispenserEventFromJson(
+        Map<String, dynamic> json) =>
+    RefillDispenserEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: RefillDispenserParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$RefillDispenserEventToJson(
+        RefillDispenserEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+RefillDispenserParams _$RefillDispenserParamsFromJson(
+        Map<String, dynamic> json) =>
+    RefillDispenserParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      dispenseQuantity: (json['dispense_quantity'] as num).toInt(),
+      dispenserTxHash: json['dispenser_tx_hash'] as String,
+      source: json['source'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$RefillDispenserParamsToJson(
+        RefillDispenserParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'dispense_quantity': instance.dispenseQuantity,
+      'dispenser_tx_hash': instance.dispenserTxHash,
+      'source': instance.source,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+VerboseRefillDispenserEvent _$VerboseRefillDispenserEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseRefillDispenserEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      params: VerboseRefillDispenserParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseRefillDispenserEventToJson(
+        VerboseRefillDispenserEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseRefillDispenserParams _$VerboseRefillDispenserParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseRefillDispenserParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      dispenseQuantity: (json['dispense_quantity'] as num).toInt(),
+      dispenserTxHash: json['dispenser_tx_hash'] as String,
+      source: json['source'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      dispenseQuantityNormalized:
+          json['dispense_quantity_normalized'] as String,
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseRefillDispenserParamsToJson(
+        VerboseRefillDispenserParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'dispense_quantity': instance.dispenseQuantity,
+      'dispenser_tx_hash': instance.dispenserTxHash,
+      'source': instance.source,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'dispense_quantity_normalized': instance.dispenseQuantityNormalized,
+      'asset_info': instance.assetInfo,
+    };
+
 DispenseParams _$DispenseParamsFromJson(Map<String, dynamic> json) =>
     DispenseParams(
       asset: json['asset'] as String,

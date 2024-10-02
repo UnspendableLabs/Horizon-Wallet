@@ -609,3 +609,71 @@ class VerboseOpenDispenserEvent extends VerboseEvent {
     required this.params,
   });
 }
+
+class RefillDispenserParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int dispenseQuantity;
+  final String dispenserTxHash;
+  final String source;
+  final String txHash;
+  final int txIndex;
+
+  RefillDispenserParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.dispenseQuantity,
+    required this.dispenserTxHash,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class RefillDispenserEvent extends Event {
+  final RefillDispenserParams params;
+
+  const RefillDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseRefillDispenserParams extends RefillDispenserParams {
+  final String dispenseQuantityNormalized;
+  // final AssetInfo? assetInfo;
+
+  VerboseRefillDispenserParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.dispenseQuantity,
+    required super.dispenserTxHash,
+    required super.source,
+    required super.txHash,
+    required super.txIndex,
+    required this.dispenseQuantityNormalized,
+    // this.assetInfo,
+  });
+}
+
+class VerboseRefillDispenserEvent extends VerboseEvent {
+  final VerboseRefillDispenserParams params;
+
+  const VerboseRefillDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
