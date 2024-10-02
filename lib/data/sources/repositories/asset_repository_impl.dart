@@ -7,11 +7,11 @@ class AssetRepositoryImpl implements AssetRepository {
   final V2Api api;
   AssetRepositoryImpl({required this.api});
   @override
-  Future<a.Asset?> getAsset(String uuid) async {
+  Future<a.Asset> getAsset(String uuid) async {
     final response = await api.getAsset(uuid);
 
     if (response.result == null) {
-      return null;
+      throw Exception('Asset not found');
     }
 
     final asset = response.result!;

@@ -37,3 +37,12 @@ class ComposeSendState with _$ComposeSendState, ComposeStateBase {
         quantity: '',
       );
 }
+
+/// MaxValueState represents the state for calculating maximum transferable value.
+@freezed
+class MaxValueState with _$MaxValueState {
+  const factory MaxValueState.initial() = _MaxValueInitial;
+  const factory MaxValueState.loading() = _MaxValueLoading;
+  const factory MaxValueState.success(int maxValue) = _MaxValueSuccess;
+  const factory MaxValueState.error(String error) = _MaxValueError;
+}

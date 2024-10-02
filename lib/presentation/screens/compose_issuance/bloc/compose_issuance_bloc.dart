@@ -115,7 +115,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     late FeeEstimates feeEstimates;
 
     try {
-      List<Address> addresses = [event.currentAddress];
+      List<Address> addresses = [event.currentAddress!];
 
       balances =
           await balanceRepository.getBalancesForAddress(addresses[0].address);

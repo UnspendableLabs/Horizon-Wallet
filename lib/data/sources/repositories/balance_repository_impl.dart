@@ -16,10 +16,11 @@ class BalanceRepositoryImpl implements BalanceRepository {
   final UtxoRepository utxoRepository;
   final BitcoinRepository bitcoinRepository;
 
-  BalanceRepositoryImpl(
-      {required this.api,
-      required this.utxoRepository,
-      required this.bitcoinRepository});
+  BalanceRepositoryImpl({
+    required this.api,
+    required this.utxoRepository,
+    required this.bitcoinRepository,
+  });
 
   @override
   Future<List<b.Balance>> getBalancesForAddress(String address) async {
@@ -119,5 +120,26 @@ class BalanceRepositoryImpl implements BalanceRepository {
             divisible: true,
           ));
     });
+  }
+
+  @override
+  Future<b.Balance> getBalanceForAddressAndAsset(
+      String address, String assetName) async {
+    final response =
+        await api.getBalanceForAddressAndAssetVerbose(assetName, address);
+    final balance = response.result;
+    if (balance == null) {
+      throw Exception('Failed to get balance for $address and $assetName');
+    }
+    return b.Balance(
+        address: address,
+        quantity: balance.quantity.toInt(),
+        quantityNormalized: balance.quantityNormalized,
+        asset: balance.asset,
+        assetInfo: ai.AssetInfo(
+          assetLongname: balance.assetInfo.assetLongname,
+          description: balance.assetInfo.description,
+          divisible: balance.assetInfo.divisible,
+        ));
   }
 }

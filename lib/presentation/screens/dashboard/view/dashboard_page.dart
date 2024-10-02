@@ -749,45 +749,51 @@ class BalancesSliverState extends State<BalancesSliver> {
                         },
                       ),
                       if (isOwner)
-                        PopupMenuButton<String>(
+                        PopupMenuButton<IssuanceActionType>(
                           icon: const Icon(Icons.more_vert),
-                          onSelected: (String result) {
+                          onSelected: (IssuanceActionType result) {
                             HorizonUI.HorizonDialog.show(
                               context: context,
                               body: HorizonUI.HorizonDialog(
-                                title: "Compose Issuance",
+                                title: "Update Issuance",
                                 body: UpdateIssuancePageWrapper(
+                                  assetName: currentAsset?.asset ?? '',
+                                  actionType: result,
                                   dashboardActivityFeedBloc: BlocProvider.of<
                                       DashboardActivityFeedBloc>(context),
-                                  address: widget.currentAddress,
                                 ),
+                                includeBackButton: false,
+                                includeCloseButton: true,
+                                onBackButtonPressed: () {
+                                  Navigator.of(context).pop();
+                                },
                               ),
                             );
                           },
                           itemBuilder: (BuildContext context) =>
-                              <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
-                              value: 'reset',
+                              <PopupMenuEntry<IssuanceActionType>>[
+                            const PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.reset,
                               child: Text('Reset Asset'),
                             ),
-                            // const PopupMenuItem<String>(
-                            //   value: 'lockDescription',
+                            // const PopupMenuItem<IssuanceActionType>(
+                            //   value: IssuanceActionType.lockDescription,
                             //   child: Text('Lock Description'),
                             // ),
-                            // const PopupMenuItem<String>(
-                            //   value: 'lockQuantity',
-                            //   child: Text('Lock Quantity'),
-                            // ),
-                            const PopupMenuItem<String>(
-                              value: 'changeDescription',
+                            const PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.lockQuantity,
+                              child: Text('Lock Quantity'),
+                            ),
+                            const PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.changeDescription,
                               child: Text('Change Description'),
                             ),
-                            const PopupMenuItem<String>(
-                              value: 'issueMore',
+                            const PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.issueMore,
                               child: Text('Issue More'),
                             ),
-                            const PopupMenuItem<String>(
-                              value: 'issueSubasset',
+                            const PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.issueSubasset,
                               child: Text('Issue Subasset'),
                             ),
                           ],

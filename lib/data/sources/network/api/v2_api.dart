@@ -2543,6 +2543,12 @@ abstract class V2Api {
   @GET("/assets/{asset}")
   Future<Response<Asset>> getAsset(@Path("asset") String asset);
 
+  @GET("/assets/{asset}/balances/{address}?verbose=true")
+  Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
+    @Path("asset") String asset,
+    @Path("address") String address,
+  );
+
   //     Get Asset Info
   //     Get Asset Balances
   //     Get Balance By Address And Asset
