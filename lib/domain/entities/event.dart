@@ -519,3 +519,93 @@ class VerboseDispenseEvent extends VerboseEvent {
     required this.params,
   });
 }
+
+class OpenDispenserParams {
+  final String asset;
+  final int blockIndex;
+  final int escrowQuantity;
+  final int giveQuantity;
+  final int giveRemaining;
+  final String? oracleAddress;
+  final String origin;
+  final int satoshirate;
+  final String source;
+  final int status;
+  final String txHash;
+  final int txIndex;
+
+  OpenDispenserParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.escrowQuantity,
+    required this.giveQuantity,
+    required this.giveRemaining,
+    this.oracleAddress,
+    required this.origin,
+    required this.satoshirate,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class OpenDispenserEvent extends Event {
+  final OpenDispenserParams params;
+
+  const OpenDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseOpenDispenserParams extends OpenDispenserParams {
+  final String giveQuantityNormalized;
+  final String giveRemainingNormalized;
+  final String escrowQuantityNormalized;
+  final String satoshirateNormalized;
+  // final AssetInfo assetInfo;
+  // final String description;
+  // final String issuer;
+  // final bool divisible;
+  // final bool locked;
+  //
+  VerboseOpenDispenserParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.escrowQuantity,
+    required super.giveQuantity,
+    required super.giveRemaining,
+    super.oracleAddress,
+    required super.origin,
+    required super.satoshirate,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.giveQuantityNormalized,
+    required this.giveRemainingNormalized,
+    required this.escrowQuantityNormalized,
+    required this.satoshirateNormalized,
+    // this.assetInfo
+
+  });
+}
+
+class VerboseOpenDispenserEvent extends VerboseEvent {
+  final VerboseOpenDispenserParams params;
+
+  const VerboseOpenDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}

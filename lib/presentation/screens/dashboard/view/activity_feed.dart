@@ -208,6 +208,9 @@ class ActivityFeedListItem extends StatelessWidget {
                 "Issue ${params.quantityNormalized} ${params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
+      VerboseOpenDispenserEvent(params: var params) => SelectableText(
+          "Open Dispenser ${params.giveQuantityNormalized} ${params.asset} for ${params.satoshirateNormalized} BTC"),
+
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -233,6 +236,11 @@ class ActivityFeedListItem extends StatelessWidget {
           quantityNormalized: satoshisToBtc(btcAmount).toString(),
           asset: 'BTC',
         ),
+      TransactionInfoDispenserVerbose(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText(
+            "Dispenser Action"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -271,6 +279,9 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseDispenseEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseOpenDispenserEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -330,6 +341,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toll, color: Colors.grey),
       VerboseDispenseEvent(params: var params) =>
         const Icon(Icons.paid, color: Colors.grey),
+      VerboseOpenDispenserEvent(params: var params) =>
+        const Icon(Icons.account_balance, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

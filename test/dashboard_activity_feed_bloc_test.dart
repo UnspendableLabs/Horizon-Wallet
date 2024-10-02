@@ -25,6 +25,8 @@ final DEFAULT_WHITELIST = [
   "ENHANCED_SEND",
   "ASSET_ISSUANCE",
   "DISPENSE",
+  "OPEN_DISPENSER",
+  "REFILL_DISPENSER"
 ];
 
 extension DateTimeExtension on DateTime {

@@ -495,6 +495,123 @@ Map<String, dynamic> _$VerboseAssetIssuanceEventToJson(
       'params': instance.params,
     };
 
+OpenDispenserEvent _$OpenDispenserEventFromJson(Map<String, dynamic> json) =>
+    OpenDispenserEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          OpenDispenserParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OpenDispenserEventToJson(OpenDispenserEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+OpenDispenserParams _$OpenDispenserParamsFromJson(Map<String, dynamic> json) =>
+    OpenDispenserParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      escrowQuantity: (json['escrow_quantity'] as num).toInt(),
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      oracleAddress: json['oracle_address'] as String?,
+      origin: json['origin'] as String,
+      satoshirate: (json['satoshirate'] as num).toInt(),
+      source: json['source'] as String,
+      status: (json['status'] as num).toInt(),
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$OpenDispenserParamsToJson(
+        OpenDispenserParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'escrow_quantity': instance.escrowQuantity,
+      'give_quantity': instance.giveQuantity,
+      'give_remaining': instance.giveRemaining,
+      'oracle_address': instance.oracleAddress,
+      'origin': instance.origin,
+      'satoshirate': instance.satoshirate,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+VerboseOpenDispenserEvent _$VerboseOpenDispenserEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOpenDispenserEvent(
+      eventIndex: (json['event_index'] as num).toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      params: VerboseOpenDispenserParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOpenDispenserEventToJson(
+        VerboseOpenDispenserEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseOpenDispenserParams _$VerboseOpenDispenserParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOpenDispenserParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      escrowQuantity: (json['escrow_quantity'] as num).toInt(),
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      oracleAddress: json['oracle_address'] as String?,
+      origin: json['origin'] as String,
+      satoshirate: (json['satoshirate'] as num).toInt(),
+      source: json['source'] as String,
+      status: (json['status'] as num).toInt(),
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      giveRemainingNormalized: json['give_remaining_normalized'] as String,
+      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
+      satoshirateNormalized: json['satoshirate_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseOpenDispenserParamsToJson(
+        VerboseOpenDispenserParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'escrow_quantity': instance.escrowQuantity,
+      'give_quantity': instance.giveQuantity,
+      'give_remaining': instance.giveRemaining,
+      'oracle_address': instance.oracleAddress,
+      'origin': instance.origin,
+      'satoshirate': instance.satoshirate,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'give_quantity_normalized': instance.giveQuantityNormalized,
+      'give_remaining_normalized': instance.giveRemainingNormalized,
+      'escrow_quantity_normalized': instance.escrowQuantityNormalized,
+      'satoshirate_normalized': instance.satoshirateNormalized,
+    };
+
 DispenseParams _$DispenseParamsFromJson(Map<String, dynamic> json) =>
     DispenseParams(
       asset: json['asset'] as String,
@@ -1242,7 +1359,7 @@ Dispenser _$DispenserFromJson(Map<String, dynamic> json) => Dispenser(
       source: json['source'] as String,
       giveQuantity: (json['give_quantity'] as num).toInt(),
       escrowQuantity: (json['escrow_quantity'] as num).toInt(),
-      satoshiRate: (json['satoshi_rate'] as num).toInt(),
+      satoshirate: (json['satoshirate'] as num).toInt(),
       status: (json['status'] as num).toInt(),
       giveRemaining: (json['give_remaining'] as num).toInt(),
       oracleAddress: json['oracle_address'] as String?,
@@ -1260,7 +1377,7 @@ Map<String, dynamic> _$DispenserToJson(Dispenser instance) => <String, dynamic>{
       'source': instance.source,
       'give_quantity': instance.giveQuantity,
       'escrow_quantity': instance.escrowQuantity,
-      'satoshi_rate': instance.satoshiRate,
+      'satoshirate': instance.satoshirate,
       'status': instance.status,
       'give_remaining': instance.giveRemaining,
       'oracle_address': instance.oracleAddress,
@@ -1618,6 +1735,31 @@ Map<String, dynamic> _$IssuanceInfoVerboseToJson(
       'fee': instance.fee,
       'data': instance.data,
       'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+DispenserInfoVerbose _$DispenserInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    DispenserInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      unpackedData: DispenserUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DispenserInfoVerboseToJson(
+        DispenserInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
       'btc_amount_normalized': instance.btcAmountNormalized,
       'unpacked_data': instance.unpackedData,
     };
