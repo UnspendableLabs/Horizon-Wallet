@@ -36,8 +36,8 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_st
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
-import 'package:horizon/presentation/screens/dashboard/view/issuance_dialog.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/screens/update_issuance/view/update_issuance_page.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -366,12 +366,14 @@ class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
   final List<Address> addresses;
   final String accountUuid;
+  final Address currentAddress;
 
   const BalancesDisplay(
       {super.key,
       required this.isDarkTheme,
       required this.addresses,
-      required this.accountUuid});
+      required this.accountUuid,
+      required this.currentAddress});
 
   @override
   BalancesDisplayState createState() => BalancesDisplayState();
@@ -381,12 +383,13 @@ class BalancesSliver extends StatefulWidget {
   final bool isDarkTheme;
   final List<Address> addresses;
   final int initialItemCount;
-
+  final Address currentAddress;
   const BalancesSliver(
       {super.key,
       required this.isDarkTheme,
       required this.addresses,
-      this.initialItemCount = 3});
+      this.initialItemCount = 3,
+      required this.currentAddress});
 
   @override
   BalancesSliverState createState() => BalancesSliverState();
@@ -611,6 +614,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
     return BalancesSliver(
       isDarkTheme: widget.isDarkTheme,
       addresses: widget.addresses,
+      currentAddress: widget.currentAddress,
     );
   }
 
@@ -750,9 +754,13 @@ class BalancesSliverState extends State<BalancesSliver> {
                           onSelected: (String result) {
                             HorizonUI.HorizonDialog.show(
                               context: context,
-                              body: IssuanceDialog(
-                                actionType: result,
-                                asset: currentAsset!,
+                              body: HorizonUI.HorizonDialog(
+                                title: "Compose Issuance",
+                                body: UpdateIssuancePageWrapper(
+                                  dashboardActivityFeedBloc: BlocProvider.of<
+                                      DashboardActivityFeedBloc>(context),
+                                  address: widget.currentAddress,
+                                ),
                               ),
                             );
                           },
@@ -993,7 +1001,9 @@ class DashboardPageState extends State<DashboardPage> {
                                                       isDarkTheme: isDarkTheme,
                                                       addresses: [
                                                         widget.currentAddress
-                                                      ]),
+                                                      ],
+                                                      currentAddress: widget
+                                                          .currentAddress),
                                                 ),
                                               ],
                                             ),
@@ -1231,7 +1241,8 @@ class DashboardPageState extends State<DashboardPage> {
                                     sliver: BalancesDisplay(
                                         accountUuid: widget.accountUuid,
                                         isDarkTheme: isDarkTheme,
-                                        addresses: [widget.currentAddress]),
+                                        addresses: [widget.currentAddress],
+                                        currentAddress: widget.currentAddress),
                                   ),
                                 ]),
                                 SliverStack(children: [

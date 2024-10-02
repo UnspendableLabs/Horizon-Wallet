@@ -22,7 +22,8 @@ class AssetRepositoryImpl implements AssetRepository {
         divisible: asset.divisible,
         issuer: asset.issuer,
         owner: asset.owner,
-        supply: asset.supply);
+        supply: asset.supply,
+        description: asset.description);
   }
 
   @override
@@ -40,6 +41,7 @@ class AssetRepositoryImpl implements AssetRepository {
             asset: e.asset,
             assetLongname: e.assetLongname,
             divisible: e.divisible,
+            description: e.description,
             issuer: e.issuer,
             owner: e.owner,
             supply: e.supply))

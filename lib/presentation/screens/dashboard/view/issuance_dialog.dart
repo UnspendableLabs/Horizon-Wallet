@@ -109,33 +109,32 @@ class _IssuanceDialogState extends State<IssuanceDialog> {
   }
 
   Widget _buildNavigationButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        HorizonUI.HorizonCancelButton(
-          onPressed: _currentStep > 0
-              ? () => setState(() => _currentStep--)
-              : () => Navigator.of(context).pop(),
-          buttonText: _currentStep == 0 ? 'CANCEL' : 'BACK',
-        ),
-        HorizonUI.HorizonContinueButton(
-          onPressed: _currentStep < _totalSteps - 1
-              ? () => setState(() => _currentStep++)
-              : () {
-                  // Handle form submission here
-                  print('Form submitted');
-                  Navigator.of(context).pop();
-                },
-          buttonText: _currentStep == _totalSteps - 1 ? 'SUBMIT' : 'CONTINUE',
+        const HorizonUI.HorizonDivider(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            HorizonUI.HorizonCancelButton(
+              onPressed: _currentStep > 0
+                  ? () => setState(() => _currentStep--)
+                  : () => Navigator.of(context).pop(),
+              buttonText: _currentStep == 0 ? 'CANCEL' : 'BACK',
+            ),
+            HorizonUI.HorizonContinueButton(
+              onPressed: _currentStep < _totalSteps - 1
+                  ? () => setState(() => _currentStep++)
+                  : () {
+                      // Handle form submission here
+                      print('Form submitted');
+                      Navigator.of(context).pop();
+                    },
+              buttonText:
+                  _currentStep == _totalSteps - 1 ? 'SUBMIT' : 'CONTINUE',
+            ),
+          ],
         ),
       ],
-    );
-  }
-
-  Widget _buildStep1Content() {
-    return FormBuilderTextField(
-      name: 'step1_field',
-      decoration: const InputDecoration(labelText: 'Step 1 Field'),
     );
   }
 
@@ -167,20 +166,35 @@ class _IssuanceDialogState extends State<IssuanceDialog> {
         // case 'lockQuantity':
         return Column(
           children: [
-            const Text('Please confirm the following action:',
+            const SelectableText('Please confirm the following action:',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: mainTextWhite)),
             const SizedBox(height: 12),
-            Text('$title will be performed on ${asset.asset}',
+            SelectableText('$title will be performed on ${asset.asset}',
                 style: const TextStyle(fontSize: 16, color: mainTextWhite)),
           ],
         );
       case 'changeDescription':
+        print(
+            'asset.description: ${asset.description != '' ? asset.description : 'N/A'} ');
         return Column(
           children: [
-            Text('Please enter the new description for ${asset.asset}:'),
+            SelectableText(
+                'Please enter the new description for ${asset.asset}:',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: mainTextWhite)),
+            const SizedBox(height: 12),
+            HorizonUI.HorizonTextFormField(
+              controller: TextEditingController(),
+              label: 'Previous Description',
+              initialValue: asset.description != '' ? asset.description : 'N/A',
+              enabled: false,
+            ),
+            const SizedBox(height: 12),
             FormBuilderTextField(
               name: 'new_description',
               decoration: const InputDecoration(labelText: 'New Description'),

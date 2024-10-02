@@ -2,6 +2,7 @@
 class Asset {
   final String? asset;
   final String? assetLongname;
+  final String? description;
   final bool? divisible;
   final String? issuer;
   final String? owner;
@@ -10,6 +11,7 @@ class Asset {
   const Asset(
       {this.asset,
       this.assetLongname,
+      this.description,
       this.divisible,
       this.issuer,
       this.owner,
