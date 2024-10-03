@@ -1,8 +1,11 @@
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -29,9 +32,12 @@ import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuanc
 class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   final AssetRepository assetRepository;
   final BalanceRepository balanceRepository;
+  final BitcoindService bitcoindService;
+
   UpdateIssuanceBloc({
     required this.assetRepository,
     required this.balanceRepository,
+    required this.bitcoindService,
   }) : super(UpdateIssuanceState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
@@ -50,8 +56,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
-    print('Fetching form data for ${event.assetName}');
-    print('Current address: ${event.currentAddress?.address}');
     if (event.assetName == null || event.currentAddress == null) {
       return;
     }
@@ -62,22 +66,44 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       assetState: const AssetState.loading(),
     ));
 
-    print('Fetching form data for ${event.assetName}');
+    final Asset asset;
+    late FeeEstimates feeEstimates;
+    late Balance balance;
 
-    final Asset asset = await assetRepository.getAsset(event.assetName!);
-    print('Asset: $asset');
-    print(asset.asset);
-    // TODO: use this once we have the API working
+    try {
+      asset = await assetRepository.getAsset(event.assetName!);
+    } catch (e) {
+      emit(state.copyWith(assetState: AssetState.error(e.toString())));
+      return;
+    }
+
+    // TODO: use this instead
     // final Balance balance = await balanceRepository.getBalanceForAddressAndAsset(event.assetName!, event.currentAddress!.address);
 
-    final List<Balance> balances = await balanceRepository
-        .getBalancesForAddress(event.currentAddress!.address);
-    final Balance balance =
-        balances.firstWhere((element) => element.asset == event.assetName);
+    try {
+      final List<Balance> balances = await balanceRepository
+          .getBalancesForAddress(event.currentAddress!.address);
+      balance =
+          balances.firstWhere((element) => element.asset == event.assetName);
+    } catch (e) {
+      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
+      return;
+    }
+
+    try {
+      feeEstimates = await GetFeeEstimates(
+        targets: (1, 3, 6),
+        bitcoindService: bitcoindService,
+      ).call();
+    } catch (e) {
+      emit(state.copyWith(feeState: FeeState.error(e.toString())));
+      return;
+    }
 
     emit(state.copyWith(
       assetState: AssetState.success(asset),
       balancesState: BalancesState.success([balance]),
+      feeState: FeeState.success(feeEstimates),
     ));
   }
 

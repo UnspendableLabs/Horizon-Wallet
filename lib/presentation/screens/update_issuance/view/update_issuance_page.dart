@@ -1,11 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
@@ -35,6 +39,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
         create: (context) => UpdateIssuanceBloc(
           assetRepository: GetIt.I.get<AssetRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
+          bitcoindService: GetIt.I.get<BitcoindService>(),
         )..add(FetchFormData(
             assetName: assetName, currentAddress: state.currentAddress)),
         child: UpdateIssuancePage(
@@ -67,9 +72,18 @@ class UpdateIssuancePage extends StatefulWidget {
 }
 
 class UpdateIssuancePageState extends State<UpdateIssuancePage> {
+  late TextEditingController _subassetController;
+
   @override
   void initState() {
     super.initState();
+    _subassetController = TextEditingController(text: '${widget.assetName}.');
+  }
+
+  @override
+  void dispose() {
+    _subassetController.dispose();
+    super.dispose();
   }
 
   @override
@@ -210,6 +224,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                   }
                   return null;
                 },
+                onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
               )
             ],
           IssuanceActionType.issueMore => [
@@ -248,18 +263,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                   enabled: false,
                   controller: TextEditingController(text: asset.asset)),
               const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: TextEditingController(),
-                label: 'Subasset Name',
-                hint: 'Enter the new subasset name',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a subasset name';
-                  }
-                  return null;
-                },
-                onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
-              ),
+              _buildSubassetNameField(asset, formKey),
             ],
         };
       },
@@ -267,9 +271,65 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     );
   }
 
+  Widget _buildSubassetNameField(Asset asset, GlobalKey<FormState> formKey) {
+    return Stack(
+      children: [
+        HorizonUI.HorizonTextFormField(
+          controller: _subassetController,
+          textCapitalization: TextCapitalization.characters,
+          label: 'Subasset Name',
+          validator: (value) {
+            if (value == null || value.isEmpty || value == '${asset.asset}.') {
+              return 'Please enter a subasset name';
+            }
+            return null;
+          },
+          onChanged: (value) {
+            final prefix = '${asset.asset}.';
+            if (value.length < prefix.length) {
+              // If the user is trying to delete the prefix, keep it intact
+              _subassetController.value = TextEditingValue(
+                text: prefix,
+                selection: TextSelection.collapsed(offset: prefix.length),
+              );
+            } else {
+              // Allow typing after the prefix, but ensure the prefix is always there
+              String subAssetPart = value.substring(prefix.length);
+
+              // Filter and capitalize alphanumeric characters
+              String filteredPart = '';
+              for (int i = 0;
+                  i < subAssetPart.length && filteredPart.length < 20;
+                  i++) {
+                String char = subAssetPart[i].toUpperCase();
+                if ((char.codeUnitAt(0) >= 65 &&
+                        char.codeUnitAt(0) <= 90) || // A-Z
+                    (char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57)) {
+                  // 0-9
+                  filteredPart += char;
+                }
+              }
+
+              final issueSubassetName = '$prefix$filteredPart';
+
+              _subassetController.value = TextEditingValue(
+                text: issueSubassetName,
+                selection:
+                    TextSelection.collapsed(offset: issueSubassetName.length),
+              );
+            }
+          },
+          onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
+        ),
+      ],
+    );
+  }
+
   void _handleInitialCancel() {}
 
-  void _handleInitialSubmit(GlobalKey<FormState> formKey) {}
+  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+    formKey.currentState?.validate();
+  }
 
   List<Widget> _buildConfirmationDetails(composeTransaction) {
     return const [];
@@ -283,4 +343,29 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {}
 
   void _onFinalizeCancel() {}
+}
+
+class PrefixTextEditingController extends TextEditingController {
+  final String prefix;
+
+  PrefixTextEditingController({required this.prefix}) : super(text: prefix);
+
+  @override
+  set text(String newText) {
+    if (newText.startsWith(prefix)) {
+      super.text = newText;
+    } else {
+      super.text =
+          prefix + newText.replaceAll(RegExp('^.*?(?=[A-Z0-9]|\$)'), '');
+    }
+  }
+
+  @override
+  TextSelection get selection {
+    final newSelection = super.selection;
+    return newSelection.copyWith(
+      baseOffset: math.max(prefix.length, newSelection.baseOffset),
+      extentOffset: math.max(prefix.length, newSelection.extentOffset),
+    );
+  }
 }

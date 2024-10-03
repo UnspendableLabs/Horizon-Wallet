@@ -412,6 +412,7 @@ class HorizonTextFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool? enabled;
   final String? initialValue;
+  final FloatingLabelBehavior? floatingLabelBehavior;
 
   const HorizonTextFormField({
     super.key,
@@ -432,6 +433,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.inputFormatters,
     this.enabled,
     this.initialValue,
+    this.floatingLabelBehavior,
   });
 
   @override
@@ -482,6 +484,8 @@ class HorizonTextFormField extends StatelessWidget {
       textCapitalization: textCapitalization ?? TextCapitalization.none,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
+        floatingLabelBehavior:
+            floatingLabelBehavior ?? FloatingLabelBehavior.auto,
         labelText: label,
         suffix: suffix,
       ),
