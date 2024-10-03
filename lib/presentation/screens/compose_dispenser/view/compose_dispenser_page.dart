@@ -136,12 +136,34 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      int giveQuantity = int.parse(giveQuantityController.text);
-      int escrowQuantity = int.parse(escrowQuantityController.text);
+      Decimal giveInput = Decimal.parse(giveQuantityController.text);
+      Decimal escrowInput = Decimal.parse(escrowQuantityController.text);
       int mainchainrate = int.parse(mainchainrateController.text);
+      Balance? balance = balance_;
 
-      if (asset == null) throw Exception("Please select an asset");
+      if (balance == null) {
+        throw Exception("No balance found for selected asset");
+      }
 
+      int giveQuantity;
+      int escrowQuantity;
+
+      // Handle divisibility for the give quantity
+      if (balance.assetInfo.divisible) {
+        giveQuantity =
+            (giveInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+        escrowQuantity =
+            (escrowInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+      } else {
+        giveQuantity = giveInput.toBigInt().toInt();
+        escrowQuantity = escrowInput.toBigInt().toInt();
+      }
+
+      if (asset == null) {
+        throw Exception("Please select an asset");
+      }
+
+      // Dispatch the event with the calculated values
       context.read<ComposeDispenserBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: ComposeDispenserEventParams(
@@ -416,14 +438,14 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Give Quantity",
-        controller: TextEditingController(text: params.giveQuantity.toString()),
+        controller: TextEditingController(text: params.giveQuantityNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Escrow Quantity",
         controller:
-            TextEditingController(text: params.escrowQuantity.toString()),
+            TextEditingController(text: params.escrowQuantityNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
