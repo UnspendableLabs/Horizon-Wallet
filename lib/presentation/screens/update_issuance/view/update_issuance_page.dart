@@ -406,6 +406,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           break;
         case IssuanceActionType.issueSubasset:
           longName = _subassetController.text;
+
           break;
 
         default:
@@ -415,8 +416,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: UpdateIssuanceEventParams(
-              name: name,
-              longName: longName,
+              name: longName ?? name,
+              // longName: longName,
               quantity: quantity,
               description: description ?? '',
               divisible: isDivisible,

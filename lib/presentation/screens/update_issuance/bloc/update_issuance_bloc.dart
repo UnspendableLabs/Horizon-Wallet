@@ -32,7 +32,7 @@ import 'package:logger/logger.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
   final IssuanceActionType issuanceActionType;
-  final String? longName;
+  // final String? longName;
 
   UpdateIssuanceEventParams({
     required super.name,
@@ -42,7 +42,7 @@ class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
     required super.lock,
     required super.reset,
     required this.issuanceActionType,
-    this.longName,
+    // this.longName,
   });
 }
 
