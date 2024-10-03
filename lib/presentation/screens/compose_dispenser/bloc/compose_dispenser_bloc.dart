@@ -90,22 +90,11 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
             mainchainrate: '',
             status: 0)) {
     // Event handlers specific to the dispenser
-    on<FetchBalances>(_onFetchBalances);
     on<ChangeAsset>(_onChangeAsset);
   }
 
-  _onFetchBalances(FetchBalances event, emit) async {
-    emit(state.copyWith(balancesState: const BalancesState.loading()));
-    try {
-      List<Balance> balances =
-          await balanceRepository.getBalancesForAddress(event.address);
-      emit(state.copyWith(balancesState: BalancesState.success(balances)));
-    } catch (e) {
-      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-    }
-  }
 
-    _onChangeAsset(ChangeAsset event, emit) {
+  _onChangeAsset(ChangeAsset event, emit) {
     emit(state.copyWith(
       assetName: event.asset,
       balancesState: BalancesState.success([event.balance]),
@@ -130,8 +119,10 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     try {
       List<Address> addresses = [event.currentAddress];
 
-      balances =
+      final balances_ =
           await balanceRepository.getBalancesForAddress(addresses[0].address);
+
+      balances = balances_.where((balance) => balance.asset != 'BTC').toList();
     } catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(e.toString()),
