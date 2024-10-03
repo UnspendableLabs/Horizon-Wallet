@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/format.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -138,8 +139,13 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     if (formKey.currentState!.validate()) {
       Decimal giveInput = Decimal.parse(giveQuantityController.text);
       Decimal escrowInput = Decimal.parse(escrowQuantityController.text);
-      int mainchainrate = int.parse(mainchainrateController.text);
+      Decimal mainchainrateBtc =
+          Decimal.parse(mainchainrateController.text); // Price in BTC
       Balance? balance = balance_;
+
+      if (asset == null) {
+        throw Exception("Please select an asset");
+      }
 
       if (balance == null) {
         throw Exception("No balance found for selected asset");
@@ -159,9 +165,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         escrowQuantity = escrowInput.toBigInt().toInt();
       }
 
-      if (asset == null) {
-        throw Exception("Please select an asset");
-      }
+      int mainchainrate =
+          (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
 
       // Dispatch the event with the calculated values
       context.read<ComposeDispenserBloc>().add(ComposeTransactionEvent(
@@ -411,10 +416,11 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   Widget _buildPricePerUnitInput(bool loading) {
     return HorizonUI.HorizonTextFormField(
       controller: mainchainrateController,
-      label: 'Price Per Unit (satoshis)',
+      label: 'Price Per Unit (BTC)',
       enabled: !loading,
       inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly, // Only allow integers
+        DecimalTextInputFormatter(
+            decimalRange: 8), // Allow up to 8 decimal places for BTC
       ],
       keyboardType: const TextInputType.numberWithOptions(
           decimal: false, signed: false), // No decimal allowed
@@ -450,9 +456,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: 'Price Per Unit (satoshis)',
-        controller:
-            TextEditingController(text: params.mainchainrate.toString()),
+        label: 'Price Per Unit (BTC)',
+        controller: TextEditingController(
+            text: satoshisToBtc(params.mainchainrate).toStringAsFixed(8)),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
