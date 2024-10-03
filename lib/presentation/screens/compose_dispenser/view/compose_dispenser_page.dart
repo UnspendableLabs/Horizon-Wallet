@@ -420,7 +420,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           decimal: false, signed: false), // No decimal allowed
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter a mainchain rate';
+          return 'Per Unit Price is required';
         }
         return null;
       },
@@ -450,7 +450,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Mainchain Rate",
+        label: 'Price Per Unit (satoshis)',
         controller:
             TextEditingController(text: params.mainchainrate.toString()),
         enabled: false,
