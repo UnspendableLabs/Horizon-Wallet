@@ -1053,6 +1053,7 @@ ComposeIssuanceParams _$ComposeIssuanceParamsFromJson(
       quantity: (json['quantity'] as num).toInt(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
+      reset: json['reset'] as bool,
       description: json['description'] as String?,
       transferDestination: json['transferDestination'] as String?,
     );
@@ -1065,6 +1066,7 @@ Map<String, dynamic> _$ComposeIssuanceParamsToJson(
       'quantity': instance.quantity,
       'divisible': instance.divisible,
       'lock': instance.lock,
+      'reset': instance.reset,
       'description': instance.description,
       'transferDestination': instance.transferDestination,
     };
@@ -1094,6 +1096,7 @@ ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
       quantity: (json['quantity'] as num).toInt(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
+      reset: json['reset'] as bool,
       description: json['description'] as String?,
       transferDestination: json['transfer_destination'] as String?,
       quantityNormalized: json['quantity_normalized'] as String,
@@ -1107,6 +1110,7 @@ Map<String, dynamic> _$ComposeIssuanceVerboseParamsToJson(
       'quantity': instance.quantity,
       'divisible': instance.divisible,
       'lock': instance.lock,
+      'reset': instance.reset,
       'description': instance.description,
       'transfer_destination': instance.transferDestination,
       'quantity_normalized': instance.quantityNormalized,
@@ -2993,7 +2997,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/assets/${asset}',
+              '/assets/${asset}?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )

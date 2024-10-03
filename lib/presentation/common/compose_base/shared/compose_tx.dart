@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/utxo.dart';
@@ -46,7 +47,9 @@ Future<void> composeTransaction<T, S extends ComposeStateBase>({
 
     (composedTransaction, virtualSize) =
         await transactionHandler(inputsSet ?? [], feeRate);
-
+    print('composedTransaction: $composedTransaction');
+    print(
+        'reset: ${(composedTransaction as ComposeIssuanceVerbose).params.reset}');
     logger.d('rawTx: ${(composedTransaction as dynamic).rawtransaction}');
 
     emit((state as dynamic).copyWith(

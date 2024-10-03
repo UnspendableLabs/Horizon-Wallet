@@ -1243,6 +1243,7 @@ class ComposeIssuanceParams {
   final int quantity;
   final bool divisible;
   final bool lock;
+  final bool reset;
   final String? description;
   final String? transferDestination;
 
@@ -1252,6 +1253,7 @@ class ComposeIssuanceParams {
     required this.quantity,
     required this.divisible,
     required this.lock,
+    required this.reset,
     this.description,
     this.transferDestination,
   });
@@ -1285,6 +1287,7 @@ class ComposeIssuanceVerboseParams extends ComposeIssuanceParams {
     required super.quantity,
     required super.divisible,
     required super.lock,
+    required super.reset,
     super.description,
     super.transferDestination,
     required this.quantityNormalized,
@@ -2540,7 +2543,7 @@ abstract class V2Api {
   //     Compose Sweep
   // Assets
   //     Get Valid Assets
-  @GET("/assets/{asset}")
+  @GET("/assets/{asset}?verbose=true")
   Future<Response<Asset>> getAsset(@Path("asset") String asset);
 
   @GET("/assets/{asset}/balances/{address}?verbose=true")

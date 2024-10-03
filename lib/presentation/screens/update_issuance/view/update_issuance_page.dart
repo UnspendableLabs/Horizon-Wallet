@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,9 +8,22 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
@@ -40,6 +54,18 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
           assetRepository: GetIt.I.get<AssetRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
           bitcoindService: GetIt.I.get<BitcoindService>(),
+          utxoRepository: GetIt.I.get<UtxoRepository>(),
+          composeRepository: GetIt.I.get<ComposeRepository>(),
+          transactionService: GetIt.I.get<TransactionService>(),
+          addressRepository: GetIt.I.get<AddressRepository>(),
+          accountRepository: GetIt.I.get<AccountRepository>(),
+          walletRepository: GetIt.I.get<WalletRepository>(),
+          encryptionService: GetIt.I.get<EncryptionService>(),
+          addressService: GetIt.I.get<AddressService>(),
+          transactionRepository: GetIt.I.get<TransactionRepository>(),
+          transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+          bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+          analyticsService: GetIt.I.get<AnalyticsService>(),
         )..add(FetchFormData(
             assetName: assetName, currentAddress: state.currentAddress)),
         child: UpdateIssuancePage(
@@ -73,18 +99,31 @@ class UpdateIssuancePage extends StatefulWidget {
 
 class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   late TextEditingController _subassetController;
-
+  late TextEditingController _quantityController;
+  late TextEditingController _newDescriptionController;
   @override
   void initState() {
     super.initState();
     _subassetController = TextEditingController(text: '${widget.assetName}.');
+    _quantityController = TextEditingController();
+    _newDescriptionController = TextEditingController();
   }
 
   @override
   void dispose() {
     _subassetController.dispose();
+    _quantityController.dispose();
+    _newDescriptionController.dispose();
     super.dispose();
   }
+
+  late String name;
+  late String? longName;
+  late int quantity;
+  late String? description;
+  late bool isDivisible;
+  late bool isLocked;
+  late bool isReset;
 
   @override
   Widget build(BuildContext context) {
@@ -180,6 +219,13 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         };
       },
       success: (asset) {
+        name = asset.asset!;
+        longName = asset.assetLongname;
+        quantity = asset.supply!;
+        description = asset.description;
+        isDivisible = asset.divisible ?? false;
+        isLocked = asset.locked ?? false;
+        isReset = false;
         return switch (widget.actionType) {
           IssuanceActionType.reset => [
               HorizonUI.HorizonTextFormField(
@@ -215,7 +261,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                   : const SelectableText('Asset currently has no description'),
               const SizedBox(height: 16),
               HorizonUI.HorizonTextFormField(
-                controller: TextEditingController(),
+                controller: _newDescriptionController,
                 label: 'New Description',
                 hint: 'Enter the new description for the asset',
                 validator: (value) {
@@ -236,10 +282,10 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                   label: 'Current Supply',
                   enabled: false,
                   controller:
-                      TextEditingController(text: asset.supply.toString())),
+                      TextEditingController(text: asset.supplyNormalized)),
               const SizedBox(height: 16),
               HorizonUI.HorizonTextFormField(
-                controller: TextEditingController(),
+                controller: _quantityController,
                 label: 'Quantity to Add to Current Supply',
                 keyboardType: const TextInputType.numberWithOptions(
                     decimal: true, signed: false),
@@ -325,24 +371,152 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     );
   }
 
-  void _handleInitialCancel() {}
+  void _handleInitialCancel() {
+    Navigator.of(context).pop();
+  }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
-    formKey.currentState?.validate();
+    if (formKey.currentState!.validate()) {
+      switch (widget.actionType) {
+        case IssuanceActionType.reset:
+          isReset = true;
+          break;
+        // case IssuanceActionType.lockDescription:
+        //   isLocked = true;
+        //   break;
+        case IssuanceActionType.lockQuantity:
+          isLocked = true;
+          break;
+        case IssuanceActionType.changeDescription:
+          description = _newDescriptionController.text;
+          break;
+        case IssuanceActionType.issueMore:
+          // TODO: wrap this in function and write some tests
+          final int originalQuantity = quantity;
+          Decimal input = Decimal.parse(_quantityController.text);
+
+          int newQuantity;
+          if (isDivisible) {
+            newQuantity =
+                (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+          } else {
+            newQuantity = (input).toBigInt().toInt();
+          }
+          quantity = newQuantity + originalQuantity;
+          break;
+        case IssuanceActionType.issueSubasset:
+          longName = _subassetController.text;
+          break;
+
+        default:
+          print("Invalid case");
+      }
+
+      context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
+            sourceAddress: widget.address.address,
+            params: UpdateIssuanceEventParams(
+              name: name,
+              longName: longName,
+              quantity: quantity,
+              description: description ?? '',
+              divisible: isDivisible,
+              lock: isLocked,
+              reset: isReset,
+              issuanceActionType: widget.actionType,
+            ),
+          ));
+    }
   }
 
-  List<Widget> _buildConfirmationDetails(composeTransaction) {
-    return const [];
+  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+    final params = (composeTransaction as ComposeIssuanceVerbose).params;
+    return [
+      HorizonUI.HorizonTextFormField(
+        label: "Source Address",
+        controller: TextEditingController(text: params.source),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Token name",
+        controller: TextEditingController(text: composeTransaction.name),
+        enabled: false,
+      ),
+      //       const SizedBox(height: 16.0),
+      // HorizonUI.HorizonTextFormField(
+      //   label: "Asset Long Name",
+      //   controller: TextEditingController(text: composeTransaction.longName),
+      //   enabled: false,
+      // ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Quantity",
+        controller: TextEditingController(text: params.quantityNormalized),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      params.description != ''
+          ? HorizonUI.HorizonTextFormField(
+              label: "Description",
+              controller: TextEditingController(text: params.description),
+              enabled: false,
+            )
+          : const SizedBox.shrink(),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Divisible",
+        controller: TextEditingController(
+            text: params.divisible == true ? 'true' : 'false'),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Lock",
+        controller:
+            TextEditingController(text: params.lock == true ? 'true' : 'false'),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Reset",
+        controller: TextEditingController(
+            text: params.reset == true ? 'true' : 'false'),
+        enabled: false,
+      ),
+    ];
   }
 
-  void _onConfirmationBack() {}
+  void _onConfirmationBack() {
+    context.read<UpdateIssuanceBloc>().add(FetchFormData(
+        currentAddress: widget.address, assetName: widget.assetName));
+  }
 
   void _onConfirmationContinue(
-      composeTransaction, int fee, GlobalKey<FormState> formKey) {}
+      dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      context.read<UpdateIssuanceBloc>().add(
+            FinalizeTransactionEvent<ComposeIssuanceVerbose>(
+              composeTransaction: composeTransaction,
+              fee: fee,
+            ),
+          );
+    }
+  }
 
-  void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {}
+  void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      context.read<UpdateIssuanceBloc>().add(
+            SignAndBroadcastTransactionEvent(
+              password: password,
+            ),
+          );
+    }
+  }
 
-  void _onFinalizeCancel() {}
+  void _onFinalizeCancel() {
+    context.read<UpdateIssuanceBloc>().add(FetchFormData(
+        currentAddress: widget.address, assetName: widget.assetName));
+  }
 }
 
 class PrefixTextEditingController extends TextEditingController {

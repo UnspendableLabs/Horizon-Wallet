@@ -23,7 +23,8 @@ class AssetRepositoryImpl implements AssetRepository {
         issuer: asset.issuer,
         owner: asset.owner,
         supply: asset.supply,
-        description: asset.description);
+        description: asset.description,
+        supplyNormalized: asset.supplyNormalized);
   }
 
   @override
@@ -37,14 +38,16 @@ class AssetRepositoryImpl implements AssetRepository {
     final assets = response.result!;
 
     return assets
-        .map((e) => a.Asset(
-            asset: e.asset,
-            assetLongname: e.assetLongname,
-            divisible: e.divisible,
-            description: e.description,
-            issuer: e.issuer,
-            owner: e.owner,
-            supply: e.supply))
+        .map((result) => a.Asset(
+            asset: result.asset,
+            assetLongname: result.assetLongname,
+            divisible: result.divisible,
+            description: result.description,
+            locked: result.locked,
+            issuer: result.issuer,
+            owner: result.owner,
+            supply: result.supply,
+            supplyNormalized: result.supplyNormalized))
         .toList();
   }
 }

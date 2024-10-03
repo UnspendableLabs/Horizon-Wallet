@@ -126,6 +126,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     return compose_issuance.ComposeIssuanceVerbose(
         rawtransaction: txVerbose.rawtransaction,
         params: compose_issuance.ComposeIssuanceVerboseParams(
+          reset: txVerbose.params.reset,
           source: txVerbose.params.source,
           asset: txVerbose.params.asset,
           quantity: txVerbose.params.quantity,
