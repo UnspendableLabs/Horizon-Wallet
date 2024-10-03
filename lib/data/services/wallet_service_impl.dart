@@ -8,12 +8,16 @@ import 'package:horizon/domain/entities/wallet.dart' as entity;
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/js/bip32.dart' as bip32;
+import 'package:horizon/js/wif.dart' as wif;
 import 'package:horizon/js/mnemonicjs.dart';
 import 'package:horizon/js/bip39.dart' as bip39;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair; // TODO move to data;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger();
 
 class WalletServiceImpl implements WalletService {
   final Config config;
@@ -23,6 +27,8 @@ class WalletServiceImpl implements WalletService {
   WalletServiceImpl(this.encryptionService, this.config);
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
+  final ecpair.ECPairFactory _ecpair =
+      ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
   @override
   Future<entity.Wallet> deriveRoot(String mnemonic, String password) async {
@@ -39,6 +45,14 @@ class WalletServiceImpl implements WalletService {
 
     String encryptedMnemonic =
         await encryptionService.encrypt(mnemonic, password);
+
+    logger.i("""
+
+    Der wif:
+   
+    ${root.toWIF()}
+
+    """);
 
     return entity.Wallet(
         uuid: uuid.v4(),
@@ -145,6 +159,22 @@ class WalletServiceImpl implements WalletService {
     String encryptedPrivKey =
         await encryptionService.encrypt(privKey, password);
 
+    return entity.Wallet(
+        uuid: uuid.v4(),
+        name: 'Wallet 1',
+        encryptedPrivKey: encryptedPrivKey,
+        publicKey: root.neutered().toBase58(),
+        chainCodeHex: hex.encode(root.chainCode.toDart));
+  }
+
+  @override
+  Future<entity.Wallet> fromWIF(String wif, String password) async {
+
+    final ecpair.ECPair keyPair = _ecpair.fromWIF(wif, _getNetwork());
+
+    String privKey = hex.encode(keyPair.privateKey.toDart);
+    String encryptedPrivKey =
+        await encryptionService.encrypt(privKey, password);
     return entity.Wallet(
         uuid: uuid.v4(),
         name: 'Wallet 1',

@@ -7,7 +7,7 @@ import 'package:horizon/js/buffer.dart';
 import "package:horizon/js/common.dart" as c;
 
 extension type ECPair._(JSObject _) implements JSObject {
-  external bool comppessed;
+  external bool compressed;
   external bool lowR;
   external c.Network network;
   external JSUint8Array privateKey;

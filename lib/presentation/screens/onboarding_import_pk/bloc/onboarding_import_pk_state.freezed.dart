@@ -19,6 +19,7 @@ mixin _$OnboardingImportPKState {
   String? get pkError => throw _privateConstructorUsedError;
   String get pk => throw _privateConstructorUsedError;
   dynamic get importFormat => throw _privateConstructorUsedError;
+  KeyType get keyType => throw _privateConstructorUsedError;
   dynamic get importState => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -33,7 +34,11 @@ abstract class $OnboardingImportPKStateCopyWith<$Res> {
       _$OnboardingImportPKStateCopyWithImpl<$Res, OnboardingImportPKState>;
   @useResult
   $Res call(
-      {String? pkError, String pk, dynamic importFormat, dynamic importState});
+      {String? pkError,
+      String pk,
+      dynamic importFormat,
+      KeyType keyType,
+      dynamic importState});
 }
 
 /// @nodoc
@@ -53,6 +58,7 @@ class _$OnboardingImportPKStateCopyWithImpl<$Res,
     Object? pkError = freezed,
     Object? pk = null,
     Object? importFormat = freezed,
+    Object? keyType = null,
     Object? importState = freezed,
   }) {
     return _then(_value.copyWith(
@@ -68,6 +74,10 @@ class _$OnboardingImportPKStateCopyWithImpl<$Res,
           ? _value.importFormat
           : importFormat // ignore: cast_nullable_to_non_nullable
               as dynamic,
+      keyType: null == keyType
+          ? _value.keyType
+          : keyType // ignore: cast_nullable_to_non_nullable
+              as KeyType,
       importState: freezed == importState
           ? _value.importState
           : importState // ignore: cast_nullable_to_non_nullable
@@ -86,7 +96,11 @@ abstract class _$$OnboardingImportPKStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? pkError, String pk, dynamic importFormat, dynamic importState});
+      {String? pkError,
+      String pk,
+      dynamic importFormat,
+      KeyType keyType,
+      dynamic importState});
 }
 
 /// @nodoc
@@ -105,6 +119,7 @@ class __$$OnboardingImportPKStateImplCopyWithImpl<$Res>
     Object? pkError = freezed,
     Object? pk = null,
     Object? importFormat = freezed,
+    Object? keyType = null,
     Object? importState = freezed,
   }) {
     return _then(_$OnboardingImportPKStateImpl(
@@ -118,6 +133,10 @@ class __$$OnboardingImportPKStateImplCopyWithImpl<$Res>
               as String,
       importFormat:
           freezed == importFormat ? _value.importFormat! : importFormat,
+      keyType: null == keyType
+          ? _value.keyType
+          : keyType // ignore: cast_nullable_to_non_nullable
+              as KeyType,
       importState: freezed == importState ? _value.importState! : importState,
     ));
   }
@@ -130,6 +149,7 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
       {this.pkError,
       this.pk = "",
       this.importFormat = ImportFormat.horizon,
+      this.keyType = KeyType.privateKey,
       this.importState = ImportStateNotAsked});
 
   @override
@@ -142,11 +162,14 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
   final dynamic importFormat;
   @override
   @JsonKey()
+  final KeyType keyType;
+  @override
+  @JsonKey()
   final dynamic importState;
 
   @override
   String toString() {
-    return 'OnboardingImportPKState(pkError: $pkError, pk: $pk, importFormat: $importFormat, importState: $importState)';
+    return 'OnboardingImportPKState(pkError: $pkError, pk: $pk, importFormat: $importFormat, keyType: $keyType, importState: $importState)';
   }
 
   @override
@@ -158,6 +181,7 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
             (identical(other.pk, pk) || other.pk == pk) &&
             const DeepCollectionEquality()
                 .equals(other.importFormat, importFormat) &&
+            (identical(other.keyType, keyType) || other.keyType == keyType) &&
             const DeepCollectionEquality()
                 .equals(other.importState, importState));
   }
@@ -168,6 +192,7 @@ class _$OnboardingImportPKStateImpl implements _OnboardingImportPKState {
       pkError,
       pk,
       const DeepCollectionEquality().hash(importFormat),
+      keyType,
       const DeepCollectionEquality().hash(importState));
 
   @JsonKey(ignore: true)
@@ -183,6 +208,7 @@ abstract class _OnboardingImportPKState implements OnboardingImportPKState {
       {final String? pkError,
       final String pk,
       final dynamic importFormat,
+      final KeyType keyType,
       final dynamic importState}) = _$OnboardingImportPKStateImpl;
 
   @override
@@ -191,6 +217,8 @@ abstract class _OnboardingImportPKState implements OnboardingImportPKState {
   String get pk;
   @override
   dynamic get importFormat;
+  @override
+  KeyType get keyType;
   @override
   dynamic get importState;
   @override

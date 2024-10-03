@@ -3,12 +3,14 @@ import 'package:horizon/common/constants.dart';
 
 part 'onboarding_import_pk_state.freezed.dart';
 
+
 @freezed
 class OnboardingImportPKState with _$OnboardingImportPKState {
   const factory OnboardingImportPKState({
     String? pkError,
     @Default("") String pk,
     @Default(ImportFormat.horizon) importFormat,
+    @Default(KeyType.privateKey) KeyType keyType,
     @Default(ImportStateNotAsked) importState,
   }) = _OnboardingImportPKState;
 }

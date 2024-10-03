@@ -39,6 +39,10 @@ class OnboardingImportPKBloc
       emit(state.copyWith(pk: event.pk, pkError: null));
     });
 
+    on<KeyTypeChanged>((event, emit) async {
+      emit(state.copyWith(keyType: event.keyType));
+    });
+
     on<ImportFormatChanged>((event, emit) async {
       emit(state.copyWith(importFormat: event.importFormat));
     });
@@ -61,13 +65,22 @@ class OnboardingImportPKBloc
       emit(state.copyWith(
           importState: ImportStatePKCollected(),
           importFormat: importFormat,
+          keyType: event.keyType,
           pk: event.pk));
     });
 
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
       final password = event.password;
+
       try {
+
+        // Wallet wallet = switch(state.keyType) {
+        //   KeyType.privateKey => await walletService.fromBase58(state.pk, password),
+        //   KeyType.wif => await walletService.fromWif(state.pk, password),
+        // };
+
+
         switch (state.importFormat) {
           case ImportFormat.horizon:
             Wallet wallet = await walletService.fromBase58(state.pk, password);

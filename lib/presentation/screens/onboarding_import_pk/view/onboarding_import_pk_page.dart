@@ -18,6 +18,34 @@ import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboardin
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+
+class KeyTypeDropdown extends StatelessWidget {
+  final Function(KeyType) onChanged;
+  final KeyType value;
+  const KeyTypeDropdown(
+      {super.key, required this.onChanged, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return HorizonUI.HorizonDropdownMenu<String>(
+      controller: TextEditingController(),
+      onChanged: (String? value) {
+        if (value != null) {
+          onChanged(KeyType.fromString(value));
+        }
+      },
+      selectedValue: value.toString(),
+
+      items: [
+        HorizonUI.buildDropdownMenuItem(
+            KeyType.privateKey.name, "Private Key"),
+        HorizonUI.buildDropdownMenuItem(
+            KeyType.wif.name, "WIF"),
+      ],
+    );
+  }
+}
 
 class OnboardingImportPKPageWrapper extends StatelessWidget {
   const OnboardingImportPKPageWrapper({super.key});
@@ -49,6 +77,7 @@ class OnboardingImportPKPageState extends State<OnboardingImportPKPage> {
       TextEditingController(text: "");
   final TextEditingController _importFormat =
       TextEditingController(text: ImportFormat.horizon.name);
+  KeyType selectedKeyType = KeyType.wif;
 
   @override
   dispose() {
@@ -171,6 +200,7 @@ class _PKFieldState extends State<PKField> {
   TextEditingController pkController = TextEditingController();
 
   String? selectedFormat = ImportFormat.horizon.name;
+  KeyType selectedKeyType = KeyType.privateKey;
 
   @override
   void dispose() {
@@ -208,8 +238,9 @@ class _PKFieldState extends State<PKField> {
                       fillColor: isDarkMode
                           ? darkThemeInputColor
                           : lightThemeInputColor,
-                      labelText: 'Private Key',
-                      helperText: 'Root BIP32 Extended Private Key',
+                      labelText: selectedKeyType == KeyType.privateKey
+                          ? 'BIP 32 Extended Private Key'
+                          : 'WIF',
                       labelStyle: TextStyle(
                         color: isDarkMode
                             ? darkThemeInputLabelColor
@@ -230,10 +261,35 @@ class _PKFieldState extends State<PKField> {
                         style: const TextStyle(color: redErrorText),
                       ),
                     ),
+                  SizedBox(height: isSmallScreen ? 16 : 20),
+                  KeyTypeDropdown(
+                    value: selectedKeyType,
+                    onChanged: (keyType) {
+                      setState(() {
+                        selectedKeyType = keyType;
+                      });
+                      context
+                          .read<OnboardingImportPKBloc>()
+                          .add(KeyTypeChanged(keyType: keyType));
+                    },
+                  )
                 ],
               ),
             ),
           )),
+          // if (isSmallScreen) const SizedBox(height: 16),
+          // KeyTypeDropdown(
+          //   key: UniqueKey(),
+          //   value: selectedKeyType,
+          //   onChanged: (KeyType newValue) {
+          //     setState(() {
+          //       selectedKeyType = newValue;
+          //     });
+          //     context
+          //         .read<OnboardingImportPKBloc>()
+          //         .add(KeyTypeChanged(keyType: newValue));
+          //   },
+          // ),
           if (isSmallScreen) const SizedBox(height: 16),
           ImportFormatDropdown(
             onChanged: (String? newValue) {
@@ -257,6 +313,7 @@ class _PKFieldState extends State<PKField> {
                 context.read<OnboardingImportPKBloc>().add(PKSubmit(
                       pk: pkController.text,
                       importFormat: selectedFormat!,
+                      keyType: selectedKeyType,
                     ));
               },
               backButtonText: 'CANCEL',

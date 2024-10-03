@@ -1,5 +1,42 @@
 import 'package:flutter/services.dart';
 
+enum KeyType {
+  privateKey,
+  wif;
+
+  get name {
+    switch (this) {
+      case KeyType.privateKey:
+        return "Private Key";
+      case KeyType.wif:
+        return "WIF";
+    }
+  }
+
+  static KeyType fromString(String keyType) {
+    switch (keyType) {
+      case "Private Key":
+        return KeyType.privateKey;
+      case "WIF":
+        return KeyType.wif;
+      default:
+        throw Exception("Invalid key type");
+    }
+  }
+
+  @override
+  String toString() {
+    switch (this) {
+      case KeyType.privateKey:
+        return "Private Key";
+      case KeyType.wif:
+        return "WIF";
+    }
+  }
+
+
+}
+
 enum ImportFormat {
   horizon("Horizon", "Horizon Native"),
   // legacy("Legacy", "BIP44,P2PKH,Base58"),
