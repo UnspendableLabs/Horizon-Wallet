@@ -208,11 +208,10 @@ class ActivityFeedListItem extends StatelessWidget {
                 "Issue ${params.quantityNormalized} ${params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
-      VerboseOpenDispenserEvent(params: var params) => SelectableText(
-          "Open Dispenser for ${params.asset}"),
-      VerboseRefillDispenserEvent(params: var params) => SelectableText(
-          "Refill Dispenser for ${params.asset}"),
-
+      VerboseOpenDispenserEvent(params: var params) =>
+        SelectableText("Open Dispenser for ${params.asset}"),
+      VerboseRefillDispenserEvent(params: var params) =>
+        SelectableText("Refill Dispenser for ${params.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -286,7 +285,6 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseRefillDispenserEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
-
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
