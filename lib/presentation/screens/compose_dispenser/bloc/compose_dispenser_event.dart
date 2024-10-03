@@ -8,3 +8,13 @@ class ChangeAsset extends ComposeDispenserEvent {
   final Balance balance;
   ChangeAsset({required this.asset, required this.balance});
 }
+
+class ChangeGiveQuantity extends ComposeDispenserEvent {
+  final String value;
+  ChangeGiveQuantity({required this.value});
+}
+
+class ChangeEscrowQuantity extends ComposeDispenserEvent {
+  final String value;
+  ChangeEscrowQuantity({required this.value});
+}

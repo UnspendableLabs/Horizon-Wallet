@@ -1,5 +1,8 @@
 import 'package:collection/collection.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -142,7 +145,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       context.read<ComposeDispenserBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: ComposeDispenserEventParams(
-              asset: asset!, 
+              asset: asset!,
               giveQuantity: giveQuantity,
               escrowQuantity: escrowQuantity,
               mainchainrate: mainchainrate,
@@ -200,6 +203,168 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         });
   }
 
+  Widget _buildGiveQuantityInput(ComposeDispenserState state,
+      void Function() handleInitialSubmit, bool loading) {
+    return state.balancesState.maybeWhen(orElse: () {
+      return _buildGiveQuantityInputField(
+          state,
+          null,
+          // handleInitialSubmit,
+          loading);
+    }, success: (balances) {
+      if (balances.isEmpty) {
+        return const HorizonUI.HorizonTextFormField(
+          enabled: false,
+        );
+      }
+
+      Balance? balance = balance_ ??
+          _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+
+      if (balance == null) {
+        return const HorizonUI.HorizonTextFormField(
+          enabled: false,
+        );
+      }
+
+      return _buildGiveQuantityInputField(
+          state,
+          balance,
+          // handleInitialSubmit,
+          loading);
+    });
+  }
+
+  Widget _buildGiveQuantityInputField(
+      ComposeDispenserState state,
+      Balance? balance,
+      /* void Function() handleInitialSubmit, */ bool loading) {
+    return Stack(
+      children: [
+        HorizonUI.HorizonTextFormField(
+          controller: giveQuantityController,
+          enabled: !loading,
+          onChanged: (value) {
+            context
+                .read<ComposeDispenserBloc>()
+                .add(ChangeGiveQuantity(value: value));
+          },
+          label: 'Quantity',
+          inputFormatters: [
+            balance?.assetInfo.divisible == true
+                ? DecimalTextInputFormatter(decimalRange: 8)
+                : FilteringTextInputFormatter.digitsOnly,
+          ],
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: false),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a quantity';
+            }
+            Decimal input = Decimal.parse(value);
+            Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
+            if (input > max) {
+              return "give quantity exceeds available balance";
+            }
+            setState(() {
+              balance_ = balance;
+            });
+            return null;
+          },
+          // onFieldSubmitted: (value) {
+          //   handleInitialSubmit();
+          // },
+        ),
+        state.balancesState.maybeWhen(orElse: () {
+          return const SizedBox.shrink();
+        }, success: (_) {
+          return asset != null
+              ? Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Row(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 2.0),
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink();
+        }),
+      ],
+    );
+  }
+
+  Widget _buildEscrowQuantityInput(ComposeDispenserState state, bool loading) {
+    return state.balancesState.maybeWhen(orElse: () {
+      return _buildEscrowQuantityInputField(state, null, loading);
+    }, success: (balances) {
+      if (balances.isEmpty) {
+        return const HorizonUI.HorizonTextFormField(
+          enabled: false,
+        );
+      }
+
+      Balance? balance = balance_ ??
+          _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+
+      if (balance == null) {
+        return const HorizonUI.HorizonTextFormField(
+          enabled: false,
+        );
+      }
+
+      return _buildEscrowQuantityInputField(state, balance, loading);
+    });
+  }
+
+  Widget _buildEscrowQuantityInputField(
+      ComposeDispenserState state, Balance? balance, bool loading) {
+    return HorizonUI.HorizonTextFormField(
+      controller: escrowQuantityController,
+      enabled: !loading,
+      onChanged: (value) {
+        context
+            .read<ComposeDispenserBloc>()
+            .add(ChangeEscrowQuantity(value: value));
+      },
+      label: 'Escrow Quantity',
+      inputFormatters: [
+        balance?.assetInfo.divisible == true
+            ? DecimalTextInputFormatter(decimalRange: 8)
+            : FilteringTextInputFormatter.digitsOnly,
+      ],
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true, signed: false),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter an escrow quantity';
+        }
+        Decimal escrowQuantity = Decimal.parse(value);
+        Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
+        if (escrowQuantity > max) {
+          return "escrow quantity exceeds available balance";
+        }
+
+        Decimal? giveQuantity = giveQuantityController.text.isNotEmpty
+            ? Decimal.parse(giveQuantityController.text)
+            : null;
+        // Check if the escrow quantity is greater than or equal to the give quantity
+
+        if (giveQuantity != null && escrowQuantity < giveQuantity) {
+          return 'Escrow quantity must be greater than or equal to give quantity';
+        }
+
+        setState(() {
+          balance_ = balance;
+        });
+        return null;
+      },
+    );
+  }
+
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return [
@@ -211,45 +376,33 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       const SizedBox(height: 16.0),
       _buildAssetInput(state, loading),
       const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        controller: giveQuantityController,
-        label: 'Give Quantity',
-        keyboardType: const TextInputType.numberWithOptions(
-            decimal: false, signed: false),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter a give quantity';
-          }
-          return null;
-        },
-      ),
+      _buildGiveQuantityInput(state, () {
+        _handleInitialSubmit(formKey);
+      }, loading),
       const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        controller: escrowQuantityController,
-        label: 'Escrow Quantity',
-        keyboardType: const TextInputType.numberWithOptions(
-            decimal: false, signed: false),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter an escrow quantity';
-          }
-          return null;
-        },
-      ),
+      _buildEscrowQuantityInput(state, loading),
       const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        controller: mainchainrateController,
-        label: 'Mainchain Rate',
-        keyboardType: const TextInputType.numberWithOptions(
-            decimal: false, signed: false),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter a mainchain rate';
-          }
-          return null;
-        },
-      ),
+      _buildPricePerUnitInput(loading),
     ];
+  }
+
+  Widget _buildPricePerUnitInput(bool loading) {
+    return HorizonUI.HorizonTextFormField(
+      controller: mainchainrateController,
+      label: 'Price Per Unit (satoshis)',
+      enabled: !loading,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly, // Only allow integers
+      ],
+      keyboardType: const TextInputType.numberWithOptions(
+          decimal: false, signed: false), // No decimal allowed
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a mainchain rate';
+        }
+        return null;
+      },
+    );
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {

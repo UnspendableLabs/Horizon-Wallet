@@ -91,8 +91,19 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
             status: 0)) {
     // Event handlers specific to the dispenser
     on<ChangeAsset>(_onChangeAsset);
+    on<ChangeGiveQuantity>(_onChangeGiveQuantity);
+    on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
   }
 
+  _onChangeEscrowQuantity(ChangeEscrowQuantity event, emit) {
+    final quantity = event.value;
+    emit(state.copyWith(escrowQuantity: quantity));
+  }
+
+  _onChangeGiveQuantity(ChangeGiveQuantity event, emit) {
+    final quantity = event.value;
+    emit(state.copyWith(giveQuantity: quantity));
+  }
 
   _onChangeAsset(ChangeAsset event, emit) {
     emit(state.copyWith(

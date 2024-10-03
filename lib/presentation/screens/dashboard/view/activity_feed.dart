@@ -241,8 +241,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoDispenserVerbose(
         unpackedData: var unpackedData,
       ) =>
-        SelectableText(
-            "Dispenser Action"),
+        SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -255,6 +254,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.arrow_back, color: Colors.grey),
       TransactionInfoIssuanceVerbose() =>
         const Icon(Icons.toll, color: Colors.grey),
+      TransactionInfoDispenserVerbose() =>
+        const Icon(Icons.account_balance, color: Colors.grey),
       TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
