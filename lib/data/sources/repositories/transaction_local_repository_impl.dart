@@ -8,31 +8,33 @@ import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
+import 'package:logger/logger.dart';
+final logger = Logger();
 
-class UnpackedMapper {
-  static TransactionUnpacked toDomain(api.TransactionUnpacked u) {
-    switch (u.messageType) {
-      case "enhanced_send":
-        return EnhancedSendUnpackedMapper.toDomain(
-            u as api.EnhancedSendUnpacked);
-      default:
-        return TransactionUnpacked(
-          messageType: u.messageType,
-        );
-    }
-  }
-}
+// class UnpackedMapper {
+//   static TransactionUnpacked toDomain(api.TransactionUnpacked u) {
+//     switch (u.messageType) {
+//       case "enhanced_send":
+//         return EnhancedSendUnpackedMapper.toDomain(
+//             u as api.EnhancedSendUnpacked);
+//       default:
+//         return TransactionUnpacked(
+//           messageType: u.messageType,
+//         );
+//     }
+//   }
+// }
 
-class EnhancedSendUnpackedMapper {
-  static EnhancedSendUnpacked toDomain(api.EnhancedSendUnpacked u) {
-    return EnhancedSendUnpacked(
-      asset: u.asset,
-      quantity: u.quantity,
-      address: u.address,
-      memo: u.memo,
-    );
-  }
-}
+// class EnhancedSendUnpackedMapper {
+//   static EnhancedSendUnpacked toDomain(api.EnhancedSendUnpacked u) {
+//     return EnhancedSendUnpacked(
+//       asset: u.asset,
+//       quantity: u.quantity,
+//       address: u.address,
+//       memo: u.memo,
+//     );
+//   }
+// }
 
 class UnpackedVerboseMapper {
   static TransactionUnpackedVerbose toDomain(api.TransactionUnpackedVerbose u) {
@@ -43,25 +45,15 @@ class UnpackedVerboseMapper {
       case "issuance":
         return IssuanceUnpackedVerboseMapper.toDomain(
             u as api.IssuanceUnpackedVerbose);
+      case "dispenser":
+        return DispenserUnpackedVerboseMapper.toDomain(
+            u as api.DispenserUnpackedVerbose);
       default:
         return TransactionUnpackedVerbose(
           messageType: u.messageType,
           // btcAmountNormalized: u.btcAmountNormalized,
         );
     }
-  }
-}
-
-class EnhancedSendUnpackedVerboseMapper {
-  static EnhancedSendUnpackedVerbose toDomain(
-      api.EnhancedSendUnpackedVerbose u) {
-    return EnhancedSendUnpackedVerbose(
-      asset: u.asset,
-      quantity: u.quantity,
-      address: u.address,
-      memo: u.memo,
-      quantityNormalized: u.quantityNormalized,
-    );
   }
 }
 
@@ -118,6 +110,21 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "quantity_normalized": unpacked.quantityNormalized,
           }
         }),
+      TransactionInfoDispenserVerbose(
+        unpackedData: DispenserUnpackedVerbose unpacked
+      ) =>
+        jsonEncode({
+          "message_type": "dispenser",
+          "message_data": {
+            "asset": unpacked.asset,
+            "give_quantity": unpacked.giveQuantity,
+            "escrow_quantity": unpacked.escrowQuantity,
+            "mainchainrate": unpacked.mainchainrate,
+            "status": unpacked.status,
+            "give_quantity_normalized": unpacked.giveQuantityNormalized,
+            "escrow_quantity_normalized": unpacked.escrowQuantityNormalized,
+            // "mainchainrate_normalized": unpacked.mainchainrateNormalized,
+          } }),
       _ => null
     };
 
@@ -163,6 +170,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        DispenserUnpackedVerbose() => TransactionInfoDispenserVerbose(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -227,6 +245,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        DispenserUnpackedVerbose() => TransactionInfoDispenserVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfoVerbose(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -272,6 +301,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        DispenserUnpackedVerbose() => TransactionInfoDispenserVerbose(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

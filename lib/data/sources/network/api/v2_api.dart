@@ -242,6 +242,10 @@ class Event {
         return AssetIssuanceEvent.fromJson(json);
       case 'DISPENSE':
         return DispenseEvent.fromJson(json);
+      case 'OPEN_DISPENSER':
+        return OpenDispenserEvent.fromJson(json);
+      case 'REFILL_DISPENSER':
+        return RefillDispenserEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -563,6 +567,258 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class OpenDispenserEvent extends Event {
+  final OpenDispenserParams params;
+
+  OpenDispenserEvent({
+    required int eventIndex,
+    required String event,
+    required String? txHash,
+    int? blockIndex,
+    required this.params,
+  }) : super(
+          eventIndex: eventIndex,
+          event: event,
+          txHash: txHash,
+          blockIndex: blockIndex,
+        );
+
+  factory OpenDispenserEvent.fromJson(Map<String, dynamic> json) =>
+      _$OpenDispenserEventFromJson(json);
+}
+
+
+
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OpenDispenserParams {
+  final String asset;
+  final int blockIndex;
+  final int escrowQuantity;
+  final int giveQuantity;
+  final int giveRemaining;
+  final String? oracleAddress;
+  final String origin;
+  final int satoshirate;
+  final String source;
+  final int status;
+  final String txHash;
+  final int txIndex;
+
+  OpenDispenserParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.escrowQuantity,
+    required this.giveQuantity,
+    required this.giveRemaining,
+    this.oracleAddress,
+    required this.origin,
+    required this.satoshirate,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory OpenDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$OpenDispenserParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOpenDispenserEvent extends VerboseEvent {
+  final VerboseOpenDispenserParams params;
+
+  VerboseOpenDispenserEvent({
+    required int eventIndex,
+    required String event,
+    required String txHash,
+    int? blockIndex,
+    required int blockTime,
+    required this.params,
+  }) : super(
+          eventIndex: eventIndex,
+          event: event,
+          txHash: txHash,
+          blockIndex: blockIndex,
+          blockTime: blockTime,
+        );
+
+  factory VerboseOpenDispenserEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOpenDispenserEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOpenDispenserParams extends OpenDispenserParams {
+  final String giveQuantityNormalized;
+  final String giveRemainingNormalized;
+  final String escrowQuantityNormalized;
+  final String satoshirateNormalized;
+
+  VerboseOpenDispenserParams({
+    required String asset,
+    required int blockIndex,
+    required int escrowQuantity,
+    required int giveQuantity,
+    required int giveRemaining,
+    String? oracleAddress,
+    required String origin,
+    required int satoshirate,
+    required String source,
+    required int status,
+    required String txHash,
+    required int txIndex,
+    required this.giveQuantityNormalized,
+    required this.giveRemainingNormalized,
+    required this.escrowQuantityNormalized,
+    required this.satoshirateNormalized,
+  }) : super(
+          asset: asset,
+          blockIndex: blockIndex,
+          escrowQuantity: escrowQuantity,
+          giveQuantity: giveQuantity,
+          giveRemaining: giveRemaining,
+          oracleAddress: oracleAddress,
+          origin: origin,
+          satoshirate: satoshirate,
+          source: source,
+          status: status,
+          txHash: txHash,
+          txIndex: txIndex,
+        );
+
+  factory VerboseOpenDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOpenDispenserParamsFromJson(json);
+}
+
+// {
+//     "event_index": 17758284,
+//     "event": "REFILL_DISPENSER",
+//     "params": {
+//         "asset": "A4630460187535670455",
+//         "block_index": 863842,
+//         "destination": "bc1q0eapk4tyqa7r2vcta6z6v2mgnqcux3kfkmurzp",
+//         "dispense_quantity": 1,
+//         "dispenser_tx_hash": "609ac3187dd8ba65d484f945784cd3056f1c087aae766e773818d75b51e0e78b",
+//         "source": "bc1q0eapk4tyqa7r2vcta6z6v2mgnqcux3kfkmurzp",
+//         "tx_hash": "1dc0aa271c66b66a7f5a7222cbb950aeefebec1c4bcbae58f64beeefff2117d2",
+//         "tx_index": 2756307,
+//         "block_time": 1727894737,
+//         "asset_info": {
+//             "asset_longname": null,
+//             "description": "",
+//             "issuer": "bc1q0eapk4tyqa7r2vcta6z6v2mgnqcux3kfkmurzp",
+//             "divisible": true,
+//             "locked": false
+//         },
+//         "dispense_quantity_normalized": "0.00000001"
+//     },
+//     "tx_hash": "1dc0aa271c66b66a7f5a7222cbb950aeefebec1c4bcbae58f64beeefff2117d2",
+//     "block_index": 863842,
+//     "block_time": 1727894737
+// },
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RefillDispenserEvent extends Event {
+  final RefillDispenserParams params;
+
+  RefillDispenserEvent({
+    required int eventIndex,
+    required String event,
+    required String? txHash,
+    int? blockIndex,
+    required this.params,
+  }) : super(
+          eventIndex: eventIndex,
+          event: event,
+          txHash: txHash,
+          blockIndex: blockIndex,
+        );
+
+  factory RefillDispenserEvent.fromJson(Map<String, dynamic> json) =>
+      _$RefillDispenserEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class RefillDispenserParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int dispenseQuantity;
+  final String dispenserTxHash;
+  final String source;
+  final String txHash;
+  final int txIndex;
+
+  RefillDispenserParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.dispenseQuantity,
+    required this.dispenserTxHash,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory RefillDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$RefillDispenserParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseRefillDispenserEvent extends VerboseEvent {
+  final VerboseRefillDispenserParams params;
+
+  VerboseRefillDispenserEvent({
+    required int eventIndex,
+    required String event,
+    required String txHash,
+    int? blockIndex,
+    required int blockTime,
+    required this.params,
+  }) : super(
+          eventIndex: eventIndex,
+          event: event,
+          txHash: txHash,
+          blockIndex: blockIndex,
+          blockTime: blockTime,
+        );
+
+  factory VerboseRefillDispenserEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseRefillDispenserEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseRefillDispenserParams extends RefillDispenserParams {
+  final String dispenseQuantityNormalized;
+  final AssetInfo assetInfo;
+
+  VerboseRefillDispenserParams({
+    required String asset,
+    required int blockIndex,
+    required String destination,
+    required int dispenseQuantity,
+    required String dispenserTxHash,
+    required String source,
+    required String txHash,
+    required int txIndex,
+    required this.dispenseQuantityNormalized,
+    required this.assetInfo,
+  }) : super(
+          asset: asset,
+          blockIndex: blockIndex,
+          destination: destination,
+          dispenseQuantity: dispenseQuantity,
+          dispenserTxHash: dispenserTxHash,
+          source: source,
+          txHash: txHash,
+          txIndex: txIndex,
+        );
+
+  factory VerboseRefillDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseRefillDispenserParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class DispenseParams {
   final String asset;
   final int blockIndex;
@@ -856,6 +1112,10 @@ class VerboseEvent extends Event {
         return VerboseAssetIssuanceEvent.fromJson(json);
       case 'DISPENSE':
         return VerboseDispenseEvent.fromJson(json);
+      case 'OPEN_DISPENSER':
+        return VerboseOpenDispenserEvent.fromJson(json);
+      case 'REFILL_DISPENSER':
+        return VerboseRefillDispenserEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -1285,6 +1545,102 @@ class ComposeIssuanceVerboseParams extends ComposeIssuanceParams {
       _$ComposeIssuanceVerboseParamsFromJson(json);
 }
 
+@JsonSerializable()
+class ComposeDispenser {
+  final String rawtransaction;
+  final ComposeDispenserParams params;
+  final String name;
+
+  const ComposeDispenser({
+    required this.rawtransaction,
+    required this.params,
+    required this.name,
+  });
+
+  factory ComposeDispenser.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserFromJson(json);
+}
+
+// Params class for ComposeDispenser
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ComposeDispenserParams {
+  final String source;
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final int status;
+  final String? openAddress;
+  final String? oracleAddress;
+  final AssetInfo assetInfo;
+  final String giveQuantityNormalized;
+  final String escrowQuantityNormalized;
+
+  ComposeDispenserParams({
+    required this.source,
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.status,
+    this.openAddress,
+    this.oracleAddress,
+    required this.assetInfo,
+    required this.giveQuantityNormalized,
+    required this.escrowQuantityNormalized,
+  });
+
+  factory ComposeDispenserParams.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ComposeDispenserVerbose extends ComposeDispenser {
+  @override
+  final ComposeDispenserVerboseParams params;
+  final int btcIn;
+  final int btcOut;
+  final int btcChange;
+  final int btcFee;
+  final String data;
+
+  ComposeDispenserVerbose({
+    required super.rawtransaction,
+    required super.name,
+    required this.params,
+    required this.btcIn,
+    required this.btcOut,
+    required this.btcChange,
+    required this.btcFee,
+    required this.data,
+  }) : super(params: params);
+
+  factory ComposeDispenserVerbose.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserVerboseFromJson(json);
+}
+
+// Verbose params class for ComposeDispenserVerbose
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ComposeDispenserVerboseParams extends ComposeDispenserParams {
+  // final UnpackedData unpackedData;
+
+  ComposeDispenserVerboseParams({
+    required super.source,
+    required super.asset,
+    required super.giveQuantity,
+    required super.escrowQuantity,
+    required super.mainchainrate,
+    required super.status,
+    required super.assetInfo,
+    required super.giveQuantityNormalized,
+    required super.escrowQuantityNormalized,
+    // required this.unpackedData,
+  });
+
+  factory ComposeDispenserVerboseParams.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenserVerboseParamsFromJson(json);
+}
+
 // Send
 // {
 //                 "tx_index": 2726604,
@@ -1384,7 +1740,7 @@ class Dispenser {
   final String source;
   final int giveQuantity;
   final int escrowQuantity;
-  final int satoshiRate;
+  final int satoshirate;
   final int status;
   final int giveRemaining;
   final String? oracleAddress;
@@ -1401,7 +1757,7 @@ class Dispenser {
     required this.source,
     required this.giveQuantity,
     required this.escrowQuantity,
-    required this.satoshiRate,
+    required this.satoshirate,
     required this.status,
     required this.giveRemaining,
     required this.oracleAddress,
@@ -1610,6 +1966,8 @@ class TransactionUnpacked {
         return EnhancedSendUnpacked.fromJson(json);
       case "issuance":
         return IssuanceUnpacked.fromJson(json);
+      case "dispenser":
+        return DispenserUnpacked.fromJson(json);
       default:
         return TransactionUnpacked(
           messageType: json["message_type"],
@@ -1662,6 +2020,47 @@ class EnhancedSendUnpacked extends TransactionUnpacked {
   }
 }
 
+class DispenserUnpacked extends TransactionUnpacked {
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final String status;
+
+  DispenserUnpacked({
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.status,
+  }) : super(messageType: "dispenser");
+
+  factory DispenserUnpacked.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return DispenserUnpacked(
+      asset: messageData["asset"],
+      giveQuantity: messageData["give_quantity"],
+      escrowQuantity: messageData["escrow_quantity"],
+      mainchainrate: messageData["mainchainrate"],
+      status: messageData["status"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "ispenser",
+      "message_data": {
+        "asset": asset,
+        "give_quantity": giveQuantity,
+        "escrow_quantity": escrowQuantity,
+        "mainchainrate": mainchainrate,
+        "status": status,
+      }
+    };
+  }
+}
+
 class TransactionUnpackedVerbose extends TransactionUnpacked {
   const TransactionUnpackedVerbose({required super.messageType});
 
@@ -1672,6 +2071,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return EnhancedSendUnpackedVerbose.fromJson(json);
       case "issuance":
         return IssuanceUnpackedVerbose.fromJson(json);
+      case "dispenser":
+        return DispenserUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -1722,6 +2123,59 @@ class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
         "memo": memo,
         // "asset_info": assetInfo.toJson(),
         "quantity_normalized": quantityNormalized,
+      }
+    };
+  }
+}
+
+class DispenserUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final String status;
+  final String giveQuantityNormalized;
+  final String escrowQuantityNormalized;
+  // final String mainchainrateNormalized;
+
+  DispenserUnpackedVerbose({
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.status,
+    required this.giveQuantityNormalized,
+    required this.escrowQuantityNormalized,
+    // required this.mainchainrateNormalized,
+  }) : super(messageType: "dispenser");
+
+  factory DispenserUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return DispenserUnpackedVerbose(
+      asset: messageData["asset"],
+      giveQuantity: messageData["give_quantity"],
+      escrowQuantity: messageData["escrow_quantity"],
+      mainchainrate: messageData["mainchainrate"],
+      status: messageData["status"],
+      giveQuantityNormalized: messageData["give_quantity_normalized"],
+      escrowQuantityNormalized: messageData["escrow_quantity_normalized"],
+      // mainchainrateNormalized: messageData["mainchainrate_normalized"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "dispenser",
+      "message_data": {
+        "asset": asset,
+        "give_quantity": giveQuantity,
+        "escrow_quantity": escrowQuantity,
+        "mainchainrate": mainchainrate,
+        "status": status,
+        "give_quantity_normalized": giveQuantityNormalized,
+        "escrow_quantity_normalized": escrowQuantityNormalized,
+        // "mainchainrate_normalized": mainchainrateNormalized,
       }
     };
   }
@@ -1931,6 +2385,8 @@ class InfoVerbose extends Info {
         return EnhancedSendInfoVerbose.fromJson(json);
       case "issuance":
         return IssuanceInfoVerbose.fromJson(json);
+      case "dispenser":
+        return DispenserInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -2051,6 +2507,27 @@ class IssuanceInfoVerbose extends InfoVerbose {
       _$IssuanceInfoVerboseFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$IssuanceInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DispenserInfoVerbose extends InfoVerbose {
+  final DispenserUnpackedVerbose unpackedData;
+
+  const DispenserInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory DispenserInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$DispenserInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$DispenserInfoVerboseToJson(this);
 }
 
 // {
@@ -2352,6 +2829,22 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
+  ]);
+
+  @GET("/addresses/{address}/compose/dispenser?verbose=true")
+  Future<Response<ComposeDispenserVerbose>> composeDispenserVerbose(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("give_quantity") int giveQuantity,
+    @Query("escrow_quantity") int escrowQuantity,
+    @Query("mainchainrate") int mainchainrate,
+    @Query("status") int status, [
+    @Query("open_address") String? openAddress,
+    @Query("oracle_address") String? oracleAddress,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")

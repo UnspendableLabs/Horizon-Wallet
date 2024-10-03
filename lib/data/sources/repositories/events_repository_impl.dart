@@ -35,6 +35,12 @@ class EventMapper {
             apiEvent as api.AssetIssuanceEvent);
       case "DISPENSE":
         return DispenseEventMapper.toDomain(apiEvent as api.DispenseEvent);
+      case "OPEN_DISPENSER":
+        return OpenDispenserEventMapper.toDomain(
+            apiEvent as api.OpenDispenserEvent);
+      case "REFILL_DISPENSER":
+        return RefillDispenserEventMapper.toDomain(
+            apiEvent as api.RefillDispenserEvent);
       // case 'NEW_TRANSACTION':
       //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
 
@@ -72,6 +78,12 @@ class VerboseEventMapper {
       case 'ASSET_ISSUANCE':
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
+      case 'OPEN_DISPENSER':
+        return VerboseOpenDispenserEventMapper.toDomain(
+            apiEvent as api.VerboseOpenDispenserEvent);
+      case "REFILL_DISPENSER":
+        return VerboseRefillDispenserEventMapper.toDomain(
+        apiEvent as api.VerboseRefillDispenserEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);
@@ -488,6 +500,144 @@ class VerboseNewTransactionParamsMapper {
       txIndex: apiParams.txIndex,
       unpackedData: apiParams.unpackedData,
       btcAmountNormalized: apiParams.btcAmountNormalized,
+    );
+  }
+}
+
+class OpenDispenserEventMapper {
+  static OpenDispenserEvent toDomain(api.OpenDispenserEvent apiEvent) {
+    return OpenDispenserEvent(
+      state: StateMapper.get(apiEvent),
+      event: "OPEN_DISPENSER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      params: OpenDispenserParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class OpenDispenserParamsMapper {
+  static OpenDispenserParams toDomain(api.OpenDispenserParams apiParams) {
+    return OpenDispenserParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      escrowQuantity: apiParams.escrowQuantity,
+      giveQuantity: apiParams.giveQuantity,
+      giveRemaining: apiParams.giveRemaining,
+      oracleAddress: apiParams.oracleAddress,
+      origin: apiParams.origin,
+      satoshirate: apiParams.satoshirate,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+    );
+  }
+}
+
+class VerboseOpenDispenserEventMapper {
+  static VerboseOpenDispenserEvent toDomain(
+      api.VerboseOpenDispenserEvent apiEvent) {
+    return VerboseOpenDispenserEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "OPEN_DISPENSER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseOpenDispenserParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseOpenDispenserParamsMapper {
+  static VerboseOpenDispenserParams toDomain(
+      api.VerboseOpenDispenserParams apiParams) {
+    return VerboseOpenDispenserParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      escrowQuantity: apiParams.escrowQuantity,
+      giveQuantity: apiParams.giveQuantity,
+      giveRemaining: apiParams.giveRemaining,
+      oracleAddress: apiParams.oracleAddress,
+      origin: apiParams.origin,
+      satoshirate: apiParams.satoshirate,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      // blockTime: apiParams.blockTime,
+      giveQuantityNormalized: apiParams.giveQuantityNormalized,
+      giveRemainingNormalized: apiParams.giveRemainingNormalized,
+      escrowQuantityNormalized: apiParams.escrowQuantityNormalized,
+      satoshirateNormalized: apiParams.satoshirateNormalized,
+      // description: apiParams.description,
+      // issuer: apiParams.issuer,
+      // divisible: apiParams.divisible,
+      // locked: apiParams.locked,
+    );
+  }
+}
+
+class RefillDispenserEventMapper {
+  static RefillDispenserEvent toDomain(api.RefillDispenserEvent apiEvent) {
+    return RefillDispenserEvent(
+      state: StateMapper.get(apiEvent),
+      event: "REFILL_DISPENSER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      params: RefillDispenserParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class RefillDispenserParamsMapper {
+  static RefillDispenserParams toDomain(api.RefillDispenserParams apiParams) {
+    return RefillDispenserParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      dispenseQuantity: apiParams.dispenseQuantity,
+      dispenserTxHash: apiParams.dispenserTxHash,
+      source: apiParams.source,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+    );
+  }
+}
+
+class VerboseRefillDispenserEventMapper {
+  static VerboseRefillDispenserEvent toDomain(
+      api.VerboseRefillDispenserEvent apiEvent) {
+    return VerboseRefillDispenserEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "REFILL_DISPENSER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseRefillDispenserParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseRefillDispenserParamsMapper {
+  static VerboseRefillDispenserParams toDomain(
+      api.VerboseRefillDispenserParams apiParams) {
+    return VerboseRefillDispenserParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      dispenseQuantity: apiParams.dispenseQuantity,
+      dispenserTxHash: apiParams.dispenserTxHash,
+      source: apiParams.source,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      dispenseQuantityNormalized: apiParams.dispenseQuantityNormalized,
+      // assetInfo: AssetInfoMapper.toDomain(
+      //     apiParams.assetInfo), // Assuming AssetInfoMapper exists
     );
   }
 }

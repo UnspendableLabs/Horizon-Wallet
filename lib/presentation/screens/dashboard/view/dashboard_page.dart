@@ -18,6 +18,7 @@ import 'package:horizon/presentation/common/footer.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -337,6 +338,19 @@ class AddressActions extends StatelessWidget {
               ),
               icon: Icons.add,
               text: "ISSUE",
+            ),
+            AddressAction(
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Create Dispenser",
+                body: ComposeDispenserPageWrapper(
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                ),
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.add,
+              text: "Dispenser",
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,
