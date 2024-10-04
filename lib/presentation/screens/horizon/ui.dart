@@ -413,6 +413,7 @@ class HorizonTextFormField extends StatelessWidget {
   final bool? enabled;
   final String? initialValue;
   final FloatingLabelBehavior? floatingLabelBehavior;
+  final Color? textColor;
 
   const HorizonTextFormField({
     super.key,
@@ -434,6 +435,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.enabled,
     this.initialValue,
     this.floatingLabelBehavior,
+    this.textColor,
   });
 
   @override
@@ -449,20 +451,21 @@ class HorizonTextFormField extends StatelessWidget {
           fillColor: fillColor,
           labelText: label,
           suffix: suffix,
+
         ),
         child: obscureText == true
             ? Text(
                 '•' * (controller?.text.length ?? 0),
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDarkMode ? mainTextWhite : mainTextBlack,
+                  color: textColor ?? (isDarkMode ? mainTextWhite : mainTextBlack),
                 ),
               )
             : SelectableText(
                 controller?.text ?? '',
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDarkMode ? mainTextWhite : mainTextBlack,
+                  color: textColor ?? (isDarkMode ? mainTextWhite : mainTextBlack),
                 ),
               ),
       );

@@ -362,23 +362,6 @@ class AddressActions extends StatelessWidget {
   }
 }
 
-class BalancesDisplay extends StatefulWidget {
-  final bool isDarkTheme;
-  final List<Address> addresses;
-  final String accountUuid;
-  final Address currentAddress;
-
-  const BalancesDisplay(
-      {super.key,
-      required this.isDarkTheme,
-      required this.addresses,
-      required this.accountUuid,
-      required this.currentAddress});
-
-  @override
-  BalancesDisplayState createState() => BalancesDisplayState();
-}
-
 class BalancesSliver extends StatefulWidget {
   final bool isDarkTheme;
   final List<Address> addresses;
@@ -606,6 +589,23 @@ class QRCodeDialog extends StatelessWidget {
   }
 }
 
+class BalancesDisplay extends StatefulWidget {
+  final bool isDarkTheme;
+  final List<Address> addresses;
+  final String accountUuid;
+  final Address currentAddress;
+
+  const BalancesDisplay(
+      {super.key,
+      required this.isDarkTheme,
+      required this.addresses,
+      required this.accountUuid,
+      required this.currentAddress});
+
+  @override
+  BalancesDisplayState createState() => BalancesDisplayState();
+}
+
 class BalancesDisplayState extends State<BalancesDisplay> {
   late BalancesBloc _balancesBloc;
 
@@ -691,13 +691,11 @@ class BalancesSliverState extends State<BalancesSliver> {
 
           final currentAsset =
               assets.firstWhereOrNull((asset) => asset.asset == entry.key);
-          print('Current asset: $currentAsset');
           final bool isOwner = currentAsset?.owner ==
               context.read<ShellStateCubit>().state.maybeWhen(
                     success: (state) => state.currentAddress.address,
                     orElse: () => throw Exception("invariant: no address"),
                   );
-          print('Is owner: $isOwner');
 
           return [
             Padding(
@@ -709,7 +707,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   Expanded(
                     child: SelectableText.rich(
                       TextSpan(
-                        text: '${entry.key} ',
+                        text: '${entry.key != 'BTC' && entry.value.assetInfo.assetLongname != null ? entry.value.assetInfo.assetLongname : entry.key} ',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -772,25 +770,29 @@ class BalancesSliverState extends State<BalancesSliver> {
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<IssuanceActionType>>[
-                            const PopupMenuItem<IssuanceActionType>(
+                            PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.reset,
                               child: Text('Reset Asset'),
+                              enabled: currentAsset?.locked != true,
                             ),
                             // const PopupMenuItem<IssuanceActionType>(
                             //   value: IssuanceActionType.lockDescription,
                             //   child: Text('Lock Description'),
                             // ),
-                            const PopupMenuItem<IssuanceActionType>(
+                            PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.lockQuantity,
                               child: Text('Lock Quantity'),
+                              enabled: currentAsset?.locked != true,
                             ),
-                            const PopupMenuItem<IssuanceActionType>(
+                            PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.changeDescription,
                               child: Text('Change Description'),
+                              enabled: currentAsset?.locked != true,
                             ),
-                            const PopupMenuItem<IssuanceActionType>(
+                            PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.issueMore,
                               child: Text('Issue More'),
+                              enabled: currentAsset?.locked != true,
                             ),
                             const PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.issueSubasset,

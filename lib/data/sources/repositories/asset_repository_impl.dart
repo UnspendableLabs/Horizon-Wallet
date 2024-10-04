@@ -22,6 +22,7 @@ class AssetRepositoryImpl implements AssetRepository {
         divisible: asset.divisible,
         issuer: asset.issuer,
         owner: asset.owner,
+        locked: asset.locked,
         supply: asset.supply,
         description: asset.description,
         supplyNormalized: asset.supplyNormalized);

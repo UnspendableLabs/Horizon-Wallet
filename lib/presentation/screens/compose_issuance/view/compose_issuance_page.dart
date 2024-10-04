@@ -419,13 +419,17 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
         controller: TextEditingController(text: params.quantityNormalized),
         enabled: false,
       ),
-      const SizedBox(height: 16.0),
       params.description != ''
-          ? HorizonUI.HorizonTextFormField(
-              label: "Description",
-              controller: TextEditingController(text: params.description),
-              enabled: false,
-            )
+          ? Column(
+            children: [
+              const SizedBox(height: 16.0),
+              HorizonUI.HorizonTextFormField(
+                  label: "Description",
+                  controller: TextEditingController(text: params.description),
+                  enabled: false,
+                ),
+            ],
+          )
           : const SizedBox.shrink(),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(

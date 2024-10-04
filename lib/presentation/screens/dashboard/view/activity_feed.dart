@@ -205,7 +205,7 @@ class ActivityFeedListItem extends StatelessWidget {
             ? const SelectableText('Issue (INVALID)',
                 style: TextStyle(color: redErrorText))
             : SelectableText(
-                "Issue ${params.quantityNormalized} ${params.asset}"),
+                "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       _ => SelectableText(
