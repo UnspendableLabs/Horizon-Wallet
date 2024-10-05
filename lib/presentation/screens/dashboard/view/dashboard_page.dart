@@ -30,6 +30,7 @@ import "package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -341,6 +342,19 @@ class AddressActions extends StatelessWidget {
               ),
               icon: Icons.add,
               text: "ISSUE",
+            ),
+            AddressAction(
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Create Dispenser",
+                body: ComposeDispenserPageWrapper(
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                ),
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.add,
+              text: "Dispenser",
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,
@@ -707,7 +721,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                   Expanded(
                     child: SelectableText.rich(
                       TextSpan(
-                        text: '${entry.key != 'BTC' && entry.value.assetInfo.assetLongname != null ? entry.value.assetInfo.assetLongname : entry.key} ',
+                        text:
+                            '${entry.key != 'BTC' && entry.value.assetInfo.assetLongname != null ? entry.value.assetInfo.assetLongname : entry.key} ',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -772,8 +787,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                               <PopupMenuEntry<IssuanceActionType>>[
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.reset,
-                              child: Text('Reset Asset'),
                               enabled: currentAsset?.locked != true,
+                              child: const Text('Reset Asset'),
                             ),
                             // const PopupMenuItem<IssuanceActionType>(
                             //   value: IssuanceActionType.lockDescription,
@@ -781,18 +796,18 @@ class BalancesSliverState extends State<BalancesSliver> {
                             // ),
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.lockQuantity,
-                              child: Text('Lock Quantity'),
                               enabled: currentAsset?.locked != true,
+                              child: const Text('Lock Quantity'),
                             ),
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.changeDescription,
-                              child: Text('Change Description'),
                               enabled: currentAsset?.locked != true,
+                              child: const Text('Change Description'),
                             ),
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.issueMore,
-                              child: Text('Issue More'),
                               enabled: currentAsset?.locked != true,
+                              child: const Text('Issue More'),
                             ),
                             const PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.issueSubasset,

@@ -34,7 +34,7 @@ class ConfigImpl implements Config {
 
   String get _defaultEsploraBase => switch (network) {
         Network.mainnet => "https://api.counterparty.io:3000",
-        Network.testnet => "https://api.counterparty.io:3001",
+        Network.testnet => "https://api.counterparty.io:13000",
         Network.regtest => "http://127.0.0.1:3002",
       };
 

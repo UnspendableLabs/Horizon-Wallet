@@ -16,6 +16,8 @@ class UnpackedMapper {
             u as api.EnhancedSendUnpacked);
       case "issuance":
         return IssuanceUnpackedMapper.toDomain(u as api.IssuanceUnpacked);
+      case "dispenser":
+        return DispenserUnpackedMapper.toDomain(u as api.DispenserUnpacked);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -54,6 +56,18 @@ class IssuanceUnpackedMapper {
   }
 }
 
+class DispenserUnpackedMapper {
+  static DispenserUnpacked toDomain(api.DispenserUnpacked u) {
+    return DispenserUnpacked(
+        asset: u.asset,
+        giveQuantity: u.giveQuantity,
+        escrowQuantity: u.escrowQuantity,
+        mainchainrate: u.mainchainrate,
+        status: "" // TODO: reconcile,
+        );
+  }
+}
+
 class UnpackedVerboseMapper {
   static TransactionUnpackedVerbose toDomain(api.TransactionUnpackedVerbose u) {
     switch (u.messageType) {
@@ -64,6 +78,9 @@ class UnpackedVerboseMapper {
       case "issuance":
         return IssuanceUnpackedVerboseMapper.toDomain(
             u as api.IssuanceUnpackedVerbose);
+      case "dispenser":
+        return DispenserUnpackedVerboseMapper.toDomain(
+            u as api.DispenserUnpackedVerbose);
       default:
         return TransactionUnpackedVerbose(
           messageType: u.messageType,
@@ -102,6 +119,21 @@ class IssuanceUnpackedVerboseMapper {
       description: u.description,
       status: u.status,
       quantityNormalized: u.quantityNormalized,
+    );
+  }
+}
+
+class DispenserUnpackedVerboseMapper {
+  static DispenserUnpackedVerbose toDomain(api.DispenserUnpackedVerbose u) {
+    return DispenserUnpackedVerbose(
+      asset: u.asset,
+      giveQuantity: u.giveQuantity,
+      escrowQuantity: u.escrowQuantity,
+      mainchainrate: u.mainchainrate,
+      giveQuantityNormalized: u.giveQuantityNormalized,
+      escrowQuantityNormalized: u.escrowQuantityNormalized,
+      // mainchainrateNormalized: u.mainchainrateNormalized,
+      status: "", // TODO: reconcile
     );
   }
 }
@@ -172,6 +204,19 @@ class InfoVerboseMapper {
           domain: TransactionInfoDomainLocal(
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: IssuanceUnpackedVerboseMapper.toDomain(u),
+        ),
+      api.DispenserInfoVerbose(unpackedData: var u) =>
+        TransactionInfoDispenserVerbose(
+          btcAmountNormalized: info.btcAmountNormalized,
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: DispenserUnpackedVerboseMapper.toDomain(u),
         ),
       _ => TransactionInfoVerbose(
           btcAmountNormalized: info.btcAmountNormalized,

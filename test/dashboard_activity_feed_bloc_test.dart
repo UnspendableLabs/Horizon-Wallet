@@ -25,6 +25,8 @@ final DEFAULT_WHITELIST = [
   "ENHANCED_SEND",
   "ASSET_ISSUANCE",
   "DISPENSE",
+  "OPEN_DISPENSER",
+  "REFILL_DISPENSER"
 ];
 
 extension DateTimeExtension on DateTime {
@@ -62,7 +64,7 @@ class MockBitcoinTx extends Mock implements BitcoinTx {
   Decimal getAmountReceived(List<String> addresses) => Decimal.zero;
 
   @override
-  bool isCounterpartyTx(List<String> addresses) => false;
+  bool isCounterpartyTx() => false;
 }
 
 class MockStatus extends Mock implements Status {

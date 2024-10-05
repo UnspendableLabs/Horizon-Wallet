@@ -1279,6 +1279,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  simple_rc4:
+    dependency: "direct main"
+    description:
+      name: simple_rc4
+      sha256: "600210d1e141257dfabcb2787a5bb7b7134993c041127a10f240645949835709"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   sky_engine:
     dependency: transitive
     description: flutter

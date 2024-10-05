@@ -277,8 +277,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                     )
                   : const Align(
                       alignment: Alignment.centerLeft,
-                      child: SelectableText(
-                          'Asset currently has no description')),
+                      child:
+                          SelectableText('Asset currently has no description')),
               const SizedBox(height: 16),
               HorizonUI.HorizonTextFormField(
                 controller: _newDescriptionController,
@@ -478,9 +478,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       // ),
       widget.actionType == IssuanceActionType.issueMore
           ? Column(
-            children: [
-              const SizedBox(height: 16),
-              Row(
+              children: [
+                const SizedBox(height: 16),
+                Row(
                   children: [
                     HorizonUI.HorizonTextFormField(
                       label: "Original Supply",
@@ -492,23 +492,26 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                       label: "Additional Supply",
                       controller: TextEditingController(
                           text: (Decimal.parse(params.quantityNormalized) -
-                                  Decimal.parse(originalAsset.supplyNormalized!))
+                                  Decimal.parse(
+                                      originalAsset.supplyNormalized!))
                               .toString()),
                       enabled: false,
                     ),
                   ],
                 ),
-            ],
-          )
+              ],
+            )
           : const SizedBox.shrink(),
       const SizedBox(height: 16),
       HorizonUI.HorizonTextFormField(
-        label: widget.actionType == IssuanceActionType.issueMore || originalAsset.supplyNormalized != params.quantityNormalized
+        label: widget.actionType == IssuanceActionType.issueMore ||
+                originalAsset.supplyNormalized != params.quantityNormalized
             ? "Updated Quantity"
             : "Quantity",
         controller: TextEditingController(text: params.quantityNormalized),
         enabled: false,
-        textColor: widget.actionType == IssuanceActionType.issueMore || originalAsset.supplyNormalized != params.quantityNormalized
+        textColor: widget.actionType == IssuanceActionType.issueMore ||
+                originalAsset.supplyNormalized != params.quantityNormalized
             ? Colors.green
             : null,
       ),
@@ -520,9 +523,10 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                   label: "Description",
                   controller: TextEditingController(text: params.description),
                   enabled: false,
-                  textColor: widget.actionType == IssuanceActionType.changeDescription
-            ? Colors.green
-            : null,
+                  textColor:
+                      widget.actionType == IssuanceActionType.changeDescription
+                          ? Colors.green
+                          : null,
                 ),
               ],
             )
@@ -550,9 +554,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         controller: TextEditingController(
             text: params.reset == true ? 'true' : 'false'),
         enabled: false,
-        textColor: widget.actionType == IssuanceActionType.reset
-            ? Colors.green
-            : null,
+        textColor:
+            widget.actionType == IssuanceActionType.reset ? Colors.green : null,
       ),
     ];
   }

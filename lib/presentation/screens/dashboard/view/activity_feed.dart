@@ -200,14 +200,18 @@ class ActivityFeedListItem extends StatelessWidget {
           quantityNormalized: params.quantityNormalized,
           asset: params.asset,
         ),
-      VerboseAssetIssuanceEvent(params: var params) =>
-        params.asset == null || params.quantityNormalized == null
-            ? const SelectableText('Issue (INVALID)',
-                style: TextStyle(color: redErrorText))
-            : SelectableText(
-                "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}"),
+      VerboseAssetIssuanceEvent(params: var params) => params.asset == null ||
+              params.quantityNormalized == null
+          ? const SelectableText('Issue (INVALID)',
+              style: TextStyle(color: redErrorText))
+          : SelectableText(
+              "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
+      VerboseOpenDispenserEvent(params: var params) =>
+        SelectableText("Open Dispenser for ${params.asset}"),
+      VerboseRefillDispenserEvent(params: var params) =>
+        SelectableText("Refill Dispenser for ${params.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -233,6 +237,10 @@ class ActivityFeedListItem extends StatelessWidget {
           quantityNormalized: satoshisToBtc(btcAmount).toString(),
           asset: 'BTC',
         ),
+      TransactionInfoDispenserVerbose(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -245,6 +253,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.arrow_back, color: Colors.grey),
       TransactionInfoIssuanceVerbose() =>
         const Icon(Icons.toll, color: Colors.grey),
+      TransactionInfoDispenserVerbose() =>
+        const Icon(Icons.account_balance, color: Colors.grey),
       TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -270,6 +280,10 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseEnhancedSendEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseDispenseEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseOpenDispenserEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseRefillDispenserEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
@@ -330,6 +344,10 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toll, color: Colors.grey),
       VerboseDispenseEvent(params: var params) =>
         const Icon(Icons.paid, color: Colors.grey),
+      VerboseOpenDispenserEvent(params: var params) =>
+        const Icon(Icons.account_balance, color: Colors.grey),
+      VerboseRefillDispenserEvent(params: var params) =>
+        const Icon(Icons.account_balance, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

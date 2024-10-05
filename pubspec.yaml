@@ -81,6 +81,7 @@ dependencies:
   dio_smart_retry: ^6.0.0
   posthog_flutter: ^4.5.0
   flutter_form_builder: ^9.3.0
+  simple_rc4: ^0.3.0
 
 
 dev_dependencies:

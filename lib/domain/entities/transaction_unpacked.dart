@@ -155,3 +155,43 @@ class IssuanceUnpackedVerbose extends TransactionUnpackedVerbose {
         quantityNormalized
       ];
 }
+
+class DispenserUnpacked extends TransactionUnpacked {
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final String status;
+
+  const DispenserUnpacked({
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.status,
+  }) : super(messageType: "dispenser");
+
+  // Optionally add other methods like from API mappings
+}
+
+class DispenserUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final String status;
+  final String giveQuantityNormalized;
+  final String escrowQuantityNormalized;
+  // final String mainchainrateNormalized;
+
+  const DispenserUnpackedVerbose({
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.status,
+    required this.giveQuantityNormalized,
+    required this.escrowQuantityNormalized,
+    // required this.mainchainrateNormalized,
+  }) : super(messageType: "dispenser");
+}

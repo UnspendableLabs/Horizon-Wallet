@@ -15,7 +15,13 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 
 // ignore: non_constant_identifier_names
-final DEFAULT_WHITELIST = ["ENHANCED_SEND", "ASSET_ISSUANCE", "DISPENSE"];
+final DEFAULT_WHITELIST = [
+  "ENHANCED_SEND",
+  "ASSET_ISSUANCE",
+  "DISPENSE",
+  "OPEN_DISPENSER",
+  "REFILL_DISPENSER"
+];
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
@@ -122,7 +128,7 @@ class DashboardActivityFeedBloc
         newBitcoinTransactions = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx([address]),
+              (tx) => !tx.isCounterpartyTx(),
             )
             .toList();
       } else {
@@ -133,7 +139,7 @@ class DashboardActivityFeedBloc
         final bitcoinTxs = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx([address]),
+              (tx) => !tx.isCounterpartyTx(),
             )
             .toList();
 
@@ -387,7 +393,7 @@ class DashboardActivityFeedBloc
       final btcMempoolList = btcMempoolE
           .getOrElse((left) => throw left)
           .where(
-            (tx) => !tx.isCounterpartyTx(addresses),
+            (tx) => !tx.isCounterpartyTx(),
           )
           .toList();
 

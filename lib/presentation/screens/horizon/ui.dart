@@ -451,21 +451,22 @@ class HorizonTextFormField extends StatelessWidget {
           fillColor: fillColor,
           labelText: label,
           suffix: suffix,
-
         ),
         child: obscureText == true
             ? Text(
                 '•' * (controller?.text.length ?? 0),
                 style: TextStyle(
                   fontSize: 16,
-                  color: textColor ?? (isDarkMode ? mainTextWhite : mainTextBlack),
+                  color:
+                      textColor ?? (isDarkMode ? mainTextWhite : mainTextBlack),
                 ),
               )
             : SelectableText(
                 controller?.text ?? '',
                 style: TextStyle(
                   fontSize: 16,
-                  color: textColor ?? (isDarkMode ? mainTextWhite : mainTextBlack),
+                  color:
+                      textColor ?? (isDarkMode ? mainTextWhite : mainTextBlack),
                 ),
               ),
       );
