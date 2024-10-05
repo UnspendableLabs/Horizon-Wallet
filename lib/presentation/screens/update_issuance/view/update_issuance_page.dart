@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +24,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/issuance_checkboxes.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_bloc.dart';
@@ -102,7 +101,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   late TextEditingController _quantityController;
   late TextEditingController _newDescriptionController;
 
-  late Asset originalAsset;
   @override
   void initState() {
     super.initState();
@@ -120,224 +118,329 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   late String name;
-  late String? longName;
-  late int quantity;
+  late int? quantity;
   late String? description;
-  late bool isDivisible;
-  late bool isLocked;
-  late bool isReset;
+
+  // ignore: avoid_init_to_null
+  late bool? isDivisible;
+  // ignore: avoid_init_to_null
+  late bool? isLocked;
+  late bool? isReset;
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UpdateIssuanceBloc, UpdateIssuanceState>(
       listener: (context, state) {
-        state.assetState.maybeWhen(
-          success: (asset) {
-            originalAsset = asset;
-            name = asset.asset!;
-            longName = asset.assetLongname;
-            quantity = asset.supply!;
-            description = asset.description;
-            isDivisible = asset.divisible ?? false;
-            isLocked = asset.locked ?? false;
-            isReset = false;
-          },
-          orElse: () {},
-        );
+        // state.assetState.maybeWhen(
+        //   success: (asset) {
+        //     setState(() {});
+
+        //     // print('isDivisible listener: $isDivisible');
+        //     // print('isLocked listener: $isLocked');
+        //   },
+        //   orElse: () {},
+        // );
       },
       builder: (context, state) {
-        return ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
-          address: widget.address,
-          dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-          onFeeChange: (fee) => context
-              .read<UpdateIssuanceBloc>()
-              .add(ChangeFeeOption(value: fee)),
-          buildInitialFormFields: (state, loading, formKey) =>
-              _buildInitialFormFields(state, loading, formKey),
-          onInitialCancel: () => _handleInitialCancel(),
-          onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-          buildConfirmationFormFields: (composeTransaction, formKey) =>
-              _buildConfirmationDetails(composeTransaction),
-          onConfirmationBack: () => _onConfirmationBack(),
-          onConfirmationContinue: (composeTransaction, fee, formKey) {
-            _onConfirmationContinue(composeTransaction, fee, formKey);
+        return state.assetState.maybeWhen(
+          loading: () =>
+              ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
+            address: widget.address,
+            dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+            onFeeChange: (fee) => context
+                .read<UpdateIssuanceBloc>()
+                .add(ChangeFeeOption(value: fee)),
+            buildInitialFormFields: (state, loading, formKey) =>
+                _buildInitialFormLoadingFields(state, loading, formKey),
+            onInitialCancel: () => _handleInitialCancel(),
+            onInitialSubmit: (formKey) => () {},
+            buildConfirmationFormFields: (composeTransaction, formKey) => [],
+            onConfirmationBack: () => _onConfirmationBack(),
+            onConfirmationContinue: (composeTransaction, fee, formKey) {
+              //   _onConfirmationContinue(composeTransaction, fee, formKey);
+            },
+            onFinalizeSubmit: (password, formKey) {
+              // _onFinalizeSubmit(password, formKey);
+            },
+            onFinalizeCancel: () => _onFinalizeCancel(),
+          ),
+          success: (originalAsset) {
+            return ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
+              address: widget.address,
+              dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+              onFeeChange: (fee) => context
+                  .read<UpdateIssuanceBloc>()
+                  .add(ChangeFeeOption(value: fee)),
+              buildInitialFormFields: (state, loading, formKey) =>
+                  _buildInitialFormFields(
+                      state, loading, formKey, originalAsset),
+              onInitialCancel: () => _handleInitialCancel(),
+              onInitialSubmit: (formKey) =>
+                  _handleInitialSubmit(formKey, originalAsset),
+              buildConfirmationFormFields: (composeTransaction, formKey) =>
+                  _buildConfirmationDetails(composeTransaction, originalAsset),
+              onConfirmationBack: () => _onConfirmationBack(),
+              onConfirmationContinue: (composeTransaction, fee, formKey) {
+                _onConfirmationContinue(composeTransaction, fee, formKey);
+              },
+              onFinalizeSubmit: (password, formKey) {
+                _onFinalizeSubmit(password, formKey);
+              },
+              onFinalizeCancel: () => _onFinalizeCancel(),
+            );
           },
-          onFinalizeSubmit: (password, formKey) {
-            _onFinalizeSubmit(password, formKey);
-          },
-          onFinalizeCancel: () => _onFinalizeCancel(),
+          orElse: () => const SizedBox.shrink(),
         );
       },
     );
   }
 
-  List<Widget> _buildInitialFormFields(
+  List<Widget> _buildInitialFormLoadingFields(
       UpdateIssuanceState state, bool loading, GlobalKey<FormState> formKey) {
-    return state.assetState.maybeWhen(
-      loading: () {
-        return switch (widget.actionType) {
-          IssuanceActionType.reset => [
-              const HorizonUI.HorizonTextFormField(
-                  label: 'Reset Asset:',
-                  enabled: false,
-                  suffix: CircularProgressIndicator())
-            ],
-          IssuanceActionType.lockDescription => [
-              const HorizonUI.HorizonTextFormField(
-                  label: 'Lock Description for Asset',
-                  enabled: false,
-                  suffix: CircularProgressIndicator())
-            ],
-          IssuanceActionType.lockQuantity => [
-              const HorizonUI.HorizonTextFormField(
-                  label: 'Lock Quantity for Asset',
-                  enabled: false,
-                  suffix: CircularProgressIndicator())
-            ],
-          IssuanceActionType.changeDescription => [
-              const HorizonUI.HorizonTextFormField(
-                  label: 'Update Description for Asset',
-                  enabled: false,
-                  suffix: CircularProgressIndicator()),
-              const SizedBox(height: 16),
-              const HorizonUI.HorizonTextFormField(
-                label: 'Current Description',
-                enabled: false,
-              ),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: TextEditingController(),
-                label: 'New Description',
-                enabled: false,
-              )
-            ],
-          IssuanceActionType.issueMore => [
-              const HorizonUI.HorizonTextFormField(
-                  label: 'Issue More of Asset',
-                  enabled: false,
-                  suffix: CircularProgressIndicator()),
-              const HorizonUI.HorizonTextFormField(
-                label: 'Current Supply',
-                enabled: false,
-              ),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: TextEditingController(),
-                label: 'Quantity to Add to Current Supply',
-                enabled: false,
-              ),
-            ],
-          IssuanceActionType.issueSubasset => [
-              const HorizonUI.HorizonTextFormField(
-                  label: 'Issue Subasset of Asset', enabled: false),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: TextEditingController(),
-                label: 'Subasset Name',
-                hint: 'Enter the new subasset name',
-                enabled: false,
-              ),
-            ],
-        };
-      },
-      success: (asset) {
-        print('asset Locked??: ${asset.locked}');
-
-        return switch (widget.actionType) {
-          IssuanceActionType.reset => [
-              HorizonUI.HorizonTextFormField(
-                  label: 'Reset Asset',
-                  controller: TextEditingController(text: asset.asset),
-                  enabled: false),
-            ],
-          IssuanceActionType.lockDescription => [
-              HorizonUI.HorizonTextFormField(
-                  label: 'Lock Description for Asset',
-                  controller: TextEditingController(text: asset.asset),
-                  enabled: false)
-            ],
-          IssuanceActionType.lockQuantity => [
-              HorizonUI.HorizonTextFormField(
-                  label: 'Lock Quantity for Asset',
-                  controller: TextEditingController(text: asset.asset),
-                  enabled: false),
-            ],
-          IssuanceActionType.changeDescription => [
-              HorizonUI.HorizonTextFormField(
-                  label: 'Update Description for Asset',
-                  enabled: false,
-                  controller: TextEditingController(text: asset.asset)),
-              const SizedBox(height: 16),
-              asset.description != ''
-                  ? HorizonUI.HorizonTextFormField(
-                      label: 'Current Description',
-                      enabled: false,
-                      controller:
-                          TextEditingController(text: asset.description),
-                    )
-                  : const Align(
-                      alignment: Alignment.centerLeft,
-                      child:
-                          SelectableText('Asset currently has no description')),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: _newDescriptionController,
-                label: 'New Description',
-                hint: 'Enter the new description for the asset',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-                onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
-              )
-            ],
-          IssuanceActionType.issueMore => [
-              HorizonUI.HorizonTextFormField(
-                  label: 'Issue More of Asset',
-                  enabled: false,
-                  controller: TextEditingController(text: asset.asset)),
-              HorizonUI.HorizonTextFormField(
-                  label: 'Current Supply',
-                  enabled: false,
-                  controller:
-                      TextEditingController(text: asset.supplyNormalized)),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: _quantityController,
-                label: 'Quantity to Add to Current Supply',
-                keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true, signed: false),
-                inputFormatters: [
-                  asset.divisible == true
-                      ? DecimalTextInputFormatter(decimalRange: 8)
-                      : FilteringTextInputFormatter.digitsOnly,
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a quantity';
-                  }
-                  return null;
-                },
-                onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
-              ),
-            ],
-          IssuanceActionType.issueSubasset => [
-              HorizonUI.HorizonTextFormField(
-                  label: 'Issue Subasset of Asset',
-                  enabled: false,
-                  controller: TextEditingController(text: asset.asset)),
-              const SizedBox(height: 16),
-              _buildSubassetNameField(asset, formKey),
-            ],
-        };
-      },
-      orElse: () => [],
-    );
+    return switch (widget.actionType) {
+      IssuanceActionType.reset => [
+          const HorizonUI.HorizonTextFormField(
+              label: 'Reset Asset:',
+              enabled: false,
+              suffix: CircularProgressIndicator())
+        ],
+      IssuanceActionType.lockDescription => [
+          const HorizonUI.HorizonTextFormField(
+              label: 'Lock Description for Asset',
+              enabled: false,
+              suffix: CircularProgressIndicator())
+        ],
+      IssuanceActionType.lockQuantity => [
+          const HorizonUI.HorizonTextFormField(
+              label: 'Lock Quantity for Asset',
+              enabled: false,
+              suffix: CircularProgressIndicator())
+        ],
+      IssuanceActionType.changeDescription => [
+          const HorizonUI.HorizonTextFormField(
+              label: 'Update Description for Asset',
+              enabled: false,
+              suffix: CircularProgressIndicator()),
+          const SizedBox(height: 16),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Current Description',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: TextEditingController(),
+            label: 'New Description',
+            enabled: false,
+          )
+        ],
+      IssuanceActionType.issueMore => [
+          const HorizonUI.HorizonTextFormField(
+              label: 'Issue More of Asset',
+              enabled: false,
+              suffix: CircularProgressIndicator()),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Current Supply',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: TextEditingController(),
+            label: 'Quantity to Add to Current Supply',
+            enabled: false,
+          ),
+        ],
+      IssuanceActionType.issueSubasset => [
+          const HorizonUI.HorizonTextFormField(
+              label: 'Issue Subasset of Asset', enabled: false),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: TextEditingController(),
+            label: 'Subasset Name',
+            hint: 'Enter the new subasset name',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Quantity',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Description (optional)',
+            enabled: false,
+          ),
+          // const SizedBox(height: 16),
+          // IssuanceCheckboxes(
+          //   loading: loading,
+          // ),
+        ],
+    };
   }
 
-  Widget _buildSubassetNameField(Asset asset, GlobalKey<FormState> formKey) {
+  List<Widget> _buildInitialFormFields(UpdateIssuanceState state, bool loading,
+      GlobalKey<FormState> formKey, Asset originalAsset) {
+    return switch (widget.actionType) {
+      IssuanceActionType.reset => [
+          HorizonUI.HorizonTextFormField(
+              label: 'Reset Asset',
+              controller: TextEditingController(
+                  text: originalAsset.assetLongname ?? originalAsset.asset),
+              enabled: false),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: _quantityController,
+            label: 'Reset Quantity (Optional)',
+            keyboardType: const TextInputType.numberWithOptions(
+                decimal: true, signed: false),
+            inputFormatters: [
+              originalAsset.divisible == true
+                  ? DecimalTextInputFormatter(decimalRange: 8)
+                  : FilteringTextInputFormatter.digitsOnly,
+            ],
+            onFieldSubmitted: (_) =>
+                _handleInitialSubmit(formKey, originalAsset),
+          ),
+          if (_quantityController.text != '')
+            const Column(
+              children: [
+                SizedBox(height: 16),
+              ],
+            ),
+        ],
+      IssuanceActionType.lockDescription => [
+          HorizonUI.HorizonTextFormField(
+              label: 'Lock Description for Asset',
+              controller: TextEditingController(
+                  text: originalAsset.assetLongname ?? originalAsset.asset),
+              enabled: false)
+        ],
+      IssuanceActionType.lockQuantity => [
+          HorizonUI.HorizonTextFormField(
+              label: 'Lock Quantity for Asset',
+              controller: TextEditingController(
+                  text: originalAsset.assetLongname ?? originalAsset.asset),
+              enabled: false),
+        ],
+      IssuanceActionType.changeDescription => [
+          HorizonUI.HorizonTextFormField(
+              label: 'Update Description for Asset',
+              enabled: false,
+              controller: TextEditingController(
+                  text: originalAsset.assetLongname ?? originalAsset.asset)),
+          const SizedBox(height: 16),
+          originalAsset.description != ''
+              ? HorizonUI.HorizonTextFormField(
+                  label: 'Current Description',
+                  enabled: false,
+                  controller:
+                      TextEditingController(text: originalAsset.description),
+                )
+              : const Align(
+                  alignment: Alignment.centerLeft,
+                  child: SelectableText('Asset currently has no description')),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: _newDescriptionController,
+            label: 'New Description',
+            hint: 'Enter the new description for the asset',
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a description';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) =>
+                _handleInitialSubmit(formKey, originalAsset),
+          )
+        ],
+      IssuanceActionType.issueMore => [
+          HorizonUI.HorizonTextFormField(
+              label: 'Issue More of Asset',
+              enabled: false,
+              controller: TextEditingController(
+                  text: originalAsset.assetLongname ?? originalAsset.asset)),
+          HorizonUI.HorizonTextFormField(
+              label: 'Current Supply',
+              enabled: false,
+              controller:
+                  TextEditingController(text: originalAsset.supplyNormalized)),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: _quantityController,
+            label: 'Quantity to Add to Current Supply',
+            keyboardType: const TextInputType.numberWithOptions(
+                decimal: true, signed: false),
+            inputFormatters: [
+              originalAsset.divisible == true
+                  ? DecimalTextInputFormatter(decimalRange: 8)
+                  : FilteringTextInputFormatter.digitsOnly,
+            ],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a quantity';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) =>
+                _handleInitialSubmit(formKey, originalAsset),
+          ),
+        ],
+      IssuanceActionType.issueSubasset => [
+          _buildSubassetNameField(formKey, originalAsset),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: _quantityController,
+            label: 'Quantity',
+            keyboardType: const TextInputType.numberWithOptions(
+                decimal: true, signed: false),
+            inputFormatters: [
+              isDivisible == true
+                  ? DecimalTextInputFormatter(decimalRange: 8)
+                  : FilteringTextInputFormatter.digitsOnly,
+            ],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a quantity';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) =>
+                _handleInitialSubmit(formKey, originalAsset),
+          ),
+          const SizedBox(height: 16.0),
+          HorizonUI.HorizonTextFormField(
+            controller: _newDescriptionController,
+            label: 'Description (optional)',
+            onFieldSubmitted: (_) =>
+                _handleInitialSubmit(formKey, originalAsset),
+          ),
+          const SizedBox(height: 16.0),
+          IssuanceCheckboxes(
+            isDivisible: isDivisible ?? originalAsset.divisible!,
+            isLocked: isLocked ?? originalAsset.locked!,
+            onDivisibleChanged: (bool? value) {
+              setState(() {
+                isDivisible = value ?? false;
+                _quantityController.text = '';
+                print('isDivisible builder: $isDivisible');
+              });
+            },
+            onLockChanged: (bool? value) {
+              setState(() {
+                isLocked = value ?? false;
+                print('isLocked builder: $isLocked');
+              });
+            },
+          ),
+        ],
+    };
+  }
+  //   orElse: () => [],
+  // );
+  // }
+
+  Widget _buildSubassetNameField(
+      GlobalKey<FormState> formKey, Asset originalAsset) {
     return Stack(
       children: [
         HorizonUI.HorizonTextFormField(
@@ -345,14 +448,19 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           textCapitalization: TextCapitalization.characters,
           label: 'Subasset Name',
           validator: (value) {
-            if (value == null || value.isEmpty || value == '${asset.asset}.') {
+            if (value == null ||
+                value.isEmpty ||
+                value ==
+                    '${originalAsset.assetLongname ?? originalAsset.asset}.') {
               return 'Please enter a subasset name';
             }
             return null;
           },
           onChanged: (value) {
-            final prefix = '${asset.asset}.';
+            final prefix =
+                '${originalAsset.assetLongname ?? originalAsset.asset}.';
             if (value.length < prefix.length) {
+              print('prefix: $prefix');
               // If the user is trying to delete the prefix, keep it intact
               _subassetController.value = TextEditingValue(
                 text: prefix,
@@ -361,6 +469,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             } else {
               // Allow typing after the prefix, but ensure the prefix is always there
               String subAssetPart = value.substring(prefix.length);
+              print('subAssetPart: $subAssetPart');
 
               // Filter and capitalize alphanumeric characters
               String filteredPart = '';
@@ -385,7 +494,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               );
             }
           },
-          onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
+          onFieldSubmitted: (_) => _handleInitialSubmit(formKey, originalAsset),
         ),
       ],
     );
@@ -395,61 +504,68 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+  void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset originalAsset) {
     if (formKey.currentState!.validate()) {
       switch (widget.actionType) {
         case IssuanceActionType.reset:
-          isReset = true;
+          setState(() {
+            isReset = true;
+          });
           break;
         // case IssuanceActionType.lockDescription:
         //   isLocked = true;
         //   break;
         case IssuanceActionType.lockQuantity:
-          isLocked = true;
+          setState(() {
+            isLocked = true;
+          });
           break;
         case IssuanceActionType.changeDescription:
-          description = _newDescriptionController.text;
+          setState(() {
+            description = _newDescriptionController.text;
+          });
           break;
         case IssuanceActionType.issueMore:
           // TODO: wrap this in function and write some tests
-          final int originalQuantity = quantity;
-          Decimal input = Decimal.parse(_quantityController.text);
-
-          int newQuantity;
-          if (isDivisible) {
-            newQuantity =
-                (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-          } else {
-            newQuantity = (input).toBigInt().toInt();
-          }
-          quantity = newQuantity + originalQuantity;
+          int inputQuantity = _updateQuantity(
+              isDivisible ?? originalAsset.divisible!, _quantityController);
+          setState(() {
+            quantity = inputQuantity + originalAsset.supply!;
+          });
           break;
         case IssuanceActionType.issueSubasset:
-          longName = _subassetController.text;
-
+          setState(() {
+            name = _subassetController.text;
+            quantity = _updateQuantity(
+                isDivisible ?? originalAsset.divisible!, _quantityController);
+            description = _newDescriptionController.text;
+          });
           break;
 
         default:
           print("Invalid case");
       }
 
+      print('isDivisible submit: $isDivisible');
+      print('isLocked submit: $isLocked');
+
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: UpdateIssuanceEventParams(
-              name: longName ?? name,
-              // longName: longName,
-              quantity: quantity,
+              name: name,
+              quantity: quantity ?? originalAsset.supply!,
               description: description ?? '',
-              divisible: isDivisible,
-              lock: isLocked,
-              reset: isReset,
+              divisible: isDivisible ?? originalAsset.divisible!,
+              lock: isLocked ?? originalAsset.locked!,
+              reset: isReset ?? false,
               issuanceActionType: widget.actionType,
             ),
           ));
     }
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+  List<Widget> _buildConfirmationDetails(
+      dynamic composeTransaction, Asset originalAsset) {
     final params = (composeTransaction as ComposeIssuanceVerbose).params;
     print('original asset: $originalAsset');
     print('supply normalized: ${originalAsset.supplyNormalized}');
@@ -466,16 +582,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             : "Token name",
         controller: TextEditingController(text: composeTransaction.name),
         enabled: false,
-        textColor: widget.actionType == IssuanceActionType.issueSubasset
-            ? Colors.green
-            : null,
       ),
-      //       const SizedBox(height: 16.0),
-      // HorizonUI.HorizonTextFormField(
-      //   label: "Asset Long Name",
-      //   controller: TextEditingController(text: composeTransaction.longName),
-      //   enabled: false,
-      // ),
       widget.actionType == IssuanceActionType.issueMore
           ? Column(
               children: [
@@ -591,29 +698,18 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     context.read<UpdateIssuanceBloc>().add(FetchFormData(
         currentAddress: widget.address, assetName: widget.assetName));
   }
-}
 
-class PrefixTextEditingController extends TextEditingController {
-  final String prefix;
+  int _updateQuantity(
+      bool isDivisible, TextEditingController quantityController) {
+    Decimal input = Decimal.parse(quantityController.text);
 
-  PrefixTextEditingController({required this.prefix}) : super(text: prefix);
+    int quantity;
 
-  @override
-  set text(String newText) {
-    if (newText.startsWith(prefix)) {
-      super.text = newText;
+    if (isDivisible) {
+      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
     } else {
-      super.text =
-          prefix + newText.replaceAll(RegExp('^.*?(?=[A-Z0-9]|\$)'), '');
+      quantity = (input).toBigInt().toInt();
     }
-  }
-
-  @override
-  TextSelection get selection {
-    final newSelection = super.selection;
-    return newSelection.copyWith(
-      baseOffset: math.max(prefix.length, newSelection.baseOffset),
-      extentOffset: math.max(prefix.length, newSelection.extentOffset),
-    );
+    return quantity;
   }
 }

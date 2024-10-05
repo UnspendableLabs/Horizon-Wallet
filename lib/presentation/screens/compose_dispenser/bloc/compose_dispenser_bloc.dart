@@ -128,7 +128,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     late FeeEstimates feeEstimates;
 
     try {
-      List<Address> addresses = [event.currentAddress];
+      List<Address> addresses = [event.currentAddress!];
 
       final balances_ =
           await balanceRepository.getBalancesForAddress(addresses[0].address);

@@ -23,6 +23,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/issuance_checkboxes.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
@@ -99,7 +100,6 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
   bool isDivisible = true;
   bool isLocked = false;
-  bool isReset = false;
 
   @override
   void initState() {
@@ -156,7 +156,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
               description: descriptionController.text,
               divisible: isDivisible,
               lock: isLocked,
-              reset: isReset,
+              reset: false,
             ),
           ));
     }
@@ -164,8 +164,6 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeIssuanceState state, bool loading, GlobalKey<FormState> formKey) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     final Widget assetNameField = state.balancesState.when(
       initial: () => HorizonUI.HorizonTextFormField(
           enabled: false, controller: nameController, label: "Token name"),
@@ -306,95 +304,24 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
         },
       ),
       const SizedBox(height: 16.0),
-      Column(
-        children: [
-          Row(
-            children: [
-              Checkbox(
-                value: isDivisible,
-                onChanged: loading
-                    ? null
-                    : (bool? value) {
-                        setState(() {
-                          isDivisible = value ?? false;
-                          quantityController.text = '';
-                        });
-                      },
-              ),
-              Text('Divisible',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? mainTextWhite : mainTextBlack)),
-            ],
-          ),
-          const Row(
-            children: [
-              SizedBox(width: 30.0),
-              Expanded(
-                child: Text(
-                  'Whether this asset is divisible or not. Defaults to true.',
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Checkbox(
-                value: isLocked,
-                onChanged: loading
-                    ? null
-                    : (bool? value) {
-                        setState(() {
-                          isLocked = value ?? false;
-                        });
-                      },
-              ),
-              Text('Lock',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? mainTextWhite : mainTextBlack)),
-            ],
-          ),
-          const Row(
-            children: [
-              SizedBox(width: 30.0),
-              Expanded(
-                child: Text(
-                  'Whether this issuance should lock supply of this asset forever. Defaults to false.',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 16.0),
-          // Row(
-          //   children: [
-          //     Checkbox(
-          //       value: isReset,
-          //       onChanged: (bool? value) {
-          //         setState(() {
-          //           isReset = value ?? false;
-          //         });
-          //       },
-          //     ),
-          //     // Text('Reset',
-          //     //     style: TextStyle(
-          //     //         fontWeight: FontWeight.bold,
-          //     //         color: isDarkMode
-          //     //             ? mainTextWhite
-          //     //             : mainTextBlack)),
-          //   ],
-          // ),
-          // const Row(
-          //   children: [
-          //     SizedBox(width: 30.0),
-          //     Expanded(
-          //       child: Text(
-          //         'Whether this issuance should reset any existing supply. Defaults to false.',
-          //       ),
-          //     ),
-          //   ],
-          // ),
-        ],
+      IssuanceCheckboxes(
+        isDivisible: isDivisible,
+        isLocked: isLocked,
+        onDivisibleChanged: loading
+            ? null
+            : (bool? value) {
+                setState(() {
+                  isDivisible = value ?? false;
+                  quantityController.text = '';
+                });
+              },
+        onLockChanged: loading
+            ? null
+            : (bool? value) {
+                setState(() {
+                  isLocked = value ?? false;
+                });
+              },
       ),
     ];
   }
