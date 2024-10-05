@@ -127,17 +127,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UpdateIssuanceBloc, UpdateIssuanceState>(
-      listener: (context, state) {
-        // state.assetState.maybeWhen(
-        //   success: (asset) {
-        //     setState(() {});
-
-        //     // print('isDivisible listener: $isDivisible');
-        //     // print('isLocked listener: $isLocked');
-        //   },
-        //   orElse: () {},
-        // );
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         return state.assetState.maybeWhen(
           loading: () =>
@@ -149,17 +139,13 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                 .add(ChangeFeeOption(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormLoadingFields(state, loading, formKey),
-            onInitialCancel: () => _handleInitialCancel(),
-            onInitialSubmit: (formKey) => () {},
+            onInitialCancel: () => {},
+            onInitialSubmit: (formKey) => {},
             buildConfirmationFormFields: (composeTransaction, formKey) => [],
-            onConfirmationBack: () => _onConfirmationBack(),
-            onConfirmationContinue: (composeTransaction, fee, formKey) {
-              //   _onConfirmationContinue(composeTransaction, fee, formKey);
-            },
-            onFinalizeSubmit: (password, formKey) {
-              // _onFinalizeSubmit(password, formKey);
-            },
-            onFinalizeCancel: () => _onFinalizeCancel(),
+            onConfirmationBack: () => {},
+            onConfirmationContinue: (composeTransaction, fee, formKey) => {},
+            onFinalizeSubmit: (password, formKey) => {},
+            onFinalizeCancel: () => {},
           ),
           success: (originalAsset) {
             return ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
@@ -200,6 +186,12 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               label: 'Reset Asset',
               enabled: false,
               suffix: CircularProgressIndicator()),
+          const SizedBox(height: 16),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Currently Supply',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
           const HorizonUI.HorizonTextFormField(
             label: 'Reset Quantity',
             enabled: false,
@@ -209,13 +201,18 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           const HorizonUI.HorizonTextFormField(
               label: 'Lock Description for Asset',
               enabled: false,
-              suffix: CircularProgressIndicator())
+              suffix: CircularProgressIndicator()),
         ],
       IssuanceActionType.lockQuantity => [
           const HorizonUI.HorizonTextFormField(
               label: 'Lock Quantity for Asset',
               enabled: false,
-              suffix: CircularProgressIndicator())
+              suffix: CircularProgressIndicator()),
+          const SizedBox(height: 16),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Quantity',
+            enabled: false,
+          )
         ],
       IssuanceActionType.changeDescription => [
           const HorizonUI.HorizonTextFormField(
@@ -334,11 +331,19 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               enabled: false)
         ],
       IssuanceActionType.lockQuantity => [
+          // locking the quantity will not allow the user to change the quantity in the future
           HorizonUI.HorizonTextFormField(
               label: 'Lock Quantity for Asset',
               controller: TextEditingController(
                   text: originalAsset.assetLongname ?? originalAsset.asset),
               enabled: false),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            label: 'Quantity',
+            controller:
+                TextEditingController(text: originalAsset.supplyNormalized),
+            enabled: false,
+          )
         ],
       IssuanceActionType.changeDescription => [
           HorizonUI.HorizonTextFormField(
