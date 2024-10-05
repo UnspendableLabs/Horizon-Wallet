@@ -7,6 +7,7 @@ class IssuanceCheckboxes extends StatelessWidget {
   final Function(bool?)? onDivisibleChanged;
   final Function(bool?)? onLockChanged;
   final bool? loading;
+  final bool? isReset;
 
   const IssuanceCheckboxes(
       {super.key,
@@ -14,7 +15,8 @@ class IssuanceCheckboxes extends StatelessWidget {
       this.isLocked,
       this.onDivisibleChanged,
       this.onLockChanged,
-      this.loading});
+      this.loading,
+      this.isReset});
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +25,10 @@ class IssuanceCheckboxes extends StatelessWidget {
       children: [
         Row(
           children: [
-            if (isDivisible != null)
-              Checkbox(
-                value: isDivisible,
-                onChanged: loading == true ? null : onDivisibleChanged,
-              ),
+            Checkbox(
+              value: isDivisible,
+              onChanged: loading == true ? null : onDivisibleChanged,
+            ),
             Text('Divisible',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -44,29 +45,30 @@ class IssuanceCheckboxes extends StatelessWidget {
             ),
           ],
         ),
-        Row(
-          children: [
-            if (isLocked != null)
+        if (isReset == null || isReset == false)
+          Row(
+            children: [
               Checkbox(
                 value: isLocked,
                 onChanged: loading == true ? null : onLockChanged,
               ),
-            Text('Lock',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? mainTextWhite : mainTextBlack)),
-          ],
-        ),
-        const Row(
-          children: [
-            SizedBox(width: 30.0),
-            Expanded(
-              child: Text(
-                'Whether this issuance should lock supply of this asset forever. Defaults to false.',
+              Text('Lock',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? mainTextWhite : mainTextBlack)),
+            ],
+          ),
+        if (isReset == null || isReset == false)
+          const Row(
+            children: [
+              SizedBox(width: 30.0),
+              Expanded(
+                child: Text(
+                  'Whether this issuance should lock supply of this asset forever. Defaults to false.',
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ],
     );
   }

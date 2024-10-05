@@ -117,15 +117,12 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     super.dispose();
   }
 
-  late String name;
-  late int? quantity;
-  late String? description;
-
   // ignore: avoid_init_to_null
-  late bool? isDivisible;
+  late bool? isDivisible = null;
   // ignore: avoid_init_to_null
-  late bool? isLocked;
-  late bool? isReset;
+  late bool? isLocked = null;
+  // ignore: avoid_init_to_null
+  late bool? isReset = false;
 
   @override
   Widget build(BuildContext context) {
@@ -200,9 +197,13 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     return switch (widget.actionType) {
       IssuanceActionType.reset => [
           const HorizonUI.HorizonTextFormField(
-              label: 'Reset Asset:',
+              label: 'Reset Asset',
               enabled: false,
-              suffix: CircularProgressIndicator())
+              suffix: CircularProgressIndicator()),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Reset Quantity',
+            enabled: false,
+          )
         ],
       IssuanceActionType.lockDescription => [
           const HorizonUI.HorizonTextFormField(
@@ -281,31 +282,49 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       GlobalKey<FormState> formKey, Asset originalAsset) {
     return switch (widget.actionType) {
       IssuanceActionType.reset => [
+          // Resetting an asset allows the user to change the supply quantity of the asset and to change the divisibility
           HorizonUI.HorizonTextFormField(
               label: 'Reset Asset',
               controller: TextEditingController(
                   text: originalAsset.assetLongname ?? originalAsset.asset),
               enabled: false),
           const SizedBox(height: 16),
-          HorizonUI.HorizonTextFormField(
-            controller: _quantityController,
-            label: 'Reset Quantity (Optional)',
-            keyboardType: const TextInputType.numberWithOptions(
-                decimal: true, signed: false),
-            inputFormatters: [
-              originalAsset.divisible == true
-                  ? DecimalTextInputFormatter(decimalRange: 8)
-                  : FilteringTextInputFormatter.digitsOnly,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: HorizonUI.HorizonTextFormField(
+                  label: 'Current Supply',
+                  controller: TextEditingController(
+                      text: originalAsset.supplyNormalized),
+                  enabled: false,
+                ),
+              ),
+              const SizedBox(width: 16), // Add some spacing between the fields
+              Expanded(
+                child: HorizonUI.HorizonTextFormField(
+                  label: 'Currently Divisible',
+                  controller: TextEditingController(
+                      text: originalAsset.divisible == true ? 'true' : 'false'),
+                  enabled: false,
+                ),
+              ),
             ],
-            onFieldSubmitted: (_) =>
-                _handleInitialSubmit(formKey, originalAsset),
           ),
-          if (_quantityController.text != '')
-            const Column(
-              children: [
-                SizedBox(height: 16),
-              ],
-            ),
+          const SizedBox(height: 16),
+          _buildQuantityField(formKey, originalAsset, 'Reset Quantity'),
+          const SizedBox(height: 16),
+          IssuanceCheckboxes(
+            isDivisible: isDivisible ?? originalAsset.divisible!,
+            onDivisibleChanged: (bool? value) {
+              setState(() {
+                isDivisible = value ?? false;
+                _quantityController.text = '';
+              });
+            },
+            loading: loading,
+            isReset: true,
+          ),
         ],
       IssuanceActionType.lockDescription => [
           HorizonUI.HorizonTextFormField(
@@ -435,9 +454,28 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         ],
     };
   }
-  //   orElse: () => [],
-  // );
-  // }
+
+  Widget _buildQuantityField(
+      GlobalKey<FormState> formKey, Asset originalAsset, String label) {
+    return HorizonUI.HorizonTextFormField(
+      controller: _quantityController,
+      label: label,
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true, signed: false),
+      inputFormatters: [
+        isDivisible ?? originalAsset.divisible!
+            ? DecimalTextInputFormatter(decimalRange: 8)
+            : FilteringTextInputFormatter.digitsOnly,
+      ],
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a quantity';
+        }
+        return null;
+      },
+      onFieldSubmitted: (_) => _handleInitialSubmit(formKey, originalAsset),
+    );
+  }
 
   Widget _buildSubassetNameField(
       GlobalKey<FormState> formKey, Asset originalAsset) {
@@ -505,12 +543,16 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset originalAsset) {
+    String name = originalAsset.assetLongname ?? originalAsset.asset!;
+    int quantity = originalAsset.supply!;
+    String? description = originalAsset.description;
+
     if (formKey.currentState!.validate()) {
       switch (widget.actionType) {
         case IssuanceActionType.reset:
-          setState(() {
-            isReset = true;
-          });
+          isReset = true;
+          quantity = _updateQuantity(
+              isDivisible ?? originalAsset.divisible!, _quantityController);
           break;
         // case IssuanceActionType.lockDescription:
         //   isLocked = true;
@@ -546,14 +588,11 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           print("Invalid case");
       }
 
-      print('isDivisible submit: $isDivisible');
-      print('isLocked submit: $isLocked');
-
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: UpdateIssuanceEventParams(
               name: name,
-              quantity: quantity ?? originalAsset.supply!,
+              quantity: quantity,
               description: description ?? '',
               divisible: isDivisible ?? originalAsset.divisible!,
               lock: isLocked ?? originalAsset.locked!,
@@ -567,8 +606,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   List<Widget> _buildConfirmationDetails(
       dynamic composeTransaction, Asset originalAsset) {
     final params = (composeTransaction as ComposeIssuanceVerbose).params;
-    print('original asset: $originalAsset');
-    print('supply normalized: ${originalAsset.supplyNormalized}');
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -582,6 +619,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             : "Token name",
         controller: TextEditingController(text: composeTransaction.name),
         enabled: false,
+        textColor: widget.actionType == IssuanceActionType.issueSubasset
+            ? Colors.green
+            : null,
       ),
       widget.actionType == IssuanceActionType.issueMore
           ? Column(
@@ -594,6 +634,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                       controller: TextEditingController(
                           text: originalAsset.supplyNormalized),
                       enabled: false,
+                      textColor: Colors.red,
                     ),
                     HorizonUI.HorizonTextFormField(
                       label: "Additional Supply",
@@ -609,26 +650,41 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               ],
             )
           : const SizedBox.shrink(),
+      widget.actionType == IssuanceActionType.reset
+          ? Column(
+              children: [
+                const SizedBox(height: 16),
+                HorizonUI.HorizonTextFormField(
+                  label: "Original Supply",
+                  controller: TextEditingController(
+                      text: originalAsset.supplyNormalized),
+                  enabled: false,
+                  textColor: Colors.red,
+                ),
+              ],
+            )
+          : const SizedBox.shrink(),
       const SizedBox(height: 16),
       HorizonUI.HorizonTextFormField(
-        label: widget.actionType == IssuanceActionType.issueMore ||
-                originalAsset.supplyNormalized != params.quantityNormalized
+        label: originalAsset.supplyNormalized != params.quantityNormalized
             ? "Updated Quantity"
             : "Quantity",
         controller: TextEditingController(text: params.quantityNormalized),
         enabled: false,
-        textColor: widget.actionType == IssuanceActionType.issueMore ||
-                originalAsset.supplyNormalized != params.quantityNormalized
+        textColor: originalAsset.supplyNormalized != params.quantityNormalized
             ? Colors.green
             : null,
       ),
-      params.description != ''
+      params.description != originalAsset.description
           ? Column(
               children: [
                 const SizedBox(height: 16),
                 HorizonUI.HorizonTextFormField(
                   label: "Description",
-                  controller: TextEditingController(text: params.description),
+                  controller: TextEditingController(
+                      text: params.description != originalAsset.description
+                          ? params.description
+                          : ''),
                   enabled: false,
                   textColor:
                       widget.actionType == IssuanceActionType.changeDescription
@@ -644,6 +700,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         controller: TextEditingController(
             text: params.divisible == true ? 'true' : 'false'),
         enabled: false,
+        textColor:
+            params.divisible != originalAsset.divisible ? Colors.green : null,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(

@@ -179,18 +179,18 @@ class BitcoinTx {
       Uint8List vinTxidBytes = _hexToBytes(vin[0].txid);
 
       logs.add("$txid.isCounterpartyTx()");
-      logs.add("Input vin[0].txid: ${vin[0].txid}");
+      logs.add("$txid Input vin[0].txid: ${vin[0].txid}");
       logs.add(
-          "Using vin[0].txid bytes as RC4 key: ${encodeHex(vinTxidBytes)}");
+          "$txid Using vin[0].txid bytes as RC4 key: ${encodeHex(vinTxidBytes)}");
 
       // Iterate through each output in the transaction
       for (Vout output in vout) {
         logs.add(
-            "Processing output scriptpubkeyType: ${output.scriptpubkeyType}");
+            "$txid Processing output scriptpubkeyType: ${output.scriptpubkeyType}");
 
         // Check if the output is an OP_RETURN output
         if (output.scriptpubkeyType == 'op_return') {
-          logs.add("Found OP_RETURN output");
+          logs.add("$txid Found OP_RETURN output");
 
           // Extract and clean hex data
           String dataHex = output.scriptpubkeyAsm.replaceAll('OP_RETURN ', '');
@@ -200,27 +200,28 @@ class BitcoinTx {
             dataHex = parts.last;
           }
 
-          logs.add("Cleaned OP_RETURN data (hex): $dataHex");
+          logs.add("$txid Cleaned OP_RETURN data (hex): $dataHex");
 
           // Check if the data is valid hex
           if (!RegExp(r'^[0-9a-fA-F]+$').hasMatch(dataHex)) {
             logs.add(
-                "Invalid hex data: ${dataHex.length > 20 ? '${dataHex.substring(0, 20)}...' : dataHex}");
+                "$txid Invalid hex data: ${dataHex.length > 20 ? '${dataHex.substring(0, 20)}...' : dataHex}");
             continue;
           }
 
           // Convert the hex data to bytes
           Uint8List dataBytes = _hexToBytes(dataHex);
-          logs.add("OP_RETURN data (bytes): ${encodeHex(dataBytes)}");
+          logs.add("$txid OP_RETURN data (bytes): ${encodeHex(dataBytes)}");
 
           // Initialize the RC4 cipher with the vin[0].txid bytes as the key
           RC4 rc4 = RC4.fromBytes(vinTxidBytes);
-          logs.add("Initialized RC4 with key: ${encodeHex(vinTxidBytes)}");
+          logs.add(
+              "$txid Initialized RC4 with key: ${encodeHex(vinTxidBytes)}");
 
           // Decrypt the data
           List<int> decryptedData = rc4.encodeBytes(dataBytes);
           logs.add(
-              "Decrypted data (bytes): ${encodeHex(Uint8List.fromList(decryptedData))}");
+              "$txid Decrypted data (bytes): ${encodeHex(Uint8List.fromList(decryptedData))}");
           // Convert decrypted bytes to string and log result
           String decodedData = String.fromCharCodes(decryptedData);
           // logs.add(
@@ -228,14 +229,16 @@ class BitcoinTx {
 
           // Check for Counterparty prefix
           if (decodedData.startsWith(PREFIX)) {
-            logs.add("Counterparty transaction detected.");
+            logs.add("$txid Counterparty transaction detected.");
             logger.i(logs.join("\n"));
             return true;
           } else {
-            logs.add("Decoded data does not contain Counterparty prefix.");
+            logs.add(
+                "$txid Decoded data does not contain Counterparty prefix.");
           }
         } else if (output.scriptpubkeyAsm.contains('OP_CHECKMULTISIG')) {
-          logs.add("Processing potential multisig Counterparty transaction");
+          logs.add(
+              "$txid Processing potential multisig Counterparty transaction");
 
           // Extract the public keys from the scriptpubkeyAsm
           List<String> parts = output.scriptpubkeyAsm.split(' ');
@@ -249,7 +252,7 @@ class BitcoinTx {
           }
 
           if (pubKeys.isNotEmpty) {
-            logs.add("Found public keys in multisig script.");
+            logs.add("$txid Found public keys in multisig script.");
 
             // Assemble the data chunk from the public keys
             String dataHex = '';
@@ -260,26 +263,27 @@ class BitcoinTx {
               }
             }
 
-            logs.add("Assembled data hex from pubkeys: $dataHex");
+            logs.add("$txid Assembled data hex from pubkeys: $dataHex");
 
             // Convert the hex data to bytes
             Uint8List dataBytes = _hexToBytes(dataHex);
-            logs.add("Multisig data (bytes): ${encodeHex(dataBytes)}");
+            logs.add("$txid Multisig data (bytes): ${encodeHex(dataBytes)}");
 
             // Initialize the RC4 cipher with the vin[0].txid bytes as the key
             RC4 rc4 = RC4.fromBytes(vinTxidBytes);
-            logs.add("Initialized RC4 with key: ${encodeHex(vinTxidBytes)}");
+            logs.add(
+                "$txid Initialized RC4 with key: ${encodeHex(vinTxidBytes)}");
 
             // Decrypt the data
             List<int> decryptedData = rc4.encodeBytes(dataBytes);
             logs.add(
-                "Decrypted data (bytes): ${encodeHex(Uint8List.fromList(decryptedData))}");
+                "$txid Decrypted data (bytes): ${encodeHex(Uint8List.fromList(decryptedData))}");
 
             // Decrypted data has a length byte at the start
             if (decryptedData.length > PREFIX.length + 1) {
               // Extract the length byte
               int chunkLength = decryptedData[0];
-              logs.add("Chunk length from decrypted data: $chunkLength");
+              logs.add("$txid Chunk length from decrypted data: $chunkLength");
 
               // Check that the chunk length is valid
               if (chunkLength + 1 <= decryptedData.length) {
@@ -291,37 +295,38 @@ class BitcoinTx {
                 if (chunk.length >= PREFIX.length) {
                   String prefixString =
                       String.fromCharCodes(chunk.sublist(0, PREFIX.length));
-                  logs.add("Prefix from chunk: $prefixString");
+                  logs.add("$txid Prefix from chunk: $prefixString");
 
                   if (prefixString == PREFIX) {
-                    logs.add("Counterparty transaction detected.");
+                    logs.add("$txid Counterparty transaction detected.");
                     logger.i(logs.join("\n"));
                     return true;
                   } else {
-                    logs.add("Chunk does not contain Counterparty prefix.");
+                    logs.add(
+                        "$txid Chunk does not contain Counterparty prefix.");
                   }
                 } else {
                   logs.add(
-                      "Chunk is too short to contain Counterparty prefix.");
+                      "$txid Chunk is too short to contain Counterparty prefix.");
                 }
               } else {
-                logs.add("Chunk length exceeds decrypted data length.");
+                logs.add("$txid Chunk length exceeds decrypted data length.");
               }
             } else {
               logs.add(
-                  "Decrypted data is too short to contain Counterparty prefix.");
+                  "$txid Decrypted data is too short to contain Counterparty prefix.");
             }
           }
         }
       }
 
       // No valid Counterparty transaction detected
-      logs.add("No Counterparty transaction detected.");
+      logs.add("$txid No Counterparty transaction detected.");
       logger.d(logs.join("\n"));
       return false;
     } catch (e, stacktrace) {
-      logs.add("An error occurred: $e");
-      logs.add("Stacktrace: $stacktrace");
+      logs.add("$txid An error occurred: $e");
+      logs.add("$txid Stacktrace: $stacktrace");
       logger.d(logs.join("\n"));
       rethrow;
     }
