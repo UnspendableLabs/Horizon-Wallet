@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -110,7 +111,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
     final Asset asset;
     late FeeEstimates feeEstimates;
-    late Balance balance;
+    late Balance? balance;
 
     try {
       asset = await assetRepository.getAsset(event.assetName!);
@@ -125,8 +126,11 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     try {
       final List<Balance> balances = await balanceRepository
           .getBalancesForAddress(event.currentAddress!.address);
-      balance =
-          balances.firstWhere((element) => element.asset == event.assetName);
+      balance = balances.firstWhereOrNull((element) =>
+          element.asset == asset.asset || element.asset == asset.assetLongname);
+      if (balance == null) {
+        throw Exception('invariant: balance not found for asset');
+      }
     } catch (e) {
       emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
       return;
@@ -142,7 +146,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       return;
     }
 
-    print('asset SUPPLY NORMALIZED: ${asset.supplyNormalized}');
     emit(state.copyWith(
       assetState: AssetState.success(asset),
       balancesState: BalancesState.success([balance]),
@@ -152,8 +155,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    print('onComposeTransaction');
-
     await composeTransaction<ComposeIssuanceVerbose, UpdateIssuanceState>(
         state: state,
         emit: emit,

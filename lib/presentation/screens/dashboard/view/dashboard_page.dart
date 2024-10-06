@@ -353,8 +353,8 @@ class AddressActions extends StatelessWidget {
                 includeBackButton: false,
                 includeCloseButton: true,
               ),
-              icon: Icons.add,
-              text: "DISPENSE",
+              icon: Icons.compare_arrows,
+              text: "DISPENSER",
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,
@@ -770,7 +770,9 @@ class BalancesSliverState extends State<BalancesSliver> {
                               body: HorizonUI.HorizonDialog(
                                 title: "Update Issuance",
                                 body: UpdateIssuancePageWrapper(
-                                  assetName: currentAsset?.asset ?? '',
+                                  assetName: currentAsset?.assetLongname ??
+                                      currentAsset?.asset ??
+                                      '',
                                   actionType: result,
                                   dashboardActivityFeedBloc: BlocProvider.of<
                                       DashboardActivityFeedBloc>(context),
