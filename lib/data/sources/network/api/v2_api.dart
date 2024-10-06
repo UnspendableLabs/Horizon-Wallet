@@ -2794,6 +2794,7 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
+    @Query("lock_description") bool? lockDescription,
   ]);
 
   @GET("/addresses/{address}/compose/dispenser?verbose=true")

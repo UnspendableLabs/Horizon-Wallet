@@ -354,7 +354,7 @@ class AddressActions extends StatelessWidget {
                 includeCloseButton: true,
               ),
               icon: Icons.add,
-              text: "Dispenser",
+              text: "DISPENSE",
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,

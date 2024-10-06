@@ -202,6 +202,11 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               label: 'Lock Description for Asset',
               enabled: false,
               suffix: CircularProgressIndicator()),
+          const SizedBox(height: 16),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Current Description',
+            enabled: false,
+          ),
         ],
       IssuanceActionType.lockQuantity => [
           const HorizonUI.HorizonTextFormField(
@@ -297,7 +302,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                   enabled: false,
                 ),
               ),
-              const SizedBox(width: 16), // Add some spacing between the fields
+              const SizedBox(width: 16),
               Expanded(
                 child: HorizonUI.HorizonTextFormField(
                   label: 'Currently Divisible',
@@ -328,7 +333,19 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               label: 'Lock Description for Asset',
               controller: TextEditingController(
                   text: originalAsset.assetLongname ?? originalAsset.asset),
-              enabled: false)
+              enabled: false),
+          const SizedBox(height: 16),
+          originalAsset.description != ''
+              ? HorizonUI.HorizonTextFormField(
+                  label: 'Current Description',
+                  enabled: false,
+                  controller:
+                      TextEditingController(text: originalAsset.description),
+                )
+              : const Align(
+                  alignment: Alignment.centerLeft,
+                  child: SelectableText('Asset currently has no description')),
+          const SizedBox(height: 16),
         ],
       IssuanceActionType.lockQuantity => [
           // locking the quantity will not allow the user to change the quantity in the future
@@ -346,6 +363,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           )
         ],
       IssuanceActionType.changeDescription => [
+          // change the description of the asset
           HorizonUI.HorizonTextFormField(
               label: 'Update Description for Asset',
               enabled: false,
@@ -560,39 +578,30 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               isDivisible ?? originalAsset.divisible!, _quantityController);
           break;
         // case IssuanceActionType.lockDescription:
-        //   isLocked = true;
         //   break;
         case IssuanceActionType.lockQuantity:
-          setState(() {
-            isLocked = true;
-          });
+          isLocked = true;
           break;
         case IssuanceActionType.changeDescription:
-          setState(() {
-            description = _newDescriptionController.text;
-          });
+          description = _newDescriptionController.text;
           break;
         case IssuanceActionType.issueMore:
-          // TODO: wrap this in function and write some tests
           int inputQuantity = _updateQuantity(
               isDivisible ?? originalAsset.divisible!, _quantityController);
-          setState(() {
-            quantity = inputQuantity + originalAsset.supply!;
-          });
+          quantity = inputQuantity + originalAsset.supply!;
           break;
         case IssuanceActionType.issueSubasset:
-          setState(() {
-            name = _subassetController.text;
-            quantity = _updateQuantity(
-                isDivisible ?? originalAsset.divisible!, _quantityController);
-            description = _newDescriptionController.text;
-          });
+          name = _subassetController.text;
+          quantity = _updateQuantity(
+              isDivisible ?? originalAsset.divisible!, _quantityController);
+          description = _newDescriptionController.text;
           break;
 
         default:
           print("Invalid case");
       }
 
+      print('QUANTITY: $quantity');
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: UpdateIssuanceEventParams(
@@ -634,21 +643,25 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    HorizonUI.HorizonTextFormField(
-                      label: "Original Supply",
-                      controller: TextEditingController(
-                          text: originalAsset.supplyNormalized),
-                      enabled: false,
-                      textColor: Colors.red,
+                    Expanded(
+                      child: HorizonUI.HorizonTextFormField(
+                        label: "Original Supply",
+                        controller: TextEditingController(
+                            text: originalAsset.supplyNormalized),
+                        enabled: false,
+                        textColor: Colors.red,
+                      ),
                     ),
-                    HorizonUI.HorizonTextFormField(
-                      label: "Additional Supply",
-                      controller: TextEditingController(
-                          text: (Decimal.parse(params.quantityNormalized) -
-                                  Decimal.parse(
-                                      originalAsset.supplyNormalized!))
-                              .toString()),
-                      enabled: false,
+                    Expanded(
+                      child: HorizonUI.HorizonTextFormField(
+                        label: "Additional Supply",
+                        controller: TextEditingController(
+                            text: (Decimal.parse(params.quantityNormalized) -
+                                    Decimal.parse(
+                                        originalAsset.supplyNormalized!))
+                                .toString()),
+                        enabled: false,
+                      ),
                     ),
                   ],
                 ),
@@ -691,10 +704,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                           ? params.description
                           : ''),
                   enabled: false,
-                  textColor:
-                      widget.actionType == IssuanceActionType.changeDescription
-                          ? Colors.green
-                          : null,
+                  textColor: Colors.green,
                 ),
               ],
             )
@@ -714,9 +724,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         controller:
             TextEditingController(text: params.lock == true ? 'true' : 'false'),
         enabled: false,
-        textColor: widget.actionType == IssuanceActionType.lockQuantity
-            ? Colors.green
-            : null,
+        textColor: params.lock != originalAsset.locked ? Colors.green : null,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -724,8 +732,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         controller: TextEditingController(
             text: params.reset == true ? 'true' : 'false'),
         enabled: false,
-        textColor:
-            widget.actionType == IssuanceActionType.reset ? Colors.green : null,
+        textColor: params.reset == true ? Colors.green : null,
       ),
     ];
   }
