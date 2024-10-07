@@ -1069,6 +1069,10 @@ class VerboseEvent extends Event {
         return VerboseOpenDispenserEvent.fromJson(json);
       case 'REFILL_DISPENSER':
         return VerboseRefillDispenserEvent.fromJson(json);
+      case 'RESET_ISSUANCE':
+        return VerboseAssetIssuanceEvent.fromJson(json);
+      case "ASSET_CREATION":
+        return VerboseAssetIssuanceEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -2014,7 +2018,7 @@ class DispenserUnpacked extends TransactionUnpacked {
   @override
   Map<String, dynamic> toJson() {
     return {
-      "message_type": "ispenser",
+      "message_type": "dispenser",
       "message_data": {
         "asset": asset,
         "give_quantity": giveQuantity,
