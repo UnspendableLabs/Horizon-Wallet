@@ -240,6 +240,8 @@ class Event {
         return NewTransactionEvent.fromJson(json);
       case 'ASSET_ISSUANCE':
         return AssetIssuanceEvent.fromJson(json);
+      case 'RESET_ISSUANCE':
+        return ResetIssuanceEvent.fromJson(json);
       case 'DISPENSE':
         return DispenseEvent.fromJson(json);
       case 'OPEN_DISPENSER':
@@ -458,6 +460,7 @@ class NewTransactionEvent extends Event {
 class AssetIssuanceParams {
   final String? asset;
   final String? assetLongname;
+  final String assetEvents;
   // final int blockIndex;
   // final int callDate;
   // final int callPrice;
@@ -478,6 +481,7 @@ class AssetIssuanceParams {
   AssetIssuanceParams({
     this.asset,
     this.assetLongname,
+    required this.assetEvents,
     // required this.blockIndex,
     // required this.callDate,
     // required this.callPrice,
@@ -509,7 +513,9 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
 
   VerboseAssetIssuanceParams({
     required super.asset,
-    super.assetLongname, // required super.blockIndex, required super.callDate, required super.callPrice, required super.callable, required super.description,
+    super.assetLongname,
+    required super.assetEvents,
+    // required super.blockIndex, required super.callDate, required super.callPrice, required super.callable, required super.description,
     // required super.divisible,
     // required super.feePaid,
     // required super.issuer,
@@ -529,6 +535,22 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
 
   factory VerboseAssetIssuanceParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseAssetIssuanceParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ResetIssuanceEvent extends Event {
+  final AssetIssuanceParams params;
+
+  ResetIssuanceEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory ResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
+      _$ResetIssuanceEventFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -580,6 +602,23 @@ class OpenDispenserEvent extends Event {
 
   factory OpenDispenserEvent.fromJson(Map<String, dynamic> json) =>
       _$OpenDispenserEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseResetIssuanceEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+
+  VerboseResetIssuanceEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseResetIssuanceEventFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1070,7 +1109,7 @@ class VerboseEvent extends Event {
       case 'REFILL_DISPENSER':
         return VerboseRefillDispenserEvent.fromJson(json);
       case 'RESET_ISSUANCE':
-        return VerboseAssetIssuanceEvent.fromJson(json);
+        return VerboseResetIssuanceEvent.fromJson(json);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEvent.fromJson(json);
       default:

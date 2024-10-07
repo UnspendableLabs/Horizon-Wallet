@@ -114,7 +114,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final Map<String, Balance> aggregated =
           aggregateAndSortBalancesByAsset(balances);
 
-      final List<AssetVerbose> assets = await assetRepository
+      final List<Asset> assets = await assetRepository
           .getValidAssetsByOwnerVerbose(currentAddress.address);
 
       emit(BalancesState.complete(Result.ok(balances, aggregated, assets)));

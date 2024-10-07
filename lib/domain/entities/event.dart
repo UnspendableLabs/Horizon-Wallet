@@ -351,6 +351,7 @@ class VerboseNewTransactionEvent extends VerboseEvent {
 class AssetIssuanceParams {
   final String? asset;
   final String? assetLongname;
+  final String? assetEvents;
   // final int? blockIndex;
   // final int callDate;
   // final int callPrice;
@@ -371,6 +372,7 @@ class AssetIssuanceParams {
   AssetIssuanceParams({
     this.asset,
     this.assetLongname,
+    this.assetEvents,
     // this.blockIndex,
     // required this.callDate,
     // required this.callPrice,
@@ -404,6 +406,19 @@ class AssetIssuanceEvent extends Event {
   });
 }
 
+class ResetIssuanceEvent extends Event {
+  final AssetIssuanceParams params;
+
+  const ResetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
   final int blockTime;
   final String? quantityNormalized;
@@ -411,6 +426,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
   VerboseAssetIssuanceParams({
     required super.asset,
     required super.assetLongname,
+    required super.assetEvents,
     // required super.callDate,
     // required super.callPrice,
     // required super.callable,
@@ -441,6 +457,19 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     // required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseResetIssuanceEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+  const VerboseResetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
     required super.blockTime,
     required this.params,
   });
@@ -592,7 +621,6 @@ class VerboseOpenDispenserParams extends OpenDispenserParams {
     required this.escrowQuantityNormalized,
     required this.satoshirateNormalized,
     // this.assetInfo
-
   });
 }
 
@@ -676,4 +704,3 @@ class VerboseRefillDispenserEvent extends VerboseEvent {
     required this.params,
   });
 }
-

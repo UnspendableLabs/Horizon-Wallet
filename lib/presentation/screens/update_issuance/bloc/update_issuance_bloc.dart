@@ -104,7 +104,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       assetState: const AssetState.loading(),
     ));
 
-    final AssetVerbose asset;
+    final Asset asset;
     late FeeEstimates feeEstimates;
     late Balance? balance;
 

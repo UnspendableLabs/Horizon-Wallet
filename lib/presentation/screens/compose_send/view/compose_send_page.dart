@@ -35,7 +35,7 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final AssetVerbose? selectedAsset;
+  final Asset? selectedAsset;
 
   const ComposeSendPageWrapper({
     required this.dashboardActivityFeedBloc,
@@ -79,7 +79,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
 class ComposeSendPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  final AssetVerbose? selectedAsset;
+  final Asset? selectedAsset;
   const ComposeSendPage({
     super.key,
     required this.dashboardActivityFeedBloc,

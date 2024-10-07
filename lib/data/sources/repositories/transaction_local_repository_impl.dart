@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
 import 'package:logger/logger.dart';
+
 final logger = Logger();
 
 // class UnpackedMapper {
@@ -124,7 +125,8 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "give_quantity_normalized": unpacked.giveQuantityNormalized,
             "escrow_quantity_normalized": unpacked.escrowQuantityNormalized,
             // "mainchainrate_normalized": unpacked.mainchainrateNormalized,
-          } }),
+          }
+        }),
       _ => null
     };
 

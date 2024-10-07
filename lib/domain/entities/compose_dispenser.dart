@@ -79,4 +79,3 @@ class ComposeDispenserVerboseParams {
     required this.escrowQuantityNormalized,
   });
 }
-

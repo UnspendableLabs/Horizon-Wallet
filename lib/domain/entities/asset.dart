@@ -1,14 +1,4 @@
 class Asset {
-  final String asset;
-  final String assetLongname;
-  final bool divisible;
-  const Asset(
-      {required this.asset,
-      required this.assetLongname,
-      required this.divisible});
-}
-
-class AssetVerbose {
   final String? asset;
   final String? assetLongname;
   final String? description;
@@ -19,7 +9,7 @@ class AssetVerbose {
   final int? supply;
   final String? supplyNormalized;
 
-  const AssetVerbose(
+  const Asset(
       {this.asset,
       this.assetLongname,
       this.description,

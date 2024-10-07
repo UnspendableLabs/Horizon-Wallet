@@ -15,6 +15,6 @@ class BalancesState with _$BalancesState {
 @freezed
 class Result with _$Result {
   const factory Result.ok(List<Balance> balances,
-      Map<String, Balance> aggregated, List<AssetVerbose> assets) = _Ok;
+      Map<String, Balance> aggregated, List<Asset> assets) = _Ok;
   const factory Result.error(String error) = _Error;
 }

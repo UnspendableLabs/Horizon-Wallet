@@ -200,12 +200,10 @@ class ActivityFeedListItem extends StatelessWidget {
           quantityNormalized: params.quantityNormalized,
           asset: params.asset,
         ),
-      VerboseAssetIssuanceEvent(params: var params) => params.asset == null ||
-              params.quantityNormalized == null
-          ? const SelectableText('Issue (INVALID)',
-              style: TextStyle(color: redErrorText))
-          : SelectableText(
-              "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}"),
+      VerboseAssetIssuanceEvent(params: var params) =>
+        _buildAssetIssuanceTitle(params),
+      VerboseResetIssuanceEvent(params: var params) => SelectableText(
+          "Reset Issuance ${params.assetLongname ?? params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       VerboseOpenDispenserEvent(params: var params) =>
@@ -215,6 +213,20 @@ class ActivityFeedListItem extends StatelessWidget {
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
+  }
+
+  Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
+    if (params.assetEvents != null &&
+        params.assetEvents!.isNotEmpty &&
+        params.assetEvents == "reissuance") {
+      return SelectableText("Reissue ${params.assetLongname ?? params.asset}");
+    } else if (params.asset == null || params.quantityNormalized == null) {
+      return const SelectableText('Issue (INVALID)',
+          style: TextStyle(color: redErrorText));
+    } else {
+      return SelectableText(
+          "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}");
+    }
   }
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
@@ -276,6 +288,8 @@ class ActivityFeedListItem extends StatelessWidget {
   Widget _buildEventSubtitle(Event event) {
     return switch (event) {
       VerboseAssetIssuanceEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseResetIssuanceEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseEnhancedSendEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
@@ -341,6 +355,8 @@ class ActivityFeedListItem extends StatelessWidget {
           when _getSendSide(params.source) == SendSide.destination =>
         const Icon(Icons.arrow_forward, color: Colors.green),
       VerboseAssetIssuanceEvent(params: var params) =>
+        const Icon(Icons.toll, color: Colors.grey),
+      VerboseResetIssuanceEvent(params: var params) =>
         const Icon(Icons.toll, color: Colors.grey),
       VerboseDispenseEvent(params: var params) =>
         const Icon(Icons.paid, color: Colors.grey),

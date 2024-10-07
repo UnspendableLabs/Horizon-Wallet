@@ -42,8 +42,8 @@ class EventMapper {
         return RefillDispenserEventMapper.toDomain(
             apiEvent as api.RefillDispenserEvent);
       case "RESET_ISSUANCE":
-        return AssetIssuanceEventMapper.toDomain(
-            apiEvent as api.AssetIssuanceEvent);
+        return ResetIssuanceEventMapper.toDomain(
+            apiEvent as api.ResetIssuanceEvent);
       case "ASSET_CREATION":
         return AssetIssuanceEventMapper.toDomain(
             apiEvent as api.AssetIssuanceEvent);
@@ -91,8 +91,8 @@ class VerboseEventMapper {
         return VerboseRefillDispenserEventMapper.toDomain(
             apiEvent as api.VerboseRefillDispenserEvent);
       case "RESET_ISSUANCE":
-        return VerboseAssetIssuanceEventMapper.toDomain(
-            apiEvent as api.VerboseAssetIssuanceEvent);
+        return VerboseResetIssuanceEventMapper.toDomain(
+            apiEvent as api.VerboseResetIssuanceEvent);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
@@ -299,6 +299,19 @@ class VerboseDebitParamsMapper {
   }
 }
 
+class ResetIssuanceEventMapper {
+  static ResetIssuanceEvent toDomain(api.ResetIssuanceEvent apiEvent) {
+    return ResetIssuanceEvent(
+      state: StateMapper.get(apiEvent),
+      event: "RESET_ISSUANCE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
 class AssetIssuanceEventMapper {
   static AssetIssuanceEvent toDomain(api.AssetIssuanceEvent apiEvent) {
     return AssetIssuanceEvent(
@@ -318,6 +331,7 @@ class AssetIssuanceParamsMapper {
     return AssetIssuanceParams(
       asset: apiParams.asset,
       assetLongname: apiParams.assetLongname,
+      assetEvents: apiParams.assetEvents,
       // blockIndex: apiParams.blockIndex,
       // callDate: apiParams.callDate,
       // callPrice: apiParams.callPrice,
@@ -356,12 +370,30 @@ class VerboseAssetIssuanceEventMapper {
   }
 }
 
+class VerboseResetIssuanceEventMapper {
+  static VerboseResetIssuanceEvent toDomain(
+      api.VerboseResetIssuanceEvent apiEvent) {
+    final x = VerboseResetIssuanceEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "RESET_ISSUANCE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseAssetIssuanceParamsMapper.toDomain(apiEvent.params),
+    );
+
+    return x;
+  }
+}
+
 class VerboseAssetIssuanceParamsMapper {
   static VerboseAssetIssuanceParams toDomain(
       api.VerboseAssetIssuanceParams apiParams) {
     return VerboseAssetIssuanceParams(
       asset: apiParams.asset,
       assetLongname: apiParams.assetLongname,
+      assetEvents: apiParams.assetEvents,
       // blockIndex: apiParams.blockIndex,
       // callDate: apiParams.callDate,
       // callPrice: apiParams.callPrice,
