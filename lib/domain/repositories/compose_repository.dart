@@ -1,7 +1,6 @@
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
-import 'package:horizon/domain/entities/raw_transaction.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {

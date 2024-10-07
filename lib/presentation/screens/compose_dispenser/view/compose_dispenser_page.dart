@@ -212,8 +212,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                 Balance? balance =
                     _getBalanceForSelectedAsset(balances, value!);
 
-                if (balance == null)
+                if (balance == null) {
                   throw Exception("No balance found for selected asset");
+                }
 
                 setState(() {
                   asset = value;

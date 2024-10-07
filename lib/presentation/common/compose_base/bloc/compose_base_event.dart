@@ -4,8 +4,9 @@ import 'package:horizon/domain/entities/fee_option.dart';
 abstract class ComposeBaseEvent {}
 
 class FetchFormData extends ComposeBaseEvent {
-  Address currentAddress;
-  FetchFormData({required this.currentAddress});
+  Address? currentAddress;
+  String? assetName;
+  FetchFormData({this.currentAddress, this.assetName});
 }
 
 class ChangeFeeOption extends ComposeBaseEvent {

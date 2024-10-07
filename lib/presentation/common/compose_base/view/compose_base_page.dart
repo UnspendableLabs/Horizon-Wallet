@@ -230,7 +230,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                       : () {
                           widget.onSubmit(_formKey);
                         },
-                  buttonText: 'SUBMIT',
+                  buttonText: 'CONTINUE',
                 ),
               ],
             ),

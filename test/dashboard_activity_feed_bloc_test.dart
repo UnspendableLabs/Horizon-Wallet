@@ -26,7 +26,9 @@ final DEFAULT_WHITELIST = [
   "ASSET_ISSUANCE",
   "DISPENSE",
   "OPEN_DISPENSER",
-  "REFILL_DISPENSER"
+  "REFILL_DISPENSER",
+  "RESET_ISSUANCE",
+  "ASSET_CREATION",
 ];
 
 extension DateTimeExtension on DateTime {

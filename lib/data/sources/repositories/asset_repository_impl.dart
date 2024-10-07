@@ -7,18 +7,49 @@ class AssetRepositoryImpl implements AssetRepository {
   final V2Api api;
   AssetRepositoryImpl({required this.api});
   @override
-  Future<a.Asset?> getAsset(String uuid) async {
-    final response = await api.getAsset(uuid);
+  Future<a.AssetVerbose> getAssetVerbose(String uuid) async {
+    final response = await api.getAssetVerbose(uuid);
 
     if (response.result == null) {
-      return null;
+      throw Exception('Asset not found');
     }
 
     final asset = response.result!;
 
-    return a.Asset(
+    return a.AssetVerbose(
         asset: asset.asset,
         assetLongname: asset.assetLongname,
-        divisible: asset.divisible);
+        divisible: asset.divisible,
+        issuer: asset.issuer,
+        owner: asset.owner,
+        locked: asset.locked,
+        supply: asset.supply,
+        description: asset.description,
+        supplyNormalized: asset.supplyNormalized);
+  }
+
+  @override
+  Future<List<a.AssetVerbose>> getValidAssetsByOwnerVerbose(
+      String address) async {
+    final response = await api.getValidAssetsByOwnerVerbose(address);
+
+    if (response.result == null) {
+      return [];
+    }
+
+    final assets = response.result!;
+
+    return assets
+        .map((result) => a.AssetVerbose(
+            asset: result.asset,
+            assetLongname: result.assetLongname,
+            divisible: result.divisible,
+            description: result.description,
+            locked: result.locked,
+            issuer: result.issuer,
+            owner: result.owner,
+            supply: result.supply,
+            supplyNormalized: result.supplyNormalized))
+        .toList();
   }
 }

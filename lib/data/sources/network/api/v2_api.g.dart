@@ -1092,6 +1092,33 @@ Map<String, dynamic> _$AssetToJson(Asset instance) => <String, dynamic>{
       'locked': instance.locked,
     };
 
+AssetVerbose _$AssetVerboseFromJson(Map<String, dynamic> json) => AssetVerbose(
+      asset: json['asset'] as String?,
+      assetLongname: json['asset_longname'] as String?,
+      description: json['description'] as String?,
+      divisible: json['divisible'] as bool?,
+      locked: json['locked'] as bool?,
+      issuer: json['issuer'] as String?,
+      owner: json['owner'] as String?,
+      supply: (json['supply'] as num?)?.toInt(),
+      confirmed: json['confirmed'] as bool?,
+      supplyNormalized: json['supply_normalized'] as String?,
+    );
+
+Map<String, dynamic> _$AssetVerboseToJson(AssetVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'asset_longname': instance.assetLongname,
+      'description': instance.description,
+      'issuer': instance.issuer,
+      'owner': instance.owner,
+      'divisible': instance.divisible,
+      'locked': instance.locked,
+      'supply': instance.supply,
+      'confirmed': instance.confirmed,
+      'supply_normalized': instance.supplyNormalized,
+    };
+
 Credit _$CreditFromJson(Map<String, dynamic> json) => Credit(
       blockIndex: json['block_index'] as String,
       address: json['address'] as String,
@@ -1263,6 +1290,7 @@ ComposeIssuanceParams _$ComposeIssuanceParamsFromJson(
       quantity: (json['quantity'] as num).toInt(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
+      reset: json['reset'] as bool,
       description: json['description'] as String?,
       transferDestination: json['transferDestination'] as String?,
     );
@@ -1275,6 +1303,7 @@ Map<String, dynamic> _$ComposeIssuanceParamsToJson(
       'quantity': instance.quantity,
       'divisible': instance.divisible,
       'lock': instance.lock,
+      'reset': instance.reset,
       'description': instance.description,
       'transferDestination': instance.transferDestination,
     };
@@ -1304,6 +1333,7 @@ ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
       quantity: (json['quantity'] as num).toInt(),
       divisible: json['divisible'] as bool,
       lock: json['lock'] as bool,
+      reset: json['reset'] as bool,
       description: json['description'] as String?,
       transferDestination: json['transfer_destination'] as String?,
       quantityNormalized: json['quantity_normalized'] as String,
@@ -1317,6 +1347,7 @@ Map<String, dynamic> _$ComposeIssuanceVerboseParamsToJson(
       'quantity': instance.quantity,
       'divisible': instance.divisible,
       'lock': instance.lock,
+      'reset': instance.reset,
       'description': instance.description,
       'transfer_destination': instance.transferDestination,
       'quantity_normalized': instance.quantityNormalized,
@@ -2950,6 +2981,7 @@ class _V2Api implements V2Api {
     bool? unconfirmed,
     int? fee,
     String? inputsSet,
+    bool? lockDescription,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -2963,6 +2995,7 @@ class _V2Api implements V2Api {
       r'unconfirmed': unconfirmed,
       r'exact_fee': fee,
       r'inputs_set': inputsSet,
+      r'lock_description': lockDescription,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -3084,6 +3117,103 @@ class _V2Api implements V2Api {
           ? json
               .map<Transaction>(
                   (i) => Transaction.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<Asset>>> getValidAssetsByOwner(
+    String address, [
+    String? named,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+    bool? showUnconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'named': named,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+      r'show_unconfirmed': showUnconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Asset>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/assets/owned',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<Asset>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Asset>((i) => Asset.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<AssetVerbose>>> getValidAssetsByOwnerVerbose(
+    String address, [
+    String? named,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+    bool? showUnconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'named': named,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+      r'show_unconfirmed': showUnconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<AssetVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/assets/owned?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<AssetVerbose>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<AssetVerbose>(
+                  (i) => AssetVerbose.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );
@@ -3348,6 +3478,69 @@ class _V2Api implements V2Api {
     final _value = Response<Asset>.fromJson(
       _result.data!,
       (json) => Asset.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<AssetVerbose>> getAssetVerbose(String asset) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<AssetVerbose>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/assets/${asset}?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<AssetVerbose>.fromJson(
+      _result.data!,
+      (json) => AssetVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
+    String address,
+    String asset,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<BalanceVerbose>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/balances/${asset}?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<BalanceVerbose>.fromJson(
+      _result.data!,
+      (json) => BalanceVerbose.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

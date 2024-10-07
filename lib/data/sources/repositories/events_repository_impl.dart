@@ -41,6 +41,12 @@ class EventMapper {
       case "REFILL_DISPENSER":
         return RefillDispenserEventMapper.toDomain(
             apiEvent as api.RefillDispenserEvent);
+      case "RESET_ISSUANCE":
+        return AssetIssuanceEventMapper.toDomain(
+            apiEvent as api.AssetIssuanceEvent);
+      case "ASSET_CREATION":
+        return AssetIssuanceEventMapper.toDomain(
+            apiEvent as api.AssetIssuanceEvent);
       // case 'NEW_TRANSACTION':
       //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
 
@@ -83,7 +89,13 @@ class VerboseEventMapper {
             apiEvent as api.VerboseOpenDispenserEvent);
       case "REFILL_DISPENSER":
         return VerboseRefillDispenserEventMapper.toDomain(
-        apiEvent as api.VerboseRefillDispenserEvent);
+            apiEvent as api.VerboseRefillDispenserEvent);
+      case "RESET_ISSUANCE":
+        return VerboseAssetIssuanceEventMapper.toDomain(
+            apiEvent as api.VerboseAssetIssuanceEvent);
+      case "ASSET_CREATION":
+        return VerboseAssetIssuanceEventMapper.toDomain(
+            apiEvent as api.VerboseAssetIssuanceEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);

@@ -32,15 +32,6 @@ class BalancesState with _$BalancesState {
   const factory BalancesState.error(String error) = _BalancesError;
 }
 
-/// MaxValueState represents the state for calculating maximum transferable value.
-@freezed
-class MaxValueState with _$MaxValueState {
-  const factory MaxValueState.initial() = _MaxValueInitial;
-  const factory MaxValueState.loading() = _MaxValueLoading;
-  const factory MaxValueState.success(int maxValue) = _MaxValueSuccess;
-  const factory MaxValueState.error(String error) = _MaxValueError;
-}
-
 /// Abstract class for submit state, allows for different implementations.
 @immutable
 abstract class SubmitState {

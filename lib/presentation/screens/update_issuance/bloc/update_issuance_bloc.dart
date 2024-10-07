@@ -1,55 +1,52 @@
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
 import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
-import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
+import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
 import 'package:logger/logger.dart';
 
-class ComposeDispenserEventParams {
-  final String asset;
-  final int giveQuantity;
-  final int escrowQuantity;
-  final int mainchainrate;
-  final int status;
-  final String? openAddress;
-  final String? oracleAddress;
+class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
+  final IssuanceActionType issuanceActionType;
 
-  ComposeDispenserEventParams({
-    required this.asset,
-    required this.giveQuantity,
-    required this.escrowQuantity,
-    required this.mainchainrate,
-    required this.status,
-    this.openAddress,
-    this.oracleAddress,
+  UpdateIssuanceEventParams({
+    required super.name,
+    required super.quantity,
+    required super.description,
+    required super.divisible,
+    required super.lock,
+    required super.reset,
+    required this.issuanceActionType,
   });
 }
 
-class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
+class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   final Logger logger = Logger();
+  final AssetRepository assetRepository;
   final AddressRepository addressRepository;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
@@ -65,7 +62,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   final BitcoinRepository bitcoinRepository;
   final AnalyticsService analyticsService;
 
-  ComposeDispenserBloc({
+  UpdateIssuanceBloc({
+    required this.assetRepository,
     required this.addressRepository,
     required this.balanceRepository,
     required this.composeRepository,
@@ -80,37 +78,13 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     required this.transactionLocalRepository,
     required this.bitcoinRepository,
     required this.analyticsService,
-  }) : super(ComposeDispenserState(
-            submitState: const SubmitInitial(),
-            feeOption: FeeOption.Medium(),
-            balancesState: const BalancesState.initial(),
-            feeState: const FeeState.initial(),
-            giveQuantity: '',
-            escrowQuantity: '',
-            mainchainrate: '',
-            status: 0)) {
-    // Event handlers specific to the dispenser
-    on<ChangeAsset>(_onChangeAsset);
-    on<ChangeGiveQuantity>(_onChangeGiveQuantity);
-    on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
-  }
-
-  _onChangeEscrowQuantity(ChangeEscrowQuantity event, emit) {
-    final quantity = event.value;
-    emit(state.copyWith(escrowQuantity: quantity));
-  }
-
-  _onChangeGiveQuantity(ChangeGiveQuantity event, emit) {
-    final quantity = event.value;
-    emit(state.copyWith(giveQuantity: quantity));
-  }
-
-  _onChangeAsset(ChangeAsset event, emit) {
-    emit(state.copyWith(
-      assetName: event.asset,
-      balancesState: BalancesState.success([event.balance]),
-    ));
-  }
+  }) : super(UpdateIssuanceState(
+          submitState: const SubmitInitial(),
+          feeOption: FeeOption.Medium(),
+          balancesState: const BalancesState.initial(),
+          feeState: const FeeState.initial(),
+          assetState: const AssetState.initial(),
+        ));
 
   @override
   void onChangeFeeOption(ChangeFeeOption event, emit) async {
@@ -120,24 +94,32 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
-    emit(state.copyWith(
-        balancesState: const BalancesState.loading(),
-        submitState: const SubmitInitial()));
+    if (event.assetName == null || event.currentAddress == null) {
+      return;
+    }
 
-    late List<Balance> balances;
+    emit(state.copyWith(
+      balancesState: const BalancesState.loading(),
+      submitState: const SubmitInitial(),
+      assetState: const AssetState.loading(),
+    ));
+
+    final AssetVerbose asset;
     late FeeEstimates feeEstimates;
+    late Balance? balance;
 
     try {
-      List<Address> addresses = [event.currentAddress!];
-
-      final balances_ =
-          await balanceRepository.getBalancesForAddress(addresses[0].address);
-
-      balances = balances_.where((balance) => balance.asset != 'BTC').toList();
+      asset = await assetRepository.getAssetVerbose(event.assetName!);
     } catch (e) {
-      emit(state.copyWith(
-        balancesState: BalancesState.error(e.toString()),
-      ));
+      emit(state.copyWith(assetState: AssetState.error(e.toString())));
+      return;
+    }
+
+    try {
+      balance = await balanceRepository.getBalanceForAddressAndAssetVerbose(
+          event.assetName!, event.currentAddress!.address);
+    } catch (e) {
+      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
       return;
     }
 
@@ -152,14 +134,15 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     }
 
     emit(state.copyWith(
-      balancesState: BalancesState.success(balances),
+      assetState: AssetState.success(asset),
+      balancesState: BalancesState.success([balance]),
       feeState: FeeState.success(feeEstimates),
     ));
   }
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    await composeTransaction<ComposeDispenserVerbose, ComposeDispenserState>(
+    await composeTransaction<ComposeIssuanceVerbose, UpdateIssuanceState>(
         state: state,
         emit: emit,
         event: event,
@@ -168,36 +151,36 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         transactionService: transactionService,
         logger: logger,
         transactionHandler: (inputsSet, feeRate) async {
-          final dispenserParams = event.params;
+          final issuanceParams = event.params;
           // Dummy transaction to compute virtual size
-          final dispenser = await composeRepository.composeDispenserVerbose(
+          final issuance = await composeRepository.composeIssuanceVerbose(
             event.sourceAddress,
-            dispenserParams.asset,
-            dispenserParams.giveQuantity,
-            dispenserParams.escrowQuantity,
-            dispenserParams.mainchainrate,
-            dispenserParams.status,
-            dispenserParams.openAddress,
-            dispenserParams.oracleAddress,
+            issuanceParams.name,
+            issuanceParams.quantity,
+            issuanceParams.divisible,
+            issuanceParams.lock,
+            issuanceParams.reset,
+            issuanceParams.description,
+            null,
             true,
             1,
             inputsSet,
           );
 
           final virtualSize =
-              transactionService.getVirtualSize(dispenser.rawtransaction);
+              transactionService.getVirtualSize(issuance.rawtransaction);
           final int totalFee = virtualSize * feeRate;
 
           final composeTransaction =
-              await composeRepository.composeDispenserVerbose(
+              await composeRepository.composeIssuanceVerbose(
             event.sourceAddress,
-            dispenserParams.asset,
-            dispenserParams.giveQuantity,
-            dispenserParams.escrowQuantity,
-            dispenserParams.mainchainrate,
-            dispenserParams.status,
-            dispenserParams.openAddress,
-            dispenserParams.oracleAddress,
+            issuanceParams.name,
+            issuanceParams.quantity,
+            issuanceParams.divisible,
+            issuanceParams.lock,
+            issuanceParams.reset,
+            issuanceParams.description,
+            null,
             true,
             totalFee,
             inputsSet,
@@ -210,7 +193,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserVerbose>(
+        submitState: SubmitFinalizing<ComposeIssuanceVerbose>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -221,8 +204,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    await signAndBroadcastTransaction<ComposeDispenserVerbose,
-            ComposeDispenserState>(
+    await signAndBroadcastTransaction<ComposeIssuanceVerbose,
+            UpdateIssuanceState>(
         state: state,
         emit: emit,
         password: event.password,
@@ -240,19 +223,20 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         analyticsService: analyticsService,
         logger: logger,
         extractParams: () {
-          final dispenserParams =
-              (state.submitState as SubmitFinalizing<ComposeDispenserVerbose>)
+          final issuanceParams =
+              (state.submitState as SubmitFinalizing<ComposeIssuanceVerbose>)
                   .composeTransaction;
-          final source = dispenserParams.params.source;
-          final rawTx = dispenserParams.rawtransaction;
-          final destination = source;
-          final giveQuantity = dispenserParams.params.giveQuantity;
-          final asset = dispenserParams.params.asset;
+          final source = issuanceParams.params.source;
+          final rawTx = issuanceParams.rawtransaction;
+          final destination =
+              source; // For issuance, destination is the same as source
+          final quantity = issuanceParams.params.quantity;
+          final asset = issuanceParams.params.asset;
 
-          return (source, rawTx, destination, giveQuantity, asset);
+          return (source, rawTx, destination, quantity, asset);
         },
         successAction:
-            (txHex, txHash, source, destination, giveQuantity, asset) async {
+            (txHex, txHash, source, destination, quantity, asset) async {
           TransactionInfoVerbose txInfo =
               await transactionRepository.getInfoVerbose(txHex);
 
@@ -260,13 +244,13 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
             hash: txHash,
           ));
 
-          logger.d('dispenser broadcasted txHash: $txHash');
+          logger.d('issue broadcasted txHash: $txHash');
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex, sourceAddress: source!)));
 
-          analyticsService.trackEvent('broadcast_tx_dispenser');
+          analyticsService.trackEvent('broadcast_tx_issue');
         });
   }
 }

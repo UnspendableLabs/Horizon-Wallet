@@ -5,7 +5,6 @@ import 'package:horizon/domain/entities/compose_issuance.dart'
 import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
 import 'package:horizon/domain/entities/compose_dispenser.dart'
     as compose_dispenser;
-import 'package:horizon/domain/entities/raw_transaction.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -89,6 +88,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     return compose_issuance.ComposeIssuanceVerbose(
         rawtransaction: txVerbose.rawtransaction,
         params: compose_issuance.ComposeIssuanceVerboseParams(
+          reset: txVerbose.params.reset,
           source: txVerbose.params.source,
           asset: txVerbose.params.asset,
           quantity: txVerbose.params.quantity,

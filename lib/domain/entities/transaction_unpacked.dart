@@ -163,7 +163,7 @@ class DispenserUnpacked extends TransactionUnpacked {
   final int mainchainrate;
   final String status;
 
-  DispenserUnpacked({
+  const DispenserUnpacked({
     required this.asset,
     required this.giveQuantity,
     required this.escrowQuantity,
@@ -184,7 +184,7 @@ class DispenserUnpackedVerbose extends TransactionUnpackedVerbose {
   final String escrowQuantityNormalized;
   // final String mainchainrateNormalized;
 
-  DispenserUnpackedVerbose({
+  const DispenserUnpackedVerbose({
     required this.asset,
     required this.giveQuantity,
     required this.escrowQuantity,

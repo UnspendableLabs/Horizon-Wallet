@@ -1,3 +1,7 @@
+import 'dart:math';
+
+import 'package:collection/collection.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,14 +14,22 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
+import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
+import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
+import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
@@ -25,21 +37,13 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_st
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
-import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/screens/update_issuance/view/update_issuance_page.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-import 'dart:math';
-import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:flutter/gestures.dart';
-import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
-import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
-import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -349,8 +353,8 @@ class AddressActions extends StatelessWidget {
                 includeBackButton: false,
                 includeCloseButton: true,
               ),
-              icon: Icons.add,
-              text: "Dispenser",
+              icon: Icons.compare_arrows,
+              text: "DISPENSER",
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,
@@ -372,31 +376,17 @@ class AddressActions extends StatelessWidget {
   }
 }
 
-class BalancesDisplay extends StatefulWidget {
-  final bool isDarkTheme;
-  final List<Address> addresses;
-  final String accountUuid;
-
-  const BalancesDisplay(
-      {super.key,
-      required this.isDarkTheme,
-      required this.addresses,
-      required this.accountUuid});
-
-  @override
-  BalancesDisplayState createState() => BalancesDisplayState();
-}
-
 class BalancesSliver extends StatefulWidget {
   final bool isDarkTheme;
   final List<Address> addresses;
   final int initialItemCount;
-
+  final Address currentAddress;
   const BalancesSliver(
       {super.key,
       required this.isDarkTheme,
       required this.addresses,
-      this.initialItemCount = 3});
+      this.initialItemCount = 3,
+      required this.currentAddress});
 
   @override
   BalancesSliverState createState() => BalancesSliverState();
@@ -421,6 +411,7 @@ class DashboardPageWrapper extends StatelessWidget {
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     addressTxRepository: GetIt.I.get<AddressTxRepository>(),
+                    assetRepository: GetIt.I.get<AssetRepository>(),
                     currentAddress: data.currentAddress,
                   )..add(Start(pollingInterval: const Duration(seconds: 60))),
                 ),
@@ -612,6 +603,23 @@ class QRCodeDialog extends StatelessWidget {
   }
 }
 
+class BalancesDisplay extends StatefulWidget {
+  final bool isDarkTheme;
+  final List<Address> addresses;
+  final String accountUuid;
+  final Address currentAddress;
+
+  const BalancesDisplay(
+      {super.key,
+      required this.isDarkTheme,
+      required this.addresses,
+      required this.accountUuid,
+      required this.currentAddress});
+
+  @override
+  BalancesDisplayState createState() => BalancesDisplayState();
+}
+
 class BalancesDisplayState extends State<BalancesDisplay> {
   late BalancesBloc _balancesBloc;
 
@@ -620,6 +628,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
     return BalancesSliver(
       isDarkTheme: widget.isDarkTheme,
       addresses: widget.addresses,
+      currentAddress: widget.currentAddress,
     );
   }
 
@@ -655,7 +664,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated) {
+      ok: (balances, aggregated, assets) {
         if (balances.isEmpty) {
           return [
             const NoData(
@@ -686,7 +695,6 @@ class BalancesSliverState extends State<BalancesSliver> {
 
         List<Widget> widgets = displayedEntries.expand((entry) {
           final isLastEntry = entry == orderedEntries.last;
-
           final isClickable = entry.key != 'BTC';
 
           final Color textColor = isClickable
@@ -695,6 +703,11 @@ class BalancesSliverState extends State<BalancesSliver> {
                   ? greyDashboardTextDarkTheme
                   : greyDashboardTextLightTheme);
 
+          final currentAsset =
+              assets.firstWhereOrNull((asset) => asset.asset == entry.key);
+          final bool isOwner = currentAsset?.owner ==
+              widget.currentAddress.address;
+
           return [
             Padding(
               padding:
@@ -702,23 +715,106 @@ class BalancesSliverState extends State<BalancesSliver> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SelectableText.rich(
-                    TextSpan(
-                      text: '${entry.key} ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
+                  Expanded(
+                    child: SelectableText.rich(
+                      TextSpan(
+                        text:
+                            '${entry.key != 'BTC' && entry.value.assetInfo.assetLongname != null ? entry.value.assetInfo.assetLongname : entry.key} ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                        recognizer: isClickable
+                            ? (TapGestureRecognizer()
+                              ..onTap = () => _launchAssetUrl(entry.key))
+                            : null,
                       ),
-                      recognizer: isClickable
-                          ? (TapGestureRecognizer()
-                            ..onTap = () => _launchAssetUrl(entry.key))
-                          : null,
                     ),
                   ),
                   SelectableText(
                     entry.value.quantityNormalized,
                     style: const TextStyle(fontSize: 14),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        iconSize: 16.0,
+                        icon: const Icon(Icons.send),
+                        onPressed: () {
+                          HorizonUI.HorizonDialog.show(
+                            context: context,
+                            body: HorizonUI.HorizonDialog(
+                              title: 'Compose Send',
+                              body: ComposeSendPageWrapper(
+                                dashboardActivityFeedBloc:
+                                    BlocProvider.of<DashboardActivityFeedBloc>(
+                                        context),
+                                selectedAsset: currentAsset,
+                              ),
+                              includeBackButton: false,
+                              includeCloseButton: true,
+                            ),
+                          );
+                        },
+                      ),
+                      if (isOwner)
+                        PopupMenuButton<IssuanceActionType>(
+                          icon: const Icon(Icons.more_vert),
+                          onSelected: (IssuanceActionType result) {
+                            HorizonUI.HorizonDialog.show(
+                              context: context,
+                              body: HorizonUI.HorizonDialog(
+                                title: "Update Issuance",
+                                body: UpdateIssuancePageWrapper(
+                                  assetName: currentAsset?.assetLongname ??
+                                      currentAsset?.asset ??
+                                      '',
+                                  actionType: result,
+                                  dashboardActivityFeedBloc: BlocProvider.of<
+                                      DashboardActivityFeedBloc>(context),
+                                ),
+                                includeBackButton: false,
+                                includeCloseButton: true,
+                                onBackButtonPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            );
+                          },
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<IssuanceActionType>>[
+                            PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.reset,
+                              enabled: currentAsset?.locked != true,
+                              child: const Text('Reset Asset'),
+                            ),
+                            // const PopupMenuItem<IssuanceActionType>(
+                            //   value: IssuanceActionType.lockDescription,
+                            //   child: Text('Lock Description'),
+                            // ),
+                            PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.lockQuantity,
+                              enabled: currentAsset?.locked != true,
+                              child: const Text('Lock Quantity'),
+                            ),
+                            PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.changeDescription,
+                              enabled: currentAsset?.locked != true,
+                              child: const Text('Change Description'),
+                            ),
+                            PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.issueMore,
+                              enabled: currentAsset?.locked != true,
+                              child: const Text('Issue More'),
+                            ),
+                            const PopupMenuItem<IssuanceActionType>(
+                              value: IssuanceActionType.issueSubasset,
+                              child: Text('Issue Subasset'),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -927,7 +1023,9 @@ class DashboardPageState extends State<DashboardPage> {
                                                       isDarkTheme: isDarkTheme,
                                                       addresses: [
                                                         widget.currentAddress
-                                                      ]),
+                                                      ],
+                                                      currentAddress: widget
+                                                          .currentAddress),
                                                 ),
                                               ],
                                             ),
@@ -1165,7 +1263,8 @@ class DashboardPageState extends State<DashboardPage> {
                                     sliver: BalancesDisplay(
                                         accountUuid: widget.accountUuid,
                                         isDarkTheme: isDarkTheme,
-                                        addresses: [widget.currentAddress]),
+                                        addresses: [widget.currentAddress],
+                                        currentAddress: widget.currentAddress),
                                   ),
                                 ]),
                                 SliverStack(children: [

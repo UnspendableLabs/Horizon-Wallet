@@ -38,12 +38,11 @@ void main() {
     }
   });
   group('non counterparty txs', () {
-
-      final transactionsJson = loadFixtureSync("btc_transactions.json");
+    final transactionsJson = loadFixtureSync("btc_transactions.json");
 
     for (var jsonData in transactionsJson) {
       final txid = jsonData['txid'] as String;
-      final isCounterpartyExpected = false;
+      const isCounterpartyExpected = false;
 
       test(
           'Transaction $txid is ${isCounterpartyExpected ? '' : 'not '}a Counterparty transaction',

@@ -231,7 +231,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     late List<Balance> balances;
     late FeeEstimates feeEstimates;
     try {
-      List<Address> addresses = [event.currentAddress];
+      List<Address> addresses = [event.currentAddress!];
 
       balances =
           await balanceRepository.getBalancesForAddress(addresses[0].address);

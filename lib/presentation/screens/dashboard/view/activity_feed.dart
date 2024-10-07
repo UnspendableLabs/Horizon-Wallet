@@ -200,12 +200,12 @@ class ActivityFeedListItem extends StatelessWidget {
           quantityNormalized: params.quantityNormalized,
           asset: params.asset,
         ),
-      VerboseAssetIssuanceEvent(params: var params) =>
-        params.asset == null || params.quantityNormalized == null
-            ? const SelectableText('Issue (INVALID)',
-                style: TextStyle(color: redErrorText))
-            : SelectableText(
-                "Issue ${params.quantityNormalized} ${params.asset}"),
+      VerboseAssetIssuanceEvent(params: var params) => params.asset == null ||
+              params.quantityNormalized == null
+          ? const SelectableText('Issue (INVALID)',
+              style: TextStyle(color: redErrorText))
+          : SelectableText(
+              "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       VerboseOpenDispenserEvent(params: var params) =>

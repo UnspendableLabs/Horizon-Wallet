@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
+import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -59,6 +61,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final AccountRepository accountRepository;
   final AddressRepository addressRepository;
   final AddressTxRepository addressTxRepository;
+  final AssetRepository assetRepository;
   final Address currentAddress;
 
   Timer? _timer;
@@ -68,6 +71,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     required this.accountRepository,
     required this.addressRepository,
     required this.addressTxRepository,
+    required this.assetRepository,
     required this.currentAddress,
   }) : super(const BalancesState.initial()) {
     on<Start>(_onStart);
@@ -110,7 +114,10 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final Map<String, Balance> aggregated =
           aggregateAndSortBalancesByAsset(balances);
 
-      emit(BalancesState.complete(Result.ok(balances, aggregated)));
+      final List<AssetVerbose> assets = await assetRepository
+          .getValidAssetsByOwnerVerbose(currentAddress.address);
+
+      emit(BalancesState.complete(Result.ok(balances, aggregated, assets)));
     } catch (e) {
       emit(BalancesState.complete(Result.error(
           "Error fetching balances for ${currentAddress.address}")));
