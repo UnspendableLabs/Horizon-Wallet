@@ -275,7 +275,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   List<Widget> _buildInitialFormFields(UpdateIssuanceState state, bool loading,
-      GlobalKey<FormState> formKey, Asset originalAsset) {
+      GlobalKey<FormState> formKey, AssetVerbose originalAsset) {
     final assetName = originalAsset.assetLongname ?? originalAsset.asset;
     return switch (widget.actionType) {
       IssuanceActionType.reset => [
@@ -435,7 +435,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   Widget _buildQuantityField(
-      GlobalKey<FormState> formKey, Asset originalAsset, String label) {
+      GlobalKey<FormState> formKey, AssetVerbose originalAsset, String label) {
     return HorizonUI.HorizonTextFormField(
       controller: _quantityController,
       label: label,
@@ -457,7 +457,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   Widget _buildSubassetNameField(
-      GlobalKey<FormState> formKey, Asset originalAsset) {
+      GlobalKey<FormState> formKey, AssetVerbose originalAsset) {
     return Stack(
       children: [
         HorizonUI.HorizonTextFormField(
@@ -518,7 +518,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset originalAsset) {
+  void _handleInitialSubmit(
+      GlobalKey<FormState> formKey, AssetVerbose originalAsset) {
     String name = originalAsset.assetLongname ?? originalAsset.asset!;
     int quantity = originalAsset.supply!;
     String? description = originalAsset.description;
@@ -569,7 +570,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   List<Widget> _buildConfirmationDetails(
-      dynamic composeTransaction, Asset originalAsset) {
+      dynamic composeTransaction, AssetVerbose originalAsset) {
     final params = (composeTransaction as ComposeIssuanceVerbose).params;
     return [
       HorizonUI.HorizonTextFormField(

@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -109,28 +108,22 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       assetState: const AssetState.loading(),
     ));
 
-    final Asset asset;
+    final AssetVerbose asset;
     late FeeEstimates feeEstimates;
     late Balance? balance;
 
     try {
-      asset = await assetRepository.getAsset(event.assetName!);
+      asset = await assetRepository.getAssetVerbose(event.assetName!);
     } catch (e) {
       emit(state.copyWith(assetState: AssetState.error(e.toString())));
       return;
     }
 
     // TODO: use this instead
-    // final Balance balance = await balanceRepository.getBalanceForAddressAndAsset(event.assetName!, event.currentAddress!.address);
 
     try {
-      final List<Balance> balances = await balanceRepository
-          .getBalancesForAddress(event.currentAddress!.address);
-      balance = balances.firstWhereOrNull((element) =>
-          element.asset == asset.asset || element.asset == asset.assetLongname);
-      if (balance == null) {
-        throw Exception('invariant: balance not found for asset');
-      }
+      balance = await balanceRepository.getBalanceForAddressAndAssetVerbose(
+          event.assetName!, event.currentAddress!.address);
     } catch (e) {
       emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
       return;

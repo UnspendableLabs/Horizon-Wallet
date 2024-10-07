@@ -35,7 +35,7 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Asset? selectedAsset;
+  final AssetVerbose? selectedAsset;
 
   const ComposeSendPageWrapper({
     required this.dashboardActivityFeedBloc,
@@ -79,7 +79,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
 class ComposeSendPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  final Asset? selectedAsset;
+  final AssetVerbose? selectedAsset;
   const ComposeSendPage({
     super.key,
     required this.dashboardActivityFeedBloc,
@@ -431,8 +431,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               });
             }
           });
-          print('widget.selectedAsset: ${widget.selectedAsset}');
-          print('balances: $asset');
 
           return SizedBox(
             height: 48,

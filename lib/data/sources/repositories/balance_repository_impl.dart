@@ -5,8 +5,8 @@ import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger();
@@ -123,7 +123,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<b.Balance> getBalanceForAddressAndAsset(
+  Future<b.Balance> getBalanceForAddressAndAssetVerbose(
       String address, String assetName) async {
     final response =
         await api.getBalanceForAddressAndAssetVerbose(assetName, address);

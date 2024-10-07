@@ -269,7 +269,7 @@ mixin _$AssetState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(Asset asset) success,
+    required TResult Function(AssetVerbose asset) success,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -277,7 +277,7 @@ mixin _$AssetState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(Asset asset)? success,
+    TResult? Function(AssetVerbose asset)? success,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -285,7 +285,7 @@ mixin _$AssetState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(Asset asset)? success,
+    TResult Function(AssetVerbose asset)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -375,7 +375,7 @@ class _$AssetStateInitialImpl implements _AssetStateInitial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(Asset asset) success,
+    required TResult Function(AssetVerbose asset) success,
     required TResult Function(String error) error,
   }) {
     return initial();
@@ -386,7 +386,7 @@ class _$AssetStateInitialImpl implements _AssetStateInitial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(Asset asset)? success,
+    TResult? Function(AssetVerbose asset)? success,
     TResult? Function(String error)? error,
   }) {
     return initial?.call();
@@ -397,7 +397,7 @@ class _$AssetStateInitialImpl implements _AssetStateInitial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(Asset asset)? success,
+    TResult Function(AssetVerbose asset)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -489,7 +489,7 @@ class _$AssetStateLoadingImpl implements _AssetStateLoading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(Asset asset) success,
+    required TResult Function(AssetVerbose asset) success,
     required TResult Function(String error) error,
   }) {
     return loading();
@@ -500,7 +500,7 @@ class _$AssetStateLoadingImpl implements _AssetStateLoading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(Asset asset)? success,
+    TResult? Function(AssetVerbose asset)? success,
     TResult? Function(String error)? error,
   }) {
     return loading?.call();
@@ -511,7 +511,7 @@ class _$AssetStateLoadingImpl implements _AssetStateLoading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(Asset asset)? success,
+    TResult Function(AssetVerbose asset)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -569,7 +569,7 @@ abstract class _$$AssetStateSuccessImplCopyWith<$Res> {
           $Res Function(_$AssetStateSuccessImpl) then) =
       __$$AssetStateSuccessImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({Asset asset});
+  $Res call({AssetVerbose asset});
 }
 
 /// @nodoc
@@ -589,7 +589,7 @@ class __$$AssetStateSuccessImplCopyWithImpl<$Res>
       null == asset
           ? _value.asset
           : asset // ignore: cast_nullable_to_non_nullable
-              as Asset,
+              as AssetVerbose,
     ));
   }
 }
@@ -600,7 +600,7 @@ class _$AssetStateSuccessImpl implements _AssetStateSuccess {
   const _$AssetStateSuccessImpl(this.asset);
 
   @override
-  final Asset asset;
+  final AssetVerbose asset;
 
   @override
   String toString() {
@@ -630,7 +630,7 @@ class _$AssetStateSuccessImpl implements _AssetStateSuccess {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(Asset asset) success,
+    required TResult Function(AssetVerbose asset) success,
     required TResult Function(String error) error,
   }) {
     return success(asset);
@@ -641,7 +641,7 @@ class _$AssetStateSuccessImpl implements _AssetStateSuccess {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(Asset asset)? success,
+    TResult? Function(AssetVerbose asset)? success,
     TResult? Function(String error)? error,
   }) {
     return success?.call(asset);
@@ -652,7 +652,7 @@ class _$AssetStateSuccessImpl implements _AssetStateSuccess {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(Asset asset)? success,
+    TResult Function(AssetVerbose asset)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -701,9 +701,10 @@ class _$AssetStateSuccessImpl implements _AssetStateSuccess {
 }
 
 abstract class _AssetStateSuccess implements AssetState {
-  const factory _AssetStateSuccess(final Asset asset) = _$AssetStateSuccessImpl;
+  const factory _AssetStateSuccess(final AssetVerbose asset) =
+      _$AssetStateSuccessImpl;
 
-  Asset get asset;
+  AssetVerbose get asset;
   @JsonKey(ignore: true)
   _$$AssetStateSuccessImplCopyWith<_$AssetStateSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -776,7 +777,7 @@ class _$AssetStateErrorImpl implements _AssetStateError {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(Asset asset) success,
+    required TResult Function(AssetVerbose asset) success,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -787,7 +788,7 @@ class _$AssetStateErrorImpl implements _AssetStateError {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(Asset asset)? success,
+    TResult? Function(AssetVerbose asset)? success,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -798,7 +799,7 @@ class _$AssetStateErrorImpl implements _AssetStateError {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(Asset asset)? success,
+    TResult Function(AssetVerbose asset)? success,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {

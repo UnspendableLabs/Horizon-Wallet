@@ -1185,6 +1185,25 @@ class EventCount {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Asset {
+  final String asset;
+  final String assetLongname;
+  final String description;
+  final String? issuer;
+  final bool divisible;
+  final bool locked;
+  const Asset({
+    required this.asset,
+    required this.assetLongname,
+    required this.description,
+    required this.divisible,
+    required this.locked,
+    this.issuer, // TODO: validate shape
+  });
+  factory Asset.fromJson(Map<String, dynamic> json) => _$AssetFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetVerbose {
   final String? asset;
   final String? assetLongname;
   final String? description;
@@ -1196,7 +1215,7 @@ class Asset {
   final bool? confirmed;
   final String? supplyNormalized;
 
-  const Asset({
+  const AssetVerbose({
     this.asset,
     this.assetLongname,
     this.description,
@@ -1208,7 +1227,8 @@ class Asset {
     this.confirmed,
     this.supplyNormalized,
   });
-  factory Asset.fromJson(Map<String, dynamic> json) => _$AssetFromJson(json);
+  factory AssetVerbose.fromJson(Map<String, dynamic> json) =>
+      _$AssetVerboseFromJson(json);
 }
 
 // @JsonSerializable(fieldRename: FieldRename.snake)
@@ -2824,12 +2844,20 @@ abstract class V2Api {
     @Query("limit") int? limit,
   ]);
 
-  @GET("/addresses/{address}/assets")
-  Future<Response<List<Asset>>> getValidAssetsByIssuer(
-    // ?named}{&cursor}{&limit}{&offset}{&verbose}{&show_unconfirmed}
+  @GET("/addresses/{address}/assets/owned")
+  Future<Response<List<Asset>>> getValidAssetsByOwner(
     @Path("address") String address, [
     @Query("named") String? named,
-    @Query("verbose") bool? verbose,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+  ]);
+
+  @GET("/addresses/{address}/assets/owned?verbose=true")
+  Future<Response<List<AssetVerbose>>> getValidAssetsByOwnerVerbose(
+    @Path("address") String address, [
+    @Query("named") String? named,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,
@@ -2994,13 +3022,16 @@ abstract class V2Api {
   //     Compose Sweep
   // Assets
   //     Get Valid Assets
-  @GET("/assets/{asset}?verbose=true")
+
+  @GET("/assets/{asset}")
   Future<Response<Asset>> getAsset(@Path("asset") String asset);
 
-  @GET("/assets/{asset}/balances/{address}?verbose=true")
+  @GET("/assets/{asset}?verbose=true")
+  Future<Response<AssetVerbose>> getAssetVerbose(@Path("asset") String asset);
+  @GET("/addresses/{address}/balances/{asset}?verbose=true")
   Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
-    @Path("asset") String asset,
     @Path("address") String address,
+    @Path("asset") String asset,
   );
 
   //     Get Asset Info

@@ -1075,6 +1075,24 @@ Map<String, dynamic> _$EventCountToJson(EventCount instance) =>
     };
 
 Asset _$AssetFromJson(Map<String, dynamic> json) => Asset(
+      asset: json['asset'] as String,
+      assetLongname: json['asset_longname'] as String,
+      description: json['description'] as String,
+      divisible: json['divisible'] as bool,
+      locked: json['locked'] as bool,
+      issuer: json['issuer'] as String?,
+    );
+
+Map<String, dynamic> _$AssetToJson(Asset instance) => <String, dynamic>{
+      'asset': instance.asset,
+      'asset_longname': instance.assetLongname,
+      'description': instance.description,
+      'issuer': instance.issuer,
+      'divisible': instance.divisible,
+      'locked': instance.locked,
+    };
+
+AssetVerbose _$AssetVerboseFromJson(Map<String, dynamic> json) => AssetVerbose(
       asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
       description: json['description'] as String?,
@@ -1087,7 +1105,8 @@ Asset _$AssetFromJson(Map<String, dynamic> json) => Asset(
       supplyNormalized: json['supply_normalized'] as String?,
     );
 
-Map<String, dynamic> _$AssetToJson(Asset instance) => <String, dynamic>{
+Map<String, dynamic> _$AssetVerboseToJson(AssetVerbose instance) =>
+    <String, dynamic>{
       'asset': instance.asset,
       'asset_longname': instance.assetLongname,
       'description': instance.description,
@@ -3105,10 +3124,9 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<List<Asset>>> getValidAssetsByIssuer(
+  Future<Response<List<Asset>>> getValidAssetsByOwner(
     String address, [
     String? named,
-    bool? verbose,
     CursorModel? cursor,
     int? limit,
     int? offset,
@@ -3117,7 +3135,6 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'named': named,
-      r'verbose': verbose,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
@@ -3134,7 +3151,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/addresses/${address}/assets',
+              '/addresses/${address}/assets/owned',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -3148,6 +3165,55 @@ class _V2Api implements V2Api {
       (json) => json is List<dynamic>
           ? json
               .map<Asset>((i) => Asset.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<AssetVerbose>>> getValidAssetsByOwnerVerbose(
+    String address, [
+    String? named,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+    bool? showUnconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'named': named,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+      r'show_unconfirmed': showUnconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<AssetVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/assets/owned?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<AssetVerbose>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<AssetVerbose>(
+                  (i) => AssetVerbose.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
     );
@@ -3400,7 +3466,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/assets/${asset}?verbose=true',
+              '/assets/${asset}',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -3417,9 +3483,39 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<AssetVerbose>> getAssetVerbose(String asset) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<AssetVerbose>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/assets/${asset}?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<AssetVerbose>.fromJson(
+      _result.data!,
+      (json) => AssetVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
-    String asset,
     String address,
+    String asset,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -3433,7 +3529,7 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/assets/${asset}/balances/${address}?verbose=true',
+              '/addresses/${address}/balances/${asset}?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )

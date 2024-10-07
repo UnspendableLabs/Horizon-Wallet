@@ -7,8 +7,8 @@ class AssetRepositoryImpl implements AssetRepository {
   final V2Api api;
   AssetRepositoryImpl({required this.api});
   @override
-  Future<a.Asset> getAsset(String uuid) async {
-    final response = await api.getAsset(uuid);
+  Future<a.AssetVerbose> getAssetVerbose(String uuid) async {
+    final response = await api.getAssetVerbose(uuid);
 
     if (response.result == null) {
       throw Exception('Asset not found');
@@ -16,7 +16,7 @@ class AssetRepositoryImpl implements AssetRepository {
 
     final asset = response.result!;
 
-    return a.Asset(
+    return a.AssetVerbose(
         asset: asset.asset,
         assetLongname: asset.assetLongname,
         divisible: asset.divisible,
@@ -29,8 +29,9 @@ class AssetRepositoryImpl implements AssetRepository {
   }
 
   @override
-  Future<List<a.Asset>> getValidAssetsByIssuer(String address) async {
-    final response = await api.getValidAssetsByIssuer(address);
+  Future<List<a.AssetVerbose>> getValidAssetsByOwnerVerbose(
+      String address) async {
+    final response = await api.getValidAssetsByOwnerVerbose(address);
 
     if (response.result == null) {
       return [];
@@ -39,7 +40,7 @@ class AssetRepositoryImpl implements AssetRepository {
     final assets = response.result!;
 
     return assets
-        .map((result) => a.Asset(
+        .map((result) => a.AssetVerbose(
             asset: result.asset,
             assetLongname: result.assetLongname,
             divisible: result.divisible,
