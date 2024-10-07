@@ -7,7 +7,6 @@ import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
@@ -18,8 +17,8 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/usecase/get_fee_estimates.dart';
-import 'package:horizon/domain/usecase/get_max_send_quantity.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
@@ -54,25 +53,25 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   final AddressService addressService;
   final TransactionRepository transactionRepository;
   final TransactionLocalRepository transactionLocalRepository;
-  final BitcoinRepository bitcoinRepository;
   final AnalyticsService analyticsService;
+  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
 
-  ComposeSendBloc({
-    required this.addressRepository,
-    required this.balanceRepository,
-    required this.composeRepository,
-    required this.utxoRepository,
-    required this.transactionService,
-    required this.bitcoindService,
-    required this.accountRepository,
-    required this.walletRepository,
-    required this.encryptionService,
-    required this.addressService,
-    required this.transactionRepository,
-    required this.transactionLocalRepository,
-    required this.bitcoinRepository,
-    required this.analyticsService,
-  }) : super(ComposeSendState(
+  ComposeSendBloc(
+      {required this.addressRepository,
+      required this.balanceRepository,
+      required this.composeRepository,
+      required this.utxoRepository,
+      required this.transactionService,
+      required this.bitcoindService,
+      required this.accountRepository,
+      required this.walletRepository,
+      required this.encryptionService,
+      required this.addressService,
+      required this.transactionRepository,
+      required this.transactionLocalRepository,
+      required this.analyticsService,
+      required this.getFeeEstimatesUseCase})
+      : super(ComposeSendState(
           feeOption: FeeOption.Medium(),
           submitState: const SubmitInitial(),
           feeState: const FeeState.initial(),
@@ -242,10 +241,9 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       return;
     }
     try {
-      feeEstimates = await GetFeeEstimates(
+      feeEstimates = await getFeeEstimatesUseCase.call(
         targets: (1, 3, 6),
-        bitcoindService: bitcoindService,
-      ).call();
+      );
     } catch (e) {
       emit(state.copyWith(
           feeState: FeeState.error(e.toString()),

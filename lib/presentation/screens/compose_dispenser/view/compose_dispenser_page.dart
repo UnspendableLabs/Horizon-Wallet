@@ -9,29 +9,21 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/services/bitcoind_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 class ComposeDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -48,20 +40,15 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeDispenserBloc(
-          bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+          writelocalTransactionUseCase:
+              GetIt.I.get<WriteLocalTransactionUseCase>(),
+          signAndBroadcastTransactionUseCase:
+              GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
+          composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
+          fetchDispenserFormDataUseCase:
+              GetIt.I.get<FetchDispenserFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
-          addressRepository: GetIt.I.get<AddressRepository>(),
-          balanceRepository: GetIt.I.get<BalanceRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-          utxoRepository: GetIt.I.get<UtxoRepository>(),
-          accountRepository: GetIt.I.get<AccountRepository>(),
-          walletRepository: GetIt.I.get<WalletRepository>(),
-          encryptionService: GetIt.I.get<EncryptionService>(),
-          addressService: GetIt.I.get<AddressService>(),
-          transactionService: GetIt.I.get<TransactionService>(),
-          bitcoindService: GetIt.I.get<BitcoindService>(),
-          transactionRepository: GetIt.I.get<TransactionRepository>(),
-          transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeDispenserPage(
           address: state.currentAddress,
@@ -97,8 +84,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   String? asset;
   Balance? balance_;
 
-  final balanceRepository = GetIt.I.get<BalanceRepository>();
-
   @override
   void initState() {
     super.initState();
@@ -130,9 +115,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   }
 
   void _handleInitialCancel() {
-    context
-        .read<ComposeDispenserBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    Navigator.of(context).pop();
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
@@ -186,6 +169,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     return state.balancesState.maybeWhen(
         orElse: () => const AssetDropdownLoading(),
         success: (balances) {
+          // the problem is here, somehow balances is being reset
+          // to a single balance...
+
           if (balances.isEmpty) {
             return const HorizonUI.HorizonTextFormField(
               enabled: false,
@@ -204,31 +190,37 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           return SizedBox(
             height: 48,
             child: AssetDropdown(
+              key: const Key('asset_dropdown'),
               loading: loading,
               asset: asset,
               controller: assetController,
               balances: balances,
               onSelected: (String? value) {
-                Balance? balance =
-                    _getBalanceForSelectedAsset(balances, value!);
-
-                if (balance == null) {
-                  throw Exception("No balance found for selected asset");
-                }
-
-                setState(() {
-                  asset = value;
-                  balance_ = balance;
-                  giveQuantityController.text = '';
-                });
-
-                context
-                    .read<ComposeDispenserBloc>()
-                    .add(ChangeAsset(asset: value, balance: balance));
+                _onAssetChanged(value, balances);
               },
             ),
           );
         });
+  }
+
+  void _onAssetChanged(String? value, List<Balance> balances) {
+    Balance? balance = _getBalanceForSelectedAsset(balances, value!);
+
+    if (balance == null) throw Exception("No balance found for selected asset");
+
+    setState(() {
+      asset = value;
+      balance_ = balance;
+
+      // Reset the input fields
+      giveQuantityController.clear();
+      escrowQuantityController.clear();
+      mainchainrateController.clear();
+    });
+
+    context
+        .read<ComposeDispenserBloc>()
+        .add(ChangeAsset(asset: value, balance: balance));
   }
 
   Widget _buildGiveQuantityInput(ComposeDispenserState state,
@@ -269,7 +261,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       /* void Function() handleInitialSubmit, */ bool loading) {
     return Stack(
       children: [
+        Text(
+            "balance is divisible ${balance?.asset} ${balance?.assetInfo.divisible}"),
         HorizonUI.HorizonTextFormField(
+          key: Key('give_quantity_input_${balance?.asset}'),
           controller: giveQuantityController,
           enabled: !loading,
           onChanged: (value) {
@@ -351,6 +346,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   Widget _buildEscrowQuantityInputField(
       ComposeDispenserState state, Balance? balance, bool loading) {
     return HorizonUI.HorizonTextFormField(
+      key: Key('escrow_quantity_input_${balance?.asset}'),
       controller: escrowQuantityController,
       enabled: !loading,
       onChanged: (value) {
@@ -382,7 +378,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         // Check if the escrow quantity is greater than or equal to the give quantity
 
         if (giveQuantity != null && escrowQuantity < giveQuantity) {
-          return 'Escrow quantity must be greater than or equal to give quantity';
+          return 'escrow quantity must be greater than or equal to give quantity';
         }
 
         setState(() {
@@ -416,6 +412,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   Widget _buildPricePerUnitInput(bool loading) {
     return HorizonUI.HorizonTextFormField(
+      key: const Key('price_per_unit_input'),
       controller: mainchainrateController,
       label: 'Price Per Unit (BTC)',
       enabled: !loading,
@@ -435,7 +432,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    final params = (composeTransaction as ComposeDispenserVerbose).params;
+    final params =
+        (composeTransaction as ComposeDispenserResponseVerbose).params;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -476,7 +474,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenserBloc>().add(
-            FinalizeTransactionEvent<ComposeDispenserVerbose>(
+            FinalizeTransactionEvent<ComposeDispenserResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),

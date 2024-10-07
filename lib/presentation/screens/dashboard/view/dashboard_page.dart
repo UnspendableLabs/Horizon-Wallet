@@ -705,8 +705,8 @@ class BalancesSliverState extends State<BalancesSliver> {
 
           final currentAsset =
               assets.firstWhereOrNull((asset) => asset.asset == entry.key);
-          final bool isOwner = currentAsset?.owner ==
-              widget.currentAddress.address;
+          final bool isOwner =
+              currentAsset?.owner == widget.currentAddress.address;
 
           return [
             Padding(

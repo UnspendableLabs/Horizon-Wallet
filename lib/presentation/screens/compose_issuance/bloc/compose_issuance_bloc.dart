@@ -23,9 +23,8 @@ import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadca
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:logger/logger.dart';
 
 class ComposeIssuanceEventParams {
@@ -60,8 +59,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   final BitcoindService bitcoindService;
   final TransactionRepository transactionRepository;
   final TransactionLocalRepository transactionLocalRepository;
-  final BitcoinRepository bitcoinRepository;
   final AnalyticsService analyticsService;
+  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
 
   ComposeIssuanceBloc({
     required this.addressRepository,
@@ -76,8 +75,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     required this.bitcoindService,
     required this.transactionRepository,
     required this.transactionLocalRepository,
-    required this.bitcoinRepository,
     required this.analyticsService,
+    required this.getFeeEstimatesUseCase,
   }) : super(ComposeIssuanceState(
             submitState: const SubmitInitial(),
             feeOption: FeeOption.Medium(),
@@ -127,10 +126,9 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     }
 
     try {
-      feeEstimates = await GetFeeEstimates(
+      feeEstimates = await getFeeEstimatesUseCase.call(
         targets: (1, 3, 6),
-        bitcoindService: bitcoindService,
-      ).call();
+      );
     } catch (e) {
       emit(state.copyWith(feeState: FeeState.error(e.toString())));
       return;
@@ -144,7 +142,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    await composeTransaction<ComposeIssuanceVerbose, ComposeIssuanceState>(
+    await composeTransaction<ComposeIssuanceResponseVerbose,
+            ComposeIssuanceState>(
         state: state,
         emit: emit,
         event: event,
@@ -195,7 +194,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeIssuanceVerbose>(
+        submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -206,7 +205,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    await signAndBroadcastTransaction<ComposeIssuanceVerbose,
+    await signAndBroadcastTransaction<ComposeIssuanceResponseVerbose,
             ComposeIssuanceState>(
         state: state,
         emit: emit,
@@ -225,9 +224,9 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
         analyticsService: analyticsService,
         logger: logger,
         extractParams: () {
-          final issuanceParams =
-              (state.submitState as SubmitFinalizing<ComposeIssuanceVerbose>)
-                  .composeTransaction;
+          final issuanceParams = (state.submitState
+                  as SubmitFinalizing<ComposeIssuanceResponseVerbose>)
+              .composeTransaction;
           final source = issuanceParams.params.source;
           final rawTx = issuanceParams.rawtransaction;
           final destination =

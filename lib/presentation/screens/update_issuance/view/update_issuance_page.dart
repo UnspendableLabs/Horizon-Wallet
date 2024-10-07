@@ -30,6 +30,7 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class UpdateIssuancePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -65,6 +66,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
           transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
           bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
         )..add(FetchFormData(
             assetName: assetName, currentAddress: state.currentAddress)),
         child: UpdateIssuancePage(
@@ -147,7 +149,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             onFinalizeSubmit: (password, formKey) => {},
             onFinalizeCancel: () => {},
           ),
-
           success: (originalAsset) {
             return ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
               address: widget.address,
@@ -572,7 +573,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
 
   List<Widget> _buildConfirmationDetails(
       dynamic composeTransaction, AssetVerbose originalAsset) {
-    final params = (composeTransaction as ComposeIssuanceVerbose).params;
+    final params =
+        (composeTransaction as ComposeIssuanceResponseVerbose).params;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -706,7 +708,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<UpdateIssuanceBloc>().add(
-            FinalizeTransactionEvent<ComposeIssuanceVerbose>(
+            FinalizeTransactionEvent<ComposeIssuanceResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
