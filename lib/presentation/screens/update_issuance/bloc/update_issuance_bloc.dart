@@ -32,7 +32,6 @@ import 'package:logger/logger.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
   final IssuanceActionType issuanceActionType;
-  // final String? longName;
 
   UpdateIssuanceEventParams({
     required super.name,
@@ -42,7 +41,6 @@ class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
     required super.lock,
     required super.reset,
     required this.issuanceActionType,
-    // this.longName,
   });
 }
 
@@ -86,9 +84,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
           assetState: const AssetState.initial(),
-        )) {
-    // Event handlers specific to issuance
-  }
+        ));
 
   @override
   void onChangeFeeOption(ChangeFeeOption event, emit) async {
@@ -118,8 +114,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       emit(state.copyWith(assetState: AssetState.error(e.toString())));
       return;
     }
-
-    // TODO: use this instead
 
     try {
       balance = await balanceRepository.getBalanceForAddressAndAssetVerbose(
@@ -158,12 +152,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         logger: logger,
         transactionHandler: (inputsSet, feeRate) async {
           final issuanceParams = event.params;
-          print('event.sourceAddress: ${event.sourceAddress}');
-          print('issuanceParams.quantity: ${issuanceParams.quantity}');
-          print('issuanceParams.divisible: ${issuanceParams.divisible}');
-          print('issuanceParams.lock: ${issuanceParams.lock}');
-          print('issuanceParams.reset: ${issuanceParams.reset}');
-          print('issuanceParams.description: ${issuanceParams.description}');
           // Dummy transaction to compute virtual size
           final issuance = await composeRepository.composeIssuanceVerbose(
             event.sourceAddress,

@@ -706,10 +706,7 @@ class BalancesSliverState extends State<BalancesSliver> {
           final currentAsset =
               assets.firstWhereOrNull((asset) => asset.asset == entry.key);
           final bool isOwner = currentAsset?.owner ==
-              context.read<ShellStateCubit>().state.maybeWhen(
-                    success: (state) => state.currentAddress.address,
-                    orElse: () => throw Exception("invariant: no address"),
-                  );
+              widget.currentAddress.address;
 
           return [
             Padding(

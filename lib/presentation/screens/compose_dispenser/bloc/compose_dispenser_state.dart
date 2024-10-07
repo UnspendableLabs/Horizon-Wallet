@@ -36,3 +36,4 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
         status: 0,
       );
 }
+

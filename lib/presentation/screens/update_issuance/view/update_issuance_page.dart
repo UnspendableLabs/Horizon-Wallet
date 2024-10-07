@@ -147,6 +147,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             onFinalizeSubmit: (password, formKey) => {},
             onFinalizeCancel: () => {},
           ),
+
           success: (originalAsset) {
             return ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
               address: widget.address,

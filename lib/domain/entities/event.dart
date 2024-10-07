@@ -592,6 +592,7 @@ class VerboseOpenDispenserParams extends OpenDispenserParams {
     required this.escrowQuantityNormalized,
     required this.satoshirateNormalized,
     // this.assetInfo
+
   });
 }
 
@@ -675,3 +676,4 @@ class VerboseRefillDispenserEvent extends VerboseEvent {
     required this.params,
   });
 }
+
