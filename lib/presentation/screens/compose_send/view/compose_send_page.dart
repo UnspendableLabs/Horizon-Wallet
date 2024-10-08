@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -35,11 +34,11 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Asset? selectedAsset;
+  final String? asset;
 
   const ComposeSendPageWrapper({
     required this.dashboardActivityFeedBloc,
-    this.selectedAsset,
+    this.asset,
     super.key,
   });
 
@@ -68,7 +67,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
         child: ComposeSendPage(
           address: state.currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-          selectedAsset: selectedAsset,
+          asset: asset,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -79,12 +78,12 @@ class ComposeSendPageWrapper extends StatelessWidget {
 class ComposeSendPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  final Asset? selectedAsset;
+  final String? asset;
   const ComposeSendPage({
     super.key,
     required this.dashboardActivityFeedBloc,
     required this.address,
-    this.selectedAsset,
+    this.asset,
   });
 
   @override
@@ -104,7 +103,10 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   void initState() {
     super.initState();
     fromAddressController.text = widget.address.address;
-    asset = widget.selectedAsset?.asset;
+    asset = widget.asset;
+    if (asset != null) {
+      context.read<ComposeSendBloc>().add(ChangeAsset(asset: asset!));
+    }
   }
 
   String _formatMaxValue(ComposeSendState state, int maxValue, String? asset) {
@@ -453,9 +455,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                   quantityController.text = '';
                 });
 
-                context
-                    .read<ComposeSendBloc>()
-                    .add(ChangeAsset(asset: value, balance: balance));
+                context.read<ComposeSendBloc>().add(ChangeAsset(asset: value));
               },
             ),
           );
@@ -501,51 +501,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   }
 }
 
-class AssetDropdownLoading extends StatelessWidget {
-  const AssetDropdownLoading({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(children: [
-      DropdownMenu(
-        expandedInsets: const EdgeInsets.all(0),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-        ),
-        initialSelection: "",
-        // enabled: false,
-        label: const Text('Asset'),
-        dropdownMenuEntries:
-            [const DropdownMenuEntry<String>(value: "", label: "")].toList(),
-        menuStyle: MenuStyle(
-          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-          ),
-          padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-            const EdgeInsets.symmetric(vertical: 8.0),
-          ),
-        ),
-      ),
-      const Positioned(
-        left: 12,
-        top: 0,
-        bottom: 0,
-        child: Center(
-          child: SizedBox(
-            width: 24.0,
-            height: 24.0,
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      ),
-    ]);
-  }
-}
-
-_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
+Balance? _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
   if (balances.isEmpty) {
     return null;
   }

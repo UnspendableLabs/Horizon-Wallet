@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -664,7 +665,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated, assets) {
+      ok: (balances, aggregated, ownedAssets) {
         if (balances.isEmpty) {
           return [
             const NoData(
@@ -703,10 +704,11 @@ class BalancesSliverState extends State<BalancesSliver> {
                   ? greyDashboardTextDarkTheme
                   : greyDashboardTextLightTheme);
 
-          final currentAsset =
-              assets.firstWhereOrNull((asset) => asset.asset == entry.key);
+          Asset? currentOwnedAsset =
+              ownedAssets.firstWhereOrNull((asset) => asset.asset == entry.key);
+
           final bool isOwner =
-              currentAsset?.owner == widget.currentAddress.address;
+              currentOwnedAsset?.owner == widget.currentAddress.address;
 
           return [
             Padding(
@@ -718,8 +720,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   Expanded(
                     child: SelectableText.rich(
                       TextSpan(
-                        text:
-                            '${entry.key != 'BTC' && entry.value.assetInfo.assetLongname != null ? entry.value.assetInfo.assetLongname : entry.key} ',
+                        text: entry.value.assetInfo.assetLongname ?? entry.key,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -750,7 +751,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                                 dashboardActivityFeedBloc:
                                     BlocProvider.of<DashboardActivityFeedBloc>(
                                         context),
-                                selectedAsset: currentAsset,
+                                asset: entry.key,
                               ),
                               includeBackButton: false,
                               includeCloseButton: true,
@@ -767,8 +768,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                               body: HorizonUI.HorizonDialog(
                                 title: "Update Issuance",
                                 body: UpdateIssuancePageWrapper(
-                                  assetName: currentAsset?.assetLongname ??
-                                      currentAsset?.asset ??
+                                  assetName: currentOwnedAsset?.assetLongname ??
+                                      currentOwnedAsset?.asset ??
                                       '',
                                   actionType: result,
                                   dashboardActivityFeedBloc: BlocProvider.of<
@@ -786,7 +787,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                               <PopupMenuEntry<IssuanceActionType>>[
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.reset,
-                              enabled: currentAsset?.locked != true,
+                              enabled: currentOwnedAsset?.locked != true,
                               child: const Text('Reset Asset'),
                             ),
                             // const PopupMenuItem<IssuanceActionType>(
@@ -795,17 +796,17 @@ class BalancesSliverState extends State<BalancesSliver> {
                             // ),
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.lockQuantity,
-                              enabled: currentAsset?.locked != true,
+                              enabled: currentOwnedAsset?.locked != true,
                               child: const Text('Lock Quantity'),
                             ),
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.changeDescription,
-                              enabled: currentAsset?.locked != true,
+                              enabled: currentOwnedAsset?.locked != true,
                               child: const Text('Change Description'),
                             ),
                             PopupMenuItem<IssuanceActionType>(
                               value: IssuanceActionType.issueMore,
-                              enabled: currentAsset?.locked != true,
+                              enabled: currentOwnedAsset?.locked != true,
                               child: const Text('Issue More'),
                             ),
                             const PopupMenuItem<IssuanceActionType>(

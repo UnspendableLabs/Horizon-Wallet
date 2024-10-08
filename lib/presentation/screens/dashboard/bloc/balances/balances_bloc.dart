@@ -114,10 +114,11 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final Map<String, Balance> aggregated =
           aggregateAndSortBalancesByAsset(balances);
 
-      final List<Asset> assets = await assetRepository
+      final List<Asset> ownedAssets = await assetRepository
           .getValidAssetsByOwnerVerbose(currentAddress.address);
 
-      emit(BalancesState.complete(Result.ok(balances, aggregated, assets)));
+      emit(
+          BalancesState.complete(Result.ok(balances, aggregated, ownedAssets)));
     } catch (e) {
       emit(BalancesState.complete(Result.error(
           "Error fetching balances for ${currentAddress.address}")));

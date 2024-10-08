@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
@@ -71,7 +72,6 @@ class _AssetDropdownState extends State<AssetDropdown> {
   void initState() {
     super.initState();
     orderedBalances = _orderBalances(widget.balances);
-    widget.controller.text = widget.asset ?? orderedBalances[0].asset;
   }
 
   List<Balance> _orderBalances(List<Balance> balances) {
@@ -91,17 +91,32 @@ class _AssetDropdownState extends State<AssetDropdown> {
     ];
   }
 
+  String _getDisplayString(String? asset) {
+    if (asset == null) return orderedBalances[0].asset;
+    final balance = orderedBalances.firstWhere((b) => b.asset == asset);
+    return balance.assetInfo.assetLongname ?? balance.asset;
+  }
+
+  String _getSelectedValue() {
+    if (widget.asset == null) return orderedBalances[0].asset;
+    return widget.asset!;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return HorizonUI.HorizonDropdownMenu(
+    return HorizonUI.HorizonDropdownMenu<String>(
       enabled: !widget.loading,
       controller: widget.controller,
       label: 'Asset',
       onChanged: widget.onSelected,
-      selectedValue: widget.asset ?? orderedBalances[0].asset,
+      selectedValue: _getSelectedValue(),
       items: orderedBalances.map<DropdownMenuItem<String>>((balance) {
-        return HorizonUI.buildDropdownMenuItem(balance.asset, balance.asset);
+        return HorizonUI.buildDropdownMenuItem(
+          balance.asset,
+          _getDisplayString(balance.asset),
+        );
       }).toList(),
+      displayStringForOption: _getDisplayString,
     );
   }
 }

@@ -518,8 +518,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(
-      GlobalKey<FormState> formKey, Asset originalAsset) {
+  void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset originalAsset) {
     String name = originalAsset.assetLongname ?? originalAsset.asset!;
     int quantity = originalAsset.supply!;
     String? description = originalAsset.description;
