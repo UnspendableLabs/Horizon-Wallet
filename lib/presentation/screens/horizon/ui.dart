@@ -300,30 +300,35 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
         enabled: enabled,
         labelText: label,
         floatingLabelBehavior: FloatingLabelBehavior.never,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide.none,
         ),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          isExpanded: true,
-          value: selectedValue ?? items.first.value,
-          onChanged: enabled ? onChanged : null,
-          items: items,
-          borderRadius: BorderRadius.circular(borderRadius ?? 10),
-          icon: icon,
-          selectedItemBuilder: (BuildContext context) {
-            return items.map<Widget>((DropdownMenuItem<T> item) {
-              return Text(
-                displayStringForOption?.call(item.value) ??
-                    item.value.toString(),
-                style: const TextStyle(overflow: TextOverflow.ellipsis),
-              );
-            }).toList();
-          },
+        child: ButtonTheme(
+          alignedDropdown: true,
+          child: DropdownButton<T>(
+            isExpanded: true,
+            value: selectedValue ?? items.first.value,
+            onChanged: enabled ? onChanged : null,
+            items: items,
+            borderRadius: BorderRadius.circular(borderRadius ?? 10),
+            icon: icon,
+            selectedItemBuilder: (BuildContext context) {
+              return items.map<Widget>((DropdownMenuItem<T> item) {
+                return Container(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    displayStringForOption?.call(item.value) ??
+                        item.value.toString(),
+                    style: const TextStyle(overflow: TextOverflow.ellipsis),
+                  ),
+                );
+              }).toList();
+            },
+          ),
         ),
       ),
     );
