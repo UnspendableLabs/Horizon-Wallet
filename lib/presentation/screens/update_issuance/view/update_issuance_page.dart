@@ -121,7 +121,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   late bool? isDivisible = null;
   // ignore: avoid_init_to_null
   late bool? isLocked = null;
-  // ignore: avoid_init_to_null
+
   late bool? isReset = false;
 
   @override
@@ -530,8 +530,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           quantity = _updateQuantity(
               isDivisible ?? originalAsset.divisible!, _quantityController);
           break;
-        // case IssuanceActionType.lockDescription:
-        //   break;
+        case IssuanceActionType.lockDescription:
+          description = 'lock_description';
+          break;
         case IssuanceActionType.lockQuantity:
           isLocked = true;
           break;
@@ -652,17 +653,37 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                 const SizedBox(height: 16),
                 HorizonUI.HorizonTextFormField(
                   label: "Description",
-                  controller: TextEditingController(text: params.description),
+                  controller: TextEditingController(
+                      text: widget.actionType ==
+                              IssuanceActionType.lockDescription
+                          ? originalAsset.description
+                          : params.description),
                   enabled: false,
                   textColor: params.description != originalAsset.description &&
-                          widget.actionType != IssuanceActionType.issueSubasset
+                          widget.actionType !=
+                              IssuanceActionType.issueSubasset &&
+                          widget.actionType !=
+                              IssuanceActionType.lockDescription
                       ? Colors.green
                       : null,
                 ),
               ],
             )
           : const SizedBox.shrink(),
-      const SizedBox(height: 16.0),
+      widget.actionType == IssuanceActionType.lockDescription
+          ? Column(
+              children: [
+                const SizedBox(height: 16),
+                HorizonUI.HorizonTextFormField(
+                  label: "Lock Description",
+                  controller: TextEditingController(text: 'true'),
+                  enabled: false,
+                  textColor: Colors.green,
+                ),
+              ],
+            )
+          : const SizedBox.shrink(),
+      const SizedBox(height: 16),
       HorizonUI.HorizonTextFormField(
         label: "Divisible",
         controller: TextEditingController(

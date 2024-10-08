@@ -828,10 +828,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                                         body: HorizonUI.HorizonDialog(
                                           title: "Update Issuance",
                                           body: UpdateIssuancePageWrapper(
-                                            assetName: currentOwnedAsset
-                                                    ?.assetLongname ??
-                                                currentOwnedAsset?.asset ??
-                                                '',
+                                            assetName:
+                                                currentOwnedAsset!.asset!,
                                             actionType: result,
                                             dashboardActivityFeedBloc: BlocProvider
                                                 .of<DashboardActivityFeedBloc>(
@@ -853,15 +851,16 @@ class BalancesSliverState extends State<BalancesSliver> {
                                             currentOwnedAsset?.locked != true,
                                         child: const Text('Reset Asset'),
                                       ),
-                                      // const PopupMenuItem<IssuanceActionType>(
-                                      //   value: IssuanceActionType.lockDescription,
-                                      //   child: Text('Lock Description'),
-                                      // ),
                                       PopupMenuItem<IssuanceActionType>(
                                         value: IssuanceActionType.lockQuantity,
                                         enabled:
                                             currentOwnedAsset?.locked != true,
                                         child: const Text('Lock Quantity'),
+                                      ),
+                                      const PopupMenuItem<IssuanceActionType>(
+                                        value:
+                                            IssuanceActionType.lockDescription,
+                                        child: Text('Lock Description'),
                                       ),
                                       PopupMenuItem<IssuanceActionType>(
                                         value: IssuanceActionType

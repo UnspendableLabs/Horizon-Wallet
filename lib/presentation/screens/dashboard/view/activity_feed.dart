@@ -220,17 +220,24 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
-    if (params.assetEvents != null &&
-        params.assetEvents!.isNotEmpty &&
-        params.assetEvents == "reissuance") {
-      return SelectableText("Reissue ${params.assetLongname ?? params.asset}");
-    } else if (params.asset == null || params.quantityNormalized == null) {
+    if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
+      if (params.assetEvents == "reissuance") {
+        return SelectableText(
+            "Reissue ${params.assetLongname ?? params.asset}");
+      } else if (params.assetEvents == "lock_quantity reissuance") {
+        return SelectableText(
+            "Lock Quantity for ${params.assetLongname ?? params.asset}");
+      } else if (params.assetEvents == "lock_description reissuance") {
+        return SelectableText(
+            "Lock Description for ${params.assetLongname ?? params.asset}");
+      }
+    }
+    if (params.asset == null || params.quantityNormalized == null) {
       return const SelectableText('Issue (INVALID)',
           style: TextStyle(color: redErrorText));
-    } else {
-      return SelectableText(
-          "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}");
     }
+    return SelectableText(
+        "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}");
   }
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {

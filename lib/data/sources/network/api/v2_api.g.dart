@@ -3027,7 +3027,6 @@ class _V2Api implements V2Api {
     bool? unconfirmed,
     int? fee,
     String? inputsSet,
-    bool? lockDescription,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -3041,7 +3040,6 @@ class _V2Api implements V2Api {
       r'unconfirmed': unconfirmed,
       r'exact_fee': fee,
       r'inputs_set': inputsSet,
-      r'lock_description': lockDescription,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
