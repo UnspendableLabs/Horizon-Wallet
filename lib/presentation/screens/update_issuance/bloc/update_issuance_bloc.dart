@@ -153,7 +153,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         transactionService: transactionService,
         logger: logger,
         transactionHandler: (inputsSet, feeRate) async {
-          print('destination: ${event.params.destination}');
           final issuanceParams = event.params;
           // Dummy transaction to compute virtual size
           final issuance = await composeRepository.composeIssuanceVerbose(
@@ -169,8 +168,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
             1,
             inputsSet,
           );
-
-          print('issuance: ${issuance.params.transferDestination}');
 
           final virtualSize =
               transactionService.getVirtualSize(issuance.rawtransaction);
@@ -191,8 +188,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
             inputsSet,
           );
 
-          print(
-              'composeTransaction: ${composeTransaction.params.transferDestination}');
           return (composeTransaction, virtualSize);
         });
   }
@@ -239,8 +234,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
               issuanceParams.params.transferDestination ?? source;
           final quantity = issuanceParams.params.quantity;
           final asset = issuanceParams.params.asset;
-
-          print('DESCRIPTION: $destination');
 
           return (source, rawTx, destination, quantity, asset);
         },

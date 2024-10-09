@@ -365,7 +365,7 @@ class AssetIssuanceParams {
   // final bool reset;
   final String source;
   // final String status;
-  // final bool transfer;
+  final bool transfer;
   // final String txHash;
   // final int txIndex;
 
@@ -386,7 +386,7 @@ class AssetIssuanceParams {
     // required this.reset,
     required this.source,
     // required this.status,
-    // required this.transfer,
+    required this.transfer,
     // required this.txHash,
     // required this.txIndex,
   });
@@ -419,19 +419,6 @@ class ResetIssuanceEvent extends Event {
   });
 }
 
-class AssetTransferEvent extends Event {
-  final AssetIssuanceParams params;
-
-  const AssetTransferEvent({
-    required super.state,
-    required super.eventIndex,
-    required super.event,
-    required super.txHash,
-    required super.blockIndex,
-    required this.params,
-  });
-}
-
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
   final int? blockTime;
   final String? quantityNormalized;
@@ -452,7 +439,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.reset,
     required super.source,
     // required super.status,
-    // required super.transfer,
+    required super.transfer,
     // required super.txHash,
     // required super.txIndex,
     required this.blockTime,
@@ -478,19 +465,6 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
 class VerboseResetIssuanceEvent extends VerboseEvent {
   final VerboseAssetIssuanceParams params;
   const VerboseResetIssuanceEvent({
-    required super.state,
-    required super.eventIndex,
-    required super.event,
-    required super.txHash,
-    required super.blockIndex,
-    required super.blockTime,
-    required this.params,
-  });
-}
-
-class VerboseAssetTransferEvent extends VerboseEvent {
-  final VerboseAssetIssuanceParams params;
-  const VerboseAssetTransferEvent({
     required super.state,
     required super.eventIndex,
     required super.event,

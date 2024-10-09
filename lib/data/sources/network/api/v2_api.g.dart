@@ -419,6 +419,7 @@ AssetIssuanceParams _$AssetIssuanceParamsFromJson(Map<String, dynamic> json) =>
       assetEvents: json['asset_events'] as String,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
+      transfer: json['transfer'] as bool,
     );
 
 Map<String, dynamic> _$AssetIssuanceParamsToJson(
@@ -429,6 +430,7 @@ Map<String, dynamic> _$AssetIssuanceParamsToJson(
       'asset_events': instance.assetEvents,
       'quantity': instance.quantity,
       'source': instance.source,
+      'transfer': instance.transfer,
     };
 
 VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
@@ -439,6 +441,7 @@ VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
       assetEvents: json['asset_events'] as String,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
+      transfer: json['transfer'] as bool,
       blockTime: (json['block_time'] as num?)?.toInt(),
       quantityNormalized: json['quantity_normalized'] as String?,
       feePaidNormalized: json['fee_paid_normalized'] as String,
@@ -452,6 +455,7 @@ Map<String, dynamic> _$VerboseAssetIssuanceParamsToJson(
       'asset_events': instance.assetEvents,
       'quantity': instance.quantity,
       'source': instance.source,
+      'transfer': instance.transfer,
       'block_time': instance.blockTime,
       'quantity_normalized': instance.quantityNormalized,
       'fee_paid_normalized': instance.feePaidNormalized,
@@ -468,25 +472,6 @@ ResetIssuanceEvent _$ResetIssuanceEventFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$ResetIssuanceEventToJson(ResetIssuanceEvent instance) =>
-    <String, dynamic>{
-      'event_index': instance.eventIndex,
-      'event': instance.event,
-      'tx_hash': instance.txHash,
-      'block_index': instance.blockIndex,
-      'params': instance.params,
-    };
-
-AssetTransferEvent _$AssetTransferEventFromJson(Map<String, dynamic> json) =>
-    AssetTransferEvent(
-      eventIndex: (json['event_index'] as num?)?.toInt(),
-      event: json['event'] as String,
-      txHash: json['tx_hash'] as String?,
-      blockIndex: (json['block_index'] as num?)?.toInt(),
-      params:
-          AssetIssuanceParams.fromJson(json['params'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$AssetTransferEventToJson(AssetTransferEvent instance) =>
     <String, dynamic>{
       'event_index': instance.eventIndex,
       'event': instance.event,
@@ -570,29 +555,6 @@ VerboseResetIssuanceEvent _$VerboseResetIssuanceEventFromJson(
 
 Map<String, dynamic> _$VerboseResetIssuanceEventToJson(
         VerboseResetIssuanceEvent instance) =>
-    <String, dynamic>{
-      'event_index': instance.eventIndex,
-      'event': instance.event,
-      'tx_hash': instance.txHash,
-      'block_index': instance.blockIndex,
-      'block_time': instance.blockTime,
-      'params': instance.params,
-    };
-
-VerboseAssetTransferEvent _$VerboseAssetTransferEventFromJson(
-        Map<String, dynamic> json) =>
-    VerboseAssetTransferEvent(
-      eventIndex: (json['event_index'] as num?)?.toInt(),
-      event: json['event'] as String,
-      txHash: json['tx_hash'] as String?,
-      blockIndex: (json['block_index'] as num?)?.toInt(),
-      blockTime: (json['block_time'] as num?)?.toInt(),
-      params: VerboseAssetIssuanceParams.fromJson(
-          json['params'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$VerboseAssetTransferEventToJson(
-        VerboseAssetTransferEvent instance) =>
     <String, dynamic>{
       'event_index': instance.eventIndex,
       'event': instance.event,

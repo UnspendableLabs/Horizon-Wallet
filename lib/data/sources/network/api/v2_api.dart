@@ -242,8 +242,6 @@ class Event {
         return AssetIssuanceEvent.fromJson(json);
       case 'RESET_ISSUANCE':
         return ResetIssuanceEvent.fromJson(json);
-      // case 'ASSET_TRANSFER':
-      //   return AssetTransferEvent.fromJson(json);
       case 'DISPENSE':
         return DispenseEvent.fromJson(json);
       case 'OPEN_DISPENSER':
@@ -476,7 +474,7 @@ class AssetIssuanceParams {
   // final bool reset;
   final String source;
   // final String status;
-  // final bool transfer;
+  final bool transfer;
   // final String txHash;
   // final int txIndex;
 
@@ -497,7 +495,7 @@ class AssetIssuanceParams {
     // required this.reset,
     required this.source,
     // required this.status,
-    // required this.transfer,
+    required this.transfer,
     // required this.txHash,
     // required this.txIndex,
   });
@@ -526,7 +524,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.reset,
     required super.source,
     // required super.status,
-    // required super.transfer,
+    required super.transfer,
     // required super.txHash,
     // required super.txIndex,
     required this.blockTime,
@@ -553,22 +551,6 @@ class ResetIssuanceEvent extends Event {
 
   factory ResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
       _$ResetIssuanceEventFromJson(json);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AssetTransferEvent extends Event {
-  final AssetIssuanceParams params;
-
-  AssetTransferEvent({
-    required super.eventIndex,
-    required super.event,
-    required super.txHash,
-    required super.blockIndex,
-    required this.params,
-  });
-
-  factory AssetTransferEvent.fromJson(Map<String, dynamic> json) =>
-      _$AssetTransferEventFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -637,23 +619,6 @@ class VerboseResetIssuanceEvent extends VerboseEvent {
 
   factory VerboseResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
       _$VerboseResetIssuanceEventFromJson(json);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class VerboseAssetTransferEvent extends VerboseEvent {
-  final VerboseAssetIssuanceParams params;
-
-  VerboseAssetTransferEvent({
-    required super.eventIndex,
-    required super.event,
-    required super.txHash,
-    required super.blockIndex,
-    required super.blockTime,
-    required this.params,
-  });
-
-  factory VerboseAssetTransferEvent.fromJson(Map<String, dynamic> json) =>
-      _$VerboseAssetTransferEventFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1145,8 +1110,6 @@ class VerboseEvent extends Event {
         return VerboseRefillDispenserEvent.fromJson(json);
       case 'RESET_ISSUANCE':
         return VerboseResetIssuanceEvent.fromJson(json);
-      // case 'ASSET_TRANSFER':
-      //   return VerboseAssetTransferEvent.fromJson(json);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEvent.fromJson(json);
       default:

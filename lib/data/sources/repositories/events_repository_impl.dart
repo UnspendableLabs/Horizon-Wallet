@@ -44,9 +44,6 @@ class EventMapper {
       case "RESET_ISSUANCE":
         return ResetIssuanceEventMapper.toDomain(
             apiEvent as api.ResetIssuanceEvent);
-      // case "ASSET_TRANSFER":
-      //   return AssetTransferEventMapper.toDomain(
-      // apiEvent as api.AssetTransferEvent);
       case "ASSET_CREATION":
         return AssetIssuanceEventMapper.toDomain(
             apiEvent as api.AssetIssuanceEvent);
@@ -96,10 +93,6 @@ class VerboseEventMapper {
       case "RESET_ISSUANCE":
         return VerboseResetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseResetIssuanceEvent);
-
-      // case "ASSET_TRANSFER":
-      //   return VerboseAssetTransferEventMapper.toDomain(
-      //       apiEvent as api.VerboseAssetTransferEvent);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
@@ -319,20 +312,6 @@ class ResetIssuanceEventMapper {
   }
 }
 
-class AssetTransferEventMapper {
-  static AssetTransferEvent toDomain(api.AssetTransferEvent apiEvent) {
-    return AssetTransferEvent(
-      state: StateMapper.get(apiEvent),
-      event: "ASSET_TRANSFER",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      // confirmed: apiEvent.confirmed,
-      params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
 class AssetIssuanceEventMapper {
   static AssetIssuanceEvent toDomain(api.AssetIssuanceEvent apiEvent) {
     return AssetIssuanceEvent(
@@ -366,7 +345,7 @@ class AssetIssuanceParamsMapper {
       // reset: apiParams.reset,
       source: apiParams.source,
       // status: apiParams.status,
-      // transfer: apiParams.transfer,
+      transfer: apiParams.transfer,
       // txHash: apiParams.txHash,
       // txIndex: apiParams.txIndex,
     );
@@ -408,23 +387,6 @@ class VerboseResetIssuanceEventMapper {
   }
 }
 
-class VerboseAssetTransferEventMapper {
-  static VerboseAssetTransferEvent toDomain(
-      api.VerboseAssetTransferEvent apiEvent) {
-    final x = VerboseAssetTransferEvent(
-      state: StateMapper.getVerbose(apiEvent),
-      event: "ASSET_TRANSFER",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      blockTime: apiEvent.blockTime,
-      params: VerboseAssetIssuanceParamsMapper.toDomain(apiEvent.params),
-    );
-
-    return x;
-  }
-}
-
 class VerboseAssetIssuanceParamsMapper {
   static VerboseAssetIssuanceParams toDomain(
       api.VerboseAssetIssuanceParams apiParams) {
@@ -445,7 +407,7 @@ class VerboseAssetIssuanceParamsMapper {
       // reset: apiParams.reset,
       source: apiParams.source,
       // status: apiParams.status,
-      // transfer: apiParams.transfer,
+      transfer: apiParams.transfer,
       // txHash: apiParams.txHash,
       // txIndex: apiParams.txIndex,
       blockTime: apiParams.blockTime,

@@ -590,8 +590,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           print("Invalid case");
       }
 
-      print('DESTINATION>>>>> $destinationAddress');
-
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: UpdateIssuanceEventParams(

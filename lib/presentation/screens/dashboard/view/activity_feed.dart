@@ -208,8 +208,6 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildAssetIssuanceTitle(params),
       VerboseResetIssuanceEvent(params: var params) => SelectableText(
           "Reset Issuance ${params.assetLongname ?? params.asset}"),
-      VerboseAssetTransferEvent(params: var params) => SelectableText(
-          "Transfer Ownership of ${params.assetLongname ?? params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       VerboseOpenDispenserEvent(params: var params) =>
@@ -222,6 +220,10 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
+    if (params.transfer) {
+      return SelectableText(
+          "Transfer Ownership of ${params.assetLongname ?? params.asset}");
+    }
     if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
       if (params.assetEvents == "reissuance") {
         return SelectableText(
