@@ -242,8 +242,8 @@ class Event {
         return AssetIssuanceEvent.fromJson(json);
       case 'RESET_ISSUANCE':
         return ResetIssuanceEvent.fromJson(json);
-      case 'ASSET_TRANSFER':
-        return AssetTransferEvent.fromJson(json);
+      // case 'ASSET_TRANSFER':
+      //   return AssetTransferEvent.fromJson(json);
       case 'DISPENSE':
         return DispenseEvent.fromJson(json);
       case 'OPEN_DISPENSER':
@@ -1145,8 +1145,8 @@ class VerboseEvent extends Event {
         return VerboseRefillDispenserEvent.fromJson(json);
       case 'RESET_ISSUANCE':
         return VerboseResetIssuanceEvent.fromJson(json);
-      case 'ASSET_TRANSFER':
-        return VerboseAssetTransferEvent.fromJson(json);
+      // case 'ASSET_TRANSFER':
+      //   return VerboseAssetTransferEvent.fromJson(json);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEvent.fromJson(json);
       default:

@@ -44,9 +44,9 @@ class EventMapper {
       case "RESET_ISSUANCE":
         return ResetIssuanceEventMapper.toDomain(
             apiEvent as api.ResetIssuanceEvent);
-      case "ASSET_TRANSFER":
-        return AssetTransferEventMapper.toDomain(
-            apiEvent as api.AssetTransferEvent);
+      // case "ASSET_TRANSFER":
+      //   return AssetTransferEventMapper.toDomain(
+      // apiEvent as api.AssetTransferEvent);
       case "ASSET_CREATION":
         return AssetIssuanceEventMapper.toDomain(
             apiEvent as api.AssetIssuanceEvent);
@@ -97,9 +97,9 @@ class VerboseEventMapper {
         return VerboseResetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseResetIssuanceEvent);
 
-      case "ASSET_TRANSFER":
-        return VerboseAssetTransferEventMapper.toDomain(
-            apiEvent as api.VerboseAssetTransferEvent);
+      // case "ASSET_TRANSFER":
+      //   return VerboseAssetTransferEventMapper.toDomain(
+      //       apiEvent as api.VerboseAssetTransferEvent);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
@@ -900,10 +900,12 @@ class EventsRepositoryImpl implements EventsRepository {
         limit: 1000,
         cursor: cursor,
         unconfirmed: unconfirmed,
-        whitelist: whitelist,
       );
+      final whitelistedEvents = events
+          .where((event) => whitelist?.contains(event.event) ?? true)
+          .toList();
 
-      allEvents.addAll(events);
+      allEvents.addAll(whitelistedEvents);
 
       if (nextCursor == null) {
         hasMore = false;
