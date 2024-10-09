@@ -761,7 +761,6 @@ class EventsRepositoryImpl implements EventsRepository {
 
     final results = await Future.wait(futures);
 
-    // List<VerboseEvent> mempoolResults = [];
     if (unconfirmed == true) {
       final mempoolFutures = addresses.map((address) =>
           _getAllMempoolVerboseEventsForAddress(
@@ -835,7 +834,7 @@ class EventsRepositoryImpl implements EventsRepository {
         whitelist_);
 
     if (response.error != null) {
-      throw Exception("Error getting events by addresses: ${response.error}");
+      throw Exception("Error getting mempool events by addresses: ${response.error}");
     }
     cursor_entity.Cursor? nextCursor =
         cursor_model.CursorMapper.toDomain(response.nextCursor);

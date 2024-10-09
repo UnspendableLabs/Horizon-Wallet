@@ -373,7 +373,7 @@ class AddressActions extends StatelessWidget {
                 includeBackButton: false,
                 includeCloseButton: true,
               ),
-              icon: Icons.compare_arrows,
+              icon: Icons.swap_vert,
               text: "DISPENSER",
             ),
             AddressAction(
@@ -859,10 +859,12 @@ class BalancesSliverState extends State<BalancesSliver> {
                                             currentOwnedAsset?.locked != true,
                                         child: const Text('Lock Quantity'),
                                       ),
-                                      const PopupMenuItem<IssuanceActionType>(
+                                      PopupMenuItem<IssuanceActionType>(
                                         value:
                                             IssuanceActionType.lockDescription,
-                                        child: Text('Lock Description'),
+                                        enabled:
+                                            currentOwnedAsset?.locked != true,
+                                        child: const Text('Lock Description'),
                                       ),
                                       PopupMenuItem<IssuanceActionType>(
                                         value: IssuanceActionType
