@@ -1,13 +1,12 @@
 import "package:horizon/domain/entities/fee_estimates.dart";
 import "package:horizon/domain/services/bitcoind_service.dart";
 
-class GetFeeEstimates {
-  final (int, int, int) targets;
+class GetFeeEstimatesUseCase {
   final BitcoindService bitcoindService;
 
-  const GetFeeEstimates({required this.targets, required this.bitcoindService});
+  const GetFeeEstimatesUseCase({required this.bitcoindService});
 
-  Future<FeeEstimates> call() async {
+  Future<FeeEstimates> call({required (int, int, int) targets}) async {
     final (fastTarget, mediumTarget, slowTarget) = targets;
 
     final results = await Future.wait([

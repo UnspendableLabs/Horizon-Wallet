@@ -62,6 +62,12 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 
 import 'package:logger/logger.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 
 final logger = Logger();
 
@@ -86,8 +92,7 @@ Future<void> setup() async {
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
     RetryInterceptor(
-      dio: dio,
-      retries: 4,
+      dio: dio, retries: 4,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
       retryDelays: const [
         // set delays between retries (optional)
@@ -183,6 +188,7 @@ Future<void> setup() async {
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
+
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<WalletRepository>(
@@ -210,6 +216,42 @@ Future<void> setup() async {
   injector.registerSingleton<AccountSettingsRepository>(
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
+  ));
+
+  injector.registerSingleton<GetFeeEstimatesUseCase>(
+      GetFeeEstimatesUseCase(bitcoindService: GetIt.I.get<BitcoindService>()));
+
+  injector.registerSingleton<GetVirtualSizeUseCase>(GetVirtualSizeUseCase(
+    transactionService: GetIt.I.get<TransactionService>(),
+  ));
+
+  injector.registerSingleton(FetchDispenserFormDataUseCase(
+      getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+      balanceRepository: injector.get<BalanceRepository>()));
+
+  injector
+      .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
+    utxoRepository: GetIt.I.get<UtxoRepository>(),
+    getVirtualSizeUseCase: GetIt.I.get<GetVirtualSizeUseCase>(),
+  ));
+
+  injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
+      SignAndBroadcastTransactionUseCase(
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    accountRepository: GetIt.I.get<AccountRepository>(),
+    walletRepository: GetIt.I.get<WalletRepository>(),
+    utxoRepository: GetIt.I.get<UtxoRepository>(),
+    encryptionService: GetIt.I.get<EncryptionService>(),
+    addressService: GetIt.I.get<AddressService>(),
+    transactionService: GetIt.I.get<TransactionService>(),
+    bitcoindService: GetIt.I.get<BitcoindService>(),
+    transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+  ));
+
+  injector.registerSingleton<WriteLocalTransactionUseCase>(
+      WriteLocalTransactionUseCase(
+    transactionRepository: GetIt.I.get<TransactionRepository>(),
+    transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
   ));
 }
 

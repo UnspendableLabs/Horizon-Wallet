@@ -12,7 +12,6 @@ import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
@@ -32,6 +31,7 @@ import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.da
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -50,6 +50,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeSendBloc(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           addressRepository: GetIt.I.get<AddressRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
@@ -63,7 +64,6 @@ class ComposeSendPageWrapper extends StatelessWidget {
           addressService: GetIt.I.get<AddressService>(),
           transactionRepository: GetIt.I.get<TransactionRepository>(),
           transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-          bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeSendPage(
           address: state.currentAddress,

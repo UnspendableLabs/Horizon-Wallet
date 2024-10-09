@@ -52,7 +52,6 @@ Future<void> composeTransaction<T, S extends ComposeStateBase>({
     emit((state as dynamic).copyWith(
       submitState: SubmitComposingTransaction<T>(
         composeTransaction: composedTransaction,
-        virtualSize: virtualSize,
         fee: virtualSize * feeRate,
         feeRate: feeRate,
       ),

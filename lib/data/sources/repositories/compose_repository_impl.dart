@@ -49,7 +49,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_issuance.ComposeIssuanceVerbose> composeIssuanceVerbose(
+  Future<compose_issuance.ComposeIssuanceResponseVerbose>
+      composeIssuanceVerbose(
     String sourceAddress,
     String name,
     int quantity, [
@@ -85,9 +86,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
     }
 
     final txVerbose = response.result!;
-    return compose_issuance.ComposeIssuanceVerbose(
+    return compose_issuance.ComposeIssuanceResponseVerbose(
         rawtransaction: txVerbose.rawtransaction,
-        params: compose_issuance.ComposeIssuanceVerboseParams(
+        params: compose_issuance.ComposeIssuanceResponseVerboseParams(
           reset: txVerbose.params.reset,
           source: txVerbose.params.source,
           asset: txVerbose.params.asset,
@@ -102,20 +103,21 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_dispenser.ComposeDispenserVerbose> composeDispenserVerbose(
-      String sourceAddress,
-      String asset,
-      int giveQuantity,
-      int escrowQuantity,
-      int mainchainrate,
-      int status,
-      [String? openAddress,
-      String? oracleAddress,
-      bool? allowUnconfirmedTx,
-      int? fee,
-      List<Utxo>? inputsSet]) async {
+  Future<compose_dispenser.ComposeDispenserResponseVerbose>
+      composeDispenserVerbose(int fee, List<Utxo> inputsSet,
+          compose_dispenser.ComposeDispenserParams params) async {
+    final sourceAddress = params.source;
+    final asset = params.asset;
+    final giveQuantity = params.giveQuantity;
+    final escrowQuantity = params.escrowQuantity;
+    final mainchainrate = params.mainchainrate;
+    const status = 0;
+    const openAddress = null;
+    const oracleAddress = null;
+    const allowUnconfirmedTx = true;
+
     final inputsSetString =
-        inputsSet?.map((e) => "${e.txid}:${e.vout}").join(',');
+        inputsSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
     final response = await api.composeDispenserVerbose(
         sourceAddress,
@@ -135,14 +137,14 @@ class ComposeRepositoryImpl extends ComposeRepository {
     }
 
     final txVerbose = response.result!;
-    return compose_dispenser.ComposeDispenserVerbose(
+    return compose_dispenser.ComposeDispenserResponseVerbose(
         rawtransaction: txVerbose.rawtransaction,
         btcIn: txVerbose.btcIn,
         btcOut: txVerbose.btcOut,
         btcChange: txVerbose.btcChange,
         btcFee: txVerbose.btcFee,
         data: txVerbose.data,
-        params: compose_dispenser.ComposeDispenserVerboseParams(
+        params: compose_dispenser.ComposeDispenserResponseVerboseParams(
           source: txVerbose.params.source,
           asset: txVerbose.params.asset,
           giveQuantity: txVerbose.params.giveQuantity,

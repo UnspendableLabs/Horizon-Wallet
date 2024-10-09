@@ -92,6 +92,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
     final fillColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
 
     return DropdownButtonFormField<String>(
+      key: const Key("fee_dropdown"),
       value: widget.value.toInputValue(),
       decoration: InputDecoration(
         fillColor: fillColor,

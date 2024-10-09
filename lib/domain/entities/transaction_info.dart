@@ -264,7 +264,6 @@ class TransactionInfoIssuanceVerbose extends TransactionInfoVerbose {
   }
 }
 
-
 class TransactionInfoDispenser extends TransactionInfo {
   final DispenserUnpacked unpackedData;
 
@@ -349,4 +348,3 @@ class TransactionInfoDispenserVerbose extends TransactionInfoVerbose {
     );
   }
 }
-
