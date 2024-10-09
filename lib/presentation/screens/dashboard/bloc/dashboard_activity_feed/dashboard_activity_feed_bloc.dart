@@ -23,6 +23,7 @@ final DEFAULT_WHITELIST = [
   "REFILL_DISPENSER",
   "RESET_ISSUANCE",
   "ASSET_CREATION",
+  "ASSET_TRANSFER",
 ];
 
 class DashboardActivityFeedBloc

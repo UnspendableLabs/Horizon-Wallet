@@ -44,6 +44,9 @@ class EventMapper {
       case "RESET_ISSUANCE":
         return ResetIssuanceEventMapper.toDomain(
             apiEvent as api.ResetIssuanceEvent);
+      case "ASSET_TRANSFER":
+        return AssetTransferEventMapper.toDomain(
+            apiEvent as api.AssetTransferEvent);
       case "ASSET_CREATION":
         return AssetIssuanceEventMapper.toDomain(
             apiEvent as api.AssetIssuanceEvent);
@@ -93,6 +96,10 @@ class VerboseEventMapper {
       case "RESET_ISSUANCE":
         return VerboseResetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseResetIssuanceEvent);
+
+      case "ASSET_TRANSFER":
+        return VerboseAssetTransferEventMapper.toDomain(
+            apiEvent as api.VerboseAssetTransferEvent);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
@@ -312,6 +319,20 @@ class ResetIssuanceEventMapper {
   }
 }
 
+class AssetTransferEventMapper {
+  static AssetTransferEvent toDomain(api.AssetTransferEvent apiEvent) {
+    return AssetTransferEvent(
+      state: StateMapper.get(apiEvent),
+      event: "ASSET_TRANSFER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      // confirmed: apiEvent.confirmed,
+      params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
 class AssetIssuanceEventMapper {
   static AssetIssuanceEvent toDomain(api.AssetIssuanceEvent apiEvent) {
     return AssetIssuanceEvent(
@@ -376,6 +397,23 @@ class VerboseResetIssuanceEventMapper {
     final x = VerboseResetIssuanceEvent(
       state: StateMapper.getVerbose(apiEvent),
       event: "RESET_ISSUANCE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseAssetIssuanceParamsMapper.toDomain(apiEvent.params),
+    );
+
+    return x;
+  }
+}
+
+class VerboseAssetTransferEventMapper {
+  static VerboseAssetTransferEvent toDomain(
+      api.VerboseAssetTransferEvent apiEvent) {
+    final x = VerboseAssetTransferEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "ASSET_TRANSFER",
       eventIndex: apiEvent.eventIndex,
       txHash: apiEvent.txHash!,
       blockIndex: apiEvent.blockIndex,
@@ -759,16 +797,17 @@ class EventsRepositoryImpl implements EventsRepository {
     final futures = addresses.map((address) =>
         _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
 
-    // List<VerboseEvent> mempoolResults = [];
-    // if (unconfirmed == true) {
-    //   mempoolResults = await getMempoolEventsByAddressesVerbose(
-    //     address: address,
-    //     unconfirmed: unconfirmed,
-    //     whitelist: whitelist,
-    //   );
-    // }
-
     final results = await Future.wait(futures);
+
+    // List<VerboseEvent> mempoolResults = [];
+    if (unconfirmed == true) {
+      final mempoolFutures = addresses.map((address) =>
+          _getAllMempoolVerboseEventsForAddress(
+              address, unconfirmed, whitelist));
+
+      final mempoolResults = await Future.wait(mempoolFutures);
+      results.addAll(mempoolResults);
+    }
 
     return results.expand((events) => events).toList();
   }
@@ -800,14 +839,63 @@ class EventsRepositoryImpl implements EventsRepository {
     return allEvents;
   }
 
-  Future<List<VerboseEvent>> _getAllVerboseMempoolEventsForAddress(
+  @override
+  Future<
+      (
+        List<VerboseEvent>,
+        cursor_entity.Cursor? nextCursor,
+        int? resultCount
+      )> getMempoolEventsByAddressVerbose({
+    required String address,
+    cursor_entity.Cursor? cursor,
+    int? limit,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  }) async {
+    String? cacheKey;
+    if (limit != null && cursor != null) {
+      cacheKey = _generateCacheKey(address, limit, cursor);
+    }
+
+    if (cacheKey != null && _cache.containsKey(cacheKey)) {
+      return _cache[cacheKey]!;
+    }
+
+    final addressesParam = address;
+
+    final whitelist_ = whitelist?.join(",");
+
+    final response = await api_.getMempoolEventsByAddressesVerbose(
+        addressesParam,
+        cursor_model.CursorMapper.toData(cursor),
+        limit,
+        unconfirmed,
+        whitelist_);
+
+    if (response.error != null) {
+      throw Exception("Error getting events by addresses: ${response.error}");
+    }
+    cursor_entity.Cursor? nextCursor =
+        cursor_model.CursorMapper.toDomain(response.nextCursor);
+    List<VerboseEvent> events = response.result!.map((event) {
+      return VerboseEventMapper.toDomain(event);
+    }).toList();
+
+    if (cacheKey != null) {
+      _cache[cacheKey] = (events, nextCursor, response.resultCount);
+    }
+
+    return (events, nextCursor, response.resultCount);
+  }
+
+  Future<List<VerboseEvent>> _getAllMempoolVerboseEventsForAddress(
       String address, bool? unconfirmed, List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
     Cursor? cursor;
     bool hasMore = true;
 
     while (hasMore) {
-      final (events, nextCursor, _) = await getByAddressVerbose(
+      final (events, nextCursor, _) = await getMempoolEventsByAddressVerbose(
         address: address,
         limit: 1000,
         cursor: cursor,

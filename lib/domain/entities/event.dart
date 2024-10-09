@@ -16,7 +16,7 @@ class EventStateConfirmed extends EventState {
 class Event extends Equatable {
   final EventState state;
 
-  final int eventIndex;
+  final int? eventIndex;
   final String event;
   final String txHash;
   final int? blockIndex;
@@ -39,7 +39,7 @@ class Event extends Equatable {
 }
 
 class VerboseEvent extends Event {
-  final int blockTime;
+  final int? blockTime;
 
   const VerboseEvent({
     required super.state,
@@ -419,8 +419,21 @@ class ResetIssuanceEvent extends Event {
   });
 }
 
+class AssetTransferEvent extends Event {
+  final AssetIssuanceParams params;
+
+  const AssetTransferEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
-  final int blockTime;
+  final int? blockTime;
   final String? quantityNormalized;
   final String feePaidNormalized;
   VerboseAssetIssuanceParams({
@@ -465,6 +478,19 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
 class VerboseResetIssuanceEvent extends VerboseEvent {
   final VerboseAssetIssuanceParams params;
   const VerboseResetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseAssetTransferEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+  const VerboseAssetTransferEvent({
     required super.state,
     required super.eventIndex,
     required super.event,
