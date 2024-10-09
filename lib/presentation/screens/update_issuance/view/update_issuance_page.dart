@@ -35,11 +35,13 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final IssuanceActionType actionType;
   final String assetName;
+  final String? assetLongname;
 
   const UpdateIssuancePageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.actionType,
     required this.assetName,
+    required this.assetLongname,
     super.key,
   });
 
@@ -72,6 +74,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
           address: state.currentAddress,
           actionType: actionType,
           assetName: assetName,
+          assetLongname: assetLongname,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -84,12 +87,15 @@ class UpdateIssuancePage extends StatefulWidget {
   final Address address;
   final IssuanceActionType actionType;
   final String assetName;
+  final String? assetLongname;
+
   const UpdateIssuancePage({
     super.key,
     required this.dashboardActivityFeedBloc,
     required this.address,
     required this.actionType,
     required this.assetName,
+    this.assetLongname,
   });
 
   @override
@@ -100,21 +106,25 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   late TextEditingController _subassetController;
   late TextEditingController _quantityController;
   late TextEditingController _newDescriptionController;
+  late TextEditingController _destinationAddressController;
 
   @override
   void initState() {
     super.initState();
-    _subassetController = TextEditingController(text: '${widget.assetName}.');
+    _subassetController = TextEditingController(
+        text: '${widget.assetLongname ?? widget.assetName}.');
     _quantityController = TextEditingController();
     _newDescriptionController = TextEditingController();
+    _destinationAddressController = TextEditingController();
   }
 
   @override
   void dispose() {
+    super.dispose();
     _subassetController.dispose();
     _quantityController.dispose();
     _newDescriptionController.dispose();
-    super.dispose();
+    _destinationAddressController.dispose();
   }
 
   // ignore: avoid_init_to_null
@@ -268,6 +278,17 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           const SizedBox(height: 16),
           const HorizonUI.HorizonTextFormField(
             label: 'Description (optional)',
+            enabled: false,
+          ),
+        ],
+      IssuanceActionType.transferOwnership => [
+          const HorizonUI.HorizonTextFormField(
+              label: 'Transfer Ownership of Asset',
+              enabled: false,
+              suffix: CircularProgressIndicator()),
+          const SizedBox(height: 16),
+          const HorizonUI.HorizonTextFormField(
+            label: 'Destination Address',
             enabled: false,
           ),
         ],
@@ -431,6 +452,18 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             },
           ),
         ],
+      IssuanceActionType.transferOwnership => [
+          // Transfer the asset to a new owner
+          HorizonUI.HorizonTextFormField(
+              label: 'Transfer Ownership of Asset',
+              enabled: false,
+              controller: TextEditingController(text: assetName)),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            label: 'Destination Address',
+            controller: _destinationAddressController,
+          ),
+        ],
     };
   }
 
@@ -520,8 +553,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset originalAsset) {
     String name = originalAsset.assetLongname ?? originalAsset.asset!;
-    int quantity = originalAsset.supply!;
+    int quantity = 0;
     String? description = originalAsset.description;
+    String? destinationAddress;
 
     if (formKey.currentState!.validate()) {
       switch (widget.actionType) {
@@ -549,10 +583,14 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               isDivisible ?? originalAsset.divisible!, _quantityController);
           description = _newDescriptionController.text;
           break;
-
+        case IssuanceActionType.transferOwnership:
+          destinationAddress = _destinationAddressController.text;
+          break;
         default:
           print("Invalid case");
       }
+
+      print('DESTINATION>>>>> $destinationAddress');
 
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
@@ -564,6 +602,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               lock: isLocked ?? originalAsset.locked!,
               reset: isReset ?? false,
               issuanceActionType: widget.actionType,
+              destination: destinationAddress,
             ),
           ));
     }
@@ -578,6 +617,19 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         controller: TextEditingController(text: params.source),
         enabled: false,
       ),
+      widget.actionType == IssuanceActionType.transferOwnership
+          ? Column(
+              children: [
+                const SizedBox(height: 16),
+                HorizonUI.HorizonTextFormField(
+                  label: "Destination Address",
+                  controller:
+                      TextEditingController(text: params.transferDestination),
+                  enabled: false,
+                ),
+              ],
+            )
+          : const SizedBox.shrink(),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: widget.actionType == IssuanceActionType.issueSubasset

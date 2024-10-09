@@ -830,6 +830,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                                           body: UpdateIssuancePageWrapper(
                                             assetName:
                                                 currentOwnedAsset!.asset!,
+                                            assetLongname:
+                                                currentOwnedAsset.assetLongname,
                                             actionType: result,
                                             dashboardActivityFeedBloc: BlocProvider
                                                 .of<DashboardActivityFeedBloc>(
@@ -878,6 +880,11 @@ class BalancesSliverState extends State<BalancesSliver> {
                                       const PopupMenuItem<IssuanceActionType>(
                                         value: IssuanceActionType.issueSubasset,
                                         child: Text('Issue Subasset'),
+                                      ),
+                                      const PopupMenuItem<IssuanceActionType>(
+                                        value: IssuanceActionType
+                                            .transferOwnership,
+                                        child: Text('Transfer Ownership'),
                                       ),
                                     ],
                                   ),

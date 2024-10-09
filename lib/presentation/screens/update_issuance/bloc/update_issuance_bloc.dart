@@ -32,6 +32,7 @@ import 'package:logger/logger.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
   final IssuanceActionType issuanceActionType;
+  final String? destination;
 
   UpdateIssuanceEventParams({
     required super.name,
@@ -41,6 +42,7 @@ class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
     required super.lock,
     required super.reset,
     required this.issuanceActionType,
+    this.destination,
   });
 }
 
@@ -151,6 +153,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         transactionService: transactionService,
         logger: logger,
         transactionHandler: (inputsSet, feeRate) async {
+          print('destination: ${event.params.destination}');
           final issuanceParams = event.params;
           // Dummy transaction to compute virtual size
           final issuance = await composeRepository.composeIssuanceVerbose(
@@ -161,11 +164,13 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
             issuanceParams.lock,
             issuanceParams.reset,
             issuanceParams.description,
-            null,
+            issuanceParams.destination,
             true,
             1,
             inputsSet,
           );
+
+          print('issuance: ${issuance.params.transferDestination}');
 
           final virtualSize =
               transactionService.getVirtualSize(issuance.rawtransaction);
@@ -180,12 +185,14 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
             issuanceParams.lock,
             issuanceParams.reset,
             issuanceParams.description,
-            null,
+            issuanceParams.destination,
             true,
             totalFee,
             inputsSet,
           );
 
+          print(
+              'composeTransaction: ${composeTransaction.params.transferDestination}');
           return (composeTransaction, virtualSize);
         });
   }
@@ -229,9 +236,11 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
           final source = issuanceParams.params.source;
           final rawTx = issuanceParams.rawtransaction;
           final destination =
-              source; // For issuance, destination is the same as source
+              issuanceParams.params.transferDestination ?? source;
           final quantity = issuanceParams.params.quantity;
           final asset = issuanceParams.params.asset;
+
+          print('DESCRIPTION: $destination');
 
           return (source, rawTx, destination, quantity, asset);
         },

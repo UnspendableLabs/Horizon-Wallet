@@ -1338,7 +1338,7 @@ ComposeIssuanceParams _$ComposeIssuanceParamsFromJson(
       lock: json['lock'] as bool,
       reset: json['reset'] as bool,
       description: json['description'] as String?,
-      transferDestination: json['transferDestination'] as String?,
+      transferDestination: json['transfer_destination'] as String?,
     );
 
 Map<String, dynamic> _$ComposeIssuanceParamsToJson(
@@ -1351,7 +1351,7 @@ Map<String, dynamic> _$ComposeIssuanceParamsToJson(
       'lock': instance.lock,
       'reset': instance.reset,
       'description': instance.description,
-      'transferDestination': instance.transferDestination,
+      'transfer_destination': instance.transferDestination,
     };
 
 ComposeIssuanceVerbose _$ComposeIssuanceVerboseFromJson(
@@ -2980,7 +2980,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'asset': asset,
       r'quantity': quantity,
-      r'transferDestination': transferDestination,
+      r'transfer_destination': transferDestination,
       r'divisible': divisible,
       r'lock': lock,
       r'reset': reset,
@@ -3032,7 +3032,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'asset': asset,
       r'quantity': quantity,
-      r'transferDestination': transferDestination,
+      r'transfer_destination': transferDestination,
       r'divisible': divisible,
       r'lock': lock,
       r'reset': reset,
@@ -3385,6 +3385,54 @@ class _V2Api implements V2Api {
             .compose(
               _dio.options,
               '/addresses/events?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<VerboseEvent>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<VerboseEvent>(
+                  (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<VerboseEvent>>> getMempoolEventsByAddressesVerbose(
+    String addresses, [
+    CursorModel? cursor,
+    int? limit,
+    bool? showUnconfirmed,
+    String? eventName,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'show_unconfirmed': showUnconfirmed,
+      r'event_name': eventName,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<VerboseEvent>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              'addresses/mempool?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )

@@ -759,12 +759,48 @@ class EventsRepositoryImpl implements EventsRepository {
     final futures = addresses.map((address) =>
         _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
 
+    // List<VerboseEvent> mempoolResults = [];
+    // if (unconfirmed == true) {
+    //   mempoolResults = await getMempoolEventsByAddressesVerbose(
+    //     address: address,
+    //     unconfirmed: unconfirmed,
+    //     whitelist: whitelist,
+    //   );
+    // }
+
     final results = await Future.wait(futures);
 
     return results.expand((events) => events).toList();
   }
 
   Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
+      String address, bool? unconfirmed, List<String>? whitelist) async {
+    final allEvents = <VerboseEvent>[];
+    Cursor? cursor;
+    bool hasMore = true;
+
+    while (hasMore) {
+      final (events, nextCursor, _) = await getByAddressVerbose(
+        address: address,
+        limit: 1000,
+        cursor: cursor,
+        unconfirmed: unconfirmed,
+        whitelist: whitelist,
+      );
+
+      allEvents.addAll(events);
+
+      if (nextCursor == null) {
+        hasMore = false;
+      } else {
+        cursor = nextCursor;
+      }
+    }
+
+    return allEvents;
+  }
+
+  Future<List<VerboseEvent>> _getAllVerboseMempoolEventsForAddress(
       String address, bool? unconfirmed, List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
     Cursor? cursor;

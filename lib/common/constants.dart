@@ -19,6 +19,7 @@ enum IssuanceActionType {
   changeDescription,
   issueMore,
   issueSubasset,
+  transferOwnership
 }
 
 class DecimalTextInputFormatter extends TextInputFormatter {

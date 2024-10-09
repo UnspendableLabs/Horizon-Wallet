@@ -1512,7 +1512,7 @@ class ComposeIssuance {
       _$ComposeIssuanceFromJson(json);
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeIssuanceParams {
   final String source;
   final String asset;
@@ -2836,7 +2836,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
-    @Query("transferDestination") String? transferDestination,
+    @Query("transfer_destination") String? transferDestination,
     @Query("divisible") bool? divisible,
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
@@ -2849,7 +2849,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
-    @Query("transferDestination") String? transferDestination,
+    @Query("transfer_destination") String? transferDestination,
     @Query("divisible") bool? divisible,
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
@@ -2923,6 +2923,15 @@ abstract class V2Api {
   // @Verbose()
   @GET("/addresses/events?verbose=true")
   Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
+    @Query("addresses") String addresses, [
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("event_name") String? eventName,
+  ]);
+
+  @GET("addresses/mempool?verbose=true")
+  Future<Response<List<VerboseEvent>>> getMempoolEventsByAddressesVerbose(
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
