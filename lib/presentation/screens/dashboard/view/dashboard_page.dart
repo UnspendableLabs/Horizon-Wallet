@@ -714,8 +714,8 @@ class BalancesSliverState extends State<BalancesSliver> {
 
         final ownedAssetsNotIncludedInEntries = ownedAssets
             .where((asset) =>
-                orderedEntries.any((entry) => entry.key != asset.asset))
-            .toList(); // If address is owner of asset and balance is 0, these will not be part of the balance entries
+                !orderedEntries.any((entry) => entry.key == asset.asset))
+            .toList();
 
         final List<TableRow> rows = [];
         final balanceRows = orderedEntries.map((entry) {
