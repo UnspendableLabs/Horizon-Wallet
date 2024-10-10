@@ -16,7 +16,7 @@ class EventStateConfirmed extends EventState {
 class Event extends Equatable {
   final EventState state;
 
-  final int eventIndex;
+  final int? eventIndex;
   final String event;
   final String txHash;
   final int? blockIndex;
@@ -39,7 +39,7 @@ class Event extends Equatable {
 }
 
 class VerboseEvent extends Event {
-  final int blockTime;
+  final int? blockTime;
 
   const VerboseEvent({
     required super.state,
@@ -351,6 +351,7 @@ class VerboseNewTransactionEvent extends VerboseEvent {
 class AssetIssuanceParams {
   final String? asset;
   final String? assetLongname;
+  final String? assetEvents;
   // final int? blockIndex;
   // final int callDate;
   // final int callPrice;
@@ -364,13 +365,14 @@ class AssetIssuanceParams {
   // final bool reset;
   final String source;
   // final String status;
-  // final bool transfer;
+  final bool transfer;
   // final String txHash;
   // final int txIndex;
 
   AssetIssuanceParams({
     this.asset,
     this.assetLongname,
+    this.assetEvents,
     // this.blockIndex,
     // required this.callDate,
     // required this.callPrice,
@@ -384,7 +386,7 @@ class AssetIssuanceParams {
     // required this.reset,
     required this.source,
     // required this.status,
-    // required this.transfer,
+    required this.transfer,
     // required this.txHash,
     // required this.txIndex,
   });
@@ -404,13 +406,27 @@ class AssetIssuanceEvent extends Event {
   });
 }
 
+class ResetIssuanceEvent extends Event {
+  final AssetIssuanceParams params;
+
+  const ResetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
-  final int blockTime;
+  final int? blockTime;
   final String? quantityNormalized;
   final String feePaidNormalized;
   VerboseAssetIssuanceParams({
     required super.asset,
     required super.assetLongname,
+    required super.assetEvents,
     // required super.callDate,
     // required super.callPrice,
     // required super.callable,
@@ -423,7 +439,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.reset,
     required super.source,
     // required super.status,
-    // required super.transfer,
+    required super.transfer,
     // required super.txHash,
     // required super.txIndex,
     required this.blockTime,
@@ -441,6 +457,19 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     // required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseResetIssuanceEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+  const VerboseResetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
     required super.blockTime,
     required this.params,
   });

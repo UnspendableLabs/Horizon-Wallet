@@ -115,7 +115,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
           asset: 'BTC',
           // TODO: this is a bit of a hack
           assetInfo: const ai.AssetInfo(
-            assetLongname: 'Bitcoin',
+            assetLongname: 'BTC',
             description: 'Bitcoin',
             divisible: true,
           ));

@@ -29,4 +29,13 @@ abstract class EventsRepository {
     bool? unconfirmed = false,
     List<String>? whitelist,
   });
+
+  Future<(List<VerboseEvent>, Cursor? nextCursor, int? resultCount)>
+      getMempoolEventsByAddressVerbose({
+    required String address,
+    int? limit,
+    Cursor? cursor,
+    bool? unconfirmed = false,
+    List<String>? whitelist,
+  });
 }

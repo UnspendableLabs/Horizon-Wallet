@@ -32,6 +32,7 @@ import 'package:logger/logger.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
   final IssuanceActionType issuanceActionType;
+  final String? destination;
 
   UpdateIssuanceEventParams({
     required super.name,
@@ -41,6 +42,7 @@ class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
     required super.lock,
     required super.reset,
     required this.issuanceActionType,
+    this.destination,
   });
 }
 
@@ -106,7 +108,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       assetState: const AssetState.loading(),
     ));
 
-    final AssetVerbose asset;
+    final Asset asset;
     late FeeEstimates feeEstimates;
     late Balance? balance;
 
@@ -163,7 +165,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
             issuanceParams.lock,
             issuanceParams.reset,
             issuanceParams.description,
-            null,
+            issuanceParams.destination,
             true,
             1,
             inputsSet,
@@ -182,7 +184,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
             issuanceParams.lock,
             issuanceParams.reset,
             issuanceParams.description,
-            null,
+            issuanceParams.destination,
             true,
             totalFee,
             inputsSet,
@@ -231,7 +233,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
           final source = issuanceParams.params.source;
           final rawTx = issuanceParams.rawtransaction;
           final destination =
-              source; // For issuance, destination is the same as source
+              issuanceParams.params.transferDestination ?? source;
           final quantity = issuanceParams.params.quantity;
           final asset = issuanceParams.params.asset;
 

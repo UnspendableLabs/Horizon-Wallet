@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -238,16 +239,20 @@ class AddressAction extends StatelessWidget {
   final String text;
   final double? iconSize;
 
-  const AddressAction(
-      {super.key,
-      required this.isDarkTheme,
-      required this.dialog,
-      required this.icon,
-      required this.text,
-      this.iconSize});
+  const AddressAction({
+    super.key,
+    required this.isDarkTheme,
+    required this.dialog,
+    required this.icon,
+    required this.text,
+    this.iconSize,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -261,31 +266,46 @@ class AddressAction extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24.0),
               ),
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
             ),
             onPressed: () {
               HorizonUI.HorizonDialog.show(context: context, body: dialog);
             },
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon,
-                      size: iconSize ?? 28.0,
-                      color: isDarkTheme
-                          ? greyDashboardButtonTextDarkTheme
-                          : greyDashboardButtonTextLightTheme),
-                  const SizedBox(width: 8.0),
-                  Text(text,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: isDarkTheme
-                              ? greyDashboardButtonTextDarkTheme
-                              : greyDashboardButtonTextLightTheme)),
-                ],
-              ),
-            ),
+            child: isMobile
+                ? Icon(
+                    icon,
+                    size: iconSize ?? 24.0,
+                    color: isDarkTheme
+                        ? greyDashboardButtonTextDarkTheme
+                        : greyDashboardButtonTextLightTheme,
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        size: iconSize ?? 24.0,
+                        color: isDarkTheme
+                            ? greyDashboardButtonTextDarkTheme
+                            : greyDashboardButtonTextLightTheme,
+                      ),
+                      const SizedBox(width: 4.0),
+                      Flexible(
+                        child: Text(
+                          text,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: isDarkTheme
+                                ? greyDashboardButtonTextDarkTheme
+                                : greyDashboardButtonTextLightTheme,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -353,7 +373,7 @@ class AddressActions extends StatelessWidget {
                 includeBackButton: false,
                 includeCloseButton: true,
               ),
-              icon: Icons.compare_arrows,
+              icon: Icons.swap_vert,
               text: "DISPENSER",
             ),
             AddressAction(
@@ -385,7 +405,7 @@ class BalancesSliver extends StatefulWidget {
       {super.key,
       required this.isDarkTheme,
       required this.addresses,
-      this.initialItemCount = 3,
+      required this.initialItemCount,
       required this.currentAddress});
 
   @override
@@ -608,13 +628,15 @@ class BalancesDisplay extends StatefulWidget {
   final List<Address> addresses;
   final String accountUuid;
   final Address currentAddress;
+  final int initialItemCount;
 
   const BalancesDisplay(
       {super.key,
       required this.isDarkTheme,
       required this.addresses,
       required this.accountUuid,
-      required this.currentAddress});
+      required this.currentAddress,
+      required this.initialItemCount});
 
   @override
   BalancesDisplayState createState() => BalancesDisplayState();
@@ -629,6 +651,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
       isDarkTheme: widget.isDarkTheme,
       addresses: widget.addresses,
       currentAddress: widget.currentAddress,
+      initialItemCount: widget.initialItemCount,
     );
   }
 
@@ -664,7 +687,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated, assets) {
+      ok: (balances, aggregated, ownedAssets) {
         if (balances.isEmpty) {
           return [
             const NoData(
@@ -693,135 +716,192 @@ class BalancesSliverState extends State<BalancesSliver> {
             ? orderedEntries
             : orderedEntries.take(widget.initialItemCount).toList();
 
-        List<Widget> widgets = displayedEntries.expand((entry) {
-          final isLastEntry = entry == orderedEntries.last;
-          final isClickable = entry.key != 'BTC';
-
-          final Color textColor = isClickable
-              ? (widget.isDarkTheme ? Colors.blue[300]! : Colors.blue[700]!)
-              : (widget.isDarkTheme
-                  ? greyDashboardTextDarkTheme
-                  : greyDashboardTextLightTheme);
-
-          final currentAsset =
-              assets.firstWhereOrNull((asset) => asset.asset == entry.key);
-          final bool isOwner =
-              currentAsset?.owner == widget.currentAddress.address;
-
-          return [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: SelectableText.rich(
-                      TextSpan(
-                        text:
-                            '${entry.key != 'BTC' && entry.value.assetInfo.assetLongname != null ? entry.value.assetInfo.assetLongname : entry.key} ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: textColor,
-                        ),
-                        recognizer: isClickable
-                            ? (TapGestureRecognizer()
-                              ..onTap = () => _launchAssetUrl(entry.key))
-                            : null,
-                      ),
-                    ),
+        List<Widget> widgets = [
+          LayoutBuilder(builder: (context, constraints) {
+            return SizedBox(
+              width: constraints.maxWidth,
+              child: Table(
+                border: TableBorder(
+                  horizontalInside: BorderSide(
+                    color: widget.isDarkTheme ? Colors.white24 : Colors.black12,
+                    width: 1,
                   ),
-                  SelectableText(
-                    entry.value.quantityNormalized,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  Row(
+                ),
+                columnWidths: {
+                  0: FlexColumnWidth(
+                      MediaQuery.of(context).size.width < 600 ? 1 : 2),
+                  1: const FlexColumnWidth(1),
+                  2: FlexColumnWidth(
+                      MediaQuery.of(context).size.width < 600 ? 1 : 1),
+                },
+                children: displayedEntries.map((entry) {
+                  final isClickable = entry.key != 'BTC';
+
+                  final Color textColor = isClickable
+                      ? (widget.isDarkTheme
+                          ? Colors.blue[300]!
+                          : Colors.blue[700]!)
+                      : (widget.isDarkTheme
+                          ? greyDashboardTextDarkTheme
+                          : greyDashboardTextLightTheme);
+
+                  Asset? currentOwnedAsset = ownedAssets
+                      .firstWhereOrNull((asset) => asset.asset == entry.key);
+
+                  final bool isOwner =
+                      currentOwnedAsset?.owner == widget.currentAddress.address;
+
+                  const EdgeInsets padding =
+                      EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0);
+                  return TableRow(
                     children: [
-                      IconButton(
-                        iconSize: 16.0,
-                        icon: const Icon(Icons.send),
-                        onPressed: () {
-                          HorizonUI.HorizonDialog.show(
-                            context: context,
-                            body: HorizonUI.HorizonDialog(
-                              title: 'Compose Send',
-                              body: ComposeSendPageWrapper(
-                                dashboardActivityFeedBloc:
-                                    BlocProvider.of<DashboardActivityFeedBloc>(
-                                        context),
-                                selectedAsset: currentAsset,
-                              ),
-                              includeBackButton: false,
-                              includeCloseButton: true,
-                            ),
-                          );
-                        },
-                      ),
-                      if (isOwner)
-                        PopupMenuButton<IssuanceActionType>(
-                          icon: const Icon(Icons.more_vert),
-                          onSelected: (IssuanceActionType result) {
-                            HorizonUI.HorizonDialog.show(
-                              context: context,
-                              body: HorizonUI.HorizonDialog(
-                                title: "Update Issuance",
-                                body: UpdateIssuancePageWrapper(
-                                  assetName: currentAsset?.assetLongname ??
-                                      currentAsset?.asset ??
-                                      '',
-                                  actionType: result,
-                                  dashboardActivityFeedBloc: BlocProvider.of<
-                                      DashboardActivityFeedBloc>(context),
+                      TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.middle,
+                        child: Padding(
+                          padding: padding,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SelectableText.rich(
+                                TextSpan(
+                                  text: entry.value.assetInfo.assetLongname ??
+                                      entry.key,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: textColor,
+                                  ),
+                                  recognizer: isClickable
+                                      ? (TapGestureRecognizer()
+                                        ..onTap =
+                                            () => _launchAssetUrl(entry.key))
+                                      : null,
                                 ),
-                                includeBackButton: false,
-                                includeCloseButton: true,
-                                onBackButtonPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            );
-                          },
-                          itemBuilder: (BuildContext context) =>
-                              <PopupMenuEntry<IssuanceActionType>>[
-                            PopupMenuItem<IssuanceActionType>(
-                              value: IssuanceActionType.reset,
-                              enabled: currentAsset?.locked != true,
-                              child: const Text('Reset Asset'),
-                            ),
-                            // const PopupMenuItem<IssuanceActionType>(
-                            //   value: IssuanceActionType.lockDescription,
-                            //   child: Text('Lock Description'),
-                            // ),
-                            PopupMenuItem<IssuanceActionType>(
-                              value: IssuanceActionType.lockQuantity,
-                              enabled: currentAsset?.locked != true,
-                              child: const Text('Lock Quantity'),
-                            ),
-                            PopupMenuItem<IssuanceActionType>(
-                              value: IssuanceActionType.changeDescription,
-                              enabled: currentAsset?.locked != true,
-                              child: const Text('Change Description'),
-                            ),
-                            PopupMenuItem<IssuanceActionType>(
-                              value: IssuanceActionType.issueMore,
-                              enabled: currentAsset?.locked != true,
-                              child: const Text('Issue More'),
-                            ),
-                            const PopupMenuItem<IssuanceActionType>(
-                              value: IssuanceActionType.issueSubasset,
-                              child: Text('Issue Subasset'),
-                            ),
-                          ],
+                              );
+                            },
+                          ),
                         ),
+                      ),
+                      TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.middle,
+                        child: Padding(
+                          padding: padding,
+                          child: SelectableText(
+                            entry.value.quantityNormalized,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ),
+                      TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.middle,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 8.0),
+                          child: Flexible(
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  iconSize: 16.0,
+                                  icon: const Icon(Icons.send),
+                                  onPressed: () {
+                                    HorizonUI.HorizonDialog.show(
+                                      context: context,
+                                      body: HorizonUI.HorizonDialog(
+                                        title: 'Compose Send',
+                                        body: ComposeSendPageWrapper(
+                                          dashboardActivityFeedBloc: BlocProvider
+                                              .of<DashboardActivityFeedBloc>(
+                                                  context),
+                                          asset: entry.key,
+                                        ),
+                                        includeBackButton: false,
+                                        includeCloseButton: true,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                if (isOwner)
+                                  PopupMenuButton<IssuanceActionType>(
+                                    icon: const Icon(Icons.more_vert),
+                                    onSelected: (IssuanceActionType result) {
+                                      HorizonUI.HorizonDialog.show(
+                                        context: context,
+                                        body: HorizonUI.HorizonDialog(
+                                          title: "Update Issuance",
+                                          body: UpdateIssuancePageWrapper(
+                                            assetName:
+                                                currentOwnedAsset!.asset!,
+                                            assetLongname:
+                                                currentOwnedAsset.assetLongname,
+                                            actionType: result,
+                                            dashboardActivityFeedBloc: BlocProvider
+                                                .of<DashboardActivityFeedBloc>(
+                                                    context),
+                                          ),
+                                          includeBackButton: false,
+                                          includeCloseButton: true,
+                                          onBackButtonPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      );
+                                    },
+                                    itemBuilder: (BuildContext context) =>
+                                        <PopupMenuEntry<IssuanceActionType>>[
+                                      PopupMenuItem<IssuanceActionType>(
+                                        value: IssuanceActionType.reset,
+                                        enabled:
+                                            currentOwnedAsset?.locked != true,
+                                        child: const Text('Reset Asset'),
+                                      ),
+                                      PopupMenuItem<IssuanceActionType>(
+                                        value: IssuanceActionType.lockQuantity,
+                                        enabled:
+                                            currentOwnedAsset?.locked != true,
+                                        child: const Text('Lock Quantity'),
+                                      ),
+                                      PopupMenuItem<IssuanceActionType>(
+                                        value:
+                                            IssuanceActionType.lockDescription,
+                                        enabled:
+                                            currentOwnedAsset?.locked != true,
+                                        child: const Text('Lock Description'),
+                                      ),
+                                      PopupMenuItem<IssuanceActionType>(
+                                        value: IssuanceActionType
+                                            .changeDescription,
+                                        enabled:
+                                            currentOwnedAsset?.locked != true,
+                                        child: const Text('Change Description'),
+                                      ),
+                                      PopupMenuItem<IssuanceActionType>(
+                                        value: IssuanceActionType.issueMore,
+                                        enabled:
+                                            currentOwnedAsset?.locked != true,
+                                        child: const Text('Issue More'),
+                                      ),
+                                      const PopupMenuItem<IssuanceActionType>(
+                                        value: IssuanceActionType.issueSubasset,
+                                        child: Text('Issue Subasset'),
+                                      ),
+                                      const PopupMenuItem<IssuanceActionType>(
+                                        value: IssuanceActionType
+                                            .transferOwnership,
+                                        child: Text('Transfer Ownership'),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
-            ),
-            if (!isLastEntry) const Divider(height: 1),
-          ];
-        }).toList();
+            );
+          }),
+        ];
 
         if (!_viewAll && orderedEntries.length > widget.initialItemCount) {
           widgets.add(
@@ -908,7 +988,7 @@ class DashboardPageState extends State<DashboardPage> {
     final backgroundColorWrapper =
         isDarkTheme ? darkNavyDarkTheme : Colors.white;
 
-    final isSmallScreen = screenWidth < 768;
+    final isSmallScreen = screenWidth < 600;
 
     final account = context.read<ShellStateCubit>().state.maybeWhen(
           success: (state) => state.accounts
@@ -1003,7 +1083,7 @@ class DashboardPageState extends State<DashboardPage> {
                                           );
                                         }),
                                         SizedBox(
-                                          height: 248,
+                                          height: isSmallScreen ? 352 : 258,
                                           child: Container(
                                             margin: const EdgeInsets.fromLTRB(
                                                 8, 4, 8, 8),
@@ -1024,15 +1104,19 @@ class DashboardPageState extends State<DashboardPage> {
                                                       addresses: [
                                                         widget.currentAddress
                                                       ],
-                                                      currentAddress: widget
-                                                          .currentAddress),
+                                                      currentAddress:
+                                                          widget.currentAddress,
+                                                      initialItemCount:
+                                                          isSmallScreen
+                                                              ? 5
+                                                              : 3),
                                                 ),
                                               ],
                                             ),
                                           ),
                                         ),
                                         SizedBox(
-                                          height: 352,
+                                          height: isSmallScreen ? 248 : 352,
                                           child: Container(
                                             margin: const EdgeInsets.fromLTRB(
                                                 8, 4, 8, 8),
@@ -1048,13 +1132,19 @@ class DashboardPageState extends State<DashboardPage> {
                                                       const EdgeInsets.all(8.0),
                                                   sliver:
                                                       DashboardActivityFeedScreen(
-                                                    key: Key(widget
-                                                        .currentAddress
-                                                        .address),
-                                                    addresses: [
-                                                      widget.currentAddress
-                                                    ],
-                                                  ),
+                                                          key: Key(
+                                                            widget
+                                                                .currentAddress
+                                                                .address,
+                                                          ),
+                                                          addresses: [
+                                                            widget
+                                                                .currentAddress
+                                                          ],
+                                                          initialItemCount:
+                                                              isSmallScreen
+                                                                  ? 3
+                                                                  : 4),
                                                 )
                                               ],
                                             ),
@@ -1264,7 +1354,9 @@ class DashboardPageState extends State<DashboardPage> {
                                         accountUuid: widget.accountUuid,
                                         isDarkTheme: isDarkTheme,
                                         addresses: [widget.currentAddress],
-                                        currentAddress: widget.currentAddress),
+                                        currentAddress: widget.currentAddress,
+                                        initialItemCount:
+                                            isSmallScreen ? 5 : 3),
                                   ),
                                 ]),
                                 SliverStack(children: [
@@ -1284,6 +1376,7 @@ class DashboardPageState extends State<DashboardPage> {
                                     sliver: DashboardActivityFeedScreen(
                                       key: Key(widget.currentAddress.address),
                                       addresses: [widget.currentAddress],
+                                      initialItemCount: isSmallScreen ? 3 : 4,
                                     ),
                                   ),
                                 ])

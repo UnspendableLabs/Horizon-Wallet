@@ -33,6 +33,6 @@ class UpdateIssuanceState with _$UpdateIssuanceState, ComposeStateBase {
 class AssetState with _$AssetState {
   const factory AssetState.initial() = _AssetStateInitial;
   const factory AssetState.loading() = _AssetStateLoading;
-  const factory AssetState.success(AssetVerbose asset) = _AssetStateSuccess;
+  const factory AssetState.success(Asset asset) = _AssetStateSuccess;
   const factory AssetState.error(String error) = _AssetStateError;
 }

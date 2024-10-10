@@ -213,7 +213,7 @@ class MultiAddressBalanceVerbose {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Event {
-  final int eventIndex;
+  final int? eventIndex;
   final String event;
   final String? txHash;
   final int? blockIndex;
@@ -240,6 +240,8 @@ class Event {
         return NewTransactionEvent.fromJson(json);
       case 'ASSET_ISSUANCE':
         return AssetIssuanceEvent.fromJson(json);
+      case 'RESET_ISSUANCE':
+        return ResetIssuanceEvent.fromJson(json);
       case 'DISPENSE':
         return DispenseEvent.fromJson(json);
       case 'OPEN_DISPENSER':
@@ -458,6 +460,7 @@ class NewTransactionEvent extends Event {
 class AssetIssuanceParams {
   final String? asset;
   final String? assetLongname;
+  final String assetEvents;
   // final int blockIndex;
   // final int callDate;
   // final int callPrice;
@@ -471,13 +474,14 @@ class AssetIssuanceParams {
   // final bool reset;
   final String source;
   // final String status;
-  // final bool transfer;
+  final bool transfer;
   // final String txHash;
   // final int txIndex;
 
   AssetIssuanceParams({
     this.asset,
     this.assetLongname,
+    required this.assetEvents,
     // required this.blockIndex,
     // required this.callDate,
     // required this.callPrice,
@@ -491,7 +495,7 @@ class AssetIssuanceParams {
     // required this.reset,
     required this.source,
     // required this.status,
-    // required this.transfer,
+    required this.transfer,
     // required this.txHash,
     // required this.txIndex,
   });
@@ -502,14 +506,16 @@ class AssetIssuanceParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
-  final int blockTime;
+  final int? blockTime;
   // final AssetInfo assetInfo;
   final String? quantityNormalized;
   final String feePaidNormalized;
 
   VerboseAssetIssuanceParams({
     required super.asset,
-    super.assetLongname, // required super.blockIndex, required super.callDate, required super.callPrice, required super.callable, required super.description,
+    super.assetLongname,
+    required super.assetEvents,
+    // required super.blockIndex, required super.callDate, required super.callPrice, required super.callable, required super.description,
     // required super.divisible,
     // required super.feePaid,
     // required super.issuer,
@@ -518,7 +524,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.reset,
     required super.source,
     // required super.status,
-    // required super.transfer,
+    required super.transfer,
     // required super.txHash,
     // required super.txIndex,
     required this.blockTime,
@@ -529,6 +535,22 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
 
   factory VerboseAssetIssuanceParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseAssetIssuanceParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ResetIssuanceEvent extends Event {
+  final AssetIssuanceParams params;
+
+  ResetIssuanceEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory ResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
+      _$ResetIssuanceEventFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -580,6 +602,23 @@ class OpenDispenserEvent extends Event {
 
   factory OpenDispenserEvent.fromJson(Map<String, dynamic> json) =>
       _$OpenDispenserEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseResetIssuanceEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+
+  VerboseResetIssuanceEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseResetIssuanceEventFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1039,7 +1078,7 @@ class AssetInfo {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseEvent extends Event {
-  final int blockTime;
+  final int? blockTime;
 
   VerboseEvent({
     required super.eventIndex,
@@ -1070,7 +1109,7 @@ class VerboseEvent extends Event {
       case 'REFILL_DISPENSER':
         return VerboseRefillDispenserEvent.fromJson(json);
       case 'RESET_ISSUANCE':
-        return VerboseAssetIssuanceEvent.fromJson(json);
+        return VerboseResetIssuanceEvent.fromJson(json);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEvent.fromJson(json);
       default:
@@ -1473,7 +1512,7 @@ class ComposeIssuance {
       _$ComposeIssuanceFromJson(json);
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeIssuanceParams {
   final String source;
   final String asset;
@@ -2797,7 +2836,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
-    @Query("transferDestination") String? transferDestination,
+    @Query("transfer_destination") String? transferDestination,
     @Query("divisible") bool? divisible,
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
@@ -2810,7 +2849,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
-    @Query("transferDestination") String? transferDestination,
+    @Query("transfer_destination") String? transferDestination,
     @Query("divisible") bool? divisible,
     @Query("lock") bool? lock,
     @Query("reset") bool? reset,
@@ -2818,7 +2857,6 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
-    @Query("lock_description") bool? lockDescription,
   ]);
 
   @GET("/addresses/{address}/compose/dispenser?verbose=true")
@@ -2885,6 +2923,15 @@ abstract class V2Api {
   // @Verbose()
   @GET("/addresses/events?verbose=true")
   Future<Response<List<VerboseEvent>>> getEventsByAddressesVerbose(
+    @Query("addresses") String addresses, [
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("event_name") String? eventName,
+  ]);
+
+  @GET("/addresses/mempool?verbose=true")
+  Future<Response<List<VerboseEvent>>> getMempoolEventsByAddressesVerbose(
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,

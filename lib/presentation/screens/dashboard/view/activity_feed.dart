@@ -132,9 +132,13 @@ enum SendSide { source, destination }
 class ActivityFeedListItem extends StatelessWidget {
   final ActivityFeedItem item;
   final List<Address> addresses;
+  final bool isMobile;
 
   const ActivityFeedListItem(
-      {super.key, required this.item, required this.addresses});
+      {super.key,
+      required this.item,
+      required this.addresses,
+      required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
@@ -200,12 +204,10 @@ class ActivityFeedListItem extends StatelessWidget {
           quantityNormalized: params.quantityNormalized,
           asset: params.asset,
         ),
-      VerboseAssetIssuanceEvent(params: var params) => params.asset == null ||
-              params.quantityNormalized == null
-          ? const SelectableText('Issue (INVALID)',
-              style: TextStyle(color: redErrorText))
-          : SelectableText(
-              "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}"),
+      VerboseAssetIssuanceEvent(params: var params) =>
+        _buildAssetIssuanceTitle(params),
+      VerboseResetIssuanceEvent(params: var params) => SelectableText(
+          "Reset Issuance ${params.assetLongname ?? params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       VerboseOpenDispenserEvent(params: var params) =>
@@ -215,6 +217,31 @@ class ActivityFeedListItem extends StatelessWidget {
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
+  }
+
+  Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
+    if (params.transfer) {
+      return SelectableText(
+          "Transfer Ownership of ${params.assetLongname ?? params.asset}");
+    }
+    if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
+      if (params.assetEvents == "reissuance") {
+        return SelectableText(
+            "Reissue ${params.assetLongname ?? params.asset}");
+      } else if (params.assetEvents == "lock_quantity reissuance") {
+        return SelectableText(
+            "Lock Quantity for ${params.assetLongname ?? params.asset}");
+      } else if (params.assetEvents == "lock_description reissuance") {
+        return SelectableText(
+            "Lock Description for ${params.assetLongname ?? params.asset}");
+      }
+    }
+    if (params.asset == null || params.quantityNormalized == null) {
+      return const SelectableText('Issue (INVALID)',
+          style: TextStyle(color: redErrorText));
+    }
+    return SelectableText(
+        "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}");
   }
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
@@ -276,6 +303,8 @@ class ActivityFeedListItem extends StatelessWidget {
   Widget _buildEventSubtitle(Event event) {
     return switch (event) {
       VerboseAssetIssuanceEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseResetIssuanceEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseEnhancedSendEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
@@ -342,6 +371,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.arrow_forward, color: Colors.green),
       VerboseAssetIssuanceEvent(params: var params) =>
         const Icon(Icons.toll, color: Colors.grey),
+      VerboseResetIssuanceEvent(params: var params) =>
+        const Icon(Icons.toll, color: Colors.grey),
       VerboseDispenseEvent(params: var params) =>
         const Icon(Icons.paid, color: Colors.grey),
       VerboseOpenDispenserEvent(params: var params) =>
@@ -399,15 +430,17 @@ class ActivityFeedListItem extends StatelessWidget {
   String _getConfirmations(int? confirmations, int? blockHeight) {
     return switch (confirmations) {
       null => "#${numberWithCommas.format(blockHeight)}",
-      _ => "${confirmations > 6 ? '>6' : confirmations} confirmations",
+      _ =>
+        "${confirmations > 6 ? '>6' : confirmations}${isMobile ? '' : ' confirmations'}",
     };
   }
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
   final List<Address> addresses;
-
-  const DashboardActivityFeedScreen({super.key, required this.addresses});
+  final int initialItemCount;
+  const DashboardActivityFeedScreen(
+      {super.key, required this.addresses, required this.initialItemCount});
 
   @override
   DashboardActivityFeedScreenState createState() =>
@@ -417,14 +450,14 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 class DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
-  static int displayedTransactionsCount = 4;
+  static int? displayedTransactionsCount;
   static const int pageSize = 20;
 
   @override
   void initState() {
     super.initState();
     _bloc = context.read<DashboardActivityFeedBloc>();
-
+    displayedTransactionsCount = widget.initialItemCount;
     // Start polling after the first frame
     // TODO: make this part of config?
 
@@ -462,14 +495,14 @@ class DashboardActivityFeedScreenState
             _buildNewTransactionsBanner(state),
           ..._buildContent(state),
           state is DashboardActivityFeedStateCompleteOk &&
-                  state.transactions.length > displayedTransactionsCount
+                  state.transactions.length > displayedTransactionsCount!
               ? Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
                         displayedTransactionsCount =
-                            displayedTransactionsCount + pageSize;
+                            displayedTransactionsCount! + pageSize;
                       });
                     },
                     child: const Text("View More"),
@@ -511,13 +544,15 @@ class DashboardActivityFeedScreenState
       }
 
       final displayedTransactions =
-          transactions.take(displayedTransactionsCount).toList();
+          transactions.take(displayedTransactionsCount!).toList();
+      final isMobile = MediaQuery.of(context).size.width < 600;
 
       final List<Widget> widgets = displayedTransactions
           .map((transaction) => ActivityFeedListItem(
                 key: ValueKey(transaction.hash),
                 item: transaction,
                 addresses: widget.addresses,
+                isMobile: isMobile,
               ))
           .toList();
 
