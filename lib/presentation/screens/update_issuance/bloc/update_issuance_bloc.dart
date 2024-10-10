@@ -119,13 +119,14 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       return;
     }
 
-    try {
-      balance = await balanceRepository.getBalanceForAddressAndAssetVerbose(
-          event.assetName!, event.currentAddress!.address);
-    } catch (e) {
-      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-      return;
-    }
+    // try {
+    //   balance = await balanceRepository.getBalanceForAddressAndAssetVerbose(
+    //       event.assetName!, event.currentAddress!.address);
+    // print('balance: $balance');
+    // } catch (e) {
+    //   emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
+    //   return;
+    // }
 
     try {
       feeEstimates = await getFeeEstimatesUseCase.call(
@@ -136,9 +137,10 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       return;
     }
 
+    // print('before emitting: $balance');
     emit(state.copyWith(
       assetState: AssetState.success(asset),
-      balancesState: BalancesState.success([balance]),
+      balancesState: const BalancesState.success([]),
       feeState: FeeState.success(feeEstimates),
     ));
   }

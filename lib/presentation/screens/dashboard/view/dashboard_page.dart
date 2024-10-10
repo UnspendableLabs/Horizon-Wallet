@@ -723,7 +723,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
           final Color textColor = isClickable
               ? (widget.isDarkTheme
-                  ? const Color.fromRGBO(33, 150, 243, 1)
+                  ? const Color.fromRGBO(100, 181, 246, 1)
                   : const Color.fromRGBO(25, 118, 210, 1))
               : (widget.isDarkTheme
                   ? greyDashboardTextDarkTheme
