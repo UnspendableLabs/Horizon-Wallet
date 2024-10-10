@@ -1243,7 +1243,7 @@ class Asset {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AssetVerbose {
-  final String? asset;
+  final String asset;
   final String? assetLongname;
   final String? description;
   final String? issuer;
@@ -1255,7 +1255,7 @@ class AssetVerbose {
   final String? supplyNormalized;
 
   const AssetVerbose({
-    this.asset,
+    required this.asset,
     this.assetLongname,
     this.description,
     this.divisible,

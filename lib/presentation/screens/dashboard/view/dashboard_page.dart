@@ -712,9 +712,59 @@ class BalancesSliverState extends State<BalancesSliver> {
           ...entries,
         ];
 
-        final displayedEntries = _viewAll
-            ? orderedEntries
-            : orderedEntries.take(widget.initialItemCount).toList();
+        final ownedAssetsNotIncludedInEntries = ownedAssets
+            .where((asset) =>
+                !orderedEntries.any((entry) => entry.key == asset.asset))
+            .toList();
+
+        final List<TableRow> rows = [];
+        final balanceRows = orderedEntries.map((entry) {
+          final isClickable = entry.key != 'BTC';
+
+          final Color textColor = isClickable
+              ? (widget.isDarkTheme
+                  ? const Color.fromRGBO(33, 150, 243, 1)
+                  : const Color.fromRGBO(25, 118, 210, 1))
+              : (widget.isDarkTheme
+                  ? greyDashboardTextDarkTheme
+                  : greyDashboardTextLightTheme);
+
+          Asset? currentOwnedAsset =
+              ownedAssets.firstWhereOrNull((asset) => asset.asset == entry.key);
+
+          final bool isOwner =
+              currentOwnedAsset?.owner == widget.currentAddress.address;
+
+          return TableRow(
+            children: [
+              _buildTableCell1(entry.key, entry.value.assetInfo.assetLongname,
+                  isClickable, textColor),
+              _buildTableCell2(entry.value.quantityNormalized, textColor),
+              _buildTableCell3(entry.key, textColor, isOwner, currentOwnedAsset,
+                  entry.value.quantity)
+            ],
+          );
+        }).toList();
+
+        final ownedAssetRows = ownedAssetsNotIncludedInEntries.map((asset) {
+          final textColor = widget.isDarkTheme
+              ? const Color.fromRGBO(100, 181, 246, 1)
+              : const Color.fromRGBO(25, 118, 210, 1);
+          return TableRow(
+            children: [
+              _buildTableCell1(
+                  asset.asset, asset.assetLongname, true, textColor),
+              _buildTableCell2('0', textColor), // these are zero balances
+              _buildTableCell3(asset.asset, textColor, true, asset, 0)
+            ],
+          );
+        }).toList();
+
+        rows.addAll(balanceRows);
+        rows.addAll(ownedAssetRows);
+
+        final displayedRows =
+            _viewAll ? rows : rows.take(widget.initialItemCount).toList();
 
         List<Widget> widgets = [
           LayoutBuilder(builder: (context, constraints) {
@@ -734,170 +784,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   2: FlexColumnWidth(
                       MediaQuery.of(context).size.width < 600 ? 1 : 1),
                 },
-                children: displayedEntries.map((entry) {
-                  final isClickable = entry.key != 'BTC';
-
-                  final Color textColor = isClickable
-                      ? (widget.isDarkTheme
-                          ? Colors.blue[300]!
-                          : Colors.blue[700]!)
-                      : (widget.isDarkTheme
-                          ? greyDashboardTextDarkTheme
-                          : greyDashboardTextLightTheme);
-
-                  Asset? currentOwnedAsset = ownedAssets
-                      .firstWhereOrNull((asset) => asset.asset == entry.key);
-
-                  final bool isOwner =
-                      currentOwnedAsset?.owner == widget.currentAddress.address;
-
-                  const EdgeInsets padding =
-                      EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0);
-                  return TableRow(
-                    children: [
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: padding,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              return SelectableText.rich(
-                                TextSpan(
-                                  text: entry.value.assetInfo.assetLongname ??
-                                      entry.key,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: textColor,
-                                  ),
-                                  recognizer: isClickable
-                                      ? (TapGestureRecognizer()
-                                        ..onTap =
-                                            () => _launchAssetUrl(entry.key))
-                                      : null,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: padding,
-                          child: SelectableText(
-                            entry.value.quantityNormalized,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ),
-                      ),
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 8.0),
-                          child: Flexible(
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  iconSize: 16.0,
-                                  icon: const Icon(Icons.send),
-                                  onPressed: () {
-                                    HorizonUI.HorizonDialog.show(
-                                      context: context,
-                                      body: HorizonUI.HorizonDialog(
-                                        title: 'Compose Send',
-                                        body: ComposeSendPageWrapper(
-                                          dashboardActivityFeedBloc: BlocProvider
-                                              .of<DashboardActivityFeedBloc>(
-                                                  context),
-                                          asset: entry.key,
-                                        ),
-                                        includeBackButton: false,
-                                        includeCloseButton: true,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                if (isOwner)
-                                  PopupMenuButton<IssuanceActionType>(
-                                    icon: const Icon(Icons.more_vert),
-                                    onSelected: (IssuanceActionType result) {
-                                      HorizonUI.HorizonDialog.show(
-                                        context: context,
-                                        body: HorizonUI.HorizonDialog(
-                                          title: "Update Issuance",
-                                          body: UpdateIssuancePageWrapper(
-                                            assetName:
-                                                currentOwnedAsset!.asset!,
-                                            assetLongname:
-                                                currentOwnedAsset.assetLongname,
-                                            actionType: result,
-                                            dashboardActivityFeedBloc: BlocProvider
-                                                .of<DashboardActivityFeedBloc>(
-                                                    context),
-                                          ),
-                                          includeBackButton: false,
-                                          includeCloseButton: true,
-                                          onBackButtonPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    itemBuilder: (BuildContext context) =>
-                                        <PopupMenuEntry<IssuanceActionType>>[
-                                      PopupMenuItem<IssuanceActionType>(
-                                        value: IssuanceActionType.reset,
-                                        enabled:
-                                            currentOwnedAsset?.locked != true,
-                                        child: const Text('Reset Asset'),
-                                      ),
-                                      PopupMenuItem<IssuanceActionType>(
-                                        value: IssuanceActionType.lockQuantity,
-                                        enabled:
-                                            currentOwnedAsset?.locked != true,
-                                        child: const Text('Lock Quantity'),
-                                      ),
-                                      PopupMenuItem<IssuanceActionType>(
-                                        value:
-                                            IssuanceActionType.lockDescription,
-                                        enabled:
-                                            currentOwnedAsset?.locked != true,
-                                        child: const Text('Lock Description'),
-                                      ),
-                                      PopupMenuItem<IssuanceActionType>(
-                                        value: IssuanceActionType
-                                            .changeDescription,
-                                        enabled:
-                                            currentOwnedAsset?.locked != true,
-                                        child: const Text('Change Description'),
-                                      ),
-                                      PopupMenuItem<IssuanceActionType>(
-                                        value: IssuanceActionType.issueMore,
-                                        enabled:
-                                            currentOwnedAsset?.locked != true,
-                                        child: const Text('Issue More'),
-                                      ),
-                                      const PopupMenuItem<IssuanceActionType>(
-                                        value: IssuanceActionType.issueSubasset,
-                                        child: Text('Issue Subasset'),
-                                      ),
-                                      const PopupMenuItem<IssuanceActionType>(
-                                        value: IssuanceActionType
-                                            .transferOwnership,
-                                        child: Text('Transfer Ownership'),
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                children: displayedRows,
               ),
             );
           }),
@@ -953,6 +840,140 @@ class BalancesSliverState extends State<BalancesSliver> {
       ],
       complete: (result) => _buildBalanceList(result),
       reloading: (result) => _buildBalanceList(result),
+    );
+  }
+
+  TableCell _buildTableCell1(String assetName, String? assetLongname,
+      bool isClickable, Color textColor) {
+    return TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SelectableText.rich(
+                TextSpan(
+                  text: assetLongname ?? assetName,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                  recognizer: isClickable
+                      ? (TapGestureRecognizer()
+                        ..onTap = () => _launchAssetUrl(assetName))
+                      : null,
+                ),
+              );
+            },
+          ),
+        ));
+  }
+
+  TableCell _buildTableCell2(String quantityNormalized, Color textColor) =>
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
+          child: SelectableText(
+            quantityNormalized,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
+      );
+
+  TableCell _buildTableCell3(String assetName, Color textColor, bool isOwner,
+      Asset? currentOwnedAsset, int quantity) {
+    return TableCell(
+      verticalAlignment: TableCellVerticalAlignment.middle,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(4.0, 8.0, 2.0, 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (quantity > 0)
+              IconButton(
+                iconSize: 16.0,
+                icon: const Icon(Icons.send),
+                onPressed: () {
+                  HorizonUI.HorizonDialog.show(
+                    context: context,
+                    body: HorizonUI.HorizonDialog(
+                      title: 'Compose Send',
+                      body: ComposeSendPageWrapper(
+                        dashboardActivityFeedBloc:
+                            BlocProvider.of<DashboardActivityFeedBloc>(context),
+                        asset: assetName,
+                      ),
+                      includeBackButton: false,
+                      includeCloseButton: true,
+                    ),
+                  );
+                },
+              ),
+            if (isOwner)
+              PopupMenuButton<IssuanceActionType>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (IssuanceActionType result) {
+                  HorizonUI.HorizonDialog.show(
+                    context: context,
+                    body: HorizonUI.HorizonDialog(
+                      title: "Update Issuance",
+                      body: UpdateIssuancePageWrapper(
+                        assetName: currentOwnedAsset!.asset,
+                        assetLongname: currentOwnedAsset.assetLongname,
+                        actionType: result,
+                        dashboardActivityFeedBloc:
+                            BlocProvider.of<DashboardActivityFeedBloc>(context),
+                      ),
+                      includeBackButton: false,
+                      includeCloseButton: true,
+                      onBackButtonPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  );
+                },
+                itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<IssuanceActionType>>[
+                  PopupMenuItem<IssuanceActionType>(
+                    value: IssuanceActionType.reset,
+                    enabled: currentOwnedAsset?.locked != true,
+                    child: const Text('Reset Asset'),
+                  ),
+                  PopupMenuItem<IssuanceActionType>(
+                    value: IssuanceActionType.lockQuantity,
+                    enabled: currentOwnedAsset?.locked != true,
+                    child: const Text('Lock Quantity'),
+                  ),
+                  PopupMenuItem<IssuanceActionType>(
+                    value: IssuanceActionType.lockDescription,
+                    enabled: currentOwnedAsset?.locked != true,
+                    child: const Text('Lock Description'),
+                  ),
+                  PopupMenuItem<IssuanceActionType>(
+                    value: IssuanceActionType.changeDescription,
+                    enabled: currentOwnedAsset?.locked != true,
+                    child: const Text('Change Description'),
+                  ),
+                  PopupMenuItem<IssuanceActionType>(
+                    value: IssuanceActionType.issueMore,
+                    enabled: currentOwnedAsset?.locked != true,
+                    child: const Text('Issue More'),
+                  ),
+                  const PopupMenuItem<IssuanceActionType>(
+                    value: IssuanceActionType.issueSubasset,
+                    child: Text('Issue Subasset'),
+                  ),
+                  const PopupMenuItem<IssuanceActionType>(
+                    value: IssuanceActionType.transferOwnership,
+                    child: Text('Transfer Ownership'),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
