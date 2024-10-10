@@ -612,7 +612,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
 
   List<Widget> _buildConfirmationDetails(
       dynamic composeTransaction, Asset originalAsset) {
-    final params = (composeTransaction as ComposeIssuanceResponseVerbose).params;
+    final params =
+        (composeTransaction as ComposeIssuanceResponseVerbose).params;
     return switch (widget.actionType) {
       IssuanceActionType.reset => [
           _sourceField(params.source),
