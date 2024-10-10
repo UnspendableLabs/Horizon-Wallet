@@ -1,89 +1,59 @@
-import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/entities/compose_dispense.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
-import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:logger/logger.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_state.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:logger/logger.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 
-class ComposeDispenserEventParams {
-  final String asset;
-  final int giveQuantity;
-  final int escrowQuantity;
-  final int mainchainrate;
-  final int status;
-  final String? openAddress;
-  final String? oracleAddress;
+class ComposeDispenseEventParams {
+  final String address;
+  final String dispenser;
+  final int quantity;
 
-  ComposeDispenserEventParams({
-    required this.asset,
-    required this.giveQuantity,
-    required this.escrowQuantity,
-    required this.mainchainrate,
-    required this.status,
-    this.openAddress,
-    this.oracleAddress,
+  ComposeDispenseEventParams({
+    required this.address,
+    required this.dispenser,
+    required this.quantity,
   });
 }
 
-class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
+class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   final Logger logger = Logger();
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
 
-  final FetchDispenserFormDataUseCase fetchDispenserFormDataUseCase;
+  final FetchDispenseFormDataUseCase fetchDispenseFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
 
-  ComposeDispenserBloc({
-    required this.fetchDispenserFormDataUseCase,
-    required this.composeTransactionUseCase,
+  ComposeDispenseBloc({
     required this.composeRepository,
     required this.analyticsService,
+    required this.fetchDispenseFormDataUseCase,
+    required this.composeTransactionUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
-  }) : super(ComposeDispenserState(
-            submitState: const SubmitInitial(),
-            feeOption: FeeOption.Medium(),
-            balancesState: const BalancesState.initial(),
-            feeState: const FeeState.initial(),
-            giveQuantity: '',
-            escrowQuantity: '',
-            mainchainrate: '',
-            status: 0)) {
-    // Event handlers specific to the dispenser
-    on<ChangeAsset>(_onChangeAsset);
-    on<ChangeGiveQuantity>(_onChangeGiveQuantity);
-    on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
-  }
-
-  _onChangeEscrowQuantity(ChangeEscrowQuantity event, emit) {
-    final quantity = event.value;
-    emit(state.copyWith(escrowQuantity: quantity));
-  }
-
-  _onChangeGiveQuantity(ChangeGiveQuantity event, emit) {
-    final quantity = event.value;
-    emit(state.copyWith(giveQuantity: quantity));
-  }
-
-  _onChangeAsset(ChangeAsset event, emit) {
-    emit(state.copyWith(
-      assetName: event.asset,
-    ));
+  }) : super(ComposeDispenseState(
+          feeOption: FeeOption.Medium(),
+          submitState: const SubmitInitial(),
+          feeState: const FeeState.initial(),
+          balancesState: const BalancesState.initial(),
+          quantity: "",
+        )) {
+    // Register additional event handlers specific to sending
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  onChangeFeeOption(event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
@@ -97,7 +67,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
     try {
       final (balances, feeEstimates) =
-          await fetchDispenserFormDataUseCase.call(event.currentAddress!);
+          await fetchDispenseFormDataUseCase.call(event.currentAddress!);
 
       emit(state.copyWith(
         balancesState: BalancesState.success(balances),
@@ -122,32 +92,41 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   }
 
   @override
+  onFinalizeTransaction(event, emit) async {
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeDispenseParams>(
+            loading: false,
+            error: null,
+            composeTransaction: event.composeTransaction,
+            fee: event.fee)));
+  }
+
+  @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
-      final asset = event.params.asset;
-      final giveQuantity = event.params.giveQuantity;
-      final escrowQuantity = event.params.escrowQuantity;
-      final mainchainrate = event.params.mainchainrate;
+      final dispenser = event.params.dispenser;
+      final quantity = event.params.quantity;
+
+      logger.e("event dispenser ${event.params.dispenser}");
+
 
       final composed = await composeTransactionUseCase
-          .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+          .call<ComposeDispenseParams, ComposeDispenseResponse>(
               feeRate: feeRate,
               source: source,
-              params: ComposeDispenserParams(
-                  source: source,
-                  asset: asset,
-                  giveQuantity: giveQuantity,
-                  escrowQuantity: escrowQuantity,
-                  mainchainrate: mainchainrate),
-              composeFn: composeRepository.composeDispenserVerbose);
+              params: ComposeDispenseParams(
+                address: source,
+                dispenser: dispenser,
+                quantity: quantity,
+              ),
+              composeFn: composeRepository.composeDispense);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeDispenserResponseVerbose>(
+          submitState: SubmitComposingTransaction<ComposeDispenseResponse>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
@@ -174,31 +153,18 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
-  }
-
-  @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState
-        is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
+    if (state.submitState is! SubmitFinalizing<ComposeDispenseResponse>) {
       return;
     }
 
-    final s = (state.submitState
-        as SubmitFinalizing<ComposeDispenserResponseVerbose>);
+    final s = (state.submitState as SubmitFinalizing<ComposeDispenseResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: SubmitFinalizing<ComposeDispenseResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -207,23 +173,23 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
-        source: compose.params.source,
+        source: compose.params.address,
         rawtransaction: compose.rawtransaction,
-        onSuccess:
-            (txHex, txHash) async {
+        onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.d('dispenser broadcasted txHash: $txHash');
+          logger.d('dispense broadcasted txHash: $txHash');
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
-                  transactionHex: txHex, sourceAddress: compose.params.source)));
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.address)));
 
-          analyticsService.trackEvent('broadcast_tx_dispenser');
+          analyticsService.trackEvent('broadcast_tx_dispense');
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+              submitState: SubmitFinalizing<ComposeDispenseResponse>(
             loading: false,
             error: msg,
             fee: fee,

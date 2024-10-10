@@ -49,22 +49,16 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required this.transactionLocalRepository,
   });
 
-  Future<void> call({
-    required String password,
-    required Function() extractParams,
-    required Function(String, String, String?, String?, int?, String?)
-        onSuccess,
-    required Function(String) onError,
-  }) async {
+  Future<void> call(
+      {required String password,
+      // todo: no reason to have extrat params...just pass in dirctly.
+      required Function(String, String)
+          onSuccess,
+      required Function(String) onError,
+      required String source,
+      required String rawtransaction}) async {
     try {
-      late String source;
-      late String rawTx;
-      late String destination;
-      late int quantity;
-      late String asset;
-
       // Extract parameters
-      (source, rawTx, destination, quantity, asset) = extractParams();
 
       // Fetch UTXOs
       final utxos = await utxoRepository.getUnspentForAddress(source);
@@ -107,7 +101,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
-        rawTx,
+        rawtransaction,
         addressPrivKey,
         source,
         utxoMap,
@@ -116,7 +110,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       // Broadcast Transaction
       try {
         final txHash = await bitcoindService.sendrawtransaction(txHex);
-        await onSuccess(txHex, txHash, source, destination, quantity, asset);
+        await onSuccess(txHex, txHash);
       } catch (e) {
         throw SignAndBroadcastTransactionException(
             'Failed to broadcast the transaction.');

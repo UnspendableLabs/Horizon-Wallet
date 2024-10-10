@@ -3,6 +3,8 @@ import "package:horizon/domain/entities/action.dart";
 import "package:fpdart/fpdart.dart";
 
 class ActionRepositoryImpl implements ActionRepository {
+  Action? _currentAction;
+
   @override
   Either<String, Action> fromString(String str) {
     return Either.tryCatch(
@@ -17,5 +19,15 @@ class ActionRepositoryImpl implements ActionRepository {
       ("dispense", String address) => DispenseAction(address),
       _ => throw Exception()
     };
+  }
+
+  @override
+  void enqueue(Action action) {
+    _currentAction = action; // Store the single action
+  }
+
+  @override
+  Option<Action> dequeue() {
+    return Option.fromNullable(_currentAction);
   }
 }

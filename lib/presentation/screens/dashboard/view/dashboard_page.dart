@@ -8,10 +8,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/fn.dart';
+import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
@@ -26,6 +29,7 @@ import 'package:horizon/presentation/common/footer.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
@@ -452,6 +456,7 @@ class DashboardPageWrapper extends StatelessWidget {
                     "${data.currentAccountUuid}:${data.currentAddress.address}"),
                 accountUuid: data.currentAccountUuid,
                 currentAddress: data.currentAddress,
+                actionRepository: GetIt.instance<ActionRepository>(),
               ),
             ),
         orElse: () => const SizedBox.shrink());
@@ -982,9 +987,14 @@ class BalancesSliverState extends State<BalancesSliver> {
 class DashboardPage extends StatefulWidget {
   final String accountUuid;
   final Address currentAddress;
+  final ActionRepository actionRepository;
 
-  const DashboardPage(
-      {super.key, required this.accountUuid, required this.currentAddress});
+  const DashboardPage({
+    super.key,
+    required this.accountUuid,
+    required this.currentAddress,
+    required this.actionRepository,
+  });
 
   @override
   DashboardPageState createState() => DashboardPageState();
@@ -994,6 +1004,38 @@ class DashboardPageState extends State<DashboardPage> {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
 
   final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    final action = widget.actionRepository.dequeue();
+    action.fold(noop, (action) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _getHandler(action)();
+      });
+    });
+  }
+
+  void Function() _getHandler(URLAction.Action action) {
+    return switch (action) {
+      URLAction.DispenseAction(address: var address) => () =>
+          _handleDispenseAction(address),
+      _ => noop
+    };
+  }
+
+  void _handleDispenseAction(String address) {
+    final dashboardActivityFeedBloc =
+        BlocProvider.of<DashboardActivityFeedBloc>(context);
+
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+            title: "Trigger Dispense",
+            body: ComposeDispensePageWrapper(
+                initialDispenserAddress: address,
+                dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1414,10 +1456,5 @@ class DashboardPageState extends State<DashboardPage> {
             ],
           ),
         ));
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 }
