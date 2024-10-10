@@ -10,7 +10,7 @@ abstract class ComposeRepository {
       int? fee,
       int? feeRate,
       List<Utxo>? inputsSet]);
-  Future<ComposeIssuanceVerbose> composeIssuanceVerbose(
+  Future<ComposeIssuanceResponseVerbose> composeIssuanceVerbose(
       String sourceAddress, String name, int quantity,
       [bool? divisible,
       bool? lock,
@@ -21,16 +21,6 @@ abstract class ComposeRepository {
       int? fee,
       List<Utxo>? inputsSet]);
 
-  Future<ComposeDispenserVerbose> composeDispenserVerbose(
-      String sourceAddress,
-      String asset,
-      int giveQuantity,
-      int escrowQuantity,
-      int mainchainrate,
-      int status,
-      [String? openAddress,
-      String? oracleAddress,
-      bool? allowUnconfirmedTx,
-      int? fee,
-      List<Utxo>? inputsSet]);
+  Future<ComposeDispenserResponseVerbose> composeDispenserVerbose(
+      int fee, List<Utxo> inputsSet, ComposeDispenserParams params);
 }

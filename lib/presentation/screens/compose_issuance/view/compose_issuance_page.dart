@@ -10,7 +10,6 @@ import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
@@ -31,6 +30,7 @@ import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'dart:math';
 
 class ComposeIssuancePageWrapper extends StatelessWidget {
@@ -48,6 +48,7 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeIssuanceBloc(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           addressRepository: GetIt.I.get<AddressRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
@@ -61,7 +62,6 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
           bitcoindService: GetIt.I.get<BitcoindService>(),
           transactionRepository: GetIt.I.get<TransactionRepository>(),
           transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-          bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeIssuancePage(
           address: state.currentAddress,
@@ -327,7 +327,8 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    final params = (composeTransaction as ComposeIssuanceVerbose).params;
+    final params =
+        (composeTransaction as ComposeIssuanceResponseVerbose).params;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -392,7 +393,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeIssuanceBloc>().add(
-            FinalizeTransactionEvent<ComposeIssuanceVerbose>(
+            FinalizeTransactionEvent<ComposeIssuanceResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),

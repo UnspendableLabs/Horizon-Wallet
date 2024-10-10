@@ -93,14 +93,12 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
             composeTransaction: var composeTransaction,
             fee: var fee,
             feeRate: var feeRate,
-            virtualSize: var virtualSize,
           ) =>
             ComposeBaseConfirmationPage(
               composeTransaction: composeTransaction,
               address: widget.address,
               fee: fee,
               feeRate: feeRate,
-              virtualSize: virtualSize,
               buildConfirmationFormFields: (composeTransaction, formKey) =>
                   widget.buildConfirmationFormFields(
                       composeTransaction, formKey),
@@ -246,7 +244,6 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
   final Address address;
   final int fee;
   final int feeRate;
-  final int virtualSize;
   final List<Widget> Function(dynamic, GlobalKey<FormState>)
       buildConfirmationFormFields;
   final void Function() onBack;
@@ -258,7 +255,6 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
     required this.address,
     required this.fee,
     required this.feeRate,
-    required this.virtualSize,
     required this.buildConfirmationFormFields,
     required this.onBack,
     required this.onContinue,

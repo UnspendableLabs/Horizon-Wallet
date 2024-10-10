@@ -22,6 +22,15 @@ class FeeState with _$FeeState {
   const factory FeeState.error(String error) = _FeeError;
 }
 
+extension FeeStateGetOrThrow on FeeState {
+  FeeEstimates feeEstimatesOrThrow() {
+    return maybeWhen(
+      success: (feeEstimates) => feeEstimates,
+      orElse: () => throw StateError('FeeState is not in a success state'),
+    );
+  }
+}
+
 /// BalancesState represents the state of fetching balances.
 @freezed
 class BalancesState with _$BalancesState {
@@ -49,12 +58,12 @@ class SubmitInitial extends SubmitState {
 /// State when submission is in progress.
 class SubmitComposingTransaction<T> extends SubmitState {
   final T composeTransaction;
-  final int virtualSize;
+  // final int virtualSize;
   final int fee;
   final int feeRate;
   const SubmitComposingTransaction({
     required this.composeTransaction,
-    required this.virtualSize,
+    // required this.virtualSize,
     required this.fee,
     required this.feeRate,
   });

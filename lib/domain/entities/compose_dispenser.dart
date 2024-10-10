@@ -1,16 +1,45 @@
-class ComposeDispenser {
+import "./compose_response.dart";
+import "./compose_fn.dart";
+
+class ComposeDispenserParams extends ComposeParams {
+  final String source;
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+
+  ComposeDispenserParams({
+    required this.source,
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+  });
+
+  @override
+  List<Object> get props => [
+        source,
+        asset,
+        giveQuantity,
+        escrowQuantity,
+        mainchainrate,
+      ];
+}
+
+class ComposeDispenserResponse implements ComposeResponse {
+  @override
   final String rawtransaction;
   final ComposeDispenserParams params;
   final String name;
 
-  const ComposeDispenser({
+  const ComposeDispenserResponse({
     required this.rawtransaction,
     required this.params,
     required this.name,
   });
 }
 
-class ComposeDispenserParams {
+class ComposeDispenserResponseParams {
   final String source;
   final String asset;
   final int giveQuantity;
@@ -20,7 +49,7 @@ class ComposeDispenserParams {
   final String? openAddress;
   final String? oracleAddress;
 
-  ComposeDispenserParams({
+  ComposeDispenserResponseParams({
     required this.source,
     required this.asset,
     required this.giveQuantity,
@@ -32,9 +61,10 @@ class ComposeDispenserParams {
   });
 }
 
-class ComposeDispenserVerbose {
+class ComposeDispenserResponseVerbose implements ComposeResponse {
+  @override
   final String rawtransaction;
-  final ComposeDispenserVerboseParams params;
+  final ComposeDispenserResponseVerboseParams params;
   final String name;
   final int btcIn;
   final int btcOut;
@@ -42,7 +72,7 @@ class ComposeDispenserVerbose {
   final int btcFee;
   final String data;
 
-  const ComposeDispenserVerbose({
+  const ComposeDispenserResponseVerbose({
     required this.rawtransaction,
     required this.params,
     required this.name,
@@ -54,7 +84,7 @@ class ComposeDispenserVerbose {
   });
 }
 
-class ComposeDispenserVerboseParams {
+class ComposeDispenserResponseVerboseParams {
   final String source;
   final String asset;
   final int giveQuantity;
@@ -66,7 +96,7 @@ class ComposeDispenserVerboseParams {
   final String giveQuantityNormalized;
   final String escrowQuantityNormalized;
 
-  const ComposeDispenserVerboseParams({
+  const ComposeDispenserResponseVerboseParams({
     required this.source,
     required this.asset,
     required this.giveQuantity,

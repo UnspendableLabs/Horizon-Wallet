@@ -1,16 +1,19 @@
-class ComposeIssuance {
+import "./compose_response.dart";
+
+class ComposeIssuanceResponse implements ComposeResponse {
+  @override
   final String rawtransaction;
-  final ComposeIssuanceParams params;
+  final ComposeIssuanceResponseParams params;
   final String name;
 
-  const ComposeIssuance({
+  const ComposeIssuanceResponse({
     required this.rawtransaction,
     required this.params,
     required this.name,
   });
 }
 
-class ComposeIssuanceParams {
+class ComposeIssuanceResponseParams {
   final String source;
   final String asset;
   final int quantity;
@@ -20,7 +23,7 @@ class ComposeIssuanceParams {
   final String? description;
   final String? transferDestination;
 
-  ComposeIssuanceParams({
+  ComposeIssuanceResponseParams({
     required this.source,
     required this.asset,
     required this.quantity,
@@ -32,19 +35,20 @@ class ComposeIssuanceParams {
   });
 }
 
-class ComposeIssuanceVerbose {
+class ComposeIssuanceResponseVerbose implements ComposeResponse {
+  @override
   final String rawtransaction;
-  final ComposeIssuanceVerboseParams params;
+  final ComposeIssuanceResponseVerboseParams params;
   final String name;
 
-  const ComposeIssuanceVerbose({
+  const ComposeIssuanceResponseVerbose({
     required this.rawtransaction,
     required this.params,
     required this.name,
   });
 }
 
-class ComposeIssuanceVerboseParams {
+class ComposeIssuanceResponseVerboseParams {
   final String source;
   final String asset;
   final int quantity;
@@ -55,7 +59,7 @@ class ComposeIssuanceVerboseParams {
   final String? transferDestination;
   final String quantityNormalized;
 
-  const ComposeIssuanceVerboseParams({
+  const ComposeIssuanceResponseVerboseParams({
     required this.source,
     required this.asset,
     required this.quantity,
