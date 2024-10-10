@@ -58,6 +58,9 @@ import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/action_repository.dart';
+import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
+
 import 'package:horizon/data/sources/network/esplora_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -71,6 +74,7 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 
 final logger = Logger();
 
@@ -231,9 +235,15 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
   ));
 
-  injector.registerSingleton(FetchDispenserFormDataUseCase(
-      getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-      balanceRepository: injector.get<BalanceRepository>()));
+  injector.registerSingleton<FetchDispenserFormDataUseCase>(
+      FetchDispenserFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton<FetchDispenseFormDataUseCase>(
+      FetchDispenseFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton(FetchCloseDispenserFormDataUseCase(
       getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -263,6 +273,8 @@ Future<void> setup() async {
     transactionRepository: GetIt.I.get<TransactionRepository>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
   ));
+
+  injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
 }
 
 class CustomDioException extends DioException {

@@ -5,8 +5,15 @@ import 'package:horizon/domain/entities/compose_issuance.dart'
 import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
 import 'package:horizon/domain/entities/compose_dispenser.dart'
     as compose_dispenser;
+import 'package:horizon/domain/entities/compose_dispense.dart'
+    as compose_dispense;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+
+import 'package:logger/logger.dart';
+
+
+final logger = Logger();
 
 class ComposeRepositoryImpl extends ComposeRepository {
   final V2Api api;
@@ -157,5 +164,40 @@ class ComposeRepositoryImpl extends ComposeRepository {
           escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
         ),
         name: txVerbose.name);
+  }
+
+  @override
+  Future<compose_dispense.ComposeDispenseResponse> composeDispense(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_dispense.ComposeDispenseParams params) async {
+    final sourceAddress = params.address;
+    final dispenser = params.dispenser;
+    final quantity = params.quantity;
+    const allowUnconfirmedTx = true;
+
+    
+
+    final inputsSetString =
+        inputsSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+    logger.e("""
+
+      address: $sourceAddress,
+      dispenser: $dispenser,
+      quantity: $quantity
+
+
+
+    """);
+
+    final response = await api.composeDispense(sourceAddress, dispenser,
+        quantity, allowUnconfirmedTx, fee, inputsSetString);
+
+    if (response.result == null) {
+      throw Exception('Failed to compose dispense');
+    }
+
+    return response.result!.toDomain();
   }
 }

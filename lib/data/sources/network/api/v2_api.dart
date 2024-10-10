@@ -1,8 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/cursor.dart';
+import 'package:horizon/data/models/compose.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
+
+import 'package:horizon/domain/entities/compose_dispense.dart';
 
 part 'v2_api.g.dart';
 //
@@ -2969,6 +2972,17 @@ abstract class V2Api {
     @Query("limit") int? limit,
     @Query("cursor") CursorModel? cursor,
     @Query("show_unconfirmed") bool? showUnconfirmed,
+    ]);
+
+  @GET("/addresses/{address}/compose/dispense?verbose=true")
+  Future<Response<ComposeDispenseResponseModel>> composeDispense(
+    @Path("address") String address,
+    @Query("dispenser") String dispenser,
+    @Query("quantity") int quantity, [
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")
