@@ -1,5 +1,5 @@
 class Asset {
-  final String? asset;
+  final String asset;
   final String? assetLongname;
   final String? description;
   final bool? divisible;
@@ -10,7 +10,7 @@ class Asset {
   final String? supplyNormalized;
 
   const Asset(
-      {this.asset,
+      {required this.asset,
       this.assetLongname,
       this.description,
       this.divisible,

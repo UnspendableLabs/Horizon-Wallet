@@ -556,7 +556,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset originalAsset) {
-    String name = originalAsset.assetLongname ?? originalAsset.asset!;
+    String name = originalAsset.assetLongname ?? originalAsset.asset;
     int quantity = 0;
     String? description = originalAsset.description;
     String? destinationAddress;

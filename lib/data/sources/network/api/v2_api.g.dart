@@ -1143,7 +1143,7 @@ Map<String, dynamic> _$AssetToJson(Asset instance) => <String, dynamic>{
     };
 
 AssetVerbose _$AssetVerboseFromJson(Map<String, dynamic> json) => AssetVerbose(
-      asset: json['asset'] as String?,
+      asset: json['asset'] as String,
       assetLongname: json['asset_longname'] as String?,
       description: json['description'] as String?,
       divisible: json['divisible'] as bool?,
