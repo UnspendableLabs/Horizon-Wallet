@@ -462,6 +462,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           HorizonUI.HorizonTextFormField(
             label: 'Destination Address',
             controller: _destinationAddressController,
+            onFieldSubmitted: (_) =>
+                _handleInitialSubmit(formKey, originalAsset),
           ),
         ],
     };
@@ -609,161 +611,166 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   List<Widget> _buildConfirmationDetails(
       dynamic composeTransaction, Asset originalAsset) {
     final params = (composeTransaction as ComposeIssuanceVerbose).params;
-    return [
-      HorizonUI.HorizonTextFormField(
-        label: "Source Address",
-        controller: TextEditingController(text: params.source),
-        enabled: false,
-      ),
-      widget.actionType == IssuanceActionType.transferOwnership
-          ? Column(
-              children: [
-                const SizedBox(height: 16),
-                HorizonUI.HorizonTextFormField(
-                  label: "Destination Address",
-                  controller:
-                      TextEditingController(text: params.transferDestination),
-                  enabled: false,
-                ),
-              ],
-            )
-          : const SizedBox.shrink(),
-      const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        label: widget.actionType == IssuanceActionType.issueSubasset
-            ? "Subasset Issuance"
-            : "Token name",
-        controller: TextEditingController(text: composeTransaction.name),
-        enabled: false,
-      ),
-      widget.actionType == IssuanceActionType.issueMore
-          ? Column(
-              children: [
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: HorizonUI.HorizonTextFormField(
-                        label: "Original Supply",
-                        controller: TextEditingController(
-                            text: originalAsset.supplyNormalized),
-                        enabled: false,
-                        textColor: Colors.red,
-                      ),
-                    ),
-                    Expanded(
-                      child: HorizonUI.HorizonTextFormField(
-                        label: "Additional Supply",
-                        controller: TextEditingController(
-                            text: params.quantityNormalized),
-                        enabled: false,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            )
-          : const SizedBox.shrink(),
-      widget.actionType == IssuanceActionType.reset
-          ? Column(
-              children: [
-                const SizedBox(height: 16),
-                HorizonUI.HorizonTextFormField(
+    return switch (widget.actionType) {
+      IssuanceActionType.reset => [
+          _sourceField(params.source),
+          const SizedBox(height: 16),
+          _nameField(composeTransaction.name, widget.actionType),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: HorizonUI.HorizonTextFormField(
                   label: "Original Supply",
                   controller: TextEditingController(
                       text: originalAsset.supplyNormalized),
                   enabled: false,
-                  textColor: Colors.red,
+                  textColor: Colors.grey,
                 ),
-              ],
-            )
-          : const SizedBox.shrink(),
-      const SizedBox(height: 16),
-      HorizonUI.HorizonTextFormField(
-        label: originalAsset.supplyNormalized != params.quantityNormalized &&
-                widget.actionType != IssuanceActionType.issueSubasset
-            ? "Updated Quantity"
-            : "Quantity",
-        controller: TextEditingController(
-            text: widget.actionType == IssuanceActionType.issueMore
-                ? (Decimal.parse(params.quantityNormalized) +
-                        Decimal.parse(originalAsset.supplyNormalized!))
-                    .toString()
-                : params.quantityNormalized),
-        enabled: false,
-        textColor:
-            originalAsset.supplyNormalized != params.quantityNormalized &&
-                    widget.actionType != IssuanceActionType.issueSubasset
-                ? Colors.green
-                : null,
-      ),
-      params.description != originalAsset.description
-          ? Column(
-              children: [
-                const SizedBox(height: 16),
-                HorizonUI.HorizonTextFormField(
-                  label: "Description",
-                  controller: TextEditingController(
-                      text: widget.actionType ==
-                              IssuanceActionType.lockDescription
-                          ? originalAsset.description
-                          : params.description),
-                  enabled: false,
-                  textColor: params.description != originalAsset.description &&
-                          widget.actionType !=
-                              IssuanceActionType.issueSubasset &&
-                          widget.actionType !=
-                              IssuanceActionType.lockDescription
-                      ? Colors.green
-                      : null,
-                ),
-              ],
-            )
-          : const SizedBox.shrink(),
-      widget.actionType == IssuanceActionType.lockDescription
-          ? Column(
-              children: [
-                const SizedBox(height: 16),
-                HorizonUI.HorizonTextFormField(
-                  label: "Lock Description",
-                  controller: TextEditingController(text: 'true'),
+              ),
+              Expanded(
+                child: HorizonUI.HorizonTextFormField(
+                  label: "Updated Supply",
+                  controller:
+                      TextEditingController(text: params.quantityNormalized),
                   enabled: false,
                   textColor: Colors.green,
                 ),
-              ],
-            )
-          : const SizedBox.shrink(),
-      const SizedBox(height: 16),
-      HorizonUI.HorizonTextFormField(
-        label: "Divisible",
-        controller: TextEditingController(
-            text: params.divisible == true ? 'true' : 'false'),
-        enabled: false,
-        textColor: params.divisible != originalAsset.divisible &&
-                widget.actionType != IssuanceActionType.issueSubasset
-            ? Colors.green
-            : null,
-      ),
-      const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        label: "Lock",
-        controller:
-            TextEditingController(text: params.lock == true ? 'true' : 'false'),
-        enabled: false,
-        textColor: params.lock != originalAsset.locked &&
-                widget.actionType != IssuanceActionType.issueSubasset
-            ? Colors.green
-            : null,
-      ),
-      const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        label: "Reset",
-        controller: TextEditingController(
-            text: params.reset == true ? 'true' : 'false'),
-        enabled: false,
-        textColor: params.reset == true ? Colors.green : null,
-      ),
-    ];
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildConfirmDescriptionField(
+              params.description ?? '', originalAsset, widget.actionType),
+          const SizedBox(height: 16),
+          ..._buildBoolFields(params, originalAsset),
+        ],
+      IssuanceActionType.lockQuantity => [
+          _sourceField(params.source),
+          const SizedBox(height: 16),
+          _nameField(composeTransaction.name, widget.actionType),
+          const SizedBox(height: 16),
+          _buildConfirmQuantityField(originalAsset.supplyNormalized!),
+          const SizedBox(height: 16),
+          _buildConfirmDescriptionField(
+              params.description ?? '', originalAsset, widget.actionType),
+          const SizedBox(height: 16),
+          ..._buildBoolFields(params, originalAsset),
+        ],
+      IssuanceActionType.lockDescription => [
+          _sourceField(params.source),
+          const SizedBox(height: 16),
+          _nameField(composeTransaction.name, widget.actionType),
+          const SizedBox(height: 16),
+          _buildConfirmQuantityField(originalAsset.supplyNormalized!),
+          const SizedBox(height: 16),
+          _buildConfirmDescriptionField(originalAsset.description ?? '',
+              originalAsset, widget.actionType),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            label: "Lock Description",
+            controller: TextEditingController(text: 'true'),
+            enabled: false,
+            textColor: Colors.green,
+          ),
+          const SizedBox(height: 16),
+          ..._buildBoolFields(params, originalAsset),
+        ],
+      IssuanceActionType.changeDescription => [
+          _sourceField(params.source),
+          const SizedBox(height: 16),
+          _nameField(composeTransaction.name, widget.actionType),
+          const SizedBox(height: 16),
+          _buildConfirmQuantityField(originalAsset.supplyNormalized!),
+          const SizedBox(height: 16),
+          _buildConfirmDescriptionField(
+              params.description ?? '', originalAsset, widget.actionType),
+          const SizedBox(height: 16),
+          ..._buildBoolFields(params, originalAsset),
+        ],
+      IssuanceActionType.issueMore => [
+          _sourceField(params.source),
+          const SizedBox(height: 16),
+          _nameField(composeTransaction.name, widget.actionType),
+          const SizedBox(height: 16),
+          Column(
+            children: [
+              HorizonUI.HorizonTextFormField(
+                label: "Additional Supply",
+                enabled: false,
+                controller:
+                    TextEditingController(text: params.quantityNormalized),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: HorizonUI.HorizonTextFormField(
+                      label: "Original Supply",
+                      controller: TextEditingController(
+                          text: originalAsset.supplyNormalized),
+                      enabled: false,
+                      textColor: Colors.grey,
+                    ),
+                  ),
+                  Expanded(
+                    child: HorizonUI.HorizonTextFormField(
+                      label: "Updated Total Supply",
+                      controller: TextEditingController(
+                          text: (Decimal.parse(params.quantityNormalized) +
+                                  Decimal.parse(
+                                      originalAsset.supplyNormalized!))
+                              .toString()),
+                      enabled: false,
+                      textColor: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildConfirmDescriptionField(
+              params.description ?? '', originalAsset, widget.actionType),
+          const SizedBox(height: 16),
+          ..._buildBoolFields(params, originalAsset),
+        ],
+      IssuanceActionType.issueSubasset => [
+          _sourceField(params.source),
+          const SizedBox(height: 16),
+          _nameField(composeTransaction.name, widget.actionType),
+          const SizedBox(height: 16),
+          _buildConfirmQuantityField(params.quantityNormalized),
+          const SizedBox(height: 16),
+          _buildConfirmDescriptionField(
+              params.description ?? '', originalAsset, widget.actionType),
+          const SizedBox(height: 16),
+          ..._buildBoolFields(params, originalAsset),
+        ],
+      IssuanceActionType.transferOwnership => [
+          _sourceField(params.source),
+          const SizedBox(height: 16),
+          Column(
+            children: [
+              HorizonUI.HorizonTextFormField(
+                label: "Destination Address",
+                controller:
+                    TextEditingController(text: params.transferDestination),
+                enabled: false,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _nameField(composeTransaction.name, widget.actionType),
+          const SizedBox(height: 16),
+          _buildConfirmQuantityField(originalAsset.supplyNormalized!),
+          const SizedBox(height: 16),
+          _buildConfirmDescriptionField(
+              params.description ?? '', originalAsset, widget.actionType),
+          const SizedBox(height: 16),
+          ..._buildBoolFields(params, originalAsset),
+        ],
+    };
   }
 
   void _onConfirmationBack() {
@@ -783,6 +790,84 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     }
   }
 
+  void _onFinalizeCancel() {
+    context.read<UpdateIssuanceBloc>().add(FetchFormData(
+        currentAddress: widget.address, assetName: widget.assetName));
+  }
+
+  static HorizonUI.HorizonTextFormField _sourceField(String source) =>
+      HorizonUI.HorizonTextFormField(
+        label: "Source Address",
+        controller: TextEditingController(text: source),
+        enabled: false,
+      );
+
+  static HorizonUI.HorizonTextFormField _nameField(
+          String name, IssuanceActionType actionType) =>
+      HorizonUI.HorizonTextFormField(
+        label: actionType == IssuanceActionType.issueSubasset
+            ? "Subasset Issuance"
+            : "Token name",
+        controller: TextEditingController(text: name),
+        enabled: false,
+      );
+
+  static HorizonUI.HorizonTextFormField _buildConfirmQuantityField(
+          String quantityNormalized) =>
+      HorizonUI.HorizonTextFormField(
+        label: "Quantity",
+        controller: TextEditingController(text: quantityNormalized),
+        enabled: false,
+      );
+
+  static HorizonUI.HorizonTextFormField _buildConfirmDescriptionField(
+          String description,
+          Asset originalAsset,
+          IssuanceActionType actionType) =>
+      HorizonUI.HorizonTextFormField(
+        label: "Description",
+        controller: TextEditingController(text: description),
+        enabled: false,
+        textColor: actionType != IssuanceActionType.lockDescription &&
+                description != originalAsset.description
+            ? Colors.green
+            : null,
+      );
+
+  List<Widget> _buildBoolFields(
+          ComposeIssuanceVerboseParams params, Asset originalAsset) =>
+      [
+        HorizonUI.HorizonTextFormField(
+          label: "Divisible",
+          controller: TextEditingController(
+              text: params.divisible == true ? 'true' : 'false'),
+          enabled: false,
+          textColor: params.divisible != originalAsset.divisible &&
+                  widget.actionType != IssuanceActionType.issueSubasset
+              ? Colors.green
+              : null,
+        ),
+        const SizedBox(height: 16.0),
+        HorizonUI.HorizonTextFormField(
+          label: "Lock",
+          controller: TextEditingController(
+              text: params.lock == true ? 'true' : 'false'),
+          enabled: false,
+          textColor: params.lock != originalAsset.locked &&
+                  widget.actionType != IssuanceActionType.issueSubasset
+              ? Colors.green
+              : null,
+        ),
+        const SizedBox(height: 16.0),
+        HorizonUI.HorizonTextFormField(
+          label: "Reset",
+          controller: TextEditingController(
+              text: params.reset == true ? 'true' : 'false'),
+          enabled: false,
+          textColor: params.reset == true ? Colors.green : null,
+        ),
+      ];
+
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<UpdateIssuanceBloc>().add(
@@ -791,11 +876,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             ),
           );
     }
-  }
-
-  void _onFinalizeCancel() {
-    context.read<UpdateIssuanceBloc>().add(FetchFormData(
-        currentAddress: widget.address, assetName: widget.assetName));
   }
 
   int _updateQuantity(

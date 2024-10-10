@@ -834,7 +834,8 @@ class EventsRepositoryImpl implements EventsRepository {
         whitelist_);
 
     if (response.error != null) {
-      throw Exception("Error getting mempool events by addresses: ${response.error}");
+      throw Exception(
+          "Error getting mempool events by addresses: ${response.error}");
     }
     cursor_entity.Cursor? nextCursor =
         cursor_model.CursorMapper.toDomain(response.nextCursor);
