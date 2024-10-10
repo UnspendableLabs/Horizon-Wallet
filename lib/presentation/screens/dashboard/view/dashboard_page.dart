@@ -735,7 +735,6 @@ class BalancesSliverState extends State<BalancesSliver> {
           final bool isOwner =
               currentOwnedAsset?.owner == widget.currentAddress.address;
 
-          print('quantity: ${entry.value.quantity}');
           return TableRow(
             children: [
               _buildTableCell1(entry.key, entry.value.assetInfo.assetLongname,
@@ -753,20 +752,16 @@ class BalancesSliverState extends State<BalancesSliver> {
               : const Color.fromRGBO(25, 118, 210, 1);
           return TableRow(
             children: [
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Text(asset.asset),
-              ),
-              // _buildTableCell1(
-              //     asset.asset, asset.assetLongname, true, textColor),
-              // _buildTableCell2('0', textColor), // these are zero balances
-              // _buildTableCell3(asset.asset, textColor, true, asset, 0)
+              _buildTableCell1(
+                  asset.asset, asset.assetLongname, true, textColor),
+              _buildTableCell2('0', textColor), // these are zero balances
+              _buildTableCell3(asset.asset, textColor, true, asset, 0)
             ],
           );
         }).toList();
 
         rows.addAll(balanceRows);
-        // rows.addAll(ownedAssetRows);
+        rows.addAll(ownedAssetRows);
 
         final displayedRows =
             _viewAll ? rows : rows.take(widget.initialItemCount).toList();
@@ -849,30 +844,31 @@ class BalancesSliverState extends State<BalancesSliver> {
   }
 
   TableCell _buildTableCell1(String assetName, String? assetLongname,
-          bool isClickable, Color textColor) =>
-      TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SelectableText.rich(
-                  TextSpan(
-                    text: assetLongname ?? assetName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
-                    recognizer: isClickable
-                        ? (TapGestureRecognizer()
-                          ..onTap = () => _launchAssetUrl(assetName))
-                        : null,
+      bool isClickable, Color textColor) {
+    return TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SelectableText.rich(
+                TextSpan(
+                  text: assetLongname ?? assetName,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
                   ),
-                );
-              },
-            ),
-          ));
+                  recognizer: isClickable
+                      ? (TapGestureRecognizer()
+                        ..onTap = () => _launchAssetUrl(assetName))
+                      : null,
+                ),
+              );
+            },
+          ),
+        ));
+  }
 
   TableCell _buildTableCell2(String quantityNormalized, Color textColor) =>
       TableCell(
