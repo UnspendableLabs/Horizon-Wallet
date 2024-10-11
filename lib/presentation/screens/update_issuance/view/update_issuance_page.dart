@@ -720,10 +720,13 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                     child: HorizonUI.HorizonTextFormField(
                       label: "Updated Total Supply",
                       controller: TextEditingController(
-                          text: (Decimal.parse(params.quantityNormalized) +
+                          text: params.divisible == true
+                              ? (Decimal.parse(params.quantityNormalized) +
                                   Decimal.parse(
                                       originalAsset.supplyNormalized!))
-                              .toString()),
+                              .toStringAsFixed(8)
+                              : (Decimal.parse(params.quantityNormalized) + Decimal.parse(originalAsset.supplyNormalized!))
+                                  .toString()),
                       enabled: false,
                       textColor: Colors.green,
                     ),
