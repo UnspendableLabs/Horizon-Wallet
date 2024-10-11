@@ -754,7 +754,8 @@ class BalancesSliverState extends State<BalancesSliver> {
             children: [
               _buildTableCell1(
                   asset.asset, asset.assetLongname, true, textColor),
-              _buildTableCell2('0', textColor), // these are zero balances
+              _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
+                  textColor), // these are zero balances
               _buildTableCell3(asset.asset, textColor, true, asset, 0)
             ],
           );
