@@ -722,10 +722,12 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                       controller: TextEditingController(
                           text: params.divisible == true
                               ? (Decimal.parse(params.quantityNormalized) +
-                                  Decimal.parse(
-                                      originalAsset.supplyNormalized!))
-                              .toStringAsFixed(8)
-                              : (Decimal.parse(params.quantityNormalized) + Decimal.parse(originalAsset.supplyNormalized!))
+                                      Decimal.parse(
+                                          originalAsset.supplyNormalized!))
+                                  .toStringAsFixed(8)
+                              : (Decimal.parse(params.quantityNormalized) +
+                                      Decimal.parse(
+                                          originalAsset.supplyNormalized!))
                                   .toString()),
                       enabled: false,
                       textColor: Colors.green,

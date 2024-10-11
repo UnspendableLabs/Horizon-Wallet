@@ -176,13 +176,14 @@ class ActivityFeedListItem extends StatelessWidget {
 
     return switch (tx.getTransactionType(addresses_)) {
       TransactionType.sender => SendTitle(
-          quantityNormalized: tx.getAmountSentNormalized(addresses_).toString(),
+          quantityNormalized:
+              tx.getAmountSentNormalized(addresses_).toStringAsFixed(8),
           asset: 'BTC',
         ),
       // TODO: assumes single party send?
       TransactionType.recipient => ReceiveTitle(
           quantityNormalized:
-              tx.getAmountReceivedNormalized(addresses_).toString(),
+              tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8),
           asset: 'BTC',
         ),
       TransactionType.neither =>
@@ -221,8 +222,13 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
     if (params.transfer) {
-      return SelectableText(
-          "Transfer Ownership of ${params.assetLongname ?? params.asset}");
+      if (addresses.any((a) => a.address == params.source)) {
+        return SelectableText(
+            "Transfer Out of ${params.assetLongname ?? params.asset}");
+      } else {
+        return SelectableText(
+            "Transfer In of ${params.assetLongname ?? params.asset}");
+      }
     }
     if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
       if (params.assetEvents == "reissuance") {
@@ -261,7 +267,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoVerbose(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
         SendTitle(
-          quantityNormalized: satoshisToBtc(btcAmount).toString(),
+          quantityNormalized: satoshisToBtc(btcAmount).toStringAsFixed(8),
           asset: 'BTC',
         ),
       TransactionInfoDispenserVerbose(

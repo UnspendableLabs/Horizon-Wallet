@@ -106,7 +106,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
       final funded = success.chainStats.fundedTxoSum;
       final spent = success.chainStats.spentTxoSum;
       final quantity = funded - spent;
-      final quantityNormalized = satoshisToBtc(quantity).toString();
+      final quantityNormalized = satoshisToBtc(quantity).toStringAsFixed(8);
 
       return b.Balance(
           address: address,

@@ -98,7 +98,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
 
   String? asset;
 
-  bool isDivisible = true;
+  bool isDivisible = false;
   bool isLocked = false;
 
   @override

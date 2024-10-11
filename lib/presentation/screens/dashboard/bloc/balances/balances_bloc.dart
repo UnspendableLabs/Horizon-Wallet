@@ -27,23 +27,17 @@ Map<String, Balance> aggregateBalancesByAsset(List<Balance> balances) {
             address: balance.address,
             assetInfo: balance.assetInfo);
 
-    int nextQuantity;
+    int nextQuantity = agg.quantity + balance.quantity;
+
+    Decimal nextQuantityNormalizedDecimal =
+        Decimal.parse(agg.quantityNormalized) +
+            Decimal.parse(balance.quantityNormalized);
+
     String nextQuantityNormalized;
-    if (agg.quantity == 0) {
-      nextQuantity = balance.quantity;
-      nextQuantityNormalized = balance.quantityNormalized;
+    if (balance.assetInfo.divisible) {
+      nextQuantityNormalized = nextQuantityNormalizedDecimal.toStringAsFixed(8);
     } else {
-      nextQuantity = agg.quantity + balance.quantity;
-
-      Decimal nextQuantityNormalizedInt =
-          (Decimal.parse(agg.quantityNormalized) +
-              Decimal.parse(balance.quantityNormalized));
-
-      if (balance.assetInfo.divisible) {
-        nextQuantityNormalized = nextQuantityNormalizedInt.toStringAsFixed(8);
-      } else {
-        nextQuantityNormalized = nextQuantityNormalizedInt.toString();
-      }
+      nextQuantityNormalized = nextQuantityNormalizedDecimal.toString();
     }
 
     Balance next = Balance(
