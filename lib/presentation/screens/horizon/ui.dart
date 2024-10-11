@@ -173,11 +173,11 @@ class HorizonDialog extends StatelessWidget {
     );
 
     if (screenWidth < 768) {
-      return BottomSheet(
-        onClosing: () {},
-        builder: (BuildContext context) {
-          return dialogContent;
-        },
+      // Adjust for keyboard by adding bottom padding
+      return Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: dialogContent,
       );
     } else {
       return Dialog(
@@ -195,13 +195,17 @@ class HorizonDialog extends StatelessWidget {
     if (screenWidth < 768) {
       showModalBottomSheet(
         context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) => body,
+        isScrollControlled: true, // Important to allow full-screen height
+        builder: (BuildContext context) {
+          return body;
+        },
       );
     } else {
       showDialog(
         context: context,
-        builder: (BuildContext context) => body,
+        builder: (BuildContext context) {
+          return body;
+        },
       );
     }
   }
