@@ -102,7 +102,7 @@ class EnhancedSendEvent extends Event {
 }
 
 class VerboseEnhancedSendParams extends EnhancedSendParams {
-  final int blockTime;
+  final int? blockTime;
   // final AssetInfo assetInfo;
   final String quantityNormalized;
 

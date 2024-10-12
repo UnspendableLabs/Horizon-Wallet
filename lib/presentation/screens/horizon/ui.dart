@@ -115,59 +115,70 @@ class HorizonDialog extends StatelessWidget {
 
     Widget dialogContent = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 675, maxHeight: 750),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Stack(
-                children: [
-                  if (includeBackButton == true)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15.0, left: 10.0),
-                        child: IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed: () => onBackButtonPressed?.call()),
+      child: Material(
+        // Provide the Material widget here
+        color: isDarkTheme
+            ? dialogBackgroundColorDarkTheme
+            : dialogBackgroundColorLightTheme,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Your existing header and body widgets
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Stack(
+                  children: [
+                    // Include back button, title, and close button
+                    if (includeBackButton == true)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 15.0, left: 10.0),
+                          child: IconButton(
+                              icon: const Icon(Icons.arrow_back),
+                              onPressed: () => onBackButtonPressed?.call()),
+                        ),
                       ),
-                    ),
-                  Align(
-                    alignment: titleAlign ?? Alignment.center,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          color: isDarkTheme ? mainTextWhite : mainTextBlack,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
+                    Align(
+                      alignment: titleAlign ?? Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            color: isDarkTheme ? Colors.white : Colors.black,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  if (includeCloseButton == true)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15.0, right: 10.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.of(context).pop(),
+                    if (includeCloseButton == true)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 15.0, right: 10.0),
+                          child: IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const HorizonDivider(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: body,
-            ),
-          ],
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: body,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -195,7 +206,7 @@ class HorizonDialog extends StatelessWidget {
     if (screenWidth < 768) {
       showModalBottomSheet(
         context: context,
-        isScrollControlled: true, // Important to allow full-screen height
+        isScrollControlled: true, // Allows full-screen height
         builder: (BuildContext context) {
           return body;
         },
