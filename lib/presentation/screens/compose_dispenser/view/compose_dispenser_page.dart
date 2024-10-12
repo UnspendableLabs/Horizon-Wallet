@@ -83,6 +83,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   String? asset;
   Balance? balance_;
+  bool _submitted = false;
 
   @override
   void initState() {
@@ -119,6 +120,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+    setState(() {
+      _submitted = true;
+    });
     if (formKey.currentState!.validate()) {
       Decimal giveInput = Decimal.parse(giveQuantityController.text);
       Decimal escrowInput = Decimal.parse(escrowQuantityController.text);
@@ -223,14 +227,13 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         .add(ChangeAsset(asset: value, balance: balance));
   }
 
-  Widget _buildGiveQuantityInput(ComposeDispenserState state,
-      void Function() handleInitialSubmit, bool loading) {
+  Widget _buildGiveQuantityInput(
+      ComposeDispenserState state,
+      void Function() handleInitialSubmit,
+      bool loading,
+      GlobalKey<FormState> formKey) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildGiveQuantityInputField(
-          state,
-          null,
-          // handleInitialSubmit,
-          loading);
+      return _buildGiveQuantityInputField(state, null, loading, formKey);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonUI.HorizonTextFormField(
@@ -247,27 +250,22 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         );
       }
 
-      return _buildGiveQuantityInputField(
-          state,
-          balance,
-          // handleInitialSubmit,
-          loading);
+      return _buildGiveQuantityInputField(state, balance, loading, formKey);
     });
   }
 
-  Widget _buildGiveQuantityInputField(
-      ComposeDispenserState state,
-      Balance? balance,
-      /* void Function() handleInitialSubmit, */ bool loading) {
+  Widget _buildGiveQuantityInputField(ComposeDispenserState state,
+      Balance? balance, bool loading, GlobalKey<FormState> formKey) {
     return Stack(
       children: [
-        Text(
-            "balance is divisible ${balance?.asset} ${balance?.assetInfo.divisible}"),
         HorizonUI.HorizonTextFormField(
           key: Key('give_quantity_input_${balance?.asset}'),
           controller: giveQuantityController,
           enabled: !loading,
           onChanged: (value) {
+            setState(() {
+              balance_ = balance;
+            });
             context
                 .read<ComposeDispenserBloc>()
                 .add(ChangeGiveQuantity(value: value));
@@ -289,14 +287,14 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             if (input > max) {
               return "give quantity exceeds available balance";
             }
-            setState(() {
-              balance_ = balance;
-            });
             return null;
           },
-          // onFieldSubmitted: (value) {
-          //   handleInitialSubmit();
-          // },
+          onFieldSubmitted: (value) {
+            _handleInitialSubmit(formKey);
+          },
+          autovalidateMode: _submitted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
         ),
         state.balancesState.maybeWhen(orElse: () {
           return const SizedBox.shrink();
@@ -320,9 +318,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
-  Widget _buildEscrowQuantityInput(ComposeDispenserState state, bool loading) {
+  Widget _buildEscrowQuantityInput(
+      ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return state.balancesState.maybeWhen(orElse: () {
-      return _buildEscrowQuantityInputField(state, null, loading);
+      return _buildEscrowQuantityInputField(state, null, loading, formKey);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonUI.HorizonTextFormField(
@@ -339,12 +338,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         );
       }
 
-      return _buildEscrowQuantityInputField(state, balance, loading);
+      return _buildEscrowQuantityInputField(state, balance, loading, formKey);
     });
   }
 
-  Widget _buildEscrowQuantityInputField(
-      ComposeDispenserState state, Balance? balance, bool loading) {
+  Widget _buildEscrowQuantityInputField(ComposeDispenserState state,
+      Balance? balance, bool loading, GlobalKey<FormState> formKey) {
     return HorizonUI.HorizonTextFormField(
       key: Key('escrow_quantity_input_${balance?.asset}'),
       controller: escrowQuantityController,
@@ -386,6 +385,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         });
         return null;
       },
+      onFieldSubmitted: (value) {
+        _handleInitialSubmit(formKey);
+      },
+      autovalidateMode: _submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
     );
   }
 
@@ -402,15 +407,15 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       const SizedBox(height: 16.0),
       _buildGiveQuantityInput(state, () {
         _handleInitialSubmit(formKey);
-      }, loading),
+      }, loading, formKey),
       const SizedBox(height: 16.0),
-      _buildEscrowQuantityInput(state, loading),
+      _buildEscrowQuantityInput(state, loading, formKey),
       const SizedBox(height: 16.0),
-      _buildPricePerUnitInput(loading),
+      _buildPricePerUnitInput(loading, formKey),
     ];
   }
 
-  Widget _buildPricePerUnitInput(bool loading) {
+  Widget _buildPricePerUnitInput(bool loading, GlobalKey<FormState> formKey) {
     return HorizonUI.HorizonTextFormField(
       key: const Key('price_per_unit_input'),
       controller: mainchainrateController,
@@ -428,6 +433,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         }
         return null;
       },
+      onFieldSubmitted: (value) {
+        _handleInitialSubmit(formKey);
+      },
+      autovalidateMode: _submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
     );
   }
 

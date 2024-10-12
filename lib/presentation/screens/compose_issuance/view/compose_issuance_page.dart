@@ -101,6 +101,8 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   bool isDivisible = false;
   bool isLocked = false;
 
+  bool _submitted = false;
+
   @override
   void initState() {
     super.initState();
@@ -136,6 +138,9 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+    setState(() {
+      _submitted = true;
+    });
     if (formKey.currentState!.validate()) {
       // TODO: wrap this in function and write some tests
       Decimal input = Decimal.parse(quantityController.text);
@@ -171,6 +176,9 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
         children: [
           TextFormField(
             enabled: false,
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
             controller: nameController,
             decoration: InputDecoration(
               fillColor: noBackgroundColor,
@@ -207,6 +215,9 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
         return Stack(
           children: [
             HorizonUI.HorizonTextFormField(
+              autovalidateMode: _submitted
+                  ? AutovalidateMode.onUserInteraction
+                  : AutovalidateMode.disabled,
               enabled: !loading,
               controller: nameController,
               label: "Token name",
@@ -252,6 +263,9 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
       assetNameField,
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
+        autovalidateMode: _submitted
+            ? AutovalidateMode.onUserInteraction
+            : AutovalidateMode.disabled,
         controller: quantityController,
         label: 'Quantity',
         keyboardType:
@@ -299,6 +313,9 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
             controller: descriptionController,
             label: 'Description (optional)',
             onFieldSubmitted: (_) => _handleInitialSubmit(formKey),
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
             // keyboardType: TextInputType.multiline,
           );
         },

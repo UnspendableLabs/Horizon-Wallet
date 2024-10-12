@@ -147,7 +147,8 @@ class HorizonDialog extends StatelessWidget {
                     Align(
                       alignment: titleAlign ?? Alignment.center,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
+                        padding:
+                            const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
                         child: Text(
                           title,
                           style: TextStyle(
@@ -162,7 +163,8 @@ class HorizonDialog extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 15.0, right: 10.0),
+                          padding:
+                              const EdgeInsets.only(top: 15.0, right: 10.0),
                           child: IconButton(
                             icon: const Icon(Icons.close),
                             onPressed: () => Navigator.of(context).pop(),
@@ -446,6 +448,7 @@ class HorizonTextFormField extends StatelessWidget {
   final String? initialValue;
   final FloatingLabelBehavior? floatingLabelBehavior;
   final Color? textColor;
+  final AutovalidateMode? autovalidateMode;
 
   const HorizonTextFormField({
     super.key,
@@ -468,6 +471,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.initialValue,
     this.floatingLabelBehavior,
     this.textColor,
+    this.autovalidateMode,
   });
 
   @override
@@ -527,8 +531,8 @@ class HorizonTextFormField extends StatelessWidget {
       ),
       style: const TextStyle(
         fontSize: 16,
-        // color: isDarkMode ? mainTextWhite : mainTextBlack,
       ),
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
     );
   }
 
@@ -552,6 +556,7 @@ class HorizonTextFormField extends StatelessWidget {
       inputFormatters: inputFormatters,
       enabled: enabled ?? this.enabled,
       initialValue: initialValue,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
     );
   }
 }
