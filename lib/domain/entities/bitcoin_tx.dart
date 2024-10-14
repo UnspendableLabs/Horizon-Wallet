@@ -318,10 +318,9 @@ class BitcoinTx {
       logger.debug(logs.join("\n"));
       return false;
     } catch (e, stacktrace) {
-
       logs.add("An error occurred: $e");
       logs.add("Stacktrace: $stacktrace");
-      logger.error(logs.join("\n"), stacktrace);
+      logger.error(logs.join("\n"), null, stacktrace);
       return false;
     }
   }
