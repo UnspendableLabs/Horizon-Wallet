@@ -349,6 +349,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       controller: escrowQuantityController,
       enabled: !loading,
       onChanged: (value) {
+        setState(() {
+          balance_ = balance;
+        });
         context
             .read<ComposeDispenserBloc>()
             .add(ChangeEscrowQuantity(value: value));
@@ -379,10 +382,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         if (giveQuantity != null && escrowQuantity < giveQuantity) {
           return 'escrow quantity must be greater than or equal to give quantity';
         }
-
-        setState(() {
-          balance_ = balance;
-        });
         return null;
       },
       onFieldSubmitted: (value) {

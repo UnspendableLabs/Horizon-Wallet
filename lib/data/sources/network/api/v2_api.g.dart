@@ -1547,6 +1547,7 @@ Dispenser _$DispenserFromJson(Map<String, dynamic> json) => Dispenser(
       oracleAddress: json['oracle_address'] as String?,
       lastStatusTxHash: json['last_status_tx_hash'] as String?,
       origin: json['origin'] as String,
+      asset: json['asset'] as String,
       dispenseCount: (json['dispense_count'] as num).toInt(),
       giveQuantityNormalized: json['give_quantity_normalized'] as String,
       giveRemainingNormalized: json['give_remaining_normalized'] as String,
@@ -1562,6 +1563,7 @@ Map<String, dynamic> _$DispenserToJson(Dispenser instance) => <String, dynamic>{
       'satoshirate': instance.satoshirate,
       'status': instance.status,
       'give_remaining': instance.giveRemaining,
+      'asset': instance.asset,
       'oracle_address': instance.oracleAddress,
       'last_status_tx_hash': instance.lastStatusTxHash,
       'origin': instance.origin,
@@ -3124,6 +3126,53 @@ class _V2Api implements V2Api {
     final _value = Response<ComposeDispenserVerbose>.fromJson(
       _result.data!,
       (json) => ComposeDispenserVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<Dispenser>>> getDispenserByAddress(
+    String address, [
+    String? status,
+    int? limit,
+    CursorModel? cursor,
+    bool? showUnconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'status': status,
+      r'limit': limit,
+      r'cursor': cursor?.toJson(),
+      r'show_unconfirmed': showUnconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Dispenser>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/dispensers',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<Dispenser>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Dispenser>(
+                  (i) => Dispenser.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
     );
     return _value;
   }

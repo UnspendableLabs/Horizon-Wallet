@@ -1771,6 +1771,7 @@ class Dispenser {
   final int satoshirate;
   final int status;
   final int giveRemaining;
+  final String asset;
   final String? oracleAddress;
   final String? lastStatusTxHash;
   final String origin;
@@ -1791,6 +1792,7 @@ class Dispenser {
     required this.oracleAddress,
     required this.lastStatusTxHash,
     required this.origin,
+    required this.asset,
     required this.dispenseCount,
     required this.giveQuantityNormalized,
     required this.giveRemainingNormalized,
@@ -2873,6 +2875,15 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
+  @GET("/addresses/{address}/dispensers")
+  Future<Response<List<Dispenser>>> getDispenserByAddress(
+    @Path("address") String address, [
+    @Query("status") String? status,
+    @Query("limit") int? limit,
+    @Query("cursor") CursorModel? cursor,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")
