@@ -116,7 +116,6 @@ class HorizonDialog extends StatelessWidget {
     Widget dialogContent = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 675, maxHeight: 750),
       child: Material(
-        // Provide the Material widget here
         color: isDarkTheme
             ? dialogBackgroundColorDarkTheme
             : dialogBackgroundColorLightTheme,
@@ -133,7 +132,6 @@ class HorizonDialog extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Stack(
                   children: [
-                    // Include back button, title, and close button
                     if (includeBackButton == true)
                       Align(
                         alignment: Alignment.centerLeft,
