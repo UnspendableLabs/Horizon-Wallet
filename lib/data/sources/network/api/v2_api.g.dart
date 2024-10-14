@@ -1549,9 +1549,9 @@ Dispenser _$DispenserFromJson(Map<String, dynamic> json) => Dispenser(
       origin: json['origin'] as String,
       asset: json['asset'] as String,
       dispenseCount: (json['dispense_count'] as num).toInt(),
-      giveQuantityNormalized: json['give_quantity_normalized'] as String,
-      giveRemainingNormalized: json['give_remaining_normalized'] as String,
-      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
+      giveQuantityNormalized: json['give_quantity_normalized'] as String?,
+      giveRemainingNormalized: json['give_remaining_normalized'] as String?,
+      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String?,
     );
 
 Map<String, dynamic> _$DispenserToJson(Dispenser instance) => <String, dynamic>{

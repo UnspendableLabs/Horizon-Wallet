@@ -1,37 +1,31 @@
-import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/repositories/dispenser_repository.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchCloseDispenserFormDataUseCase {
-  final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final DispenserRepository dispenserRepository;
 
   FetchCloseDispenserFormDataUseCase({
-    required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.dispenserRepository,
   });
 
-  Future<(List<Balance>, FeeEstimates, List<Dispenser>)> call(
-      Address currentAddress) async {
+  Future<(FeeEstimates, List<Dispenser>)> call(Address currentAddress) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        // _fetchBalances(currentAddress),
         _fetchDispenser(currentAddress),
         _fetchFeeEstimates(),
       ]);
 
-      final balances = [] as List<Balance>;
       final dispensers = futures[0] as List<Dispenser>;
       final feeEstimates = futures[1] as FeeEstimates;
 
-      return (balances, feeEstimates, dispensers);
+      return (feeEstimates, dispensers);
     } on FetchDispenserException catch (e) {
       throw FetchDispenserException(e.message);
     } on FetchFeeEstimatesException catch (e) {
@@ -51,8 +45,7 @@ class FetchCloseDispenserFormDataUseCase {
 
   Future<List<Dispenser>> _fetchDispenser(Address currentAddress) async {
     try {
-      return await dispenserRepository
-          .getDispenserByAddress(currentAddress.address);
+      return await dispenserRepository.getDispenserByAddress(currentAddress.address);
     } catch (e) {
       throw FetchDispenserException(e.toString());
     }

@@ -1776,9 +1776,9 @@ class Dispenser {
   final String? lastStatusTxHash;
   final String origin;
   final int dispenseCount;
-  final String giveQuantityNormalized;
-  final String giveRemainingNormalized;
-  final String escrowQuantityNormalized;
+  final String? giveQuantityNormalized;
+  final String? giveRemainingNormalized;
+  final String? escrowQuantityNormalized;
 
   const Dispenser({
     required this.txIndex,
