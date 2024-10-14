@@ -64,7 +64,6 @@ import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 
-import 'package:logger/logger.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -73,10 +72,16 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 
-final logger = Logger();
+import 'package:logger/logger.dart' as _logger;
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/data/logging/logger_impl.dart';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
+
+  _logger.Logger.level = _logger.Level.warning;
+
+  injector.registerSingleton<Logger>(LoggerImpl(_logger.Logger()));
 
   Config config = ConfigImpl();
 
@@ -295,7 +300,8 @@ class TimeoutInterceptor extends Interceptor {
             'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
       );
-      logger.d(formattedError.toString());
+
+      GetIt.I<Logger>().debug(formattedError.toString());
 
       handler.next(formattedError);
     } else {
@@ -316,7 +322,7 @@ class ConnectionErrorInterceptor extends Interceptor {
             'Connection Error — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
-      logger.d(formattedError.toString());
+      GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -336,7 +342,7 @@ class BadResponseInterceptor extends Interceptor {
             : "Bad Response",
         type: DioExceptionType.badResponse,
       );
-      logger.d('${formattedError.toString()} -- $requestPath');
+      GetIt.I<Logger>().debug('${formattedError.toString()} -- $requestPath');
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -355,7 +361,7 @@ class BadCertificateInterceptor extends Interceptor {
             'Bad Certificate — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
       );
-      logger.d(formattedError.toString());
+      GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -367,7 +373,7 @@ class SimpleLogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final requestInfo = '${options.method} ${options.uri}';
-    logger.d('Request: $requestInfo');
+    GetIt.I<Logger>().debug('Request: $requestInfo');
     handler.next(options);
   }
 
@@ -375,7 +381,7 @@ class SimpleLogInterceptor extends Interceptor {
   void onResponse(response, ResponseInterceptorHandler handler) {
     final responseInfo =
         '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
-    logger.d('Response: $responseInfo');
+    GetIt.I<Logger>().debug('Response: $responseInfo');
     handler.next(response);
   }
 
@@ -383,10 +389,10 @@ class SimpleLogInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final errorInfo =
         '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
-    logger.d('Error: $errorInfo');
+    GetIt.I<Logger>().debug('Error: $errorInfo');
     if (err.response != null) {
       final responseData = err.response?.data;
-      logger.d('Response data: $responseData');
+      GetIt.I<Logger>().debug('Response data: $responseData');
     }
     handler.next(err);
   }
