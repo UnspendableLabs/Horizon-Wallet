@@ -961,7 +961,7 @@ class VerboseDispenseEvent extends VerboseEvent {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseEnhancedSendParams extends EnhancedSendParams {
-  final int blockTime;
+  final int? blockTime;
   final AssetInfo assetInfo;
   final String quantityNormalized;
 

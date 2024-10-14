@@ -115,69 +115,80 @@ class HorizonDialog extends StatelessWidget {
 
     Widget dialogContent = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 675, maxHeight: 750),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Stack(
-                children: [
-                  if (includeBackButton == true)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15.0, left: 10.0),
-                        child: IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed: () => onBackButtonPressed?.call()),
+      child: Material(
+        color: isDarkTheme
+            ? dialogBackgroundColorDarkTheme
+            : dialogBackgroundColorLightTheme,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Your existing header and body widgets
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Stack(
+                  children: [
+                    if (includeBackButton == true)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 15.0, left: 10.0),
+                          child: IconButton(
+                              icon: const Icon(Icons.arrow_back),
+                              onPressed: () => onBackButtonPressed?.call()),
+                        ),
                       ),
-                    ),
-                  Align(
-                    alignment: titleAlign ?? Alignment.center,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          color: isDarkTheme ? mainTextWhite : mainTextBlack,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
+                    Align(
+                      alignment: titleAlign ?? Alignment.center,
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 0.0),
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            color: isDarkTheme ? Colors.white : Colors.black,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  if (includeCloseButton == true)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15.0, right: 10.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.of(context).pop(),
+                    if (includeCloseButton == true)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.only(top: 15.0, right: 10.0),
+                          child: IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const HorizonDivider(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: body,
-            ),
-          ],
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: body,
+              ),
+            ],
+          ),
         ),
       ),
     );
 
     if (screenWidth < 768) {
-      return BottomSheet(
-        onClosing: () {},
-        builder: (BuildContext context) {
-          return dialogContent;
-        },
+      // Adjust for keyboard by adding bottom padding
+      return Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: dialogContent,
       );
     } else {
       return Dialog(
@@ -195,13 +206,17 @@ class HorizonDialog extends StatelessWidget {
     if (screenWidth < 768) {
       showModalBottomSheet(
         context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) => body,
+        isScrollControlled: true, // Allows full-screen height
+        builder: (BuildContext context) {
+          return body;
+        },
       );
     } else {
       showDialog(
         context: context,
-        builder: (BuildContext context) => body,
+        builder: (BuildContext context) {
+          return body;
+        },
       );
     }
   }
@@ -431,6 +446,7 @@ class HorizonTextFormField extends StatelessWidget {
   final String? initialValue;
   final FloatingLabelBehavior? floatingLabelBehavior;
   final Color? textColor;
+  final AutovalidateMode? autovalidateMode;
 
   const HorizonTextFormField({
     super.key,
@@ -453,6 +469,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.initialValue,
     this.floatingLabelBehavior,
     this.textColor,
+    this.autovalidateMode,
   });
 
   @override
@@ -512,8 +529,8 @@ class HorizonTextFormField extends StatelessWidget {
       ),
       style: const TextStyle(
         fontSize: 16,
-        // color: isDarkMode ? mainTextWhite : mainTextBlack,
       ),
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
     );
   }
 
@@ -537,6 +554,7 @@ class HorizonTextFormField extends StatelessWidget {
       inputFormatters: inputFormatters,
       enabled: enabled ?? this.enabled,
       initialValue: initialValue,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
     );
   }
 }

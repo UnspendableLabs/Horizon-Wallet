@@ -29,9 +29,16 @@ Map<String, Balance> aggregateBalancesByAsset(List<Balance> balances) {
 
     int nextQuantity = agg.quantity + balance.quantity;
 
-    String nextQuantityNormalized = (Decimal.parse(agg.quantityNormalized) +
-            Decimal.parse(balance.quantityNormalized))
-        .toString();
+    Decimal nextQuantityNormalizedDecimal =
+        Decimal.parse(agg.quantityNormalized) +
+            Decimal.parse(balance.quantityNormalized);
+
+    String nextQuantityNormalized;
+    if (balance.assetInfo.divisible) {
+      nextQuantityNormalized = nextQuantityNormalizedDecimal.toStringAsFixed(8);
+    } else {
+      nextQuantityNormalized = nextQuantityNormalizedDecimal.toString();
+    }
 
     Balance next = Balance(
         asset: balance.asset,

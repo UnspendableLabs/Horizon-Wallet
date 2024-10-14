@@ -27,6 +27,9 @@ const greyDashboardButtonTextDarkTheme = Color.fromRGBO(142, 142, 155, 1);
 const greyDashboardTextLightTheme = Color.fromRGBO(8, 8, 51, 0.8);
 const greyDashboardButtonTextLightTheme = Color.fromRGBO(106, 106, 137, 1);
 
+const darkThemeAssetLinkColor = Color.fromRGBO(100, 181, 246, 1);
+const lightThemeAssetLinkColor = Color.fromRGBO(25, 118, 210, 1);
+
 // Common Button and input Colors
 const navyDarkTheme = Color.fromRGBO(32, 42, 67, 1);
 

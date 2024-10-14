@@ -98,6 +98,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
 
   String? asset;
   Balance? balance_;
+  bool _submitted = false;
 
   @override
   void initState() {
@@ -202,6 +203,9 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+    setState(() {
+      _submitted = true;
+    });
     if (formKey.currentState!.validate()) {
       Decimal input = Decimal.parse(quantityController.text);
       Balance? balance = balance_;
@@ -261,6 +265,9 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         onFieldSubmitted: (value) {
           _handleInitialSubmit(formKey);
         },
+        autovalidateMode: _submitted
+            ? AutovalidateMode.onUserInteraction
+            : AutovalidateMode.disabled,
       ),
       const SizedBox(height: 16.0),
       if (width > 768)
@@ -328,6 +335,9 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           controller: quantityController,
           enabled: !loading,
           onChanged: (value) {
+            setState(() {
+              balance_ = balance;
+            });
             context.read<ComposeSendBloc>().add(ChangeQuantity(value: value));
           },
           label: 'Quantity',
@@ -347,14 +357,14 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             if (input > max) {
               return "quantity exceeds max";
             }
-            setState(() {
-              balance_ = balance;
-            });
             return null;
           },
           onFieldSubmitted: (value) {
             handleInitialSubmit();
           },
+          autovalidateMode: _submitted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
         ),
         state.sendMax
             ? state.maxValue.maybeWhen(

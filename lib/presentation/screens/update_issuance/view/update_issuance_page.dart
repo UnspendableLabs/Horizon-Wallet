@@ -135,6 +135,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   late bool? isLocked = null;
 
   late bool? isReset = false;
+  bool _submitted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -408,6 +409,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             },
             onFieldSubmitted: (_) =>
                 _handleInitialSubmit(formKey, originalAsset),
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
           )
         ],
       IssuanceActionType.issueMore => [
@@ -436,6 +440,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             label: 'Description (optional)',
             onFieldSubmitted: (_) =>
                 _handleInitialSubmit(formKey, originalAsset),
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
           ),
           const SizedBox(height: 16.0),
           IssuanceCheckboxes(
@@ -466,6 +473,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             controller: _destinationAddressController,
             onFieldSubmitted: (_) =>
                 _handleInitialSubmit(formKey, originalAsset),
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
           ),
         ],
     };
@@ -490,6 +500,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         return null;
       },
       onFieldSubmitted: (_) => _handleInitialSubmit(formKey, originalAsset),
+      autovalidateMode: _submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
     );
   }
 
@@ -556,6 +569,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset originalAsset) {
+    setState(() {
+      _submitted = true;
+    });
     String name = originalAsset.assetLongname ?? originalAsset.asset;
     int quantity = 0;
     String? description = originalAsset.description;
@@ -720,10 +736,15 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                     child: HorizonUI.HorizonTextFormField(
                       label: "Updated Total Supply",
                       controller: TextEditingController(
-                          text: (Decimal.parse(params.quantityNormalized) +
-                                  Decimal.parse(
-                                      originalAsset.supplyNormalized!))
-                              .toString()),
+                          text: params.divisible == true
+                              ? (Decimal.parse(params.quantityNormalized) +
+                                      Decimal.parse(
+                                          originalAsset.supplyNormalized!))
+                                  .toStringAsFixed(8)
+                              : (Decimal.parse(params.quantityNormalized) +
+                                      Decimal.parse(
+                                          originalAsset.supplyNormalized!))
+                                  .toString()),
                       enabled: false,
                       textColor: Colors.green,
                     ),

@@ -723,8 +723,8 @@ class BalancesSliverState extends State<BalancesSliver> {
 
           final Color textColor = isClickable
               ? (widget.isDarkTheme
-                  ? const Color.fromRGBO(33, 150, 243, 1)
-                  : const Color.fromRGBO(25, 118, 210, 1))
+                  ? darkThemeAssetLinkColor
+                  : lightThemeAssetLinkColor)
               : (widget.isDarkTheme
                   ? greyDashboardTextDarkTheme
                   : greyDashboardTextLightTheme);
@@ -748,13 +748,14 @@ class BalancesSliverState extends State<BalancesSliver> {
 
         final ownedAssetRows = ownedAssetsNotIncludedInEntries.map((asset) {
           final textColor = widget.isDarkTheme
-              ? const Color.fromRGBO(100, 181, 246, 1)
-              : const Color.fromRGBO(25, 118, 210, 1);
+              ? darkThemeAssetLinkColor
+              : lightThemeAssetLinkColor;
           return TableRow(
             children: [
               _buildTableCell1(
                   asset.asset, asset.assetLongname, true, textColor),
-              _buildTableCell2('0', textColor), // these are zero balances
+              _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
+                  textColor), // these are zero balances
               _buildTableCell3(asset.asset, textColor, true, asset, 0)
             ],
           );

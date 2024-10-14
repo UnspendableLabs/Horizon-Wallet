@@ -1,6 +1,5 @@
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/asset.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -110,20 +109,11 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
     final Asset asset;
     late FeeEstimates feeEstimates;
-    late Balance? balance;
 
     try {
       asset = await assetRepository.getAssetVerbose(event.assetName!);
     } catch (e) {
       emit(state.copyWith(assetState: AssetState.error(e.toString())));
-      return;
-    }
-
-    try {
-      balance = await balanceRepository.getBalanceForAddressAndAssetVerbose(
-          event.assetName!, event.currentAddress!.address);
-    } catch (e) {
-      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
       return;
     }
 
@@ -138,7 +128,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
     emit(state.copyWith(
       assetState: AssetState.success(asset),
-      balancesState: BalancesState.success([balance]),
+      balancesState: const BalancesState.success([]),
       feeState: FeeState.success(feeEstimates),
     ));
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import "package:horizon/presentation/colors.dart";
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -26,7 +25,7 @@ class Footer extends StatelessWidget {
                 child: const Text(
                   'Terms of Service',
                   style: TextStyle(
-                    color: neonBlueDarkThemeButtonTextColor,
+                    color: neonBlueDarkTheme,
                     fontSize: 16,
                   ),
                 ),
@@ -37,7 +36,7 @@ class Footer extends StatelessWidget {
                 child: const Text(
                   'Privacy Policy',
                   style: TextStyle(
-                    color: neonBlueDarkThemeButtonTextColor,
+                    color: neonBlueDarkTheme,
                     fontSize: 16,
                   ),
                 ),
@@ -51,7 +50,7 @@ class Footer extends StatelessWidget {
                 child: const Text(
                   'v1.0.1',
                   style: TextStyle(
-                    color: neonBlueDarkThemeButtonTextColor,
+                    color: neonBlueDarkTheme,
                     fontSize: 16,
                   ),
                 ),

@@ -58,7 +58,7 @@ class FeeEstimationState extends State<FeeEstimation> {
               ),
               Row(children: [
                 SelectableText(
-                    "${satoshisToBtc(_getTotalSats()).toString()} BTC",
+                    "${satoshisToBtc(_getTotalSats()).toStringAsFixed(8)} BTC",
                     style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(width: 4),
                 SelectableText(
