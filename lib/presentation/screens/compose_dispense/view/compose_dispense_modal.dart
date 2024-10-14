@@ -10,10 +10,12 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_bloc.dart';
+import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_event.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_state.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
@@ -21,8 +23,9 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 class ComposeDispensePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -41,6 +44,10 @@ class ComposeDispensePageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeDispenseBloc(
+          logger: GetIt.I.get<Logger>(),
+          fetchOpenDispensersOnAddressUseCase:
+              GetIt.I.get<FetchOpenDispensersOnAddressUseCase>(),
+          dispenserRepository: GetIt.I.get<DispenserRepository>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           signAndBroadcastTransactionUseCase:
@@ -50,7 +57,9 @@ class ComposeDispensePageWrapper extends StatelessWidget {
               GetIt.I.get<FetchDispenseFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(currentAddress: state.currentAddress)),
+        )..add(FetchFormData(
+            currentAddress: state.currentAddress,
+            initialDispenserAddress: initialDispenserAddress)),
         child: ComposeDispensePage(
           initialDispenserAddress: initialDispenserAddress,
           address: state.currentAddress,
@@ -139,6 +148,31 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                 quantity: quantity),
           ));
     }
+  }
+
+  Widget _buildOpenDispensersList(ComposeDispenseState state) {
+    return state.dispensersState.when(
+      initial: () => Container(),
+      loading: () => Center(child: CircularProgressIndicator()),
+      success: (dispensers) => Container(
+        height: 100,
+        child: ListView.builder(
+          itemCount: dispensers.length,
+          itemBuilder: (context, index) {
+            final dispenser = dispensers[index];
+            return Container(
+                height: 50,
+                child: ListTile(
+                  title: Text(
+                      "${dispenser.satoshirateNormalized} BTC/${dispenser.asset}"),
+                  trailing:
+                      Text("${dispenser.giveRemainingNormalized} Remaining"),
+                ));
+          },
+        ),
+      ),
+      error: (error) => Text('Error: $error'),
+    );
   }
 
   Widget _buildQuantityInput(ComposeDispenseState state,
@@ -238,6 +272,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       ),
       const SizedBox(height: 16.0),
       _buildDispenserInput(),
+      _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
       _buildQuantityInput(state, () {
         _handleInitialSubmit(formKey);
@@ -251,6 +286,12 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       key: const Key('dispense_dispenesr_input'),
       controller: dispenserController,
       label: 'Dispenser Address',
+      onChanged: (value) {
+        dispenserController.text = value;
+        context
+            .read<ComposeDispenseBloc>()
+            .add(DispenserAddressChanged(address: value));
+      },
       // keyboardType: const TextInputType.numberWithOptions(
       //     decimal: false, signed: false), // No decimal allowed
       validator: (value) {
@@ -287,9 +328,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onConfirmationBack() {
-    context
-        .read<ComposeDispenseBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    context.read<ComposeDispenseBloc>().add(FetchFormData(
+          currentAddress: widget.address,
+          initialDispenserAddress: widget.initialDispenserAddress,
+        ));
   }
 
   void _onConfirmationContinue(
@@ -315,9 +357,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onFinalizeCancel() {
-    context
-        .read<ComposeDispenseBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    context.read<ComposeDispenseBloc>().add(FetchFormData(
+          currentAddress: widget.address,
+          initialDispenserAddress: widget.initialDispenserAddress,
+        ));
   }
 }
 

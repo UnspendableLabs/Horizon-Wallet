@@ -6,13 +6,13 @@ import 'package:horizon/core/logging/logger.dart';
 
 class DispenserRepositoryImpl implements DispenserRepository {
   final V2Api api;
-  final Logger logger;
-  DispenserRepositoryImpl({required this.api, required this.logger});
+  final Logger? logger;
+  DispenserRepositoryImpl({required this.api, this.logger});
   @override
   TaskEither<String, List<e.Dispenser>> getDispensersByAddress(String address) {
     return TaskEither.tryCatch(() => _getDispensersByAddress(address),
         (error, stacktrace) {
-      logger.error(
+      logger?.error(
           "DispenserRepositoryImpl.getDispensersByAddress", null, stacktrace);
 
       return "GetDispensersByAddress failure";
@@ -20,7 +20,11 @@ class DispenserRepositoryImpl implements DispenserRepository {
   }
 
   Future<List<e.Dispenser>> _getDispensersByAddress(String address) async {
-    final response = await api.getDispensersByAddress(address);
+    final response = await api.getDispensersByAddress(
+        address,
+        true,     // verbose
+        "open"    // status
+        );
 
     if (response.result == null) {
       throw Exception();

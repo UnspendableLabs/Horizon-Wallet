@@ -2895,6 +2895,7 @@ class _V2Api implements V2Api {
   Future<Response<List<DispenserModel>>> getDispensersByAddress(
     String address, [
     bool? verbose,
+    String? status,
     CursorModel? cursor,
     int? limit,
     int? offset,
@@ -2902,6 +2903,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'verbose': verbose,
+      r'status': status,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
