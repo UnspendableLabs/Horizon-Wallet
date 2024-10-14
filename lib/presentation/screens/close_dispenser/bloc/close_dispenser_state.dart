@@ -18,9 +18,8 @@ class CloseDispenserState with _$CloseDispenserState, ComposeStateBase {
     required SubmitState submitState,
     // required List
 
-      // Close Dispenser-specific properties
-      required DispenserState dispensersState,
-
+    // Close Dispenser-specific properties
+    required DispenserState dispensersState,
   }) = _CloseDispenserState;
 
   factory CloseDispenserState.initial() => CloseDispenserState(
@@ -36,6 +35,7 @@ class CloseDispenserState with _$CloseDispenserState, ComposeStateBase {
 class DispenserState with _$DispenserState {
   const factory DispenserState.initial() = _DispenserInitial;
   const factory DispenserState.loading() = _DispenserLoading;
-  const factory DispenserState.success(List<Dispenser> dispensers) = _DispenserSuccess;
+  const factory DispenserState.success(List<Dispenser> dispensers) =
+      _DispenserSuccess;
   const factory DispenserState.error(String error) = _DispenserError;
 }

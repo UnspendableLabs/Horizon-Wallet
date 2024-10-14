@@ -1,5 +1,4 @@
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
@@ -45,7 +44,8 @@ class FetchCloseDispenserFormDataUseCase {
 
   Future<List<Dispenser>> _fetchDispenser(Address currentAddress) async {
     try {
-      return await dispenserRepository.getDispenserByAddress(currentAddress.address);
+      return await dispenserRepository
+          .getDispenserByAddress(currentAddress.address);
     } catch (e) {
       throw FetchDispenserException(e.toString());
     }

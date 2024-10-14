@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -13,6 +14,7 @@ import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispense
 import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_state.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class CloseDispenserPageWrapper extends StatelessWidget {
@@ -30,9 +32,12 @@ class CloseDispenserPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => CloseDispenserBloc(
-          fetchCloseDispenserFormDataUseCase: GetIt.I.get<FetchCloseDispenserFormDataUseCase>(),
-          writelocalTransactionUseCase: GetIt.I.get<WriteLocalTransactionUseCase>(),
-          signAndBroadcastTransactionUseCase: GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
+          fetchCloseDispenserFormDataUseCase:
+              GetIt.I.get<FetchCloseDispenserFormDataUseCase>(),
+          writelocalTransactionUseCase:
+              GetIt.I.get<WriteLocalTransactionUseCase>(),
+          signAndBroadcastTransactionUseCase:
+              GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           // fetchDispenserFormDataUseCase: GetIt.I.get<FetchDispenserFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
@@ -63,11 +68,11 @@ class CloseDispenserPage extends StatefulWidget {
 }
 
 class CloseDispenserPageState extends State<CloseDispenserPage> {
-  TextEditingController openAddressController = TextEditingController();
-  TextEditingController assetController = TextEditingController();
+  TextEditingController dispenserController = TextEditingController();
 
   // String? asset;
   // Balance? balance_;
+  Dispenser? selectedDispenser;
   final bool _submitted = false;
 
   @override
@@ -86,11 +91,15 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
         return ComposeBasePage<CloseDispenserBloc, CloseDispenserState>(
           address: widget.address,
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-          onFeeChange: (fee) => context.read<CloseDispenserBloc>().add(ChangeFeeOption(value: fee)),
-          buildInitialFormFields: (state, loading, formKey) => _buildInitialFormFields(state, loading, formKey),
+          onFeeChange: (fee) => context
+              .read<CloseDispenserBloc>()
+              .add(ChangeFeeOption(value: fee)),
+          buildInitialFormFields: (state, loading, formKey) =>
+              _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
           onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-          buildConfirmationFormFields: (composeTransaction, formKey) => _buildConfirmationDetails(composeTransaction),
+          buildConfirmationFormFields: (composeTransaction, formKey) =>
+              _buildConfirmationDetails(composeTransaction),
           onConfirmationBack: () => _onConfirmationBack(),
           onConfirmationContinue: (composeTransaction, fee, formKey) {
             _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -138,100 +147,36 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
     );
   }
 
-  List<Widget> _buildInitialFormFields(CloseDispenserState state, bool loading, GlobalKey<FormState> formKey) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    const TableRow headerRow = TableRow(
-      children: [
-        TableCell(child: SizedBox()), // Empty cell for checkbox column
-        TableCell(child: Center(child: SelectableText('Source'))),
-        TableCell(child: Center(child: SelectableText('Asset Name'))),
-        TableCell(child: Center(child: SelectableText('Quantity'))),
-        TableCell(child: Center(child: SelectableText('Price'))),
-      ],
-    );
-
-    const Color evenColumnColor = Colors.white;
-    const Color oddColumnColor = Color(0xFFF5F5F5); // Light grey color
-
+  List<Widget> _buildInitialFormFields(
+      CloseDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return state.dispensersState.maybeWhen(
       success: (dispensers) => [
-        Table(
-          border: TableBorder(
-            horizontalInside: BorderSide(
-              color: isDarkTheme ? Colors.white24 : Colors.black12,
-              width: 1,
-            ),
-          ),
-          columnWidths: const {
-            0: FixedColumnWidth(50), // Checkbox column
-            1: FlexColumnWidth(2), // Source column
-            2: FlexColumnWidth(2), // Asset Name column
-            3: FlexColumnWidth(1), // Quantity column
-            4: FlexColumnWidth(1), // Price column
-          },
-          children: [
-            headerRow,
-            ...dispensers.map((dispenser) => TableRow(
-              decoration: const BoxDecoration(
-                color: Colors.transparent,
+        HorizonUI.HorizonDropdownMenu<Dispenser>(
+          controller: dispenserController,
+          id: 'close_dispenser_dropdown',
+          label: 'Select Dispenser to Close',
+          selectedValue: selectedDispenser,
+          items: dispensers.map((dispenser) {
+            return DropdownMenuItem<Dispenser>(
+              value: dispenser,
+              child: Text(
+                '${dispenser.openAddress} - ${dispenser.assetName} - '
+                'Quantity: ${dispenser.giveQuantity} - '
+                'Price: ${dispenser.mainchainrate}',
               ),
-              children: [
-                TableCell(
-
-                  child: Container(
-                    color: evenColumnColor,
-                    child: Center(
-                      child: Checkbox(
-                        value: false, // TODO: Implement checkbox state management
-                        onChanged: (bool? value) {
-                          // TODO: Implement checkbox state change
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                TableCell(child: Container(color: oddColumnColor, child: Center(child: SelectableText(dispenser.openAddress)))),
-                TableCell(child: Container(color: evenColumnColor, child: Center(child: SelectableText(dispenser.assetName)))),
-                TableCell(child: Container(color: oddColumnColor, child: Center(child: SelectableText(dispenser.giveQuantity.toString())))),
-                TableCell(child: Container(color: evenColumnColor, child: Center(child: SelectableText(dispenser.mainchainrate.toString())))),
-              ],
-            )),
-          ],
+            );
+          }).toList(),
+          onChanged: (Dispenser? newDispenser) {
+            setState(() {
+              selectedDispenser = newDispenser;
+            });
+            // if (newDispenser != null) {
+            //   context.read<CloseDispenserBloc>().add(SelectDispenser(dispenser: newDispenser));
+            // }
+          },
         ),
       ],
       loading: () => [
-        Table(
-          columnWidths: const {
-            0: FixedColumnWidth(50), // Checkbox column
-            1: FlexColumnWidth(2), // Source column
-            2: FlexColumnWidth(2), // Asset Name column
-            3: FlexColumnWidth(1), // Quantity column
-            4: FlexColumnWidth(1), // Price column
-          },
-          children: [
-            headerRow,
-            TableRow(
-              children: List.generate(
-                5,
-                (index) => TableCell(
-                  child: Container(
-                    color: index.isEven ? evenColumnColor : oddColumnColor,
-                    padding: const EdgeInsets.all(8.0),
-                    child: const Center(
-                      child: SizedBox(
-                        height: 20,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
         const Center(child: CircularProgressIndicator()),
       ],
       error: (error) => [SelectableText(error)],
@@ -257,7 +202,8 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
     // TODO: implement _onConfirmationBack
   }
 
-  void _onConfirmationContinue(dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
+  void _onConfirmationContinue(
+      dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     // TODO: implement _onConfirmationContinue
   }
 

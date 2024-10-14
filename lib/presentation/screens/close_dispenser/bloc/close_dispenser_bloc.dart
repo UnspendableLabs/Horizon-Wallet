@@ -41,7 +41,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
     // on<ChangeEscrowQuantity>((e, emit) {});
   }
 
-    @override
+  @override
   void onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
@@ -50,7 +50,8 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
         submitState: const SubmitInitial()));
 
     try {
-      final (feeEstimates, dispensers) = await fetchCloseDispenserFormDataUseCase.call(event.currentAddress!);
+      final (feeEstimates, dispensers) =
+          await fetchCloseDispenserFormDataUseCase.call(event.currentAddress!);
 
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
@@ -67,9 +68,12 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
       ));
     } catch (e) {
       emit(state.copyWith(
-        balancesState: BalancesState.error('An unexpected error occurred: ${e.toString()}'),
-        dispensersState: DispenserState.error('An unexpected error occurred: ${e.toString()}'),
-        feeState: FeeState.error('An unexpected error occurred: ${e.toString()}'),
+        balancesState: BalancesState.error(
+            'An unexpected error occurred: ${e.toString()}'),
+        dispensersState: DispenserState.error(
+            'An unexpected error occurred: ${e.toString()}'),
+        feeState:
+            FeeState.error('An unexpected error occurred: ${e.toString()}'),
       ));
     }
   }

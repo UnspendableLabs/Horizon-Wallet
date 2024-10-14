@@ -294,6 +294,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final double? borderRadius;
   final bool enabled;
   final String Function(T?)? displayStringForOption;
+  final String? id; // Add this line
 
   const HorizonDropdownMenu({
     super.key,
@@ -306,6 +307,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
     this.borderRadius,
     this.enabled = true,
     this.displayStringForOption,
+    this.id, // Add this line
   });
 
   @override
@@ -326,8 +328,12 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
           alignedDropdown: true,
           child: DropdownButton<T>(
             isExpanded: true,
-            value: selectedValue ?? items.first.value,
-            onChanged: enabled ? onChanged : null,
+            value: selectedValue, // Remove the ?? items.first.value
+            onChanged: enabled
+                ? (T? newValue) {
+                    onChanged(newValue);
+                  }
+                : null,
             items: items,
             borderRadius: BorderRadius.circular(borderRadius ?? 10),
             icon: icon,
@@ -343,6 +349,10 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
                 );
               }).toList();
             },
+            // Add these lines
+            hint: Text(label ?? ''),
+            isDense: true,
+            underline: const SizedBox(),
           ),
         ),
       ),
@@ -360,6 +370,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
       borderRadius: borderRadius,
       enabled: enabled ?? this.enabled,
       displayStringForOption: displayStringForOption,
+      id: id, // Add this line
     );
   }
 }
