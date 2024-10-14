@@ -59,6 +59,9 @@ import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
+import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart';
+
 import 'package:horizon/data/sources/network/esplora_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -270,6 +273,13 @@ Future<void> setup() async {
   ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
+
+  injector.registerSingleton<DispenserRepository>(
+    DispenserRepositoryImpl(
+      api: GetIt.I.get<V2Api>(),
+      logger: GetIt.I.get<Logger>(),
+    ),
+  );
 }
 
 class CustomDioException extends DioException {

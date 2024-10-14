@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/compose.dart';
+import 'package:horizon/data/models/dispenser.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -2779,6 +2780,16 @@ abstract class V2Api {
   //     Get Send By Address And Asset
   //     Get Receive By Address And Asset
   //     Get Dispensers By Address
+
+  @GET("/addresses/{address}/dispensers")
+  Future<Response<List<DispenserModel>>> getDispensersByAddress(
+    @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+  ]);
+
   //     Get Dispensers By Address And Asset
   //     Get Sweeps By Address
   // Compose
