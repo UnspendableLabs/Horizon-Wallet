@@ -2,14 +2,17 @@ import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_event.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_state.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:logger/logger.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 
@@ -26,16 +29,21 @@ class ComposeDispenseEventParams {
 }
 
 class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
-  final Logger logger = Logger();
+  final Logger logger;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
 
+  final FetchOpenDispensersOnAddressUseCase fetchOpenDispensersOnAddressUseCase;
   final FetchDispenseFormDataUseCase fetchDispenseFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final DispenserRepository dispenserRepository;
 
   ComposeDispenseBloc({
+    required this.logger,
+    required this.fetchOpenDispensersOnAddressUseCase,
+    required this.dispenserRepository,
     required this.composeRepository,
     required this.analyticsService,
     required this.fetchDispenseFormDataUseCase,
@@ -47,9 +55,48 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
           submitState: const SubmitInitial(),
           feeState: const FeeState.initial(),
           balancesState: const BalancesState.initial(),
+          dispensersState: const DispensersState.initial(),
           quantity: "",
         )) {
+    on<DispenserAddressChanged>(_onDispenserAddressChanged);
     // Register additional event handlers specific to sending
+  }
+
+  _onDispenserAddressChanged(event, emit) async {
+    emit(state.copyWith(
+      dispensersState: const DispensersState.loading(),
+    ));
+
+    try {
+      if (event.address.isEmpty) {
+        emit(state.copyWith(
+          dispensersState: const DispensersState.initial(),
+        ));
+        return;
+      }
+
+      final dispensers =
+          await fetchOpenDispensersOnAddressUseCase.call(event.address);
+
+      emit(state.copyWith(
+        dispensersState: DispensersState.success(dispensers),
+      ));
+    } on FetchOpenDispensersOnAddressException catch (e) {
+      logger.error("what the heck  ${e.toString()}");
+
+      emit(state.copyWith(
+        dispensersState: DispensersState.error(e.message),
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        dispensersState: DispensersState.error(
+            'An unexpected error occurred: ${e.toString()}'),
+        balancesState: BalancesState.error(
+            'An unexpected error occurred: ${e.toString()}'),
+        feeState:
+            FeeState.error('An unexpected error occurred: ${e.toString()}'),
+      ));
+    }
   }
 
   @override
@@ -65,14 +112,25 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         feeState: const FeeState.loading(),
         submitState: const SubmitInitial()));
 
+    logger.warn("fetchf form data ${event.initialDispenserAddress}");
+
     try {
       final (balances, feeEstimates) =
           await fetchDispenseFormDataUseCase.call(event.currentAddress!);
 
+      // default to initial of there is no dispenser addy
+      DispensersState nextDispensersState = const DispensersState.initial();
+
+      if (event.initialDispenserAddress != null) {
+        final dispensers = await fetchOpenDispensersOnAddressUseCase
+            .call(event.initialDispenserAddress!);
+        nextDispensersState = DispensersState.success(dispensers);
+      }
+
       emit(state.copyWith(
-        balancesState: BalancesState.success(balances),
-        feeState: FeeState.success(feeEstimates),
-      ));
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          dispensersState: nextDispensersState));
     } on FetchBalancesException catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(e.message),
@@ -81,8 +139,14 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
       ));
+    } on FetchOpenDispensersOnAddressException catch (e) {
+      emit(state.copyWith(
+        dispensersState: DispensersState.error(e.message),
+      ));
     } catch (e) {
       emit(state.copyWith(
+        dispensersState: DispensersState.error(
+            'An unexpected error occurred: ${e.toString()}'),
         balancesState: BalancesState.error(
             'An unexpected error occurred: ${e.toString()}'),
         feeState:
@@ -105,14 +169,26 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
+    final openDispeners = state.dispensersState.maybeWhen(
+      success: (dispensers) => dispensers.isNotEmpty,
+      orElse: () => false,
+    );
+
+    if (!openDispeners) {
+      emit(state.copyWith(
+        submitState: SubmitInitial(
+            loading: false, error: 'No open dispensers found')));
+      return;
+    }
+
+
     try {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
       final dispenser = event.params.dispenser;
       final quantity = event.params.quantity;
 
-      logger.e("event dispenser ${event.params.dispenser}");
-
+      logger.error("event dispenser ${event.params.dispenser}");
 
       final composed = await composeTransactionUseCase
           .call<ComposeDispenseParams, ComposeDispenseResponse>(
@@ -178,7 +254,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.d('dispense broadcasted txHash: $txHash');
+          logger.error('dispense broadcasted txHash: $txHash');
 
           emit(state.copyWith(
               submitState: SubmitSuccess(

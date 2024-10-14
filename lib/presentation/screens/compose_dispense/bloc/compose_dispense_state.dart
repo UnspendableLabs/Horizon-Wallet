@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/address.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 
 part 'compose_dispense_state.freezed.dart';
@@ -16,6 +17,7 @@ class ComposeDispenseState with _$ComposeDispenseState, ComposeStateBase {
     required BalancesState balancesState,
     required FeeOption feeOption,
     required SubmitState submitState,
+    required DispensersState dispensersState,
 
     // Specific properties
     Address? source,
@@ -28,9 +30,18 @@ class ComposeDispenseState with _$ComposeDispenseState, ComposeStateBase {
   factory ComposeDispenseState.initial() => ComposeDispenseState(
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
+        dispensersState: const DispensersState.initial(),
         feeOption: Medium(),
         submitState: const SubmitInitial(),
         quantity: '',
       );
 }
 
+@freezed
+class DispensersState with _$DispensersState {
+  const factory DispensersState.initial() = _DispensersInitial;
+  const factory DispensersState.loading() = _DispensersLoading;
+  const factory DispensersState.success(List<Dispenser> dispensers) =
+      _DispensersSuccess;
+  const factory DispensersState.error(String error) = _DispensersError;
+}

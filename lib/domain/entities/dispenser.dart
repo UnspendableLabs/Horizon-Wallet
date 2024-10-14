@@ -6,7 +6,7 @@ class Dispenser {
   final String asset;
   final int giveQuantity;
   final int escrowQuantity;
-  final int satoshiRate;
+  final int satoshirate;
   final int status;
   final int giveRemaining;
   final String? oracleAddress;
@@ -22,7 +22,7 @@ class Dispenser {
   final String? giveQuantityNormalized;
   final String? giveRemainingNormalized;
   final String? escrowQuantityNormalized;
-  final String? satoshiRateNormalized;
+  final String? satoshirateNormalized;
 
   Dispenser({
     required this.txIndex,
@@ -32,7 +32,7 @@ class Dispenser {
     required this.asset,
     required this.giveQuantity,
     required this.escrowQuantity,
-    required this.satoshiRate,
+    required this.satoshirate,
     required this.status,
     required this.giveRemaining,
     this.oracleAddress,
@@ -48,6 +48,6 @@ class Dispenser {
     this.giveQuantityNormalized,
     this.giveRemainingNormalized,
     this.escrowQuantityNormalized,
-    this.satoshiRateNormalized,
+    this.satoshirateNormalized,
   });
 }

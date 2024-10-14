@@ -3,43 +3,63 @@ import 'package:json_annotation/json_annotation.dart';
 
 part "dispenser.g.dart";
 
+// DispenserModel class
 @JsonSerializable(fieldRename: FieldRename.snake)
-class DispenserModel extends Dispenser {
+class DispenserModel {
+  final int txIndex;
+  final String txHash;
+  final int blockIndex;
+  final String source;
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int satoshirate;
+  final int status;
+  final int giveRemaining;
+  final String? oracleAddress;
+  final String? lastStatusTxHash;
+  final String? closeBlockIndex; // String type
+  final String origin;
+  final int dispenseCount;
+  final String? lastStatusTxSource;
+  final bool confirmed;
+  // Verbose fields
+  final int? blockTime;
+  final String? giveQuantityNormalized;
+  final String? giveRemainingNormalized;
+  final String? escrowQuantityNormalized;
+  final String? satoshirateNormalized;
+
   DispenserModel({
-    required super.txIndex,
-    required super.txHash,
-    required super.blockIndex,
-    required super.source,
-    required super.asset,
-    required super.giveQuantity,
-    required super.escrowQuantity,
-    required super.satoshiRate,
-    required super.status,
-    required super.giveRemaining,
-    super.oracleAddress,
-    super.lastStatusTxHash,
-    required super.origin,
-    required super.dispenseCount,
-    super.lastStatusTxSource,
-    super.closeBlockIndex,
-    required super.confirmed,
+    required this.txIndex,
+    required this.txHash,
+    required this.blockIndex,
+    required this.source,
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.satoshirate,
+    required this.status,
+    required this.giveRemaining,
+    this.oracleAddress,
+    this.lastStatusTxHash,
+    this.closeBlockIndex,
+    required this.origin,
+    required this.dispenseCount,
+    this.lastStatusTxSource,
+    required this.confirmed,
     // Verbose fields
-    super.blockTime,
-    // AssetInfo? assetInfo,
-    super.giveQuantityNormalized,
-    super.giveRemainingNormalized,
-    super.escrowQuantityNormalized,
-    super.satoshiRateNormalized,
+    this.blockTime,
+    this.giveQuantityNormalized,
+    this.giveRemainingNormalized,
+    this.escrowQuantityNormalized,
+    this.satoshirateNormalized,
   });
 
-  /// Connect the generated `fromJson` function with the class constructor.
   factory DispenserModel.fromJson(Map<String, dynamic> json) =>
       _$DispenserModelFromJson(json);
 
-  /// Connect the generated `toJson` function with the class to produce a JSON map.
-  Map<String, dynamic> toJson() => _$DispenserModelToJson(this);
-
-   Dispenser toDomain() {
+  Dispenser toDomain() {
     return Dispenser(
       txIndex: txIndex,
       txHash: txHash,
@@ -48,7 +68,7 @@ class DispenserModel extends Dispenser {
       asset: asset,
       giveQuantity: giveQuantity,
       escrowQuantity: escrowQuantity,
-      satoshiRate: satoshiRate,
+      satoshirate: satoshirate,
       status: status,
       giveRemaining: giveRemaining,
       oracleAddress: oracleAddress,
@@ -56,13 +76,14 @@ class DispenserModel extends Dispenser {
       origin: origin,
       dispenseCount: dispenseCount,
       lastStatusTxSource: lastStatusTxSource,
-      closeBlockIndex: closeBlockIndex,
+      closeBlockIndex:
+          closeBlockIndex != null ? int.tryParse(closeBlockIndex!) : null,
       confirmed: confirmed,
       blockTime: blockTime,
       giveQuantityNormalized: giveQuantityNormalized,
       giveRemainingNormalized: giveRemainingNormalized,
       escrowQuantityNormalized: escrowQuantityNormalized,
-      satoshiRateNormalized: satoshiRateNormalized,
+      satoshirateNormalized: satoshirateNormalized,
     );
   }
 }

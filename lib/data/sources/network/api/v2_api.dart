@@ -2785,6 +2785,7 @@ abstract class V2Api {
   Future<Response<List<DispenserModel>>> getDispensersByAddress(
     @Path("address") String address, [
     @Query("verbose") bool? verbose,
+    @Query("status") String? status,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,

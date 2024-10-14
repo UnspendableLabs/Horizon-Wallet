@@ -74,6 +74,7 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 
 import 'package:logger/logger.dart' as _logger;
 import 'package:horizon/core/logging/logger.dart';
@@ -229,6 +230,13 @@ Future<void> setup() async {
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
+  
+  injector.registerSingleton<DispenserRepository>(
+    DispenserRepositoryImpl(
+      api: GetIt.I.get<V2Api>(),
+      logger: GetIt.I.get<Logger>(),
+    ),
+  );
 
   injector.registerSingleton<GetFeeEstimatesUseCase>(
       GetFeeEstimatesUseCase(bitcoindService: GetIt.I.get<BitcoindService>()));
@@ -246,6 +254,10 @@ Future<void> setup() async {
       FetchDispenseFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton<FetchOpenDispensersOnAddressUseCase>(
+      FetchOpenDispensersOnAddressUseCase(
+          dispenserRepository: GetIt.I.get<DispenserRepository>()));
 
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
@@ -274,12 +286,6 @@ Future<void> setup() async {
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
 
-  injector.registerSingleton<DispenserRepository>(
-    DispenserRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
-      logger: GetIt.I.get<Logger>(),
-    ),
-  );
 }
 
 class CustomDioException extends DioException {
