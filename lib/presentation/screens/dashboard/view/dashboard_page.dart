@@ -381,6 +381,20 @@ class AddressActions extends StatelessWidget {
               text: "DISPENSER",
             ),
             AddressAction(
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Trigger Dispense",
+                body: ComposeDispensePageWrapper(
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                ),
+
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.swap_vert,
+              text: "DISPENSE",
+            ),
+            AddressAction(
                 isDarkTheme: isDarkTheme,
                 dialog: HorizonUI.HorizonDialog(
                   title: "Receive",
