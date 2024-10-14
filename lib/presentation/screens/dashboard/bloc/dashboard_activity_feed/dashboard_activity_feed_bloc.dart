@@ -363,7 +363,6 @@ class DashboardActivityFeedBloc
 
       final counterpartyEvents = await eventsRepository.getAllByAddressVerbose(
           address: currentAddress.address,
-          // limit: pageSize,
           unconfirmed: true,
           whitelist: DEFAULT_WHITELIST);
 
