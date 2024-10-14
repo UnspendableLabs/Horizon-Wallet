@@ -1,10 +1,8 @@
 import 'package:decimal/decimal.dart';
 import 'package:simple_rc4/simple_rc4.dart';
 import 'dart:typed_data';
-import 'package:logger/logger.dart';
 import 'package:convert/convert.dart';
-
-final logger = Logger();
+import 'package:horizon/core/logging/logger.dart';
 
 String encodeHex(Uint8List bytes) {
   return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
@@ -166,7 +164,7 @@ class BitcoinTx {
     return btcValue.toDecimal().round(scale: 8);
   }
 
-  bool isCounterpartyTx() {
+  bool isCounterpartyTx(Logger logger) {
     List<String> logs = [];
 
     try {
@@ -229,7 +227,7 @@ class BitcoinTx {
           // Check for Counterparty prefix
           if (decodedData.startsWith(PREFIX)) {
             logs.add("Counterparty transaction detected.");
-            logger.i(logs.join("\n"));
+            logger.info(logs.join("\n"));
             return true;
           } else {
             logs.add("Decoded data does not contain Counterparty prefix.");
@@ -295,7 +293,7 @@ class BitcoinTx {
 
                   if (prefixString == PREFIX) {
                     logs.add("Counterparty transaction detected.");
-                    // logger.i(logs.join("\n"));
+                    logger.debug(logs.join("\n"));
                     return true;
                   } else {
                     logs.add("Chunk does not contain Counterparty prefix.");
@@ -317,13 +315,14 @@ class BitcoinTx {
 
       // No valid Counterparty transaction detected
       logs.add("No Counterparty transaction detected.");
-      // logger.d(logs.join("\n"));
+      logger.debug(logs.join("\n"));
       return false;
     } catch (e, stacktrace) {
+
       logs.add("An error occurred: $e");
       logs.add("Stacktrace: $stacktrace");
-      // logger.d(logs.join("\n"));
-      rethrow;
+      logger.error(logs.join("\n"), stacktrace);
+      return false;
     }
   }
 

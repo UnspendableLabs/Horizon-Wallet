@@ -50,6 +50,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -533,6 +534,7 @@ class DashboardPageWrapper extends StatelessWidget {
                 ),
                 BlocProvider<DashboardActivityFeedBloc>(
                   create: (context) => DashboardActivityFeedBloc(
+                    logger: GetIt.I.get<Logger>(),
                     currentAddress: data.currentAddress,
                     eventsRepository: GetIt.I.get<EventsRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),

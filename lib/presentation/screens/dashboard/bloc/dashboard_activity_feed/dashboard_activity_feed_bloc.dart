@@ -13,6 +13,7 @@ import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
@@ -28,6 +29,7 @@ final DEFAULT_WHITELIST = [
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
+  Logger logger;
   Timer? timer;
   Address currentAddress;
   int pageSize;
@@ -39,7 +41,8 @@ class DashboardActivityFeedBloc
   bool _isCancelled = false;
 
   DashboardActivityFeedBloc(
-      {required this.currentAddress,
+      {required this.logger,
+      required this.currentAddress,
       required this.eventsRepository,
       required this.pageSize,
       required this.transactionLocalRepository,
@@ -131,7 +134,7 @@ class DashboardActivityFeedBloc
         newBitcoinTransactions = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx(),
+              (tx) => !tx.isCounterpartyTx(logger),
             )
             .toList();
       } else {
@@ -142,7 +145,7 @@ class DashboardActivityFeedBloc
         final bitcoinTxs = bitcoinTxsE
             .getOrElse((left) => throw left)
             .where(
-              (tx) => !tx.isCounterpartyTx(),
+              (tx) => !tx.isCounterpartyTx(logger),
             )
             .toList();
 
@@ -395,7 +398,7 @@ class DashboardActivityFeedBloc
       final btcMempoolList = btcMempoolE
           .getOrElse((left) => throw left)
           .where(
-            (tx) => !tx.isCounterpartyTx(),
+            (tx) => !tx.isCounterpartyTx(logger),
           )
           .toList();
 
