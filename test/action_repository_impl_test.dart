@@ -13,7 +13,7 @@ void main() {
   group('ActionRepositoryImpl', () {
     test('should decode a valid dispense action', () {
       // Arrange
-      final encodedString = 'dispense,0x123abc';
+      const encodedString = 'dispense,0x123abc';
       
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -32,7 +32,7 @@ void main() {
 
     test('should return an error for an invalid action type', () {
       // Arrange
-      final encodedString = 'invalidaction,0x123abc';
+      const encodedString = 'invalidaction,0x123abc';
       
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -47,7 +47,7 @@ void main() {
 
     test('should return an error for a missing parameter', () {
       // Arrange
-      final encodedString = 'dispense'; // Missing the address
+      const encodedString = 'dispense'; // Missing the address
       
       // Act
       final result = actionRepository.fromString(encodedString);
@@ -62,7 +62,7 @@ void main() {
 
     test('should correctly decode with URI-encoded characters', () {
       // Arrange
-      final encodedString = 'dispense,0x123%20abc'; // URI-encoded space
+      const encodedString = 'dispense,0x123%20abc'; // URI-encoded space
       
       // Act
       final result = actionRepository.fromString(encodedString);

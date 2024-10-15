@@ -7,7 +7,6 @@ import 'package:horizon/data/models/asset_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
-import 'package:horizon/domain/entities/compose_dispense.dart';
 
 part 'v2_api.g.dart';
 //

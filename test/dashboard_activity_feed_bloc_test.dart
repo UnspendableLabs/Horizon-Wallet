@@ -20,7 +20,6 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart";
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/data/logging/logger_impl.dart';
 
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [

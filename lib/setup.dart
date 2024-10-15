@@ -77,16 +77,16 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
 
-import 'package:logger/logger.dart' as _logger;
+import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
-  _logger.Logger.level = _logger.Level.warning;
+  logger.Logger.level = logger.Level.warning;
 
-  injector.registerSingleton<Logger>(LoggerImpl(_logger.Logger()));
+  injector.registerSingleton<Logger>(LoggerImpl(logger.Logger()));
 
   Config config = ConfigImpl();
 

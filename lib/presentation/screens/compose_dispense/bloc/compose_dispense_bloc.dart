@@ -1,4 +1,3 @@
-import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -206,9 +205,9 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         feeRate: feeRate,
         otherParams: expectedDispenses,
       )));
-    } on FetchOpenDispensersOnAddressException catch (e) {
+    } on FetchOpenDispensersOnAddressException {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: const SubmitInitial(
               loading: false, error: 'No open dispensers found')));
       return;
     } on ComposeTransactionException catch (e, _) {

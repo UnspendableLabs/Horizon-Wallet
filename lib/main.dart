@@ -12,7 +12,6 @@ import 'package:horizon/common/fn.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/data/services/regtest_utils.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
-import 'package:horizon/domain/entities/action.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
