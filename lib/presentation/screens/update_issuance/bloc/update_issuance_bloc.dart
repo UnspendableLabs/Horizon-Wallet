@@ -231,8 +231,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         },
         successAction:
             (txHex, txHash, source, destination, quantity, asset) async {
-          TransactionInfo txInfo =
-              await transactionRepository.getInfo(txHex);
+          TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
           await transactionLocalRepository.insert(txInfo.copyWith(
             hash: txHash,

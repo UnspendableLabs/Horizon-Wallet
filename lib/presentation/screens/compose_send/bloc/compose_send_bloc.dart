@@ -346,8 +346,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
             (txHex, txHash, source, destination, quantity, asset) async {
           // for now we don't track btc sends
           if (asset!.toLowerCase() != 'btc') {
-            TransactionInfo txInfo =
-                await transactionRepository.getInfo(txHex);
+            TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
             await transactionLocalRepository.insert(txInfo.copyWith(
                 hash: txHash,

@@ -7,7 +7,6 @@ import 'package:horizon/data/models/asset_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
-
 part 'v2_api.g.dart';
 //
 // class Verbose {
@@ -1057,7 +1056,6 @@ class VerboseNewTransactionParams extends NewTransactionParams {
   factory VerboseNewTransactionParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseNewTransactionParamsFromJson(json);
 }
-
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseEvent extends Event {

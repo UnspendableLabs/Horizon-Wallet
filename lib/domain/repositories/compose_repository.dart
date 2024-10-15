@@ -27,5 +27,4 @@ abstract class ComposeRepository {
 
   Future<ComposeDispenseResponse> composeDispense(
       int fee, List<Utxo> inputsSet, ComposeDispenseParams params);
-
 }

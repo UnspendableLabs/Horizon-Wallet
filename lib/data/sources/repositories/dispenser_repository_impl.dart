@@ -22,8 +22,8 @@ class DispenserRepositoryImpl implements DispenserRepository {
   Future<List<e.Dispenser>> _getDispensersByAddress(String address) async {
     final response = await api.getDispensersByAddress(
         address,
-        true,     // verbose
-        "open"    // status
+        true, // verbose
+        "open" // status
         );
 
     if (response.result == null) {

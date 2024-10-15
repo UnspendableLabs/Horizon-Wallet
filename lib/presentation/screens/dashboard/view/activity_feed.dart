@@ -284,8 +284,7 @@ class ActivityFeedListItem extends StatelessWidget {
       // local can only ever be a send
       TransactionInfoEnhancedSend() =>
         const Icon(Icons.arrow_back, color: Colors.grey),
-      TransactionInfoIssuance() =>
-        const Icon(Icons.toll, color: Colors.grey),
+      TransactionInfoIssuance() => const Icon(Icons.toll, color: Colors.grey),
       TransactionInfoDispenser() =>
         const Icon(Icons.account_balance, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>

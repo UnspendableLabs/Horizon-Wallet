@@ -130,7 +130,6 @@ void main() {
       const String txHex = 'transaction_hex';
       const String txHash = 'transaction_hash';
 
-
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source'))
           .thenAnswer((_) async => mockUtxos);
@@ -217,7 +216,6 @@ void main() {
 
       when(() => mockUtxoRepository.getUnspentForAddress('source'))
           .thenAnswer((_) async => mockUtxos);
-
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
@@ -338,7 +336,10 @@ void main() {
               'Failed to broadcast the transaction.'));
 
       var errorCallbackInvoked = false;
-      onSuccess(String txHex, String txHash,) {}
+      onSuccess(
+        String txHex,
+        String txHash,
+      ) {}
       onError(String error) {
         expect(error, 'Failed to broadcast the transaction.');
         errorCallbackInvoked = true;

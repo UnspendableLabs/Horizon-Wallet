@@ -29,7 +29,6 @@ class EnhancedSendUnpacked extends TransactionUnpacked {
   List<Object?> get props => [messageType, asset, quantity, address, memo];
 }
 
-
 class EnhancedSendUnpackedVerbose extends TransactionUnpacked {
   final String asset;
   final int quantity;

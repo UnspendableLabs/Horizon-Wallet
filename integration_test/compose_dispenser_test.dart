@@ -100,7 +100,6 @@ class FakeAssetInfo extends Fake implements AssetInfo {
 
   @override
   String get assetLongname => _assetLongname;
-
 }
 
 class FakeAddress extends Fake implements Address {

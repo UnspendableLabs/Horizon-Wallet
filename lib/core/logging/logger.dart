@@ -6,4 +6,3 @@ abstract class Logger {
   void fatal(String message, [Error? error, StackTrace? stackTrace]);
   void trace(String message);
 }
-

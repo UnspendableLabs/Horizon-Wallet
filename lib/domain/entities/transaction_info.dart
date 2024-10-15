@@ -70,8 +70,16 @@ class TransactionInfo extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [hash, source, destination, btcAmount, fee, data, domain, btcAmountNormalized];
+  List<Object?> get props => [
+        hash,
+        source,
+        destination,
+        btcAmount,
+        fee,
+        data,
+        domain,
+        btcAmountNormalized
+      ];
 }
 
 // class TransactionInfoVerbose extends TransactionInfo {
@@ -163,7 +171,6 @@ class TransactionInfoEnhancedSend extends TransactionInfo {
   }
 }
 
-
 class TransactionInfoIssuance extends TransactionInfo {
   final IssuanceUnpackedVerbose unpackedData;
 
@@ -183,7 +190,6 @@ class TransactionInfoIssuance extends TransactionInfo {
   @override
   List<Object?> get props => [unpackedData, ...super.props];
 }
-
 
 class TransactionInfoDispenser extends TransactionInfo {
   final DispenserUnpackedVerbose unpackedData;
@@ -214,7 +220,6 @@ class TransactionInfoDispenser extends TransactionInfo {
     TransactionInfoDomain? domain,
     DispenserUnpackedVerbose? unpackedData,
     String? btcAmountNormalized,
-      
   }) {
     return TransactionInfoDispenser(
       hash: hash ?? this.hash,
@@ -229,4 +234,3 @@ class TransactionInfoDispenser extends TransactionInfo {
     );
   }
 }
-

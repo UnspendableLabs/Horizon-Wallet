@@ -11,11 +11,9 @@ class MockTransactionRepository extends Mock implements TransactionRepository {}
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
 
-class MockTransactionInfo extends Mock
-    implements TransactionInfo {}
+class MockTransactionInfo extends Mock implements TransactionInfo {}
 
-class FakeTransactionInfo extends Fake
-    implements TransactionInfo{}
+class FakeTransactionInfo extends Fake implements TransactionInfo {}
 
 void main() {
   late WriteLocalTransactionUseCase writeLocalTransactionUseCase;
@@ -49,8 +47,7 @@ void main() {
           .thenAnswer((_) async => mockTransactionInfo);
       when(() => mockTransactionInfo.copyWith(hash: hash))
           .thenReturn(mockTransactionInfo);
-      when(() =>
-              mockTransactionLocalRepository.insert(mockTransactionInfo))
+      when(() => mockTransactionLocalRepository.insert(mockTransactionInfo))
           .thenAnswer((_) async => {});
 
       // Act
@@ -59,8 +56,7 @@ void main() {
       // Assert
       verify(() => mockTransactionRepository.getInfo(hex)).called(1);
       verify(() => mockTransactionInfo.copyWith(hash: hash)).called(1);
-      verify(() =>
-              mockTransactionLocalRepository.insert(mockTransactionInfo))
+      verify(() => mockTransactionLocalRepository.insert(mockTransactionInfo))
           .called(1);
     });
 
