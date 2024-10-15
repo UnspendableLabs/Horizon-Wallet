@@ -181,7 +181,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
   TransactionRepositoryImpl(
       {required this.api_, required this.addressRepository});
 
-
   @override
   Future<TransactionUnpacked> unpack(String hex) async {
     final response = await api_.unpackTransactionVerbose(hex);

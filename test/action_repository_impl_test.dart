@@ -14,10 +14,10 @@ void main() {
     test('should decode a valid dispense action', () {
       // Arrange
       const encodedString = 'dispense,0x123abc';
-      
+
       // Act
       final result = actionRepository.fromString(encodedString);
-      
+
       // Assert
       expect(result.isRight(), true);
       result.match(
@@ -33,10 +33,10 @@ void main() {
     test('should return an error for an invalid action type', () {
       // Arrange
       const encodedString = 'invalidaction,0x123abc';
-      
+
       // Act
       final result = actionRepository.fromString(encodedString);
-      
+
       // Assert
       expect(result.isLeft(), true);
       result.match(
@@ -48,10 +48,10 @@ void main() {
     test('should return an error for a missing parameter', () {
       // Arrange
       const encodedString = 'dispense'; // Missing the address
-      
+
       // Act
       final result = actionRepository.fromString(encodedString);
-      
+
       // Assert
       expect(result.isLeft(), true);
       result.match(
@@ -63,10 +63,10 @@ void main() {
     test('should correctly decode with URI-encoded characters', () {
       // Arrange
       const encodedString = 'dispense,0x123%20abc'; // URI-encoded space
-      
+
       // Act
       final result = actionRepository.fromString(encodedString);
-      
+
       // Assert
       expect(result.isRight(), true);
       result.match(
@@ -80,4 +80,3 @@ void main() {
     });
   });
 }
-

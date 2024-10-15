@@ -16,7 +16,9 @@ Future<void> composeTransaction<T, S extends ComposeStateBase, OtherParams>({
   required UtxoRepository utxoRepository,
   required ComposeRepository composeRepository,
   required TransactionService transactionService,
-  required Logger logger, required Function(List<Utxo>, int feeRate) transactionHandler, }) async {
+  required Logger logger,
+  required Function(List<Utxo>, int feeRate) transactionHandler,
+}) async {
   FeeEstimates? feeEstimates =
       state.feeState.maybeWhen(success: (value) => value, orElse: () => null);
 

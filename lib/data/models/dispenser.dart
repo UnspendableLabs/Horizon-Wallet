@@ -32,32 +32,31 @@ class DispenserModel {
   final String satoshirateNormalized;
   final AssetInfoModel assetInfo;
 
-  DispenserModel({
-    required this.txIndex,
-    required this.txHash,
-    required this.blockIndex,
-    required this.source,
-    required this.asset,
-    required this.giveQuantity,
-    required this.escrowQuantity,
-    required this.satoshirate,
-    required this.status,
-    required this.giveRemaining,
-    this.oracleAddress,
-    this.lastStatusTxHash,
-    this.closeBlockIndex,
-    required this.origin,
-    required this.dispenseCount,
-    this.lastStatusTxSource,
-    required this.confirmed,
-    // Verbose fields
-    this.blockTime,
-    required this.giveQuantityNormalized,
-    required this.giveRemainingNormalized,
-    required this.escrowQuantityNormalized,
-    required this.satoshirateNormalized,
-    required this.assetInfo
-  });
+  DispenserModel(
+      {required this.txIndex,
+      required this.txHash,
+      required this.blockIndex,
+      required this.source,
+      required this.asset,
+      required this.giveQuantity,
+      required this.escrowQuantity,
+      required this.satoshirate,
+      required this.status,
+      required this.giveRemaining,
+      this.oracleAddress,
+      this.lastStatusTxHash,
+      this.closeBlockIndex,
+      required this.origin,
+      required this.dispenseCount,
+      this.lastStatusTxSource,
+      required this.confirmed,
+      // Verbose fields
+      this.blockTime,
+      required this.giveQuantityNormalized,
+      required this.giveRemainingNormalized,
+      required this.escrowQuantityNormalized,
+      required this.satoshirateNormalized,
+      required this.assetInfo});
 
   factory DispenserModel.fromJson(Map<String, dynamic> json) =>
       _$DispenserModelFromJson(json);

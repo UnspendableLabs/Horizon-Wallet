@@ -440,12 +440,11 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          when(() => mockTransactionLocalRepository
-              .getAllByAddresses(any())).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -490,12 +489,11 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          when(() => mockTransactionLocalRepository
-              .getAllByAddresses(any())).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -513,7 +511,7 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
-            logger: LoggerFake(),
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -536,11 +534,10 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
-          when(() => mockTransactionLocalRepository
-              .getAllByAddresses(any())).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -558,7 +555,7 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
-            logger: LoggerFake(),
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -606,8 +603,8 @@ void main() {
             ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAddresses(
-              any())).thenAnswer((_) async => mockedLocal);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -675,8 +672,8 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAddresses(
-              any())).thenAnswer((_) async => mockedLocal);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -746,8 +743,8 @@ void main() {
           final mockEventsRepository = MockEventsRepository();
           final mockBitcoinRepository = MockBitcoinRepository();
           // effectively asserts that right method is calleD with right args
-          when(() => mockTransactionLocalRepository
-              .getAllByAddresses(any())).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => []);
 
           mockedRemote = MockEventFactory.createMultiple([
             ("0005", EventStateMempool(), null),
@@ -839,8 +836,7 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -930,8 +926,7 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccount("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();

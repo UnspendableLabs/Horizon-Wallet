@@ -68,4 +68,3 @@ class FetchFeeEstimatesException implements Exception {
   @override
   String toString() => 'FetchFeeEstimatesException: $message';
 }
-

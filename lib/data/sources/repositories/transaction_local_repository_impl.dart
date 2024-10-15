@@ -12,7 +12,6 @@ import 'package:logger/logger.dart';
 
 final logger = Logger();
 
-
 class UnpackedVerboseMapper {
   static TransactionUnpacked toDomain(api.TransactionUnpackedVerbose u) {
     switch (u.messageType) {
@@ -66,9 +65,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "quantity_normalized": unpacked.quantityNormalized,
           }
         }),
-      TransactionInfoIssuance(
-        unpackedData: IssuanceUnpackedVerbose unpacked
-      ) =>
+      TransactionInfoIssuance(unpackedData: IssuanceUnpackedVerbose unpacked) =>
         jsonEncode({
           "message_type": "issuance",
           "message_data": {
@@ -185,8 +182,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   }
 
   @override
-  Future<List<TransactionInfo>> getAllByAccount(
-      String accountUuid) async {
+  Future<List<TransactionInfo>> getAllByAccount(String accountUuid) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
     final transactions = await transactionDao
         .getAllBySources(addresses.map((e) => e.address).toList());

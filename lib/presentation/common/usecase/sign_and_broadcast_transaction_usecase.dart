@@ -52,8 +52,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   Future<void> call(
       {required String password,
       // todo: no reason to have extrat params...just pass in dirctly.
-      required Function(String, String)
-          onSuccess,
+      required Function(String, String) onSuccess,
       required Function(String) onError,
       required String source,
       required String rawtransaction}) async {

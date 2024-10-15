@@ -6,8 +6,10 @@ abstract class ComposeBaseEvent {}
 class FetchFormData extends ComposeBaseEvent {
   Address? currentAddress;
   String? assetName;
-  String? initialDispenserAddress; // this is a total hack but necessary due to current base bloc implementation
-  FetchFormData({this.currentAddress, this.assetName, this.initialDispenserAddress});
+  String?
+      initialDispenserAddress; // this is a total hack but necessary due to current base bloc implementation
+  FetchFormData(
+      {this.currentAddress, this.assetName, this.initialDispenserAddress});
 }
 
 class ChangeFeeOption extends ComposeBaseEvent {

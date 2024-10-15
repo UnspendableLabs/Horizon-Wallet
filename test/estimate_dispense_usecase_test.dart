@@ -160,7 +160,6 @@ void main() {
 
   group("empty dispenser", () {
     test("divisible: true", () {
-
       final dispenser = FakeDispenser(
         asset: "EMPTY_TEST",
         giveQuantity: 100,

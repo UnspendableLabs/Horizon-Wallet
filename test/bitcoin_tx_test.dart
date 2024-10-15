@@ -8,7 +8,6 @@ import 'package:horizon/data/models/bitcoin_tx.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 
-
 List<dynamic> loadFixtureSync(String filename) {
   final fixturePath =
       p.join(Directory.current.path, 'test', 'fixtures', filename);
@@ -19,7 +18,7 @@ List<dynamic> loadFixtureSync(String filename) {
 void main() {
   logger.Logger.level = logger.Level.warning;
 
-   // TODO: add test logger
+  // TODO: add test logger
   Logger logger = LoggerImpl(logger.Logger());
 
   group('counterparty txs', () {

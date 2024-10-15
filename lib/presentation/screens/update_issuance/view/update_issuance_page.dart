@@ -154,7 +154,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                 _buildInitialFormLoadingFields(state, loading, formKey),
             onInitialCancel: () => {},
             onInitialSubmit: (formKey) => {},
-            buildConfirmationFormFields: (state, composeTransaction, formKey) => [],
+            buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+                [],
             onConfirmationBack: () => {},
             onConfirmationContinue: (composeTransaction, fee, formKey) => {},
             onFinalizeSubmit: (password, formKey) => {},
@@ -173,7 +174,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               onInitialCancel: () => _handleInitialCancel(),
               onInitialSubmit: (formKey) =>
                   _handleInitialSubmit(formKey, originalAsset),
-              buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+              buildConfirmationFormFields: (state, composeTransaction,
+                      formKey) =>
                   _buildConfirmationDetails(composeTransaction, originalAsset),
               onConfirmationBack: () => _onConfirmationBack(),
               onConfirmationContinue: (composeTransaction, fee, formKey) {
