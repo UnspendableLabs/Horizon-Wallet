@@ -261,12 +261,12 @@ void main() {
         sourceAddress: 'source-address',
       )),
       expect: () => [
-        isA<ComposeDispenserState>().having(
+        isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
           isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
         ),
-        isA<ComposeDispenserState>().having(
+        isA<CloseDispenserState>().having(
             (state) => state.submitState,
             'submitState',
             isA<SubmitComposingTransaction<ComposeDispenserResponseVerbose>>()
@@ -275,6 +275,7 @@ void main() {
                 .having((s) => s.fee, 'fee', 250)
                 .having((s) => s.feeRate, 'feeRate', 3) // default ( medium ),
             ),
+
       ],
     );
 
@@ -307,7 +308,7 @@ void main() {
           'submitState',
           isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
         ),
-        isA<ComposeDispenserState>().having(
+        isA<CloseDispenserState>().having(
             (state) => state.submitState,
             'submitState',
             isA<SubmitComposingTransaction<ComposeDispenserResponseVerbose>>()
@@ -341,12 +342,12 @@ void main() {
         sourceAddress: 'source-address',
       )),
       expect: () => [
-        isA<ComposeDispenserState>().having(
+        isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
           isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
         ),
-        isA<ComposeDispenserState>().having(
+        isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
           isA<SubmitInitial>()
