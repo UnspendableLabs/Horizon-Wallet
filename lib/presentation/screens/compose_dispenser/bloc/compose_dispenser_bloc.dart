@@ -209,15 +209,15 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         password: event.password,
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
-        onSuccess:
-            (txHex, txHash) async {
+        onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.d('dispenser broadcasted txHash: $txHash');
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
-                  transactionHex: txHex, sourceAddress: compose.params.source)));
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
 
           analyticsService.trackEvent('broadcast_tx_dispenser');
         },

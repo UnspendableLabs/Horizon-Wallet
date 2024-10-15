@@ -7,25 +7,6 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 // import "package:horizon/data/models/unpacked.dart" as unpacked_model;
 
-// TODO: move to sh
-class UnpackedMapper {
-  static TransactionUnpacked toDomain(api.TransactionUnpacked u) {
-    switch (u.messageType) {
-      case "enhanced_send":
-        return EnhancedSendUnpackedMapper.toDomain(
-            u as api.EnhancedSendUnpacked);
-      case "issuance":
-        return IssuanceUnpackedMapper.toDomain(u as api.IssuanceUnpacked);
-      case "dispenser":
-        return DispenserUnpackedMapper.toDomain(u as api.DispenserUnpacked);
-      default:
-        return TransactionUnpacked(
-          messageType: u.messageType,
-        );
-    }
-  }
-}
-
 class EnhancedSendUnpackedMapper {
   static EnhancedSendUnpacked toDomain(api.EnhancedSendUnpacked u) {
     return EnhancedSendUnpacked(
@@ -68,8 +49,8 @@ class DispenserUnpackedMapper {
   }
 }
 
-class UnpackedVerboseMapper {
-  static TransactionUnpackedVerbose toDomain(api.TransactionUnpackedVerbose u) {
+class UnpackedVerbose {
+  static TransactionUnpacked toDomain(api.TransactionUnpackedVerbose u) {
     switch (u.messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedVerboseMapper.toDomain(
@@ -82,7 +63,7 @@ class UnpackedVerboseMapper {
         return DispenserUnpackedVerboseMapper.toDomain(
             u as api.DispenserUnpackedVerbose);
       default:
-        return TransactionUnpackedVerbose(
+        return TransactionUnpacked(
           messageType: u.messageType,
           // btcAmountNormalized: u.btcAmountNormalized,
         );
@@ -138,49 +119,11 @@ class DispenserUnpackedVerboseMapper {
   }
 }
 
-class InfoMapper {
-  static TransactionInfo toDomain(api.Info info) {
-    return switch (info) {
-      api.EnhancedSendInfo(unpackedData: var u) => TransactionInfoEnhancedSend(
-          hash: "",
-          source: info.source,
-          destination: info.destination,
-          btcAmount: info.btcAmount,
-          fee: info.fee,
-          data: info.data,
-          domain: TransactionInfoDomainLocal(
-              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
-          unpackedData: EnhancedSendUnpackedMapper.toDomain(u),
-        ),
-      api.IssuanceInfo(unpackedData: var u) => TransactionInfoIssuance(
-          hash: "",
-          source: info.source,
-          destination: info.destination,
-          btcAmount: info.btcAmount,
-          fee: info.fee,
-          data: info.data,
-          domain: TransactionInfoDomainLocal(
-              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
-          unpackedData: IssuanceUnpackedMapper.toDomain(u)),
-      _ => TransactionInfo(
-          hash: "",
-          domain: TransactionInfoDomainLocal(
-              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
-          source: info.source,
-          destination: info.destination,
-          btcAmount: info.btcAmount,
-          fee: info.fee,
-          data: info.data,
-        )
-    };
-  }
-}
-
 class InfoVerboseMapper {
-  static TransactionInfoVerbose toDomain(api.InfoVerbose info) {
+  static TransactionInfo toDomain(api.InfoVerbose info) {
     return switch (info) {
       api.EnhancedSendInfoVerbose(unpackedData: var u) =>
-        TransactionInfoEnhancedSendVerbose(
+        TransactionInfoEnhancedSend(
           btcAmountNormalized: info.btcAmountNormalized,
           hash: "",
           source: info.source,
@@ -192,8 +135,7 @@ class InfoVerboseMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(u),
         ),
-      api.IssuanceInfoVerbose(unpackedData: var u) =>
-        TransactionInfoIssuanceVerbose(
+      api.IssuanceInfoVerbose(unpackedData: var u) => TransactionInfoIssuance(
           btcAmountNormalized: info.btcAmountNormalized,
           hash: "",
           source: info.source,
@@ -205,8 +147,7 @@ class InfoVerboseMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: IssuanceUnpackedVerboseMapper.toDomain(u),
         ),
-      api.DispenserInfoVerbose(unpackedData: var u) =>
-        TransactionInfoDispenserVerbose(
+      api.DispenserInfoVerbose(unpackedData: var u) => TransactionInfoDispenser(
           btcAmountNormalized: info.btcAmountNormalized,
           hash: "",
           source: info.source,
@@ -218,7 +159,7 @@ class InfoVerboseMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: DispenserUnpackedVerboseMapper.toDomain(u),
         ),
-      _ => TransactionInfoVerbose(
+      _ => TransactionInfo(
           btcAmountNormalized: info.btcAmountNormalized,
           hash: "",
           domain: TransactionInfoDomainLocal(
@@ -240,19 +181,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
   TransactionRepositoryImpl(
       {required this.api_, required this.addressRepository});
 
+
   @override
   Future<TransactionUnpacked> unpack(String hex) async {
-    final response = await api_.unpackTransaction(hex);
-    // todo: check for errors
-    if (response.result == null) {
-      throw Exception("Failed to unpack transaction: $hex");
-    }
-
-    return UnpackedMapper.toDomain(response.result!);
-  }
-
-  @override
-  Future<TransactionUnpackedVerbose> unpackVerbose(String hex) async {
     final response = await api_.unpackTransactionVerbose(hex);
 
     // todo: check for errors
@@ -260,24 +191,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       throw Exception("Failed to unpack transaction: $hex");
     }
 
-    return UnpackedVerboseMapper.toDomain(response.result!);
+    return UnpackedVerbose.toDomain(response.result!);
   }
 
   @override
   Future<TransactionInfo> getInfo(String raw) async {
-    final response = await api_.getTransactionInfo(raw);
-
-    if (response.result == null) {
-      throw Exception("Failed to get transaction info: $raw");
-    }
-
-    api.Info info = response.result!;
-
-    return InfoMapper.toDomain(info);
-  }
-
-  @override
-  Future<TransactionInfoVerbose> getInfoVerbose(String raw) async {
     final response = await api_.getTransactionInfoVerbose(raw);
 
     if (response.result == null) {
@@ -292,10 +210,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<
       (
-        List<TransactionInfoVerbose>,
+        List<TransactionInfo>,
         cursor_entity.Cursor? nextCursor,
         int? resultCount
-      )> getByAccountVerbose({
+      )> getByAccount({
     required String accountUuid,
     cursor_entity.Cursor? cursor,
     int? limit,
@@ -316,11 +234,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       throw Exception("Failed to get transactions by account: $accountUuid");
     }
 
-    List<TransactionInfoVerbose> transactions = response.result!.map((tx) {
+    List<TransactionInfo> transactions = response.result!.map((tx) {
       final messageType = tx.unpackedData.messageType;
 
       return switch (messageType) {
-        "enhanced_send" => TransactionInfoEnhancedSendVerbose(
+        "enhanced_send" => TransactionInfoEnhancedSend(
             btcAmountNormalized: tx.btcAmountNormalized,
             hash: tx.txHash,
             domain: tx.confirmed
@@ -334,7 +252,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
             data: tx.data,
             unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(
                 tx.unpackedData as api.EnhancedSendUnpackedVerbose)),
-        _ => TransactionInfoVerbose(
+        _ => TransactionInfo(
             btcAmountNormalized: tx.btcAmountNormalized,
             hash: tx.txHash,
             domain: tx.confirmed

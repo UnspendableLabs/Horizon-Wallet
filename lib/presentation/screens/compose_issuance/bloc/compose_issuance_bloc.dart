@@ -238,10 +238,10 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
         },
         successAction:
             (txHex, txHash, source, destination, quantity, asset) async {
-          TransactionInfoVerbose txInfo =
-              await transactionRepository.getInfoVerbose(txHex);
+          TransactionInfo txInfo =
+              await transactionRepository.getInfo(txHex);
 
-          await transactionLocalRepository.insertVerbose(txInfo.copyWith(
+          await transactionLocalRepository.insert(txInfo.copyWith(
             hash: txHash,
           ));
 
