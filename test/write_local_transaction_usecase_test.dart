@@ -11,11 +11,11 @@ class MockTransactionRepository extends Mock implements TransactionRepository {}
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
 
-class MockTransactionInfoVerbose extends Mock
-    implements TransactionInfoVerbose {}
+class MockTransactionInfo extends Mock
+    implements TransactionInfo {}
 
-class FakeTransactionInfoVerbose extends Fake
-    implements TransactionInfoVerbose {}
+class FakeTransactionInfo extends Fake
+    implements TransactionInfo{}
 
 void main() {
   late WriteLocalTransactionUseCase writeLocalTransactionUseCase;
@@ -24,7 +24,7 @@ void main() {
 
   // Register fallback values for mocktail
   setUpAll(() {
-    registerFallbackValue(FakeTransactionInfoVerbose());
+    registerFallbackValue(FakeTransactionInfo());
   });
 
   setUp(() {
@@ -42,25 +42,25 @@ void main() {
       // Arrange
       const hex = 'transaction_hex';
       const hash = 'transaction_hash';
-      final mockTransactionInfo = MockTransactionInfoVerbose();
+      final mockTransactionInfo = MockTransactionInfo();
 
       // Mock the behavior
-      when(() => mockTransactionRepository.getInfoVerbose(hex))
+      when(() => mockTransactionRepository.getInfo(hex))
           .thenAnswer((_) async => mockTransactionInfo);
       when(() => mockTransactionInfo.copyWith(hash: hash))
           .thenReturn(mockTransactionInfo);
       when(() =>
-              mockTransactionLocalRepository.insertVerbose(mockTransactionInfo))
+              mockTransactionLocalRepository.insert(mockTransactionInfo))
           .thenAnswer((_) async => {});
 
       // Act
       await writeLocalTransactionUseCase.call(hex, hash);
 
       // Assert
-      verify(() => mockTransactionRepository.getInfoVerbose(hex)).called(1);
+      verify(() => mockTransactionRepository.getInfo(hex)).called(1);
       verify(() => mockTransactionInfo.copyWith(hash: hash)).called(1);
       verify(() =>
-              mockTransactionLocalRepository.insertVerbose(mockTransactionInfo))
+              mockTransactionLocalRepository.insert(mockTransactionInfo))
           .called(1);
     });
 
@@ -70,15 +70,15 @@ void main() {
       const hash = 'transaction_hash';
 
       // Mock the behavior to throw an error
-      when(() => mockTransactionRepository.getInfoVerbose(hex))
+      when(() => mockTransactionRepository.getInfo(hex))
           .thenThrow(Exception('Failed to fetch transaction info'));
 
       // Act
       await writeLocalTransactionUseCase.call(hex, hash);
 
       // Assert
-      verify(() => mockTransactionRepository.getInfoVerbose(hex)).called(1);
-      verifyNever(() => mockTransactionLocalRepository.insertVerbose(any()));
+      verify(() => mockTransactionRepository.getInfo(hex)).called(1);
+      verifyNever(() => mockTransactionLocalRepository.insert(any()));
     });
   });
 }
