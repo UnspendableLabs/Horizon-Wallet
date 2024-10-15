@@ -44,7 +44,6 @@ class ComposeTransactionUseCase {
 
       return finalTx;
     } catch (e, stackTrace) {
-      rethrow;
       throw ComposeTransactionException(e.toString(), stackTrace);
     }
   }

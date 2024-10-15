@@ -363,7 +363,7 @@ class DashboardActivityFeedBloc
 
       // query local transactions above mose recent confirmed event
       final localTransactions =
-          await transactionLocalRepository.getAllByAddressesVerbose(addresses);
+          await transactionLocalRepository.getAllByAddresses(addresses);
 
       final counterpartyEvents = await eventsRepository.getAllByAddressVerbose(
           address: currentAddress.address,
