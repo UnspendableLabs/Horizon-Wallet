@@ -149,7 +149,8 @@ BalanceVerbose _$BalanceVerboseFromJson(Map<String, dynamic> json) =>
       address: json['address'] as String,
       quantity: (json['quantity'] as num).toDouble(),
       asset: json['asset'] as String,
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -213,7 +214,8 @@ MultiAddressBalanceVerbose _$MultiAddressBalanceVerboseFromJson(
       addresses: (json['addresses'] as List<dynamic>)
           .map((e) => MultiBalanceVerbose.fromJson(e as Map<String, dynamic>))
           .toList(),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       totalNormalized: json['total_normalized'] as String,
     );
 
@@ -843,7 +845,8 @@ VerboseRefillDispenserParams _$VerboseRefillDispenserParamsFromJson(
       txIndex: (json['tx_index'] as num).toInt(),
       dispenseQuantityNormalized:
           json['dispense_quantity_normalized'] as String,
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$VerboseRefillDispenserParamsToJson(
@@ -978,7 +981,8 @@ VerboseEnhancedSendParams _$VerboseEnhancedSendParamsFromJson(
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
       blockTime: (json['block_time'] as num?)?.toInt(),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -1009,7 +1013,8 @@ VerboseCreditParams _$VerboseCreditParamsFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
       blockTime: (json['block_time'] as num).toInt(),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -1038,7 +1043,8 @@ VerboseDebitParams _$VerboseDebitParamsFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
       blockTime: (json['block_time'] as num).toInt(),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -1088,22 +1094,6 @@ Map<String, dynamic> _$VerboseNewTransactionParamsToJson(
       'tx_index': instance.txIndex,
       'unpacked_data': instance.unpackedData,
       'btc_amount_normalized': instance.btcAmountNormalized,
-    };
-
-AssetInfo _$AssetInfoFromJson(Map<String, dynamic> json) => AssetInfo(
-      divisible: json['divisible'] as bool,
-      assetLongname: json['asset_longname'] as String?,
-      description: json['description'] as String,
-      locked: json['locked'] as bool,
-      issuer: json['issuer'] as String?,
-    );
-
-Map<String, dynamic> _$AssetInfoToJson(AssetInfo instance) => <String, dynamic>{
-      'divisible': instance.divisible,
-      'asset_longname': instance.assetLongname,
-      'description': instance.description,
-      'locked': instance.locked,
-      'issuer': instance.issuer,
     };
 
 VerboseEvent _$VerboseEventFromJson(Map<String, dynamic> json) => VerboseEvent(
@@ -1275,7 +1265,8 @@ Credit _$CreditFromJson(Map<String, dynamic> json) => Credit(
       callingFunction: json['calling_function'] as String,
       event: json['event'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -1299,7 +1290,8 @@ Debit _$DebitFromJson(Map<String, dynamic> json) => Debit(
       action: json['action'] as String,
       event: json['event'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -1353,7 +1345,8 @@ Destruction _$DestructionFromJson(Map<String, dynamic> json) => Destruction(
       quantity: (json['quantity'] as num).toInt(),
       tag: json['tag'] as String,
       status: json['status'] as String,
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -1527,7 +1520,8 @@ ComposeDispenserParams _$ComposeDispenserParamsFromJson(
       status: (json['status'] as num).toInt(),
       openAddress: json['open_address'] as String?,
       oracleAddress: json['oracle_address'] as String?,
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       giveQuantityNormalized: json['give_quantity_normalized'] as String,
       escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
     );
@@ -1584,7 +1578,8 @@ ComposeDispenserVerboseParams _$ComposeDispenserVerboseParamsFromJson(
       escrowQuantity: (json['escrow_quantity'] as num).toInt(),
       mainchainrate: (json['mainchainrate'] as num).toInt(),
       status: (json['status'] as num).toInt(),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       giveQuantityNormalized: json['give_quantity_normalized'] as String,
       escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
     );
@@ -1614,7 +1609,8 @@ Send _$SendFromJson(Map<String, dynamic> json) => Send(
       status: json['status'] as String,
       msgIndex: (json['msg_index'] as num).toInt(),
       memo: json['memo'] as String?,
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 
@@ -1682,7 +1678,8 @@ Dispense _$DispenseFromJson(Map<String, dynamic> json) => Dispense(
       dispenseQuantity: (json['dispense_quantity'] as num).toInt(),
       dispenserTxHash: json['dispenser_tx_hash'] as String,
       dispenser: Dispenser.fromJson(json['dispenser'] as Map<String, dynamic>),
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DispenseToJson(Dispense instance) => <String, dynamic>{
@@ -1765,7 +1762,8 @@ SendTxParamsVerbose _$SendTxParamsVerboseFromJson(Map<String, dynamic> json) =>
       memo: json['memo'] as String?,
       memoIsHex: json['memo_is_hex'] as bool,
       useEnhancedSend: json['use_enhanced_send'] as bool,
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
     );
 

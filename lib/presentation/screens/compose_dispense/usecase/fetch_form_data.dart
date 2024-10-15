@@ -38,7 +38,7 @@ class FetchDispenseFormDataUseCase {
     try {
       final balances_ =
           await balanceRepository.getBalancesForAddress(currentAddress.address);
-      return balances_.where((balance) => balance.asset != 'BTC').toList();
+      return balances_.where((balance) => balance.asset == 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());
     }

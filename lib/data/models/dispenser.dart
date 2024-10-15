@@ -1,5 +1,6 @@
 import "package:horizon/domain/entities/dispenser.dart";
 import 'package:json_annotation/json_annotation.dart';
+import "package:horizon/data/models/asset_info.dart";
 
 part "dispenser.g.dart";
 
@@ -25,10 +26,11 @@ class DispenserModel {
   final bool confirmed;
   // Verbose fields
   final int? blockTime;
-  final String? giveQuantityNormalized;
-  final String? giveRemainingNormalized;
-  final String? escrowQuantityNormalized;
-  final String? satoshirateNormalized;
+  final String giveQuantityNormalized;
+  final String giveRemainingNormalized;
+  final String escrowQuantityNormalized;
+  final String satoshirateNormalized;
+  final AssetInfoModel assetInfo;
 
   DispenserModel({
     required this.txIndex,
@@ -50,10 +52,11 @@ class DispenserModel {
     required this.confirmed,
     // Verbose fields
     this.blockTime,
-    this.giveQuantityNormalized,
-    this.giveRemainingNormalized,
-    this.escrowQuantityNormalized,
-    this.satoshirateNormalized,
+    required this.giveQuantityNormalized,
+    required this.giveRemainingNormalized,
+    required this.escrowQuantityNormalized,
+    required this.satoshirateNormalized,
+    required this.assetInfo
   });
 
   factory DispenserModel.fromJson(Map<String, dynamic> json) =>
@@ -84,6 +87,7 @@ class DispenserModel {
       giveRemainingNormalized: giveRemainingNormalized,
       escrowQuantityNormalized: escrowQuantityNormalized,
       satoshirateNormalized: satoshirateNormalized,
+      assetInfo: assetInfo.toDomain(),
     );
   }
 }

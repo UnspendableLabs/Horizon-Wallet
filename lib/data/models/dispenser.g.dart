@@ -26,10 +26,12 @@ DispenserModel _$DispenserModelFromJson(Map<String, dynamic> json) =>
       lastStatusTxSource: json['last_status_tx_source'] as String?,
       confirmed: json['confirmed'] as bool,
       blockTime: (json['block_time'] as num?)?.toInt(),
-      giveQuantityNormalized: json['give_quantity_normalized'] as String?,
-      giveRemainingNormalized: json['give_remaining_normalized'] as String?,
-      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String?,
-      satoshirateNormalized: json['satoshirate_normalized'] as String?,
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      giveRemainingNormalized: json['give_remaining_normalized'] as String,
+      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
+      satoshirateNormalized: json['satoshirate_normalized'] as String,
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DispenserModelToJson(DispenserModel instance) =>
@@ -56,4 +58,5 @@ Map<String, dynamic> _$DispenserModelToJson(DispenserModel instance) =>
       'give_remaining_normalized': instance.giveRemainingNormalized,
       'escrow_quantity_normalized': instance.escrowQuantityNormalized,
       'satoshirate_normalized': instance.satoshirateNormalized,
+      'asset_info': instance.assetInfo,
     };

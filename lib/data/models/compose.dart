@@ -26,10 +26,10 @@ class ComposeDispenseParamsModel extends ComposeDispenseParams {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeDispenseResponseParamsModel extends ComposeDispenseResponseParams {
   ComposeDispenseResponseParamsModel({
-    required super.address,
-    required super.dispenser,
+    required super.source,
+    required super.destination,
     required super.quantity,
-    required super.quantityNormalized,
+    // required super.quantityNormalized,
   });
 
   // JSON serialization methods
@@ -42,10 +42,10 @@ class ComposeDispenseResponseParamsModel extends ComposeDispenseResponseParams {
   // Domain conversion function
   ComposeDispenseResponseParams toDomain() {
     return ComposeDispenseResponseParams(
-      address: address,
-      dispenser: dispenser,
+      source: source,
+      destination: destination,
       quantity: quantity,
-      quantityNormalized: quantityNormalized,
+      // quantityNormalized: quantityNormalized,
     );
   }
 }
@@ -63,11 +63,11 @@ class ComposeDispenseResponseModel extends ComposeDispenseResponse {
     required super.btcOut,
     required super.btcChange,
     required super.btcFee,
-    required super.data,
+    // required super.data,
   }) : super(params: params);
 
-  factory ComposeDispenseResponseModel.fromJson(Map<String, dynamic> json )
-   => _$ComposeDispenseResponseModelFromJson(json);
+  factory ComposeDispenseResponseModel.fromJson(Map<String, dynamic> json) =>
+      _$ComposeDispenseResponseModelFromJson(json);
 
   // Domain conversion function
   ComposeDispenseResponse toDomain() {
@@ -79,7 +79,7 @@ class ComposeDispenseResponseModel extends ComposeDispenseResponse {
       btcOut: btcOut,
       btcChange: btcChange,
       btcFee: btcFee,
-      data: data,
+      // data: data,
     );
   }
 }

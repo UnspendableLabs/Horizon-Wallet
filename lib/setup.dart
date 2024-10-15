@@ -78,6 +78,7 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
 
 import 'package:logger/logger.dart' as _logger;
 import 'package:horizon/core/logging/logger.dart';
@@ -236,7 +237,7 @@ Future<void> setup() async {
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
-  
+
   injector.registerSingleton<DispenserRepository>(
     DispenserRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
@@ -295,6 +296,8 @@ Future<void> setup() async {
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
 
+  injector
+      .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 }
 
 class CustomDioException extends DioException {

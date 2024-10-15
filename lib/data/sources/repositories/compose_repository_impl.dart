@@ -12,7 +12,6 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 
 import 'package:logger/logger.dart';
 
-
 final logger = Logger();
 
 class ComposeRepositoryImpl extends ComposeRepository {
@@ -176,20 +175,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final quantity = params.quantity;
     const allowUnconfirmedTx = true;
 
-    
-
     final inputsSetString =
         inputsSet.map((e) => "${e.txid}:${e.vout}").join(',');
-
-    logger.e("""
-
-      address: $sourceAddress,
-      dispenser: $dispenser,
-      quantity: $quantity
-
-
-
-    """);
 
     final response = await api.composeDispense(sourceAddress, dispenser,
         quantity, allowUnconfirmedTx, fee, inputsSetString);

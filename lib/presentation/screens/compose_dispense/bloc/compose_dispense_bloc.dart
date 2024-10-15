@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -11,6 +12,7 @@ import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispe
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_state.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -35,6 +37,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
 
   final FetchOpenDispensersOnAddressUseCase fetchOpenDispensersOnAddressUseCase;
   final FetchDispenseFormDataUseCase fetchDispenseFormDataUseCase;
+  final EstimateDispensesUseCase estimateDispensesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
@@ -50,6 +53,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
     required this.composeTransactionUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
+    required this.estimateDispensesUseCase,
   }) : super(ComposeDispenseState(
           feeOption: FeeOption.Medium(),
           submitState: const SubmitInitial(),
@@ -169,26 +173,13 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
-    final openDispeners = state.dispensersState.maybeWhen(
-      success: (dispensers) => dispensers.isNotEmpty,
-      orElse: () => false,
-    );
-
-    if (!openDispeners) {
-      emit(state.copyWith(
-        submitState: SubmitInitial(
-            loading: false, error: 'No open dispensers found')));
-      return;
-    }
-
-
     try {
+      // This will throw if no dispensers are found
+
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
       final dispenser = event.params.dispenser;
       final quantity = event.params.quantity;
-
-      logger.error("event dispenser ${event.params.dispenser}");
 
       final composed = await composeTransactionUseCase
           .call<ComposeDispenseParams, ComposeDispenseResponse>(
@@ -201,13 +192,26 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
               ),
               composeFn: composeRepository.composeDispense);
 
+      final dispensers = await fetchOpenDispensersOnAddressUseCase
+          .call(event.params.dispenser);
+
+      final expectedDispenses = estimateDispensesUseCase.call(
+          dispensers: dispensers, quantity: event.params.quantity);
+
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeDispenseResponse>(
+          submitState: SubmitComposingTransaction<ComposeDispenseResponse,
+              List<EstimatedDispense>>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
+        otherParams: expectedDispenses,
       )));
-    } on ComposeTransactionException catch (e) {
+    } on FetchOpenDispensersOnAddressException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(
+              loading: false, error: 'No open dispensers found')));
+      return;
+    } on ComposeTransactionException catch (e, _) {
       emit(state.copyWith(
           submitState: SubmitInitial(loading: false, error: e.message)));
     } catch (e) {
@@ -249,7 +253,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
 
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
-        source: compose.params.address,
+        source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
@@ -259,7 +263,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
-                  sourceAddress: compose.params.address)));
+                  sourceAddress: compose.params.source)));
 
           analyticsService.trackEvent('broadcast_tx_dispense');
         },

@@ -136,7 +136,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     await composeTransaction<ComposeIssuanceResponseVerbose,
-            UpdateIssuanceState>(
+            UpdateIssuanceState, void>(
         state: state,
         emit: emit,
         event: event,

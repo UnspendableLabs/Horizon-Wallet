@@ -269,7 +269,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    await composeTransaction<ComposeSend, ComposeSendState>(
+    await composeTransaction<ComposeSend, ComposeSendState, void>(
         state: state,
         emit: emit,
         event: event,
