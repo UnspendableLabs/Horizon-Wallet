@@ -294,7 +294,12 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final double? borderRadius;
   final bool enabled;
   final String Function(T?)? displayStringForOption;
-  final String? id; // Add this line
+  final String? id;
+  final List<Widget> Function(BuildContext)? selectedItemBuilder;
+  final bool isDense;
+  final bool isExpanded;
+  final String? Function(T?)? validator;
+  final AutovalidateMode autovalidateMode;
 
   const HorizonDropdownMenu({
     super.key,
@@ -307,59 +312,62 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
     this.borderRadius,
     this.enabled = true,
     this.displayStringForOption,
-    this.id, // Add this line
+    this.id,
+    this.selectedItemBuilder,
+    this.isDense = true,
+    this.isExpanded = false,
+    this.validator,
+    this.autovalidateMode = AutovalidateMode.disabled,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InputDecorator(
-      decoration: InputDecoration(
-        enabled: enabled,
-        labelText: label,
-        floatingLabelBehavior: FloatingLabelBehavior.never,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: ButtonTheme(
-          alignedDropdown: true,
-          child: DropdownButton<T>(
-            isExpanded: true,
-            value: selectedValue, // Remove the ?? items.first.value
-            onChanged: enabled
-                ? (T? newValue) {
-                    onChanged(newValue);
-                  }
-                : null,
-            items: items,
-            borderRadius: BorderRadius.circular(borderRadius ?? 10),
-            icon: icon,
-            selectedItemBuilder: (BuildContext context) {
-              return items.map<Widget>((DropdownMenuItem<T> item) {
-                return Container(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    displayStringForOption?.call(item.value) ??
-                        item.value.toString(),
-                    style: const TextStyle(overflow: TextOverflow.ellipsis),
-                  ),
-                );
-              }).toList();
-            },
-            // Add these lines
-            hint: Text(label ?? ''),
-            isDense: true,
-            underline: const SizedBox(),
+    return FormField<T>(
+      validator: validator,
+      autovalidateMode: autovalidateMode,
+      initialValue: selectedValue,
+      builder: (FormFieldState<T> state) {
+        return InputDecorator(
+          decoration: InputDecoration(
+            enabled: enabled,
+            labelText: label,
+            floatingLabelBehavior: FloatingLabelBehavior.never,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide.none,
+            ),
+            errorText: state.errorText,
           ),
-        ),
-      ),
+          child: DropdownButtonHideUnderline(
+            child: ButtonTheme(
+              alignedDropdown: true,
+              child: DropdownButton<T>(
+                isExpanded: isExpanded,
+                value: state.value,
+                onChanged: enabled
+                    ? (T? newValue) {
+                        state.didChange(newValue);
+                        onChanged(newValue);
+                      }
+                    : null,
+                items: items,
+                borderRadius: BorderRadius.circular(borderRadius ?? 10),
+                icon: icon,
+                selectedItemBuilder: selectedItemBuilder,
+                isDense: isDense,
+                hint: Text(label ?? ''),
+                underline: const SizedBox(),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  HorizonDropdownMenu<T> copyWith({bool? enabled}) {
+  HorizonDropdownMenu<T> copyWith(
+      {bool? enabled, String? Function(T?)? validator}) {
     return HorizonDropdownMenu<T>(
       items: items,
       onChanged: onChanged,
@@ -370,7 +378,12 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
       borderRadius: borderRadius,
       enabled: enabled ?? this.enabled,
       displayStringForOption: displayStringForOption,
-      id: id, // Add this line
+      id: id,
+      selectedItemBuilder: selectedItemBuilder,
+      isDense: isDense,
+      isExpanded: isExpanded,
+      validator: validator ?? this.validator,
+      autovalidateMode: autovalidateMode,
     );
   }
 }

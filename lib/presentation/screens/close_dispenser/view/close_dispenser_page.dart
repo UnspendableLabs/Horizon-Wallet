@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -73,7 +75,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
   // String? asset;
   // Balance? balance_;
   Dispenser? selectedDispenser;
-  final bool _submitted = false;
+  bool _submitted = false;
 
   @override
   void initState() {
@@ -149,65 +151,167 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
 
   List<Widget> _buildInitialFormFields(
       CloseDispenserState state, bool loading, GlobalKey<FormState> formKey) {
-    return state.dispensersState.maybeWhen(
-      success: (dispensers) => [
-        HorizonUI.HorizonDropdownMenu<Dispenser>(
-          controller: dispenserController,
-          id: 'close_dispenser_dropdown',
-          label: 'Select Dispenser to Close',
-          selectedValue: selectedDispenser,
-          items: dispensers.map((dispenser) {
-            return DropdownMenuItem<Dispenser>(
-              value: dispenser,
-              child: Text(
-                '${dispenser.openAddress} - ${dispenser.assetName} - '
-                'Quantity: ${dispenser.giveQuantity} - '
-                'Price: ${dispenser.mainchainrate}',
-              ),
-            );
-          }).toList(),
-          onChanged: (Dispenser? newDispenser) {
-            setState(() {
-              selectedDispenser = newDispenser;
-            });
-            // if (newDispenser != null) {
-            //   context.read<CloseDispenserBloc>().add(SelectDispenser(dispenser: newDispenser));
-            // }
-          },
-        ),
-      ],
-      loading: () => [
-        const Center(child: CircularProgressIndicator()),
-      ],
-      error: (error) => [SelectableText(error)],
-      orElse: () => [const Text('No dispensers available')],
-    );
+    try {
+      return state.dispensersState.maybeWhen(
+        success: (dispensers) => [
+          HorizonUI.HorizonDropdownMenu<Dispenser>(
+            controller: dispenserController,
+            id: 'close_dispenser_dropdown',
+            label: 'Select Dispenser to Close',
+            selectedValue: selectedDispenser ??
+                (dispensers.isNotEmpty ? dispensers.first : null),
+            items: dispensers.map((dispenser) {
+              return DropdownMenuItem<Dispenser>(
+                value: dispenser,
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 60),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${dispenser.openAddress} - ${dispenser.assetName} - '
+                    'Quantity: ${dispenser.giveQuantity} - '
+                    'Price: ${dispenser.mainchainrate}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (Dispenser? newDispenser) {
+              setState(() {
+                selectedDispenser = newDispenser;
+              });
+            },
+            displayStringForOption: (Dispenser? dispenser) {
+              if (dispenser == null) return '';
+              return '${dispenser.openAddress} - ${dispenser.assetName} - '
+                  'Quantity: ${dispenser.giveQuantity} - '
+                  'Price: ${dispenser.mainchainrate}';
+            },
+            selectedItemBuilder: (BuildContext context) {
+              return dispensers.map<Widget>((Dispenser dispenser) {
+                return Container(
+                  constraints: const BoxConstraints(minHeight: 60),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${dispenser.openAddress} - ${dispenser.assetName} - '
+                    'Quantity: ${dispenser.giveQuantity} - '
+                    'Price: ${dispenser.mainchainrate}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                );
+              }).toList();
+            },
+            isDense: false,
+            isExpanded: true,
+            validator: (value) {
+              if (value == null) {
+                return 'Please select a dispenser';
+              }
+              return null;
+            },
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
+          ),
+        ],
+        loading: () => [
+          const Center(child: CircularProgressIndicator()),
+        ],
+        error: (error) => [SelectableText(error)],
+        orElse: () => [const Text('No dispensers available')],
+      );
+    } catch (e, stackTrace) {
+      print('Error building initial form fields: $e, $stackTrace');
+      return [SelectableText(e.toString())];
+    }
   }
 
   void _handleInitialCancel() {
-    // TODO: implement _onInitialCancel
+    Navigator.of(context).pop();
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
-    // TODO: implement _onInitialSubmit
+    setState(() {
+      _submitted = true;
+    });
+    if (formKey.currentState!.validate()) {
+      context.read<CloseDispenserBloc>().add(ComposeTransactionEvent(
+            sourceAddress: widget.address.address,
+            params: CloseDispenserParams(
+              asset: selectedDispenser!.assetName,
+              giveQuantity: selectedDispenser!.giveQuantity,
+              escrowQuantity: selectedDispenser!.escrowQuantity,
+              mainchainrate: selectedDispenser!.mainchainrate,
+              status: 10,
+            ),
+          ));
+    }
   }
 
-  void _onFinalizeCancel() {}
-
-  void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
-    // TODO: implement _onFinalizeSubmit
+  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+    final params =
+        (composeTransaction as ComposeDispenserResponseVerbose).params;
+    return [
+      const SelectableText('CLOSE DISPENSER'),
+      HorizonUI.HorizonTextFormField(
+        label: "Source Address",
+        controller: TextEditingController(text: params.source),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Give Quantity",
+        controller: TextEditingController(text: params.giveQuantityNormalized),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Escrow Quantity",
+        controller:
+            TextEditingController(text: params.escrowQuantityNormalized),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: 'Price Per Unit (BTC)',
+        controller: TextEditingController(
+            text: satoshisToBtc(params.mainchainrate).toStringAsFixed(8)),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+    ];
   }
 
   void _onConfirmationBack() {
-    // TODO: implement _onConfirmationBack
+    context
+        .read<CloseDispenserBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
-    // TODO: implement _onConfirmationContinue
+    if (formKey.currentState!.validate()) {
+      context.read<CloseDispenserBloc>().add(
+            FinalizeTransactionEvent<ComposeDispenserResponseVerbose>(
+              composeTransaction: composeTransaction,
+              fee: fee,
+            ),
+          );
+    }
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    return [];
+  void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      context.read<CloseDispenserBloc>().add(
+            SignAndBroadcastTransactionEvent(
+              password: password,
+            ),
+          );
+    }
+  }
+
+  void _onFinalizeCancel() {
+    context
+        .read<CloseDispenserBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
   }
 }
