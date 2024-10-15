@@ -19,6 +19,8 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart";
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/data/logging/logger_impl.dart';
 
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
@@ -38,6 +40,8 @@ extension DateTimeExtension on DateTime {
         : DateTime(year, month, day, hour, minute, second);
   }
 }
+
+class LoggerFake extends Fake implements Logger {}
 
 class AddressMock extends Mock implements Address {
   @override
@@ -66,7 +70,7 @@ class MockBitcoinTx extends Mock implements BitcoinTx {
   Decimal getAmountReceived(List<String> addresses) => Decimal.zero;
 
   @override
-  bool isCounterpartyTx() => false;
+  bool isCounterpartyTx(Logger _) => false;
 }
 
 class MockStatus extends Mock implements Status {
@@ -171,7 +175,7 @@ class MockAddressRepository extends Mock implements AddressRepository {}
 
 class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
-class MockTransactionInfo extends Mock implements TransactionInfoVerbose {
+class MockTransactionInfo extends Mock implements TransactionInfo {
   @override
   final String hash;
   @override
@@ -301,12 +305,11 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          when(() => mockTransactionLocalRepository
-              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -324,6 +327,7 @@ void main() {
               )).thenAnswer((_) async => []);
 
           return DashboardActivityFeedBloc(
+            logger: LoggerFake(),
             currentAddress: AddressMock(),
             pageSize: 10,
             eventsRepository: mockEventsRepository,
@@ -349,12 +353,11 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          when(() => mockTransactionLocalRepository
-              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -372,6 +375,7 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -396,12 +400,11 @@ void main() {
         build: () {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
-          when(() => mockTransactionLocalRepository
-              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+          when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+              .thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -419,6 +422,7 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -437,11 +441,11 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
           when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+                  mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
           when(() => mockTransactionLocalRepository
-              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+              .getAllByAddresses(any())).thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -458,6 +462,7 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -486,11 +491,11 @@ void main() {
               MockTransactionLocalRepository();
 
           when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+                  mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
 
           when(() => mockTransactionLocalRepository
-              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+              .getAllByAddresses(any())).thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -508,6 +513,7 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
+            logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -531,10 +537,10 @@ void main() {
           final mockTransactionLocalRepository =
               MockTransactionLocalRepository();
           when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+                  mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => []);
           when(() => mockTransactionLocalRepository
-              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+              .getAllByAddresses(any())).thenAnswer((_) async => []);
 
           final mockEventsRepository = MockEventsRepository();
 
@@ -552,6 +558,7 @@ void main() {
               )).thenAnswer((_) async => <VerboseEvent>[]);
 
           return DashboardActivityFeedBloc(
+            logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -599,7 +606,7 @@ void main() {
             ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
+          when(() => mockTransactionLocalRepository.getAllByAddresses(
               any())).thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -618,6 +625,7 @@ void main() {
               )).thenAnswer((_) async => mockedRemote);
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -667,7 +675,7 @@ void main() {
             ),
           ]);
 
-          when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
+          when(() => mockTransactionLocalRepository.getAllByAddresses(
               any())).thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -699,6 +707,7 @@ void main() {
               .thenAnswer((_) async => const Right(100));
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -738,7 +747,7 @@ void main() {
           final mockBitcoinRepository = MockBitcoinRepository();
           // effectively asserts that right method is calleD with right args
           when(() => mockTransactionLocalRepository
-              .getAllByAddressesVerbose(any())).thenAnswer((_) async => []);
+              .getAllByAddresses(any())).thenAnswer((_) async => []);
 
           mockedRemote = MockEventFactory.createMultiple([
             ("0005", EventStateMempool(), null),
@@ -778,6 +787,7 @@ void main() {
               .thenAnswer((_) async => const Right(100));
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -830,7 +840,7 @@ void main() {
           ]);
 
           when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+                  mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -851,6 +861,7 @@ void main() {
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (mockedRemote, null, null));
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -920,7 +931,7 @@ void main() {
           ]);
 
           when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+                  mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -945,6 +956,7 @@ void main() {
               )).thenAnswer((_) async => (mockedRemote, null, null));
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -1009,8 +1021,7 @@ void main() {
             ),
           ]);
 
-          when(() =>
-                  mockTransactionLocalRepository.getAllByAccountVerbose("123"))
+          when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
 
           final mockEventsRepository = MockEventsRepository();
@@ -1049,6 +1060,7 @@ void main() {
               )).thenAnswer((_) async => (mockedRemote, null, null));
 
           return DashboardActivityFeedBloc(
+              logger: LoggerFake(),
               pageSize: 10,
               currentAddress: AddressMock(),
               transactionLocalRepository: mockTransactionLocalRepository,
@@ -1129,8 +1141,8 @@ void main() {
                 TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
               ),
             ]);
-            when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
-                any())).thenAnswer((_) async => mockedLocal);
+            when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+                .thenAnswer((_) async => mockedLocal);
 
             // btc mocks
             final mockBitcoinRepository = MockBitcoinRepository();
@@ -1161,6 +1173,7 @@ void main() {
                 unconfirmed: true)).thenAnswer((_) async => <VerboseEvent>[]);
 
             return DashboardActivityFeedBloc(
+                logger: LoggerFake(),
                 pageSize: 10,
                 currentAddress: AddressMock(),
                 transactionLocalRepository: mockTransactionLocalRepository,
@@ -1195,11 +1208,11 @@ void main() {
                 TransactionInfoDomainLocal(raw: "", submittedAt: DateTime.now())
               ),
             ]);
-            when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
-                any())).thenAnswer((_) async => mockedLocal);
+            when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+                .thenAnswer((_) async => mockedLocal);
 
-            when(() => mockTransactionLocalRepository.getAllByAddressesVerbose(
-                any())).thenAnswer((_) async => mockedLocal);
+            when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+                .thenAnswer((_) async => mockedLocal);
 
             // btc mocks
             final mockBitcoinRepository = MockBitcoinRepository();
@@ -1235,6 +1248,7 @@ void main() {
                 .thenAnswer((_) async => const Right(100));
 
             return DashboardActivityFeedBloc(
+                logger: LoggerFake(),
                 pageSize: 10,
                 currentAddress: AddressMock(),
                 transactionLocalRepository: mockTransactionLocalRepository,
