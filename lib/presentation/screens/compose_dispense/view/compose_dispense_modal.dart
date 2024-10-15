@@ -3,7 +3,6 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -156,14 +155,14 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   Widget _buildOpenDispensersList(ComposeDispenseState state) {
     return state.dispensersState.when(
       initial: () => Container(),
-      loading: () => Center(child: CircularProgressIndicator()),
-      success: (dispensers) => Container(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      success: (dispensers) => SizedBox(
         height: 100,
         child: ListView.builder(
           itemCount: dispensers.length,
           itemBuilder: (context, index) {
             final dispenser = dispensers[index];
-            return Container(
+            return SizedBox(
                 height: 50,
                 child: ListTile(
                   title: Text(
@@ -214,7 +213,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     return Stack(
       children: [
         HorizonUI.HorizonTextFormField(
-          key: Key('dispense_btc_quantity_input'),
+          key: const Key('dispense_btc_quantity_input'),
           controller: quantityController,
           enabled: !loading,
           label: 'Quantity',
@@ -325,7 +324,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      Container(
+      SizedBox(
         height: 200, // Set appropriate height
         child: ListView.builder(
           itemCount: estimatedDispenses.length,
@@ -341,7 +340,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                 children: [
                   Text(
                     "Asset: ${dispense.asset}",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8.0),
                   Text("Estimated Units: ${dispense.estimatedUnits}"),
@@ -350,7 +349,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                       "Estimated Quantity: ${dispense.estimatedQuantityNormalized.toString()}"),
                   const SizedBox(height: 8.0),
                   if (hasOverpay)
-                    Text(
+                    const Text(
                       "Warning: Overpay",
                       style: TextStyle(color: Colors.orange),
                     ),
@@ -359,7 +358,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                           .contains(EstimatedDispenseAnnotations.overpay))
                     Text(
                       "Annotations: ${dispense.annotations.map((e) => e.toString().split('.').last).join(', ')}",
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                 ],
               ),

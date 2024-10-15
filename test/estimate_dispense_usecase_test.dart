@@ -3,7 +3,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
-import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
 
 class FakeAssetInfo extends Fake implements AssetInfo {
