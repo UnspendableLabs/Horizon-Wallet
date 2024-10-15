@@ -25,6 +25,8 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
+
 import 'package:horizon/core/logging/logger.dart';
 
 class ComposeDispensePageWrapper extends StatelessWidget {
@@ -45,6 +47,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeDispenseBloc(
           logger: GetIt.I.get<Logger>(),
+          estimateDispensesUseCase: GetIt.I.get<EstimateDispensesUseCase>(),
           fetchOpenDispensersOnAddressUseCase:
               GetIt.I.get<FetchOpenDispensersOnAddressUseCase>(),
           dispenserRepository: GetIt.I.get<DispenserRepository>(),
@@ -114,8 +117,8 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           _buildInitialFormFields(state, loading, formKey),
       onInitialCancel: () => _handleInitialCancel(),
       onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-      buildConfirmationFormFields: (composeTransaction, formKey) =>
-          _buildConfirmationDetails(composeTransaction),
+      buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+          _buildConfirmationDetails(state, composeTransaction),
       onConfirmationBack: () => _onConfirmationBack(),
       onConfirmationContinue: (composeTransaction, fee, formKey) {
         _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -190,8 +193,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         );
       }
 
-      Balance? balance =
-          balance_ ?? _getBalanceForSelectedAsset(balances, "BTC");
+      Balance? balance = _getBalanceForSelectedAsset(balances, "BTC");
 
       if (balance == null) {
         return const HorizonUI.HorizonTextFormField(
@@ -215,11 +217,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           key: Key('dispense_btc_quantity_input'),
           controller: quantityController,
           enabled: !loading,
-          // onChanged: (value) {
-          //   context
-          //       .read<ComposeDispenseBloc>()
-          //       .add(ChangeGiveQuantity(value: value));
-          // },
           label: 'Quantity',
           inputFormatters: [DecimalTextInputFormatter(decimalRange: 8)],
           keyboardType: const TextInputType.numberWithOptions(
@@ -303,25 +300,72 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     );
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+  List<Widget> _buildConfirmationDetails(state_, dynamic composeTransaction) {
+    final estimatedDispenses = state_.otherParams as List<EstimatedDispense>;
     final params = (composeTransaction as ComposeDispenseResponse).params;
+
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
-        controller: TextEditingController(text: params.address),
+        controller: TextEditingController(text: params.source),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Dispenser",
-        controller: TextEditingController(text: params.dispenser),
+        controller: TextEditingController(text: params.destination),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Quantity",
-        controller: TextEditingController(text: params.quantityNormalized),
+        controller: TextEditingController(
+          text: "${satoshisToBtc(params.quantity).toStringAsFixed(8)} BTC",
+        ),
         enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      Container(
+        height: 200, // Set appropriate height
+        child: ListView.builder(
+          itemCount: estimatedDispenses.length,
+          itemBuilder: (context, index) {
+            final dispense = estimatedDispenses[index];
+            final hasOverpay = dispense.annotations
+                .contains(EstimatedDispenseAnnotations.overpay);
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Asset: ${dispense.asset}",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text("Estimated Units: ${dispense.estimatedUnits}"),
+                  const SizedBox(height: 8.0),
+                  Text(
+                      "Estimated Quantity: ${dispense.estimatedQuantityNormalized.toString()}"),
+                  const SizedBox(height: 8.0),
+                  if (hasOverpay)
+                    Text(
+                      "Warning: Overpay",
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                  if (dispense.annotations.isNotEmpty &&
+                      !dispense.annotations
+                          .contains(EstimatedDispenseAnnotations.overpay))
+                    Text(
+                      "Annotations: ${dispense.annotations.map((e) => e.toString().split('.').last).join(', ')}",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
       const SizedBox(height: 16.0),
     ];
@@ -367,6 +411,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
   if (balances.isEmpty) {
     return null;
+  }
+
+  for (var balance in balances) {
+    print(balance.asset);
   }
 
   return balances.firstWhereOrNull((balance) => balance.asset == asset) ??

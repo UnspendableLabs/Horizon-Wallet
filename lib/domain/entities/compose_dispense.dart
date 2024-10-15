@@ -26,7 +26,7 @@ class ComposeDispenseResponse implements ComposeResponse {
   final int btcOut;
   final int btcChange;
   final int btcFee;
-  final String data;
+  // final String data;
 
   const ComposeDispenseResponse({
     required this.rawtransaction,
@@ -36,19 +36,20 @@ class ComposeDispenseResponse implements ComposeResponse {
     required this.btcOut,
     required this.btcChange,
     required this.btcFee,
-    required this.data,
+    // required this.data,
   });
 }
 
 class ComposeDispenseResponseParams {
-  final String address;
-  final String dispenser;
+  final String source;
+  final String destination;
   final int quantity;
-  final String quantityNormalized;
+  // final String quantityNormalized;
 
-  const ComposeDispenseResponseParams(
-      {required this.address,
-      required this.dispenser,
-      required this.quantity,
-      required this.quantityNormalized});
+  const ComposeDispenseResponseParams({
+    required this.source,
+    required this.destination,
+    required this.quantity,
+    // required this.quantityNormalized
+  });
 }

@@ -143,7 +143,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     await composeTransaction<ComposeIssuanceResponseVerbose,
-            ComposeIssuanceState>(
+            ComposeIssuanceState, void>(
         state: state,
         emit: emit,
         event: event,

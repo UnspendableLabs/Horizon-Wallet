@@ -147,7 +147,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
       emit(state.copyWith(
           submitState:
-              SubmitComposingTransaction<ComposeDispenserResponseVerbose>(
+              SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,

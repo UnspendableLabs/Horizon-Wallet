@@ -167,7 +167,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             _buildInitialFormFields(state, loading, formKey),
         onInitialCancel: () => _handleInitialCancel(),
         onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-        buildConfirmationFormFields: (composeTransaction, formKey) =>
+        buildConfirmationFormFields: (state, composeTransaction, formKey) =>
             _buildConfirmationDetails(composeTransaction),
         onConfirmationBack: () => context
             .read<ComposeSendBloc>()

@@ -25,19 +25,17 @@ Map<String, dynamic> _$ComposeDispenseParamsModelToJson(
 ComposeDispenseResponseParamsModel _$ComposeDispenseResponseParamsModelFromJson(
         Map<String, dynamic> json) =>
     ComposeDispenseResponseParamsModel(
-      address: json['address'] as String,
-      dispenser: json['dispenser'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String,
       quantity: (json['quantity'] as num).toInt(),
-      quantityNormalized: json['quantity_normalized'] as String,
     );
 
 Map<String, dynamic> _$ComposeDispenseResponseParamsModelToJson(
         ComposeDispenseResponseParamsModel instance) =>
     <String, dynamic>{
-      'address': instance.address,
-      'dispenser': instance.dispenser,
+      'source': instance.source,
+      'destination': instance.destination,
       'quantity': instance.quantity,
-      'quantity_normalized': instance.quantityNormalized,
     };
 
 ComposeDispenseResponseModel _$ComposeDispenseResponseModelFromJson(
@@ -51,7 +49,6 @@ ComposeDispenseResponseModel _$ComposeDispenseResponseModelFromJson(
       btcOut: (json['btc_out'] as num).toInt(),
       btcChange: (json['btc_change'] as num).toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
-      data: json['data'] as String,
     );
 
 Map<String, dynamic> _$ComposeDispenseResponseModelToJson(
@@ -63,6 +60,5 @@ Map<String, dynamic> _$ComposeDispenseResponseModelToJson(
       'btc_out': instance.btcOut,
       'btc_change': instance.btcChange,
       'btc_fee': instance.btcFee,
-      'data': instance.data,
       'params': instance.params,
     };

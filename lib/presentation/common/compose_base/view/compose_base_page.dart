@@ -19,7 +19,8 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
   final void Function(FeeOption) onFeeChange;
   final void Function() onInitialCancel;
   final void Function(GlobalKey<FormState>) onInitialSubmit;
-  final List<Widget> Function(dynamic, GlobalKey<FormState>)
+  final List<Widget> Function(
+          SubmitComposingTransaction, dynamic, GlobalKey<FormState>)
       buildConfirmationFormFields;
   final void Function() onConfirmationBack;
   final void Function(dynamic, int, GlobalKey<FormState>)
@@ -93,6 +94,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
             composeTransaction: var composeTransaction,
             fee: var fee,
             feeRate: var feeRate,
+            otherParams: var otherPArams
           ) =>
             ComposeBaseConfirmationPage(
               composeTransaction: composeTransaction,
@@ -101,7 +103,9 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               feeRate: feeRate,
               buildConfirmationFormFields: (composeTransaction, formKey) =>
                   widget.buildConfirmationFormFields(
-                      composeTransaction, formKey),
+                      state.submitState as SubmitComposingTransaction,
+                      composeTransaction,
+                      formKey),
               onBack: widget.onConfirmationBack,
               onContinue: (composeTransaction, fee, formKey) => widget
                   .onConfirmationContinue(composeTransaction, fee, formKey),
