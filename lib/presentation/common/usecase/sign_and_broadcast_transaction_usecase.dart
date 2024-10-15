@@ -63,15 +63,22 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       late int quantity;
       late String asset;
 
+      print('in the use case');
+
       // Extract parameters
       (source, rawTx, destination, quantity, asset) = extractParams();
+
+      print('in the use case 2 $source $rawTx $destination $quantity $asset');
 
       // Fetch UTXOs
       final utxos = await utxoRepository.getUnspentForAddress(source);
       final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
+      print('in the use case 3 $utxoMap');
+
       // Fetch Address, Account, and Wallet
       final address = await addressRepository.getAddress(source);
+      print('in the use case 4 $address');
       if (address == null) {
         throw SignAndBroadcastTransactionException('Address not found.');
       }
@@ -118,8 +125,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         final txHash = await bitcoindService.sendrawtransaction(txHex);
         await onSuccess(txHex, txHash, source, destination, quantity, asset);
       } catch (e) {
-        throw SignAndBroadcastTransactionException(
-            'Failed to broadcast the transaction.');
+        final String errorMessage = 'Failed to broadcast the transaction: $e';
+        throw SignAndBroadcastTransactionException(errorMessage);
       }
     } catch (e) {
       onError(e is SignAndBroadcastTransactionException
