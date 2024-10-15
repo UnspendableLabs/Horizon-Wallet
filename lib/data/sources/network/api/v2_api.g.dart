@@ -662,6 +662,104 @@ Map<String, dynamic> _$VerboseOpenDispenserParamsToJson(
       'satoshirate_normalized': instance.satoshirateNormalized,
     };
 
+DispenserUpdateEvent _$DispenserUpdateEventFromJson(
+        Map<String, dynamic> json) =>
+    DispenserUpdateEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: DispenserUpdateParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DispenserUpdateEventToJson(
+        DispenserUpdateEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+DispenserUpdateParams _$DispenserUpdateParamsFromJson(
+        Map<String, dynamic> json) =>
+    DispenserUpdateParams(
+      asset: json['asset'] as String,
+      closeBlockIndex: (json['close_block_index'] as num?)?.toInt(),
+      lastStatusTxHash: json['last_status_tx_hash'] as String?,
+      lastStatusTxSource: json['last_status_tx_source'] as String?,
+      source: json['source'] as String,
+      status: (json['status'] as num).toInt(),
+      txHash: json['tx_hash'] as String?,
+      giveRemaining: (json['give_remaining'] as num?)?.toInt(),
+      dispenseCount: (json['dispense_count'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$DispenserUpdateParamsToJson(
+        DispenserUpdateParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'close_block_index': instance.closeBlockIndex,
+      'last_status_tx_hash': instance.lastStatusTxHash,
+      'last_status_tx_source': instance.lastStatusTxSource,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'give_remaining': instance.giveRemaining,
+      'dispense_count': instance.dispenseCount,
+    };
+
+VerboseDispenserUpdateEvent _$VerboseDispenserUpdateEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDispenserUpdateEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseDispenserUpdateParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDispenserUpdateEventToJson(
+        VerboseDispenserUpdateEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseDispenserUpdateParams _$VerboseDispenserUpdateParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDispenserUpdateParams(
+      asset: json['asset'] as String,
+      closeBlockIndex: (json['close_block_index'] as num?)?.toInt(),
+      lastStatusTxHash: json['last_status_tx_hash'] as String?,
+      lastStatusTxSource: json['last_status_tx_source'] as String?,
+      source: json['source'] as String,
+      status: (json['status'] as num).toInt(),
+      txHash: json['tx_hash'] as String?,
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDispenserUpdateParamsToJson(
+        VerboseDispenserUpdateParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'close_block_index': instance.closeBlockIndex,
+      'last_status_tx_hash': instance.lastStatusTxHash,
+      'last_status_tx_source': instance.lastStatusTxSource,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'asset_info': instance.assetInfo,
+    };
+
 RefillDispenserEvent _$RefillDispenserEventFromJson(
         Map<String, dynamic> json) =>
     RefillDispenserEvent(

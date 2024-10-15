@@ -215,6 +215,8 @@ class ActivityFeedListItem extends StatelessWidget {
         SelectableText("Open Dispenser for ${params.asset}"),
       VerboseRefillDispenserEvent(params: var params) =>
         SelectableText("Refill Dispenser for ${params.asset}"),
+      VerboseDispenserUpdateEvent(params: var params) =>
+        _buildDispenserUpdateTitle(params),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -248,6 +250,14 @@ class ActivityFeedListItem extends StatelessWidget {
     }
     return SelectableText(
         "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}");
+  }
+
+  Widget _buildDispenserUpdateTitle(VerboseDispenserUpdateParams params) {
+    if (params.status == 10 || params.status == 11) {
+      return SelectableText("Close Dispenser for ${params.asset}");
+    } else {
+      return SelectableText("Update Dispenser for ${params.asset}");
+    }
   }
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
@@ -320,6 +330,8 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseRefillDispenserEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseDispenserUpdateEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -384,6 +396,8 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseOpenDispenserEvent(params: var params) =>
         const Icon(Icons.account_balance, color: Colors.grey),
       VerboseRefillDispenserEvent(params: var params) =>
+        const Icon(Icons.account_balance, color: Colors.grey),
+      VerboseDispenserUpdateEvent(params: var params) =>
         const Icon(Icons.account_balance, color: Colors.grey),
       _ => const Icon(Icons.error),
     };

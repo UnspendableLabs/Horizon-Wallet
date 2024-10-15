@@ -400,7 +400,7 @@ class AddressActions extends StatelessWidget {
                   includeBackButton: false,
                   includeCloseButton: true,
                 ),
-                icon: Icons.qr_code,
+                icon: Icons.close,
                 text: "CLOSE DISPENSER",
                 iconSize: 24.0)
           ],

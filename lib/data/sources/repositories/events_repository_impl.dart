@@ -41,6 +41,9 @@ class EventMapper {
       case "REFILL_DISPENSER":
         return RefillDispenserEventMapper.toDomain(
             apiEvent as api.RefillDispenserEvent);
+      case "DISPENSER_UPDATE":
+        return DispenserUpdateEventMapper.toDomain(
+            apiEvent as api.DispenserUpdateEvent);
       case "RESET_ISSUANCE":
         return ResetIssuanceEventMapper.toDomain(
             apiEvent as api.ResetIssuanceEvent);
@@ -90,6 +93,9 @@ class VerboseEventMapper {
       case "REFILL_DISPENSER":
         return VerboseRefillDispenserEventMapper.toDomain(
             apiEvent as api.VerboseRefillDispenserEvent);
+      case "DISPENSER_UPDATE":
+        return VerboseDispenserUpdateEventMapper.toDomain(
+            apiEvent as api.VerboseDispenserUpdateEvent);
       case "RESET_ISSUANCE":
         return VerboseResetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseResetIssuanceEvent);
@@ -620,6 +626,64 @@ class VerboseOpenDispenserParamsMapper {
       // issuer: apiParams.issuer,
       // divisible: apiParams.divisible,
       // locked: apiParams.locked,
+    );
+  }
+}
+
+class DispenserUpdateEventMapper {
+  static DispenserUpdateEvent toDomain(api.DispenserUpdateEvent apiEvent) {
+    return DispenserUpdateEvent(
+      state: StateMapper.get(apiEvent),
+      event: "DISPENSER_UPDATE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      params: DispenserUpdateParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class DispenserUpdateParamsMapper {
+  static DispenserUpdateParams toDomain(api.DispenserUpdateParams apiParams) {
+    return DispenserUpdateParams(
+      asset: apiParams.asset,
+      closeBlockIndex: apiParams.closeBlockIndex,
+      lastStatusTxHash: apiParams.lastStatusTxHash,
+      lastStatusTxSource: apiParams.lastStatusTxSource,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+    );
+  }
+}
+
+class VerboseDispenserUpdateEventMapper {
+  static VerboseDispenserUpdateEvent toDomain(
+      api.VerboseDispenserUpdateEvent apiEvent) {
+    return VerboseDispenserUpdateEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "DISPENSER_UPDATE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseDispenserUpdateParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseDispenserUpdateParamsMapper {
+  static VerboseDispenserUpdateParams toDomain(
+      api.VerboseDispenserUpdateParams apiParams) {
+    return VerboseDispenserUpdateParams(
+      asset: apiParams.asset,
+      closeBlockIndex: apiParams.closeBlockIndex,
+      lastStatusTxHash: apiParams.lastStatusTxHash,
+      lastStatusTxSource: apiParams.lastStatusTxSource,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      // assetInfo: AssetInfoMapper.toDomain(apiParams.assetInfo),
     );
   }
 }
