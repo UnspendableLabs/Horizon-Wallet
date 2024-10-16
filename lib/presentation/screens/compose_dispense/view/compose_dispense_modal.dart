@@ -324,46 +324,54 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      SizedBox(
-        height: 200, // Set appropriate height
-        child: ListView.builder(
-          itemCount: estimatedDispenses.length,
-          itemBuilder: (context, index) {
-            final dispense = estimatedDispenses[index];
-            final hasOverpay = dispense.annotations
-                .contains(EstimatedDispenseAnnotations.overpay);
+      Text(
+        "Estimated Dispenses",
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+        child: SizedBox(
+          height: 200, // Set appropriate height
+          child: ListView.builder(
+            itemCount: estimatedDispenses.length,
+            itemBuilder: (context, index) {
+              final dispense = estimatedDispenses[index];
+              final hasOverpay = dispense.annotations
+                  .contains(EstimatedDispenseAnnotations.overpay);
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Asset: ${dispense.asset}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text("Estimated Units: ${dispense.estimatedUnits}"),
-                  const SizedBox(height: 8.0),
-                  Text(
-                      "Estimated Quantity: ${dispense.estimatedQuantityNormalized.toString()}"),
-                  const SizedBox(height: 8.0),
-                  if (hasOverpay)
-                    const Text(
-                      "Warning: Overpay",
-                      style: TextStyle(color: Colors.orange),
-                    ),
-                  if (dispense.annotations.isNotEmpty &&
-                      !dispense.annotations
-                          .contains(EstimatedDispenseAnnotations.overpay))
-                    Text(
-                      "Annotations: ${dispense.annotations.map((e) => e.toString().split('.').last).join(', ')}",
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                ],
-              ),
-            );
-          },
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            dispense.dispenser.asset,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          hasOverpay
+                              ? const Text(
+                                  "Overpay",
+                                  style: TextStyle(color: Colors.orange),
+                                )
+                              : const Text(" "),
+                        ],
+                      ),
+                      const SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          Text(
+                              "${dispense.estimatedQuantityNormalized.toString()} ${dispense.dispenser.asset}"),
+                          SizedBox(width: 8.0),
+                          Text(
+                              "( ${dispense.dispenser.giveQuantityNormalized}  x ${dispense.estimatedUnits} )"),
+                        ],
+                      ),
+                    ]),
+              );
+            },
+          ),
         ),
       ),
       const SizedBox(height: 16.0),

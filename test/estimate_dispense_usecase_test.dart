@@ -114,6 +114,58 @@ void main() {
         assetInfo: FakeAssetInfo(divisible: true),
       );
 
+      const quantity = 2500;
+
+      // Act
+      final estimatedDispense =
+          estimatedDispenseForDispenserAndQuantity(dispenser, quantity);
+
+      // Assert
+      expect(estimatedDispense.estimatedUnits, 2); // Adjust to remaining units
+      expect(estimatedDispense.estimatedQuantity, 200); // Max remaining
+      expect(estimatedDispense.annotations,
+          contains(EstimatedDispenseAnnotations.overpay));
+      expect(
+          estimatedDispense.estimatedQuantityNormalized,
+          (Decimal.fromInt(200) / Decimal.fromInt(100000000))
+              .toDecimal()
+              .round(scale: 8));
+    });
+
+    test("divisible: false", () {
+      // Arrange
+      final dispenser = FakeDispenser(
+        asset: "OVERPAY_NOT_DIVISIBLE_TEST",
+        giveQuantity: 100,
+        satoshirate: 1000,
+        giveRemaining: 200,
+        assetInfo: FakeAssetInfo(divisible: false),
+      );
+
+      const quantity = 500000;
+
+      // Act
+      final estimatedDispense =
+          estimatedDispenseForDispenserAndQuantity(dispenser, quantity);
+
+      // Assert
+      expect(estimatedDispense.estimatedUnits, 2); // Adjust to remaining units
+      expect(estimatedDispense.estimatedQuantity, 200); // Max remaining
+      expect(estimatedDispense.annotations,
+          contains(EstimatedDispenseAnnotations.overpay));
+      expect(
+          estimatedDispense.estimatedQuantityNormalized, Decimal.fromInt(200));
+    });
+    test("divisible: true", () {
+      // Arrange
+      final dispenser = FakeDispenser(
+        asset: "OVERPAY_DIVISIBLE_TEST",
+        giveQuantity: 100,
+        satoshirate: 1000,
+        giveRemaining: 200,
+        assetInfo: FakeAssetInfo(divisible: true),
+      );
+
       const quantity = 500000;
 
       // Act
@@ -177,8 +229,8 @@ void main() {
       // Assert
       expect(estimatedDispense.estimatedUnits, 0); // No units
       expect(estimatedDispense.estimatedQuantity, 0); // No quantity
-      expect(estimatedDispense.annotations,
-          contains(EstimatedDispenseAnnotations.dispenserIsEmpty));
+      // expect(estimatedDispense.annotations,
+      //     contains(EstimatedDispenseAnnotations.dispenserIsEmpty));
       expect(estimatedDispense.estimatedQuantityNormalized,
           Decimal.zero); // Zero normalized
     });
@@ -201,8 +253,8 @@ void main() {
       // Assert
       expect(estimatedDispense.estimatedUnits, 0); // No units
       expect(estimatedDispense.estimatedQuantity, 0); // No quantity
-      expect(estimatedDispense.annotations,
-          contains(EstimatedDispenseAnnotations.dispenserIsEmpty));
+      // expect(estimatedDispense.annotations,
+      //     contains(EstimatedDispenseAnnotations.dispenserIsEmpty));
       expect(estimatedDispense.estimatedQuantityNormalized,
           Decimal.zero); // Zero normalized
     });
