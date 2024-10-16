@@ -183,3 +183,9 @@ class DispenserUnpackedVerbose extends TransactionUnpacked {
     // required this.mainchainrateNormalized,
   }) : super(messageType: "dispenser");
 }
+
+// dispense unnpacked is basically empty
+class DispenseUnpackedVerbose extends TransactionUnpacked {
+
+  const DispenseUnpackedVerbose() : super(messageType: "dispense");
+}

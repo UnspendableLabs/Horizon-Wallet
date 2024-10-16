@@ -256,7 +256,7 @@ class AddressAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = false;
+    const isMobile = false;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
@@ -270,7 +270,7 @@ class AddressAction extends StatelessWidget {
         HorizonUI.HorizonDialog.show(context: context, body: dialog);
       },
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
         child: isMobile
             ? Icon(
                 icon,
@@ -457,7 +457,7 @@ class AddressActions extends StatelessWidget {
                       includeBackButton: false,
                       includeCloseButton: true,
                     ),
-                    icon: Icons.swap_vert,
+                    icon: Icons.paid,
                     text: "DISPENSE",
                   ),
                   AddressAction(

@@ -161,7 +161,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   @override
   onFinalizeTransaction(event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenseParams>(
+        submitState: SubmitFinalizing<ComposeDispenseResponse>(
             loading: false,
             error: null,
             composeTransaction: event.composeTransaction,
@@ -206,6 +206,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         otherParams: expectedDispenses,
       )));
     } on FetchOpenDispensersOnAddressException {
+
       emit(state.copyWith(
           submitState: const SubmitInitial(
               loading: false, error: 'No open dispensers found')));
@@ -241,6 +242,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
     final s = (state.submitState as SubmitFinalizing<ComposeDispenseResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
+
+
 
     emit(state.copyWith(
         submitState: SubmitFinalizing<ComposeDispenseResponse>(

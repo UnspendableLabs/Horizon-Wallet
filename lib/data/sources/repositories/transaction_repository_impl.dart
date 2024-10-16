@@ -1,178 +1,13 @@
-import 'package:horizon/data/models/cursor.dart' as cursor_model;
-import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
+import 'package:horizon/data/models/transaction_unpacked.dart';
+import 'package:horizon/data/models/transaction_info.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/transaction_unpacked.dart';
+import 'package:horizon/domain/entities/transaction_unpacked.dart'
+    as unpacked_entity;
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
+
 // import "package:horizon/data/models/unpacked.dart" as unpacked_model;
-
-class EnhancedSendUnpackedMapper {
-  static EnhancedSendUnpacked toDomain(api.EnhancedSendUnpacked u) {
-    return EnhancedSendUnpacked(
-      asset: u.asset,
-      quantity: u.quantity,
-      address: u.address,
-      memo: u.memo,
-    );
-  }
-}
-
-class IssuanceUnpackedMapper {
-  static IssuanceUnpacked toDomain(api.IssuanceUnpacked u) {
-    return IssuanceUnpacked(
-      assetId: u.assetId,
-      asset: u.asset,
-      subassetLongname: u.subassetLongname,
-      quantity: u.quantity,
-      divisible: u.divisible,
-      lock: u.lock,
-      reset: u.reset,
-      callable: u.callable,
-      callDate: u.callDate,
-      callPrice: u.callPrice,
-      description: u.description,
-      status: u.status,
-    );
-  }
-}
-
-class DispenserUnpackedMapper {
-  static DispenserUnpacked toDomain(api.DispenserUnpacked u) {
-    return DispenserUnpacked(
-        asset: u.asset,
-        giveQuantity: u.giveQuantity,
-        escrowQuantity: u.escrowQuantity,
-        mainchainrate: u.mainchainrate,
-        status: "" // TODO: reconcile,
-        );
-  }
-}
-
-class UnpackedVerbose {
-  static TransactionUnpacked toDomain(api.TransactionUnpackedVerbose u) {
-    switch (u.messageType) {
-      case "enhanced_send":
-        return EnhancedSendUnpackedVerboseMapper.toDomain(
-            u as api.EnhancedSendUnpackedVerbose);
-
-      case "issuance":
-        return IssuanceUnpackedVerboseMapper.toDomain(
-            u as api.IssuanceUnpackedVerbose);
-      case "dispenser":
-        return DispenserUnpackedVerboseMapper.toDomain(
-            u as api.DispenserUnpackedVerbose);
-      default:
-        return TransactionUnpacked(
-          messageType: u.messageType,
-          // btcAmountNormalized: u.btcAmountNormalized,
-        );
-    }
-  }
-}
-
-class EnhancedSendUnpackedVerboseMapper {
-  static EnhancedSendUnpackedVerbose toDomain(
-      api.EnhancedSendUnpackedVerbose u) {
-    return EnhancedSendUnpackedVerbose(
-      asset: u.asset,
-      quantity: u.quantity,
-      address: u.address,
-      memo: u.memo,
-      quantityNormalized: u.quantityNormalized,
-    );
-  }
-}
-
-class IssuanceUnpackedVerboseMapper {
-  static IssuanceUnpackedVerbose toDomain(api.IssuanceUnpackedVerbose u) {
-    return IssuanceUnpackedVerbose(
-      assetId: u.assetId,
-      asset: u.asset,
-      subassetLongname: u.subassetLongname,
-      quantity: u.quantity,
-      divisible: u.divisible,
-      lock: u.lock,
-      reset: u.reset,
-      callable: u.callable,
-      callDate: u.callDate,
-      callPrice: u.callPrice,
-      description: u.description,
-      status: u.status,
-      quantityNormalized: u.quantityNormalized,
-    );
-  }
-}
-
-class DispenserUnpackedVerboseMapper {
-  static DispenserUnpackedVerbose toDomain(api.DispenserUnpackedVerbose u) {
-    return DispenserUnpackedVerbose(
-      asset: u.asset,
-      giveQuantity: u.giveQuantity,
-      escrowQuantity: u.escrowQuantity,
-      mainchainrate: u.mainchainrate,
-      giveQuantityNormalized: u.giveQuantityNormalized,
-      escrowQuantityNormalized: u.escrowQuantityNormalized,
-      // mainchainrateNormalized: u.mainchainrateNormalized,
-      status: "", // TODO: reconcile
-    );
-  }
-}
-
-class InfoVerboseMapper {
-  static TransactionInfo toDomain(api.InfoVerbose info) {
-    return switch (info) {
-      api.EnhancedSendInfoVerbose(unpackedData: var u) =>
-        TransactionInfoEnhancedSend(
-          btcAmountNormalized: info.btcAmountNormalized,
-          hash: "",
-          source: info.source,
-          destination: info.destination,
-          btcAmount: info.btcAmount,
-          fee: info.fee,
-          data: info.data,
-          domain: TransactionInfoDomainLocal(
-              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
-          unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(u),
-        ),
-      api.IssuanceInfoVerbose(unpackedData: var u) => TransactionInfoIssuance(
-          btcAmountNormalized: info.btcAmountNormalized,
-          hash: "",
-          source: info.source,
-          destination: info.destination,
-          btcAmount: info.btcAmount,
-          fee: info.fee,
-          data: info.data,
-          domain: TransactionInfoDomainLocal(
-              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
-          unpackedData: IssuanceUnpackedVerboseMapper.toDomain(u),
-        ),
-      api.DispenserInfoVerbose(unpackedData: var u) => TransactionInfoDispenser(
-          btcAmountNormalized: info.btcAmountNormalized,
-          hash: "",
-          source: info.source,
-          destination: info.destination,
-          btcAmount: info.btcAmount,
-          fee: info.fee,
-          data: info.data,
-          domain: TransactionInfoDomainLocal(
-              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
-          unpackedData: DispenserUnpackedVerboseMapper.toDomain(u),
-        ),
-      _ => TransactionInfo(
-          btcAmountNormalized: info.btcAmountNormalized,
-          hash: "",
-          domain: TransactionInfoDomainLocal(
-              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
-          source: info.source,
-          destination: info.destination,
-          btcAmount: info.btcAmount,
-          fee: info.fee,
-          data: info.data,
-        )
-    };
-  }
-}
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final api.V2Api api_;
@@ -182,7 +17,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       {required this.api_, required this.addressRepository});
 
   @override
-  Future<TransactionUnpacked> unpack(String hex) async {
+  Future<unpacked_entity.TransactionUnpacked> unpack(String hex) async {
     final response = await api_.unpackTransactionVerbose(hex);
 
     // todo: check for errors
@@ -190,7 +25,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       throw Exception("Failed to unpack transaction: $hex");
     }
 
-    return UnpackedVerbose.toDomain(response.result!);
+    return UnpackedVerboseMapper.toDomain(response.result!);
   }
 
   @override
@@ -204,70 +39,5 @@ class TransactionRepositoryImpl implements TransactionRepository {
     api.InfoVerbose info = response.result!;
 
     return InfoVerboseMapper.toDomain(info);
-  }
-
-  @override
-  Future<
-      (
-        List<TransactionInfo>,
-        cursor_entity.Cursor? nextCursor,
-        int? resultCount
-      )> getByAccount({
-    required String accountUuid,
-    cursor_entity.Cursor? cursor,
-    int? limit,
-    bool? unconfirmed = false,
-  }) async {
-    final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
-
-    final addressesParam =
-        addresses.map((address) => address.address).join(',');
-
-    final response = await api_.getTransactionsByAddressesVerbose(
-        addressesParam,
-        cursor_model.CursorMapper.toData(cursor),
-        limit,
-        unconfirmed);
-
-    if (response.error != null) {
-      throw Exception("Failed to get transactions by account: $accountUuid");
-    }
-
-    List<TransactionInfo> transactions = response.result!.map((tx) {
-      final messageType = tx.unpackedData.messageType;
-
-      return switch (messageType) {
-        "enhanced_send" => TransactionInfoEnhancedSend(
-            btcAmountNormalized: tx.btcAmountNormalized,
-            hash: tx.txHash,
-            domain: tx.confirmed
-                ? TransactionInfoDomainConfirmed(
-                    blockHeight: tx.blockIndex!, blockTime: tx.blockTime!)
-                : TransactionInfoDomainMempool(),
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(
-                tx.unpackedData as api.EnhancedSendUnpackedVerbose)),
-        _ => TransactionInfo(
-            btcAmountNormalized: tx.btcAmountNormalized,
-            hash: tx.txHash,
-            domain: tx.confirmed
-                ? TransactionInfoDomainConfirmed(
-                    blockHeight: tx.blockIndex!, blockTime: tx.blockTime!)
-                : TransactionInfoDomainMempool(),
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-          ),
-      };
-    }).toList();
-    cursor_entity.Cursor? nextCursor =
-        cursor_model.CursorMapper.toDomain(response.nextCursor);
-    return (transactions, nextCursor, response.resultCount);
   }
 }

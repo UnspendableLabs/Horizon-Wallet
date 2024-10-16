@@ -1944,6 +1944,30 @@ Map<String, dynamic> _$DispenserInfoVerboseToJson(
       'unpacked_data': instance.unpackedData,
     };
 
+DispenseInfoVerbose _$DispenseInfoVerboseFromJson(Map<String, dynamic> json) =>
+    DispenseInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      unpackedData: DispenseUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DispenseInfoVerboseToJson(
+        DispenseInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),
       height: (json['height'] as num).toInt(),
