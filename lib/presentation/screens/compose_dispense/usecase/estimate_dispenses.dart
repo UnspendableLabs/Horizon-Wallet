@@ -4,27 +4,26 @@ import "package:horizon/common/format.dart";
 
 enum EstimatedDispenseAnnotations {
   overpay,
-  dispenserIsEmpty,
 }
 
 class EstimatedDispense {
-  final String asset;
   final int estimatedUnits;
   final int estimatedQuantity;
   final Decimal estimatedQuantityNormalized;
   final List<EstimatedDispenseAnnotations> annotations;
+  final Dispenser dispenser;
 
   EstimatedDispense({
-    required this.asset,
     required this.estimatedUnits,
     required this.estimatedQuantity,
     required this.estimatedQuantityNormalized,
     required this.annotations,
+    required this.dispenser,
   });
 
   @override
   String toString() =>
-      'EstimatedDispense(asset: $asset, units: $estimatedUnits, quantity: $estimatedQuantity)';
+      'EstimatedDispense(asset: ${dispenser.asset}, units: $estimatedUnits, quantity: $estimatedQuantity)';
 }
 
 class EstimateDispensesUseCase {
@@ -54,22 +53,25 @@ EstimatedDispense estimatedDispenseForDispenserAndQuantity(
     if (quantityToDispense > 0) {
       annotations.add(EstimatedDispenseAnnotations.overpay);
     }
+  } else {
+    if (unitsToDispense * dispenser.satoshirate < quantity) {
+      annotations.add(EstimatedDispenseAnnotations.overpay);
+    }
   }
 
   if (quantityToDispense > 0) {
+    print(annotations);
     return EstimatedDispense(
         annotations: annotations,
-        asset: dispenser.asset,
+        dispenser: dispenser,
         estimatedUnits: unitsToDispense,
         estimatedQuantity: quantityToDispense,
         estimatedQuantityNormalized: quantityToQuantityNormalized(
             quantityToDispense, dispenser.assetInfo.divisible));
   } else {
-    // Add annotation if the dispenser is empty
-    annotations.add(EstimatedDispenseAnnotations.dispenserIsEmpty);
     return EstimatedDispense(
         annotations: annotations,
-        asset: dispenser.asset,
+        dispenser: dispenser,
         estimatedUnits: 0,
         estimatedQuantity: 0,
         estimatedQuantityNormalized: quantityToQuantityNormalized(
