@@ -797,7 +797,7 @@ class VerboseDispenserUpdateEvent extends VerboseEvent {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseDispenserUpdateParams extends DispenserUpdateParams {
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
 
   VerboseDispenserUpdateParams({
     required super.asset,

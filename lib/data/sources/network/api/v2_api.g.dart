@@ -746,7 +746,8 @@ VerboseDispenserUpdateParams _$VerboseDispenserUpdateParamsFromJson(
       source: json['source'] as String,
       status: (json['status'] as num).toInt(),
       txHash: json['tx_hash'] as String?,
-      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$VerboseDispenserUpdateParamsToJson(

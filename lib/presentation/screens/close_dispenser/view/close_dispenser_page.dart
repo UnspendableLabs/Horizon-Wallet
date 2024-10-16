@@ -94,7 +94,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
           onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-          buildConfirmationFormFields: (composeTransaction, formKey) =>
+          buildConfirmationFormFields: (_, composeTransaction, formKey) =>
               _buildConfirmationDetails(composeTransaction),
           onConfirmationBack: () => _onConfirmationBack(),
           onConfirmationContinue: (composeTransaction, fee, formKey) {
@@ -126,9 +126,9 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
                   constraints: const BoxConstraints(minHeight: 60),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '${dispenser.openAddress} - ${dispenser.assetName} - '
+                    '${dispenser.source} - ${dispenser.asset} - '
                     'Quantity: ${dispenser.giveQuantity} - '
-                    'Price: ${dispenser.mainchainrate}',
+                    'Price: ${dispenser.satoshirate}',
                     style: const TextStyle(fontSize: 14),
                   ),
                 ),
@@ -141,9 +141,9 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
             },
             displayStringForOption: (Dispenser? dispenser) {
               if (dispenser == null) return '';
-              return '${dispenser.openAddress} - ${dispenser.assetName} - '
+              return '${dispenser.source} - ${dispenser.asset} - '
                   'Quantity: ${dispenser.giveQuantity} - '
-                  'Price: ${dispenser.mainchainrate}';
+                  'Price: ${dispenser.satoshirate}';
             },
             selectedItemBuilder: (BuildContext context) {
               return dispensers.map<Widget>((Dispenser dispenser) {
@@ -151,9 +151,9 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
                   constraints: const BoxConstraints(minHeight: 60),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '${dispenser.openAddress} - ${dispenser.assetName} - '
+                    '${dispenser.source} - ${dispenser.asset} - '
                     'Quantity: ${dispenser.giveQuantity} - '
-                    'Price: ${dispenser.mainchainrate}',
+                    'Price: ${dispenser.satoshirate}',
                     style: const TextStyle(fontSize: 14),
                   ),
                 );
@@ -195,10 +195,10 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
       context.read<CloseDispenserBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: CloseDispenserParams(
-              asset: selectedDispenser!.assetName,
+              asset: selectedDispenser!.asset,
               giveQuantity: selectedDispenser!.giveQuantity,
               escrowQuantity: selectedDispenser!.escrowQuantity,
-              mainchainrate: selectedDispenser!.mainchainrate,
+              mainchainrate: selectedDispenser!.satoshirate,
               status: 10,
             ),
           ));

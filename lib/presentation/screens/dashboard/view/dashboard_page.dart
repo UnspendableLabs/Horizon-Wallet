@@ -382,6 +382,18 @@ class AddressActions extends StatelessWidget {
                       HorizonUI.HorizonDialog.show(
                           context: context,
                           body: HorizonUI.HorizonDialog(
+                            title: "Close Dispenser",
+                            body: CloseDispenserPageWrapper(
+                              dashboardActivityFeedBloc:
+                                  dashboardActivityFeedBloc,
+                            ),
+                            includeBackButton: false,
+                            includeCloseButton: true,
+                          ));
+                    case 4: // dispense
+                      HorizonUI.HorizonDialog.show(
+                          context: context,
+                          body: HorizonUI.HorizonDialog(
                             title: "Trigger Dispense",
                             body: ComposeDispensePageWrapper(
                               dashboardActivityFeedBloc:
@@ -390,7 +402,7 @@ class AddressActions extends StatelessWidget {
                             includeBackButton: false,
                             includeCloseButton: true,
                           ));
-                    case 4:
+                    case 5:
                       HorizonUI.HorizonDialog.show(
                           context: context,
                           body: HorizonUI.HorizonDialog(
