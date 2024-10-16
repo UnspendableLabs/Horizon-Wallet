@@ -2,10 +2,12 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p; // For handling file paths
 import 'package:test/test.dart';
 import 'package:horizon/data/models/bitcoin_tx.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:logger/logger.dart' as _logger;
 import 'package:horizon/data/logging/logger_impl.dart';
 
 List<dynamic> loadFixtureSync(String filename) {
@@ -16,10 +18,10 @@ List<dynamic> loadFixtureSync(String filename) {
 }
 
 void main() {
-  logger.Logger.level = logger.Level.warning;
+  _logger.Logger.level = _logger.Level.warning;
 
   // TODO: add test logger
-  Logger logger = LoggerImpl(logger.Logger());
+  Logger logger = LoggerImpl(_logger.Logger());
 
   group('counterparty txs', () {
     final List<dynamic> transactionsJson =
