@@ -403,31 +403,6 @@ void main() {
 
       await tester.enterText(passwordField, 'test-password');
       await tester.pumpAndSettle();
-
-      // await tester
-      //     .tap(find.widgetWithText(ElevatedButton, 'SIGN AND BROADCAST'));
-      // await tester.pumpAndSettle();
-
-      //       print('after sign and broadcast!!!!!!!!!!!!!!!!!!! ${mockSignAndBroadcastTransactionUseCase.call}');
-      // when(() => mockSignAndBroadcastTransactionUseCase.call(
-      //         password: 'test-password',
-      //         extractParams: any(named: 'extractParams'),
-      //         onSuccess: any(named: 'onSuccess'),
-      //         onError: any(named: 'onError')))
-      //     .thenAnswer((_) async => composeDispenserResponse);
-
-      // print('after sign and broadcast 2');
-
-      // when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
-      //     .thenAnswer((_) async {});
-
-      // closeDispenserBloc
-      //     .add(SignAndBroadcastTransactionEvent(password: 'test-password'));
-      // await tester.pumpAndSettle();
-
-      // print('after write local transaction');
-
-      // await tester.pumpAndSettle();
     });
   });
 }

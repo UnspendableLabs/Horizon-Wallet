@@ -111,40 +111,6 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
           },
           onFinalizeCancel: () => _onFinalizeCancel(),
         );
-        // return state.dispensersState.maybeWhen(
-        //   loading: () => ComposeBasePage<CloseDispenserBloc, CloseDispenserState>(
-        //     address: widget.address,
-        //     dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-        //     onFeeChange: (fee) {},
-        //     buildInitialFormFields: (state, loading, formKey) => _buildInitialFormFields(state, loading, formKey),
-        //     onInitialCancel: () => _handleInitialCancel(),
-        //     onInitialSubmit: (formKey) {},
-        //     buildConfirmationFormFields: (composeTransaction, formKey) => [],
-        //     onConfirmationBack: () {},
-        //     onConfirmationContinue: (composeTransaction, fee, formKey) {},
-        //     onFinalizeSubmit: (password, formKey) {},
-        //     onFinalizeCancel: () {},
-        //   ),
-        //   success: (dispensers) => ComposeBasePage<CloseDispenserBloc, CloseDispenserState>(
-        //     address: widget.address,
-        //     dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-        //     onFeeChange: (fee) => context.read<CloseDispenserBloc>().add(ChangeFeeOption(value: fee)),
-        //     buildInitialFormFields: (state, loading, formKey) => _buildInitialFormFields(state, loading, formKey),
-        //     onInitialCancel: () => _handleInitialCancel(),
-        //     onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-        //     buildConfirmationFormFields: (composeTransaction, formKey) => _buildConfirmationDetails(composeTransaction),
-        //     onConfirmationBack: () => _onConfirmationBack(),
-        //     onConfirmationContinue: (composeTransaction, fee, formKey) {
-        //       _onConfirmationContinue(composeTransaction, fee, formKey);
-        //     },
-        //     onFinalizeSubmit: (password, formKey) {
-        //       _onFinalizeSubmit(password, formKey);
-        //     },
-        //     onFinalizeCancel: () => _onFinalizeCancel(),
-        //   ),
-        //   error: (error) => SelectableText(error),
-        //   orElse: () => const SizedBox.shrink(),
-        // );
       },
     );
   }
@@ -158,8 +124,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
             controller: dispenserController,
             id: 'close_dispenser_dropdown',
             label: 'Select Dispenser to Close',
-            selectedValue: selectedDispenser ??
-                (dispensers.isNotEmpty ? dispensers.first : null),
+            selectedValue: selectedDispenser,
             items: dispensers.map((dispenser) {
               return DropdownMenuItem<Dispenser>(
                 value: dispenser,
@@ -219,8 +184,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
         error: (error) => [SelectableText(error)],
         orElse: () => [const Text('No dispensers available')],
       );
-    } catch (e, stackTrace) {
-      print('Error building initial form fields: $e, $stackTrace');
+    } catch (e) {
       return [SelectableText(e.toString())];
     }
   }
@@ -251,7 +215,8 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
     final params =
         (composeTransaction as ComposeDispenserResponseVerbose).params;
     return [
-      const SelectableText('CLOSE DISPENSER'),
+      const SelectableText('CLOSE DISPENSER',
+          style: TextStyle(fontWeight: FontWeight.bold)),
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
         controller: TextEditingController(text: params.source),
