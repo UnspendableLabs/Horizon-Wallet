@@ -381,7 +381,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   void _onConfirmationBack() {
     context.read<ComposeDispenseBloc>().add(FetchFormData(
           currentAddress: widget.address,
-          initialDispenserAddress: widget.initialDispenserAddress,
+          initialDispenserAddress: dispenserController.text,
         ));
   }
 
