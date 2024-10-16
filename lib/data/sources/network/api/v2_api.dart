@@ -2169,6 +2169,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return IssuanceUnpackedVerbose.fromJson(json);
       case "dispenser":
         return DispenserUnpackedVerbose.fromJson(json);
+      case "dispense":
+        return DispenseUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],

@@ -411,7 +411,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   void _onFinalizeCancel() {
     context.read<ComposeDispenseBloc>().add(FetchFormData(
           currentAddress: widget.address,
-          initialDispenserAddress: widget.initialDispenserAddress,
+          initialDispenserAddress: dispenserController.text,
         ));
   }
 }
