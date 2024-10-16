@@ -6,12 +6,6 @@ import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
 class StateMapper {
-  static EventState get(api.Event apiEvent) {
-    return apiEvent.blockIndex != null
-        ? EventStateConfirmed(blockHeight: apiEvent.blockIndex!)
-        : EventStateMempool();
-  }
-
   static EventState getVerbose(api.VerboseEvent apiEvent) {
     return apiEvent.blockIndex != null
         ? EventStateConfirmed(
@@ -20,54 +14,6 @@ class StateMapper {
   }
 }
 
-class EventMapper {
-  static Event toDomain(api.Event apiEvent) {
-    switch (apiEvent.event) {
-      case 'ENHANCED_SEND':
-        return EnhancedSendEventMapper.toDomain(
-            apiEvent as api.EnhancedSendEvent);
-      case 'CREDIT':
-        return CreditEventMapper.toDomain(apiEvent as api.CreditEvent);
-      case 'DEBIT':
-        return DebitEventMapper.toDomain(apiEvent as api.DebitEvent);
-      case 'ASSET_ISSUANCE':
-        return AssetIssuanceEventMapper.toDomain(
-            apiEvent as api.AssetIssuanceEvent);
-      case "DISPENSE":
-        return DispenseEventMapper.toDomain(apiEvent as api.DispenseEvent);
-      case "OPEN_DISPENSER":
-        return OpenDispenserEventMapper.toDomain(
-            apiEvent as api.OpenDispenserEvent);
-      case "REFILL_DISPENSER":
-        return RefillDispenserEventMapper.toDomain(
-            apiEvent as api.RefillDispenserEvent);
-      case "DISPENSER_UPDATE":
-        return DispenserUpdateEventMapper.toDomain(
-            apiEvent as api.DispenserUpdateEvent);
-      case "RESET_ISSUANCE":
-        return ResetIssuanceEventMapper.toDomain(
-            apiEvent as api.ResetIssuanceEvent);
-      case "ASSET_CREATION":
-        return AssetIssuanceEventMapper.toDomain(
-            apiEvent as api.AssetIssuanceEvent);
-      // case 'NEW_TRANSACTION':
-      //   return NewTransactionEventMapper.toDomain( apiEvent as api.NewTransactionEvent);
-
-      default:
-        // Return a generic Event for unknown types
-
-        return Event(
-          state: StateMapper.get(apiEvent),
-          eventIndex: apiEvent.eventIndex,
-          event: apiEvent.event,
-          txHash:
-              apiEvent.txHash!, // all of the events we care about have tx hash,
-          blockIndex: apiEvent.blockIndex,
-          // confirmed: apiEvent.confirmed,
-        );
-    }
-  }
-}
 
 class VerboseEventMapper {
   static VerboseEvent toDomain(api.VerboseEvent apiEvent) {
@@ -119,35 +65,6 @@ class VerboseEventMapper {
   }
 }
 
-class EnhancedSendEventMapper {
-  static EnhancedSendEvent toDomain(api.EnhancedSendEvent apiEvent) {
-    return EnhancedSendEvent(
-      state: StateMapper.get(apiEvent),
-      event: "ENHANCED_SEND",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      // confirmed: apiEvent.confirmed,
-      params: EnhancedSendParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class EnhancedSendParamsMapper {
-  static EnhancedSendParams toDomain(api.EnhancedSendParams apiParams) {
-    return EnhancedSendParams(
-      asset: apiParams.asset,
-      blockIndex: apiParams.blockIndex,
-      destination: apiParams.destination,
-      memo: apiParams.memo,
-      quantity: apiParams.quantity,
-      source: apiParams.source,
-      status: apiParams.status,
-      txHash: apiParams.txHash,
-      txIndex: apiParams.txIndex,
-    );
-  }
-}
 
 class VerboseEnhancedSendEventMapper {
   static VerboseEnhancedSendEvent toDomain(
@@ -185,33 +102,6 @@ class VerboseEnhancedSendParamsMapper {
   }
 }
 
-class CreditEventMapper {
-  static CreditEvent toDomain(api.CreditEvent apiEvent) {
-    return CreditEvent(
-      state: StateMapper.get(apiEvent),
-      event: "CREDIT",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      // confirmed: apiEvent.confirmed,
-      params: CreditParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class CreditParamsMapper {
-  static CreditParams toDomain(api.CreditParams apiParams) {
-    return CreditParams(
-      address: apiParams.address,
-      asset: apiParams.asset,
-      blockIndex: apiParams.blockIndex,
-      callingFunction: apiParams.callingFunction,
-      event: apiParams.event,
-      quantity: apiParams.quantity,
-      txIndex: apiParams.txIndex,
-    );
-  }
-}
 
 class VerboseCreditEventMapper {
   static VerboseCreditEvent toDomain(api.VerboseCreditEvent apiEvent) {
@@ -245,33 +135,6 @@ class VerboseCreditParamsMapper {
   }
 }
 
-class DebitEventMapper {
-  static DebitEvent toDomain(api.DebitEvent apiEvent) {
-    return DebitEvent(
-      state: StateMapper.get(apiEvent),
-      event: "DEBIT",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      // confirmed: apiEvent.confirmed,
-      params: DebitParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class DebitParamsMapper {
-  static DebitParams toDomain(api.DebitParams apiParams) {
-    return DebitParams(
-      action: apiParams.action,
-      address: apiParams.address,
-      asset: apiParams.asset,
-      blockIndex: apiParams.blockIndex,
-      event: apiParams.event,
-      quantity: apiParams.quantity,
-      txIndex: apiParams.txIndex,
-    );
-  }
-}
 
 class VerboseDebitEventMapper {
   static VerboseDebitEvent toDomain(api.VerboseDebitEvent apiEvent) {
@@ -305,58 +168,7 @@ class VerboseDebitParamsMapper {
   }
 }
 
-class ResetIssuanceEventMapper {
-  static ResetIssuanceEvent toDomain(api.ResetIssuanceEvent apiEvent) {
-    return ResetIssuanceEvent(
-      state: StateMapper.get(apiEvent),
-      event: "RESET_ISSUANCE",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
 
-class AssetIssuanceEventMapper {
-  static AssetIssuanceEvent toDomain(api.AssetIssuanceEvent apiEvent) {
-    return AssetIssuanceEvent(
-      state: StateMapper.get(apiEvent),
-      event: "ASSET_ISSUANCE",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      // confirmed: apiEvent.confirmed,
-      params: AssetIssuanceParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class AssetIssuanceParamsMapper {
-  static AssetIssuanceParams toDomain(api.AssetIssuanceParams apiParams) {
-    return AssetIssuanceParams(
-      asset: apiParams.asset,
-      assetLongname: apiParams.assetLongname,
-      assetEvents: apiParams.assetEvents,
-      // blockIndex: apiParams.blockIndex,
-      // callDate: apiParams.callDate,
-      // callPrice: apiParams.callPrice,
-      // callable: apiParams.callable,
-      // description: apiParams.description,
-      // divisible: apiParams.divisible,
-      // feePaid: apiParams.feePaid,
-      // issuer: apiParams.issuer,
-      // locked: apiParams.locked,
-      quantity: apiParams.quantity,
-      // reset: apiParams.reset,
-      source: apiParams.source,
-      // status: apiParams.status,
-      transfer: apiParams.transfer,
-      // txHash: apiParams.txHash,
-      // txIndex: apiParams.txIndex,
-    );
-  }
-}
 
 class VerboseAssetIssuanceEventMapper {
   static VerboseAssetIssuanceEvent toDomain(
@@ -423,35 +235,6 @@ class VerboseAssetIssuanceParamsMapper {
   }
 }
 
-class DispenseEventMapper {
-  static DispenseEvent toDomain(api.DispenseEvent apiEvent) {
-    return DispenseEvent(
-      state: StateMapper.get(apiEvent),
-      event: "DISPENSE",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      // confirmed: apiEvent.confirmed,
-      params: DispenseParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class DispenseParamsMapper {
-  static DispenseParams toDomain(api.DispenseParams apiParams) {
-    return DispenseParams(
-        asset: apiParams.asset,
-        blockIndex: apiParams.blockIndex,
-        btcAmount: apiParams.btcAmount,
-        destination: apiParams.destination,
-        dispenseIndex: apiParams.dispenseIndex,
-        dispenseQuantity: apiParams.dispenseQuantity,
-        dispenserTxHash: apiParams.dispenserTxHash,
-        source: apiParams.source,
-        txHash: apiParams.txHash,
-        txIndex: apiParams.txIndex);
-  }
-}
 
 class VerboseDispenseEventMapper {
   static VerboseDispenseEvent toDomain(api.VerboseDispenseEvent apiEvent) {
@@ -554,37 +337,6 @@ class VerboseNewTransactionParamsMapper {
   }
 }
 
-class OpenDispenserEventMapper {
-  static OpenDispenserEvent toDomain(api.OpenDispenserEvent apiEvent) {
-    return OpenDispenserEvent(
-      state: StateMapper.get(apiEvent),
-      event: "OPEN_DISPENSER",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      params: OpenDispenserParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class OpenDispenserParamsMapper {
-  static OpenDispenserParams toDomain(api.OpenDispenserParams apiParams) {
-    return OpenDispenserParams(
-      asset: apiParams.asset,
-      blockIndex: apiParams.blockIndex,
-      escrowQuantity: apiParams.escrowQuantity,
-      giveQuantity: apiParams.giveQuantity,
-      giveRemaining: apiParams.giveRemaining,
-      oracleAddress: apiParams.oracleAddress,
-      origin: apiParams.origin,
-      satoshirate: apiParams.satoshirate,
-      source: apiParams.source,
-      status: apiParams.status,
-      txHash: apiParams.txHash,
-      txIndex: apiParams.txIndex,
-    );
-  }
-}
 
 class VerboseOpenDispenserEventMapper {
   static VerboseOpenDispenserEvent toDomain(
@@ -630,32 +382,6 @@ class VerboseOpenDispenserParamsMapper {
   }
 }
 
-class DispenserUpdateEventMapper {
-  static DispenserUpdateEvent toDomain(api.DispenserUpdateEvent apiEvent) {
-    return DispenserUpdateEvent(
-      state: StateMapper.get(apiEvent),
-      event: "DISPENSER_UPDATE",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      params: DispenserUpdateParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class DispenserUpdateParamsMapper {
-  static DispenserUpdateParams toDomain(api.DispenserUpdateParams apiParams) {
-    return DispenserUpdateParams(
-      asset: apiParams.asset,
-      closeBlockIndex: apiParams.closeBlockIndex,
-      lastStatusTxHash: apiParams.lastStatusTxHash,
-      lastStatusTxSource: apiParams.lastStatusTxSource,
-      source: apiParams.source,
-      status: apiParams.status,
-      txHash: apiParams.txHash,
-    );
-  }
-}
 
 class VerboseDispenserUpdateEventMapper {
   static VerboseDispenserUpdateEvent toDomain(
@@ -688,33 +414,6 @@ class VerboseDispenserUpdateParamsMapper {
   }
 }
 
-class RefillDispenserEventMapper {
-  static RefillDispenserEvent toDomain(api.RefillDispenserEvent apiEvent) {
-    return RefillDispenserEvent(
-      state: StateMapper.get(apiEvent),
-      event: "REFILL_DISPENSER",
-      eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
-      blockIndex: apiEvent.blockIndex,
-      params: RefillDispenserParamsMapper.toDomain(apiEvent.params),
-    );
-  }
-}
-
-class RefillDispenserParamsMapper {
-  static RefillDispenserParams toDomain(api.RefillDispenserParams apiParams) {
-    return RefillDispenserParams(
-      asset: apiParams.asset,
-      blockIndex: apiParams.blockIndex,
-      destination: apiParams.destination,
-      dispenseQuantity: apiParams.dispenseQuantity,
-      dispenserTxHash: apiParams.dispenserTxHash,
-      source: apiParams.source,
-      txHash: apiParams.txHash,
-      txIndex: apiParams.txIndex,
-    );
-  }
-}
 
 class VerboseRefillDispenserEventMapper {
   static VerboseRefillDispenserEvent toDomain(

@@ -2277,6 +2277,21 @@ class DispenserUnpackedVerbose extends TransactionUnpackedVerbose {
   }
 }
 
+class DispenseUnpackedVerbose extends TransactionUnpackedVerbose {
+  // final String mainchainrateNormalized;
+
+  DispenseUnpackedVerbose() : super(messageType: "dispense");
+
+  factory DispenseUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    return DispenseUnpackedVerbose();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {"message_type": "dispense", "message_data": {}};
+  }
+}
+
 //
 // "result": {
 //     "source": "178etygrwEeeyQso9we85rUqYZbkiqzL4A",
@@ -2483,6 +2498,8 @@ class InfoVerbose extends Info {
         return IssuanceInfoVerbose.fromJson(json);
       case "dispenser":
         return DispenserInfoVerbose.fromJson(json);
+      case "dispense":
+        return DispenseInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -2624,6 +2641,27 @@ class DispenserInfoVerbose extends InfoVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$DispenserInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DispenseInfoVerbose extends InfoVerbose {
+  final DispenseUnpackedVerbose unpackedData;
+
+  const DispenseInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory DispenseInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$DispenseInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$DispenseInfoVerboseToJson(this);
 }
 
 // {

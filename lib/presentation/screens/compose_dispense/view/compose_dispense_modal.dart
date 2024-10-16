@@ -268,6 +268,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       ),
       const SizedBox(height: 16.0),
       _buildDispenserInput(),
+      const SizedBox(height: 16.0),
       _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
       _buildQuantityInput(state, () {
@@ -324,9 +325,9 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      Text(
+      const Text(
         "Estimated Dispenses",
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
       Padding(
         padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
@@ -363,7 +364,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                         children: [
                           Text(
                               "${dispense.estimatedQuantityNormalized.toString()} ${dispense.dispenser.asset}"),
-                          SizedBox(width: 8.0),
+                          const SizedBox(width: 8.0),
                           Text(
                               "( ${dispense.dispenser.giveQuantityNormalized}  x ${dispense.estimatedUnits} )"),
                         ],
