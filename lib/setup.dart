@@ -60,6 +60,8 @@ import 'package:horizon/data/sources/network/esplora_client.dart';
 
 import 'package:logger/logger.dart';
 
+
+
 final logger = Logger();
 
 Future<void> setup() async {
@@ -81,7 +83,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -109,7 +111,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
