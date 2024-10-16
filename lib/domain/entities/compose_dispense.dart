@@ -24,7 +24,7 @@ class ComposeDispenseResponse implements ComposeResponse {
   final String name;
   final int btcIn;
   final int btcOut;
-  final int btcChange;
+  final int? btcChange;
   final int btcFee;
   // final String data;
 
@@ -34,7 +34,7 @@ class ComposeDispenseResponse implements ComposeResponse {
     required this.name,
     required this.btcIn,
     required this.btcOut,
-    required this.btcChange,
+    this.btcChange,
     required this.btcFee,
     // required this.data,
   });
