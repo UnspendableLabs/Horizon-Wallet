@@ -182,6 +182,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
       composeTransaction: compose,
     )));
 
+
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
         source: compose.params.source,

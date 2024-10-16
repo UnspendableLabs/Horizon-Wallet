@@ -58,6 +58,59 @@ class FakeAddress extends Fake implements Address {
 
 class FakeUtxo extends Fake implements Utxo {}
 
+class FakeDispenser extends Fake implements Dispenser {
+  final String _asset;
+  final int _giveQuantity;
+  final int _satoshirate;
+  // final int _giveRemaining;
+  // final AssetInfo _assetInfo;
+  final String _source;
+  final int _escrowQuantity;
+  final int _status;
+
+  FakeDispenser({
+    required String asset,
+    required int giveQuantity,
+    required int satoshirate,
+    // required int giveRemaining,
+    // required AssetInfo assetInfo,
+    required String source,
+    required int escrowQuantity,
+    required int status,
+  })  : _asset = asset,
+        _giveQuantity = giveQuantity,
+        _satoshirate = satoshirate,
+        // _giveRemaining = giveRemaining,
+        // _assetInfo = assetInfo,
+        _source = source,
+        _escrowQuantity = escrowQuantity,
+        _status = status;
+
+  @override
+  String get asset => _asset;
+
+  @override
+  int get giveQuantity => _giveQuantity;
+
+  @override
+  int get satoshirate => _satoshirate;
+
+  // @override
+  // int get giveRemaining => _giveRemaining;
+  // //
+  // @override
+  // AssetInfo get assetInfo => _assetInfo;
+
+  @override
+  String get source => _source;
+
+  @override
+  int get escrowQuantity => _escrowQuantity;
+
+  @override
+  int get status => _status;
+}
+
 void main() {
   late CloseDispenserBloc closeDispenserBloc;
   late MockComposeRepository mockComposeRepository;
@@ -70,12 +123,12 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
-  final mockDispenser = Dispenser(
-    assetName: 'ASSET_NAME',
-    openAddress: 'test-address',
+  final mockDispenser = FakeDispenser(
+    asset: 'ASSET_NAME',
+    source: 'test-address',
     giveQuantity: 1000,
     escrowQuantity: 500,
-    mainchainrate: 1,
+    satoshirate: 1,
     status: 0,
   );
   final mockAddress = FakeAddress();
@@ -270,7 +323,9 @@ void main() {
         isA<CloseDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<SubmitComposingTransaction<ComposeDispenserResponseVerbose>>()
+            isA<
+                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
+                        void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -311,7 +366,9 @@ void main() {
         isA<CloseDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<SubmitComposingTransaction<ComposeDispenserResponseVerbose>>()
+            isA<
+                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
+                        void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -323,13 +380,15 @@ void main() {
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitInitial with error when transaction composition fails',
       build: () {
-        when(() => mockComposeTransactionUseCase
-                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-              feeRate: any(named: 'feeRate'),
-              source: any(named: 'source'),
-              composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'),
-            )).thenThrow(ComposeTransactionException('Compose error'));
+        when(
+            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
+                    ComposeDispenserResponseVerbose>(
+                  feeRate: any(named: 'feeRate'),
+                  source: any(named: 'source'),
+                  composeFn: any(named: 'composeFn'),
+                  params: any(named: 'params'),
+                )).thenThrow(
+            ComposeTransactionException('Compose error', StackTrace.current));
 
         return closeDispenserBloc;
       },
@@ -394,8 +453,9 @@ void main() {
       'emits SubmitSuccess when transaction is signed and broadcasted successfully',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: any(named: 'password'),
-              extractParams: any(named: 'extractParams'),
+              source: "source-address",
+              rawtransaction: txHex,
+              password: 'test-password',
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -405,10 +465,6 @@ void main() {
           onSuccess(
             txHex,
             txHash,
-            sourceAddress,
-            'destination-address',
-            1000,
-            'ASSET_NAME',
           );
         });
 
@@ -434,7 +490,7 @@ void main() {
             .thenReturn(1);
         when(() => mockComposeDispenserVerboseParams.status).thenReturn(10);
         when(() => mockComposeDispenserVerbose.rawtransaction)
-            .thenReturn('raw-transaction');
+            .thenReturn(txHex);
 
         return closeDispenserBloc;
       },
@@ -473,13 +529,18 @@ void main() {
         ),
       ],
     );
+    //
+    // password: test-password
+    // source: source-address
+    // raw: raw-transaction
 
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitFinalizing with error when transaction signing fails',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: any(named: 'password'),
-              extractParams: any(named: 'extractParams'),
+              source: "source-address",
+              rawtransaction: "raw-transaction",
+              password: 'test-password',
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {

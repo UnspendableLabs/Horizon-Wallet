@@ -341,7 +341,7 @@ void main() {
         String txHash,
       ) {}
       onError(String error) {
-        expect(error, 'Failed to broadcast the transaction.');
+        expect(error.contains('Failed to broadcast the transaction'), isTrue);
         errorCallbackInvoked = true;
       }
 
