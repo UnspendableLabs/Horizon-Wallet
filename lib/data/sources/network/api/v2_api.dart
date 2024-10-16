@@ -248,6 +248,8 @@ class Event {
         return OpenDispenserEvent.fromJson(json);
       case 'REFILL_DISPENSER':
         return RefillDispenserEvent.fromJson(json);
+      case 'DISPENSER_UPDATE':
+        return DispenserUpdateEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -730,6 +732,87 @@ class VerboseOpenDispenserParams extends OpenDispenserParams {
 // },
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class DispenserUpdateEvent extends Event {
+  final DispenserUpdateParams params;
+
+  DispenserUpdateEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    super.blockIndex,
+    required this.params,
+  });
+
+  factory DispenserUpdateEvent.fromJson(Map<String, dynamic> json) =>
+      _$DispenserUpdateEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DispenserUpdateParams {
+  final String asset;
+  final int? closeBlockIndex;
+  final String? lastStatusTxHash; // closing dispenser w delay
+  final String? lastStatusTxSource;
+  final String source;
+  final int status;
+  final String? txHash;
+  final int? giveRemaining; // refill or closing dispenser
+  final int? dispenseCount; // refill dispenser
+
+  DispenserUpdateParams({
+    required this.asset,
+    required this.closeBlockIndex,
+    this.lastStatusTxHash,
+    this.lastStatusTxSource,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    this.giveRemaining,
+    this.dispenseCount,
+  });
+
+  factory DispenserUpdateParams.fromJson(Map<String, dynamic> json) =>
+      _$DispenserUpdateParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDispenserUpdateEvent extends VerboseEvent {
+  final VerboseDispenserUpdateParams params;
+
+  VerboseDispenserUpdateEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseDispenserUpdateEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDispenserUpdateEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDispenserUpdateParams extends DispenserUpdateParams {
+  final AssetInfo assetInfo;
+
+  VerboseDispenserUpdateParams({
+    required super.asset,
+    required super.closeBlockIndex,
+    required super.lastStatusTxHash,
+    required super.lastStatusTxSource,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required this.assetInfo,
+  });
+
+  factory VerboseDispenserUpdateParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDispenserUpdateParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class RefillDispenserEvent extends Event {
   final RefillDispenserParams params;
 
@@ -1108,6 +1191,8 @@ class VerboseEvent extends Event {
         return VerboseOpenDispenserEvent.fromJson(json);
       case 'REFILL_DISPENSER':
         return VerboseRefillDispenserEvent.fromJson(json);
+      case 'DISPENSER_UPDATE':
+        return VerboseDispenserUpdateEvent.fromJson(json);
       case 'RESET_ISSUANCE':
         return VerboseResetIssuanceEvent.fromJson(json);
       case "ASSET_CREATION":
@@ -1771,13 +1856,14 @@ class Dispenser {
   final int satoshirate;
   final int status;
   final int giveRemaining;
+  final String asset;
   final String? oracleAddress;
   final String? lastStatusTxHash;
   final String origin;
   final int dispenseCount;
-  final String giveQuantityNormalized;
-  final String giveRemainingNormalized;
-  final String escrowQuantityNormalized;
+  final String? giveQuantityNormalized;
+  final String? giveRemainingNormalized;
+  final String? escrowQuantityNormalized;
 
   const Dispenser({
     required this.txIndex,
@@ -1791,6 +1877,7 @@ class Dispenser {
     required this.oracleAddress,
     required this.lastStatusTxHash,
     required this.origin,
+    required this.asset,
     required this.dispenseCount,
     required this.giveQuantityNormalized,
     required this.giveRemainingNormalized,
@@ -2873,6 +2960,15 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
+  @GET("/addresses/{address}/dispensers")
+  Future<Response<List<Dispenser>>> getDispenserByAddress(
+    @Path("address") String address, [
+    @Query("status") String? status,
+    @Query("limit") int? limit,
+    @Query("cursor") CursorModel? cursor,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")

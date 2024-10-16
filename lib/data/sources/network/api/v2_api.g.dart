@@ -662,6 +662,104 @@ Map<String, dynamic> _$VerboseOpenDispenserParamsToJson(
       'satoshirate_normalized': instance.satoshirateNormalized,
     };
 
+DispenserUpdateEvent _$DispenserUpdateEventFromJson(
+        Map<String, dynamic> json) =>
+    DispenserUpdateEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: DispenserUpdateParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DispenserUpdateEventToJson(
+        DispenserUpdateEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+DispenserUpdateParams _$DispenserUpdateParamsFromJson(
+        Map<String, dynamic> json) =>
+    DispenserUpdateParams(
+      asset: json['asset'] as String,
+      closeBlockIndex: (json['close_block_index'] as num?)?.toInt(),
+      lastStatusTxHash: json['last_status_tx_hash'] as String?,
+      lastStatusTxSource: json['last_status_tx_source'] as String?,
+      source: json['source'] as String,
+      status: (json['status'] as num).toInt(),
+      txHash: json['tx_hash'] as String?,
+      giveRemaining: (json['give_remaining'] as num?)?.toInt(),
+      dispenseCount: (json['dispense_count'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$DispenserUpdateParamsToJson(
+        DispenserUpdateParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'close_block_index': instance.closeBlockIndex,
+      'last_status_tx_hash': instance.lastStatusTxHash,
+      'last_status_tx_source': instance.lastStatusTxSource,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'give_remaining': instance.giveRemaining,
+      'dispense_count': instance.dispenseCount,
+    };
+
+VerboseDispenserUpdateEvent _$VerboseDispenserUpdateEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDispenserUpdateEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseDispenserUpdateParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDispenserUpdateEventToJson(
+        VerboseDispenserUpdateEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseDispenserUpdateParams _$VerboseDispenserUpdateParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDispenserUpdateParams(
+      asset: json['asset'] as String,
+      closeBlockIndex: (json['close_block_index'] as num?)?.toInt(),
+      lastStatusTxHash: json['last_status_tx_hash'] as String?,
+      lastStatusTxSource: json['last_status_tx_source'] as String?,
+      source: json['source'] as String,
+      status: (json['status'] as num).toInt(),
+      txHash: json['tx_hash'] as String?,
+      assetInfo: AssetInfo.fromJson(json['asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDispenserUpdateParamsToJson(
+        VerboseDispenserUpdateParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'close_block_index': instance.closeBlockIndex,
+      'last_status_tx_hash': instance.lastStatusTxHash,
+      'last_status_tx_source': instance.lastStatusTxSource,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'asset_info': instance.assetInfo,
+    };
+
 RefillDispenserEvent _$RefillDispenserEventFromJson(
         Map<String, dynamic> json) =>
     RefillDispenserEvent(
@@ -1547,10 +1645,11 @@ Dispenser _$DispenserFromJson(Map<String, dynamic> json) => Dispenser(
       oracleAddress: json['oracle_address'] as String?,
       lastStatusTxHash: json['last_status_tx_hash'] as String?,
       origin: json['origin'] as String,
+      asset: json['asset'] as String,
       dispenseCount: (json['dispense_count'] as num).toInt(),
-      giveQuantityNormalized: json['give_quantity_normalized'] as String,
-      giveRemainingNormalized: json['give_remaining_normalized'] as String,
-      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
+      giveQuantityNormalized: json['give_quantity_normalized'] as String?,
+      giveRemainingNormalized: json['give_remaining_normalized'] as String?,
+      escrowQuantityNormalized: json['escrow_quantity_normalized'] as String?,
     );
 
 Map<String, dynamic> _$DispenserToJson(Dispenser instance) => <String, dynamic>{
@@ -1562,6 +1661,7 @@ Map<String, dynamic> _$DispenserToJson(Dispenser instance) => <String, dynamic>{
       'satoshirate': instance.satoshirate,
       'status': instance.status,
       'give_remaining': instance.giveRemaining,
+      'asset': instance.asset,
       'oracle_address': instance.oracleAddress,
       'last_status_tx_hash': instance.lastStatusTxHash,
       'origin': instance.origin,
@@ -3124,6 +3224,53 @@ class _V2Api implements V2Api {
     final _value = Response<ComposeDispenserVerbose>.fromJson(
       _result.data!,
       (json) => ComposeDispenserVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<Dispenser>>> getDispenserByAddress(
+    String address, [
+    String? status,
+    int? limit,
+    CursorModel? cursor,
+    bool? showUnconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'status': status,
+      r'limit': limit,
+      r'cursor': cursor?.toJson(),
+      r'show_unconfirmed': showUnconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<Dispenser>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/dispensers',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<Dispenser>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<Dispenser>(
+                  (i) => Dispenser.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
     );
     return _value;
   }

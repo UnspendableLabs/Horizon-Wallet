@@ -19,6 +19,7 @@ import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/dispenser_repositoty_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -27,6 +28,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -60,6 +62,7 @@ import 'package:horizon/data/sources/network/esplora_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
+import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
 import 'package:logger/logger.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -189,6 +192,9 @@ Future<void> setup() async {
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
 
+  injector.registerSingleton<DispenserRepository>(
+      DispenserRepositoryImpl(api: GetIt.I.get<V2Api>()));
+
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<WalletRepository>(
@@ -228,6 +234,10 @@ Future<void> setup() async {
   injector.registerSingleton(FetchDispenserFormDataUseCase(
       getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
       balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton(FetchCloseDispenserFormDataUseCase(
+      getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+      dispenserRepository: injector.get<DispenserRepository>()));
 
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(

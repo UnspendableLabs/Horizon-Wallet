@@ -7,6 +7,7 @@ class ComposeDispenserParams extends ComposeParams {
   final int giveQuantity;
   final int escrowQuantity;
   final int mainchainrate;
+  final int? status;
 
   ComposeDispenserParams({
     required this.source,
@@ -14,6 +15,7 @@ class ComposeDispenserParams extends ComposeParams {
     required this.giveQuantity,
     required this.escrowQuantity,
     required this.mainchainrate,
+    this.status,
   });
 
   @override

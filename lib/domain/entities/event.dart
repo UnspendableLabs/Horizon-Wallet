@@ -638,6 +638,72 @@ class VerboseOpenDispenserEvent extends VerboseEvent {
   });
 }
 
+class DispenserUpdateParams {
+  final String asset;
+  final int? closeBlockIndex;
+  final String? lastStatusTxHash;
+  final String? lastStatusTxSource;
+  final String source;
+  final int status;
+  final String? txHash;
+  final int? giveRemaining;
+  final int? dispenseCount;
+
+  DispenserUpdateParams({
+    required this.asset,
+    required this.closeBlockIndex,
+    this.lastStatusTxHash,
+    required this.lastStatusTxSource,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    this.giveRemaining,
+    this.dispenseCount,
+  });
+}
+
+class DispenserUpdateEvent extends Event {
+  final DispenserUpdateParams params;
+
+  const DispenserUpdateEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseDispenserUpdateParams extends DispenserUpdateParams {
+  // final AssetInfo? assetInfo;
+
+  VerboseDispenserUpdateParams({
+    required super.asset,
+    required super.closeBlockIndex,
+    required super.lastStatusTxHash,
+    required super.lastStatusTxSource,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    // required this.assetInfo,
+  });
+}
+
+class VerboseDispenserUpdateEvent extends VerboseEvent {
+  final VerboseDispenserUpdateParams params;
+
+  const VerboseDispenserUpdateEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
 class RefillDispenserParams {
   final String asset;
   final int blockIndex;

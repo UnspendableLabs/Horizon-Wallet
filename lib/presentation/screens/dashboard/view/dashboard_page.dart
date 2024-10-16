@@ -24,6 +24,7 @@ import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer.dart';
 import 'package:horizon/presentation/common/no_data.dart';
+import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
@@ -388,6 +389,19 @@ class AddressActions extends StatelessWidget {
                 ),
                 icon: Icons.qr_code,
                 text: "RECEIVE",
+                iconSize: 24.0),
+            AddressAction(
+                isDarkTheme: isDarkTheme,
+                dialog: HorizonUI.HorizonDialog(
+                  title: "Close Dispenser",
+                  body: CloseDispenserPageWrapper(
+                    dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                  ),
+                  includeBackButton: false,
+                  includeCloseButton: true,
+                ),
+                icon: Icons.close,
+                text: "CLOSE DISPENSER",
                 iconSize: 24.0)
           ],
         ),

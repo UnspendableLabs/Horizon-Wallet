@@ -111,7 +111,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final giveQuantity = params.giveQuantity;
     final escrowQuantity = params.escrowQuantity;
     final mainchainrate = params.mainchainrate;
-    const status = 0;
+    final status = params.status ?? 0;
     const openAddress = null;
     const oracleAddress = null;
     const allowUnconfirmedTx = true;
