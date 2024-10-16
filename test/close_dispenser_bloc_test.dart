@@ -105,8 +105,6 @@ void main() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(ComposeTransactionEvent(
       params: composeTransactionParams,
-      // utxos: utxos,
-      // feeRate: feeRate,
       sourceAddress: 'source-address',
     ));
     registerFallbackValue(SignAndBroadcastTransactionEvent(
@@ -156,13 +154,13 @@ void main() {
       expect: () => [
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
-          balancesState: const BalancesState.loading(), // Added this line
+          balancesState: const BalancesState.loading(),
           dispensersState: const DispenserState.loading(),
           submitState: const SubmitInitial(),
         ),
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.success(mockFeeEstimates),
-          balancesState: const BalancesState.success([]), // And this line
+          balancesState: const BalancesState.success([]),
           dispensersState: DispenserState.success([mockDispenser]),
         ),
       ],
@@ -532,7 +530,7 @@ void main() {
       ),
       act: (bloc) =>
           bloc.add(SignAndBroadcastTransactionEvent(password: password)),
-      wait: const Duration(milliseconds: 10), // Add this line
+      wait: const Duration(milliseconds: 10),
       expect: () => [
         isA<CloseDispenserState>().having(
           (state) => state.submitState,

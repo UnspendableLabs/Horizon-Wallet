@@ -102,61 +102,10 @@ class MockComposeDispenserEventParams extends Mock
 }
 
 class MockComposeDispenserResponseVerboseParams extends Mock
-    implements ComposeDispenserResponseVerboseParams {
-  // @override
-  // String get source => 'test-address';
-
-  // @override
-  // String get asset => 'ASSET_NAME';
-
-  // @override
-  // int get giveQuantity => 1000;
-
-  // @override
-  // int get escrowQuantity => 500;
-
-  // @override
-  // int get mainchainrate => 1;
-
-  // @override
-  // int get status => 0;
-
-  // @override
-  // String get openAddress => 'test-address';
-
-  // @override
-  // String get giveQuantityNormalized => 'test-give-quantity-normalized';
-
-  // @override
-  // String get escrowQuantityNormalized => 'test-escrow-quantity-normalized';
-}
+    implements ComposeDispenserResponseVerboseParams {}
 
 class MockComposeDispenserVerbose extends Mock
-    implements ComposeDispenserResponseVerbose {
-  // @override
-  // ComposeDispenserResponseVerboseParams get params => MockComposeDispenserResponseVerboseParams();
-
-  // @override
-  // String get rawtransaction => 'test-raw-tx';
-
-  // @override
-  // String get name => 'test-name';
-
-  // @override
-  // int get btcIn => 0;
-
-  // @override
-  // int get btcOut => 0;
-
-  // @override
-  // int get btcChange => 0;
-
-  // @override
-  // int get btcFee => 0;
-
-  // @override
-  // String get data => 'test-data';
-}
+    implements ComposeDispenserResponseVerbose {}
 
 class MockDashboardActivityFeedBloc extends Mock
     implements DashboardActivityFeedBloc {}
@@ -289,7 +238,6 @@ void main() {
             status: 0,
             openAddress: "test-address",
           ));
-      final mockComposeDispenserEventParams = MockComposeDispenserEventParams();
 
       // Mock dependencies
       when(() => mockFetchCloseDispenserFormDataUseCase.call(any()))

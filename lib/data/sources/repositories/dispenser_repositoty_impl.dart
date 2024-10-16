@@ -14,7 +14,7 @@ class DispenserRepositoryImpl implements DispenserRepository {
     if (response.result == null) {
       return [];
     }
-    // return response.data;
+
     final List<v2_api.Dispenser> dispenser = response.result!;
 
     return dispenser

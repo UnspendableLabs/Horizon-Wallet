@@ -3,7 +3,7 @@
 # Start ChromeDriver
 start_chromedriver() {
     echo "Starting ChromeDriver..."
-    /opt/homebrew/bin/chromedriver --port=4444 &
+    ./chromedriver/linux-128.0.6613.84/chromedriver-linux64/chromedriver --port=4444 &
     CHROMEDRIVER_PID=$!
     sleep 2  # Give ChromeDriver a moment to start
 }
@@ -16,21 +16,20 @@ find_test_files() {
 
 # Run integration tests
 run_tests() {
-    # for test_file in "${TEST_FILES[@]}"; do
-    test_file="integration_test/close_dispenser_test.dart"
-    test_name=$(basename "$test_file")
-    echo "Running test: $test_name"
-    flutter drive \
-        --driver=test_driver/integration_test.dart \
-        --target="$test_file" \
-        -d chrome
+    for test_file in "${TEST_FILES[@]}"; do
+        test_name=$(basename "$test_file")
+        echo "Running test: $test_name"
+        flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target="$test_file" \
+            -d chrome
 
-    # Check if the test failed
-    if [ $? -ne 0 ]; then
-        echo "Test $test_name failed"
-        FAILED_TESTS+=("$test_name")
-    fi
-    # done
+        # Check if the test failed
+        if [ $? -ne 0 ]; then
+            echo "Test $test_name failed"
+            FAILED_TESTS+=("$test_name")
+        fi
+    done
 }
 
 # Clean up

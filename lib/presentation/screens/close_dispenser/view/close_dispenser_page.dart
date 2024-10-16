@@ -41,7 +41,6 @@ class CloseDispenserPageWrapper extends StatelessWidget {
           signAndBroadcastTransactionUseCase:
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
-          // fetchDispenserFormDataUseCase: GetIt.I.get<FetchDispenserFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
@@ -72,23 +71,18 @@ class CloseDispenserPage extends StatefulWidget {
 class CloseDispenserPageState extends State<CloseDispenserPage> {
   TextEditingController dispenserController = TextEditingController();
 
-  // String? asset;
-  // Balance? balance_;
   Dispenser? selectedDispenser;
   bool _submitted = false;
 
   @override
   void initState() {
     super.initState();
-    // openAddressController.text = widget.address.address;
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CloseDispenserBloc, CloseDispenserState>(
-      listener: (context, state) {
-        // TODO: implement listener
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         return ComposeBasePage<CloseDispenserBloc, CloseDispenserState>(
           address: widget.address,
@@ -248,8 +242,8 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
 
   void _onConfirmationBack() {
     setState(() {
-      selectedDispenser = null; // Reset the selected dispenser
-      dispenserController.clear(); // Clear the controller text if necessary
+      selectedDispenser = null;
+      dispenserController.clear();
     });
     context
         .read<CloseDispenserBloc>()
