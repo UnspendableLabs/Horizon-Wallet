@@ -750,7 +750,7 @@ class DispenserUpdateEvent extends Event {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class DispenserUpdateParams {
   final String asset;
-  final int? closeBlockIndex; //
+  final int? closeBlockIndex;
   final String? lastStatusTxHash; // closing dispenser w delay
   final String? lastStatusTxSource;
   final String source;

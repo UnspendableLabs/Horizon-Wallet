@@ -664,7 +664,7 @@ class VerboseDispenserUpdateEventMapper {
       state: StateMapper.getVerbose(apiEvent),
       event: "DISPENSER_UPDATE",
       eventIndex: apiEvent.eventIndex,
-      txHash: apiEvent.txHash!,
+      txHash: apiEvent.txHash ?? "",
       blockIndex: apiEvent.blockIndex,
       blockTime: apiEvent.blockTime,
       params: VerboseDispenserUpdateParamsMapper.toDomain(apiEvent.params),

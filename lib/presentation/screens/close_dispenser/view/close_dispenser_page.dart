@@ -247,6 +247,10 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
   }
 
   void _onConfirmationBack() {
+    setState(() {
+      selectedDispenser = null; // Reset the selected dispenser
+      dispenserController.clear(); // Clear the controller text if necessary
+    });
     context
         .read<CloseDispenserBloc>()
         .add(FetchFormData(currentAddress: widget.address));

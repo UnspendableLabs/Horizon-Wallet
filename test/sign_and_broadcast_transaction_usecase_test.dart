@@ -134,9 +134,6 @@ void main() {
       // Mock parameters extraction
       extractParams() => ('source', 'rawTx', 'destination', 100, 'asset');
 
-      print("mockAddrss ${mockAddress.accountUuid}");
-      print("mockAccount ${mockAccount.walletUuid}");
-
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source'))
           .thenAnswer((_) async => mockUtxos);

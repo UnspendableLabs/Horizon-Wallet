@@ -79,7 +79,6 @@ void main() {
     status: 0,
   );
   final mockAddress = FakeAddress();
-  final mockBalances = [MockBalance()];
   final mockComposeDispenserVerbose = MockComposeDispenserVerbose();
   final composeTransactionParams = ComposeDispenserEventParams(
     asset: 'ASSET_NAME',

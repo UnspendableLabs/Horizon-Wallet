@@ -78,7 +78,85 @@ class MockComposeRepository extends Mock implements ComposeRepository {}
 class MockUtxoRepository extends Mock implements UtxoRepository {}
 
 class MockComposeDispenserEventParams extends Mock
-    implements ComposeDispenserEventParams {}
+    implements ComposeDispenserEventParams {
+  @override
+  String get asset => 'ASSET_NAME';
+
+  @override
+  int get giveQuantity => 1000;
+
+  @override
+  int get escrowQuantity => 500;
+
+  @override
+  int get mainchainrate => 1;
+
+  @override
+  int get status => 0;
+
+  @override
+  String get openAddress => 'test-address';
+
+  @override
+  String get oracleAddress => 'test-oracle-address';
+}
+
+class MockComposeDispenserResponseVerboseParams extends Mock
+    implements ComposeDispenserResponseVerboseParams {
+  // @override
+  // String get source => 'test-address';
+
+  // @override
+  // String get asset => 'ASSET_NAME';
+
+  // @override
+  // int get giveQuantity => 1000;
+
+  // @override
+  // int get escrowQuantity => 500;
+
+  // @override
+  // int get mainchainrate => 1;
+
+  // @override
+  // int get status => 0;
+
+  // @override
+  // String get openAddress => 'test-address';
+
+  // @override
+  // String get giveQuantityNormalized => 'test-give-quantity-normalized';
+
+  // @override
+  // String get escrowQuantityNormalized => 'test-escrow-quantity-normalized';
+}
+
+class MockComposeDispenserVerbose extends Mock
+    implements ComposeDispenserResponseVerbose {
+  // @override
+  // ComposeDispenserResponseVerboseParams get params => MockComposeDispenserResponseVerboseParams();
+
+  // @override
+  // String get rawtransaction => 'test-raw-tx';
+
+  // @override
+  // String get name => 'test-name';
+
+  // @override
+  // int get btcIn => 0;
+
+  // @override
+  // int get btcOut => 0;
+
+  // @override
+  // int get btcChange => 0;
+
+  // @override
+  // int get btcFee => 0;
+
+  // @override
+  // String get data => 'test-data';
+}
 
 class MockDashboardActivityFeedBloc extends Mock
     implements DashboardActivityFeedBloc {}
@@ -154,8 +232,6 @@ void main() {
   late MockAnalyticsService mockAnalyticsService;
   late MockComposeRepository mockComposeRepository;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
-  late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
-  late MockUtxoRepository mockUtxoRepository;
 
   setUpAll(() {
     registerFallbackValue(FakeAddress());
@@ -165,8 +241,6 @@ void main() {
   });
 
   setUp(() {
-    mockGetVirtualSizeUseCase = MockGetVirtualSizeUseCase();
-    mockUtxoRepository = MockUtxoRepository();
     mockComposeTransactionUseCase = MockComposeTransactionUseCase();
     mockFetchCloseDispenserFormDataUseCase =
         MockFetchCloseDispenserFormDataUseCase();
@@ -195,87 +269,6 @@ void main() {
   });
 
   group('Close dispenser form', () {
-    // testWidgets('renders correct fields', (WidgetTester tester) async {
-    //   // Mock dependencies
-    //   when(() => mockFetchCloseDispenserFormDataUseCase.call(any()))
-    //       .thenAnswer((_) async => (
-    //             const FeeEstimates(fast: 10, medium: 5, slow: 2),
-    //             [
-    //               Dispenser(
-    //                 assetName: 'ASSET1_DIVISIBLE',
-    //                 openAddress: 'test-address',
-    //                 giveQuantity: 100000000,
-    //                 escrowQuantity: 100000000,
-    //                 status: 0,
-    //                 mainchainrate: 100000000,
-    //               ),
-    //               Dispenser(
-    //                 assetName: 'ASSET2_NOT_DIVISIBLE',
-    //                 openAddress: 'test-address',
-    //                 giveQuantity: 10,
-    //                 escrowQuantity: 10,
-    //                 status: 0,
-    //                 mainchainrate: 100,
-    //               ),
-    //             ]
-    //           ));
-
-    //   when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
-    //       .thenAnswer((_) async {});
-
-    //   when(() => mockAnalyticsService.trackEvent(any()))
-    //       .thenAnswer((_) async {});
-
-    //   // Build the widget tree
-    //   await tester.pumpWidget(
-    //     MaterialApp(
-    //       home: Scaffold(
-    //         body: MultiBlocProvider(
-    //           providers: [
-    //             BlocProvider<CloseDispenserBloc>.value(
-    //                 value: closeDispenserBloc),
-    //             BlocProvider<DashboardActivityFeedBloc>.value(
-    //                 value: mockDashboardActivityFeedBloc),
-    //           ],
-    //           child: CloseDispenserPage(
-    //             address: FakeAddress(),
-    //             dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //   );
-
-    //   closeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress()));
-
-    //   await tester.pumpAndSettle();
-
-    //   final assetDropdown =
-    //       find.byType(HorizonUI.HorizonDropdownMenu<Dispenser>);
-    //   expect(assetDropdown, findsOneWidget);
-
-    //   await tester.tap(assetDropdown);
-    //   await tester.pumpAndSettle();
-
-    //   // Assert that the dropdown contains the desired items
-    //   expect(
-    //       find.widgetWithText(
-    //           DropdownMenuItem<Dispenser>,
-    //           'test-address - ASSET1_DIVISIBLE - '
-    //           'Quantity: 100000000 - '
-    //           'Price: 100000000'),
-    //       findsOneWidget);
-    //   expect(
-    //       find.widgetWithText(
-    //           DropdownMenuItem<Dispenser>,
-    //           'test-address - ASSET2_NOT_DIVISIBLE - '
-    //           'Quantity: 10 - '
-    //           'Price: 100'),
-    //       findsOneWidget);
-
-    //   await tester.pumpAndSettle();
-    // });
-
     testWidgets('submits transaction', (WidgetTester tester) async {
       const composeDispenserResponse = ComposeDispenserResponseVerbose(
           rawtransaction: "test-raw-tx",
@@ -294,7 +287,9 @@ void main() {
             giveQuantityNormalized: "test-give-quantity-normalized",
             escrowQuantityNormalized: "test-escrow-quantity-normalized",
             status: 0,
+            openAddress: "test-address",
           ));
+      final mockComposeDispenserEventParams = MockComposeDispenserEventParams();
 
       // Mock dependencies
       when(() => mockFetchCloseDispenserFormDataUseCase.call(any()))
@@ -388,7 +383,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'CONTINUE'));
+      final confirmContinueButton =
+          find.widgetWithText(ElevatedButton, 'CONTINUE');
+      expect(confirmContinueButton, findsOneWidget);
+
+      await tester.tap(confirmContinueButton);
       await tester.pumpAndSettle();
 
       closeDispenserBloc
@@ -396,6 +395,8 @@ void main() {
         composeTransaction: composeDispenserResponse,
         fee: 5,
       ));
+
+      await tester.pumpAndSettle();
 
       // Assert that the password page is displayed
       final passwordField = find.byType(HorizonUI.HorizonTextFormField);

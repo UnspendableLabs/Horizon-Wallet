@@ -52,12 +52,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
           dispensersState: const DispenserState.initial(),
-        )) {
-    // // Event handlers specific to the dispenser
-    // on<ChangeAsset>((e, emit) {});
-    // on<ChangeGiveQuantity>((e, emit) {});
-    // on<ChangeEscrowQuantity>((e, emit) {});
-  }
+        ));
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
@@ -169,20 +164,15 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    print('onSignAndBroadcastTransaction');
     if (state.submitState
         is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
       return;
     }
 
-    print('onSignAndBroadcastTransaction 2');
-
     final s = (state.submitState
         as SubmitFinalizing<ComposeDispenserResponseVerbose>);
     final compose = s.composeTransaction;
     final fee = s.fee;
-
-    print('onSignAndBroadcastTransaction 3');
 
     emit(state.copyWith(
         submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
@@ -192,39 +182,22 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
       composeTransaction: compose,
     )));
 
-    print('onSignAndBroadcastTransaction 4 ${event.password}');
-    print('onSignAndBroadcastTransaction 5 ${compose.params.source}');
-    print('onSignAndBroadcastTransaction 6 ${compose.rawtransaction}');
-    print('onSignAndBroadcastTransaction 7 ${compose.params.giveQuantity}');
-    print('onSignAndBroadcastTransaction 8 ${compose.params.asset}');
-    print('onSignAndBroadcastTransaction 9 ${compose.params.escrowQuantity}');
-    print('onSignAndBroadcastTransaction 10 ${compose.params.mainchainrate}');
-    print('onSignAndBroadcastTransaction 11 ${compose.params.status}');
-    print(
-        'signAndBroadcastTransactionUseCase ${signAndBroadcastTransactionUseCase.call}');
-
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
         extractParams: () {
-          print('extractPara?@?@?ms');
           final source = compose.params.source;
           final rawTx = compose.rawtransaction;
           final destination = source;
           final giveQuantity = compose.params.giveQuantity;
           final asset = compose.params.asset;
 
-          print('extractPara?@?@?ms 2');
-
           return (source, rawTx, destination, giveQuantity, asset);
         },
         onSuccess:
             (txHex, txHash, source, destination, giveQuantity, asset) async {
-          print('onSuccess 3');
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          print('onSuccess 4');
           logger.d('dispenser broadcasted txHash: $txHash');
-          print('onSuccess 5');
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex, sourceAddress: source!)));
@@ -232,7 +205,6 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
           analyticsService.trackEvent('broadcast_tx_dispenser');
         },
         onError: (msg) {
-          print('onError: $msg');
           emit(state.copyWith(
               submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
             loading: false,
