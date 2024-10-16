@@ -457,7 +457,7 @@ class DashboardPageWrapper extends StatelessWidget {
                     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
                     transactionLocalRepository:
                         GetIt.I.get<TransactionLocalRepository>(),
-                    pageSize: 10,
+                    pageSize: 1000,
                   ),
                 ),
               ],
