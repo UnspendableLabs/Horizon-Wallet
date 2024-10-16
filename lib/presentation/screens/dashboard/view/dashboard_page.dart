@@ -257,7 +257,7 @@ class AddressAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
+    final isMobile = false;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
@@ -405,7 +405,7 @@ class AddressActions extends StatelessWidget {
                     default:
                   }
                 },
-                shrinkExtent: 100,
+                shrinkExtent: 200,
                 itemExtent: 200,
                 children: [
                   AddressAction(
