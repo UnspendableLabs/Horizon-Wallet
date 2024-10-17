@@ -216,7 +216,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           key: const Key('dispense_btc_quantity_input'),
           controller: quantityController,
           enabled: !loading,
-          label: 'Quantity',
+          label: 'Quantity ( BTC )',
           inputFormatters: [DecimalTextInputFormatter(decimalRange: 8)],
           keyboardType: const TextInputType.numberWithOptions(
               decimal: true, signed: false),
