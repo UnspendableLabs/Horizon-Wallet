@@ -165,7 +165,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             return SizedBox(
                 height: 50,
                 child: ListTile(
-                  title: Text(
+                  title: SelectableText(
                       "${dispenser.satoshirateNormalized} BTC/${dispenser.asset}"),
                   trailing:
                       Text("${dispenser.giveRemainingNormalized} Remaining"),
