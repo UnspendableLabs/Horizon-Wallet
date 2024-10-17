@@ -137,8 +137,7 @@ class ComposeIssuanceBloc
 
       try {
         final utxos = await utxoRepository.getUnspentForAddress(source);
-        // final inputsSet = utxos.isEmpty ? null : utxos;
-        final inputsSet = null;
+        final inputsSet = utxos.isEmpty ? null : utxos;
 
         ComposeIssuanceVerbose issuance =
             await composeRepository.composeIssuanceVerbose(
