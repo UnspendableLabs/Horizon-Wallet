@@ -45,7 +45,13 @@ class FetchCloseDispenserFormDataUseCase {
   Future<List<Dispenser>> _fetchDispenser(Address currentAddress) async {
     try {
       return await dispenserRepository
-          .getDispenserByAddress(currentAddress.address);
+          .getDispensersByAddress(currentAddress.address)
+          .run()
+          .then((either) => either.fold(
+                (error) => throw FetchDispenserException(
+                    error.toString()), // Handle failure
+                (dispensers) => dispensers, // Handle success
+              ));
     } catch (e) {
       throw FetchDispenserException(e.toString());
     }

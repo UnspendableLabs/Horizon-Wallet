@@ -262,28 +262,29 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
     return switch (info) {
-      TransactionInfoEnhancedSendVerbose(
+      TransactionInfoEnhancedSend(
         unpackedData: var unpackedData,
       ) =>
         SendTitle(
             quantityNormalized: unpackedData.quantityNormalized,
             asset: unpackedData.asset),
-      TransactionInfoIssuanceVerbose(
+      TransactionInfoIssuance(
         unpackedData: var unpackedData,
       ) =>
         SelectableText(
             "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       // btc send
-      TransactionInfoVerbose(btcAmount: var btcAmount)
+      TransactionInfo(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
         SendTitle(
           quantityNormalized: satoshisToBtc(btcAmount).toStringAsFixed(8),
           asset: 'BTC',
         ),
-      TransactionInfoDispenserVerbose(
+      TransactionInfoDispenser(
         unpackedData: var unpackedData,
       ) =>
         SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
+      TransactionInfoDispense() => const SelectableText("Trigger Dispense"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -292,13 +293,13 @@ class ActivityFeedListItem extends StatelessWidget {
   Icon _getTransactionInfoLeading(TransactionInfo info) {
     return switch (info) {
       // local can only ever be a send
-      TransactionInfoEnhancedSendVerbose() =>
+      TransactionInfoEnhancedSend() =>
         const Icon(Icons.arrow_back, color: Colors.grey),
-      TransactionInfoIssuanceVerbose() =>
-        const Icon(Icons.toll, color: Colors.grey),
-      TransactionInfoDispenserVerbose() =>
+      TransactionInfoIssuance() => const Icon(Icons.toll, color: Colors.grey),
+      TransactionInfoDispenser() =>
         const Icon(Icons.account_balance, color: Colors.grey),
-      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+      TransactionInfoDispense() => const Icon(Icons.paid, color: Colors.grey),
+      TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
@@ -340,11 +341,15 @@ class ActivityFeedListItem extends StatelessWidget {
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
     return switch (info) {
       // local can only ever be a send
-      TransactionInfoEnhancedSendVerbose() =>
+      TransactionInfoEnhancedSend() =>
         TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoIssuanceVerbose() =>
+      TransactionInfoIssuance() =>
         TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+      TransactionInfoDispenser() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfoDispense() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
       _ => const Icon(Icons.error),
     };
@@ -387,15 +392,15 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
         const Icon(Icons.arrow_forward, color: Colors.green),
-      VerboseAssetIssuanceEvent(params: var params) =>
+      VerboseAssetIssuanceEvent(params: var _) =>
         const Icon(Icons.toll, color: Colors.grey),
-      VerboseResetIssuanceEvent(params: var params) =>
+      VerboseResetIssuanceEvent(params: var _) =>
         const Icon(Icons.toll, color: Colors.grey),
-      VerboseDispenseEvent(params: var params) =>
+      VerboseDispenseEvent(params: var _) =>
         const Icon(Icons.paid, color: Colors.grey),
-      VerboseOpenDispenserEvent(params: var params) =>
+      VerboseOpenDispenserEvent(params: var _) =>
         const Icon(Icons.account_balance, color: Colors.grey),
-      VerboseRefillDispenserEvent(params: var params) =>
+      VerboseRefillDispenserEvent(params: var _) =>
         const Icon(Icons.account_balance, color: Colors.grey),
       VerboseDispenserUpdateEvent(params: var params) =>
         const Icon(Icons.account_balance, color: Colors.grey),

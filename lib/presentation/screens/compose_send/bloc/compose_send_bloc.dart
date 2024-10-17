@@ -269,7 +269,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    await composeTransaction<ComposeSend, ComposeSendState>(
+    await composeTransaction<ComposeSend, ComposeSendState, void>(
         state: state,
         emit: emit,
         event: event,
@@ -346,17 +346,16 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
             (txHex, txHash, source, destination, quantity, asset) async {
           // for now we don't track btc sends
           if (asset!.toLowerCase() != 'btc') {
-            TransactionInfoVerbose txInfo =
-                await transactionRepository.getInfoVerbose(txHex);
+            TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
-            await transactionLocalRepository.insertVerbose(txInfo.copyWith(
+            await transactionLocalRepository.insert(txInfo.copyWith(
                 hash: txHash,
                 source:
                     source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
                 ));
           } else {
             // TODO: this is a bit of a hack
-            transactionLocalRepository.insertVerbose(TransactionInfoVerbose(
+            transactionLocalRepository.insert(TransactionInfo(
               hash: txHash,
               source: source!,
               destination: destination,

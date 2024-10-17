@@ -56,12 +56,14 @@ class SubmitInitial extends SubmitState {
 }
 
 /// State when submission is in progress.
-class SubmitComposingTransaction<T> extends SubmitState {
+class SubmitComposingTransaction<T, O extends Object?> extends SubmitState {
+  final O? otherParams;
   final T composeTransaction;
   // final int virtualSize;
   final int fee;
   final int feeRate;
   const SubmitComposingTransaction({
+    this.otherParams,
     required this.composeTransaction,
     // required this.virtualSize,
     required this.fee,

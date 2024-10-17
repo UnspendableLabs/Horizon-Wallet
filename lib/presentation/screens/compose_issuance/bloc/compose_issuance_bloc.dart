@@ -143,7 +143,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     await composeTransaction<ComposeIssuanceResponseVerbose,
-            ComposeIssuanceState>(
+            ComposeIssuanceState, void>(
         state: state,
         emit: emit,
         event: event,
@@ -238,10 +238,9 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
         },
         successAction:
             (txHex, txHash, source, destination, quantity, asset) async {
-          TransactionInfoVerbose txInfo =
-              await transactionRepository.getInfoVerbose(txHex);
+          TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
 
-          await transactionLocalRepository.insertVerbose(txInfo.copyWith(
+          await transactionLocalRepository.insert(txInfo.copyWith(
             hash: txHash,
           ));
 

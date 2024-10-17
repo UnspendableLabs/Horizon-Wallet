@@ -1,7 +1,6 @@
 import "dart:convert";
 
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
-import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
@@ -9,54 +8,9 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
 import 'package:logger/logger.dart';
+import 'package:horizon/data/models/transaction_unpacked.dart';
 
 final logger = Logger();
-
-// class UnpackedMapper {
-//   static TransactionUnpacked toDomain(api.TransactionUnpacked u) {
-//     switch (u.messageType) {
-//       case "enhanced_send":
-//         return EnhancedSendUnpackedMapper.toDomain(
-//             u as api.EnhancedSendUnpacked);
-//       default:
-//         return TransactionUnpacked(
-//           messageType: u.messageType,
-//         );
-//     }
-//   }
-// }
-
-// class EnhancedSendUnpackedMapper {
-//   static EnhancedSendUnpacked toDomain(api.EnhancedSendUnpacked u) {
-//     return EnhancedSendUnpacked(
-//       asset: u.asset,
-//       quantity: u.quantity,
-//       address: u.address,
-//       memo: u.memo,
-//     );
-//   }
-// }
-
-class UnpackedVerboseMapper {
-  static TransactionUnpackedVerbose toDomain(api.TransactionUnpackedVerbose u) {
-    switch (u.messageType) {
-      case "enhanced_send":
-        return EnhancedSendUnpackedVerboseMapper.toDomain(
-            u as api.EnhancedSendUnpackedVerbose);
-      case "issuance":
-        return IssuanceUnpackedVerboseMapper.toDomain(
-            u as api.IssuanceUnpackedVerbose);
-      case "dispenser":
-        return DispenserUnpackedVerboseMapper.toDomain(
-            u as api.DispenserUnpackedVerbose);
-      default:
-        return TransactionUnpackedVerbose(
-          messageType: u.messageType,
-          // btcAmountNormalized: u.btcAmountNormalized,
-        );
-    }
-  }
-}
 
 class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   final api.V2Api api_;
@@ -69,14 +23,14 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       required this.addressRepository});
 
   @override
-  Future<void> insertVerbose(TransactionInfoVerbose transactionInfo) async {
+  Future<void> insert(TransactionInfo transactionInfo) async {
     // can only save transactions created locally
     if (transactionInfo.domain.runtimeType != TransactionInfoDomainLocal) {
       throw Exception("Cannot save transaction that was not created locally");
     }
 
     String? unpacked = switch (transactionInfo) {
-      TransactionInfoEnhancedSendVerbose(
+      TransactionInfoEnhancedSend(
         unpackedData: EnhancedSendUnpackedVerbose unpacked
       ) =>
         // TODO: don't do this manually
@@ -90,9 +44,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "quantity_normalized": unpacked.quantityNormalized,
           }
         }),
-      TransactionInfoIssuanceVerbose(
-        unpackedData: IssuanceUnpackedVerbose unpacked
-      ) =>
+      TransactionInfoIssuance(unpackedData: IssuanceUnpackedVerbose unpacked) =>
         jsonEncode({
           "message_type": "issuance",
           "message_data": {
@@ -111,7 +63,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "quantity_normalized": unpacked.quantityNormalized,
           }
         }),
-      TransactionInfoDispenserVerbose(
+      TransactionInfoDispenser(
         unpackedData: DispenserUnpackedVerbose unpacked
       ) =>
         jsonEncode({
@@ -127,6 +79,8 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             // "mainchainrate_normalized": unpacked.mainchainrateNormalized,
           }
         }),
+      TransactionInfoDispense(unpackedData: DispenseUnpackedVerbose _) =>
+        jsonEncode({"message_type": "dispense", "message_data": {}}),
       _ => null
     };
 
@@ -146,7 +100,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   }
 
   @override
-  Future<List<TransactionInfoVerbose>> getAllByAddressesVerbose(
+  Future<List<TransactionInfo>> getAllByAddresses(
       List<String> addresses) async {
     final transactions = await transactionDao.getAllBySources(addresses);
 
@@ -156,11 +110,11 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
               jsonDecode(tx.unpackedData!))
           : null;
 
-      TransactionUnpackedVerbose? unpacked =
+      TransactionUnpacked? unpacked =
           unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
 
       return switch (unpacked) {
-        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSend(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -171,7 +125,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
+        IssuanceUnpackedVerbose() => TransactionInfoIssuance(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -182,7 +136,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        DispenserUnpackedVerbose() => TransactionInfoDispenserVerbose(
+        DispenserUnpackedVerbose() => TransactionInfoDispenser(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -193,7 +147,18 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        _ => TransactionInfoVerbose(
+        DispenseUnpackedVerbose() => TransactionInfoDispense(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -209,8 +174,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   }
 
   @override
-  Future<List<TransactionInfoVerbose>> getAllByAccountVerbose(
-      String accountUuid) async {
+  Future<List<TransactionInfo>> getAllByAccount(String accountUuid) async {
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
     final transactions = await transactionDao
         .getAllBySources(addresses.map((e) => e.address).toList());
@@ -221,11 +185,11 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
               jsonDecode(tx.unpackedData!))
           : null;
 
-      TransactionUnpackedVerbose? unpacked =
+      TransactionUnpacked? unpacked =
           unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
 
       return switch (unpacked) {
-        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSend(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -236,7 +200,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
+        IssuanceUnpackedVerbose() => TransactionInfoIssuance(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -247,7 +211,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        DispenserUnpackedVerbose() => TransactionInfoDispenserVerbose(
+        DispenserUnpackedVerbose() => TransactionInfoDispenser(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -258,40 +222,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        _ => TransactionInfoVerbose(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-          )
-      };
-    }).toList();
-  }
-
-  @override
-  Future<List<TransactionInfoVerbose>> getAllByAccountAfterDateVerbose(
-      String accountUuid, DateTime date) async {
-    final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
-    final transactions = await transactionDao.getAllBySourcesAfterDate(
-        addresses.map((e) => e.address).toList(), date);
-
-    return transactions.map((tx) {
-      // TODO: refactor
-      api.TransactionUnpackedVerbose? unpacked_ = tx.unpackedData != null
-          ? api.TransactionUnpackedVerbose.fromJson(
-              jsonDecode(tx.unpackedData!))
-          : null;
-
-      TransactionUnpackedVerbose? unpacked =
-          unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
-
-      return switch (unpacked) {
-        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSendVerbose(
+        DispenseUnpackedVerbose() => TransactionInfoDispense(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -302,29 +233,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        IssuanceUnpackedVerbose() => TransactionInfoIssuanceVerbose(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        DispenserUnpackedVerbose() => TransactionInfoDispenserVerbose(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        _ => TransactionInfoVerbose(
+        _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

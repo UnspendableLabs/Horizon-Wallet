@@ -9,7 +9,7 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:logger/logger.dart';
 
-Future<void> composeTransaction<T, S extends ComposeStateBase>({
+Future<void> composeTransaction<T, S extends ComposeStateBase, OtherParams>({
   required S state,
   required Emitter<S> emit,
   required ComposeTransactionEvent event,
@@ -50,7 +50,7 @@ Future<void> composeTransaction<T, S extends ComposeStateBase>({
     logger.d('rawTx: ${(composedTransaction as dynamic).rawtransaction}');
 
     emit((state as dynamic).copyWith(
-      submitState: SubmitComposingTransaction<T>(
+      submitState: SubmitComposingTransaction<T, OtherParams>(
         composeTransaction: composedTransaction,
         fee: virtualSize * feeRate,
         feeRate: feeRate,

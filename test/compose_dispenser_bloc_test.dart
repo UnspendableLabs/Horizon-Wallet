@@ -34,8 +34,20 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
 class MockWriteLocalTransactionUseCase extends Mock
     implements WriteLocalTransactionUseCase {}
 
+class MockComposeDispenserParams extends Mock
+    implements ComposeDispenserResponseVerboseParams {
+  @override
+  String get source => "source";
+}
+
 class MockComposeDispenserVerbose extends Mock
-    implements ComposeDispenserResponseVerbose {}
+    implements ComposeDispenserResponseVerbose {
+  @override
+  final MockComposeDispenserParams params = MockComposeDispenserParams();
+
+  @override
+  String get rawtransaction => "rawtransaction";
+}
 
 class MockBalance extends Mock implements Balance {}
 
@@ -67,6 +79,7 @@ void main() {
   final mockAddress = FakeAddress();
   final mockBalances = [MockBalance()];
   final mockComposeDispenserVerbose = MockComposeDispenserVerbose();
+
   final composeTransactionParams = ComposeDispenserEventParams(
     asset: 'ASSET_NAME',
     giveQuantity: 1000,
@@ -238,7 +251,7 @@ void main() {
       ),
       act: (bloc) => bloc.add(ComposeTransactionEvent(
         params: composeTransactionParams,
-        sourceAddress: 'source-address',
+        sourceAddress: 'source',
       )),
       expect: () => [
         isA<ComposeDispenserState>().having(
@@ -249,7 +262,9 @@ void main() {
         isA<ComposeDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<SubmitComposingTransaction<ComposeDispenserResponseVerbose>>()
+            isA<
+                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
+                        void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -290,7 +305,9 @@ void main() {
         isA<ComposeDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<SubmitComposingTransaction<ComposeDispenserResponseVerbose>>()
+            isA<
+                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
+                        void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -302,13 +319,15 @@ void main() {
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits SubmitInitial with error when transaction composition fails',
       build: () {
-        when(() => mockComposeTransactionUseCase
-                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-              feeRate: any(named: 'feeRate'),
-              source: any(named: 'source'),
-              composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'),
-            )).thenThrow(ComposeTransactionException('Compose error'));
+        when(
+            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
+                    ComposeDispenserResponseVerbose>(
+                  feeRate: any(named: 'feeRate'),
+                  source: any(named: 'source'),
+                  composeFn: any(named: 'composeFn'),
+                  params: any(named: 'params'),
+                )).thenThrow(
+            ComposeTransactionException('Compose error', StackTrace.current));
 
         return composeDispenserBloc;
       },
@@ -363,23 +382,23 @@ void main() {
 
   group(SignAndBroadcastTransactionEvent, () {
     const password = 'test-password';
-    const txHex = 'transaction-hex';
+    const txHex = 'rawtransaction';
     const txHash = 'transaction-hash';
-    const sourceAddress = 'source-address';
+    const sourceAddress = 'source';
 
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits SubmitSuccess when transaction is signed and broadcasted successfully',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
+              source: sourceAddress,
+              rawtransaction: txHex,
               password: any(named: 'password'),
-              extractParams: any(named: 'extractParams'),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
           final onSuccess =
               invocation.namedArguments[const Symbol('onSuccess')] as Function;
-          onSuccess(txHex, txHash, sourceAddress, 'destination-address', 1000,
-              'ASSET_NAME');
+          onSuccess(txHex, txHash);
         });
 
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
@@ -428,8 +447,9 @@ void main() {
       'emits SubmitFinalizing with error when transaction signing fails',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
+              source: any(named: "source"),
+              rawtransaction: any(named: "rawtransaction"),
               password: any(named: 'password'),
-              extractParams: any(named: 'extractParams'),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {

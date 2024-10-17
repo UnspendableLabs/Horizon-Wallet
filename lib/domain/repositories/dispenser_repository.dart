@@ -1,5 +1,6 @@
-import 'package:horizon/domain/entities/dispenser.dart';
+import "package:horizon/domain/entities/dispenser.dart";
+import "package:fpdart/fpdart.dart";
 
 abstract class DispenserRepository {
-  Future<List<Dispenser>> getDispenserByAddress(String address);
+  TaskEither<String, List<Dispenser>> getDispensersByAddress(String address);
 }

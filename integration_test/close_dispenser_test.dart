@@ -30,6 +30,59 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 
+class FakeDispenser extends Fake implements Dispenser {
+  final String _asset;
+  final int _giveQuantity;
+  final int _satoshirate;
+  // final int _giveRemaining;
+  // final AssetInfo _assetInfo;
+  final String _source;
+  final int _escrowQuantity;
+  final int _status;
+
+  FakeDispenser({
+    required String asset,
+    required int giveQuantity,
+    required int satoshirate,
+    // required int giveRemaining,
+    // required AssetInfo assetInfo,
+    required String source,
+    required int escrowQuantity,
+    required int status,
+  })  : _asset = asset,
+        _giveQuantity = giveQuantity,
+        _satoshirate = satoshirate,
+        // _giveRemaining = giveRemaining,
+        // _assetInfo = assetInfo,
+        _source = source,
+        _escrowQuantity = escrowQuantity,
+        _status = status;
+
+  @override
+  String get asset => _asset;
+
+  @override
+  int get giveQuantity => _giveQuantity;
+
+  @override
+  int get satoshirate => _satoshirate;
+
+  // @override
+  // int get giveRemaining => _giveRemaining;
+  // //
+  // @override
+  // AssetInfo get assetInfo => _assetInfo;
+
+  @override
+  String get source => _source;
+
+  @override
+  int get escrowQuantity => _escrowQuantity;
+
+  @override
+  int get status => _status;
+}
+
 class FakeComposeDispenserResponseVerbose extends Fake
     implements ComposeDispenserResponseVerbose {
   final int _btcFee;
@@ -46,15 +99,25 @@ class MockComposeTransactionUseCase extends Mock
 class MockFetchCloseDispenserFormDataUseCase extends Mock
     implements FetchCloseDispenserFormDataUseCase {}
 
+// {required String password,
+// // todo: no reason to have extrat params...just pass in dirctly.
+// required Function(String, String) onSuccess,
+// required Function(String) onError,
+// required String source,
+// required String rawtransaction}) async {
+
 class MockSignAndBroadcastTransactionUseCase extends Mock
     implements SignAndBroadcastTransactionUseCase {
   @override
   Future<void> call({
     required String password,
-    required Function() extractParams,
-    required Function(String, String, String?, String?, int?, String?)
-        onSuccess,
+    required Function(
+      String,
+      String,
+    ) onSuccess,
     required Function(String) onError,
+    required String source,
+    required String rawtransaction,
   }) {
     return super.noSuchMethod(
       Invocation.method(
@@ -62,7 +125,6 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
         [],
         {
           #password: password,
-          #extractParams: extractParams,
           #onSuccess: onSuccess,
           #onError: onError,
         },
@@ -244,21 +306,21 @@ void main() {
           .thenAnswer((_) async => (
                 const FeeEstimates(fast: 10, medium: 5, slow: 2),
                 [
-                  Dispenser(
-                    assetName: 'ASSET1_DIVISIBLE',
-                    openAddress: 'test-address',
+                  FakeDispenser(
+                    asset: 'ASSET1_DIVISIBLE',
+                    source: 'test-address',
                     giveQuantity: 100000000,
                     escrowQuantity: 100000000,
                     status: 0,
-                    mainchainrate: 100000000,
+                    satoshirate: 100000000,
                   ),
-                  Dispenser(
-                    assetName: 'ASSET2_NOT_DIVISIBLE',
-                    openAddress: 'test-address',
+                  FakeDispenser(
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    source: 'test-address',
                     giveQuantity: 10,
                     escrowQuantity: 10,
                     status: 0,
-                    mainchainrate: 100,
+                    satoshirate: 100,
                   ),
                 ]
               ));

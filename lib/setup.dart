@@ -19,7 +19,6 @@ import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/dispenser_repositoty_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -28,7 +27,6 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -58,24 +56,38 @@ import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/action_repository.dart';
+import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
+import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart';
+
 import 'package:horizon/data/sources/network/esplora_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
-import 'package:logger/logger.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
 
-final logger = Logger();
+import 'package:logger/logger.dart' as logger;
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/data/logging/logger_impl.dart';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
+
+  logger.Logger.level = logger.Level.warning;
+
+  injector.registerSingleton<Logger>(LoggerImpl(logger.Logger()));
 
   Config config = ConfigImpl();
 
@@ -192,8 +204,6 @@ Future<void> setup() async {
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
 
-  injector.registerSingleton<DispenserRepository>(
-      DispenserRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
@@ -224,6 +234,13 @@ Future<void> setup() async {
     cacheProvider: GetIt.I.get<CacheProvider>(),
   ));
 
+  injector.registerSingleton<DispenserRepository>(
+    DispenserRepositoryImpl(
+      api: GetIt.I.get<V2Api>(),
+      logger: GetIt.I.get<Logger>(),
+    ),
+  );
+
   injector.registerSingleton<GetFeeEstimatesUseCase>(
       GetFeeEstimatesUseCase(bitcoindService: GetIt.I.get<BitcoindService>()));
 
@@ -231,13 +248,22 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
   ));
 
-  injector.registerSingleton(FetchDispenserFormDataUseCase(
-      getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-      balanceRepository: injector.get<BalanceRepository>()));
+  injector.registerSingleton<FetchDispenserFormDataUseCase>(
+      FetchDispenserFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton<FetchDispenseFormDataUseCase>(
+      FetchDispenseFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton(FetchCloseDispenserFormDataUseCase(
       getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
       dispenserRepository: injector.get<DispenserRepository>()));
+  injector.registerSingleton<FetchOpenDispensersOnAddressUseCase>(
+      FetchOpenDispensersOnAddressUseCase(
+          dispenserRepository: GetIt.I.get<DispenserRepository>()));
 
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
@@ -263,6 +289,11 @@ Future<void> setup() async {
     transactionRepository: GetIt.I.get<TransactionRepository>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
   ));
+
+  injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());
+
+  injector
+      .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 }
 
 class CustomDioException extends DioException {
@@ -293,7 +324,8 @@ class TimeoutInterceptor extends Interceptor {
             'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
       );
-      logger.d(formattedError.toString());
+
+      GetIt.I<Logger>().debug(formattedError.toString());
 
       handler.next(formattedError);
     } else {
@@ -314,7 +346,7 @@ class ConnectionErrorInterceptor extends Interceptor {
             'Connection Error — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
-      logger.d(formattedError.toString());
+      GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -334,7 +366,7 @@ class BadResponseInterceptor extends Interceptor {
             : "Bad Response",
         type: DioExceptionType.badResponse,
       );
-      logger.d('${formattedError.toString()} -- $requestPath');
+      GetIt.I<Logger>().debug('${formattedError.toString()} -- $requestPath');
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -353,7 +385,7 @@ class BadCertificateInterceptor extends Interceptor {
             'Bad Certificate — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
       );
-      logger.d(formattedError.toString());
+      GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -365,7 +397,7 @@ class SimpleLogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final requestInfo = '${options.method} ${options.uri}';
-    logger.d('Request: $requestInfo');
+    GetIt.I<Logger>().debug('Request: $requestInfo');
     handler.next(options);
   }
 
@@ -373,7 +405,7 @@ class SimpleLogInterceptor extends Interceptor {
   void onResponse(response, ResponseInterceptorHandler handler) {
     final responseInfo =
         '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
-    logger.d('Response: $responseInfo');
+    GetIt.I<Logger>().debug('Response: $responseInfo');
     handler.next(response);
   }
 
@@ -381,10 +413,10 @@ class SimpleLogInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final errorInfo =
         '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
-    logger.d('Error: $errorInfo');
+    GetIt.I<Logger>().debug('Error: $errorInfo');
     if (err.response != null) {
       final responseData = err.response?.data;
-      logger.d('Response data: $responseData');
+      GetIt.I<Logger>().debug('Response data: $responseData');
     }
     handler.next(err);
   }

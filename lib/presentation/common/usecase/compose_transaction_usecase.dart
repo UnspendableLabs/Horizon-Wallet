@@ -6,7 +6,8 @@ import 'package:horizon/domain/entities/compose_fn.dart';
 
 class ComposeTransactionException implements Exception {
   final String message;
-  ComposeTransactionException(this.message);
+  final StackTrace stackTrace;
+  ComposeTransactionException(this.message, this.stackTrace);
 }
 
 class ComposeTransactionUseCase {
@@ -42,8 +43,8 @@ class ComposeTransactionUseCase {
       final R finalTx = await composeFn(totalFee, inputsSet, params);
 
       return finalTx;
-    } catch (e) {
-      throw ComposeTransactionException(e.toString());
+    } catch (e, stackTrace) {
+      throw ComposeTransactionException(e.toString(), stackTrace);
     }
   }
 }

@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/cursor.dart';
+import 'package:horizon/data/models/compose.dart';
+import 'package:horizon/data/models/dispenser.dart';
+import 'package:horizon/data/models/asset_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -146,7 +149,7 @@ class Balance {
 class BalanceVerbose extends Balance {
   @override
   final String quantityNormalized;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
 
   BalanceVerbose(
       {required super.address,
@@ -199,7 +202,7 @@ class MultiAddressBalanceVerbose {
   final String asset;
   final int total;
   final List<MultiBalanceVerbose> addresses;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String totalNormalized;
   MultiAddressBalanceVerbose(
       {required this.asset,
@@ -794,7 +797,7 @@ class VerboseDispenserUpdateEvent extends VerboseEvent {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseDispenserUpdateParams extends DispenserUpdateParams {
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
 
   VerboseDispenserUpdateParams({
     required super.asset,
@@ -874,7 +877,7 @@ class VerboseRefillDispenserEvent extends VerboseEvent {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseRefillDispenserParams extends RefillDispenserParams {
   final String dispenseQuantityNormalized;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
 
   VerboseRefillDispenserParams({
     required super.asset,
@@ -1045,7 +1048,7 @@ class VerboseDispenseEvent extends VerboseEvent {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseEnhancedSendParams extends EnhancedSendParams {
   final int? blockTime;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
 
   VerboseEnhancedSendParams({
@@ -1070,7 +1073,7 @@ class VerboseEnhancedSendParams extends EnhancedSendParams {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseCreditParams extends CreditParams {
   final int blockTime;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
 
   VerboseCreditParams({
@@ -1093,7 +1096,7 @@ class VerboseCreditParams extends CreditParams {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseDebitParams extends DebitParams {
   final int blockTime;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
 
   VerboseDebitParams({
@@ -1135,28 +1138,6 @@ class VerboseNewTransactionParams extends NewTransactionParams {
 
   factory VerboseNewTransactionParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseNewTransactionParamsFromJson(json);
-}
-
-@JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
-class AssetInfo {
-  final bool divisible;
-  final String? assetLongname;
-  final String description;
-  final bool locked;
-  final String? issuer;
-
-  AssetInfo({
-    required this.divisible,
-    this.assetLongname,
-    required this.description,
-    required this.locked,
-    this.issuer,
-  });
-
-  factory AssetInfo.fromJson(Map<String, dynamic> json) =>
-      _$AssetInfoFromJson(json);
-
-  Map<String, dynamic> toJson() => _$AssetInfoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1378,7 +1359,7 @@ class Credit {
   final String callingFunction;
   final String event;
   final int txIndex;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
 
   const Credit({
@@ -1422,7 +1403,7 @@ class Debit {
   final String action;
   final String event;
   final int txIndex;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
   const Debit({
     required this.blockIndex,
@@ -1513,7 +1494,7 @@ class Destruction {
   final int quantity;
   final String tag;
   final String status;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
 
   const Destruction({
@@ -1685,7 +1666,7 @@ class ComposeDispenserParams {
   final int status;
   final String? openAddress;
   final String? oracleAddress;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String giveQuantityNormalized;
   final String escrowQuantityNormalized;
 
@@ -1788,7 +1769,7 @@ class Send {
   final String status;
   final int msgIndex;
   final String? memo;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
 
   const Send({
@@ -1900,7 +1881,7 @@ class Dispense {
   final int dispenseQuantity;
   final String dispenserTxHash;
   final Dispenser dispenser;
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
 
   const Dispense({
     required this.txIndex,
@@ -2012,7 +1993,7 @@ class SendTx {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class SendTxParamsVerbose extends SendTxParams {
-  final AssetInfo assetInfo;
+  final AssetInfoModel assetInfo;
   final String quantityNormalized;
 
   const SendTxParamsVerbose({
@@ -2188,6 +2169,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return IssuanceUnpackedVerbose.fromJson(json);
       case "dispenser":
         return DispenserUnpackedVerbose.fromJson(json);
+      case "dispense":
+        return DispenseUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -2293,6 +2276,21 @@ class DispenserUnpackedVerbose extends TransactionUnpackedVerbose {
         // "mainchainrate_normalized": mainchainrateNormalized,
       }
     };
+  }
+}
+
+class DispenseUnpackedVerbose extends TransactionUnpackedVerbose {
+  // final String mainchainrateNormalized;
+
+  DispenseUnpackedVerbose() : super(messageType: "dispense");
+
+  factory DispenseUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    return DispenseUnpackedVerbose();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {"message_type": "dispense", "message_data": {}};
   }
 }
 
@@ -2502,6 +2500,8 @@ class InfoVerbose extends Info {
         return IssuanceInfoVerbose.fromJson(json);
       case "dispenser":
         return DispenserInfoVerbose.fromJson(json);
+      case "dispense":
+        return DispenseInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -2643,6 +2643,27 @@ class DispenserInfoVerbose extends InfoVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$DispenserInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DispenseInfoVerbose extends InfoVerbose {
+  final DispenseUnpackedVerbose unpackedData;
+
+  const DispenseInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory DispenseInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$DispenseInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$DispenseInfoVerboseToJson(this);
 }
 
 // {
@@ -2863,6 +2884,17 @@ abstract class V2Api {
   //     Get Send By Address And Asset
   //     Get Receive By Address And Asset
   //     Get Dispensers By Address
+
+  @GET("/addresses/{address}/dispensers")
+  Future<Response<List<DispenserModel>>> getDispensersByAddress(
+    @Path("address") String address, [
+    @Query("verbose") bool? verbose,
+    @Query("status") String? status,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+  ]);
+
   //     Get Dispensers By Address And Asset
   //     Get Sweeps By Address
   // Compose
@@ -2969,6 +3001,17 @@ abstract class V2Api {
     @Query("limit") int? limit,
     @Query("cursor") CursorModel? cursor,
     @Query("show_unconfirmed") bool? showUnconfirmed,
+    ]);
+
+  @GET("/addresses/{address}/compose/dispense?verbose=true")
+  Future<Response<ComposeDispenseResponseModel>> composeDispense(
+    @Path("address") String address,
+    @Query("dispenser") String dispenser,
+    @Query("quantity") int quantity, [
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")

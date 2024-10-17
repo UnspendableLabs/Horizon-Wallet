@@ -147,7 +147,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
       emit(state.copyWith(
           submitState:
-              SubmitComposingTransaction<ComposeDispenserResponseVerbose>(
+              SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
@@ -207,24 +207,17 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
-        extractParams: () {
-          final source = compose.params.source;
-          final rawTx = compose.rawtransaction;
-          final destination = source;
-          final giveQuantity = compose.params.giveQuantity;
-          final asset = compose.params.asset;
-
-          return (source, rawTx, destination, giveQuantity, asset);
-        },
-        onSuccess:
-            (txHex, txHash, source, destination, giveQuantity, asset) async {
+        source: compose.params.source,
+        rawtransaction: compose.rawtransaction,
+        onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.d('dispenser broadcasted txHash: $txHash');
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
-                  transactionHex: txHex, sourceAddress: source!)));
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
 
           analyticsService.trackEvent('broadcast_tx_dispenser');
         },

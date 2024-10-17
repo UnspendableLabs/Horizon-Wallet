@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
@@ -23,4 +24,7 @@ abstract class ComposeRepository {
 
   Future<ComposeDispenserResponseVerbose> composeDispenserVerbose(
       int fee, List<Utxo> inputsSet, ComposeDispenserParams params);
+
+  Future<ComposeDispenseResponse> composeDispense(
+      int fee, List<Utxo> inputsSet, ComposeDispenseParams params);
 }

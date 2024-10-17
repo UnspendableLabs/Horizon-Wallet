@@ -89,11 +89,17 @@ class FakeComposeDispenserParams extends Fake
 
 class FakeAssetInfo extends Fake implements AssetInfo {
   final bool _divisible;
+  final String _assetLongname;
 
-  FakeAssetInfo({required bool divisible}) : _divisible = divisible;
+  FakeAssetInfo({required bool divisible, required String assetLongname})
+      : _divisible = divisible,
+        _assetLongname = assetLongname;
 
   @override
   bool get divisible => _divisible;
+
+  @override
+  String get assetLongname => _assetLongname;
 }
 
 class FakeAddress extends Fake implements Address {
@@ -172,19 +178,20 @@ void main() {
           .thenAnswer((_) async => (
                 [
                   Balance(
-                    address: "test-address",
-                    asset: 'ASSET1_DIVISIBLE',
-                    quantity: 100000000,
-                    quantityNormalized: '1.0',
-                    assetInfo: FakeAssetInfo(divisible: true),
-                  ),
+                      address: "test-address",
+                      asset: 'ASSET1_DIVISIBLE',
+                      quantity: 100000000,
+                      quantityNormalized: '1.0',
+                      assetInfo: FakeAssetInfo(
+                          divisible: true, assetLongname: "ASSET1_DIVISIBLE")),
                   Balance(
-                    address: "test-address",
-                    asset: 'ASSET2_NOT_DIVISIBLE',
-                    quantity: 10,
-                    quantityNormalized: '10',
-                    assetInfo: FakeAssetInfo(divisible: false),
-                  ),
+                      address: "test-address",
+                      asset: 'ASSET2_NOT_DIVISIBLE',
+                      quantity: 10,
+                      quantityNormalized: '10',
+                      assetInfo: FakeAssetInfo(
+                          divisible: false,
+                          assetLongname: "ASSET2_NOT_DIVISIBLE")),
                 ],
                 const FeeEstimates(fast: 10, medium: 5, slow: 2)
               ));
@@ -502,103 +509,6 @@ void main() {
   });
 
   group("Tx Submission", () {
-    // testWidgets('tx composition errors are propagated to form',
-    //     (WidgetTester tester) async {
-    //   // Mock dependencies
-    //   when(() => mockFetchDispenserFormDataUseCase.call(any()))
-    //       .thenAnswer((_) async => (
-    //             [
-    //               Balance(
-    //                   address: "test-address",
-    //                   asset: 'ASSET1_DIVISIBLE',
-    //                   quantity: 100000000,
-    //                   quantityNormalized: '1.0',
-    //                   assetInfo: AssetInfo(
-    //                       divisible: true,
-    //                       assetLongname: "ASSET1_DIVISIBLE",
-    //                       description: "ASSET_DESCRIPTION")),
-    //             ],
-    //             FeeEstimates(fast: 10, medium: 5, slow: 2)
-    //           ));
-    //
-    //   when(() => mockComposeTransactionUseCase
-    //           .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-    //               feeRate: any(named: 'feeRate'),
-    //               source: any(named: 'source'),
-    //               composeFn: any(named: 'composeFn'),
-    //               params: any(named: 'params')))
-    //       .thenThrow(Exception("composition error"));
-    //   //
-    //   // // initial call to get virtual size
-    //   // when(() => mockComposeRepository.composeDispenserVerbose.call(
-    //   //     1,
-    //   //     [FakeUtxo(), FakeUtxo()],
-    //   //     ComposeDispenserParams(
-    //   //       source: "test-address",
-    //   //       asset: "ASSET1_DIVISIBLE",
-    //   //       giveQuantity: 100000000,
-    //   //       escrowQuantity: 100000000,
-    //   //       mainchainrate: 10000, // 0.0001 btc
-    //   //     ))).thenAnswer(
-    //   //   (_) async => MockComposeDispenserResponseVerbose(),
-    //   // );
-    //
-    //   // final tx
-    //   // when(() => mockComposeRepository.composeDispenserVerbose.call(
-    //   //     any(), // mocked virtual size * default fee rate
-    //   //     [FakeUtxo(), FakeUtxo()],
-    //   //     ComposeDispenserParams(
-    //   //       source: "test-address",
-    //   //       asset: "ASSET1_DIVISIBLE",
-    //   //       giveQuantity: 100000000,
-    //   //       escrowQuantity: 100000000,
-    //   //       mainchainrate: 10000, // 0.0001 btc
-    //   //     ))).thenAnswer(
-    //   //   (_) async => MockComposeDispenserResponseVerbose(),
-    //   // );
-    //   //
-    //   // Build the widget tree
-    //   await tester.pumpWidget(
-    //     MaterialApp(
-    //       home: Scaffold(
-    //         body: MultiBlocProvider(
-    //           providers: [
-    //             BlocProvider<ComposeDispenserBloc>.value(
-    //                 value: composeDispenserBloc),
-    //             BlocProvider<DashboardActivityFeedBloc>.value(
-    //                 value: mockDashboardActivityFeedBloc),
-    //           ],
-    //           child: ComposeDispenserPage(
-    //             address: FakeAddress(),
-    //             dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //   );
-    //
-    //   composeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress()));
-    //
-    //   await tester.pumpAndSettle();
-    //
-    //   await tester.enterText(
-    //       find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')), '1.0');
-    //
-    //   await tester.enterText(
-    //       find.byKey(const Key('escrow_quantity_input_ASSET1_DIVISIBLE')),
-    //       '1.0');
-    //
-    //   await tester.enterText(
-    //       find.byKey(const Key('price_per_unit_input')), '0.0001');
-    //
-    //   await tester.pumpAndSettle();
-    //
-    //   await tester.tap(find.widgetWithText(ElevatedButton, 'CONTINUE'));
-    //
-    //   await tester.pumpAndSettle();
-    //
-    //   expect(find.textContaining('composition error'), findsOneWidget);
-    // });
     testWidgets('calls composeTransaction use case with correct params',
         (WidgetTester tester) async {
       // Mock dependencies

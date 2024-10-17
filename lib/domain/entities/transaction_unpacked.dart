@@ -29,19 +29,7 @@ class EnhancedSendUnpacked extends TransactionUnpacked {
   List<Object?> get props => [messageType, asset, quantity, address, memo];
 }
 
-class TransactionUnpackedVerbose extends TransactionUnpacked {
-  // final String btcAmountNormalized;
-  const TransactionUnpackedVerbose({
-    // required this.btcAmountNormalized,
-    required super.messageType,
-  });
-  @override
-  List<Object?> get props => [
-        messageType,
-      ];
-}
-
-class EnhancedSendUnpackedVerbose extends TransactionUnpackedVerbose {
+class EnhancedSendUnpackedVerbose extends TransactionUnpacked {
   final String asset;
   final int quantity;
   final String address;
@@ -107,7 +95,7 @@ class IssuanceUnpacked extends TransactionUnpacked {
       ];
 }
 
-class IssuanceUnpackedVerbose extends TransactionUnpackedVerbose {
+class IssuanceUnpackedVerbose extends TransactionUnpacked {
   final int assetId;
   final String asset;
   final String? subassetLongname;
@@ -174,7 +162,7 @@ class DispenserUnpacked extends TransactionUnpacked {
   // Optionally add other methods like from API mappings
 }
 
-class DispenserUnpackedVerbose extends TransactionUnpackedVerbose {
+class DispenserUnpackedVerbose extends TransactionUnpacked {
   final String asset;
   final int giveQuantity;
   final int escrowQuantity;
@@ -194,4 +182,10 @@ class DispenserUnpackedVerbose extends TransactionUnpackedVerbose {
     required this.escrowQuantityNormalized,
     // required this.mainchainrateNormalized,
   }) : super(messageType: "dispenser");
+}
+
+// dispense unnpacked is basically empty
+class DispenseUnpackedVerbose extends TransactionUnpacked {
+
+  const DispenseUnpackedVerbose() : super(messageType: "dispense");
 }

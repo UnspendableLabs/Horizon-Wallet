@@ -37,8 +37,7 @@ class MockBitcoindService extends Mock implements BitcoindService {}
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
 
-class FakeTransactionInfoVerbose extends Fake
-    implements TransactionInfoVerbose {}
+class FakeTransactionInfo extends Fake implements TransactionInfo {}
 
 class MockUtxo extends Mock implements Utxo {
   @override
@@ -91,7 +90,7 @@ void main() {
   late MockTransactionLocalRepository mockTransactionLocalRepository;
 
   setUpAll(() {
-    registerFallbackValue(FakeTransactionInfoVerbose());
+    registerFallbackValue(FakeTransactionInfo());
   });
 
   setUp(() {
@@ -131,9 +130,6 @@ void main() {
       const String txHex = 'transaction_hex';
       const String txHash = 'transaction_hash';
 
-      // Mock parameters extraction
-      extractParams() => ('source', 'rawTx', 'destination', 100, 'asset');
-
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source'))
           .thenAnswer((_) async => mockUtxos);
@@ -158,7 +154,7 @@ void main() {
             importFormat: mockAccount.importFormat,
           )).thenAnswer((_) async => addressPrivKey);
       when(() => mockTransactionService.signTransaction(
-            'rawTx',
+            'rawtransaction',
             addressPrivKey,
             'source',
             {mockUtxos[0].txid: mockUtxos[0]},
@@ -168,8 +164,7 @@ void main() {
 
       // Define callbacks
       var successCallbackInvoked = false;
-      onSuccess(String txHex, String txHash, String? source,
-          String? destination, int? quantity, String? asset) {
+      onSuccess(String txHex, String txHash) {
         successCallbackInvoked = true;
       }
 
@@ -177,8 +172,9 @@ void main() {
 
       // Act
       await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
         password: password,
-        extractParams: extractParams,
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -205,7 +201,7 @@ void main() {
             importFormat: mockAccount.importFormat,
           )).called(1);
       verify(() => mockTransactionService.signTransaction(
-            'rawTx',
+            'rawtransaction',
             addressPrivKey,
             'source',
             {mockUtxos[0].txid: mockUtxos[0]},
@@ -221,14 +217,11 @@ void main() {
       when(() => mockUtxoRepository.getUnspentForAddress('source'))
           .thenAnswer((_) async => mockUtxos);
 
-      extractParams() => ('source', 'rawTx', 'destination', 100, 'asset');
-
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
 
       var errorCallbackInvoked = false;
-      onSuccess(String txHex, String txHash, String? source,
-          String? destination, int? quantity, String? asset) {}
+      onSuccess(String txHex, String txHash) {}
       onError(String error) {
         expect(error, 'Address not found.');
         errorCallbackInvoked = true;
@@ -236,8 +229,9 @@ void main() {
 
       // Act
       await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
         password: 'password',
-        extractParams: extractParams,
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -254,7 +248,6 @@ void main() {
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
-      extractParams() => ('source', 'rawTx', 'destination', 100, 'asset');
 
       final mockUtxos = [MockUtxo()];
 
@@ -274,8 +267,7 @@ void main() {
               SignAndBroadcastTransactionException('Incorrect password.'));
 
       var errorCallbackInvoked = false;
-      onSuccess(String txHex, String txHash, String? source,
-          String? destination, int? quantity, String? asset) {}
+      onSuccess(String txHex, String txHash) {}
       onError(String error) {
         expect(error, 'Incorrect password.');
         errorCallbackInvoked = true;
@@ -283,8 +275,9 @@ void main() {
 
       // Act
       await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
         password: 'wrong_password',
-        extractParams: extractParams,
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -308,7 +301,6 @@ void main() {
       const String decryptedRootPrivKey = 'decrypted_private_key';
       const String addressPrivKey = 'address_private_key';
       const String txHex = 'transaction_hex';
-      extractParams() => ('source', 'rawTx', 'destination', 100, 'asset');
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source'))
@@ -334,7 +326,7 @@ void main() {
             importFormat: mockAccount.importFormat,
           )).thenAnswer((_) async => addressPrivKey);
       when(() => mockTransactionService.signTransaction(
-            'rawTx',
+            'rawtransaction',
             addressPrivKey,
             'source',
             {mockUtxos[0].txid: mockUtxos[0]},
@@ -344,17 +336,20 @@ void main() {
               'Failed to broadcast the transaction.'));
 
       var errorCallbackInvoked = false;
-      onSuccess(String txHex, String txHash, String? source,
-          String? destination, int? quantity, String? asset) {}
+      onSuccess(
+        String txHex,
+        String txHash,
+      ) {}
       onError(String error) {
-        expect(error, 'Failed to broadcast the transaction.');
+        expect(error.contains('Failed to broadcast the transaction'), isTrue);
         errorCallbackInvoked = true;
       }
 
       // Act
       await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
         password: password,
-        extractParams: extractParams,
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -362,7 +357,7 @@ void main() {
       // Assert
       expect(errorCallbackInvoked, true);
       verify(() => mockBitcoindService.sendrawtransaction(txHex)).called(1);
-      verifyNever(() => mockTransactionLocalRepository.insertVerbose(any()));
+      verifyNever(() => mockTransactionLocalRepository.insert(any()));
     });
   });
 }

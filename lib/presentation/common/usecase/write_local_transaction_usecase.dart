@@ -10,9 +10,9 @@ class WriteLocalTransactionUseCase {
   });
   Future<void> call(String hex, String hash) async {
     try {
-      final txInfo = await transactionRepository.getInfoVerbose(hex);
+      final txInfo = await transactionRepository.getInfo(hex);
 
-      await transactionLocalRepository.insertVerbose(txInfo.copyWith(
+      await transactionLocalRepository.insert(txInfo.copyWith(
         hash: hash,
       ));
     } catch (e) {
