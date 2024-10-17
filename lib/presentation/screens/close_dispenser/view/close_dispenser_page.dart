@@ -132,8 +132,8 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     '${dispenser.asset} - '
-                    'Quantity: ${dispenser.giveQuantity} - '
-                    'Price: ${dispenser.satoshirate}',
+                    'Quantity: ${dispenser.giveQuantityNormalized} - '
+                    'Price: ${dispenser.satoshirateNormalized}',
                     style: const TextStyle(fontSize: 14),
                   ),
                 ),
@@ -147,8 +147,8 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
             displayStringForOption: (Dispenser? dispenser) {
               if (dispenser == null) return '';
               return '${dispenser.asset} - '
-                  'Quantity: ${dispenser.giveQuantity} - '
-                  'Price: ${dispenser.satoshirate}';
+                  'Quantity: ${dispenser.giveQuantityNormalized} - '
+                  'Price: ${dispenser.satoshirateNormalized}';
             },
             selectedItemBuilder: (BuildContext context) {
               return dispensers.map<Widget>((Dispenser dispenser) {
@@ -157,8 +157,8 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     '${dispenser.asset} - '
-                    'Quantity: ${dispenser.giveQuantity} - '
-                    'Price: ${dispenser.satoshirate}',
+                    'Quantity: ${dispenser.giveQuantityNormalized} - '
+                    'Price: ${dispenser.satoshirateNormalized}',
                     style: const TextStyle(fontSize: 14),
                   ),
                 );
@@ -201,8 +201,8 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
             sourceAddress: widget.address.address,
             params: CloseDispenserParams(
               asset: selectedDispenser!.asset,
-              giveQuantity: selectedDispenser!.giveQuantity,
-              escrowQuantity: selectedDispenser!.escrowQuantity,
+              giveQuantity: 0,
+              escrowQuantity: 0,
               mainchainrate: selectedDispenser!.satoshirate,
               status: 10,
             ),
@@ -224,14 +224,15 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Give Quantity",
-        controller: TextEditingController(text: params.giveQuantityNormalized),
+        controller: TextEditingController(
+            text: selectedDispenser!.giveQuantityNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Escrow Quantity",
-        controller:
-            TextEditingController(text: params.escrowQuantityNormalized),
+        controller: TextEditingController(
+            text: selectedDispenser!.escrowQuantityNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
@@ -278,6 +279,10 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
   }
 
   void _onFinalizeCancel() {
+    setState(() {
+      selectedDispenser = null;
+      dispenserController.clear();
+    });
     context
         .read<CloseDispenserBloc>()
         .add(FetchFormData(currentAddress: widget.address));
