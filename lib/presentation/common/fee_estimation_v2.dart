@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 enum FeeSelectionLayout { row, column }
 
@@ -29,6 +29,8 @@ class FeeSelectionV2 extends StatefulWidget {
   final FeeSelectionLayout layout;
   final Function(FeeOption) onSelected;
   final Function() onFieldSubmitted;
+  final bool enabled;
+
   const FeeSelectionV2({
     super.key,
     required this.feeEstimates,
@@ -36,10 +38,22 @@ class FeeSelectionV2 extends StatefulWidget {
     required this.onSelected,
     required this.value,
     required this.onFieldSubmitted,
+    this.enabled = true,
   });
 
   @override
   _FeeSelectionV2State createState() => _FeeSelectionV2State();
+
+  FeeSelectionV2 copyWith({bool? enabled}) {
+    return FeeSelectionV2(
+      feeEstimates: feeEstimates,
+      layout: layout,
+      onSelected: onSelected,
+      value: value,
+      onFieldSubmitted: onFieldSubmitted,
+      enabled: enabled ?? this.enabled,
+    );
+  }
 }
 
 class _FeeSelectionV2State extends State<FeeSelectionV2> {
@@ -78,6 +92,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
     final fillColor = isDarkMode ? darkThemeInputColor : lightThemeInputColor;
 
     return DropdownButtonFormField<String>(
+      key: const Key("fee_dropdown"),
       value: widget.value.toInputValue(),
       decoration: InputDecoration(
         fillColor: fillColor,
@@ -96,6 +111,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
           borderSide: BorderSide.none,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        enabled: widget.enabled,
       ),
       dropdownColor: fillColor,
       items: [
@@ -104,17 +120,20 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
         DropdownMenuItem(value: 'slow', child: _buildDropdownItem(Slow())),
         DropdownMenuItem(value: 'custom', child: Text(Custom(0).label)),
       ],
-      onChanged: (String? value) {
-        if (value != null) {
-          final newOption = FeeOption.fromString(value,
-              customFee:
-                  widget.value is Custom ? (widget.value as Custom).fee : null);
-          // setState(() {
-          //   _selectedFeeOption = newOption;
-          // });
-          widget.onSelected(newOption);
-        }
-      },
+      onChanged: widget.enabled
+          ? (String? value) {
+              if (value != null) {
+                final newOption = FeeOption.fromString(value,
+                    customFee: widget.value is Custom
+                        ? (widget.value as Custom).fee
+                        : null);
+                // setState(() {
+                //   _selectedFeeOption = newOption;
+                // });
+                widget.onSelected(newOption);
+              }
+            }
+          : null,
     );
   }
 
@@ -152,19 +171,21 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
       maintainState: true,
       maintainAnimation: true,
       maintainSize: false,
-      child: HorizonTextFormField(
+      child: HorizonUI.HorizonTextFormField(
         label: 'Custom fee (sats/vbyte)',
         keyboardType: TextInputType.number,
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
         ],
-        onChanged: (value) {
-          if (widget.value is Custom) {
-            final fee = int.tryParse(value) ?? 0;
-            final newOption = Custom(fee);
-            widget.onSelected(newOption);
-          }
-        },
+        onChanged: widget.enabled
+            ? (value) {
+                if (widget.value is Custom) {
+                  final fee = int.tryParse(value) ?? 0;
+                  final newOption = Custom(fee);
+                  widget.onSelected(newOption);
+                }
+              }
+            : null,
         validator: (value) {
           if (widget.value is Custom) {
             if (value == null || value.isEmpty) {
@@ -173,9 +194,9 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
           }
           return null;
         },
-        onFieldSubmitted: (value) {
-          widget.onFieldSubmitted();
-        },
+        onFieldSubmitted:
+            widget.enabled ? (_) => widget.onFieldSubmitted() : null,
+        enabled: widget.enabled,
       ),
     );
   }

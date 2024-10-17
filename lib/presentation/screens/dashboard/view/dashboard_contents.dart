@@ -8,12 +8,13 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_dialog.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -122,7 +123,7 @@ class _AccountSidebarState extends State<AccountSidebar> {
                       elevation: 0, // No shadow
                     ),
                     onPressed: () {
-                      HorizonDialog.show(
+                      HorizonUI.HorizonDialog.show(
                         context: context,
                         body: Builder(builder: (context) {
                           final bloc = context.watch<AccountFormBloc>();
@@ -136,7 +137,7 @@ class _AccountSidebarState extends State<AccountSidebar> {
                               },
                           };
 
-                          return HorizonDialog(
+                          return HorizonUI.HorizonDialog(
                             onBackButtonPressed: cb,
                             title: "Add an account",
                             body: const Padding(
@@ -354,6 +355,7 @@ class HorizonAppBarContent extends StatelessWidget {
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     cacheProvider: GetIt.I.get<CacheProvider>(),
+                    analyticsService: GetIt.I.get<AnalyticsService>(),
                   ),
                   child: BlocConsumer<LogoutBloc, LogoutState>(
                     listener: (context, state) {
@@ -383,11 +385,11 @@ class HorizonAppBarContent extends StatelessWidget {
                           ),
                           onSelected: (value) {
                             if (value == 'reset') {
-                              HorizonDialog.show(
+                              HorizonUI.HorizonDialog.show(
                                   context: context,
                                   body: BlocProvider.value(
                                     value: BlocProvider.of<LogoutBloc>(context),
-                                    child: HorizonDialog(
+                                    child: HorizonUI.HorizonDialog(
                                       title: 'Reset wallet',
                                       body: Column(
                                         children: [
@@ -571,9 +573,9 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                             elevation: 0,
                           ),
                           onPressed: () {
-                            HorizonDialog.show(
+                            HorizonUI.HorizonDialog.show(
                               context: context,
-                              body: HorizonDialog(
+                              body: HorizonUI.HorizonDialog(
                                 title:
                                     "Add a new address\nto ${account?.name} ",
                                 titleAlign: Alignment.center,

@@ -12,6 +12,16 @@ enum ImportFormat {
   final String description;
 }
 
+enum IssuanceActionType {
+  reset,
+  lockDescription,
+  lockQuantity,
+  changeDescription,
+  issueMore,
+  issueSubasset,
+  transferOwnership
+}
+
 class DecimalTextInputFormatter extends TextInputFormatter {
   DecimalTextInputFormatter({required this.decimalRange})
       : assert(decimalRange > 0);

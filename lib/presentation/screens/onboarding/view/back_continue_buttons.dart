@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 
 class BackContinueButtons extends StatelessWidget {
   final bool isDarkMode;

@@ -11,7 +11,7 @@ import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -132,9 +132,13 @@ enum SendSide { source, destination }
 class ActivityFeedListItem extends StatelessWidget {
   final ActivityFeedItem item;
   final List<Address> addresses;
+  final bool isMobile;
 
   const ActivityFeedListItem(
-      {super.key, required this.item, required this.addresses});
+      {super.key,
+      required this.item,
+      required this.addresses,
+      required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
@@ -172,13 +176,14 @@ class ActivityFeedListItem extends StatelessWidget {
 
     return switch (tx.getTransactionType(addresses_)) {
       TransactionType.sender => SendTitle(
-          quantityNormalized: tx.getAmountSentNormalized(addresses_).toString(),
+          quantityNormalized:
+              tx.getAmountSentNormalized(addresses_).toStringAsFixed(8),
           asset: 'BTC',
         ),
       // TODO: assumes single party send?
       TransactionType.recipient => ReceiveTitle(
           quantityNormalized:
-              tx.getAmountReceivedNormalized(addresses_).toString(),
+              tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8),
           asset: 'BTC',
         ),
       TransactionType.neither =>
@@ -201,38 +206,89 @@ class ActivityFeedListItem extends StatelessWidget {
           asset: params.asset,
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
-        params.asset == null || params.quantityNormalized == null
-            ? const SelectableText('Issue (INVALID)',
-                style: TextStyle(color: redErrorText))
-            : SelectableText(
-                "Issue ${params.quantityNormalized} ${params.asset}"),
+        _buildAssetIssuanceTitle(params),
+      VerboseResetIssuanceEvent(params: var params) => SelectableText(
+          "Reset Issuance ${params.assetLongname ?? params.asset}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
+      VerboseOpenDispenserEvent(params: var params) =>
+        SelectableText("Open Dispenser for ${params.asset}"),
+      VerboseRefillDispenserEvent(params: var params) =>
+        SelectableText("Refill Dispenser for ${params.asset}"),
+      VerboseDispenserUpdateEvent(params: var params) =>
+        _buildDispenserUpdateTitle(params),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
   }
 
+  Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
+    if (params.transfer) {
+      if (addresses.any((a) => a.address == params.source)) {
+        return SelectableText(
+            "Transfer Out of ${params.assetLongname ?? params.asset}");
+      } else {
+        return SelectableText(
+            "Transfer In of ${params.assetLongname ?? params.asset}");
+      }
+    }
+    if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
+      if (params.assetEvents == "reissuance") {
+        return SelectableText(
+            "Reissue ${params.assetLongname ?? params.asset}");
+      } else if (params.assetEvents == "lock_quantity reissuance") {
+        return SelectableText(
+            "Lock Quantity for ${params.assetLongname ?? params.asset}");
+      } else if (params.assetEvents == "lock_description reissuance") {
+        return SelectableText(
+            "Lock Description for ${params.assetLongname ?? params.asset}");
+      }
+    }
+    if (params.asset == null || params.quantityNormalized == null) {
+      return const SelectableText('Issue (INVALID)',
+          style: TextStyle(color: redErrorText));
+    }
+    return SelectableText(
+        "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}");
+  }
+
+  Widget _buildDispenserUpdateTitle(VerboseDispenserUpdateParams params) {
+    if (params.status == 10 || params.status == 11) {
+      return SelectableText("Close Dispenser for ${params.asset}");
+    } else {
+      return SelectableText("Update Dispenser for ${params.asset}");
+    }
+  }
+
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
     return switch (info) {
-      TransactionInfoEnhancedSendVerbose(
+      TransactionInfoEnhancedSend(
         unpackedData: var unpackedData,
       ) =>
         SendTitle(
             quantityNormalized: unpackedData.quantityNormalized,
             asset: unpackedData.asset),
-      TransactionInfoIssuanceVerbose(
+      TransactionInfoIssuance(
         unpackedData: var unpackedData,
       ) =>
         SelectableText(
             "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoDispense(
+        unpackedData: var unpackedData,
+      ) =>
+        const SelectableText("Trigger Dispense"),
       // btc send
-      TransactionInfoVerbose(btcAmount: var btcAmount)
+      TransactionInfo(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
         SendTitle(
-          quantityNormalized: satoshisToBtc(btcAmount).toString(),
+          quantityNormalized: satoshisToBtc(btcAmount).toStringAsFixed(8),
           asset: 'BTC',
         ),
+      TransactionInfoDispenser(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
+      TransactionInfoDispense() => const SelectableText("Trigger Dispense"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -241,11 +297,13 @@ class ActivityFeedListItem extends StatelessWidget {
   Icon _getTransactionInfoLeading(TransactionInfo info) {
     return switch (info) {
       // local can only ever be a send
-      TransactionInfoEnhancedSendVerbose() =>
+      TransactionInfoEnhancedSend() =>
         const Icon(Icons.arrow_back, color: Colors.grey),
-      TransactionInfoIssuanceVerbose() =>
-        const Icon(Icons.toll, color: Colors.grey),
-      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+      TransactionInfoIssuance() => const Icon(Icons.toll, color: Colors.grey),
+      TransactionInfoDispenser() =>
+        const Icon(Icons.account_balance, color: Colors.grey),
+      TransactionInfoDispense() => const Icon(Icons.paid, color: Colors.grey),
+      TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
@@ -267,9 +325,17 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (event) {
       VerboseAssetIssuanceEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseResetIssuanceEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseEnhancedSendEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseDispenseEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseOpenDispenserEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseRefillDispenserEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseDispenserUpdateEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
@@ -279,11 +345,15 @@ class ActivityFeedListItem extends StatelessWidget {
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
     return switch (info) {
       // local can only ever be a send
-      TransactionInfoEnhancedSendVerbose() =>
+      TransactionInfoEnhancedSend() =>
         TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoIssuanceVerbose() =>
+      TransactionInfoIssuance() =>
         TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoVerbose(btcAmount: var btcAmount) when btcAmount != null =>
+      TransactionInfoDispenser() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfoDispense() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
       _ => const Icon(Icons.error),
     };
@@ -326,10 +396,18 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
         const Icon(Icons.arrow_forward, color: Colors.green),
-      VerboseAssetIssuanceEvent(params: var params) =>
+      VerboseAssetIssuanceEvent(params: var _) =>
         const Icon(Icons.toll, color: Colors.grey),
-      VerboseDispenseEvent(params: var params) =>
+      VerboseResetIssuanceEvent(params: var _) =>
+        const Icon(Icons.toll, color: Colors.grey),
+      VerboseDispenseEvent(params: var _) =>
         const Icon(Icons.paid, color: Colors.grey),
+      VerboseOpenDispenserEvent(params: var _) =>
+        const Icon(Icons.account_balance, color: Colors.grey),
+      VerboseRefillDispenserEvent(params: var _) =>
+        const Icon(Icons.account_balance, color: Colors.grey),
+      VerboseDispenserUpdateEvent(params: var params) =>
+        const Icon(Icons.account_balance, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
@@ -381,15 +459,17 @@ class ActivityFeedListItem extends StatelessWidget {
   String _getConfirmations(int? confirmations, int? blockHeight) {
     return switch (confirmations) {
       null => "#${numberWithCommas.format(blockHeight)}",
-      _ => "${confirmations > 6 ? '>6' : confirmations} confirmations",
+      _ =>
+        "${confirmations > 6 ? '>6' : confirmations}${isMobile ? '' : ' confirmations'}",
     };
   }
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
   final List<Address> addresses;
-
-  const DashboardActivityFeedScreen({super.key, required this.addresses});
+  final int initialItemCount;
+  const DashboardActivityFeedScreen(
+      {super.key, required this.addresses, required this.initialItemCount});
 
   @override
   DashboardActivityFeedScreenState createState() =>
@@ -399,14 +479,14 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 class DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
   DashboardActivityFeedBloc? _bloc;
-  static int displayedTransactionsCount = 4;
+  static int? displayedTransactionsCount;
   static const int pageSize = 20;
 
   @override
   void initState() {
     super.initState();
     _bloc = context.read<DashboardActivityFeedBloc>();
-
+    displayedTransactionsCount = widget.initialItemCount;
     // Start polling after the first frame
     // TODO: make this part of config?
 
@@ -444,14 +524,14 @@ class DashboardActivityFeedScreenState
             _buildNewTransactionsBanner(state),
           ..._buildContent(state),
           state is DashboardActivityFeedStateCompleteOk &&
-                  state.transactions.length > displayedTransactionsCount
+                  state.transactions.length > displayedTransactionsCount!
               ? Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
                         displayedTransactionsCount =
-                            displayedTransactionsCount + pageSize;
+                            displayedTransactionsCount! + pageSize;
                       });
                     },
                     child: const Text("View More"),
@@ -493,13 +573,15 @@ class DashboardActivityFeedScreenState
       }
 
       final displayedTransactions =
-          transactions.take(displayedTransactionsCount).toList();
+          transactions.take(displayedTransactionsCount!).toList();
+      final isMobile = MediaQuery.of(context).size.width < 600;
 
       final List<Widget> widgets = displayedTransactions
           .map((transaction) => ActivityFeedListItem(
                 key: ValueKey(transaction.hash),
                 item: transaction,
                 addresses: widget.addresses,
+                isMobile: isMobile,
               ))
           .toList();
 

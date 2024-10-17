@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 
 import './shell_state.dart';
 
@@ -12,11 +13,13 @@ class ShellStateCubit extends Cubit<ShellState> {
   WalletRepository walletRepository;
   AccountRepository accountRepository;
   AddressRepository addressRepository;
+  AnalyticsService analyticsService;
 
   ShellStateCubit(
       {required this.walletRepository,
       required this.accountRepository,
-      required this.addressRepository})
+      required this.addressRepository,
+      required this.analyticsService})
       : super(const ShellState.initial());
 
   void initialize() async {
@@ -28,6 +31,8 @@ class ShellStateCubit extends Cubit<ShellState> {
         emit(const ShellState.onboarding(Onboarding.initial()));
         return;
       }
+
+      analyticsService.identify(wallet.uuid);
 
       List<Account> accounts =
           await accountRepository.getAccountsByWalletUuid(wallet.uuid);

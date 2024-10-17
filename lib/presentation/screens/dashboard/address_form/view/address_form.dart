@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
-import 'package:horizon/presentation/screens/shared/view/horizon_text_field.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart";
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
@@ -82,7 +82,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             const SizedBox(height: 16.0),
-            HorizonTextFormField(
+            HorizonUI.HorizonTextFormField(
               enabled: state.maybeWhen(
                   loading: () => false,
                   success: (_) => false,
@@ -111,12 +111,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.all(0.0),
-                    child: Divider(
-                      thickness: 1.0,
-                    ),
-                  ),
+                  const HorizonUI.HorizonDivider(),
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: ConstrainedBox(

@@ -1,11 +1,11 @@
 import 'package:horizon/domain/repositories/config_repository.dart';
 
-class EnvironmentConfig implements Config {
+class ConfigImpl implements Config {
   @override
   Network get network {
     // default to testnet for now
     const networkString =
-        String.fromEnvironment('NETWORK', defaultValue: 'mainnet');
+        String.fromEnvironment('HORIZON_NETWORK', defaultValue: 'mainnet');
     return switch (networkString.toLowerCase()) {
       'testnet' => Network.testnet,
       'regtest' => Network.regtest,
@@ -16,7 +16,7 @@ class EnvironmentConfig implements Config {
 
   @override
   String get counterpartyApiBase {
-    const envValue = String.fromEnvironment('COUNTERPARTY_API_BASE');
+    const envValue = String.fromEnvironment('HORIZON_COUNTERPARTY_API_BASE');
     return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiBase;
   }
 
@@ -28,13 +28,13 @@ class EnvironmentConfig implements Config {
 
   @override
   String get esploraBase {
-    const envValue = String.fromEnvironment('ESPLORA_BASE');
+    const envValue = String.fromEnvironment('HORIZON_ESPLORA_BASE');
     return envValue.isNotEmpty ? envValue : _defaultEsploraBase;
   }
 
   String get _defaultEsploraBase => switch (network) {
         Network.mainnet => "https://api.counterparty.io:3000",
-        Network.testnet => "https://api.counterparty.io:3001",
+        Network.testnet => "https://api.counterparty.io:13000",
         Network.regtest => "http://127.0.0.1:3002",
       };
 
@@ -54,7 +54,14 @@ class EnvironmentConfig implements Config {
 
   @override
   bool get isDatabaseViewerEnabled {
-    return const bool.fromEnvironment('ENABLE_DB_VIEWER', defaultValue: false);
+    return const bool.fromEnvironment('HORIZON_ENABLE_DB_VIEWER',
+        defaultValue: false);
+  }
+
+  @override
+  bool get isAnalyticsEnabled {
+    return const bool.fromEnvironment('HORIZON_ANALYTICS_ENABLED',
+        defaultValue: false);
   }
 
   @override

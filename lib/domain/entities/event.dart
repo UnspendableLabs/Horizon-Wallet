@@ -16,7 +16,7 @@ class EventStateConfirmed extends EventState {
 class Event extends Equatable {
   final EventState state;
 
-  final int eventIndex;
+  final int? eventIndex;
   final String event;
   final String txHash;
   final int? blockIndex;
@@ -39,7 +39,7 @@ class Event extends Equatable {
 }
 
 class VerboseEvent extends Event {
-  final int blockTime;
+  final int? blockTime;
 
   const VerboseEvent({
     required super.state,
@@ -102,7 +102,7 @@ class EnhancedSendEvent extends Event {
 }
 
 class VerboseEnhancedSendParams extends EnhancedSendParams {
-  final int blockTime;
+  final int? blockTime;
   // final AssetInfo assetInfo;
   final String quantityNormalized;
 
@@ -351,6 +351,7 @@ class VerboseNewTransactionEvent extends VerboseEvent {
 class AssetIssuanceParams {
   final String? asset;
   final String? assetLongname;
+  final String? assetEvents;
   // final int? blockIndex;
   // final int callDate;
   // final int callPrice;
@@ -364,13 +365,14 @@ class AssetIssuanceParams {
   // final bool reset;
   final String source;
   // final String status;
-  // final bool transfer;
+  final bool transfer;
   // final String txHash;
   // final int txIndex;
 
   AssetIssuanceParams({
     this.asset,
     this.assetLongname,
+    this.assetEvents,
     // this.blockIndex,
     // required this.callDate,
     // required this.callPrice,
@@ -384,7 +386,7 @@ class AssetIssuanceParams {
     // required this.reset,
     required this.source,
     // required this.status,
-    // required this.transfer,
+    required this.transfer,
     // required this.txHash,
     // required this.txIndex,
   });
@@ -404,13 +406,27 @@ class AssetIssuanceEvent extends Event {
   });
 }
 
+class ResetIssuanceEvent extends Event {
+  final AssetIssuanceParams params;
+
+  const ResetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
 class VerboseAssetIssuanceParams extends AssetIssuanceParams {
-  final int blockTime;
+  final int? blockTime;
   final String? quantityNormalized;
   final String feePaidNormalized;
   VerboseAssetIssuanceParams({
     required super.asset,
     required super.assetLongname,
+    required super.assetEvents,
     // required super.callDate,
     // required super.callPrice,
     // required super.callable,
@@ -423,7 +439,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     // required super.reset,
     required super.source,
     // required super.status,
-    // required super.transfer,
+    required super.transfer,
     // required super.txHash,
     // required super.txIndex,
     required this.blockTime,
@@ -441,6 +457,19 @@ class VerboseAssetIssuanceEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     // required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseResetIssuanceEvent extends VerboseEvent {
+  final VerboseAssetIssuanceParams params;
+  const VerboseResetIssuanceEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
     required super.blockTime,
     required this.params,
   });
@@ -515,6 +544,228 @@ class VerboseDispenseEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     // required super.confirmed,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class OpenDispenserParams {
+  final String asset;
+  final int blockIndex;
+  final int escrowQuantity;
+  final int giveQuantity;
+  final int giveRemaining;
+  final String? oracleAddress;
+  final String origin;
+  final int satoshirate;
+  final String source;
+  final int status;
+  final String txHash;
+  final int txIndex;
+
+  OpenDispenserParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.escrowQuantity,
+    required this.giveQuantity,
+    required this.giveRemaining,
+    this.oracleAddress,
+    required this.origin,
+    required this.satoshirate,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class OpenDispenserEvent extends Event {
+  final OpenDispenserParams params;
+
+  const OpenDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseOpenDispenserParams extends OpenDispenserParams {
+  final String giveQuantityNormalized;
+  final String giveRemainingNormalized;
+  final String escrowQuantityNormalized;
+  final String satoshirateNormalized;
+  // final AssetInfo assetInfo;
+  // final String description;
+  // final String issuer;
+  // final bool divisible;
+  // final bool locked;
+  //
+  VerboseOpenDispenserParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.escrowQuantity,
+    required super.giveQuantity,
+    required super.giveRemaining,
+    super.oracleAddress,
+    required super.origin,
+    required super.satoshirate,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.giveQuantityNormalized,
+    required this.giveRemainingNormalized,
+    required this.escrowQuantityNormalized,
+    required this.satoshirateNormalized,
+    // this.assetInfo
+  });
+}
+
+class VerboseOpenDispenserEvent extends VerboseEvent {
+  final VerboseOpenDispenserParams params;
+
+  const VerboseOpenDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class DispenserUpdateParams {
+  final String asset;
+  final int? closeBlockIndex;
+  final String? lastStatusTxHash;
+  final String? lastStatusTxSource;
+  final String source;
+  final int status;
+  final String? txHash;
+  final int? giveRemaining;
+  final int? dispenseCount;
+
+  DispenserUpdateParams({
+    required this.asset,
+    required this.closeBlockIndex,
+    this.lastStatusTxHash,
+    required this.lastStatusTxSource,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    this.giveRemaining,
+    this.dispenseCount,
+  });
+}
+
+class DispenserUpdateEvent extends Event {
+  final DispenserUpdateParams params;
+
+  const DispenserUpdateEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseDispenserUpdateParams extends DispenserUpdateParams {
+  // final AssetInfo? assetInfo;
+
+  VerboseDispenserUpdateParams({
+    required super.asset,
+    required super.closeBlockIndex,
+    required super.lastStatusTxHash,
+    required super.lastStatusTxSource,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    // required this.assetInfo,
+  });
+}
+
+class VerboseDispenserUpdateEvent extends VerboseEvent {
+  final VerboseDispenserUpdateParams params;
+
+  const VerboseDispenserUpdateEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class RefillDispenserParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int dispenseQuantity;
+  final String dispenserTxHash;
+  final String source;
+  final String txHash;
+  final int txIndex;
+
+  RefillDispenserParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.dispenseQuantity,
+    required this.dispenserTxHash,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class RefillDispenserEvent extends Event {
+  final RefillDispenserParams params;
+
+  const RefillDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseRefillDispenserParams extends RefillDispenserParams {
+  final String dispenseQuantityNormalized;
+  // final AssetInfo? assetInfo;
+
+  VerboseRefillDispenserParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.dispenseQuantity,
+    required super.dispenserTxHash,
+    required super.source,
+    required super.txHash,
+    required super.txIndex,
+    required this.dispenseQuantityNormalized,
+    // this.assetInfo,
+  });
+}
+
+class VerboseRefillDispenserEvent extends VerboseEvent {
+  final VerboseRefillDispenserParams params;
+
+  const VerboseRefillDispenserEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
     required super.blockTime,
     required this.params,
   });

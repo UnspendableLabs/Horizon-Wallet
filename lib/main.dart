@@ -8,6 +8,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/fn.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/data/services/regtest_utils.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
@@ -15,10 +16,12 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
@@ -26,7 +29,7 @@ import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dar
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -246,6 +249,15 @@ class AppRouter {
             // if the shell state is not yet loaded, show a loading screen
             orElse: () => "/");
 
+        final actionParam = state.uri.queryParameters['action'];
+
+        if (actionParam != null) {
+          final ActionRepository actionRepository =
+              GetIt.instance<ActionRepository>();
+          actionRepository
+              .fromString(actionParam)
+              .fold(noop1, (action) => actionRepository.enqueue(action));
+        }
         return path;
       });
 }
@@ -564,6 +576,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ShellStateCubit(
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
+              analyticsService: GetIt.I<AnalyticsService>(),
               addressRepository: GetIt.I<AddressRepository>())
             ..initialize(),
         ),

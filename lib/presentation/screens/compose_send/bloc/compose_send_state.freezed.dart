@@ -16,13 +16,15 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$ComposeSendState {
-  dynamic get balancesState => throw _privateConstructorUsedError;
-  dynamic get feeState => throw _privateConstructorUsedError;
-  dynamic get maxValue => throw _privateConstructorUsedError;
-  bool get sendMax => throw _privateConstructorUsedError;
+// Inherited properties
+  FeeState get feeState => throw _privateConstructorUsedError;
+  BalancesState get balancesState => throw _privateConstructorUsedError;
   FeeOption get feeOption => throw _privateConstructorUsedError;
-  SubmitState get submitState => throw _privateConstructorUsedError;
-  Address? get source => throw _privateConstructorUsedError; // TODO: smell
+  SubmitState get submitState =>
+      throw _privateConstructorUsedError; // Specific properties
+  MaxValueState get maxValue => throw _privateConstructorUsedError;
+  bool get sendMax => throw _privateConstructorUsedError;
+  Address? get source => throw _privateConstructorUsedError;
   String? get destination => throw _privateConstructorUsedError;
   String? get asset => throw _privateConstructorUsedError;
   String get quantity => throw _privateConstructorUsedError;
@@ -40,17 +42,21 @@ abstract class $ComposeSendStateCopyWith<$Res> {
       _$ComposeSendStateCopyWithImpl<$Res, ComposeSendState>;
   @useResult
   $Res call(
-      {dynamic balancesState,
-      dynamic feeState,
-      dynamic maxValue,
-      bool sendMax,
+      {FeeState feeState,
+      BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
+      MaxValueState maxValue,
+      bool sendMax,
       Address? source,
       String? destination,
       String? asset,
       String quantity,
       String? composeSendError});
+
+  $FeeStateCopyWith<$Res> get feeState;
+  $BalancesStateCopyWith<$Res> get balancesState;
+  $MaxValueStateCopyWith<$Res> get maxValue;
 }
 
 /// @nodoc
@@ -66,12 +72,12 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? balancesState = freezed,
-    Object? feeState = freezed,
-    Object? maxValue = freezed,
-    Object? sendMax = null,
+    Object? feeState = null,
+    Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? maxValue = null,
+    Object? sendMax = null,
     Object? source = freezed,
     Object? destination = freezed,
     Object? asset = freezed,
@@ -79,22 +85,14 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
     Object? composeSendError = freezed,
   }) {
     return _then(_value.copyWith(
-      balancesState: freezed == balancesState
-          ? _value.balancesState
-          : balancesState // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      feeState: freezed == feeState
+      feeState: null == feeState
           ? _value.feeState
           : feeState // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      maxValue: freezed == maxValue
-          ? _value.maxValue
-          : maxValue // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      sendMax: null == sendMax
-          ? _value.sendMax
-          : sendMax // ignore: cast_nullable_to_non_nullable
-              as bool,
+              as FeeState,
+      balancesState: null == balancesState
+          ? _value.balancesState
+          : balancesState // ignore: cast_nullable_to_non_nullable
+              as BalancesState,
       feeOption: null == feeOption
           ? _value.feeOption
           : feeOption // ignore: cast_nullable_to_non_nullable
@@ -103,6 +101,14 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      maxValue: null == maxValue
+          ? _value.maxValue
+          : maxValue // ignore: cast_nullable_to_non_nullable
+              as MaxValueState,
+      sendMax: null == sendMax
+          ? _value.sendMax
+          : sendMax // ignore: cast_nullable_to_non_nullable
+              as bool,
       source: freezed == source
           ? _value.source
           : source // ignore: cast_nullable_to_non_nullable
@@ -125,6 +131,30 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
               as String?,
     ) as $Val);
   }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $FeeStateCopyWith<$Res> get feeState {
+    return $FeeStateCopyWith<$Res>(_value.feeState, (value) {
+      return _then(_value.copyWith(feeState: value) as $Val);
+    });
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $BalancesStateCopyWith<$Res> get balancesState {
+    return $BalancesStateCopyWith<$Res>(_value.balancesState, (value) {
+      return _then(_value.copyWith(balancesState: value) as $Val);
+    });
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $MaxValueStateCopyWith<$Res> get maxValue {
+    return $MaxValueStateCopyWith<$Res>(_value.maxValue, (value) {
+      return _then(_value.copyWith(maxValue: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -136,17 +166,24 @@ abstract class _$$ComposeSendStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {dynamic balancesState,
-      dynamic feeState,
-      dynamic maxValue,
-      bool sendMax,
+      {FeeState feeState,
+      BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
+      MaxValueState maxValue,
+      bool sendMax,
       Address? source,
       String? destination,
       String? asset,
       String quantity,
       String? composeSendError});
+
+  @override
+  $FeeStateCopyWith<$Res> get feeState;
+  @override
+  $BalancesStateCopyWith<$Res> get balancesState;
+  @override
+  $MaxValueStateCopyWith<$Res> get maxValue;
 }
 
 /// @nodoc
@@ -160,12 +197,12 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? balancesState = freezed,
-    Object? feeState = freezed,
-    Object? maxValue = freezed,
-    Object? sendMax = null,
+    Object? feeState = null,
+    Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? maxValue = null,
+    Object? sendMax = null,
     Object? source = freezed,
     Object? destination = freezed,
     Object? asset = freezed,
@@ -173,14 +210,14 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
     Object? composeSendError = freezed,
   }) {
     return _then(_$ComposeSendStateImpl(
-      balancesState:
-          freezed == balancesState ? _value.balancesState! : balancesState,
-      feeState: freezed == feeState ? _value.feeState! : feeState,
-      maxValue: freezed == maxValue ? _value.maxValue! : maxValue,
-      sendMax: null == sendMax
-          ? _value.sendMax
-          : sendMax // ignore: cast_nullable_to_non_nullable
-              as bool,
+      feeState: null == feeState
+          ? _value.feeState
+          : feeState // ignore: cast_nullable_to_non_nullable
+              as FeeState,
+      balancesState: null == balancesState
+          ? _value.balancesState
+          : balancesState // ignore: cast_nullable_to_non_nullable
+              as BalancesState,
       feeOption: null == feeOption
           ? _value.feeOption
           : feeOption // ignore: cast_nullable_to_non_nullable
@@ -189,6 +226,14 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      maxValue: null == maxValue
+          ? _value.maxValue
+          : maxValue // ignore: cast_nullable_to_non_nullable
+              as MaxValueState,
+      sendMax: null == sendMax
+          ? _value.sendMax
+          : sendMax // ignore: cast_nullable_to_non_nullable
+              as bool,
       source: freezed == source
           ? _value.source
           : source // ignore: cast_nullable_to_non_nullable
@@ -215,52 +260,49 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ComposeSendStateImpl implements _ComposeSendState {
+class _$ComposeSendStateImpl extends _ComposeSendState {
   const _$ComposeSendStateImpl(
-      {this.balancesState = const BalancesState.initial(),
-      this.feeState = const FeeState.initial(),
-      this.maxValue = const MaxValueState.initial(),
-      this.sendMax = false,
+      {required this.feeState,
+      required this.balancesState,
       required this.feeOption,
       required this.submitState,
+      required this.maxValue,
+      required this.sendMax,
       this.source,
       this.destination,
       this.asset,
-      this.quantity = "",
-      this.composeSendError});
+      required this.quantity,
+      this.composeSendError})
+      : super._();
 
+// Inherited properties
   @override
-  @JsonKey()
-  final dynamic balancesState;
+  final FeeState feeState;
   @override
-  @JsonKey()
-  final dynamic feeState;
-  @override
-  @JsonKey()
-  final dynamic maxValue;
-  @override
-  @JsonKey()
-  final bool sendMax;
+  final BalancesState balancesState;
   @override
   final FeeOption feeOption;
   @override
   final SubmitState submitState;
+// Specific properties
+  @override
+  final MaxValueState maxValue;
+  @override
+  final bool sendMax;
   @override
   final Address? source;
-// TODO: smell
   @override
   final String? destination;
   @override
   final String? asset;
   @override
-  @JsonKey()
   final String quantity;
   @override
   final String? composeSendError;
 
   @override
   String toString() {
-    return 'ComposeSendState(balancesState: $balancesState, feeState: $feeState, maxValue: $maxValue, sendMax: $sendMax, feeOption: $feeOption, submitState: $submitState, source: $source, destination: $destination, asset: $asset, quantity: $quantity, composeSendError: $composeSendError)';
+    return 'ComposeSendState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, maxValue: $maxValue, sendMax: $sendMax, source: $source, destination: $destination, asset: $asset, quantity: $quantity, composeSendError: $composeSendError)';
   }
 
   @override
@@ -268,15 +310,17 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ComposeSendStateImpl &&
-            const DeepCollectionEquality()
-                .equals(other.balancesState, balancesState) &&
-            const DeepCollectionEquality().equals(other.feeState, feeState) &&
-            const DeepCollectionEquality().equals(other.maxValue, maxValue) &&
-            (identical(other.sendMax, sendMax) || other.sendMax == sendMax) &&
+            (identical(other.feeState, feeState) ||
+                other.feeState == feeState) &&
+            (identical(other.balancesState, balancesState) ||
+                other.balancesState == balancesState) &&
             (identical(other.feeOption, feeOption) ||
                 other.feeOption == feeOption) &&
             (identical(other.submitState, submitState) ||
                 other.submitState == submitState) &&
+            (identical(other.maxValue, maxValue) ||
+                other.maxValue == maxValue) &&
+            (identical(other.sendMax, sendMax) || other.sendMax == sendMax) &&
             (identical(other.source, source) || other.source == source) &&
             (identical(other.destination, destination) ||
                 other.destination == destination) &&
@@ -290,12 +334,12 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      const DeepCollectionEquality().hash(balancesState),
-      const DeepCollectionEquality().hash(feeState),
-      const DeepCollectionEquality().hash(maxValue),
-      sendMax,
+      feeState,
+      balancesState,
       feeOption,
       submitState,
+      maxValue,
+      sendMax,
       source,
       destination,
       asset,
@@ -310,35 +354,36 @@ class _$ComposeSendStateImpl implements _ComposeSendState {
           this, _$identity);
 }
 
-abstract class _ComposeSendState implements ComposeSendState {
+abstract class _ComposeSendState extends ComposeSendState {
   const factory _ComposeSendState(
-      {final dynamic balancesState,
-      final dynamic feeState,
-      final dynamic maxValue,
-      final bool sendMax,
+      {required final FeeState feeState,
+      required final BalancesState balancesState,
       required final FeeOption feeOption,
       required final SubmitState submitState,
+      required final MaxValueState maxValue,
+      required final bool sendMax,
       final Address? source,
       final String? destination,
       final String? asset,
-      final String quantity,
+      required final String quantity,
       final String? composeSendError}) = _$ComposeSendStateImpl;
+  const _ComposeSendState._() : super._();
 
+  @override // Inherited properties
+  FeeState get feeState;
   @override
-  dynamic get balancesState;
-  @override
-  dynamic get feeState;
-  @override
-  dynamic get maxValue;
-  @override
-  bool get sendMax;
+  BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
   SubmitState get submitState;
+  @override // Specific properties
+  MaxValueState get maxValue;
+  @override
+  bool get sendMax;
   @override
   Address? get source;
-  @override // TODO: smell
+  @override
   String? get destination;
   @override
   String? get asset;
@@ -381,7 +426,7 @@ mixin _$MaxValueState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueInitial value) initial,
     required TResult Function(_MaxValueLoading value) loading,
     required TResult Function(_MaxValueSuccess value) success,
     required TResult Function(_MaxValueError value) error,
@@ -389,7 +434,7 @@ mixin _$MaxValueState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueInitial value)? initial,
     TResult? Function(_MaxValueLoading value)? loading,
     TResult? Function(_MaxValueSuccess value)? success,
     TResult? Function(_MaxValueError value)? error,
@@ -397,7 +442,7 @@ mixin _$MaxValueState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueInitial value)? initial,
     TResult Function(_MaxValueLoading value)? loading,
     TResult Function(_MaxValueSuccess value)? success,
     TResult Function(_MaxValueError value)? error,
@@ -425,25 +470,25 @@ class _$MaxValueStateCopyWithImpl<$Res, $Val extends MaxValueState>
 }
 
 /// @nodoc
-abstract class _$$MaxValueInitalImplCopyWith<$Res> {
-  factory _$$MaxValueInitalImplCopyWith(_$MaxValueInitalImpl value,
-          $Res Function(_$MaxValueInitalImpl) then) =
-      __$$MaxValueInitalImplCopyWithImpl<$Res>;
+abstract class _$$MaxValueInitialImplCopyWith<$Res> {
+  factory _$$MaxValueInitialImplCopyWith(_$MaxValueInitialImpl value,
+          $Res Function(_$MaxValueInitialImpl) then) =
+      __$$MaxValueInitialImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$MaxValueInitalImplCopyWithImpl<$Res>
-    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueInitalImpl>
-    implements _$$MaxValueInitalImplCopyWith<$Res> {
-  __$$MaxValueInitalImplCopyWithImpl(
-      _$MaxValueInitalImpl _value, $Res Function(_$MaxValueInitalImpl) _then)
+class __$$MaxValueInitialImplCopyWithImpl<$Res>
+    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueInitialImpl>
+    implements _$$MaxValueInitialImplCopyWith<$Res> {
+  __$$MaxValueInitialImplCopyWithImpl(
+      _$MaxValueInitialImpl _value, $Res Function(_$MaxValueInitialImpl) _then)
       : super(_value, _then);
 }
 
 /// @nodoc
 
-class _$MaxValueInitalImpl implements _MaxValueInital {
-  const _$MaxValueInitalImpl();
+class _$MaxValueInitialImpl implements _MaxValueInitial {
+  const _$MaxValueInitialImpl();
 
   @override
   String toString() {
@@ -453,7 +498,7 @@ class _$MaxValueInitalImpl implements _MaxValueInital {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$MaxValueInitalImpl);
+        (other.runtimeType == runtimeType && other is _$MaxValueInitialImpl);
   }
 
   @override
@@ -499,7 +544,7 @@ class _$MaxValueInitalImpl implements _MaxValueInital {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueInitial value) initial,
     required TResult Function(_MaxValueLoading value) loading,
     required TResult Function(_MaxValueSuccess value) success,
     required TResult Function(_MaxValueError value) error,
@@ -510,7 +555,7 @@ class _$MaxValueInitalImpl implements _MaxValueInital {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueInitial value)? initial,
     TResult? Function(_MaxValueLoading value)? loading,
     TResult? Function(_MaxValueSuccess value)? success,
     TResult? Function(_MaxValueError value)? error,
@@ -521,7 +566,7 @@ class _$MaxValueInitalImpl implements _MaxValueInital {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueInitial value)? initial,
     TResult Function(_MaxValueLoading value)? loading,
     TResult Function(_MaxValueSuccess value)? success,
     TResult Function(_MaxValueError value)? error,
@@ -534,8 +579,8 @@ class _$MaxValueInitalImpl implements _MaxValueInital {
   }
 }
 
-abstract class _MaxValueInital implements MaxValueState {
-  const factory _MaxValueInital() = _$MaxValueInitalImpl;
+abstract class _MaxValueInitial implements MaxValueState {
+  const factory _MaxValueInitial() = _$MaxValueInitialImpl;
 }
 
 /// @nodoc
@@ -613,7 +658,7 @@ class _$MaxValueLoadingImpl implements _MaxValueLoading {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueInitial value) initial,
     required TResult Function(_MaxValueLoading value) loading,
     required TResult Function(_MaxValueSuccess value) success,
     required TResult Function(_MaxValueError value) error,
@@ -624,7 +669,7 @@ class _$MaxValueLoadingImpl implements _MaxValueLoading {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueInitial value)? initial,
     TResult? Function(_MaxValueLoading value)? loading,
     TResult? Function(_MaxValueSuccess value)? success,
     TResult? Function(_MaxValueError value)? error,
@@ -635,7 +680,7 @@ class _$MaxValueLoadingImpl implements _MaxValueLoading {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueInitial value)? initial,
     TResult Function(_MaxValueLoading value)? loading,
     TResult Function(_MaxValueSuccess value)? success,
     TResult Function(_MaxValueError value)? error,
@@ -755,7 +800,7 @@ class _$MaxValueSuccessImpl implements _MaxValueSuccess {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueInitial value) initial,
     required TResult Function(_MaxValueLoading value) loading,
     required TResult Function(_MaxValueSuccess value) success,
     required TResult Function(_MaxValueError value) error,
@@ -766,7 +811,7 @@ class _$MaxValueSuccessImpl implements _MaxValueSuccess {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueInitial value)? initial,
     TResult? Function(_MaxValueLoading value)? loading,
     TResult? Function(_MaxValueSuccess value)? success,
     TResult? Function(_MaxValueError value)? error,
@@ -777,7 +822,7 @@ class _$MaxValueSuccessImpl implements _MaxValueSuccess {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueInitial value)? initial,
     TResult Function(_MaxValueLoading value)? loading,
     TResult Function(_MaxValueSuccess value)? success,
     TResult Function(_MaxValueError value)? error,
@@ -900,7 +945,7 @@ class _$MaxValueErrorImpl implements _MaxValueError {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInital value) initial,
+    required TResult Function(_MaxValueInitial value) initial,
     required TResult Function(_MaxValueLoading value) loading,
     required TResult Function(_MaxValueSuccess value) success,
     required TResult Function(_MaxValueError value) error,
@@ -911,7 +956,7 @@ class _$MaxValueErrorImpl implements _MaxValueError {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInital value)? initial,
+    TResult? Function(_MaxValueInitial value)? initial,
     TResult? Function(_MaxValueLoading value)? loading,
     TResult? Function(_MaxValueSuccess value)? success,
     TResult? Function(_MaxValueError value)? error,
@@ -922,7 +967,7 @@ class _$MaxValueErrorImpl implements _MaxValueError {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInital value)? initial,
+    TResult Function(_MaxValueInitial value)? initial,
     TResult Function(_MaxValueLoading value)? loading,
     TResult Function(_MaxValueSuccess value)? success,
     TResult Function(_MaxValueError value)? error,
@@ -941,1194 +986,5 @@ abstract class _MaxValueError implements MaxValueState {
   String get error;
   @JsonKey(ignore: true)
   _$$MaxValueErrorImplCopyWith<_$MaxValueErrorImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-mixin _$BalancesState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Balance> balances) success,
-    required TResult Function(String error) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Balance> balances)? success,
-    TResult? Function(String error)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Balance> balances)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_BalanceInital value) initial,
-    required TResult Function(_BalanceLoading value) loading,
-    required TResult Function(_BalanceSuccess value) success,
-    required TResult Function(_BalanceError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_BalanceInital value)? initial,
-    TResult? Function(_BalanceLoading value)? loading,
-    TResult? Function(_BalanceSuccess value)? success,
-    TResult? Function(_BalanceError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_BalanceInital value)? initial,
-    TResult Function(_BalanceLoading value)? loading,
-    TResult Function(_BalanceSuccess value)? success,
-    TResult Function(_BalanceError value)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $BalancesStateCopyWith<$Res> {
-  factory $BalancesStateCopyWith(
-          BalancesState value, $Res Function(BalancesState) then) =
-      _$BalancesStateCopyWithImpl<$Res, BalancesState>;
-}
-
-/// @nodoc
-class _$BalancesStateCopyWithImpl<$Res, $Val extends BalancesState>
-    implements $BalancesStateCopyWith<$Res> {
-  _$BalancesStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-}
-
-/// @nodoc
-abstract class _$$BalanceInitalImplCopyWith<$Res> {
-  factory _$$BalanceInitalImplCopyWith(
-          _$BalanceInitalImpl value, $Res Function(_$BalanceInitalImpl) then) =
-      __$$BalanceInitalImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$BalanceInitalImplCopyWithImpl<$Res>
-    extends _$BalancesStateCopyWithImpl<$Res, _$BalanceInitalImpl>
-    implements _$$BalanceInitalImplCopyWith<$Res> {
-  __$$BalanceInitalImplCopyWithImpl(
-      _$BalanceInitalImpl _value, $Res Function(_$BalanceInitalImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$BalanceInitalImpl implements _BalanceInital {
-  const _$BalanceInitalImpl();
-
-  @override
-  String toString() {
-    return 'BalancesState.initial()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$BalanceInitalImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Balance> balances) success,
-    required TResult Function(String error) error,
-  }) {
-    return initial();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Balance> balances)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return initial?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Balance> balances)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_BalanceInital value) initial,
-    required TResult Function(_BalanceLoading value) loading,
-    required TResult Function(_BalanceSuccess value) success,
-    required TResult Function(_BalanceError value) error,
-  }) {
-    return initial(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_BalanceInital value)? initial,
-    TResult? Function(_BalanceLoading value)? loading,
-    TResult? Function(_BalanceSuccess value)? success,
-    TResult? Function(_BalanceError value)? error,
-  }) {
-    return initial?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_BalanceInital value)? initial,
-    TResult Function(_BalanceLoading value)? loading,
-    TResult Function(_BalanceSuccess value)? success,
-    TResult Function(_BalanceError value)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _BalanceInital implements BalancesState {
-  const factory _BalanceInital() = _$BalanceInitalImpl;
-}
-
-/// @nodoc
-abstract class _$$BalanceLoadingImplCopyWith<$Res> {
-  factory _$$BalanceLoadingImplCopyWith(_$BalanceLoadingImpl value,
-          $Res Function(_$BalanceLoadingImpl) then) =
-      __$$BalanceLoadingImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$BalanceLoadingImplCopyWithImpl<$Res>
-    extends _$BalancesStateCopyWithImpl<$Res, _$BalanceLoadingImpl>
-    implements _$$BalanceLoadingImplCopyWith<$Res> {
-  __$$BalanceLoadingImplCopyWithImpl(
-      _$BalanceLoadingImpl _value, $Res Function(_$BalanceLoadingImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$BalanceLoadingImpl implements _BalanceLoading {
-  const _$BalanceLoadingImpl();
-
-  @override
-  String toString() {
-    return 'BalancesState.loading()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$BalanceLoadingImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Balance> balances) success,
-    required TResult Function(String error) error,
-  }) {
-    return loading();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Balance> balances)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return loading?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Balance> balances)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_BalanceInital value) initial,
-    required TResult Function(_BalanceLoading value) loading,
-    required TResult Function(_BalanceSuccess value) success,
-    required TResult Function(_BalanceError value) error,
-  }) {
-    return loading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_BalanceInital value)? initial,
-    TResult? Function(_BalanceLoading value)? loading,
-    TResult? Function(_BalanceSuccess value)? success,
-    TResult? Function(_BalanceError value)? error,
-  }) {
-    return loading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_BalanceInital value)? initial,
-    TResult Function(_BalanceLoading value)? loading,
-    TResult Function(_BalanceSuccess value)? success,
-    TResult Function(_BalanceError value)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _BalanceLoading implements BalancesState {
-  const factory _BalanceLoading() = _$BalanceLoadingImpl;
-}
-
-/// @nodoc
-abstract class _$$BalanceSuccessImplCopyWith<$Res> {
-  factory _$$BalanceSuccessImplCopyWith(_$BalanceSuccessImpl value,
-          $Res Function(_$BalanceSuccessImpl) then) =
-      __$$BalanceSuccessImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({List<Balance> balances});
-}
-
-/// @nodoc
-class __$$BalanceSuccessImplCopyWithImpl<$Res>
-    extends _$BalancesStateCopyWithImpl<$Res, _$BalanceSuccessImpl>
-    implements _$$BalanceSuccessImplCopyWith<$Res> {
-  __$$BalanceSuccessImplCopyWithImpl(
-      _$BalanceSuccessImpl _value, $Res Function(_$BalanceSuccessImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? balances = null,
-  }) {
-    return _then(_$BalanceSuccessImpl(
-      null == balances
-          ? _value._balances
-          : balances // ignore: cast_nullable_to_non_nullable
-              as List<Balance>,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$BalanceSuccessImpl implements _BalanceSuccess {
-  const _$BalanceSuccessImpl(final List<Balance> balances)
-      : _balances = balances;
-
-  final List<Balance> _balances;
-  @override
-  List<Balance> get balances {
-    if (_balances is EqualUnmodifiableListView) return _balances;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_balances);
-  }
-
-  @override
-  String toString() {
-    return 'BalancesState.success(balances: $balances)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$BalanceSuccessImpl &&
-            const DeepCollectionEquality().equals(other._balances, _balances));
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_balances));
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$BalanceSuccessImplCopyWith<_$BalanceSuccessImpl> get copyWith =>
-      __$$BalanceSuccessImplCopyWithImpl<_$BalanceSuccessImpl>(
-          this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Balance> balances) success,
-    required TResult Function(String error) error,
-  }) {
-    return success(balances);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Balance> balances)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return success?.call(balances);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Balance> balances)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(balances);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_BalanceInital value) initial,
-    required TResult Function(_BalanceLoading value) loading,
-    required TResult Function(_BalanceSuccess value) success,
-    required TResult Function(_BalanceError value) error,
-  }) {
-    return success(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_BalanceInital value)? initial,
-    TResult? Function(_BalanceLoading value)? loading,
-    TResult? Function(_BalanceSuccess value)? success,
-    TResult? Function(_BalanceError value)? error,
-  }) {
-    return success?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_BalanceInital value)? initial,
-    TResult Function(_BalanceLoading value)? loading,
-    TResult Function(_BalanceSuccess value)? success,
-    TResult Function(_BalanceError value)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _BalanceSuccess implements BalancesState {
-  const factory _BalanceSuccess(final List<Balance> balances) =
-      _$BalanceSuccessImpl;
-
-  List<Balance> get balances;
-  @JsonKey(ignore: true)
-  _$$BalanceSuccessImplCopyWith<_$BalanceSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$BalanceErrorImplCopyWith<$Res> {
-  factory _$$BalanceErrorImplCopyWith(
-          _$BalanceErrorImpl value, $Res Function(_$BalanceErrorImpl) then) =
-      __$$BalanceErrorImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({String error});
-}
-
-/// @nodoc
-class __$$BalanceErrorImplCopyWithImpl<$Res>
-    extends _$BalancesStateCopyWithImpl<$Res, _$BalanceErrorImpl>
-    implements _$$BalanceErrorImplCopyWith<$Res> {
-  __$$BalanceErrorImplCopyWithImpl(
-      _$BalanceErrorImpl _value, $Res Function(_$BalanceErrorImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? error = null,
-  }) {
-    return _then(_$BalanceErrorImpl(
-      null == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$BalanceErrorImpl implements _BalanceError {
-  const _$BalanceErrorImpl(this.error);
-
-  @override
-  final String error;
-
-  @override
-  String toString() {
-    return 'BalancesState.error(error: $error)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$BalanceErrorImpl &&
-            (identical(other.error, error) || other.error == error));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, error);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$BalanceErrorImplCopyWith<_$BalanceErrorImpl> get copyWith =>
-      __$$BalanceErrorImplCopyWithImpl<_$BalanceErrorImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(List<Balance> balances) success,
-    required TResult Function(String error) error,
-  }) {
-    return error(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(List<Balance> balances)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return error?.call(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(List<Balance> balances)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this.error);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_BalanceInital value) initial,
-    required TResult Function(_BalanceLoading value) loading,
-    required TResult Function(_BalanceSuccess value) success,
-    required TResult Function(_BalanceError value) error,
-  }) {
-    return error(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_BalanceInital value)? initial,
-    TResult? Function(_BalanceLoading value)? loading,
-    TResult? Function(_BalanceSuccess value)? success,
-    TResult? Function(_BalanceError value)? error,
-  }) {
-    return error?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_BalanceInital value)? initial,
-    TResult Function(_BalanceLoading value)? loading,
-    TResult Function(_BalanceSuccess value)? success,
-    TResult Function(_BalanceError value)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _BalanceError implements BalancesState {
-  const factory _BalanceError(final String error) = _$BalanceErrorImpl;
-
-  String get error;
-  @JsonKey(ignore: true)
-  _$$BalanceErrorImplCopyWith<_$BalanceErrorImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-mixin _$FeeState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(FeeEstimates feeEstimates) success,
-    required TResult Function(String error) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(FeeEstimates feeEstimates)? success,
-    TResult? Function(String error)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(FeeEstimates feeEstimates)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_FeeInitial value) initial,
-    required TResult Function(_FeeLoading value) loading,
-    required TResult Function(_FeeSuccess value) success,
-    required TResult Function(_FeeError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_FeeInitial value)? initial,
-    TResult? Function(_FeeLoading value)? loading,
-    TResult? Function(_FeeSuccess value)? success,
-    TResult? Function(_FeeError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_FeeInitial value)? initial,
-    TResult Function(_FeeLoading value)? loading,
-    TResult Function(_FeeSuccess value)? success,
-    TResult Function(_FeeError value)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $FeeStateCopyWith<$Res> {
-  factory $FeeStateCopyWith(FeeState value, $Res Function(FeeState) then) =
-      _$FeeStateCopyWithImpl<$Res, FeeState>;
-}
-
-/// @nodoc
-class _$FeeStateCopyWithImpl<$Res, $Val extends FeeState>
-    implements $FeeStateCopyWith<$Res> {
-  _$FeeStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-}
-
-/// @nodoc
-abstract class _$$FeeInitialImplCopyWith<$Res> {
-  factory _$$FeeInitialImplCopyWith(
-          _$FeeInitialImpl value, $Res Function(_$FeeInitialImpl) then) =
-      __$$FeeInitialImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$FeeInitialImplCopyWithImpl<$Res>
-    extends _$FeeStateCopyWithImpl<$Res, _$FeeInitialImpl>
-    implements _$$FeeInitialImplCopyWith<$Res> {
-  __$$FeeInitialImplCopyWithImpl(
-      _$FeeInitialImpl _value, $Res Function(_$FeeInitialImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$FeeInitialImpl implements _FeeInitial {
-  const _$FeeInitialImpl();
-
-  @override
-  String toString() {
-    return 'FeeState.initial()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$FeeInitialImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(FeeEstimates feeEstimates) success,
-    required TResult Function(String error) error,
-  }) {
-    return initial();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(FeeEstimates feeEstimates)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return initial?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(FeeEstimates feeEstimates)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_FeeInitial value) initial,
-    required TResult Function(_FeeLoading value) loading,
-    required TResult Function(_FeeSuccess value) success,
-    required TResult Function(_FeeError value) error,
-  }) {
-    return initial(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_FeeInitial value)? initial,
-    TResult? Function(_FeeLoading value)? loading,
-    TResult? Function(_FeeSuccess value)? success,
-    TResult? Function(_FeeError value)? error,
-  }) {
-    return initial?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_FeeInitial value)? initial,
-    TResult Function(_FeeLoading value)? loading,
-    TResult Function(_FeeSuccess value)? success,
-    TResult Function(_FeeError value)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _FeeInitial implements FeeState {
-  const factory _FeeInitial() = _$FeeInitialImpl;
-}
-
-/// @nodoc
-abstract class _$$FeeLoadingImplCopyWith<$Res> {
-  factory _$$FeeLoadingImplCopyWith(
-          _$FeeLoadingImpl value, $Res Function(_$FeeLoadingImpl) then) =
-      __$$FeeLoadingImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$FeeLoadingImplCopyWithImpl<$Res>
-    extends _$FeeStateCopyWithImpl<$Res, _$FeeLoadingImpl>
-    implements _$$FeeLoadingImplCopyWith<$Res> {
-  __$$FeeLoadingImplCopyWithImpl(
-      _$FeeLoadingImpl _value, $Res Function(_$FeeLoadingImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$FeeLoadingImpl implements _FeeLoading {
-  const _$FeeLoadingImpl();
-
-  @override
-  String toString() {
-    return 'FeeState.loading()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$FeeLoadingImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(FeeEstimates feeEstimates) success,
-    required TResult Function(String error) error,
-  }) {
-    return loading();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(FeeEstimates feeEstimates)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return loading?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(FeeEstimates feeEstimates)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_FeeInitial value) initial,
-    required TResult Function(_FeeLoading value) loading,
-    required TResult Function(_FeeSuccess value) success,
-    required TResult Function(_FeeError value) error,
-  }) {
-    return loading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_FeeInitial value)? initial,
-    TResult? Function(_FeeLoading value)? loading,
-    TResult? Function(_FeeSuccess value)? success,
-    TResult? Function(_FeeError value)? error,
-  }) {
-    return loading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_FeeInitial value)? initial,
-    TResult Function(_FeeLoading value)? loading,
-    TResult Function(_FeeSuccess value)? success,
-    TResult Function(_FeeError value)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _FeeLoading implements FeeState {
-  const factory _FeeLoading() = _$FeeLoadingImpl;
-}
-
-/// @nodoc
-abstract class _$$FeeSuccessImplCopyWith<$Res> {
-  factory _$$FeeSuccessImplCopyWith(
-          _$FeeSuccessImpl value, $Res Function(_$FeeSuccessImpl) then) =
-      __$$FeeSuccessImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({FeeEstimates feeEstimates});
-}
-
-/// @nodoc
-class __$$FeeSuccessImplCopyWithImpl<$Res>
-    extends _$FeeStateCopyWithImpl<$Res, _$FeeSuccessImpl>
-    implements _$$FeeSuccessImplCopyWith<$Res> {
-  __$$FeeSuccessImplCopyWithImpl(
-      _$FeeSuccessImpl _value, $Res Function(_$FeeSuccessImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? feeEstimates = null,
-  }) {
-    return _then(_$FeeSuccessImpl(
-      null == feeEstimates
-          ? _value.feeEstimates
-          : feeEstimates // ignore: cast_nullable_to_non_nullable
-              as FeeEstimates,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$FeeSuccessImpl implements _FeeSuccess {
-  const _$FeeSuccessImpl(this.feeEstimates);
-
-  @override
-  final FeeEstimates feeEstimates;
-
-  @override
-  String toString() {
-    return 'FeeState.success(feeEstimates: $feeEstimates)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$FeeSuccessImpl &&
-            (identical(other.feeEstimates, feeEstimates) ||
-                other.feeEstimates == feeEstimates));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, feeEstimates);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
-      __$$FeeSuccessImplCopyWithImpl<_$FeeSuccessImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(FeeEstimates feeEstimates) success,
-    required TResult Function(String error) error,
-  }) {
-    return success(feeEstimates);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(FeeEstimates feeEstimates)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return success?.call(feeEstimates);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(FeeEstimates feeEstimates)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(feeEstimates);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_FeeInitial value) initial,
-    required TResult Function(_FeeLoading value) loading,
-    required TResult Function(_FeeSuccess value) success,
-    required TResult Function(_FeeError value) error,
-  }) {
-    return success(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_FeeInitial value)? initial,
-    TResult? Function(_FeeLoading value)? loading,
-    TResult? Function(_FeeSuccess value)? success,
-    TResult? Function(_FeeError value)? error,
-  }) {
-    return success?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_FeeInitial value)? initial,
-    TResult Function(_FeeLoading value)? loading,
-    TResult Function(_FeeSuccess value)? success,
-    TResult Function(_FeeError value)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _FeeSuccess implements FeeState {
-  const factory _FeeSuccess(final FeeEstimates feeEstimates) = _$FeeSuccessImpl;
-
-  FeeEstimates get feeEstimates;
-  @JsonKey(ignore: true)
-  _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$FeeErrorImplCopyWith<$Res> {
-  factory _$$FeeErrorImplCopyWith(
-          _$FeeErrorImpl value, $Res Function(_$FeeErrorImpl) then) =
-      __$$FeeErrorImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({String error});
-}
-
-/// @nodoc
-class __$$FeeErrorImplCopyWithImpl<$Res>
-    extends _$FeeStateCopyWithImpl<$Res, _$FeeErrorImpl>
-    implements _$$FeeErrorImplCopyWith<$Res> {
-  __$$FeeErrorImplCopyWithImpl(
-      _$FeeErrorImpl _value, $Res Function(_$FeeErrorImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? error = null,
-  }) {
-    return _then(_$FeeErrorImpl(
-      null == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$FeeErrorImpl implements _FeeError {
-  const _$FeeErrorImpl(this.error);
-
-  @override
-  final String error;
-
-  @override
-  String toString() {
-    return 'FeeState.error(error: $error)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$FeeErrorImpl &&
-            (identical(other.error, error) || other.error == error));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, error);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
-      __$$FeeErrorImplCopyWithImpl<_$FeeErrorImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(FeeEstimates feeEstimates) success,
-    required TResult Function(String error) error,
-  }) {
-    return error(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(FeeEstimates feeEstimates)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return error?.call(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(FeeEstimates feeEstimates)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this.error);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_FeeInitial value) initial,
-    required TResult Function(_FeeLoading value) loading,
-    required TResult Function(_FeeSuccess value) success,
-    required TResult Function(_FeeError value) error,
-  }) {
-    return error(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_FeeInitial value)? initial,
-    TResult? Function(_FeeLoading value)? loading,
-    TResult? Function(_FeeSuccess value)? success,
-    TResult? Function(_FeeError value)? error,
-  }) {
-    return error?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_FeeInitial value)? initial,
-    TResult Function(_FeeLoading value)? loading,
-    TResult Function(_FeeSuccess value)? success,
-    TResult Function(_FeeError value)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _FeeError implements FeeState {
-  const factory _FeeError(final String error) = _$FeeErrorImpl;
-
-  String get error;
-  @JsonKey(ignore: true)
-  _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

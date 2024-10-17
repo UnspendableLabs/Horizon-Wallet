@@ -140,7 +140,7 @@ void main() {
         "mzBc3iVzWXvRygcaq5YWH9XTvC5WzDMLR6",
         "tb1qenqetjtjt2xvp9wdmrg38dw76jard0xlw0mp7j"
       ],
-      'network': 'tesntet'
+      'network': 'testnet'
     }
   ];
 

@@ -8,4 +8,5 @@ abstract class Config {
   String get horizonExplorerBase;
   String get btcExplorerBase;
   bool get isDatabaseViewerEnabled;
+  bool get isAnalyticsEnabled;
 }

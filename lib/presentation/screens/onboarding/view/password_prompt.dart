@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
-import 'package:horizon/presentation/screens/shared/colors.dart';
+import 'package:horizon/presentation/common/colors.dart';
 
 class PasswordPrompt extends StatefulWidget {
   final Function() onPressedBack;
