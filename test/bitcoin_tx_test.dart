@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p; // For handling file paths
 import 'package:test/test.dart';
 import 'package:horizon/data/models/bitcoin_tx.dart';

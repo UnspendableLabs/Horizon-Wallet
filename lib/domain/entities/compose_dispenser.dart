@@ -80,7 +80,7 @@ class ComposeDispenserResponseVerbose implements ComposeResponse {
     required this.name,
     required this.btcIn,
     required this.btcOut,
-     this.btcChange,
+    this.btcChange,
     required this.btcFee,
     required this.data,
   });

@@ -10,7 +10,9 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form
 
 // Mock classes
 class MockBalanceRepository extends Mock implements BalanceRepository {}
-class MockGetFeeEstimatesUseCase extends Mock implements GetFeeEstimatesUseCase {}
+
+class MockGetFeeEstimatesUseCase extends Mock
+    implements GetFeeEstimatesUseCase {}
 
 void main() {
   late FetchDispenseFormDataUseCase useCase;
@@ -30,7 +32,8 @@ void main() {
     );
   });
 
-  test('should return balances and fee estimates when both fetches succeed', () async {
+  test('should return balances and fee estimates when both fetches succeed',
+      () async {
     // Arrange
     const address = Address(
       accountUuid: 'test-account-uuid',
@@ -68,10 +71,12 @@ void main() {
     // Assert
     expect(result.$1, balances);
     expect(result.$2, feeEstimates);
-    expect(result.$1.first.assetInfo, assetInfo); // Verifying assetInfo is returned correctly
+    expect(result.$1.first.assetInfo,
+        assetInfo); // Verifying assetInfo is returned correctly
   });
 
-  test('should throw FetchBalancesException when balance fetch fails', () async {
+  test('should throw FetchBalancesException when balance fetch fails',
+      () async {
     // Arrange
     const address = Address(
       accountUuid: 'test-account-uuid',
@@ -93,7 +98,8 @@ void main() {
     );
   });
 
-  test('should throw FetchFeeEstimatesException when fee estimate fetch fails', () async {
+  test('should throw FetchFeeEstimatesException when fee estimate fetch fails',
+      () async {
     // Arrange
     const address = Address(
       accountUuid: 'test-account-uuid',
@@ -130,7 +136,8 @@ void main() {
     );
   });
 
-  test('should throw generic Exception when an unexpected error occurs', () async {
+  test('should throw generic Exception when an unexpected error occurs',
+      () async {
     // Arrange
     const address = Address(
       accountUuid: 'test-account-uuid',
@@ -148,4 +155,3 @@ void main() {
     );
   });
 }
-

@@ -258,55 +258,187 @@ class AddressAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     const isMobile = false;
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24.0),
-        ),
-        padding: EdgeInsets.zero, // Remove default padding
-      ),
-      onPressed: () {
-        HorizonUI.HorizonDialog.show(context: context, body: dialog);
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
-        child: isMobile
-            ? Icon(
-                icon,
-                size: iconSize ?? 24.0,
-                color: isDarkTheme
-                    ? greyDashboardButtonTextDarkTheme
-                    : greyDashboardButtonTextLightTheme,
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
+    return IntrinsicWidth(
+      child: SizedBox(
+        height: 75, // Set the fixed height here
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+            padding: EdgeInsets.zero,
+          ),
+          onPressed: () {
+            HorizonUI.HorizonDialog.show(context: context, body: dialog);
+          },
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
+            child: isMobile
+                ? Icon(
                     icon,
                     size: iconSize ?? 24.0,
                     color: isDarkTheme
                         ? greyDashboardButtonTextDarkTheme
                         : greyDashboardButtonTextLightTheme,
-                  ),
-                  const SizedBox(width: 4.0),
-                  Flexible(
-                    child: Text(
-                      text,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        size: iconSize ?? 24.0,
                         color: isDarkTheme
                             ? greyDashboardButtonTextDarkTheme
                             : greyDashboardButtonTextLightTheme,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
+                      const SizedBox(width: 4.0),
+                      Flexible(
+                        child: Text(
+                          text,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: isDarkTheme
+                                ? greyDashboardButtonTextDarkTheme
+                                : greyDashboardButtonTextLightTheme,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DispenserButtonMenu extends StatelessWidget {
+  final bool isDarkTheme;
+  final IconData icon;
+  final String text;
+  final double? iconSize;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+
+  const DispenserButtonMenu({
+    super.key,
+    required this.isDarkTheme,
+    required this.icon,
+    required this.text,
+    this.iconSize,
+    required this.dashboardActivityFeedBloc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const isMobile = false;
+    return IntrinsicWidth(
+      child: SizedBox(
+        height: 75,
+        child: PopupMenuButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isDarkTheme
+                ? elevatedButtonForegroundLightTheme
+                : lightBlueLightTheme,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+            padding: EdgeInsets.zero, // Remove default padding
+          ),
+          itemBuilder: (context) => [
+            PopupMenuItem(
+                child: const Text("Create Dispenser"),
+                onTap: () {
+                  HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Create Dispenser",
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        body: ComposeDispenserPageWrapper(
+                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                        ),
+                      ));
+                }),
+            PopupMenuItem(
+              child: const Text("Close Dispenser"),
+              onTap: () {
+                HorizonUI.HorizonDialog.show(
+                    context: context,
+                    body: HorizonUI.HorizonDialog(
+                      title: "Close Dispenser",
+                      body: CloseDispenserPageWrapper(
+                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      ),
+                      includeBackButton: false,
+                      includeCloseButton: true,
+                    ));
+              },
+            ),
+            PopupMenuItem(
+              child: const Text("Trigger Dispense"),
+              onTap: () {
+                HorizonUI.HorizonDialog.show(
+                    context: context,
+                    body: HorizonUI.HorizonDialog(
+                      title: "Trigger Dispense",
+                      body: ComposeDispensePageWrapper(
+                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      ),
+                      includeBackButton: false,
+                      includeCloseButton: true,
+                    ));
+              },
+            ),
+          ],
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
+            child: isMobile
+                ? Icon(
+                    icon,
+                    size: iconSize ?? 24.0,
+                    color: isDarkTheme
+                        ? greyDashboardButtonTextDarkTheme
+                        : greyDashboardButtonTextLightTheme,
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        size: iconSize ?? 24.0,
+                        color: isDarkTheme
+                            ? greyDashboardButtonTextDarkTheme
+                            : greyDashboardButtonTextLightTheme,
+                      ),
+                      const SizedBox(width: 4.0),
+                      Flexible(
+                        child: Text(
+                          text,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: isDarkTheme
+                                ? greyDashboardButtonTextDarkTheme
+                                : greyDashboardButtonTextLightTheme,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
       ),
     );
   }
@@ -318,7 +450,6 @@ class AddressActions extends StatelessWidget {
   final String accountUuid;
   final Address currentAddress;
   final double screenWidth;
-
   const AddressActions(
       {super.key,
       required this.isDarkTheme,
@@ -326,181 +457,90 @@ class AddressActions extends StatelessWidget {
       required this.accountUuid,
       required this.currentAddress,
       required this.screenWidth});
-
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Padding(
-          padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
-          child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 64),
-              child: CarouselView(
-                onTap: (index) {
-                  // there is a bug in carousel view in which click handlers
-                  // on the carousel are not dispatched to do rendering of inkwell
-                  // on top of the button.  so we dispatch events here
-                  switch (index) {
-                    case 0: // send
-                      HorizonUI.HorizonDialog.show(
-                        context: context,
-                        body: HorizonUI.HorizonDialog(
-                          title: "Compose Send",
-                          body: ComposeSendPageWrapper(
-                            dashboardActivityFeedBloc:
-                                dashboardActivityFeedBloc,
-                          ),
-                          includeBackButton: false,
-                          includeCloseButton: true,
-                        ),
-                      );
-                      break;
-                    case 1: // issuance
-                      HorizonUI.HorizonDialog.show(
-                          context: context,
-                          body: HorizonUI.HorizonDialog(
-                            title: "Compose Issuance",
-                            body: ComposeIssuancePageWrapper(
-                              dashboardActivityFeedBloc:
-                                  dashboardActivityFeedBloc,
-                            ),
-                            includeBackButton: false,
-                            includeCloseButton: true,
-                          ));
-                    case 2: // dispenser
-                      HorizonUI.HorizonDialog.show(
-                          context: context,
-                          body: HorizonUI.HorizonDialog(
-                            title: "Create Dispenser",
-                            body: ComposeDispenserPageWrapper(
-                              dashboardActivityFeedBloc:
-                                  dashboardActivityFeedBloc,
-                            ),
-                            includeBackButton: false,
-                            includeCloseButton: true,
-                          ));
-                    case 3: // dispense
-                      HorizonUI.HorizonDialog.show(
-                          context: context,
-                          body: HorizonUI.HorizonDialog(
-                            title: "Close Dispenser",
-                            body: CloseDispenserPageWrapper(
-                              dashboardActivityFeedBloc:
-                                  dashboardActivityFeedBloc,
-                            ),
-                            includeBackButton: false,
-                            includeCloseButton: true,
-                          ));
-                    case 4: // dispense
-                      HorizonUI.HorizonDialog.show(
-                          context: context,
-                          body: HorizonUI.HorizonDialog(
-                            title: "Trigger Dispense",
-                            body: ComposeDispensePageWrapper(
-                              dashboardActivityFeedBloc:
-                                  dashboardActivityFeedBloc,
-                            ),
-                            includeBackButton: false,
-                            includeCloseButton: true,
-                          ));
-                    case 5:
-                      HorizonUI.HorizonDialog.show(
-                          context: context,
-                          body: HorizonUI.HorizonDialog(
-                            title: "Receive",
-                            body: QRCodeDialog(
-                              currentAddress: currentAddress,
-                            ),
-                            includeBackButton: false,
-                            includeCloseButton: true,
-                          ));
-
-                    default:
-                  }
-                },
-                shrinkExtent: 200,
-                itemExtent: 200,
-                children: [
-                  AddressAction(
-                    isDarkTheme: isDarkTheme,
-                    dialog: HorizonUI.HorizonDialog(
-                      title: "Compose Send",
-                      body: ComposeSendPageWrapper(
-                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                      ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                    ),
-                    icon: Icons.send,
-                    text: "SEND",
-                    iconSize: 22.0,
+        padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            AddressAction(
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Compose Send",
+                body: ComposeSendPageWrapper(
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                ),
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.send,
+              text: "SEND",
+              iconSize: 22.0,
+            ),
+            AddressAction(
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Compose Issuance",
+                body: ComposeIssuancePageWrapper(
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                ),
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.add,
+              text: "ISSUE",
+            ),
+            AddressAction(
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Create Dispenser",
+                body: ComposeDispenserPageWrapper(
+                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                ),
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.swap_vert,
+              text: "DISPENSER",
+            ),
+            AddressAction(
+                isDarkTheme: isDarkTheme,
+                dialog: HorizonUI.HorizonDialog(
+                  title: "Receive",
+                  body: QRCodeDialog(
+                    currentAddress: currentAddress,
                   ),
-                  AddressAction(
-                    isDarkTheme: isDarkTheme,
-                    dialog: HorizonUI.HorizonDialog(
-                      title: "Compose Issuance",
-                      body: ComposeIssuancePageWrapper(
-                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                      ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                    ),
-                    icon: Icons.add,
-                    text: "ISSUE",
-                  ),
-                  AddressAction(
-                    isDarkTheme: isDarkTheme,
-                    dialog: HorizonUI.HorizonDialog(
-                      title: "Create Dispenser",
-                      body: ComposeDispenserPageWrapper(
-                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                      ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                    ),
-                    icon: Icons.swap_vert,
-                    text: "DISPENSER",
-                  ),
-                  AddressAction(
-                      isDarkTheme: isDarkTheme,
-                      dialog: HorizonUI.HorizonDialog(
-                        title: "Close Dispenser",
-                        body: CloseDispenserPageWrapper(
-                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                        ),
-                        includeBackButton: false,
-                        includeCloseButton: true,
-                      ),
-                      icon: Icons.close,
-                      text: "CLOSE DISPENSER",
-                      iconSize: 24.0),
-                  AddressAction(
-                    isDarkTheme: isDarkTheme,
-                    dialog: HorizonUI.HorizonDialog(
-                      title: "Trigger Dispense",
-                      body: ComposeDispensePageWrapper(
-                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                      ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                    ),
-                    icon: Icons.paid,
-                    text: "DISPENSE",
-                  ),
-                  AddressAction(
-                      isDarkTheme: isDarkTheme,
-                      dialog: HorizonUI.HorizonDialog(
-                        title: "Receive",
-                        body: QRCodeDialog(
-                          currentAddress: currentAddress,
-                        ),
-                        includeBackButton: false,
-                        includeCloseButton: true,
-                      ),
-                      icon: Icons.qr_code,
-                      text: "RECEIVE",
-                      iconSize: 24.0),
-                ],
-              ))),
+                  includeBackButton: false,
+                  includeCloseButton: true,
+                ),
+                icon: Icons.qr_code,
+                text: "RECEIVE",
+                iconSize: 24.0),
+            DispenserButtonMenu(
+              isDarkTheme: isDarkTheme,
+              icon: Icons.more_vert,
+              text: "DISPENSER",
+              iconSize: 24.0,
+              dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            ),
+            // AddressAction(
+            //     isDarkTheme: isDarkTheme,
+            //     dialog: HorizonUI.HorizonDialog(
+            //       title: "Close Dispenser",
+            //       body: CloseDispenserPageWrapper(
+            //         dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            //       ),
+            //       includeBackButton: false,
+            //       includeCloseButton: true,
+            //     ),
+            //     icon: Icons.close,
+            //     text: "CLOSE DISPENSER",
+            //     iconSize: 24.0)
+          ],
+        ),
+      ),
     ]);
   }
 }
