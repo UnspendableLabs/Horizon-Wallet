@@ -275,4 +275,3 @@ List<Utxo> removeUtxoFromList(
           (utxo) => !(utxo.txid == txidToRemove && utxo.vout == voutToRemove))
       .toList();
 }
-

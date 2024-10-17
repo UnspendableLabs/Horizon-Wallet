@@ -14,7 +14,6 @@ class StateMapper {
   }
 }
 
-
 class VerboseEventMapper {
   static VerboseEvent toDomain(api.VerboseEvent apiEvent) {
     switch (apiEvent.event) {
@@ -65,7 +64,6 @@ class VerboseEventMapper {
   }
 }
 
-
 class VerboseEnhancedSendEventMapper {
   static VerboseEnhancedSendEvent toDomain(
       api.VerboseEnhancedSendEvent apiEvent) {
@@ -102,7 +100,6 @@ class VerboseEnhancedSendParamsMapper {
   }
 }
 
-
 class VerboseCreditEventMapper {
   static VerboseCreditEvent toDomain(api.VerboseCreditEvent apiEvent) {
     return VerboseCreditEvent(
@@ -135,7 +132,6 @@ class VerboseCreditParamsMapper {
   }
 }
 
-
 class VerboseDebitEventMapper {
   static VerboseDebitEvent toDomain(api.VerboseDebitEvent apiEvent) {
     return VerboseDebitEvent(
@@ -167,8 +163,6 @@ class VerboseDebitParamsMapper {
     );
   }
 }
-
-
 
 class VerboseAssetIssuanceEventMapper {
   static VerboseAssetIssuanceEvent toDomain(
@@ -234,7 +228,6 @@ class VerboseAssetIssuanceParamsMapper {
     );
   }
 }
-
 
 class VerboseDispenseEventMapper {
   static VerboseDispenseEvent toDomain(api.VerboseDispenseEvent apiEvent) {
@@ -337,7 +330,6 @@ class VerboseNewTransactionParamsMapper {
   }
 }
 
-
 class VerboseOpenDispenserEventMapper {
   static VerboseOpenDispenserEvent toDomain(
       api.VerboseOpenDispenserEvent apiEvent) {
@@ -382,7 +374,6 @@ class VerboseOpenDispenserParamsMapper {
   }
 }
 
-
 class VerboseDispenserUpdateEventMapper {
   static VerboseDispenserUpdateEvent toDomain(
       api.VerboseDispenserUpdateEvent apiEvent) {
@@ -413,7 +404,6 @@ class VerboseDispenserUpdateParamsMapper {
     );
   }
 }
-
 
 class VerboseRefillDispenserEventMapper {
   static VerboseRefillDispenserEvent toDomain(

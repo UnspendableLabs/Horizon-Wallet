@@ -3001,7 +3001,7 @@ abstract class V2Api {
     @Query("limit") int? limit,
     @Query("cursor") CursorModel? cursor,
     @Query("show_unconfirmed") bool? showUnconfirmed,
-    ]);
+  ]);
 
   @GET("/addresses/{address}/compose/dispense?verbose=true")
   Future<Response<ComposeDispenseResponseModel>> composeDispense(

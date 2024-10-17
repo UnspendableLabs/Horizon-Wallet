@@ -186,6 +186,5 @@ class DispenserUnpackedVerbose extends TransactionUnpacked {
 
 // dispense unnpacked is basically empty
 class DispenseUnpackedVerbose extends TransactionUnpacked {
-
   const DispenseUnpackedVerbose() : super(messageType: "dispense");
 }
