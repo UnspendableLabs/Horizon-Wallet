@@ -114,6 +114,11 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
     try {
       return state.dispensersState.maybeWhen(
         success: (dispensers) => [
+          HorizonUI.HorizonTextFormField(
+            label: 'Source Address',
+            controller: TextEditingController(text: widget.address.address),
+            enabled: false,
+          ),
           HorizonUI.HorizonDropdownMenu<Dispenser>(
             controller: dispenserController,
             id: 'close_dispenser_dropdown',
@@ -126,7 +131,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
                   constraints: const BoxConstraints(minHeight: 60),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '${dispenser.source} - ${dispenser.asset} - '
+                    '${dispenser.asset} - '
                     'Quantity: ${dispenser.giveQuantity} - '
                     'Price: ${dispenser.satoshirate}',
                     style: const TextStyle(fontSize: 14),
@@ -141,7 +146,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
             },
             displayStringForOption: (Dispenser? dispenser) {
               if (dispenser == null) return '';
-              return '${dispenser.source} - ${dispenser.asset} - '
+              return '${dispenser.asset} - '
                   'Quantity: ${dispenser.giveQuantity} - '
                   'Price: ${dispenser.satoshirate}';
             },
@@ -151,7 +156,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
                   constraints: const BoxConstraints(minHeight: 60),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '${dispenser.source} - ${dispenser.asset} - '
+                    '${dispenser.asset} - '
                     'Quantity: ${dispenser.giveQuantity} - '
                     'Price: ${dispenser.satoshirate}',
                     style: const TextStyle(fontSize: 14),

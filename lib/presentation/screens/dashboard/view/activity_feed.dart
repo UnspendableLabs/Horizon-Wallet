@@ -276,7 +276,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoDispense(
         unpackedData: var unpackedData,
       ) =>
-        SelectableText("Trigger Dispense"),
+        const SelectableText("Trigger Dispense"),
       // btc send
       TransactionInfo(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
