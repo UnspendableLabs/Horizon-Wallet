@@ -452,6 +452,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
+        label: "Asset",
+        controller: TextEditingController(text: params.asset),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
         label: "Give Quantity",
         controller: TextEditingController(text: params.giveQuantityNormalized),
         enabled: false,
