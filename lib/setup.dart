@@ -107,14 +107,13 @@ Future<void> setup() async {
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
     RetryInterceptor(
-      dio: dio, retries: 4,
+      dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
       retryDelays: const [
         // set delays between retries (optional)
         Duration(seconds: 1), // wait 1 sec before first retry
-        Duration(seconds: 2), // wait 2 sec before second retry
-        Duration(seconds: 3), // wait 3 sec before third retry
-        Duration(seconds: 5), // wait 3 sec before third retryh
+        Duration(seconds: 1), // wait 2 sec before second retry
+        Duration(seconds: 1), // wait 3 sec before third retry
       ],
     ), // Add the RetryInterceptor here
   ]);
@@ -203,7 +202,6 @@ Future<void> setup() async {
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
-
 
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
