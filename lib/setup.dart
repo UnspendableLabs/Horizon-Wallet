@@ -160,11 +160,11 @@ Future<void> setup() async {
 
   injector.registerSingleton<AnalyticsService>(PostHogWebAnalyticsService(
     config,
-    const String.fromEnvironment('POSTHOG_API_KEY').isNotEmpty
-        ? const String.fromEnvironment('POSTHOG_API_KEY')
+    const String.fromEnvironment('HORIZON_POSTHOG_API_KEY').isNotEmpty
+        ? const String.fromEnvironment('HORIZON_POSTHOG_API_KEY')
         : null,
-    const String.fromEnvironment('POSTHOG_API_HOST').isNotEmpty
-        ? const String.fromEnvironment('POSTHOG_API_HOST')
+    const String.fromEnvironment('HORIZON_POSTHOG_API_HOST').isNotEmpty
+        ? const String.fromEnvironment('HORIZON_POSTHOG_API_HOST')
         : null,
   ));
 

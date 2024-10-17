@@ -48,7 +48,7 @@ class Footer extends StatelessWidget {
                       "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v1.0.1"));
                 },
                 child: const Text(
-                  'v1.0.1',
+                  'v1.1.0',
                   style: TextStyle(
                     color: neonBlueDarkTheme,
                     fontSize: 16,
