@@ -54,12 +54,14 @@ class ConfigImpl implements Config {
 
   @override
   bool get isDatabaseViewerEnabled {
-    return const bool.fromEnvironment('HORIZON_ENABLE_DB_VIEWER', defaultValue: false);
+    return const bool.fromEnvironment('HORIZON_ENABLE_DB_VIEWER',
+        defaultValue: false);
   }
 
   @override
   bool get isAnalyticsEnabled {
-    return const bool.fromEnvironment('HORIZON_ANALYTICS_ENABLED', defaultValue: false);
+    return const bool.fromEnvironment('HORIZON_ANALYTICS_ENABLED',
+        defaultValue: false);
   }
 
   @override
