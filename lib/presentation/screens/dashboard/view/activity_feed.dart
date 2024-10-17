@@ -273,6 +273,10 @@ class ActivityFeedListItem extends StatelessWidget {
       ) =>
         SelectableText(
             "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoDispense(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText("Trigger Dispense"),
       // btc send
       TransactionInfo(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
