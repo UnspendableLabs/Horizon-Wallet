@@ -61,11 +61,15 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
       return [
         context.read<ShellStateCubit>().state.maybeWhen(
               success: (state) => WoltModalSheetPage(
-                backgroundColor: isDarkTheme ? dialogBackgroundColorDarkTheme : dialogBackgroundColorLightTheme,
+                backgroundColor: isDarkTheme
+                    ? dialogBackgroundColorDarkTheme
+                    : dialogBackgroundColorLightTheme,
                 isTopBarLayerAlwaysVisible: true,
                 topBarTitle: Text('Select an account',
                     style: TextStyle(
-                        fontSize: 25, fontWeight: FontWeight.bold, color: isDarkTheme ? mainTextWhite : mainTextBlack)),
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkTheme ? mainTextWhite : mainTextBlack)),
                 trailingNavBarWidget: IconButton(
                   padding: const EdgeInsets.all(pagePadding),
                   icon: const Icon(Icons.close),
@@ -80,12 +84,15 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                           itemCount: state.accounts.length,
                           itemBuilder: (context, index) {
                             final account = state.accounts[index];
-                            final isSelected = account.uuid == state.currentAccountUuid;
+                            final isSelected =
+                                account.uuid == state.currentAccountUuid;
                             return ListTile(
                               title: Text(account.name),
                               selected: isSelected,
                               onTap: () {
-                                context.read<ShellStateCubit>().onAccountChanged(account);
+                                context
+                                    .read<ShellStateCubit>()
+                                    .onAccountChanged(account);
                                 Navigator.of(modalSheetContext).pop();
                                 GoRouter.of(context).go('/dashboard');
                               },
@@ -98,7 +105,9 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 25.0),
-                            backgroundColor: isDarkTheme ? darkNavyDarkTheme : lightBlueLightTheme,
+                            backgroundColor: isDarkTheme
+                                ? darkNavyDarkTheme
+                                : lightBlueLightTheme,
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.zero,
                             ),
@@ -124,14 +133,17 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                   onBackButtonPressed: cb,
                                   title: "Add an account",
                                   body: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16.0),
                                     child: AddAccountForm(),
                                   ),
                                 );
                               }),
                             );
                           },
-                          child: const Text("Add Account", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          child: const Text("Add Account",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
@@ -176,7 +188,8 @@ class AccountSelectionButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 70),
             elevation: 0,
-            backgroundColor: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+            backgroundColor:
+                isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
             ),
@@ -189,24 +202,32 @@ class AccountSelectionButton extends StatelessWidget {
               children: [
                 Icon(
                   Icons.account_balance_wallet_rounded,
-                  color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                  color: isDarkTheme
+                      ? greyDashboardButtonTextDarkTheme
+                      : greyDashboardButtonTextLightTheme,
                 ),
                 const SizedBox(width: 16.0),
                 Text(
                   context.read<ShellStateCubit>().state.maybeWhen(
-                        success: (state) =>
-                            state.accounts.firstWhere((account) => account.uuid == state.currentAccountUuid).name,
+                        success: (state) => state.accounts
+                            .firstWhere((account) =>
+                                account.uuid == state.currentAccountUuid)
+                            .name,
                         orElse: () => "Select Account",
                       ),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                    color: isDarkTheme
+                        ? greyDashboardButtonTextDarkTheme
+                        : greyDashboardButtonTextLightTheme,
                   ),
                 ),
                 const Spacer(),
                 Icon(
                   Icons.arrow_drop_down,
-                  color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                  color: isDarkTheme
+                      ? greyDashboardButtonTextDarkTheme
+                      : greyDashboardButtonTextLightTheme,
                 ),
               ],
             ),
@@ -243,7 +264,8 @@ class AddressAction extends StatelessWidget {
           height: 65,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+              backgroundColor:
+                  isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24.0),
@@ -257,7 +279,9 @@ class AddressAction extends StatelessWidget {
                 ? Icon(
                     icon,
                     size: iconSize ?? 24.0,
-                    color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                    color: isDarkTheme
+                        ? greyDashboardButtonTextDarkTheme
+                        : greyDashboardButtonTextLightTheme,
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -265,7 +289,9 @@ class AddressAction extends StatelessWidget {
                       Icon(
                         icon,
                         size: iconSize ?? 24.0,
-                        color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                        color: isDarkTheme
+                            ? greyDashboardButtonTextDarkTheme
+                            : greyDashboardButtonTextLightTheme,
                       ),
                       const SizedBox(width: 4.0),
                       Flexible(
@@ -274,7 +300,9 @@ class AddressAction extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
-                            color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
+                            color: isDarkTheme
+                                ? greyDashboardButtonTextDarkTheme
+                                : greyDashboardButtonTextLightTheme,
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -288,8 +316,6 @@ class AddressAction extends StatelessWidget {
     );
   }
 }
-
-
 
 class DispenserButtonMenu extends StatelessWidget {
   final bool isDarkTheme;
@@ -332,7 +358,8 @@ class DispenserButtonMenu extends StatelessWidget {
                           includeBackButton: false,
                           includeCloseButton: true,
                           body: ComposeDispenserPageWrapper(
-                            dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                            dashboardActivityFeedBloc:
+                                dashboardActivityFeedBloc,
                           ),
                         ));
                   }),
@@ -373,34 +400,40 @@ class DispenserButtonMenu extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24.0),
               ),
               child: isMobile
-                ? Icon(
-                    icon,
-                    size: iconSize ?? 24.0,
-                    color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        icon,
-                        size: iconSize ?? 24.0,
-                        color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Flexible(
-                        child: Text(
-                          text,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: isDarkTheme ? greyDashboardButtonTextDarkTheme : greyDashboardButtonTextLightTheme,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                  ? Icon(
+                      icon,
+                      size: iconSize ?? 24.0,
+                      color: isDarkTheme
+                          ? greyDashboardButtonTextDarkTheme
+                          : greyDashboardButtonTextLightTheme,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: iconSize ?? 24.0,
+                          color: isDarkTheme
+                              ? greyDashboardButtonTextDarkTheme
+                              : greyDashboardButtonTextLightTheme,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDarkTheme
+                                  ? greyDashboardButtonTextDarkTheme
+                                  : greyDashboardButtonTextLightTheme,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ),
@@ -505,10 +538,13 @@ class DashboardPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>().state; // we should only ever get to this page if shell is success
+    final shell = context
+        .watch<ShellStateCubit>()
+        .state; // we should only ever get to this page if shell is success
     return shell.maybeWhen(
         success: (data) => MultiBlocProvider(
-              key: Key("${data.currentAccountUuid}:${data.currentAddress.address}"),
+              key: Key(
+                  "${data.currentAccountUuid}:${data.currentAddress.address}"),
               providers: [
                 BlocProvider<BalancesBloc>(
                   create: (context) => BalancesBloc(
@@ -527,13 +563,15 @@ class DashboardPageWrapper extends StatelessWidget {
                     eventsRepository: GetIt.I.get<EventsRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-                    transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+                    transactionLocalRepository:
+                        GetIt.I.get<TransactionLocalRepository>(),
                     pageSize: 1000,
                   ),
                 ),
               ],
               child: DashboardPage(
-                key: Key("${data.currentAccountUuid}:${data.currentAddress.address}"),
+                key: Key(
+                    "${data.currentAccountUuid}:${data.currentAddress.address}"),
                 accountUuid: data.currentAccountUuid,
                 currentAddress: data.currentAddress,
                 actionRepository: GetIt.instance<ActionRepository>(),
@@ -561,7 +599,9 @@ class QRCodeDialog extends StatelessWidget {
             dataModuleShape: QrDataModuleShape.square,
             color: isDarkTheme ? mainTextWhite : royalBlueLightTheme,
           ),
-          eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: isDarkTheme ? mainTextWhite : royalBlueLightTheme),
+          eyeStyle: QrEyeStyle(
+              eyeShape: QrEyeShape.square,
+              color: isDarkTheme ? mainTextWhite : royalBlueLightTheme),
           data: currentAddress.address,
           version: QrVersions.auto,
           size: 230.0,
@@ -579,8 +619,9 @@ class QRCodeDialog extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isDarkTheme ? darkNavyDarkTheme : noBackgroundColor,
                   borderRadius: BorderRadius.circular(10.0),
-                  border:
-                      isDarkTheme ? Border.all(color: noBackgroundColor) : Border.all(color: greyLightThemeUnderlineColor),
+                  border: isDarkTheme
+                      ? Border.all(color: noBackgroundColor)
+                      : Border.all(color: greyLightThemeUnderlineColor),
                 ),
                 child: Row(
                   children: [
@@ -589,7 +630,8 @@ class QRCodeDialog extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         child: SelectableText(
                           currentAddress.address,
-                          style: const TextStyle(overflow: TextOverflow.ellipsis, fontSize: 16),
+                          style: const TextStyle(
+                              overflow: TextOverflow.ellipsis, fontSize: 16),
                         ),
                       ),
                     ),
@@ -599,15 +641,19 @@ class QRCodeDialog extends StatelessWidget {
                           ? ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(text: currentAddress.address));
+                                Clipboard.setData(ClipboardData(
+                                    text: currentAddress.address));
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Address copied to clipboard')),
+                                  const SnackBar(
+                                      content:
+                                          Text('Address copied to clipboard')),
                                 );
                               },
                               child: const Icon(Icons.copy),
@@ -615,15 +661,19 @@ class QRCodeDialog extends StatelessWidget {
                           : ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0, vertical: 20.0),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(text: currentAddress.address));
+                                Clipboard.setData(ClipboardData(
+                                    text: currentAddress.address));
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Address copied to clipboard')),
+                                  const SnackBar(
+                                      content:
+                                          Text('Address copied to clipboard')),
                                 );
                               },
                               child: SizedBox(
@@ -632,12 +682,16 @@ class QRCodeDialog extends StatelessWidget {
                                   children: [
                                     Icon(Icons.copy,
                                         size: 14.0,
-                                        color: isDarkTheme ? darkThemeInputLabelColor : lightThemeInputLabelColor),
+                                        color: isDarkTheme
+                                            ? darkThemeInputLabelColor
+                                            : lightThemeInputLabelColor),
                                     const SizedBox(width: 4.0, height: 16.0),
                                     Text("COPY",
                                         style: TextStyle(
                                             fontSize: 14.0,
-                                            color: isDarkTheme ? darkThemeInputLabelColor : lightThemeInputLabelColor)),
+                                            color: isDarkTheme
+                                                ? darkThemeInputLabelColor
+                                                : lightThemeInputLabelColor)),
                                   ],
                                 ),
                               ),
@@ -657,7 +711,8 @@ class QRCodeDialog extends StatelessWidget {
 
           // look up account
           Account account = context.read<ShellStateCubit>().state.maybeWhen(
-                success: (state) => state.accounts.firstWhere((account) => account.uuid == accountUuid),
+                success: (state) => state.accounts
+                    .firstWhere((account) => account.uuid == accountUuid),
                 orElse: () => throw Exception("invariant: no account"),
               );
 
@@ -780,36 +835,50 @@ class BalancesSliverState extends State<BalancesSliver> {
           ...entries,
         ];
 
-        final ownedAssetsNotIncludedInEntries =
-            ownedAssets.where((asset) => !orderedEntries.any((entry) => entry.key == asset.asset)).toList();
+        final ownedAssetsNotIncludedInEntries = ownedAssets
+            .where((asset) =>
+                !orderedEntries.any((entry) => entry.key == asset.asset))
+            .toList();
 
         final List<TableRow> rows = [];
         final balanceRows = orderedEntries.map((entry) {
           final isClickable = entry.key != 'BTC';
 
           final Color textColor = isClickable
-              ? (widget.isDarkTheme ? darkThemeAssetLinkColor : lightThemeAssetLinkColor)
-              : (widget.isDarkTheme ? greyDashboardTextDarkTheme : greyDashboardTextLightTheme);
+              ? (widget.isDarkTheme
+                  ? darkThemeAssetLinkColor
+                  : lightThemeAssetLinkColor)
+              : (widget.isDarkTheme
+                  ? greyDashboardTextDarkTheme
+                  : greyDashboardTextLightTheme);
 
-          Asset? currentOwnedAsset = ownedAssets.firstWhereOrNull((asset) => asset.asset == entry.key);
+          Asset? currentOwnedAsset =
+              ownedAssets.firstWhereOrNull((asset) => asset.asset == entry.key);
 
-          final bool isOwner = currentOwnedAsset?.owner == widget.currentAddress.address;
+          final bool isOwner =
+              currentOwnedAsset?.owner == widget.currentAddress.address;
 
           return TableRow(
             children: [
-              _buildTableCell1(entry.key, entry.value.assetInfo.assetLongname, isClickable, textColor),
+              _buildTableCell1(entry.key, entry.value.assetInfo.assetLongname,
+                  isClickable, textColor),
               _buildTableCell2(entry.value.quantityNormalized, textColor),
-              _buildTableCell3(entry.key, textColor, isOwner, currentOwnedAsset, entry.value.quantity)
+              _buildTableCell3(entry.key, textColor, isOwner, currentOwnedAsset,
+                  entry.value.quantity)
             ],
           );
         }).toList();
 
         final ownedAssetRows = ownedAssetsNotIncludedInEntries.map((asset) {
-          final textColor = widget.isDarkTheme ? darkThemeAssetLinkColor : lightThemeAssetLinkColor;
+          final textColor = widget.isDarkTheme
+              ? darkThemeAssetLinkColor
+              : lightThemeAssetLinkColor;
           return TableRow(
             children: [
-              _buildTableCell1(asset.asset, asset.assetLongname, true, textColor),
-              _buildTableCell2(asset.divisible == true ? '0.00000000' : '0', textColor), // these are zero balances
+              _buildTableCell1(
+                  asset.asset, asset.assetLongname, true, textColor),
+              _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
+                  textColor), // these are zero balances
               _buildTableCell3(asset.asset, textColor, true, asset, 0)
             ],
           );
@@ -818,7 +887,8 @@ class BalancesSliverState extends State<BalancesSliver> {
         rows.addAll(balanceRows);
         rows.addAll(ownedAssetRows);
 
-        final displayedRows = _viewAll ? rows : rows.take(widget.initialItemCount).toList();
+        final displayedRows =
+            _viewAll ? rows : rows.take(widget.initialItemCount).toList();
 
         List<Widget> widgets = [
           LayoutBuilder(builder: (context, constraints) {
@@ -832,9 +902,11 @@ class BalancesSliverState extends State<BalancesSliver> {
                   ),
                 ),
                 columnWidths: {
-                  0: FlexColumnWidth(MediaQuery.of(context).size.width < 600 ? 1 : 2),
+                  0: FlexColumnWidth(
+                      MediaQuery.of(context).size.width < 600 ? 1 : 2),
                   1: const FlexColumnWidth(1),
-                  2: FlexColumnWidth(MediaQuery.of(context).size.width < 600 ? 1 : 1),
+                  2: FlexColumnWidth(
+                      MediaQuery.of(context).size.width < 600 ? 1 : 1),
                 },
                 children: displayedRows,
               ),
@@ -895,7 +967,8 @@ class BalancesSliverState extends State<BalancesSliver> {
     );
   }
 
-  TableCell _buildTableCell1(String assetName, String? assetLongname, bool isClickable, Color textColor) {
+  TableCell _buildTableCell1(String assetName, String? assetLongname,
+      bool isClickable, Color textColor) {
     return TableCell(
         verticalAlignment: TableCellVerticalAlignment.middle,
         child: Padding(
@@ -910,7 +983,10 @@ class BalancesSliverState extends State<BalancesSliver> {
                     fontWeight: FontWeight.w600,
                     color: textColor,
                   ),
-                  recognizer: isClickable ? (TapGestureRecognizer()..onTap = () => _launchAssetUrl(assetName)) : null,
+                  recognizer: isClickable
+                      ? (TapGestureRecognizer()
+                        ..onTap = () => _launchAssetUrl(assetName))
+                      : null,
                 ),
               );
             },
@@ -918,7 +994,8 @@ class BalancesSliverState extends State<BalancesSliver> {
         ));
   }
 
-  TableCell _buildTableCell2(String quantityNormalized, Color textColor) => TableCell(
+  TableCell _buildTableCell2(String quantityNormalized, Color textColor) =>
+      TableCell(
         verticalAlignment: TableCellVerticalAlignment.middle,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
@@ -929,7 +1006,8 @@ class BalancesSliverState extends State<BalancesSliver> {
         ),
       );
 
-  TableCell _buildTableCell3(String assetName, Color textColor, bool isOwner, Asset? currentOwnedAsset, int quantity) {
+  TableCell _buildTableCell3(String assetName, Color textColor, bool isOwner,
+      Asset? currentOwnedAsset, int quantity) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: Container(
@@ -947,7 +1025,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                     body: HorizonUI.HorizonDialog(
                       title: 'Compose Send',
                       body: ComposeSendPageWrapper(
-                        dashboardActivityFeedBloc: BlocProvider.of<DashboardActivityFeedBloc>(context),
+                        dashboardActivityFeedBloc:
+                            BlocProvider.of<DashboardActivityFeedBloc>(context),
                         asset: assetName,
                       ),
                       includeBackButton: false,
@@ -968,7 +1047,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                         assetName: currentOwnedAsset!.asset,
                         assetLongname: currentOwnedAsset.assetLongname,
                         actionType: result,
-                        dashboardActivityFeedBloc: BlocProvider.of<DashboardActivityFeedBloc>(context),
+                        dashboardActivityFeedBloc:
+                            BlocProvider.of<DashboardActivityFeedBloc>(context),
                       ),
                       includeBackButton: false,
                       includeCloseButton: true,
@@ -978,7 +1058,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                     ),
                   );
                 },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<IssuanceActionType>>[
+                itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<IssuanceActionType>>[
                   PopupMenuItem<IssuanceActionType>(
                     value: IssuanceActionType.reset,
                     enabled: currentOwnedAsset?.locked != true,
@@ -1055,20 +1136,23 @@ class DashboardPageState extends State<DashboardPage> {
 
   void Function() _getHandler(URLAction.Action action) {
     return switch (action) {
-      URLAction.DispenseAction(address: var address) => () => _handleDispenseAction(address),
+      URLAction.DispenseAction(address: var address) => () =>
+          _handleDispenseAction(address),
       _ => noop
     };
   }
 
   void _handleDispenseAction(String address) {
-    final dashboardActivityFeedBloc = BlocProvider.of<DashboardActivityFeedBloc>(context);
+    final dashboardActivityFeedBloc =
+        BlocProvider.of<DashboardActivityFeedBloc>(context);
 
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(
             title: "Trigger Dispense",
             body: ComposeDispensePageWrapper(
-                initialDispenserAddress: address, dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
+                initialDispenserAddress: address,
+                dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
   }
 
   @override
@@ -1080,14 +1164,17 @@ class DashboardPageState extends State<DashboardPage> {
     final height = MediaQuery.of(context).size.height;
 
     Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
-    final backgroundColorInner = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+    final backgroundColorInner =
+        isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
 
-    final backgroundColorWrapper = isDarkTheme ? darkNavyDarkTheme : Colors.white;
+    final backgroundColorWrapper =
+        isDarkTheme ? darkNavyDarkTheme : Colors.white;
 
     final isSmallScreen = screenWidth < 600;
 
     final account = context.read<ShellStateCubit>().state.maybeWhen(
-          success: (state) => state.accounts.firstWhere((account) => account.uuid == widget.accountUuid),
+          success: (state) => state.accounts
+              .firstWhere((account) => account.uuid == widget.accountUuid),
           orElse: () => null,
         );
 
@@ -1140,14 +1227,16 @@ class DashboardPageState extends State<DashboardPage> {
                     child: SliverStack(
                       children: [
                         SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                            padding:
+                                const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
                             sliver: SliverToBoxAdapter(
                                 child: Row(children: [
                               Expanded(
                                   child: Container(
                                       decoration: BoxDecoration(
                                         color: backgroundColorWrapper,
-                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
                                       ),
                                       child: const AccountSidebar())),
                               const SizedBox(width: 8),
@@ -1162,33 +1251,47 @@ class DashboardPageState extends State<DashboardPage> {
                                       children: [
                                         Builder(builder: (context) {
                                           final dashboardActivityFeedBloc =
-                                              BlocProvider.of<DashboardActivityFeedBloc>(context);
+                                              BlocProvider.of<
+                                                      DashboardActivityFeedBloc>(
+                                                  context);
                                           return AddressActions(
                                             isDarkTheme: isDarkTheme,
-                                            dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                                            dashboardActivityFeedBloc:
+                                                dashboardActivityFeedBloc,
                                             accountUuid: widget.accountUuid,
-                                            currentAddress: widget.currentAddress,
+                                            currentAddress:
+                                                widget.currentAddress,
                                             screenWidth: screenWidth,
                                           );
                                         }),
                                         SizedBox(
                                           height: isSmallScreen ? 352 : 258,
                                           child: Container(
-                                            margin: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                                            margin: const EdgeInsets.fromLTRB(
+                                                8, 4, 8, 8),
                                             decoration: BoxDecoration(
                                               color: backgroundColorInner,
-                                              borderRadius: BorderRadius.circular(30.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(30.0),
                                             ),
                                             child: CustomScrollView(
                                               slivers: [
                                                 SliverPadding(
-                                                  padding: const EdgeInsets.all(8.0),
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
                                                   sliver: BalancesDisplay(
-                                                      accountUuid: widget.accountUuid,
+                                                      accountUuid:
+                                                          widget.accountUuid,
                                                       isDarkTheme: isDarkTheme,
-                                                      addresses: [widget.currentAddress],
-                                                      currentAddress: widget.currentAddress,
-                                                      initialItemCount: isSmallScreen ? 5 : 3),
+                                                      addresses: [
+                                                        widget.currentAddress
+                                                      ],
+                                                      currentAddress:
+                                                          widget.currentAddress,
+                                                      initialItemCount:
+                                                          isSmallScreen
+                                                              ? 5
+                                                              : 3),
                                                 ),
                                               ],
                                             ),
@@ -1197,21 +1300,33 @@ class DashboardPageState extends State<DashboardPage> {
                                         SizedBox(
                                           height: isSmallScreen ? 248 : 352,
                                           child: Container(
-                                            margin: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                                            margin: const EdgeInsets.fromLTRB(
+                                                8, 4, 8, 8),
                                             decoration: BoxDecoration(
                                               color: backgroundColorInner,
-                                              borderRadius: BorderRadius.circular(30.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(30.0),
                                             ),
                                             child: CustomScrollView(
                                               slivers: [
                                                 SliverPadding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  sliver: DashboardActivityFeedScreen(
-                                                      key: Key(
-                                                        widget.currentAddress.address,
-                                                      ),
-                                                      addresses: [widget.currentAddress],
-                                                      initialItemCount: isSmallScreen ? 3 : 4),
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  sliver:
+                                                      DashboardActivityFeedScreen(
+                                                          key: Key(
+                                                            widget
+                                                                .currentAddress
+                                                                .address,
+                                                          ),
+                                                          addresses: [
+                                                            widget
+                                                                .currentAddress
+                                                          ],
+                                                          initialItemCount:
+                                                              isSmallScreen
+                                                                  ? 3
+                                                                  : 4),
                                                 )
                                               ],
                                             ),
@@ -1258,7 +1373,8 @@ class DashboardPageState extends State<DashboardPage> {
                       SliverCrossAxisConstrained(
                           maxCrossAxisExtent: maxWidth,
                           child: TransparentHorizonSliverAppBar(
-                            expandedHeight: isSmallScreen ? kToolbarHeight : 150,
+                            expandedHeight:
+                                isSmallScreen ? kToolbarHeight : 150,
                           )),
                       SliverCrossAxisConstrained(
                           maxCrossAxisExtent: maxWidth,
@@ -1287,7 +1403,8 @@ class DashboardPageState extends State<DashboardPage> {
                               ),
                             ),
                             SliverPadding(
-                              padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                              padding:
+                                  const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
                               sliver: MultiSliver(children: [
                                 !isSmallScreen
                                     ? SliverToBoxAdapter(
@@ -1296,58 +1413,106 @@ class DashboardPageState extends State<DashboardPage> {
                                             Expanded(
                                               child: AccountSelectionButton(
                                                 isDarkTheme: isDarkTheme,
-                                                onPressed: () => showAccountList(context, isDarkTheme),
+                                                onPressed: () =>
+                                                    showAccountList(
+                                                        context, isDarkTheme),
                                               ),
                                             ),
                                             Builder(builder: (context) {
-                                              return context.read<ShellStateCubit>().state.maybeWhen(
-                                                  success: (state) => state.addresses.length > 1
-                                                      ? Expanded(
-                                                          child: Padding(
-                                                            padding: const EdgeInsets.fromLTRB(0.0, 8.0, 8.0, 0.0),
-                                                            child: AddressSelectionButton(
-                                                              isDarkTheme: isDarkTheme,
-                                                              onPressed: () =>
-                                                                  showAddressList(context, isDarkTheme, account),
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : const SizedBox.shrink(),
-                                                  orElse: () => const SizedBox.shrink());
+                                              return context
+                                                  .read<ShellStateCubit>()
+                                                  .state
+                                                  .maybeWhen(
+                                                      success: (state) => state
+                                                                  .addresses
+                                                                  .length >
+                                                              1
+                                                          ? Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .fromLTRB(
+                                                                        0.0,
+                                                                        8.0,
+                                                                        8.0,
+                                                                        0.0),
+                                                                child:
+                                                                    AddressSelectionButton(
+                                                                  isDarkTheme:
+                                                                      isDarkTheme,
+                                                                  onPressed: () =>
+                                                                      showAddressList(
+                                                                          context,
+                                                                          isDarkTheme,
+                                                                          account),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          : const SizedBox
+                                                              .shrink(),
+                                                      orElse: () =>
+                                                          const SizedBox
+                                                              .shrink());
                                             }),
                                           ],
                                         ),
                                       )
-                                    : const SliverToBoxAdapter(child: SizedBox.shrink()),
+                                    : const SliverToBoxAdapter(
+                                        child: SizedBox.shrink()),
                                 isSmallScreen
                                     ? SliverToBoxAdapter(
                                         child: AccountSelectionButton(
                                           isDarkTheme: isDarkTheme,
-                                          onPressed: () => showAccountList(context, isDarkTheme),
+                                          onPressed: () => showAccountList(
+                                              context, isDarkTheme),
                                         ),
                                       )
-                                    : const SliverToBoxAdapter(child: SizedBox.shrink()),
+                                    : const SliverToBoxAdapter(
+                                        child: SizedBox.shrink()),
                                 isSmallScreen
                                     ? Builder(builder: (context) {
-                                        return context.read<ShellStateCubit>().state.maybeWhen(
-                                            success: (state) => state.addresses.length > 1
-                                                ? SliverToBoxAdapter(
-                                                    child: Padding(
-                                                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
-                                                    child: AddressSelectionButton(
-                                                      isDarkTheme: isDarkTheme,
-                                                      onPressed: () => showAddressList(context, isDarkTheme, account),
-                                                    ),
-                                                  ))
-                                                : const SliverToBoxAdapter(child: SizedBox.shrink()),
-                                            orElse: () => const SliverToBoxAdapter(child: SizedBox.shrink()));
+                                        return context
+                                            .read<ShellStateCubit>()
+                                            .state
+                                            .maybeWhen(
+                                                success: (state) => state
+                                                            .addresses.length >
+                                                        1
+                                                    ? SliverToBoxAdapter(
+                                                        child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .fromLTRB(8.0,
+                                                                8.0, 8.0, 0.0),
+                                                        child:
+                                                            AddressSelectionButton(
+                                                          isDarkTheme:
+                                                              isDarkTheme,
+                                                          onPressed: () =>
+                                                              showAddressList(
+                                                                  context,
+                                                                  isDarkTheme,
+                                                                  account),
+                                                        ),
+                                                      ))
+                                                    : const SliverToBoxAdapter(
+                                                        child:
+                                                            SizedBox.shrink()),
+                                                orElse: () =>
+                                                    const SliverToBoxAdapter(
+                                                        child:
+                                                            SizedBox.shrink()));
                                       })
-                                    : const SliverToBoxAdapter(child: SizedBox.shrink()),
-                                SliverToBoxAdapter(child: Builder(builder: (context) {
-                                  final dashboardActivityFeedBloc = BlocProvider.of<DashboardActivityFeedBloc>(context);
+                                    : const SliverToBoxAdapter(
+                                        child: SizedBox.shrink()),
+                                SliverToBoxAdapter(
+                                    child: Builder(builder: (context) {
+                                  final dashboardActivityFeedBloc = BlocProvider
+                                      .of<DashboardActivityFeedBloc>(context);
                                   return AddressActions(
                                     isDarkTheme: isDarkTheme,
-                                    dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                                    dashboardActivityFeedBloc:
+                                        dashboardActivityFeedBloc,
                                     accountUuid: widget.accountUuid,
                                     currentAddress: widget.currentAddress,
                                     screenWidth: screenWidth,
@@ -1356,10 +1521,12 @@ class DashboardPageState extends State<DashboardPage> {
                                 SliverStack(children: [
                                   SliverPositioned.fill(
                                     child: Container(
-                                      margin: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                                      margin:
+                                          const EdgeInsets.fromLTRB(8, 4, 8, 0),
                                       decoration: BoxDecoration(
                                         color: backgroundColorInner,
-                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
                                       ),
                                     ),
                                   ),
@@ -1370,16 +1537,19 @@ class DashboardPageState extends State<DashboardPage> {
                                         isDarkTheme: isDarkTheme,
                                         addresses: [widget.currentAddress],
                                         currentAddress: widget.currentAddress,
-                                        initialItemCount: isSmallScreen ? 5 : 3),
+                                        initialItemCount:
+                                            isSmallScreen ? 5 : 3),
                                   ),
                                 ]),
                                 SliverStack(children: [
                                   SliverPositioned.fill(
                                     child: Container(
-                                      margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                      margin:
+                                          const EdgeInsets.fromLTRB(8, 8, 8, 0),
                                       decoration: BoxDecoration(
                                         color: backgroundColorInner,
-                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
                                       ),
                                     ),
                                   ),

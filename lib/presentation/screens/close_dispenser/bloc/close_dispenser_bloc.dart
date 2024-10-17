@@ -195,7 +195,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
 
-          analyticsService.trackEvent('broadcast_tx_dispenser');
+          analyticsService.trackEvent('broadcast_tx_dispenser_close');
         },
         onError: (msg) {
           emit(state.copyWith(
