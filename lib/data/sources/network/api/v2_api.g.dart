@@ -570,6 +570,167 @@ Map<String, dynamic> _$VerboseResetIssuanceEventToJson(
       'params': instance.params,
     };
 
+NewFairminterEvent _$NewFairminterEventFromJson(Map<String, dynamic> json) =>
+    NewFairminterEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          NewFairminterParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$NewFairminterEventToJson(NewFairminterEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+NewFairminterParams _$NewFairminterParamsFromJson(Map<String, dynamic> json) =>
+    NewFairminterParams(
+      asset: json['asset'] as String,
+      assetLongname: json['asset_longname'] as String?,
+      assetParent: json['asset_parent'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      burnPayment: json['burn_payment'] as bool?,
+      description: json['description'] as String?,
+      divisible: json['divisible'] as bool?,
+      endBlock: (json['end_block'] as num?)?.toInt(),
+      hardCap: (json['hard_cap'] as num?)?.toInt(),
+      lockDescription: json['lock_description'] as bool?,
+      lockQuantity: json['lock_quantity'] as bool?,
+      maxMintPerTx: (json['max_mint_per_tx'] as num?)?.toInt(),
+      mintedAssetCommissionInt:
+          (json['minted_asset_commission_int'] as num?)?.toInt(),
+      preMinted: json['pre_minted'] as bool?,
+      premintQuantity: (json['premint_quantity'] as num?)?.toInt(),
+      price: (json['price'] as num?)?.toInt(),
+      quantityByPrice: (json['quantity_by_price'] as num?)?.toInt(),
+      softCap: (json['soft_cap'] as num?)?.toInt(),
+      softCapDeadlineBlock: (json['soft_cap_deadline_block'] as num?)?.toInt(),
+      source: json['source'] as String?,
+      startBlock: (json['start_block'] as num?)?.toInt(),
+      status: json['status'] as String?,
+      txHash: json['tx_hash'] as String?,
+      txIndex: (json['tx_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$NewFairminterParamsToJson(
+        NewFairminterParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'asset_longname': instance.assetLongname,
+      'asset_parent': instance.assetParent,
+      'block_index': instance.blockIndex,
+      'burn_payment': instance.burnPayment,
+      'description': instance.description,
+      'divisible': instance.divisible,
+      'end_block': instance.endBlock,
+      'hard_cap': instance.hardCap,
+      'lock_description': instance.lockDescription,
+      'lock_quantity': instance.lockQuantity,
+      'max_mint_per_tx': instance.maxMintPerTx,
+      'minted_asset_commission_int': instance.mintedAssetCommissionInt,
+      'pre_minted': instance.preMinted,
+      'premint_quantity': instance.premintQuantity,
+      'price': instance.price,
+      'quantity_by_price': instance.quantityByPrice,
+      'soft_cap': instance.softCap,
+      'soft_cap_deadline_block': instance.softCapDeadlineBlock,
+      'source': instance.source,
+      'start_block': instance.startBlock,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseNewFairminterEvent _$VerboseNewFairminterEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseNewFairminterEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseNewFairminterParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseNewFairminterEventToJson(
+        VerboseNewFairminterEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseNewFairminterParams _$VerboseNewFairminterParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseNewFairminterParams(
+      asset: json['asset'] as String,
+      assetLongname: json['asset_longname'] as String?,
+      assetParent: json['asset_parent'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      burnPayment: json['burn_payment'] as bool?,
+      description: json['description'] as String?,
+      divisible: json['divisible'] as bool?,
+      endBlock: (json['end_block'] as num?)?.toInt(),
+      hardCap: (json['hard_cap'] as num?)?.toInt(),
+      lockDescription: json['lock_description'] as bool?,
+      lockQuantity: json['lock_quantity'] as bool?,
+      maxMintPerTx: (json['max_mint_per_tx'] as num?)?.toInt(),
+      mintedAssetCommissionInt:
+          (json['minted_asset_commission_int'] as num?)?.toInt(),
+      preMinted: json['pre_minted'] as bool?,
+      premintQuantity: (json['premint_quantity'] as num?)?.toInt(),
+      price: (json['price'] as num?)?.toInt(),
+      quantityByPrice: (json['quantity_by_price'] as num?)?.toInt(),
+      softCap: (json['soft_cap'] as num?)?.toInt(),
+      softCapDeadlineBlock: (json['soft_cap_deadline_block'] as num?)?.toInt(),
+      source: json['source'] as String?,
+      startBlock: (json['start_block'] as num?)?.toInt(),
+      status: json['status'] as String?,
+      txHash: json['tx_hash'] as String?,
+      txIndex: (json['tx_index'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$VerboseNewFairminterParamsToJson(
+        VerboseNewFairminterParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'asset_longname': instance.assetLongname,
+      'asset_parent': instance.assetParent,
+      'block_index': instance.blockIndex,
+      'burn_payment': instance.burnPayment,
+      'description': instance.description,
+      'divisible': instance.divisible,
+      'end_block': instance.endBlock,
+      'hard_cap': instance.hardCap,
+      'lock_description': instance.lockDescription,
+      'lock_quantity': instance.lockQuantity,
+      'max_mint_per_tx': instance.maxMintPerTx,
+      'minted_asset_commission_int': instance.mintedAssetCommissionInt,
+      'pre_minted': instance.preMinted,
+      'premint_quantity': instance.premintQuantity,
+      'price': instance.price,
+      'quantity_by_price': instance.quantityByPrice,
+      'soft_cap': instance.softCap,
+      'soft_cap_deadline_block': instance.softCapDeadlineBlock,
+      'source': instance.source,
+      'start_block': instance.startBlock,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
 NewFairmintEvent _$NewFairmintEventFromJson(Map<String, dynamic> json) =>
     NewFairmintEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),

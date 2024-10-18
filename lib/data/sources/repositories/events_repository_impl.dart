@@ -50,6 +50,9 @@ class VerboseEventMapper {
       case "NEW_FAIRMINT":
         return VerboseNewFairmintEventMapper.toDomain(
             apiEvent as api.VerboseNewFairmintEvent);
+      case "NEW_FAIRMINTER":
+        return VerboseNewFairminterEventMapper.toDomain(
+            apiEvent as api.VerboseNewFairminterEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);
@@ -163,6 +166,54 @@ class VerboseDebitParamsMapper {
       blockTime: apiParams.blockTime,
       // assetInfo: AssetInfoMapper.toDomain(apiParams.assetInfo),
       quantityNormalized: apiParams.quantityNormalized,
+    );
+  }
+}
+
+class VerboseNewFairminterEventMapper {
+  static VerboseNewFairminterEvent toDomain(
+      api.VerboseNewFairminterEvent apiEvent) {
+    return VerboseNewFairminterEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "NEW_FAIRMINTER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseNewFairminterParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseNewFairminterParamsMapper {
+  static VerboseNewFairminterParams toDomain(
+      api.VerboseNewFairminterParams apiParams) {
+    return VerboseNewFairminterParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      assetLongname: apiParams.assetLongname,
+      assetParent: apiParams.assetParent,
+      burnPayment: apiParams.burnPayment,
+      description: apiParams.description,
+      divisible: apiParams.divisible,
+      endBlock: apiParams.endBlock,
+      hardCap: apiParams.hardCap,
+      lockDescription: apiParams.lockDescription,
+      lockQuantity: apiParams.lockQuantity,
+      maxMintPerTx: apiParams.maxMintPerTx,
+      mintedAssetCommissionInt: apiParams.mintedAssetCommissionInt,
+      preMinted: apiParams.preMinted,
+      premintQuantity: apiParams.premintQuantity,
+      price: apiParams.price,
+      quantityByPrice: apiParams.quantityByPrice,
+      softCap: apiParams.softCap,
+      softCapDeadlineBlock: apiParams.softCapDeadlineBlock,
+      source: apiParams.source,
+      startBlock: apiParams.startBlock,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      blockTime: apiParams.blockTime,
     );
   }
 }
