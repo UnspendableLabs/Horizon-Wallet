@@ -6,7 +6,7 @@ part "fairminter.g.dart";
 @JsonSerializable(fieldRename: FieldRename.snake)
 class FairminterModel {
   final String txHash;
-  final int txIndex;
+  final int? txIndex;
   final int? blockIndex;
   final String source;
   final String asset;
@@ -31,23 +31,23 @@ class FairminterModel {
   final String? status;
   final int? earnedQuantity;
   final int? commission;
-  final int paidQuantity;
+  final int? paidQuantity;
   final bool? confirmed;
   final int? blockTime;
 
   const FairminterModel({
     required this.txHash,
     required this.txIndex,
-    required this.blockIndex,
+    this.blockIndex,
     required this.source,
     required this.asset,
-    required this.assetParent,
-    required this.assetLongname,
-    required this.description,
-    required this.price,
+    this.assetParent,
+    this.assetLongname,
+    this.description,
+    this.price,
     required this.quantityByPrice,
     required this.hardCap,
-    required this.burnPayment,
+    this.burnPayment,
     required this.maxMintPerTx,
     required this.premintQuantity,
     required this.startBlock,
@@ -55,16 +55,16 @@ class FairminterModel {
     required this.mintedAssetCommissionInt,
     required this.softCap,
     required this.softCapDeadlineBlock,
-    required this.lockDescription,
-    required this.lockQuantity,
-    required this.divisible,
-    required this.preMinted,
-    required this.status,
-    required this.earnedQuantity,
-    required this.commission,
-    required this.paidQuantity,
-    required this.confirmed,
-    required this.blockTime,
+    this.lockDescription,
+    this.lockQuantity,
+    this.divisible,
+    this.preMinted,
+    this.status,
+    this.earnedQuantity,
+    this.commission,
+    this.paidQuantity,
+    this.confirmed,
+    this.blockTime,
   });
 
   factory FairminterModel.fromJson(Map<String, dynamic> json) =>

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/fairminter.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -16,6 +17,7 @@ import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeFairmintPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -82,9 +84,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController nameController = UpperCaseTextEditingController();
 
-  // final balanceRepository = GetIt.I.get<BalanceRepository>();
-
-  // String? asset;
+  Fairminter? fairminter;
 
   bool _submitted = false;
 
@@ -156,7 +156,55 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       ComposeFairmintState state, bool loading, GlobalKey<FormState> formKey) {
     return state.fairmintersState.maybeWhen(
       success: (fairminters) => [
-        ...fairminters.map((fairminter) => Text(fairminter.asset)),
+        HorizonUI.HorizonTextFormField(
+          label: "Address that will be minting the asset",
+          controller: fromAddressController,
+          enabled: false,
+        ),
+        const SizedBox(height: 16.0),
+        HorizonUI.HorizonTextFormField(
+          label: "Name of the asset to mint",
+          controller: nameController,
+        ),
+        const SizedBox(height: 16.0),
+        HorizonUI.HorizonTextFormField(
+          controller: TextEditingController(text: 'OR'),
+          enabled: false,
+        ),
+        const SizedBox(height: 16.0),
+        HorizonUI.HorizonDropdownMenu(
+          label: "Select a fairminter",
+          items: fairminters
+              .map((fairminter) => DropdownMenuItem(
+                  value: fairminter, child: Text(fairminter.asset)))
+              .toList(),
+          onChanged: (Fairminter? value) => setState(() {
+            fairminter = value;
+          }),
+        ),
+      ],
+      loading: () => [
+        HorizonUI.HorizonTextFormField(
+          label: "Address that will be minting the asset",
+          controller: fromAddressController,
+          enabled: false,
+        ),
+        const SizedBox(height: 16.0),
+        HorizonUI.HorizonTextFormField(
+          label: "Name of the asset to mint",
+          controller: nameController,
+          enabled: false,
+        ),
+        // HorizonUI.HorizonDropdownMenu(
+        //   label: "Select a fairminter",
+        //   items: .map((fairminter) => Text(fairminter.asset)),
+        //   onChanged: (Fairminter? value) => setState(() {
+        //     fairminter = value;
+        //   }),
+        // ),
+      ],
+      error: (error) => [
+        SelectableText(error),
       ],
       orElse: () => [],
     );

@@ -62,10 +62,13 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       final (feeEstimates, fairminters) =
           await fetchComposeFairmintFormDataUseCase.call();
 
+      final fairmintersWithZeroPrice =
+          fairminters.where((fairminter) => fairminter.price == 0).toList();
+
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
         feeState: FeeState.success(feeEstimates),
-        fairmintersState: FairmintersState.success(fairminters),
+        fairmintersState: FairmintersState.success(fairmintersWithZeroPrice),
       ));
     } on FetchFairmintersException catch (e) {
       emit(state.copyWith(

@@ -418,7 +418,7 @@ AssetIssuanceParams _$AssetIssuanceParamsFromJson(Map<String, dynamic> json) =>
     AssetIssuanceParams(
       asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      assetEvents: json['asset_events'] as String,
+      assetEvents: json['asset_events'] as String?,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
       transfer: json['transfer'] as bool,
@@ -440,7 +440,7 @@ VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
     VerboseAssetIssuanceParams(
       asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      assetEvents: json['asset_events'] as String,
+      assetEvents: json['asset_events'] as String?,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
       transfer: json['transfer'] as bool,

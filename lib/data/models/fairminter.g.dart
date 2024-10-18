@@ -9,7 +9,7 @@ part of 'fairminter.dart';
 FairminterModel _$FairminterModelFromJson(Map<String, dynamic> json) =>
     FairminterModel(
       txHash: json['tx_hash'] as String,
-      txIndex: (json['tx_index'] as num).toInt(),
+      txIndex: (json['tx_index'] as num?)?.toInt(),
       blockIndex: (json['block_index'] as num?)?.toInt(),
       source: json['source'] as String,
       asset: json['asset'] as String,
@@ -35,7 +35,7 @@ FairminterModel _$FairminterModelFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String?,
       earnedQuantity: (json['earned_quantity'] as num?)?.toInt(),
       commission: (json['commission'] as num?)?.toInt(),
-      paidQuantity: (json['paid_quantity'] as num).toInt(),
+      paidQuantity: (json['paid_quantity'] as num?)?.toInt(),
       confirmed: json['confirmed'] as bool?,
       blockTime: (json['block_time'] as num?)?.toInt(),
     );

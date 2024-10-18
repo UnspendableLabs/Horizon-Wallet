@@ -7,10 +7,10 @@ import 'package:horizon/domain/repositories/fairminter_repository.dart';
 
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 
-class FairmintRepositoryImpl implements FairminterRepository {
+class FairminterRepositoryImpl implements FairminterRepository {
   final V2Api api;
   final Logger? logger;
-  FairmintRepositoryImpl({required this.api, this.logger});
+  FairminterRepositoryImpl({required this.api, this.logger});
   @override
   TaskEither<String, List<e.Fairminter>> getAllFairminters() {
     return TaskEither.tryCatch(() => _getAllFairminters(), (error, stacktrace) {

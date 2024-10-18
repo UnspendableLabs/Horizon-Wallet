@@ -466,7 +466,7 @@ class NewTransactionEvent extends Event {
 class AssetIssuanceParams {
   final String? asset;
   final String? assetLongname;
-  final String assetEvents;
+  final String? assetEvents;
   // final int blockIndex;
   // final int callDate;
   // final int callPrice;
