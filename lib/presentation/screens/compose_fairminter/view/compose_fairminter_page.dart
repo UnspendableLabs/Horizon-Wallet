@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,7 +7,7 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
-import 'package:horizon/domain/entities/compose_fairmint.dart';
+import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -16,7 +17,6 @@ import 'package:horizon/presentation/common/compose_base/view/compose_base_page.
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_bloc.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_bloc.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_state.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
@@ -158,31 +158,27 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         });
         return;
       }
-      // if (asset == null && nameController.text.isEmpty) {
-      //   setState(() {
-      //     error = 'Please select a fairminter or enter a fairminter name';
-      //   });
-      //   return;
-      // } else if (asset == null && nameController.text.isNotEmpty) {
-      //   if (!assets.any((asset) => asset.asset == nameController.text)) {
-      //     setState(() {
-      //       error = 'Fairminter with name ${nameController.text} not found';
-      //     });
-      //     return;
-      //   }
-      // } else if (fairminter != null && nameController.text.isNotEmpty) {
-      //   setState(() {
-      //     error = 'Please specify either a fairminter name or a select from the dropdown, not both';
-      //   });
-      //   return;
-      // }
 
-      // context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
-      //       sourceAddress: widget.address.address,
-      //       params: ComposeFairmintEventParams(
-      //         asset: nameController.text,
-      //       ),
-      //     ));
+      Decimal maxMintPerTxInput = Decimal.parse(maxMintPerTxController.text);
+      Decimal hardcapInput = Decimal.parse(hardcapController.text);
+
+      int maxMintPerTx =
+          (maxMintPerTxInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+      int hardcap =
+          (hardcapInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+
+      context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
+            sourceAddress: widget.address.address,
+            params: ComposeFairminterEventParams(
+              asset: asset!.asset,
+              maxMintPerTx: maxMintPerTx,
+              hardCap: hardcap,
+              divisible: asset!.divisible!,
+              startBlock: startBlockController.text.isEmpty
+                  ? null
+                  : int.parse(startBlockController.text),
+            ),
+          ));
     }
   }
 
@@ -209,7 +205,11 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       HorizonUI.HorizonTextFormField(
         label: "Max mint per transaction",
         controller: maxMintPerTxController,
-        inputFormatters: [DecimalTextInputFormatter(decimalRange: 8)],
+        inputFormatters: [
+          asset?.divisible == true
+              ? DecimalTextInputFormatter(decimalRange: 8)
+              : FilteringTextInputFormatter.digitsOnly,
+        ],
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter a max mint per transaction';
@@ -244,9 +244,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         label: "Start block (optional)",
         controller: startBlockController,
         inputFormatters: [
-          asset?.divisible == true
-              ? DecimalTextInputFormatter(decimalRange: 8)
-              : FilteringTextInputFormatter.digitsOnly,
+          FilteringTextInputFormatter.digitsOnly,
         ],
         onFieldSubmitted: (value) {
           _handleInitialSubmit(formKey, assets);
@@ -261,7 +259,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    final params = (composeTransaction as ComposeFairmintResponse).params;
+    final params = (composeTransaction as ComposeFairminterResponse).params;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -276,8 +274,22 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Quantity",
-        controller: TextEditingController(text: params.quantityNormalized),
+        label: "Max mint per transaction",
+        controller: TextEditingController(
+            text: '${params.maxMintPerTx.toString()} sats'),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Hard cap",
+        controller:
+            TextEditingController(text: '${params.hardCap?.toString()} sats'),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Start block",
+        controller: TextEditingController(text: params.startBlock.toString()),
         enabled: false,
       ),
     ];
@@ -285,15 +297,15 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   void _onConfirmationBack() {
     context
-        .read<ComposeFairmintBloc>()
+        .read<ComposeFairminterBloc>()
         .add(FetchFormData(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
-        .read<ComposeFairmintBloc>()
-        .add(FinalizeTransactionEvent<ComposeFairmintResponse>(
+        .read<ComposeFairminterBloc>()
+        .add(FinalizeTransactionEvent<ComposeFairminterResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -301,7 +313,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      context.read<ComposeFairmintBloc>().add(
+      context.read<ComposeFairminterBloc>().add(
             SignAndBroadcastTransactionEvent(
               password: password,
             ),
@@ -311,18 +323,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   void _onFinalizeCancel() {
     context
-        .read<ComposeFairmintBloc>()
+        .read<ComposeFairminterBloc>()
         .add(FetchFormData(currentAddress: widget.address));
-  }
-}
-
-class UpperCaseTextEditingController extends TextEditingController {
-  @override
-  set value(TextEditingValue newValue) {
-    super.value = newValue.copyWith(
-      text: newValue.text.toUpperCase(),
-      selection: newValue.selection,
-      composing: newValue.composing,
-    );
   }
 }

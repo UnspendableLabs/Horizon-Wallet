@@ -190,7 +190,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
 
-          analyticsService.trackEvent('broadcast_tx_dispenser_close');
+          analyticsService.trackEvent('broadcast_tx_fairmint');
         },
         onError: (msg) {
           emit(state.copyWith(

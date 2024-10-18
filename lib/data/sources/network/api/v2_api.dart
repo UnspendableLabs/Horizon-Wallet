@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
+import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/dispenser.dart';
@@ -3090,6 +3091,17 @@ abstract class V2Api {
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     @Path("address") String address,
     @Query("asset") String asset, [
+    @Query("exact_fee") int? fee,
+    @Query("inputs_set") String? inputsSet,
+  ]);
+
+  @GET("/addresses/{address}/compose/fairminter?verbose=true")
+  Future<Response<ComposeFairminterVerboseModel>> composeFairminterVerbose(
+    @Path("address") String address,
+    @Query("asset") String asset, [
+    @Query("max_mint_per_tx") int? maxMintPerTx,
+    @Query("hard_cap") int? hardCap,
+    @Query("start_block") int? startBlock,
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
   ]);
