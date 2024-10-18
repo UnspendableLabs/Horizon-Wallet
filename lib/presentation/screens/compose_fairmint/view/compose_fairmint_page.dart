@@ -5,6 +5,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/fairminter.dart';
+import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
@@ -45,6 +46,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
+          blockRepository: GetIt.I.get<BlockRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeFairmintPage(
           address: state.currentAddress,
@@ -153,6 +155,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             },
             onFinalizeCancel: () => _onFinalizeCancel(),
           ),
+          error: (error) => SelectableText(error),
           orElse: () => const SizedBox.shrink(),
         );
       },
@@ -182,6 +185,12 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
           });
           return;
         }
+      } else if (fairminter != null && nameController.text.isNotEmpty) {
+        setState(() {
+          error =
+              'Please specify either a fairminter name or a select from the dropdown, not both';
+        });
+        return;
       }
 
       context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
@@ -195,6 +204,11 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
 
   List<Widget> _buildInitialFormFields(ComposeFairmintState state, bool loading,
       GlobalKey<FormState> formKey, List<Fairminter> fairminters) {
+    if (fairminters.isEmpty) {
+      return [
+        const SelectableText('No fairminters found'),
+      ];
+    }
     return [
       HorizonUI.HorizonTextFormField(
         label: "Address that will be minting the asset",

@@ -51,12 +51,14 @@ class Response<T> {
 class Block {
   final int blockIndex;
   final String blockHash;
-  final DateTime blockTime;
+  final int blockTime;
   final String previousBlockHash;
-  final double difficulty;
+  final int difficulty;
   final String ledgerHash;
   final String txlistHash;
   final String messagesHash;
+  final int transactionCount;
+  final bool confirmed;
 
   const Block(
       {required this.blockIndex,
@@ -66,7 +68,9 @@ class Block {
       required this.difficulty,
       required this.ledgerHash,
       required this.txlistHash,
-      required this.messagesHash});
+      required this.messagesHash,
+      required this.transactionCount,
+      required this.confirmed});
 
   factory Block.fromJson(Map<String, dynamic> json) => _$BlockFromJson(json);
 }
@@ -255,6 +259,8 @@ class Event {
         return RefillDispenserEvent.fromJson(json);
       case 'DISPENSER_UPDATE':
         return DispenserUpdateEvent.fromJson(json);
+      case 'NEW_FAIRMINT':
+        return NewFairmintEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -626,6 +632,93 @@ class VerboseResetIssuanceEvent extends VerboseEvent {
 
   factory VerboseResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
       _$VerboseResetIssuanceEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class NewFairmintEvent extends Event {
+  final NewFairmintParams params;
+
+  NewFairmintEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory NewFairmintEvent.fromJson(Map<String, dynamic> json) =>
+      _$NewFairmintEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class NewFairmintParams {
+  final String asset;
+  final int? blockIndex;
+  final int? commission;
+  final int? earnQuantity;
+  final String? fairminterTxHash;
+  final int? paidQuantity;
+  final String? source;
+  final String? status;
+  final String? txHash;
+  final int? txIndex;
+  final int? blockTime;
+
+  NewFairmintParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.commission,
+    required this.earnQuantity,
+    required this.fairminterTxHash,
+    required this.paidQuantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory NewFairmintParams.fromJson(Map<String, dynamic> json) =>
+      _$NewFairmintParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseNewFairmintEvent extends VerboseEvent {
+  final VerboseNewFairmintParams params;
+
+  VerboseNewFairmintEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseNewFairmintEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseNewFairmintEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseNewFairmintParams extends NewFairmintParams {
+  final AssetInfoModel assetInfo;
+
+  VerboseNewFairmintParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.commission,
+    required super.earnQuantity,
+    required super.fairminterTxHash,
+    required super.paidQuantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.assetInfo,
+  });
+
+  factory VerboseNewFairmintParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseNewFairmintParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1180,6 +1273,8 @@ class VerboseEvent extends Event {
         return VerboseResetIssuanceEvent.fromJson(json);
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEvent.fromJson(json);
+      case 'NEW_FAIRMINT':
+        return VerboseNewFairmintEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -2752,6 +2847,9 @@ abstract class V2Api {
     @Query("last") int last,
     @Query("verbose") bool verbose,
   );
+
+  @GET("/blocks/last")
+  Future<Response<Block>> getLastBlock();
   //     Get Block
   @GET("/blocks/{block_index}")
   Future<Response<Block>> getBlock(

@@ -18,6 +18,7 @@ import 'package:horizon/data/sources/repositories/account_settings_repository_im
 import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
@@ -27,6 +28,7 @@ import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -188,6 +190,9 @@ Future<void> setup() async {
       api: GetIt.I.get<V2Api>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),
       bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
+
+  injector.registerSingleton<BlockRepository>(
+      BlockRepositoryImpl(GetIt.I.get<V2Api>()));
 
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));

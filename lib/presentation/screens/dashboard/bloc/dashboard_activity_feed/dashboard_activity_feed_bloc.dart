@@ -25,6 +25,7 @@ final DEFAULT_WHITELIST = [
   "RESET_ISSUANCE",
   "ASSET_CREATION",
   "DISPENSER_UPDATE",
+  "NEW_FAIRMINT",
 ];
 
 class DashboardActivityFeedBloc

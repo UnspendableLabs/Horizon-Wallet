@@ -273,6 +273,77 @@ class VerboseDebitEvent extends VerboseEvent {
   });
 }
 
+class NewFairmintParams {
+  final String asset;
+  final int? blockIndex;
+  final int? commission;
+  final int? earnQuantity;
+  final String? fairminterTxHash;
+  final int? paidQuantity;
+  final String? source;
+  final String? status;
+  final String? txHash;
+  final int? txIndex;
+
+  NewFairmintParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.commission,
+    required this.earnQuantity,
+    required this.fairminterTxHash,
+    required this.paidQuantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class NewFairmintEvent extends Event {
+  final NewFairmintParams params;
+
+  const NewFairmintEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseNewFairmintEvent extends VerboseEvent {
+  final VerboseNewFairmintParams params;
+
+  const VerboseNewFairmintEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseNewFairmintParams extends NewFairmintParams {
+  // final AssetInfoModel assetInfo;
+
+  VerboseNewFairmintParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.commission,
+    required super.earnQuantity,
+    required super.fairminterTxHash,
+    required super.paidQuantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    // required this.assetInfo,
+  });
+}
+
 class NewTransactionParams {
   final String blockHash;
   final int blockIndex;

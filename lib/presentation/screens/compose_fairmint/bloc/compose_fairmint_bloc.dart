@@ -2,6 +2,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
@@ -29,6 +30,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final BlockRepository blockRepository;
 
   ComposeFairmintBloc({
     required this.logger,
@@ -38,6 +40,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     required this.analyticsService,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
+    required this.blockRepository,
   }) : super(ComposeFairmintState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
@@ -57,9 +60,17 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     try {
       final (feeEstimates, fairminters) =
           await fetchComposeFairmintFormDataUseCase.call();
+      final block = await blockRepository.getLastBlock();
 
-      final fairmintersWithZeroPrice =
-          fairminters.where((fairminter) => fairminter.price == 0).toList();
+      final fairmintersWithZeroPrice = fairminters.where((fairminter) {
+        return fairminter.price == 0 &&
+            (fairminter.startBlock != 0
+                ? fairminter.startBlock < block.blockIndex
+                : true) &&
+            (fairminter.endBlock != 0
+                ? fairminter.endBlock > block.blockIndex
+                : true);
+      }).toList();
 
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
