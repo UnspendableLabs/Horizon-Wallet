@@ -31,6 +31,7 @@ import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
+import 'package:horizon/presentation/screens/compose_fairmint/view/compose_fairmint_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
@@ -502,6 +503,19 @@ class AddressActions extends StatelessWidget {
                 ),
                 icon: Icons.qr_code,
                 text: "RECEIVE",
+                iconSize: 24.0),
+            AddressAction(
+                isDarkTheme: isDarkTheme,
+                dialog: HorizonUI.HorizonDialog(
+                  title: "Compose Fairmint",
+                  body: ComposeFairmintPageWrapper(
+                    dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                  ),
+                  includeBackButton: false,
+                  includeCloseButton: true,
+                ),
+                icon: Icons.money,
+                text: "FAIRMINT",
                 iconSize: 24.0),
             DispenserButtonMenu(
               isDarkTheme: isDarkTheme,
