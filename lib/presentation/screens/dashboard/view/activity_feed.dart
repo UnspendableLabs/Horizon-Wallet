@@ -217,6 +217,8 @@ class ActivityFeedListItem extends StatelessWidget {
         SelectableText("Refill Dispenser for ${params.asset}"),
       VerboseDispenserUpdateEvent(params: var params) =>
         _buildDispenserUpdateTitle(params),
+      VerboseNewFairmintEvent(params: var params) =>
+        SelectableText("New Fairmint for ${params.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -337,6 +339,8 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseDispenserUpdateEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseNewFairmintEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -408,6 +412,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.account_balance, color: Colors.grey),
       VerboseDispenserUpdateEvent(params: var params) =>
         const Icon(Icons.account_balance, color: Colors.grey),
+      VerboseNewFairmintEvent(params: var _) =>
+        const Icon(Icons.money, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

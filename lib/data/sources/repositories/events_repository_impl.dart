@@ -47,6 +47,9 @@ class VerboseEventMapper {
       case "ASSET_CREATION":
         return VerboseAssetIssuanceEventMapper.toDomain(
             apiEvent as api.VerboseAssetIssuanceEvent);
+      case "NEW_FAIRMINT":
+        return VerboseNewFairmintEventMapper.toDomain(
+            apiEvent as api.VerboseNewFairmintEvent);
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);
@@ -160,6 +163,40 @@ class VerboseDebitParamsMapper {
       blockTime: apiParams.blockTime,
       // assetInfo: AssetInfoMapper.toDomain(apiParams.assetInfo),
       quantityNormalized: apiParams.quantityNormalized,
+    );
+  }
+}
+
+class VerboseNewFairmintEventMapper {
+  static VerboseNewFairmintEvent toDomain(
+      api.VerboseNewFairmintEvent apiEvent) {
+    return VerboseNewFairmintEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "NEW_FAIRMINT",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseNewFairmintParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseNewFairmintParamsMapper {
+  static VerboseNewFairmintParams toDomain(
+      api.VerboseNewFairmintParams apiParams) {
+    return VerboseNewFairmintParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      commission: apiParams.commission,
+      earnQuantity: apiParams.earnQuantity,
+      fairminterTxHash: apiParams.fairminterTxHash,
+      paidQuantity: apiParams.paidQuantity,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      // assetInfo: AssetInfoMapper.toDomain(apiParams.assetInfo),
     );
   }
 }

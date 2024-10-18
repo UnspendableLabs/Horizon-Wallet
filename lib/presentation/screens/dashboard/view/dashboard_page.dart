@@ -31,6 +31,7 @@ import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
+import 'package:horizon/presentation/screens/compose_fairmint/view/compose_fairmint_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
@@ -442,6 +443,116 @@ class DispenserButtonMenu extends StatelessWidget {
   }
 }
 
+class MintMenu extends StatelessWidget {
+  final bool isDarkTheme;
+  final IconData icon;
+  final String text;
+  final double? iconSize;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+
+  const MintMenu({
+    super.key,
+    required this.isDarkTheme,
+    required this.icon,
+    required this.text,
+    this.iconSize,
+    required this.dashboardActivityFeedBloc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: SizedBox(
+          height: 65,
+          child: PopupMenuButton(
+            color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+            itemBuilder: (context) => [
+              // PopupMenuItem(
+              //     child: const Text("Compose Fairminter"),
+              //     onTap: () {
+              //       HorizonUI.HorizonDialog.show(
+              //           context: context,
+              //           body: HorizonUI.HorizonDialog(
+              //             title: "Create Dispenser",
+              //             includeBackButton: false,
+              //             includeCloseButton: true,
+              //             body: ComposeDispenserPageWrapper(
+              //               dashboardActivityFeedBloc:
+              //                   dashboardActivityFeedBloc,
+              //             ),
+              //           ));
+              //     }),
+              PopupMenuItem(
+                child: const Text("Compose Fairmint"),
+                onTap: () {
+                  HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Compose Fairmint",
+                        body: ComposeFairmintPageWrapper(
+                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                      ));
+                },
+              ),
+            ],
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+                borderRadius: BorderRadius.circular(24.0),
+              ),
+              child: isMobile
+                  ? Icon(
+                      icon,
+                      size: iconSize ?? 24.0,
+                      color: isDarkTheme
+                          ? greyDashboardButtonTextDarkTheme
+                          : greyDashboardButtonTextLightTheme,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: iconSize ?? 24.0,
+                          color: isDarkTheme
+                              ? greyDashboardButtonTextDarkTheme
+                              : greyDashboardButtonTextLightTheme,
+                        ),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDarkTheme
+                                  ? greyDashboardButtonTextDarkTheme
+                                  : greyDashboardButtonTextLightTheme,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -503,6 +614,13 @@ class AddressActions extends StatelessWidget {
                 icon: Icons.qr_code,
                 text: "RECEIVE",
                 iconSize: 24.0),
+            MintMenu(
+              isDarkTheme: isDarkTheme,
+              icon: Icons.money,
+              text: "MINT",
+              iconSize: 24.0,
+              dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            ),
             DispenserButtonMenu(
               isDarkTheme: isDarkTheme,
               icon: Icons.more_vert,
