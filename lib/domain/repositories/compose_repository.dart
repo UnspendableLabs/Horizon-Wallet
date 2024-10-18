@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/compose_fairmint.dart';
+import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
@@ -31,4 +32,7 @@ abstract class ComposeRepository {
 
   Future<ComposeFairmintResponse> composeFairmintVerbose(
       int fee, List<Utxo> inputsSet, ComposeFairmintParams params);
+
+  Future<ComposeFairminterResponse> composeFairminterVerbose(
+      int fee, List<Utxo> inputsSet, ComposeFairminterParams params);
 }
