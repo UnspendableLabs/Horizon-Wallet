@@ -1495,54 +1495,6 @@ Map<String, dynamic> _$ComposeIssuanceVerboseParamsToJson(
       'quantity_normalized': instance.quantityNormalized,
     };
 
-ComposeFairmintVerbose _$ComposeFairmintVerboseFromJson(
-        Map<String, dynamic> json) =>
-    ComposeFairmintVerbose(
-      rawtransaction: json['rawtransaction'] as String,
-      params: ComposeFairmintVerboseParams.fromJson(
-          json['params'] as Map<String, dynamic>),
-      name: json['name'] as String,
-      btcIn: (json['btc_in'] as num).toInt(),
-      btcOut: (json['btc_out'] as num).toInt(),
-      btcChange: (json['btc_change'] as num).toInt(),
-      btcFee: (json['btc_fee'] as num).toInt(),
-      data: json['data'] as String,
-    );
-
-Map<String, dynamic> _$ComposeFairmintVerboseToJson(
-        ComposeFairmintVerbose instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'data': instance.data,
-      'btc_in': instance.btcIn,
-      'btc_out': instance.btcOut,
-      'btc_change': instance.btcChange,
-      'btc_fee': instance.btcFee,
-      'rawtransaction': instance.rawtransaction,
-      'params': instance.params,
-    };
-
-ComposeFairmintVerboseParams _$ComposeFairmintVerboseParamsFromJson(
-        Map<String, dynamic> json) =>
-    ComposeFairmintVerboseParams(
-      source: json['source'] as String,
-      asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toInt(),
-      quantityNormalized: json['quantity_normalized'] as String,
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$ComposeFairmintVerboseParamsToJson(
-        ComposeFairmintVerboseParams instance) =>
-    <String, dynamic>{
-      'source': instance.source,
-      'asset': instance.asset,
-      'quantity': instance.quantity,
-      'quantity_normalized': instance.quantityNormalized,
-      'asset_info': instance.assetInfo,
-    };
-
 ComposeDispenser _$ComposeDispenserFromJson(Map<String, dynamic> json) =>
     ComposeDispenser(
       rawtransaction: json['rawtransaction'] as String,
@@ -3339,29 +3291,15 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<ComposeFairmintVerbose>> composeFairmintVerbose(
+  Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     String address,
-    String asset,
-    int quantity, [
-    String? transferDestination,
-    bool? divisible,
-    bool? lock,
-    bool? reset,
-    String? description,
-    bool? unconfirmed,
+    String asset, [
     int? fee,
     String? inputsSet,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'asset': asset,
-      r'quantity': quantity,
-      r'transfer_destination': transferDestination,
-      r'divisible': divisible,
-      r'lock': lock,
-      r'reset': reset,
-      r'description': description,
-      r'unconfirmed': unconfirmed,
       r'exact_fee': fee,
       r'inputs_set': inputsSet,
     };
@@ -3369,7 +3307,7 @@ class _V2Api implements V2Api {
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<ComposeFairmintVerbose>>(Options(
+        _setStreamType<Response<ComposeFairmintVerboseModel>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -3385,9 +3323,10 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final _value = Response<ComposeFairmintVerbose>.fromJson(
+    final _value = Response<ComposeFairmintVerboseModel>.fromJson(
       _result.data!,
-      (json) => ComposeFairmintVerbose.fromJson(json as Map<String, dynamic>),
+      (json) =>
+          ComposeFairmintVerboseModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

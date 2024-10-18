@@ -474,21 +474,21 @@ class MintMenu extends StatelessWidget {
               borderRadius: BorderRadius.circular(24.0),
             ),
             itemBuilder: (context) => [
-              PopupMenuItem(
-                  child: const Text("Compose Fairminter"),
-                  onTap: () {
-                    HorizonUI.HorizonDialog.show(
-                        context: context,
-                        body: HorizonUI.HorizonDialog(
-                          title: "Create Dispenser",
-                          includeBackButton: false,
-                          includeCloseButton: true,
-                          body: ComposeDispenserPageWrapper(
-                            dashboardActivityFeedBloc:
-                                dashboardActivityFeedBloc,
-                          ),
-                        ));
-                  }),
+              // PopupMenuItem(
+              //     child: const Text("Compose Fairminter"),
+              //     onTap: () {
+              //       HorizonUI.HorizonDialog.show(
+              //           context: context,
+              //           body: HorizonUI.HorizonDialog(
+              //             title: "Create Dispenser",
+              //             includeBackButton: false,
+              //             includeCloseButton: true,
+              //             body: ComposeDispenserPageWrapper(
+              //               dashboardActivityFeedBloc:
+              //                   dashboardActivityFeedBloc,
+              //             ),
+              //           ));
+              //     }),
               PopupMenuItem(
                 child: const Text("Compose Fairmint"),
                 onTap: () {

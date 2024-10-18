@@ -1,3 +1,6 @@
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/compose_fairmint.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -10,32 +13,25 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_state.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 
-class ComposeFairmintParams {
+class ComposeFairmintEventParams {
   final String asset;
-  final int giveQuantity;
-  final int escrowQuantity;
-  final int mainchainrate;
-  final int status;
 
-  ComposeFairmintParams({
+  ComposeFairmintEventParams({
     required this.asset,
-    required this.giveQuantity,
-    required this.escrowQuantity,
-    required this.mainchainrate,
-    required this.status,
   });
 }
 
 class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
-
+  final Logger logger;
   final FetchComposeFairmintFormDataUseCase fetchComposeFairmintFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
 
   ComposeFairmintBloc({
+    required this.logger,
     required this.fetchComposeFairmintFormDataUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
@@ -96,104 +92,103 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     emit(state.copyWith(feeOption: value));
   }
 
-  @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    // emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
-
-    // try {
-    //   final feeRate = _getFeeRate();
-    //   final source = event.sourceAddress;
-    //   final asset = event.params.asset;
-    //   final giveQuantity = event.params.giveQuantity;
-    //   final escrowQuantity = event.params.escrowQuantity;
-    //   final mainchainrate = event.params.mainchainrate;
-
-    //   final composed = await composeTransactionUseCase.call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-    //       feeRate: feeRate,
-    //       source: source,
-    //       params: ComposeDispenserParams(
-    //           source: source,
-    //           asset: asset,
-    //           giveQuantity: giveQuantity,
-    //           escrowQuantity: escrowQuantity,
-    //           mainchainrate: mainchainrate,
-    //           status: 10),
-    //       composeFn: composeRepository.composeDispenserVerbose);
-
-    //   emit(state.copyWith(
-    //       submitState: SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
-    //     composeTransaction: composed,
-    //     fee: composed.btcFee,
-    //     feeRate: feeRate,
-    //   )));
-    // } on ComposeTransactionException catch (e) {
-    //   emit(state.copyWith(submitState: SubmitInitial(loading: false, error: e.message)));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //       submitState: SubmitInitial(loading: false, error: 'An unexpected error occurred: ${e.toString()}')));
-    // }
+  int _getFeeRate() {
+    FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
+    return switch (state.feeOption) {
+      FeeOption.Fast() => feeEstimates.fast,
+      FeeOption.Medium() => feeEstimates.medium,
+      FeeOption.Slow() => feeEstimates.slow,
+      FeeOption.Custom(fee: var fee) => fee,
+    };
   }
 
-  // int _getFeeRate() {
-  //   FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
-  //   return switch (state.feeOption) {
-  //     FeeOption.Fast() => feeEstimates.fast,
-  //     FeeOption.Medium() => feeEstimates.medium,
-  //     FeeOption.Slow() => feeEstimates.slow,
-  //     FeeOption.Custom(fee: var fee) => fee,
-  //   };
-  // }
+  @override
+  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+
+    try {
+      final feeRate = _getFeeRate();
+      final source = event.sourceAddress;
+      final asset = event.params.asset;
+
+      final composed = await composeTransactionUseCase
+          .call<ComposeFairmintParams, ComposeFairmintResponse>(
+              feeRate: feeRate,
+              source: source,
+              params: ComposeFairmintParams(source: source, asset: asset),
+              composeFn: composeRepository.composeFairmintVerbose);
+
+      emit(state.copyWith(
+          submitState:
+              SubmitComposingTransaction<ComposeFairmintResponse, void>(
+        composeTransaction: composed,
+        fee: composed.btcFee,
+        feeRate: feeRate,
+      )));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(
+              loading: false,
+              error: 'An unexpected error occurred: ${e.toString()}')));
+    }
+  }
 
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    // emit(state.copyWith(
-    //     submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-    //   loading: false,
-    //   error: null,
-    //   composeTransaction: event.composeTransaction,
-    //   fee: event.fee,
-    // )));
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeFairmintResponse>(
+      loading: false,
+      error: null,
+      composeTransaction: event.composeTransaction,
+      fee: event.fee,
+    )));
   }
 
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    //   if (state.submitState is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
-    //     return;
-    //   }
+    if (state.submitState is! SubmitFinalizing<ComposeFairmintResponse>) {
+      return;
+    }
 
-    //   final s = (state.submitState as SubmitFinalizing<ComposeDispenserResponseVerbose>);
-    //   final compose = s.composeTransaction;
-    //   final fee = s.fee;
+    final s = (state.submitState as SubmitFinalizing<ComposeFairmintResponse>);
+    final compose = s.composeTransaction;
+    final fee = s.fee;
 
-    //   emit(state.copyWith(
-    //       submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-    //     loading: true,
-    //     error: null,
-    //     fee: fee,
-    //     composeTransaction: compose,
-    //   )));
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeFairmintResponse>(
+      loading: true,
+      error: null,
+      fee: fee,
+      composeTransaction: compose,
+    )));
 
-    //   await signAndBroadcastTransactionUseCase.call(
-    //       password: event.password,
-    //       source: compose.params.source,
-    //       rawtransaction: compose.rawtransaction,
-    //       onSuccess: (txHex, txHash) async {
-    //         await writelocalTransactionUseCase.call(txHex, txHash);
+    await signAndBroadcastTransactionUseCase.call(
+        password: event.password,
+        source: compose.params.source,
+        rawtransaction: compose.rawtransaction,
+        onSuccess: (txHex, txHash) async {
+          await writelocalTransactionUseCase.call(txHex, txHash);
 
-    //         logger.d('dispenser broadcasted txHash: $txHash');
-    //         emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex, sourceAddress: compose.params.source)));
+          logger.info('fairmint broadcasted txHash: $txHash');
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
 
-    //         analyticsService.trackEvent('broadcast_tx_dispenser_close');
-    //       },
-    //       onError: (msg) {
-    //         emit(state.copyWith(
-    //             submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-    //           loading: false,
-    //           error: msg,
-    //           fee: fee,
-    //           composeTransaction: compose,
-    //         )));
-    //       });
+          analyticsService.trackEvent('broadcast_tx_dispenser_close');
+        },
+        onError: (msg) {
+          emit(state.copyWith(
+              submitState: SubmitFinalizing<ComposeFairmintResponse>(
+            loading: false,
+            error: msg,
+            fee: fee,
+            composeTransaction: compose,
+          )));
+        });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/dispenser.dart';
@@ -1640,54 +1641,6 @@ class ComposeIssuanceVerboseParams extends ComposeIssuanceParams {
       _$ComposeIssuanceVerboseParamsFromJson(json);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class ComposeFairmintVerbose {
-  final String name;
-  final String data;
-  final int btcIn;
-  final int btcOut;
-  final int btcChange;
-  final int btcFee;
-  final String rawtransaction;
-  final ComposeFairmintVerboseParams params;
-  // final FairmintUnpackedVerbose unpackedData;
-
-  const ComposeFairmintVerbose({
-    required this.rawtransaction,
-    required this.params,
-    required this.name,
-    // required this.unpackedData,
-    required this.btcIn,
-    required this.btcOut,
-    required this.btcChange,
-    required this.btcFee,
-    required this.data,
-  });
-
-  factory ComposeFairmintVerbose.fromJson(Map<String, dynamic> json) =>
-      _$ComposeFairmintVerboseFromJson(json);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class ComposeFairmintVerboseParams {
-  final String source;
-  final String asset;
-  final int quantity;
-  final String quantityNormalized;
-  final AssetInfoModel assetInfo;
-
-  ComposeFairmintVerboseParams({
-    required this.source,
-    required this.asset,
-    required this.quantity,
-    required this.quantityNormalized,
-    required this.assetInfo,
-  });
-
-  factory ComposeFairmintVerboseParams.fromJson(Map<String, dynamic> json) =>
-      _$ComposeFairmintVerboseParamsFromJson(json);
-}
-
 @JsonSerializable()
 class ComposeDispenser {
   final String rawtransaction;
@@ -3036,16 +2989,9 @@ abstract class V2Api {
   ]);
 
   @GET("/addresses/{address}/compose/fairmint?verbose=true")
-  Future<Response<ComposeFairmintVerbose>> composeFairmintVerbose(
+  Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     @Path("address") String address,
-    @Query("asset") String asset,
-    @Query("quantity") int quantity, [
-    @Query("transfer_destination") String? transferDestination,
-    @Query("divisible") bool? divisible,
-    @Query("lock") bool? lock,
-    @Query("reset") bool? reset,
-    @Query("description") String? description,
-    @Query("unconfirmed") bool? unconfirmed,
+    @Query("asset") String asset, [
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
   ]);
