@@ -5,6 +5,8 @@ import 'package:horizon/domain/entities/compose_issuance.dart'
 import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
 import 'package:horizon/domain/entities/compose_dispenser.dart'
     as compose_dispenser;
+import 'package:horizon/domain/entities/compose_fairmint.dart'
+    as compose_fairmint;
 import 'package:horizon/domain/entities/compose_dispense.dart'
     as compose_dispense;
 import 'package:horizon/domain/entities/utxo.dart';
@@ -243,6 +245,31 @@ class ComposeRepositoryImpl extends ComposeRepository {
           throw Exception('Failed to compose dispense');
         }
 
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_fairmint.ComposeFairmintResponse> composeFairmintVerbose(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_fairmint.ComposeFairmintParams params) async {
+    return await _retryOnInvalidUtxo<compose_fairmint.ComposeFairmintResponse>(
+      (currentInputSet) async {
+        final sourceAddress = params.source;
+        final asset = params.asset;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeFairmintVerbose(
+            sourceAddress, asset, fee, inputsSetString);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose fairmint');
+        }
         return response.result!.toDomain();
       },
       inputsSet,

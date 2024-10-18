@@ -44,24 +44,28 @@ Object? _$nullableGenericToJson<T>(
 
 Block _$BlockFromJson(Map<String, dynamic> json) => Block(
       blockIndex: (json['block_index'] as num).toInt(),
-      blockTime: DateTime.parse(json['block_time'] as String),
+      blockTime: (json['block_time'] as num).toInt(),
       blockHash: json['block_hash'] as String,
       previousBlockHash: json['previous_block_hash'] as String,
-      difficulty: (json['difficulty'] as num).toDouble(),
+      difficulty: (json['difficulty'] as num).toInt(),
       ledgerHash: json['ledger_hash'] as String,
       txlistHash: json['txlist_hash'] as String,
       messagesHash: json['messages_hash'] as String,
+      transactionCount: (json['transaction_count'] as num).toInt(),
+      confirmed: json['confirmed'] as bool,
     );
 
 Map<String, dynamic> _$BlockToJson(Block instance) => <String, dynamic>{
       'block_index': instance.blockIndex,
       'block_hash': instance.blockHash,
-      'block_time': instance.blockTime.toIso8601String(),
+      'block_time': instance.blockTime,
       'previous_block_hash': instance.previousBlockHash,
       'difficulty': instance.difficulty,
       'ledger_hash': instance.ledgerHash,
       'txlist_hash': instance.txlistHash,
       'messages_hash': instance.messagesHash,
+      'transaction_count': instance.transactionCount,
+      'confirmed': instance.confirmed,
     };
 
 Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
@@ -418,7 +422,7 @@ AssetIssuanceParams _$AssetIssuanceParamsFromJson(Map<String, dynamic> json) =>
     AssetIssuanceParams(
       asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      assetEvents: json['asset_events'] as String,
+      assetEvents: json['asset_events'] as String?,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
       transfer: json['transfer'] as bool,
@@ -440,7 +444,7 @@ VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
     VerboseAssetIssuanceParams(
       asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
-      assetEvents: json['asset_events'] as String,
+      assetEvents: json['asset_events'] as String?,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
       transfer: json['transfer'] as bool,
@@ -564,6 +568,111 @@ Map<String, dynamic> _$VerboseResetIssuanceEventToJson(
       'block_index': instance.blockIndex,
       'block_time': instance.blockTime,
       'params': instance.params,
+    };
+
+NewFairmintEvent _$NewFairmintEventFromJson(Map<String, dynamic> json) =>
+    NewFairmintEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          NewFairmintParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$NewFairmintEventToJson(NewFairmintEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+NewFairmintParams _$NewFairmintParamsFromJson(Map<String, dynamic> json) =>
+    NewFairmintParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      commission: (json['commission'] as num?)?.toInt(),
+      earnQuantity: (json['earn_quantity'] as num?)?.toInt(),
+      fairminterTxHash: json['fairminter_tx_hash'] as String?,
+      paidQuantity: (json['paid_quantity'] as num?)?.toInt(),
+      source: json['source'] as String?,
+      status: json['status'] as String?,
+      txHash: json['tx_hash'] as String?,
+      txIndex: (json['tx_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$NewFairmintParamsToJson(NewFairmintParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'commission': instance.commission,
+      'earn_quantity': instance.earnQuantity,
+      'fairminter_tx_hash': instance.fairminterTxHash,
+      'paid_quantity': instance.paidQuantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseNewFairmintEvent _$VerboseNewFairmintEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseNewFairmintEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseNewFairmintParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseNewFairmintEventToJson(
+        VerboseNewFairmintEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseNewFairmintParams _$VerboseNewFairmintParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseNewFairmintParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      commission: (json['commission'] as num?)?.toInt(),
+      earnQuantity: (json['earn_quantity'] as num?)?.toInt(),
+      fairminterTxHash: json['fairminter_tx_hash'] as String?,
+      paidQuantity: (json['paid_quantity'] as num?)?.toInt(),
+      source: json['source'] as String?,
+      status: json['status'] as String?,
+      txHash: json['tx_hash'] as String?,
+      txIndex: (json['tx_index'] as num?)?.toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseNewFairmintParamsToJson(
+        VerboseNewFairmintParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'commission': instance.commission,
+      'earn_quantity': instance.earnQuantity,
+      'fairminter_tx_hash': instance.fairminterTxHash,
+      'paid_quantity': instance.paidQuantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'asset_info': instance.assetInfo,
     };
 
 OpenDispenserParams _$OpenDispenserParamsFromJson(Map<String, dynamic> json) =>
@@ -2387,6 +2496,36 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<Block>> getLastBlock() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<Block>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/blocks/last',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<Block>.fromJson(
+      _result.data!,
+      (json) => Block.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<Block>> getBlock(
     int blockIndex,
     bool verbose,
@@ -3240,6 +3379,93 @@ class _V2Api implements V2Api {
     final _value = Response<ComposeIssuanceVerbose>.fromJson(
       _result.data!,
       (json) => ComposeIssuanceVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<FairminterModel>>> getAllFairminters([
+    bool? showUnconfirmed,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'show_unconfirmed': showUnconfirmed,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<FairminterModel>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/fairminters?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<FairminterModel>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<FairminterModel>(
+                  (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
+    String address,
+    String asset, [
+    int? fee,
+    String? inputsSet,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'asset': asset,
+      r'exact_fee': fee,
+      r'inputs_set': inputsSet,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeFairmintVerboseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/fairmint?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeFairmintVerboseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeFairmintVerboseModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }
