@@ -45,10 +45,10 @@ class Footer extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   launchUrl(Uri.parse(
-                      "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v1.2.3"));
+                      "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v1.2.4"));
                 },
                 child: const Text(
-                  'v1.2.3',
+                  'v1.2.4',
                   style: TextStyle(
                     color: neonBlueDarkTheme,
                     fontSize: 16,

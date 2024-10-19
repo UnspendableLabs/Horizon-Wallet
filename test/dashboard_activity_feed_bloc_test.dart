@@ -32,6 +32,7 @@ final DEFAULT_WHITELIST = [
   "ASSET_CREATION",
   "DISPENSER_UPDATE",
   "NEW_FAIRMINT",
+  "NEW_FAIRMINTER",
 ];
 
 extension DateTimeExtension on DateTime {

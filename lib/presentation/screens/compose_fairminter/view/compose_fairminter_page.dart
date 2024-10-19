@@ -1,10 +1,13 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/compose_fairmint.dart';
-import 'package:horizon/domain/entities/fairminter.dart';
+import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -14,17 +17,17 @@ import 'package:horizon/presentation/common/compose_base/view/compose_base_page.
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_bloc.dart';
-import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_state.dart';
-import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_bloc.dart';
+import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_state.dart';
+import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
-class ComposeFairmintPageWrapper extends StatelessWidget {
+class ComposeFairminterPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
-  const ComposeFairmintPageWrapper({
+  const ComposeFairminterPageWrapper({
     required this.dashboardActivityFeedBloc,
     super.key,
   });
@@ -35,10 +38,10 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
-        create: (context) => ComposeFairmintBloc(
+        create: (context) => ComposeFairminterBloc(
           logger: GetIt.I.get<Logger>(),
-          fetchComposeFairmintFormDataUseCase:
-              GetIt.I.get<FetchComposeFairmintFormDataUseCase>(),
+          fetchFairminterFormDataUseCase:
+              GetIt.I.get<FetchFairminterFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
@@ -48,7 +51,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
-        child: ComposeFairmintPage(
+        child: ComposeFairminterPage(
           address: state.currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
@@ -58,25 +61,26 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
   }
 }
 
-class ComposeFairmintPage extends StatefulWidget {
+class ComposeFairminterPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final Address address;
-  const ComposeFairmintPage({
+  const ComposeFairminterPage({
     super.key,
     required this.dashboardActivityFeedBloc,
     required this.address,
   });
 
   @override
-  ComposeFairmintPageState createState() => ComposeFairmintPageState();
+  ComposeFairminterPageState createState() => ComposeFairminterPageState();
 }
 
-class ComposeFairmintPageState extends State<ComposeFairmintPage> {
-  TextEditingController quantityController = TextEditingController();
+class ComposeFairminterPageState extends State<ComposeFairminterPage> {
   TextEditingController fromAddressController = TextEditingController();
-  TextEditingController nameController = UpperCaseTextEditingController();
+  TextEditingController maxMintPerTxController = TextEditingController();
+  TextEditingController hardcapController = TextEditingController();
+  TextEditingController startBlockController = TextEditingController();
 
-  Fairminter? fairminter;
+  Asset? asset;
 
   bool _submitted = false;
 
@@ -90,39 +94,18 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ComposeFairmintBloc, ComposeFairmintState>(
+    return BlocConsumer<ComposeFairminterBloc, ComposeFairminterState>(
       listener: (context, state) {},
       builder: (context, state) {
-        return state.fairmintersState.maybeWhen(
+        return state.assetState.maybeWhen(
           loading: () =>
-              ComposeBasePage<ComposeFairmintBloc, ComposeFairmintState>(
+              ComposeBasePage<ComposeFairminterBloc, ComposeFairminterState>(
                   address: widget.address,
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
                   onFeeChange: (fee) => context
-                      .read<ComposeFairmintBloc>()
+                      .read<ComposeFairminterBloc>()
                       .add(ChangeFeeOption(value: fee)),
-                  buildInitialFormFields: (state, loading, formKey) => [
-                        HorizonUI.HorizonTextFormField(
-                          label: "Address that will be minting the asset",
-                          controller: fromAddressController,
-                          enabled: false,
-                        ),
-                        const SizedBox(height: 16.0),
-                        HorizonUI.HorizonTextFormField(
-                            label: "Name of the asset to mint",
-                            controller: nameController,
-                            enabled: false),
-                        const SizedBox(height: 16.0),
-                        HorizonUI.HorizonTextFormField(
-                          controller: TextEditingController(text: 'OR'),
-                          enabled: false,
-                        ),
-                        const SizedBox(height: 16.0),
-                        const HorizonUI.HorizonTextFormField(
-                          label: "Select a fairminter",
-                          enabled: false,
-                        ),
-                      ],
+                  buildInitialFormFields: (state, loading, formKey) => [],
                   onInitialCancel: () => _handleInitialCancel(),
                   onInitialSubmit: (formKey) {},
                   buildConfirmationFormFields:
@@ -131,18 +114,17 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                   onConfirmationContinue: (composeTransaction, fee, formKey) {},
                   onFinalizeSubmit: (password, formKey) {},
                   onFinalizeCancel: () {}),
-          success: (fairminters) =>
-              ComposeBasePage<ComposeFairmintBloc, ComposeFairmintState>(
+          success: (assets) =>
+              ComposeBasePage<ComposeFairminterBloc, ComposeFairminterState>(
             address: widget.address,
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
-                .read<ComposeFairmintBloc>()
+                .read<ComposeFairminterBloc>()
                 .add(ChangeFeeOption(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
-                _buildInitialFormFields(state, loading, formKey, fairminters),
+                _buildInitialFormFields(state, loading, formKey, assets),
             onInitialCancel: () => _handleInitialCancel(),
-            onInitialSubmit: (formKey) =>
-                _handleInitialSubmit(formKey, fairminters),
+            onInitialSubmit: (formKey) => _handleInitialSubmit(formKey, assets),
             buildConfirmationFormFields: (state, composeTransaction, formKey) =>
                 _buildConfirmationDetails(composeTransaction),
             onConfirmationBack: () => _onConfirmationBack(),
@@ -165,49 +147,47 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(
-      GlobalKey<FormState> formKey, List<Fairminter> fairminters) {
+  void _handleInitialSubmit(GlobalKey<FormState> formKey, List<Asset> assets) {
     setState(() {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      if (fairminter == null && nameController.text.isEmpty) {
+      if (asset == null) {
         setState(() {
-          error = 'Please select a fairminter or enter a fairminter name';
-        });
-        return;
-      } else if (fairminter == null && nameController.text.isNotEmpty) {
-        if (!fairminters
-            .any((fairminter) => fairminter.asset == nameController.text)) {
-          setState(() {
-            error = 'Fairminter with name ${nameController.text} not found';
-          });
-          return;
-        }
-      } else if (fairminter != null && nameController.text.isNotEmpty) {
-        setState(() {
-          error =
-              'Please specify either a fairminter name or a select from the dropdown, not both';
+          error = 'Please select an asset';
         });
         return;
       }
 
-      context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
+      Decimal maxMintPerTxInput = Decimal.parse(maxMintPerTxController.text);
+      Decimal hardcapInput = Decimal.parse(hardcapController.text);
+
+      int maxMintPerTxDivisible =
+          (maxMintPerTxInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+      int hardcapDivisible =
+          (hardcapInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+
+      context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
-            params: ComposeFairmintEventParams(
-              asset: fairminter?.asset ?? nameController.text,
+            params: ComposeFairminterEventParams(
+              asset: asset!.asset,
+              maxMintPerTx: asset!.divisible!
+                  ? maxMintPerTxDivisible
+                  : int.parse(maxMintPerTxController.text),
+              hardCap: asset!.divisible!
+                  ? hardcapDivisible
+                  : int.parse(hardcapController.text),
+              divisible: asset!.divisible!,
+              startBlock: startBlockController.text.isEmpty
+                  ? null
+                  : int.parse(startBlockController.text),
             ),
           ));
     }
   }
 
-  List<Widget> _buildInitialFormFields(ComposeFairmintState state, bool loading,
-      GlobalKey<FormState> formKey, List<Fairminter> fairminters) {
-    if (fairminters.isEmpty) {
-      return [
-        const SelectableText('No fairminters found'),
-      ];
-    }
+  List<Widget> _buildInitialFormFields(ComposeFairminterState state,
+      bool loading, GlobalKey<FormState> formKey, List<Asset> assets) {
     return [
       HorizonUI.HorizonTextFormField(
         label: "Address that will be minting the asset",
@@ -216,27 +196,70 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Name of the asset to mint",
-        controller: nameController,
+        label: "Divisible",
+        controller: TextEditingController(
+            text: asset?.divisible == true ? 'true' : 'false'),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonDropdownMenu<Asset>(
+        label: "Select an asset",
+        items: assets
+            .map((asset) =>
+                DropdownMenuItem(value: asset, child: Text(asset.asset)))
+            .toList(),
+        onChanged: (Asset? value) => setState(() {
+          asset = value;
+        }),
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Max mint per transaction",
+        controller: maxMintPerTxController,
+        inputFormatters: [
+          asset?.divisible == true
+              ? DecimalTextInputFormatter(decimalRange: 20)
+              : FilteringTextInputFormatter.digitsOnly,
+        ],
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a max mint per transaction';
+          }
+          return null;
+        },
         onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, fairminters);
+          _handleInitialSubmit(formKey, assets);
         },
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        controller: TextEditingController(text: 'OR'),
-        enabled: false,
+        label: "Hard cap",
+        controller: hardcapController,
+        inputFormatters: [
+          asset?.divisible == true
+              ? DecimalTextInputFormatter(decimalRange: 20)
+              : FilteringTextInputFormatter.digitsOnly,
+        ],
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a hardcap';
+          }
+          return null;
+        },
+        onFieldSubmitted: (value) {
+          _handleInitialSubmit(formKey, assets);
+        },
       ),
       const SizedBox(height: 16.0),
-      HorizonUI.HorizonDropdownMenu(
-        label: "Select a fairminter",
-        items: fairminters
-            .map((fairminter) => DropdownMenuItem(
-                value: fairminter, child: Text(fairminter.asset!)))
-            .toList(),
-        onChanged: (Fairminter? value) => setState(() {
-          fairminter = value;
-        }),
+      HorizonUI.HorizonTextFormField(
+        label: "Start block (optional)",
+        controller: startBlockController,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+        ],
+        onFieldSubmitted: (value) {
+          _handleInitialSubmit(formKey, assets);
+        },
       ),
       if (error != null)
         SelectableText(
@@ -247,7 +270,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    final params = (composeTransaction as ComposeFairmintResponse).params;
+    final params = (composeTransaction as ComposeFairminterResponse).params;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -262,38 +285,38 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Mint Quantity",
-        controller: TextEditingController(text: _formatMintQuantity()),
+        label: "Max mint per transaction",
+        controller: TextEditingController(
+            text: '${params.maxMintPerTx.toString()} sats'),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Hard cap",
+        controller:
+            TextEditingController(text: '${params.hardCap?.toString()} sats'),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Start block",
+        controller: TextEditingController(text: params.startBlock.toString()),
         enabled: false,
       ),
     ];
   }
 
-  String _formatMintQuantity() {
-    if (fairminter == null || fairminter!.maxMintPerTx == null) {
-      return '';
-    }
-
-    final quantity = fairminter!.maxMintPerTx! / 100000000;
-
-    if (fairminter!.divisible == true) {
-      return quantity.toStringAsFixed(8);
-    } else {
-      return fairminter!.maxMintPerTx!.toString();
-    }
-  }
-
   void _onConfirmationBack() {
     context
-        .read<ComposeFairmintBloc>()
+        .read<ComposeFairminterBloc>()
         .add(FetchFormData(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
-        .read<ComposeFairmintBloc>()
-        .add(FinalizeTransactionEvent<ComposeFairmintResponse>(
+        .read<ComposeFairminterBloc>()
+        .add(FinalizeTransactionEvent<ComposeFairminterResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -301,7 +324,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
 
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      context.read<ComposeFairmintBloc>().add(
+      context.read<ComposeFairminterBloc>().add(
             SignAndBroadcastTransactionEvent(
               password: password,
             ),
@@ -311,18 +334,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
 
   void _onFinalizeCancel() {
     context
-        .read<ComposeFairmintBloc>()
+        .read<ComposeFairminterBloc>()
         .add(FetchFormData(currentAddress: widget.address));
-  }
-}
-
-class UpperCaseTextEditingController extends TextEditingController {
-  @override
-  set value(TextEditingValue newValue) {
-    super.value = newValue.copyWith(
-      text: newValue.text.toUpperCase(),
-      selection: newValue.selection,
-      composing: newValue.composing,
-    );
   }
 }
