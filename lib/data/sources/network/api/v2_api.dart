@@ -3229,6 +3229,7 @@ abstract class V2Api {
   Future<Response<ComposeFairminterVerboseModel>> composeFairminterVerbose(
     @Path("address") String address,
     @Query("asset") String asset, [
+    @Query("divisible") bool? divisible,
     @Query("max_mint_per_tx") int? maxMintPerTx,
     @Query("hard_cap") int? hardCap,
     @Query("start_block") int? startBlock,

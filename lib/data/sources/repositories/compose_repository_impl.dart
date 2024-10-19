@@ -291,12 +291,20 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final maxMintPerTx = params.maxMintPerTx;
         final hardCap = params.hardCap;
         final startBlock = params.startBlock;
+        final divisible = params.divisible;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeFairminterVerbose(sourceAddress,
-            asset, maxMintPerTx, hardCap, startBlock, fee, inputsSetString);
+        final response = await api.composeFairminterVerbose(
+            sourceAddress,
+            asset,
+            divisible,
+            maxMintPerTx,
+            hardCap,
+            startBlock,
+            fee,
+            inputsSetString);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairminter');

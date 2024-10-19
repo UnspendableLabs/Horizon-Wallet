@@ -162,17 +162,21 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       Decimal maxMintPerTxInput = Decimal.parse(maxMintPerTxController.text);
       Decimal hardcapInput = Decimal.parse(hardcapController.text);
 
-      int maxMintPerTx =
+      int maxMintPerTxDivisible =
           (maxMintPerTxInput * Decimal.fromInt(100000000)).toBigInt().toInt();
-      int hardcap =
+      int hardcapDivisible =
           (hardcapInput * Decimal.fromInt(100000000)).toBigInt().toInt();
 
       context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: ComposeFairminterEventParams(
               asset: asset!.asset,
-              maxMintPerTx: maxMintPerTx,
-              hardCap: hardcap,
+              maxMintPerTx: asset!.divisible!
+                  ? maxMintPerTxDivisible
+                  : int.parse(maxMintPerTxController.text),
+              hardCap: asset!.divisible!
+                  ? hardcapDivisible
+                  : int.parse(hardcapController.text),
               divisible: asset!.divisible!,
               startBlock: startBlockController.text.isEmpty
                   ? null
@@ -188,6 +192,13 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       HorizonUI.HorizonTextFormField(
         label: "Address that will be minting the asset",
         controller: fromAddressController,
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Divisible",
+        controller: TextEditingController(
+            text: asset?.divisible == true ? 'true' : 'false'),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
@@ -207,7 +218,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         controller: maxMintPerTxController,
         inputFormatters: [
           asset?.divisible == true
-              ? DecimalTextInputFormatter(decimalRange: 8)
+              ? DecimalTextInputFormatter(decimalRange: 20)
               : FilteringTextInputFormatter.digitsOnly,
         ],
         validator: (value) {
@@ -226,7 +237,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         controller: hardcapController,
         inputFormatters: [
           asset?.divisible == true
-              ? DecimalTextInputFormatter(decimalRange: 8)
+              ? DecimalTextInputFormatter(decimalRange: 20)
               : FilteringTextInputFormatter.digitsOnly,
         ],
         validator: (value) {

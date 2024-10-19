@@ -128,7 +128,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
                   asset: asset,
                   maxMintPerTx: event.params.maxMintPerTx,
                   hardCap: event.params.hardCap,
-                  startBlock: event.params.startBlock),
+                  startBlock: event.params.startBlock,
+                  divisible: event.params.divisible),
               composeFn: composeRepository.composeFairminterVerbose);
 
       emit(state.copyWith(

@@ -1096,7 +1096,9 @@ class BalancesSliverState extends State<BalancesSliver> {
             builder: (context, constraints) {
               return SelectableText.rich(
                 TextSpan(
-                  text: assetLongname ?? assetName,
+                  text: (assetLongname != '' && assetLongname != null)
+                      ? assetLongname
+                      : assetName,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
