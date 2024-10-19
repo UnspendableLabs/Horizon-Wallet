@@ -344,6 +344,122 @@ class VerboseNewFairmintParams extends NewFairmintParams {
   });
 }
 
+class NewFairminterParams {
+  final String asset;
+  final String? assetLongname;
+  final String? assetParent;
+  final int? blockIndex;
+  final bool? burnPayment;
+  final String? description;
+  final bool? divisible;
+  final int? endBlock;
+  final int? hardCap;
+  final bool? lockDescription;
+  final bool? lockQuantity;
+  final int? maxMintPerTx;
+  final int? mintedAssetCommissionInt;
+  final bool? preMinted;
+  final int? premintQuantity;
+  final int? price;
+  final int? quantityByPrice;
+  final int? softCap;
+  final int? softCapDeadlineBlock;
+  final String? source;
+  final int? startBlock;
+  final String? status;
+  final String? txHash;
+  final int? txIndex;
+  final int? blockTime;
+
+  NewFairminterParams({
+    required this.asset,
+    this.assetLongname,
+    this.assetParent,
+    required this.blockIndex,
+    this.burnPayment,
+    this.description,
+    this.divisible,
+    this.endBlock,
+    this.hardCap,
+    this.lockDescription,
+    this.lockQuantity,
+    this.maxMintPerTx,
+    this.mintedAssetCommissionInt,
+    this.preMinted,
+    this.premintQuantity,
+    this.price,
+    this.quantityByPrice,
+    this.softCap,
+    this.softCapDeadlineBlock,
+    required this.source,
+    this.startBlock,
+    this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+}
+
+class NewFairminterEvent extends Event {
+  final NewFairminterParams params;
+
+  const NewFairminterEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseNewFairminterEvent extends VerboseEvent {
+  final VerboseNewFairminterParams params;
+
+  const VerboseNewFairminterEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseNewFairminterParams extends NewFairminterParams {
+  // final AssetInfoModel assetInfo;
+
+  VerboseNewFairminterParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required super.assetLongname,
+    required super.assetParent,
+    required super.burnPayment,
+    required super.description,
+    required super.divisible,
+    required super.endBlock,
+    required super.hardCap,
+    required super.lockDescription,
+    required super.lockQuantity,
+    required super.maxMintPerTx,
+    required super.mintedAssetCommissionInt,
+    required super.preMinted,
+    required super.premintQuantity,
+    required super.price,
+    required super.quantityByPrice,
+    required super.softCap,
+    required super.softCapDeadlineBlock,
+    required super.startBlock,
+    // required this.assetInfo,
+  });
+}
+
 class NewTransactionParams {
   final String blockHash;
   final int blockIndex;

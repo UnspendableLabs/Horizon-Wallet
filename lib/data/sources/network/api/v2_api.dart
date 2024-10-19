@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
+import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/dispenser.dart';
@@ -261,6 +262,8 @@ class Event {
         return DispenserUpdateEvent.fromJson(json);
       case 'NEW_FAIRMINT':
         return NewFairmintEvent.fromJson(json);
+      case 'NEW_FAIRMINTER':
+        return NewFairminterEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -632,6 +635,132 @@ class VerboseResetIssuanceEvent extends VerboseEvent {
 
   factory VerboseResetIssuanceEvent.fromJson(Map<String, dynamic> json) =>
       _$VerboseResetIssuanceEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class NewFairminterEvent extends Event {
+  final NewFairminterParams params;
+
+  NewFairminterEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory NewFairminterEvent.fromJson(Map<String, dynamic> json) =>
+      _$NewFairminterEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class NewFairminterParams {
+  final String asset;
+  final String? assetLongname;
+  final String? assetParent;
+  final int? blockIndex;
+  final bool? burnPayment;
+  final String? description;
+  final bool? divisible;
+  final int? endBlock;
+  final int? hardCap;
+  final bool? lockDescription;
+  final bool? lockQuantity;
+  final int? maxMintPerTx;
+  final int? mintedAssetCommissionInt;
+  final bool? preMinted;
+  final int? premintQuantity;
+  final int? price;
+  final int? quantityByPrice;
+  final int? softCap;
+  final int? softCapDeadlineBlock;
+  final String? source;
+  final int? startBlock;
+  final String? status;
+  final String? txHash;
+  final int? txIndex;
+  final int? blockTime;
+
+  NewFairminterParams({
+    required this.asset,
+    this.assetLongname,
+    this.assetParent,
+    required this.blockIndex,
+    required this.burnPayment,
+    required this.description,
+    required this.divisible,
+    required this.endBlock,
+    required this.hardCap,
+    required this.lockDescription,
+    required this.lockQuantity,
+    required this.maxMintPerTx,
+    required this.mintedAssetCommissionInt,
+    required this.preMinted,
+    required this.premintQuantity,
+    required this.price,
+    required this.quantityByPrice,
+    required this.softCap,
+    required this.softCapDeadlineBlock,
+    required this.source,
+    required this.startBlock,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory NewFairminterParams.fromJson(Map<String, dynamic> json) =>
+      _$NewFairminterParamsFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseNewFairminterEvent extends VerboseEvent {
+  final VerboseNewFairminterParams params;
+
+  VerboseNewFairminterEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseNewFairminterEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseNewFairminterEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseNewFairminterParams extends NewFairminterParams {
+  VerboseNewFairminterParams({
+    required super.asset,
+    super.assetLongname,
+    super.assetParent,
+    required super.blockIndex,
+    required super.burnPayment,
+    required super.description,
+    required super.divisible,
+    required super.endBlock,
+    required super.hardCap,
+    required super.lockDescription,
+    required super.lockQuantity,
+    required super.maxMintPerTx,
+    required super.mintedAssetCommissionInt,
+    required super.preMinted,
+    required super.premintQuantity,
+    required super.price,
+    required super.quantityByPrice,
+    required super.softCap,
+    required super.softCapDeadlineBlock,
+    required super.source,
+    required super.startBlock,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+  });
+
+  factory VerboseNewFairminterParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseNewFairminterParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -1275,6 +1404,8 @@ class VerboseEvent extends Event {
         return VerboseAssetIssuanceEvent.fromJson(json);
       case 'NEW_FAIRMINT':
         return VerboseNewFairmintEvent.fromJson(json);
+      case 'NEW_FAIRMINTER':
+        return VerboseNewFairminterEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -3090,6 +3221,18 @@ abstract class V2Api {
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     @Path("address") String address,
     @Query("asset") String asset, [
+    @Query("exact_fee") int? fee,
+    @Query("inputs_set") String? inputsSet,
+  ]);
+
+  @GET("/addresses/{address}/compose/fairminter?verbose=true")
+  Future<Response<ComposeFairminterVerboseModel>> composeFairminterVerbose(
+    @Path("address") String address,
+    @Query("asset") String asset, [
+    @Query("divisible") bool? divisible,
+    @Query("max_mint_per_tx") int? maxMintPerTx,
+    @Query("hard_cap") int? hardCap,
+    @Query("start_block") int? startBlock,
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
   ]);

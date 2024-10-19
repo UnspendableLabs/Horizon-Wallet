@@ -1,5 +1,5 @@
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/compose_fairmint.dart';
+import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/block_repository.dart';
@@ -11,42 +11,50 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_state.dart';
-import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_state.dart';
+import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 
-class ComposeFairmintEventParams {
+class ComposeFairminterEventParams {
   final String asset;
+  final int maxMintPerTx;
+  final int hardCap;
+  final bool divisible;
+  final int? startBlock;
 
-  ComposeFairmintEventParams({
+  ComposeFairminterEventParams({
     required this.asset,
+    required this.maxMintPerTx,
+    required this.hardCap,
+    required this.divisible,
+    this.startBlock,
   });
 }
 
-class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
+class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final Logger logger;
-  final FetchComposeFairmintFormDataUseCase fetchComposeFairmintFormDataUseCase;
+  final FetchFairminterFormDataUseCase fetchFairminterFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
 
-  ComposeFairmintBloc({
+  ComposeFairminterBloc({
     required this.logger,
-    required this.fetchComposeFairmintFormDataUseCase,
+    required this.fetchFairminterFormDataUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.analyticsService,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
-  }) : super(ComposeFairmintState(
+  }) : super(ComposeFairminterState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
-          fairmintersState: const FairmintersState.initial(),
+          assetState: const AssetState.initial(),
         ));
 
   @override
@@ -54,29 +62,21 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        fairmintersState: const FairmintersState.loading(),
+        assetState: const AssetState.loading(),
         submitState: const SubmitInitial()));
 
     try {
-      final (feeEstimates, fairminters) =
-          await fetchComposeFairmintFormDataUseCase.call();
-      // final block = await blockRepository.getLastBlock();
-
-      final validFairminters = fairminters.where((fairminter) {
-        return fairminter.status != null &&
-            fairminter.status == 'open' &&
-            fairminter.price != null &&
-            fairminter.price! == 0;
-      }).toList();
+      final (assets, feeEstimates) =
+          await fetchFairminterFormDataUseCase.call(event.currentAddress!);
 
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
         feeState: FeeState.success(feeEstimates),
-        fairmintersState: FairmintersState.success(validFairminters),
+        assetState: AssetState.success(assets),
       ));
-    } on FetchFairmintersException catch (e) {
+    } on FetchAssetsException catch (e) {
       emit(state.copyWith(
-        fairmintersState: FairmintersState.error(e.message),
+        assetState: AssetState.error(e.message),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
@@ -86,8 +86,8 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       emit(state.copyWith(
         balancesState: BalancesState.error(
             'An unexpected error occurred: ${e.toString()}'),
-        fairmintersState: FairmintersState.error(
-            'An unexpected error occurred: ${e.toString()}'),
+        assetState:
+            AssetState.error('An unexpected error occurred: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),
       ));
@@ -120,15 +120,21 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       final asset = event.params.asset;
 
       final composed = await composeTransactionUseCase
-          .call<ComposeFairmintParams, ComposeFairmintResponse>(
+          .call<ComposeFairminterParams, ComposeFairminterResponse>(
               feeRate: feeRate,
               source: source,
-              params: ComposeFairmintParams(source: source, asset: asset),
-              composeFn: composeRepository.composeFairmintVerbose);
+              params: ComposeFairminterParams(
+                  source: source,
+                  asset: asset,
+                  maxMintPerTx: event.params.maxMintPerTx,
+                  hardCap: event.params.hardCap,
+                  startBlock: event.params.startBlock,
+                  divisible: event.params.divisible),
+              composeFn: composeRepository.composeFairminterVerbose);
 
       emit(state.copyWith(
           submitState:
-              SubmitComposingTransaction<ComposeFairmintResponse, void>(
+              SubmitComposingTransaction<ComposeFairminterResponse, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
@@ -147,7 +153,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeFairmintResponse>(
+        submitState: SubmitFinalizing<ComposeFairminterResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -158,16 +164,17 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeFairmintResponse>) {
+    if (state.submitState is! SubmitFinalizing<ComposeFairminterResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeFairmintResponse>);
+    final s =
+        (state.submitState as SubmitFinalizing<ComposeFairminterResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeFairmintResponse>(
+        submitState: SubmitFinalizing<ComposeFairminterResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -181,17 +188,17 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.info('fairmint broadcasted txHash: $txHash');
+          logger.info('fairminter broadcasted txHash: $txHash');
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
 
-          analyticsService.trackEvent('broadcast_tx_fairmint');
+          analyticsService.trackEvent('broadcast_tx_fairminter');
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeFairmintResponse>(
+              submitState: SubmitFinalizing<ComposeFairminterResponse>(
             loading: false,
             error: msg,
             fee: fee,

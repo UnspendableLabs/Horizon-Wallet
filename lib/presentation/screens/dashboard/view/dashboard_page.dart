@@ -32,6 +32,7 @@ import 'package:horizon/presentation/screens/close_dispenser/view/close_dispense
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/view/compose_fairmint_page.dart';
+import 'package:horizon/presentation/screens/compose_fairminter/view/compose_fairminter_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
@@ -474,21 +475,21 @@ class MintMenu extends StatelessWidget {
               borderRadius: BorderRadius.circular(24.0),
             ),
             itemBuilder: (context) => [
-              // PopupMenuItem(
-              //     child: const Text("Compose Fairminter"),
-              //     onTap: () {
-              //       HorizonUI.HorizonDialog.show(
-              //           context: context,
-              //           body: HorizonUI.HorizonDialog(
-              //             title: "Create Dispenser",
-              //             includeBackButton: false,
-              //             includeCloseButton: true,
-              //             body: ComposeDispenserPageWrapper(
-              //               dashboardActivityFeedBloc:
-              //                   dashboardActivityFeedBloc,
-              //             ),
-              //           ));
-              //     }),
+              PopupMenuItem(
+                  child: const Text("Compose Fairminter"),
+                  onTap: () {
+                    HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: "Compose Fairminter",
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                          body: ComposeFairminterPageWrapper(
+                            dashboardActivityFeedBloc:
+                                dashboardActivityFeedBloc,
+                          ),
+                        ));
+                  }),
               PopupMenuItem(
                 child: const Text("Compose Fairmint"),
                 onTap: () {
@@ -1095,7 +1096,9 @@ class BalancesSliverState extends State<BalancesSliver> {
             builder: (context, constraints) {
               return SelectableText.rich(
                 TextSpan(
-                  text: assetLongname ?? assetName,
+                  text: (assetLongname != '' && assetLongname != null)
+                      ? assetLongname
+                      : assetName,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
