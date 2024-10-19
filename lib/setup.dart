@@ -86,6 +86,7 @@ import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
+import 'dart:convert';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
@@ -100,8 +101,23 @@ Future<void> setup() async {
 
   final dio = Dio(BaseOptions(
     baseUrl: config.counterpartyApiBase,
+    headers: {
+      'Content-Type': 'application/json',
+    },
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
+  ));
+
+  // Add basic auth interceptor
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) {
+      String username = config.counterpartyApiUsername;
+      String password = config.counterpartyApiPassword;
+      String basicAuth =
+          'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+      options.headers['Authorization'] = basicAuth;
+      return handler.next(options);
+    },
   ));
 
   dio.interceptors.addAll([

@@ -3,6 +3,8 @@ enum Network { mainnet, testnet, regtest }
 abstract class Config {
   Network get network;
   String get counterpartyApiBase;
+  String get counterpartyApiUsername;
+  String get counterpartyApiPassword;
   String get esploraBase;
   // String get blockCypherBase;
   String get horizonExplorerBase;
