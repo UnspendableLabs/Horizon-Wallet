@@ -260,8 +260,8 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Quantity",
-        controller: TextEditingController(text: params.quantityNormalized),
+        label: "Mint Quantity",
+        controller: TextEditingController(text: fairminter?.maxMintPerTx.toString()),
         enabled: false,
       ),
     ];
