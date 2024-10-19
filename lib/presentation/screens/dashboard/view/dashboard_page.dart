@@ -616,7 +616,7 @@ class AddressActions extends StatelessWidget {
                 iconSize: 24.0),
             MintMenu(
               isDarkTheme: isDarkTheme,
-              icon: Icons.money,
+              icon: Icons.print,
               text: "MINT",
               iconSize: 24.0,
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
