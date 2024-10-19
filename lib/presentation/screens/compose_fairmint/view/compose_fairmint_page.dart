@@ -195,7 +195,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: ComposeFairmintEventParams(
-              asset: nameController.text,
+              asset: fairminter?.asset ?? nameController.text,
             ),
           ));
     }
@@ -232,7 +232,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         label: "Select a fairminter",
         items: fairminters
             .map((fairminter) => DropdownMenuItem(
-                value: fairminter, child: Text(fairminter.asset)))
+                value: fairminter, child: Text(fairminter.asset!)))
             .toList(),
         onChanged: (Fairminter? value) => setState(() {
           fairminter = value;
@@ -262,8 +262,8 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Quantity",
-        controller: TextEditingController(text: params.quantityNormalized),
+        label: "Mint Quantity",
+        controller: TextEditingController(text: fairminter?.maxMintPerTx.toString()),
         enabled: false,
       ),
     ];
