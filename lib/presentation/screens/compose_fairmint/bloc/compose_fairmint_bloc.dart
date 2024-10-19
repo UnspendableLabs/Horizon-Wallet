@@ -63,7 +63,10 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       // final block = await blockRepository.getLastBlock();
 
       final validFairminters = fairminters.where((fairminter) {
-        return fairminter.status != null && fairminter.status == 'open';
+        return fairminter.status != null &&
+            fairminter.status == 'open' &&
+            fairminter.price != null &&
+            fairminter.price! == 0;
       }).toList();
 
       emit(state.copyWith(
