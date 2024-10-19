@@ -263,10 +263,24 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Mint Quantity",
-        controller: TextEditingController(text: fairminter?.maxMintPerTx.toString()),
+        controller: TextEditingController(text: _formatMintQuantity()),
         enabled: false,
       ),
     ];
+  }
+
+  String _formatMintQuantity() {
+    if (fairminter == null || fairminter!.maxMintPerTx == null) {
+      return '';
+    }
+
+    final quantity = fairminter!.maxMintPerTx! / 100000000;
+
+    if (fairminter!.divisible == true) {
+      return quantity.toStringAsFixed(8);
+    } else {
+      return fairminter!.maxMintPerTx!.toString();
+    }
   }
 
   void _onConfirmationBack() {
