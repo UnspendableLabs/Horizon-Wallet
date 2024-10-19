@@ -21,9 +21,35 @@ class ConfigImpl implements Config {
   }
 
   String get _defaultCounterpartyApiBase => switch (network) {
-        Network.mainnet => 'https://dev.counterparty.io:4000/v2',
-        Network.testnet => 'https://dev.counterparty.io:14000/v2',
+        Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
+        Network.testnet => 'https://api.counterparty.io:14000/v2',
         Network.regtest => 'http://localhost:24000/v2'
+      };
+
+  @override
+  String get counterpartyApiUsername {
+    const envValue =
+        String.fromEnvironment('HORIZON_COUNTERPARTY_API_USERNAME');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiUsername;
+  }
+
+  String get _defaultCounterpartyApiUsername => switch (network) {
+        Network.mainnet => '',
+        Network.testnet => '',
+        Network.regtest => '',
+      };
+
+  @override
+  String get counterpartyApiPassword {
+    const envValue =
+        String.fromEnvironment('HORIZON_COUNTERPARTY_API_PASSWORD');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiPassword;
+  }
+
+  String get _defaultCounterpartyApiPassword => switch (network) {
+        Network.mainnet => '',
+        Network.testnet => '',
+        Network.regtest => '',
       };
 
   @override
