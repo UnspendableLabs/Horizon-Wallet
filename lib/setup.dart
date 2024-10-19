@@ -332,13 +332,13 @@ class TimeoutInterceptor extends Interceptor {
     if (err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout) {
-      final requestPath = err.requestOptions.uri.toString();
+      // final requestPath = err.requestOptions.uri.toString();
       final timeoutDuration =
           err.requestOptions.connectTimeout ?? const Duration(seconds: 5);
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed $requestPath \n ${err.response?.data?['error']}',
+            'Timeout (${timeoutDuration.inSeconds}s) — Request Failed \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
       );
 
@@ -356,11 +356,11 @@ class ConnectionErrorInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.unknown) {
-      final requestPath = err.requestOptions.uri.toString();
+      // final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Connection Error — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
+            'Connection Error — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
       GetIt.I<Logger>().debug(formattedError.toString());
@@ -375,7 +375,7 @@ class BadResponseInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.type == DioExceptionType.badResponse) {
-      final requestPath = err.requestOptions.uri.toString();
+      // final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error: err.response?.data?['error'] != null
@@ -383,7 +383,7 @@ class BadResponseInterceptor extends Interceptor {
             : "Bad Response",
         type: DioExceptionType.badResponse,
       );
-      GetIt.I<Logger>().debug('${formattedError.toString()} -- $requestPath');
+      GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -395,11 +395,11 @@ class BadCertificateInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.type == DioExceptionType.badCertificate) {
-      final requestPath = err.requestOptions.uri.toString();
+      // final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
-            'Bad Certificate — Request Failed $requestPath ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
+            'Bad Certificate — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
       );
       GetIt.I<Logger>().debug(formattedError.toString());
