@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
@@ -94,7 +95,7 @@ class _AssetDropdownState extends State<AssetDropdown> {
   String _getDisplayString(String? asset) {
     if (asset == null) return orderedBalances[0].asset;
     final balance = orderedBalances.firstWhere((b) => b.asset == asset);
-    return balance.assetInfo.assetLongname ?? balance.asset;
+    return displayAssetName(balance.asset, balance.assetInfo.assetLongname);
   }
 
   String _getSelectedValue() {

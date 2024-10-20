@@ -113,8 +113,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   @override
   void initState() {
     super.initState();
-    _subassetController = TextEditingController(
-        text: '${widget.assetLongname ?? widget.assetName}.');
+    final assetName = displayAssetName(widget.assetName, widget.assetLongname);
+    _subassetController = TextEditingController(text: '$assetName.');
     _quantityController = TextEditingController();
     _newDescriptionController = TextEditingController();
     _destinationAddressController = TextEditingController();
@@ -302,7 +302,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
 
   List<Widget> _buildInitialFormFields(UpdateIssuanceState state, bool loading,
       GlobalKey<FormState> formKey, Asset originalAsset) {
-    final assetName = originalAsset.assetLongname ?? originalAsset.asset;
+    final assetName =
+        displayAssetName(originalAsset.asset, originalAsset.assetLongname);
     return switch (widget.actionType) {
       IssuanceActionType.reset => [
           // Resetting an asset allows the user to change the supply quantity of the asset and to change the divisibility
@@ -520,14 +521,14 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             if (value == null ||
                 value.isEmpty ||
                 value ==
-                    '${originalAsset.assetLongname ?? originalAsset.asset}.') {
+                    '${displayAssetName(originalAsset.asset, originalAsset.assetLongname)}.') {
               return 'Please enter a subasset name';
             }
             return null;
           },
           onChanged: (value) {
             final prefix =
-                '${originalAsset.assetLongname ?? originalAsset.asset}.';
+                '${displayAssetName(originalAsset.asset, originalAsset.assetLongname)}.';
             if (value.length < prefix.length) {
               // If the user is trying to delete the prefix, keep it intact
               _subassetController.value = TextEditingValue(
@@ -574,7 +575,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     setState(() {
       _submitted = true;
     });
-    String name = originalAsset.assetLongname ?? originalAsset.asset;
+    String name =
+        displayAssetName(originalAsset.asset, originalAsset.assetLongname);
     int quantity = 0;
     String? description = originalAsset.description;
     String? destinationAddress;
