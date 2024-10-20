@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart';
@@ -208,7 +209,7 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseAssetIssuanceEvent(params: var params) =>
         _buildAssetIssuanceTitle(params),
       VerboseResetIssuanceEvent(params: var params) => SelectableText(
-          "Reset Issuance ${params.assetLongname ?? params.asset}"),
+          "Reset Issuance ${displayAssetName(params.asset, params.assetLongname)}"),
       VerboseDispenseEvent(params: var params) => SelectableText(
           "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
       VerboseOpenDispenserEvent(params: var params) =>
@@ -228,22 +229,22 @@ class ActivityFeedListItem extends StatelessWidget {
     if (params.transfer) {
       if (addresses.any((a) => a.address == params.source)) {
         return SelectableText(
-            "Transfer Out of ${params.assetLongname ?? params.asset}");
+            "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");
       } else {
         return SelectableText(
-            "Transfer In of ${params.assetLongname ?? params.asset}");
+            "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}");
       }
     }
     if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
       if (params.assetEvents == "reissuance") {
         return SelectableText(
-            "Reissue ${params.assetLongname ?? params.asset}");
+            "Reissue ${displayAssetName(params.asset, params.assetLongname)}");
       } else if (params.assetEvents == "lock_quantity reissuance") {
         return SelectableText(
-            "Lock Quantity for ${params.assetLongname ?? params.asset}");
+            "Lock Quantity for ${displayAssetName(params.asset, params.assetLongname)}");
       } else if (params.assetEvents == "lock_description reissuance") {
         return SelectableText(
-            "Lock Description for ${params.assetLongname ?? params.asset}");
+            "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}");
       }
     }
     if (params.asset == null || params.quantityNormalized == null) {
@@ -251,7 +252,7 @@ class ActivityFeedListItem extends StatelessWidget {
           style: TextStyle(color: redErrorText));
     }
     return SelectableText(
-        "Issue ${params.quantityNormalized} ${params.assetLongname ?? params.asset}");
+        "Issue ${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}");
   }
 
   Widget _buildDispenserUpdateTitle(VerboseDispenserUpdateParams params) {

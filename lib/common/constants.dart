@@ -61,3 +61,9 @@ class DecimalTextInputFormatter extends TextInputFormatter {
     );
   }
 }
+
+String displayAssetName(String? assetName, String? assetLongname) {
+  return assetLongname != '' && assetLongname != null
+      ? assetLongname
+      : assetName!;
+}
