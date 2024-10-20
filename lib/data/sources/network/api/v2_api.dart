@@ -3234,6 +3234,7 @@ abstract class V2Api {
     @Query("hard_cap") int? hardCap,
     @Query("start_block") int? startBlock,
     @Query("exact_fee") int? fee,
+    @Query("lock_quantity") bool? lockQuantity,
     @Query("inputs_set") String? inputsSet,
   ]);
 

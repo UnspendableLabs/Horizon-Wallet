@@ -84,6 +84,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
   Asset? asset;
 
   bool _submitted = false;
+  bool isLocked = true;
 
   String? error;
 
@@ -208,6 +209,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
               startBlock: startBlockController.text.isEmpty
                   ? null
                   : int.parse(startBlockController.text),
+              isLocked: isLocked,
             ),
           ));
     }
@@ -215,6 +217,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   List<Widget> _buildInitialFormFields(ComposeFairminterState state,
       bool loading, GlobalKey<FormState> formKey, List<Asset> assets) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Address that will be minting the asset",
@@ -277,6 +280,35 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         },
       ),
       const SizedBox(height: 16.0),
+      Column(children: [
+        Row(
+          children: [
+            Checkbox(
+              value: isLocked,
+              onChanged: (value) {
+                setState(() {
+                  isLocked = value ?? false;
+                });
+              },
+            ),
+            Text('Lock Quantity',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? mainTextWhite : mainTextBlack)),
+          ],
+        ),
+        const Row(
+          children: [
+            SizedBox(width: 30.0),
+            Expanded(
+              child: Text(
+                'If quantity is locked, additional issuances cannot be done after hard cap is reached.',
+              ),
+            ),
+          ],
+        ),
+      ]),
+      const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Start block (optional)",
         controller: startBlockController,
@@ -329,6 +361,12 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
             text: params.divisible!
                 ? hardcapNormalized.toStringAsFixed(8)
                 : hardcapNormalized.toString()),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "Quantity Locked",
+        controller: TextEditingController(text: params.lockQuantity.toString()),
         enabled: false,
       ),
       const SizedBox(height: 16.0),

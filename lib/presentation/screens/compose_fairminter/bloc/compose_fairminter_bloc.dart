@@ -20,6 +20,7 @@ class ComposeFairminterEventParams {
   final int hardCap;
   final bool divisible;
   final int? startBlock;
+  final bool isLocked;
 
   ComposeFairminterEventParams({
     required this.asset,
@@ -27,6 +28,7 @@ class ComposeFairminterEventParams {
     required this.hardCap,
     required this.divisible,
     this.startBlock,
+    required this.isLocked,
   });
 }
 
@@ -129,7 +131,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
                   maxMintPerTx: event.params.maxMintPerTx,
                   hardCap: event.params.hardCap,
                   startBlock: event.params.startBlock,
-                  divisible: event.params.divisible),
+                  divisible: event.params.divisible,
+                  lockQuantity: event.params.isLocked),
               composeFn: composeRepository.composeFairminterVerbose);
 
       emit(state.copyWith(
