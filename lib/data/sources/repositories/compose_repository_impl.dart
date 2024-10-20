@@ -292,6 +292,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final hardCap = params.hardCap;
         final startBlock = params.startBlock;
         final divisible = params.divisible;
+        final lockQuantity = params.lockQuantity;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -304,6 +305,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             hardCap,
             startBlock,
             fee,
+            lockQuantity,
             inputsSetString);
 
         if (response.result == null) {
