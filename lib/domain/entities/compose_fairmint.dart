@@ -8,6 +8,7 @@ class ComposeFairmintParams extends ComposeParams {
   final int? quantity;
   final AssetInfo? assetInfo;
   final String? quantityNormalized;
+  final bool? divisible;
 
   ComposeFairmintParams({
     required this.source,
@@ -15,6 +16,7 @@ class ComposeFairmintParams extends ComposeParams {
     this.quantity,
     this.assetInfo,
     this.quantityNormalized,
+    this.divisible,
   });
 
   @override

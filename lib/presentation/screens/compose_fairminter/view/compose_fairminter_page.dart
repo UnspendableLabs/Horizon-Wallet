@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
@@ -105,7 +106,33 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
                   onFeeChange: (fee) => context
                       .read<ComposeFairminterBloc>()
                       .add(ChangeFeeOption(value: fee)),
-                  buildInitialFormFields: (state, loading, formKey) => [],
+                  buildInitialFormFields: (state, loading, formKey) => [
+                        HorizonUI.HorizonTextFormField(
+                          label: "Address that will be minting the asset",
+                          controller: fromAddressController,
+                          enabled: false,
+                        ),
+                        const SizedBox(height: 16.0),
+                        const HorizonUI.HorizonTextFormField(
+                          label: "Select an asset",
+                          enabled: false,
+                        ),
+                        const SizedBox(height: 16.0),
+                        const HorizonUI.HorizonTextFormField(
+                          label: "Max mint per transaction",
+                          enabled: false,
+                        ),
+                        const SizedBox(height: 16.0),
+                        const HorizonUI.HorizonTextFormField(
+                          label: "Hard cap",
+                          enabled: false,
+                        ),
+                        const SizedBox(height: 16.0),
+                        const HorizonUI.HorizonTextFormField(
+                          label: "Start block (optional)",
+                          enabled: false,
+                        )
+                      ],
                   onInitialCancel: () => _handleInitialCancel(),
                   onInitialSubmit: (formKey) {},
                   buildConfirmationFormFields:
@@ -195,22 +222,21 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        label: "Divisible",
-        controller: TextEditingController(
-            text: asset?.divisible == true ? 'true' : 'false'),
-        enabled: false,
-      ),
-      const SizedBox(height: 16.0),
-      HorizonUI.HorizonDropdownMenu<Asset>(
+      HorizonUI.HorizonSearchableDropdownMenu<Asset>(
         label: "Select an asset",
         items: assets
-            .map((asset) =>
-                DropdownMenuItem(value: asset, child: Text(asset.asset)))
+            .where((asset) => asset.locked == false)
+            .map((asset) => DropdownMenuItem(
+                value: asset,
+                child:
+                    Text(displayAssetName(asset.asset, asset.assetLongname))))
             .toList(),
         onChanged: (Asset? value) => setState(() {
           asset = value;
         }),
+        selectedValue: asset,
+        displayStringForOption: (Asset asset) =>
+            displayAssetName(asset.asset, asset.assetLongname),
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -271,6 +297,10 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeFairminterResponse).params;
+    final Decimal maxMintPerTxNormalized =
+        quantityToQuantityNormalized(params.maxMintPerTx!, params.divisible!);
+    final Decimal hardcapNormalized =
+        quantityToQuantityNormalized(params.hardCap!, params.divisible!);
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -287,14 +317,18 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       HorizonUI.HorizonTextFormField(
         label: "Max mint per transaction",
         controller: TextEditingController(
-            text: '${params.maxMintPerTx.toString()} sats'),
+            text: params.divisible!
+                ? maxMintPerTxNormalized.toStringAsFixed(8)
+                : maxMintPerTxNormalized.toString()),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Hard cap",
-        controller:
-            TextEditingController(text: '${params.hardCap?.toString()} sats'),
+        controller: TextEditingController(
+            text: params.divisible!
+                ? hardcapNormalized.toStringAsFixed(8)
+                : hardcapNormalized.toString()),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
