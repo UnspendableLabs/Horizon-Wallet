@@ -84,7 +84,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
   Asset? asset;
 
   bool _submitted = false;
-  bool isLocked = true;
+  bool isLocked = false;
 
   String? error;
 
@@ -302,7 +302,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
             SizedBox(width: 30.0),
             Expanded(
               child: Text(
-                'If quantity is locked, additional issuances cannot be done after hard cap is reached.',
+                'If quantity is locked, additional issuances cannot be done after hard cap is reached. Defaults to false.',
               ),
             ),
           ],
