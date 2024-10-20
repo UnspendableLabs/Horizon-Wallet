@@ -17,7 +17,7 @@ final numberWithCommas = NumberFormat('#,###');
 Decimal quantityToQuantityNormalized(int quantity, bool divisible) {
   if (divisible) {
     final rational = Decimal.fromInt(quantity) / Decimal.fromInt(100000000);
-    return rational.toDecimal().round(scale: 8);
+    return rational.toDecimal(scaleOnInfinitePrecision: 8);
   } else {
     return Decimal.fromInt(quantity);
   }

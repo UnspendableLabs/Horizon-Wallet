@@ -3640,6 +3640,7 @@ class _V2Api implements V2Api {
     int? hardCap,
     int? startBlock,
     int? fee,
+    bool? lockQuantity,
     String? inputsSet,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -3650,6 +3651,7 @@ class _V2Api implements V2Api {
       r'hard_cap': hardCap,
       r'start_block': startBlock,
       r'exact_fee': fee,
+      r'lock_quantity': lockQuantity,
       r'inputs_set': inputsSet,
     };
     queryParameters.removeWhere((k, v) => v == null);

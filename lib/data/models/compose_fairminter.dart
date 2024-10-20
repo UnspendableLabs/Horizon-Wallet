@@ -103,5 +103,7 @@ class ComposeFairminterVerboseParamsModel {
         softCapDeadlineBlock: softCapDeadlineBlock,
         mintedAssetCommission: mintedAssetCommission,
         burnPayment: burnPayment,
+        lockQuantity: lockQuantity,
+        divisible: divisible,
       );
 }

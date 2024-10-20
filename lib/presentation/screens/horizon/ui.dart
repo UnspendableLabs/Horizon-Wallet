@@ -597,3 +597,165 @@ class HorizonDivider extends StatelessWidget {
     );
   }
 }
+
+class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
+  final List<DropdownMenuItem<T>> items;
+  final Function(T?) onChanged;
+  final String? label;
+  final T? selectedValue;
+  final bool enabled;
+  final String? Function(T?)? validator;
+  final AutovalidateMode autovalidateMode;
+  final String Function(T) displayStringForOption;
+
+  const HorizonSearchableDropdownMenu({
+    super.key,
+    required this.items,
+    required this.onChanged,
+    required this.displayStringForOption,
+    this.label,
+    this.selectedValue,
+    this.enabled = true,
+    this.validator,
+    this.autovalidateMode = AutovalidateMode.disabled,
+  });
+
+  @override
+  _HorizonSearchableDropdownMenuState<T> createState() =>
+      _HorizonSearchableDropdownMenuState<T>();
+}
+
+class _HorizonSearchableDropdownMenuState<T>
+    extends State<HorizonSearchableDropdownMenu<T>> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  bool _isOpen = false;
+  List<DropdownMenuItem<T>> _filteredItems = [];
+  T? _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedValue = widget.selectedValue;
+    _filteredItems = widget.items;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _toggleDropdown() {
+    setState(() {
+      _isOpen = !_isOpen;
+      if (_isOpen) {
+        _focusNode.requestFocus();
+        // Reset filtered items and clear search when opening the dropdown
+        _filteredItems = widget.items;
+        _searchController.clear();
+      } else {
+        _focusNode.unfocus();
+      }
+    });
+  }
+
+  void _filterItems(String query) {
+    setState(() {
+      _filteredItems = widget.items.where((item) {
+        final itemText = (item.child as Text).data?.toLowerCase() ?? '';
+        return itemText.contains(query.toLowerCase());
+      }).toList();
+    });
+  }
+
+  void _selectItem(T? value) {
+    setState(() {
+      _selectedValue = value;
+      _isOpen = false;
+      _searchController.clear();
+      // Reset filtered items when an item is selected
+      _filteredItems = widget.items;
+    });
+    widget.onChanged(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FormField<T>(
+      validator: widget.validator,
+      autovalidateMode: widget.autovalidateMode,
+      initialValue: widget.selectedValue,
+      builder: (FormFieldState<T> state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: widget.enabled ? _toggleDropdown : null,
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: widget.label,
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  errorText: state.errorText,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedValue != null
+                            ? widget.displayStringForOption(_selectedValue as T)
+                            : widget.label ?? '',
+                        style: TextStyle(
+                          color: _selectedValue != null
+                              ? Theme.of(context).textTheme.bodyLarge?.color
+                              : Theme.of(context).hintColor,
+                        ),
+                      ),
+                    ),
+                    Icon(_isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+                  ],
+                ),
+              ),
+            ),
+            if (_isOpen)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _searchController,
+                      focusNode: _focusNode,
+                      decoration: const InputDecoration(
+                        hintText: 'Search...',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: _filterItems,
+                    ),
+                    SizedBox(
+                      height: 200,
+                      child: ListView(
+                        children: _filteredItems
+                            .map((item) => ListTile(
+                                  title: item.child,
+                                  onTap: () => _selectItem(item.value),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
