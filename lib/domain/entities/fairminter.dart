@@ -1,4 +1,6 @@
-class Fairminter {
+import 'package:equatable/equatable.dart';
+
+class Fairminter extends Equatable {
   final String txHash;
   final int? txIndex;
   final int? blockIndex;
@@ -29,7 +31,7 @@ class Fairminter {
   final bool? confirmed;
   final int? blockTime;
 
-  Fairminter({
+  const Fairminter({
     required this.txHash,
     required this.txIndex,
     this.blockIndex,
@@ -60,4 +62,7 @@ class Fairminter {
     this.confirmed,
     this.blockTime,
   });
+
+  @override
+  List<Object?> get props => [txHash];
 }

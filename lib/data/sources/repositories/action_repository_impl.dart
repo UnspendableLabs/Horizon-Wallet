@@ -17,6 +17,7 @@ class ActionRepositoryImpl implements ActionRepository {
 
     return switch ((arr[0], arr[1])) {
       ("dispense", String address) => DispenseAction(address),
+      ("fairmint", String fairminterTxHash) => FairmintAction(fairminterTxHash),
       _ => throw Exception()
     };
   }

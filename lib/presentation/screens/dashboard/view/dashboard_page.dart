@@ -1259,6 +1259,8 @@ class DashboardPageState extends State<DashboardPage> {
     return switch (action) {
       URLAction.DispenseAction(address: var address) => () =>
           _handleDispenseAction(address),
+      URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
+          _handleFairmintAction(fairminterTxHash),
       _ => noop
     };
   }
@@ -1274,6 +1276,23 @@ class DashboardPageState extends State<DashboardPage> {
             body: ComposeDispensePageWrapper(
                 initialDispenserAddress: address,
                 dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
+  }
+
+  void _handleFairmintAction(String intitialFairminterTxHash) {
+    final dashboardActivityFeedBloc =
+        BlocProvider.of<DashboardActivityFeedBloc>(context);
+
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Compose Fairmint",
+          body: ComposeFairmintPageWrapper(
+            initialFairminterTxHash: intitialFairminterTxHash,
+            dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+          ),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
   }
 
   @override

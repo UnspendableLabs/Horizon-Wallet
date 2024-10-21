@@ -8,3 +8,10 @@ class DispenseAction extends Action {
   final String address;
   DispenseAction(this.address);
 }
+
+class FairmintAction extends Action {
+  @override
+  String get action => 'fairmint';
+  final String fairminterTxHash;
+  FairmintAction(this.fairminterTxHash);
+}

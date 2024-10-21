@@ -16,6 +16,7 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_bloc.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_state.dart';
+import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_event.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -23,9 +24,11 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeFairmintPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String? initialFairminterTxHash;
 
   const ComposeFairmintPageWrapper({
     required this.dashboardActivityFeedBloc,
+    this.initialFairminterTxHash,
     super.key,
   });
 
@@ -36,6 +39,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeFairmintBloc(
+          initialFairminterTxHash: initialFairminterTxHash,
           logger: GetIt.I.get<Logger>(),
           fetchComposeFairmintFormDataUseCase:
               GetIt.I.get<FetchComposeFairmintFormDataUseCase>(),
@@ -76,7 +80,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController nameController = UpperCaseTextEditingController();
 
-  Fairminter? fairminter;
+  // Fairminter? fairminter;
 
   bool _submitted = false;
 
@@ -142,7 +146,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                 _buildInitialFormFields(state, loading, formKey, fairminters),
             onInitialCancel: () => _handleInitialCancel(),
             onInitialSubmit: (formKey) =>
-                _handleInitialSubmit(formKey, fairminters),
+                _handleInitialSubmit(formKey, fairminters, state),
             buildConfirmationFormFields: (state, composeTransaction, formKey) =>
                 _buildConfirmationDetails(composeTransaction),
             onConfirmationBack: () => _onConfirmationBack(),
@@ -166,17 +170,18 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   }
 
   void _handleInitialSubmit(
-      GlobalKey<FormState> formKey, List<Fairminter> fairminters) {
+      GlobalKey<FormState> formKey, List<Fairminter> fairminters, state) {
     setState(() {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      if (fairminter == null && nameController.text.isEmpty) {
+      if (state.selectedFairminter == null && nameController.text.isEmpty) {
         setState(() {
           error = 'Please select a fairminter or enter a fairminter name';
         });
         return;
-      } else if (fairminter == null && nameController.text.isNotEmpty) {
+      } else if (state.selectedFairminter == null &&
+          nameController.text.isNotEmpty) {
         if (!fairminters
             .any((fairminter) => fairminter.asset == nameController.text)) {
           setState(() {
@@ -184,7 +189,8 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
           });
           return;
         }
-      } else if (fairminter != null && nameController.text.isNotEmpty) {
+      } else if (state.selectedFairminter != null &&
+          nameController.text.isNotEmpty) {
         setState(() {
           error =
               'Please specify either a fairminter name or a select from the dropdown, not both';
@@ -195,9 +201,15 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: ComposeFairmintEventParams(
-              asset: fairminter?.asset ?? nameController.text,
+              asset: state.selectedFairminter?.asset ?? nameController.text,
             ),
           ));
+    } else {
+
+        setState(() {
+          error =
+              'form invalid for lord knows what reason';
+        });
     }
   }
 
@@ -219,7 +231,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         label: "Name of the asset to mint",
         controller: nameController,
         onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, fairminters);
+          _handleInitialSubmit(formKey, fairminters, state);
         },
       ),
       const SizedBox(height: 16.0),
@@ -230,13 +242,16 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonDropdownMenu(
         label: "Select a fairminter",
+        selectedValue: state.selectedFairminter,
         items: fairminters
             .map((fairminter) => DropdownMenuItem(
                 value: fairminter, child: Text(fairminter.asset!)))
             .toList(),
-        onChanged: (Fairminter? value) => setState(() {
-          fairminter = value;
-        }),
+        onChanged: (Fairminter? value) {
+          context
+              .read<ComposeFairmintBloc>()
+              .add(FairminterChanged(value: value));
+        },
       ),
       if (error != null)
         SelectableText(
@@ -270,16 +285,19 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   }
 
   String _formatMintQuantity() {
-    if (fairminter == null || fairminter!.maxMintPerTx == null) {
+    final fairminter =
+        context.read<ComposeFairmintBloc>().state.selectedFairminter;
+
+    if (fairminter == null || fairminter.maxMintPerTx == null) {
       return '';
     }
 
-    final quantity = fairminter!.maxMintPerTx! / 100000000;
+    final quantity = fairminter.maxMintPerTx! / 100000000;
 
-    if (fairminter!.divisible == true) {
+    if (fairminter.divisible == true) {
       return quantity.toStringAsFixed(8);
     } else {
-      return fairminter!.maxMintPerTx!.toString();
+      return fairminter.maxMintPerTx!.toString();
     }
   }
 
