@@ -341,7 +341,7 @@ class ActivityFeedListItem extends StatelessWidget {
                         size: 16.0, // Small icon size
                       ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(2,0 , 0, 0),
+                        padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
                         child: SelectableText(reason,
                             style: const TextStyle(color: redErrorText)),
                       ),

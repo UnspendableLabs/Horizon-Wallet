@@ -15,7 +15,9 @@ void main() {
       expect(result, isA<EventStatusValid>());
     });
 
-    test('should return EventStatusInvalid with reason for "invalid: <reason>" string', () {
+    test(
+        'should return EventStatusInvalid with reason for "invalid: <reason>" string',
+        () {
       // Arrange
       String input = 'invalid: expired token';
 
@@ -36,4 +38,3 @@ void main() {
     });
   });
 }
-

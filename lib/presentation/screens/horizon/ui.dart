@@ -600,7 +600,7 @@ class HorizonDivider extends StatelessWidget {
 
 class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
   final List<DropdownMenuItem<T>> items;
-  final Function(T?) onChanged;
+  final Function(T?)? onChanged;
   final String? label;
   final T? selectedValue;
   final bool enabled;
@@ -678,7 +678,7 @@ class _HorizonSearchableDropdownMenuState<T>
       // Reset filtered items when an item is selected
       _filteredItems = widget.items;
     });
-    widget.onChanged(value);
+    widget.onChanged?.call(value);
   }
 
   @override

@@ -1,6 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
@@ -80,11 +82,11 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController nameController = UpperCaseTextEditingController();
 
-  // Fairminter? fairminter;
-
   bool _submitted = false;
-
   String? error;
+  bool _isAssetNameSelected = true;
+  // Add a key for the dropdown
+  Key _dropdownKey = UniqueKey();
 
   @override
   void initState() {
@@ -116,11 +118,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                             label: "Name of the asset to mint",
                             controller: nameController,
                             enabled: false),
-                        const SizedBox(height: 16.0),
-                        HorizonUI.HorizonTextFormField(
-                          controller: TextEditingController(text: 'OR'),
-                          enabled: false,
-                        ),
                         const SizedBox(height: 16.0),
                         const HorizonUI.HorizonTextFormField(
                           label: "Select a fairminter",
@@ -169,31 +166,29 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(
-      GlobalKey<FormState> formKey, List<Fairminter> fairminters, state) {
+  void _handleInitialSubmit(GlobalKey<FormState> formKey,
+      List<Fairminter> fairminters, ComposeFairmintState state) {
     setState(() {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      if (state.selectedFairminter == null && nameController.text.isEmpty) {
+      if (!_isAssetNameSelected && state.selectedFairminter == null) {
         setState(() {
-          error = 'Please select a fairminter or enter a fairminter name';
+          error = 'Please select a fairminter';
         });
         return;
-      } else if (state.selectedFairminter == null &&
-          nameController.text.isNotEmpty) {
-        if (!fairminters
-            .any((fairminter) => fairminter.asset == nameController.text)) {
-          setState(() {
-            error = 'Fairminter with name ${nameController.text} not found';
-          });
-          return;
-        }
-      } else if (state.selectedFairminter != null &&
-          nameController.text.isNotEmpty) {
+      } else if (_isAssetNameSelected && nameController.text.isEmpty) {
         setState(() {
-          error =
-              'Please specify either a fairminter name or a select from the dropdown, not both';
+          error = 'Please enter a fairminter name';
+        });
+        return;
+      }
+
+      if (_isAssetNameSelected &&
+          !fairminters
+              .any((fairminter) => fairminter.asset == nameController.text)) {
+        setState(() {
+          error = 'Fairminter with name ${nameController.text} not found';
         });
         return;
       }
@@ -201,15 +196,15 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address.address,
             params: ComposeFairmintEventParams(
-              asset: state.selectedFairminter?.asset ?? nameController.text,
+              asset: _isAssetNameSelected
+                  ? state.selectedFairminter!.asset ?? nameController.text
+                  : state.selectedFairminter!.asset!,
             ),
           ));
     } else {
-
-        setState(() {
-          error =
-              'form invalid for lord knows what reason';
-        });
+      setState(() {
+        error = 'Form is invalid';
+      });
     }
   }
 
@@ -227,31 +222,91 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        label: "Name of the asset to mint",
-        controller: nameController,
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, fairminters, state);
-        },
+      Row(
+        children: [
+          Radio<bool>(
+            value: true,
+            groupValue: _isAssetNameSelected,
+            onChanged: (value) {
+              setState(() {
+                _isAssetNameSelected = value!;
+                if (_isAssetNameSelected) {
+                  // Clear the dropdown value when switching to asset name input
+                  context
+                      .read<ComposeFairmintBloc>()
+                      .add(FairminterChanged(value: null));
+                  // Reset the dropdown key to force a re-render
+                  _dropdownKey = UniqueKey();
+                }
+              });
+            },
+          ),
+          Expanded(
+            child: HorizonUI.HorizonTextFormField(
+              label: "Name of the asset to mint",
+              controller: nameController,
+              enabled: _isAssetNameSelected,
+              onChanged: (value) {
+                if (_isAssetNameSelected) {
+                  final Fairminter? fairminter = fairminters.firstWhereOrNull(
+                      (fairminter) => fairminter.asset == value);
+                  context
+                      .read<ComposeFairmintBloc>()
+                      .add(FairminterChanged(value: fairminter));
+                }
+              },
+              onFieldSubmitted: (value) {
+                if (_isAssetNameSelected) {
+                  _handleInitialSubmit(formKey, fairminters, state);
+                }
+              },
+            ),
+          ),
+        ],
       ),
       const SizedBox(height: 16.0),
-      HorizonUI.HorizonTextFormField(
-        controller: TextEditingController(text: 'OR'),
-        enabled: false,
-      ),
-      const SizedBox(height: 16.0),
-      HorizonUI.HorizonDropdownMenu(
-        label: "Select a fairminter",
-        selectedValue: state.selectedFairminter,
-        items: fairminters
-            .map((fairminter) => DropdownMenuItem(
-                value: fairminter, child: Text(fairminter.asset!)))
-            .toList(),
-        onChanged: (Fairminter? value) {
-          context
-              .read<ComposeFairmintBloc>()
-              .add(FairminterChanged(value: value));
-        },
+      Row(
+        children: [
+          Radio<bool>(
+            value: false,
+            groupValue: _isAssetNameSelected,
+            onChanged: (value) {
+              setState(() {
+                _isAssetNameSelected = value!;
+                if (!_isAssetNameSelected) {
+                  // Clear the asset name input when switching to dropdown
+                  nameController.clear();
+                }
+              });
+            },
+          ),
+          Expanded(
+            child: HorizonUI.HorizonSearchableDropdownMenu(
+              key: _dropdownKey, // Add the key here
+              displayStringForOption: (fairminter) =>
+                  '${displayAssetName(fairminter.asset!, fairminter.assetLongname)}',
+              label: "Select a fairminter",
+              selectedValue:
+                  _isAssetNameSelected ? null : state.selectedFairminter,
+              items: fairminters
+                  .map((fairminter) => DropdownMenuItem(
+                      value: fairminter,
+                      child: Text(
+                          '${displayAssetName(fairminter.asset!, fairminter.assetLongname)}')))
+                  .toList(),
+              onChanged: _isAssetNameSelected
+                  ? null
+                  : (Fairminter? value) {
+                      if (!_isAssetNameSelected) {
+                        context
+                            .read<ComposeFairmintBloc>()
+                            .add(FairminterChanged(value: value));
+                      }
+                    },
+              enabled: !_isAssetNameSelected,
+            ),
+          ),
+        ],
       ),
       if (error != null)
         SelectableText(
@@ -281,12 +336,15 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         controller: TextEditingController(text: _formatMintQuantity()),
         enabled: false,
       ),
+      const SizedBox(height: 16.0),
     ];
   }
 
   String _formatMintQuantity() {
     final fairminter =
         context.read<ComposeFairmintBloc>().state.selectedFairminter;
+    print('fairminter.maxMintPerTx ${fairminter?.maxMintPerTx}');
+    print('fairminter.price ${fairminter?.price}');
 
     if (fairminter == null || fairminter.maxMintPerTx == null) {
       return '';
