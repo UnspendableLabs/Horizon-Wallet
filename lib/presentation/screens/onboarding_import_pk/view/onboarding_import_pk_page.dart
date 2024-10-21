@@ -133,13 +133,31 @@ class OnboardingImportPKPageState extends State<OnboardingImportPKPage> {
                                     continueButtonText: 'LOGIN',
                                   ),
                           ),
+                          if (state.importState is ImportStateError)
+                            Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: redErrorTextTransparent,
+                                  borderRadius: BorderRadius.circular(40.0),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.info, color: redErrorText),
+                                    const SizedBox(width: 4),
+                                    SelectableText(
+                                      state.importState.message,
+                                      style:
+                                          const TextStyle(color: redErrorText),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
                         ],
                       ),
-                      if (state.importState is ImportStateError)
-                        SelectableText(
-                          state.importState.message,
-                          style: const TextStyle(color: redErrorText),
-                        ),
                       if (state.importState is ImportStateLoading)
                         Container(
                           color: Colors.black.withOpacity(0.3),
