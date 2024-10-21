@@ -109,45 +109,62 @@ class OnboardingImportPKPageState extends State<OnboardingImportPKPage> {
                     isSmallScreenHeight: isSmallScreen,
                     scaffoldBackgroundColor: scaffoldBackgroundColor,
                   ),
-                  body: Column(
+                  body: Stack(
                     children: [
-                      Flexible(
-                        child: state.importState == ImportStateNotAsked
-                            ? PKField(
-                                pkErrorState: state.pkError,
-                              )
-                            : PasswordPrompt(
-                                state: state,
-                                onPressedBack: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboarding();
-                                },
-                                onPressedContinue: (password) {
-                                  context
-                                      .read<OnboardingImportPKBloc>()
-                                      .add(ImportWallet(password: password));
-                                },
-                                backButtonText: 'CANCEL',
-                                continueButtonText: 'LOGIN',
-                                optionalErrorWiget:
-                                    state.importState is ImportStateError
-                                        ? Positioned(
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            child: Align(
-                                              child: Center(
-                                                child: SelectableText(
-                                                  state.importState.message,
-                                                  style: const TextStyle(
-                                                      color: redErrorText),
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                        : null,
+                      Column(
+                        children: [
+                          Flexible(
+                            child: state.importState == ImportStateNotAsked
+                                ? PKField(pkErrorState: state.pkError)
+                                : PasswordPrompt(
+                                    state: state,
+                                    onPressedBack: () {
+                                      final shell =
+                                          context.read<ShellStateCubit>();
+                                      shell.onOnboarding();
+                                    },
+                                    onPressedContinue: (password) {
+                                      context
+                                          .read<OnboardingImportPKBloc>()
+                                          .add(
+                                              ImportWallet(password: password));
+                                    },
+                                    backButtonText: 'CANCEL',
+                                    continueButtonText: 'LOGIN',
+                                  ),
+                          ),
+                          if (state.importState is ImportStateError)
+                            Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: redErrorTextTransparent,
+                                  borderRadius: BorderRadius.circular(40.0),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.info, color: redErrorText),
+                                    const SizedBox(width: 4),
+                                    SelectableText(
+                                      state.importState.message,
+                                      style:
+                                          const TextStyle(color: redErrorText),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            )
+                        ],
                       ),
+                      if (state.importState is ImportStateLoading)
+                        Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
                     ],
                   ),
                 ),

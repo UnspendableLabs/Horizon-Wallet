@@ -1,5 +1,14 @@
 import "package:equatable/equatable.dart";
 
+sealed class EventStatus {}
+
+class EventStatusValid extends EventStatus {}
+
+class EventStatusInvalid extends EventStatus {
+  final String reason;
+  EventStatusInvalid({required this.reason});
+}
+
 sealed class EventState {}
 
 class EventStateMempool extends EventState {}
@@ -551,7 +560,7 @@ class AssetIssuanceParams {
   final int? quantity;
   // final bool reset;
   final String source;
-  // final String status;
+  final EventStatus status;
   final bool transfer;
   // final String txHash;
   // final int txIndex;
@@ -572,7 +581,7 @@ class AssetIssuanceParams {
     this.quantity,
     // required this.reset,
     required this.source,
-    // required this.status,
+    required this.status,
     required this.transfer,
     // required this.txHash,
     // required this.txIndex,
@@ -625,7 +634,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     required super.quantity,
     // required super.reset,
     required super.source,
-    // required super.status,
+    required super.status,
     required super.transfer,
     // required super.txHash,
     // required super.txIndex,

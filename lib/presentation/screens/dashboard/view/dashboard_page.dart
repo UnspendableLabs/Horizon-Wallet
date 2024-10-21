@@ -1033,7 +1033,7 @@ class BalancesSliverState extends State<BalancesSliver> {
           }),
         ];
 
-        if (!_viewAll && orderedEntries.length > widget.initialItemCount) {
+        if (!_viewAll && rows.length > widget.initialItemCount) {
           widgets.add(
             Padding(
               padding: const EdgeInsets.all(16.0),
