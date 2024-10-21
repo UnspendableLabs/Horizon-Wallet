@@ -1,5 +1,7 @@
 import 'package:horizon/core/logging/logger.dart';
+import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
+import 'package:horizon/domain/entities/fairminter.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/block_repository.dart';
@@ -11,6 +13,7 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_event.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_state.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 
@@ -31,6 +34,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
+  final String? initialFairminterTxHash;
 
   ComposeFairmintBloc({
     required this.logger,
@@ -41,23 +45,39 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
+    this.initialFairminterTxHash,
   }) : super(ComposeFairmintState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
           fairmintersState: const FairmintersState.initial(),
-        ));
+          initialFairminterTxHash: initialFairminterTxHash,
+          selectedFairminter: null,
+        )) {
+    on<FairminterChanged>(_onFairminterChanged);
+  }
+
+  _onFairminterChanged(FairminterChanged event, emit) {
+    emit(state.copyWith(selectedFairminter: event.value));
+  }
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
+
+
+    Fairminter? currentSelectedFairminter = state.selectedFairminter;
+
     emit(state.copyWith(
+        selectedFairminter: null,
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         fairmintersState: const FairmintersState.loading(),
         submitState: const SubmitInitial()));
 
     try {
+      Fairminter? initialFairminter;
+
       final (feeEstimates, fairminters) =
           await fetchComposeFairmintFormDataUseCase.call();
       // final block = await blockRepository.getLastBlock();
@@ -69,10 +89,20 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
             fairminter.price! == 0;
       }).toList();
 
+      if (initialFairminterTxHash != null) {
+        final fairminter = validFairminters.firstWhereOrNull(
+            (element) => element.txHash == initialFairminterTxHash);
+
+        if (fairminter != null) {
+          initialFairminter = fairminter;
+        }
+      }
+
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
         feeState: FeeState.success(feeEstimates),
         fairmintersState: FairmintersState.success(validFairminters),
+        selectedFairminter: currentSelectedFairminter ?? initialFairminter,
       ));
     } on FetchFairmintersException catch (e) {
       emit(state.copyWith(

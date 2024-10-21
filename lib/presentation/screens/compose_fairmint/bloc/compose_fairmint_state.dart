@@ -16,17 +16,21 @@ class ComposeFairmintState with _$ComposeFairmintState, ComposeStateBase {
     required BalancesState balancesState,
     required FeeOption feeOption,
     required SubmitState submitState,
+    String? initialFairminterTxHash,
+    Fairminter? selectedFairminter,
 
     // Fairmint specific properties
     required FairmintersState fairmintersState,
   }) = _ComposeFairmintState;
 
   factory ComposeFairmintState.initial() => ComposeFairmintState(
-        feeState: const FeeState.initial(),
-        balancesState: const BalancesState.initial(),
-        feeOption: Medium(),
-        submitState: const SubmitInitial(),
-        fairmintersState: const FairmintersState.initial(),
+      feeState: const FeeState.initial(),
+      balancesState: const BalancesState.initial(),
+      feeOption: Medium(),
+      submitState: const SubmitInitial(),
+      fairmintersState: const FairmintersState.initial(),
+      initialFairminterTxHash: null,
+      selectedFairminter: null
       );
 }
 
