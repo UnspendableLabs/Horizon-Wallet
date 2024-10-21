@@ -641,12 +641,16 @@ class BalancesSliver extends StatefulWidget {
   final List<Address> addresses;
   final int initialItemCount;
   final Address currentAddress;
-  const BalancesSliver(
-      {super.key,
-      required this.isDarkTheme,
-      required this.addresses,
-      required this.initialItemCount,
-      required this.currentAddress});
+  final String searchTerm;
+
+  const BalancesSliver({
+    super.key,
+    required this.isDarkTheme,
+    required this.addresses,
+    required this.initialItemCount,
+    required this.currentAddress,
+    required this.searchTerm,
+  });
 
   @override
   BalancesSliverState createState() => BalancesSliverState();
@@ -885,30 +889,53 @@ class BalancesDisplay extends StatefulWidget {
 }
 
 class BalancesDisplayState extends State<BalancesDisplay> {
-  late BalancesBloc _balancesBloc;
-
-  @override
-  Widget build(BuildContext context) {
-    return BalancesSliver(
-      isDarkTheme: widget.isDarkTheme,
-      addresses: widget.addresses,
-      currentAddress: widget.currentAddress,
-      initialItemCount: widget.initialItemCount,
-    );
-  }
-
-  @override
-  void dispose() {
-    _balancesBloc.add(Stop());
-    super.dispose();
-  }
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _balancesBloc = context.read<BalancesBloc>();
+    _searchController.addListener(_onSearchChanged);
+  }
 
-    _balancesBloc.add(Start(pollingInterval: const Duration(seconds: 60)));
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search assets',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+          BalancesSliver(
+            isDarkTheme: widget.isDarkTheme,
+            addresses: widget.addresses,
+            currentAddress: widget.currentAddress,
+            initialItemCount: widget.initialItemCount,
+            searchTerm: _searchController.text,
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -920,8 +947,10 @@ class BalancesSliverState extends State<BalancesSliver> {
   Widget build(BuildContext context) {
     return BlocBuilder<BalancesBloc, BalancesState>(
       builder: (context, state) {
-        return SliverList(
-          delegate: SliverChildListDelegate(_buildContent(state)),
+        return ListView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: _buildContent(state),
         );
       },
     );
@@ -930,7 +959,7 @@ class BalancesSliverState extends State<BalancesSliver> {
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
       ok: (balances, aggregated, ownedAssets) {
-        if (balances.isEmpty) {
+        if (balances.isEmpty && ownedAssets.isEmpty) {
           return [
             const NoData(
               title: 'No Balances',
@@ -960,7 +989,10 @@ class BalancesSliverState extends State<BalancesSliver> {
             .toList();
 
         final List<TableRow> rows = [];
-        final balanceRows = orderedEntries.map((entry) {
+        final balanceRows = orderedEntries
+            .where((entry) =>
+                _matchesSearch(entry.key, entry.value.assetInfo.assetLongname))
+            .map((entry) {
           final isClickable = entry.key != 'BTC';
 
           final Color textColor = isClickable
@@ -988,7 +1020,9 @@ class BalancesSliverState extends State<BalancesSliver> {
           );
         }).toList();
 
-        final ownedAssetRows = ownedAssetsNotIncludedInEntries.map((asset) {
+        final ownedAssetRows = ownedAssetsNotIncludedInEntries
+            .where((asset) => _matchesSearch(asset.asset, asset.assetLongname))
+            .map((asset) {
           final textColor = widget.isDarkTheme
               ? darkThemeAssetLinkColor
               : lightThemeAssetLinkColor;
@@ -1058,6 +1092,14 @@ class BalancesSliverState extends State<BalancesSliver> {
         )
       ],
     );
+  }
+
+  bool _matchesSearch(String assetName, String? assetLongname) {
+    final searchTerm = widget.searchTerm.toLowerCase();
+    return assetName.toLowerCase().startsWith(searchTerm) ||
+        (assetLongname != null &&
+            assetLongname.isNotEmpty &&
+            assetLongname.toLowerCase().startsWith(searchTerm));
   }
 
   Future<void> _launchAssetUrl(String asset) async {
@@ -1241,8 +1283,9 @@ class DashboardPage extends StatefulWidget {
 
 class DashboardPageState extends State<DashboardPage> {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
-
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
+  String _searchTerm = '';
 
   @override
   void initState() {
@@ -1252,6 +1295,20 @@ class DashboardPageState extends State<DashboardPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _getHandler(action)();
       });
+    });
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchTerm = _searchController.text;
     });
   }
 
@@ -1317,6 +1374,22 @@ class DashboardPageState extends State<DashboardPage> {
               .firstWhere((account) => account.uuid == widget.accountUuid),
           orElse: () => null,
         );
+
+    Widget buildSearchBar() {
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            labelText: 'Search assets',
+            prefixIcon: const Icon(Icons.search),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      );
+    }
 
     if (!isSmallScreen) {
       return Scaffold(

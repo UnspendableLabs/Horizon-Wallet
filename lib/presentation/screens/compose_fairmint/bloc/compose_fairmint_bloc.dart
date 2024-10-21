@@ -64,8 +64,6 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
-
-
     Fairminter? currentSelectedFairminter = state.selectedFairminter;
 
     emit(state.copyWith(
