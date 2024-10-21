@@ -55,13 +55,7 @@ class AddressRepositoryImpl implements AddressRepository {
 
     entityAddresses.sort(addressSortComparator);
 
-    // return entityAddresses;
-    return [
-      const entity.Address(
-          accountUuid: "1",
-          address: "bc1qjyhsmetjmskue4nh0u367hckxzs2vn3scd2z6w",
-          index: 1)
-    ];
+    return entityAddresses;
   }
 
   @override
