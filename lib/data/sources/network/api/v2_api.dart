@@ -489,7 +489,7 @@ class AssetIssuanceParams {
   final int? quantity;
   // final bool reset;
   final String source;
-  // final String status;
+  final String status;
   final bool transfer;
   // final String txHash;
   // final int txIndex;
@@ -510,7 +510,7 @@ class AssetIssuanceParams {
     required this.quantity,
     // required this.reset,
     required this.source,
-    // required this.status,
+    required this.status,
     required this.transfer,
     // required this.txHash,
     // required this.txIndex,
@@ -539,7 +539,7 @@ class VerboseAssetIssuanceParams extends AssetIssuanceParams {
     super.quantity,
     // required super.reset,
     required super.source,
-    // required super.status,
+    required super.status,
     required super.transfer,
     // required super.txHash,
     // required super.txIndex,

@@ -425,6 +425,7 @@ AssetIssuanceParams _$AssetIssuanceParamsFromJson(Map<String, dynamic> json) =>
       assetEvents: json['asset_events'] as String?,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
+      status: json['status'] as String,
       transfer: json['transfer'] as bool,
     );
 
@@ -436,6 +437,7 @@ Map<String, dynamic> _$AssetIssuanceParamsToJson(
       'asset_events': instance.assetEvents,
       'quantity': instance.quantity,
       'source': instance.source,
+      'status': instance.status,
       'transfer': instance.transfer,
     };
 
@@ -447,6 +449,7 @@ VerboseAssetIssuanceParams _$VerboseAssetIssuanceParamsFromJson(
       assetEvents: json['asset_events'] as String?,
       quantity: (json['quantity'] as num?)?.toInt(),
       source: json['source'] as String,
+      status: json['status'] as String,
       transfer: json['transfer'] as bool,
       blockTime: (json['block_time'] as num?)?.toInt(),
       quantityNormalized: json['quantity_normalized'] as String?,
@@ -461,6 +464,7 @@ Map<String, dynamic> _$VerboseAssetIssuanceParamsToJson(
       'asset_events': instance.assetEvents,
       'quantity': instance.quantity,
       'source': instance.source,
+      'status': instance.status,
       'transfer': instance.transfer,
       'block_time': instance.blockTime,
       'quantity_normalized': instance.quantityNormalized,

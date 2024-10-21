@@ -3,6 +3,7 @@ import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/data/models/event.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
 class StateMapper {
@@ -306,7 +307,7 @@ class VerboseAssetIssuanceParamsMapper {
       quantity: apiParams.quantity,
       // reset: apiParams.reset,
       source: apiParams.source,
-      // status: apiParams.status,
+      status: EventStatusMapper.fromString(apiParams.status),
       transfer: apiParams.transfer,
       // txHash: apiParams.txHash,
       // txIndex: apiParams.txIndex,

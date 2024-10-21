@@ -326,8 +326,31 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildEventSubtitle(Event event) {
     return switch (event) {
-      VerboseAssetIssuanceEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseAssetIssuanceEvent(txHash: var hash, params: var params) => Row(
+          children: [
+            TxHashDisplay(hash: hash, uriType: URIType.hoex),
+            switch (params.status) {
+              EventStatusValid() => SizedBox.shrink(),
+              EventStatusInvalid(reason: var reason) => Padding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded, // Warning icon
+                        color: redErrorText, // Icon color
+                        size: 16.0, // Small icon size
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(2,0 , 0, 0),
+                        child: SelectableText(reason,
+                            style: const TextStyle(color: redErrorText)),
+                      ),
+                    ],
+                  ),
+                ),
+            }
+          ],
+        ),
       VerboseResetIssuanceEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseEnhancedSendEvent(txHash: var hash) =>
