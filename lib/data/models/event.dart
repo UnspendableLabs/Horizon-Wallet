@@ -1,6 +1,4 @@
-
 import 'package:horizon/domain/entities/event.dart';
-
 
 class EventStatusMapper {
   static EventStatus fromString(String statusString) {
@@ -15,4 +13,3 @@ class EventStatusMapper {
     }
   }
 }
-
