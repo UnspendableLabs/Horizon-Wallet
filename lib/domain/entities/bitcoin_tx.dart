@@ -10,20 +10,87 @@ String encodeHex(Uint8List bytes) {
 
 const String PREFIX = 'CNTRPRTY';
 
+const String OP_CHECKSIG = 'OP_CHECKSIG';
+const String OP_CHECKSIGVERIFY = 'OP_CHECKSIGVERIFY';
+const String OP_CHECKMULTISIG = 'OP_CHECKMULTISIG';
+const String OP_CHECKMULTISIGVERIFY = 'OP_CHECKMULTISIGVERIFY';
+const int WITNESS_SCALE_FACTOR = 4;
+const int MAX_PUBKEYS_PER_MULTISIG = 20;
 final Decimal btcFactor = Decimal.fromInt(100000000);
 
-class Prevout {
-  final String scriptpubkey;
-  final String scriptpubkeyAsm;
-  final String scriptpubkeyType;
-  final String? scriptpubkeyAddress;
-  final int value;
+class Script {
 
+  final String pubkey; 
+  final String pubkeyAsm;
+  final String pubkeyType;
+  final String? pubkeyAddress;
+
+
+
+  Script({
+    required this.pubkey,
+    required this.pubkeyAsm,
+    required this.pubkeyType,
+    this.pubkeyAddress
+    });
+
+  int getSigOpCount({bool accurate = true}) {
+
+    // TODO: validate that it's okay to ignore
+    //       p2sh case
+    int nSigOps = 0;
+    List<String> ops = pubkeyAsm.split(' ');
+    String lastOpcode = '';
+
+    for (var op in ops) {
+      if (op == OP_CHECKSIG || op == OP_CHECKSIGVERIFY) {
+        nSigOps += 1;
+      } else if (op == OP_CHECKMULTISIG || op == OP_CHECKMULTISIGVERIFY) {
+        if (accurate && _isOpN(lastOpcode)) {
+          int m = _decodeOpN(lastOpcode);
+          nSigOps += m;
+        } else {
+          nSigOps += MAX_PUBKEYS_PER_MULTISIG;
+        }
+      }
+      lastOpcode = op;
+    }
+
+    return nSigOps;
+  }
+
+  /// Checks if an opcode represents OP_N (OP_1 to OP_16).
+  bool _isOpN(String opcode) {
+    if (opcode.startsWith('OP_')) {
+      var n = opcode.substring(3);
+      if (n == '1NEGATE') return false;
+      var value = int.tryParse(n);
+      if (value != null && value >= 1 && value <= 16) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Decodes OP_N opcode to its integer value (1 to 16).
+  int _decodeOpN(String opcode) {
+    if (_isOpN(opcode)) {
+      return int.parse(opcode.substring(3));
+    }
+    return -1; // Invalid OP_N
+  }
+}
+
+class Prevout {
+  Script script;
+  // final String scriptpubkey;
+  // final String scriptpubkeyAsm;
+  // final String scriptpubkeyType;
+  // final String? scriptpubkeyAddress;
+  final int value;
+  //
   Prevout({
-    required this.scriptpubkey,
-    required this.scriptpubkeyAsm,
-    required this.scriptpubkeyType,
-    this.scriptpubkeyAddress,
+    required this.script,
     required this.value,
   });
 }
@@ -48,20 +115,19 @@ class Vin {
     required this.isCoinbase,
     required this.sequence,
   });
+
 }
 
 class Vout {
-  final String scriptpubkey;
-  final String scriptpubkeyAsm;
-  final String scriptpubkeyType;
-  final String? scriptpubkeyAddress;
+  // final String scriptpubkey;
+  // final String scriptpubkeyAsm;
+  // final String scriptpubkeyType;
+  // final String? scriptpubkeyAddress;
+  final Script script;
   final int value;
 
   Vout({
-    required this.scriptpubkey,
-    required this.scriptpubkeyAsm,
-    required this.scriptpubkeyType,
-    this.scriptpubkeyAddress,
+    required this.script,
     required this.value,
   });
 }
@@ -107,10 +173,10 @@ class BitcoinTx {
 
   TransactionType getTransactionType(List<String> addresses) {
     bool isSender = vin.any((input) =>
-        input.prevout?.scriptpubkeyAddress != null &&
-        addresses.contains(input.prevout!.scriptpubkeyAddress));
+        input.prevout?.script.pubkeyAddress != null &&
+        addresses.contains(input.prevout!.script.pubkeyAddress));
     bool isRecipient =
-        vout.any((output) => addresses.contains(output.scriptpubkeyAddress));
+        vout.any((output) => addresses.contains(output.script.pubkeyAddress));
 
     if (isSender) {
       return TransactionType.sender;
@@ -125,7 +191,7 @@ class BitcoinTx {
     // Calculate the total input amount from the given addresses
     Decimal totalInput = vin.fold(Decimal.zero, (sum, input) {
       if (input.prevout != null &&
-          addresses.contains(input.prevout!.scriptpubkeyAddress)) {
+          addresses.contains(input.prevout!.script.pubkeyAddress)) {
         return sum + Decimal.fromInt(input.prevout!.value);
       }
       return sum;
@@ -133,7 +199,7 @@ class BitcoinTx {
 
     // Calculate the amount that goes back to the same addresses (change)
     Decimal changeAmount = vout
-        .where((output) => addresses.contains(output.scriptpubkeyAddress))
+        .where((output) => addresses.contains(output.script.pubkeyAddress))
         .fold(
             Decimal.zero, (sum, output) => sum + Decimal.fromInt(output.value));
 
@@ -143,7 +209,7 @@ class BitcoinTx {
 
   Decimal getAmountReceived(List<String> addresses) {
     return vout
-        .where((output) => addresses.contains(output.scriptpubkeyAddress))
+        .where((output) => addresses.contains(output.script.pubkeyAddress))
         .fold(
             Decimal.zero, (sum, output) => sum + Decimal.fromInt(output.value));
   }
@@ -184,14 +250,14 @@ class BitcoinTx {
       // Iterate through each output in the transaction
       for (Vout output in vout) {
         logs.add(
-            "Processing output scriptpubkeyType: ${output.scriptpubkeyType}");
+            "Processing output scriptpubkeyType: ${output.script.pubkeyType}");
 
         // Check if the output is an OP_RETURN output
-        if (output.scriptpubkeyType == 'op_return') {
+        if (output.script.pubkeyType == 'op_return') {
           logs.add("Found OP_RETURN output");
 
           // Extract and clean hex data
-          String dataHex = output.scriptpubkeyAsm.replaceAll('OP_RETURN ', '');
+          String dataHex = output.script.pubkeyAsm.replaceAll('OP_RETURN ', '');
           if (dataHex.contains("OP_PUSHBYTES")) {
             // Remove OP_PUSHBYTES_xx
             List<String> parts = dataHex.split(' ');
@@ -232,11 +298,11 @@ class BitcoinTx {
           } else {
             logs.add("Decoded data does not contain Counterparty prefix.");
           }
-        } else if (output.scriptpubkeyAsm.contains('OP_CHECKMULTISIG')) {
+        } else if (output.script.pubkeyAsm.contains('OP_CHECKMULTISIG')) {
           logs.add("Processing potential multisig Counterparty transaction");
 
           // Extract the public keys from the scriptpubkeyAsm
-          List<String> parts = output.scriptpubkeyAsm.split(' ');
+          List<String> parts = output.script.pubkeyAsm.split(' ');
           List<String> pubKeys = [];
           for (int i = 0; i < parts.length; i++) {
             if (parts[i].startsWith('OP_PUSHBYTES')) {

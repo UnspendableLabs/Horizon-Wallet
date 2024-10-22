@@ -36,10 +36,12 @@ class PrevoutModel {
       };
 
   Prevout toDomain() => Prevout(
-        scriptpubkey: scriptpubkey,
-        scriptpubkeyAsm: scriptpubkeyAsm,
-        scriptpubkeyType: scriptpubkeyType,
-        scriptpubkeyAddress: scriptpubkeyAddress,
+        script: Script(
+          pubkey: scriptpubkey,
+          pubkeyAsm: scriptpubkeyAsm,
+          pubkeyType: scriptpubkeyType,
+          pubkeyAddress: scriptpubkeyAddress,
+        ),
         value: value,
       );
 }
@@ -139,10 +141,12 @@ class VoutModel {
       };
 
   Vout toDomain() => Vout(
-        scriptpubkey: scriptpubkey,
-        scriptpubkeyAsm: scriptpubkeyAsm,
-        scriptpubkeyType: scriptpubkeyType,
-        scriptpubkeyAddress: scriptpubkeyAddress,
+        script: Script(
+          pubkey: scriptpubkey,
+          pubkeyAsm: scriptpubkeyAsm,
+          pubkeyType: scriptpubkeyType,
+          pubkeyAddress: scriptpubkeyAddress,
+        ),
         value: value,
       );
 }
