@@ -70,7 +70,16 @@ class OnboardingImportPKBloc
       try {
         switch (state.importFormat) {
           case ImportFormat.horizon:
-            Wallet wallet = await walletService.fromBase58(state.pk, password);
+            Wallet wallet;
+            try {
+              wallet = await walletService.fromBase58(state.pk, password);
+            } catch (e) {
+              emit(state.copyWith(
+                  importState: ImportStateError(
+                      message:
+                          'Invalid Private Key; please ensure you are using a valid BIP32 master key')));
+              return;
+            }
 
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, password);
