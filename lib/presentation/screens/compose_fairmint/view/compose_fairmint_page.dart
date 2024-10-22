@@ -84,7 +84,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
 
   bool _submitted = false;
   String? error;
-  bool _isAssetNameSelected = true;
+  bool _isAssetNameSelected = false;
   // Add a key for the dropdown
   Key _dropdownKey = UniqueKey();
 
@@ -113,16 +113,16 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                           controller: fromAddressController,
                           enabled: false,
                         ),
-                        const SizedBox(height: 16.0),
-                        HorizonUI.HorizonTextFormField(
+                    const SizedBox(height: 16.0),
+                    const HorizonUI.HorizonTextFormField(
+                      label: "Select a fairminter",
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
                             label: "Name of the asset to mint",
                             controller: nameController,
                             enabled: false),
-                        const SizedBox(height: 16.0),
-                        const HorizonUI.HorizonTextFormField(
-                          label: "Select a fairminter",
-                          enabled: false,
-                        ),
                       ],
                   onInitialCancel: () => _handleInitialCancel(),
                   onInitialSubmit: (formKey) {},
@@ -225,6 +225,55 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       Row(
         children: [
           Radio<bool>(
+            value: false,
+            groupValue: _isAssetNameSelected,
+            onChanged: (value) {
+              setState(() {
+                _isAssetNameSelected = value!;
+                if (!_isAssetNameSelected) {
+                  // Clear the asset name input when switching to dropdown
+                  nameController.clear();
+                }
+              });
+            },
+          ),
+          Expanded(
+            child: _isAssetNameSelected
+                ? const HorizonUI.HorizonTextFormField(
+                    label: "Select a fairminter",
+                    enabled: false,
+                  )
+                : HorizonUI.HorizonSearchableDropdownMenu(
+                    key: _dropdownKey, // Add the key here
+                    displayStringForOption: (fairminter) => displayAssetName(
+                        fairminter.asset!, fairminter.assetLongname),
+                    label: "Select a fairminter",
+                    selectedValue:
+                        _isAssetNameSelected ? null : state.selectedFairminter,
+                    items: fairminters
+                        .map((fairminter) => DropdownMenuItem(
+                            value: fairminter,
+                            child: Text(displayAssetName(
+                                fairminter.asset!, fairminter.assetLongname))))
+                        .toList(),
+                    onChanged: _isAssetNameSelected
+                        ? null
+                        : (Fairminter? value) {
+                            if (!_isAssetNameSelected) {
+                              context
+                                  .read<ComposeFairmintBloc>()
+                                  .add(FairminterChanged(value: value));
+                            }
+                          },
+                    enabled: !_isAssetNameSelected,
+                  ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16.0),
+      Row(
+        children: [
+          Radio<bool>(
             value: true,
             groupValue: _isAssetNameSelected,
             onChanged: (value) {
@@ -260,50 +309,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                   _handleInitialSubmit(formKey, fairminters, state);
                 }
               },
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 16.0),
-      Row(
-        children: [
-          Radio<bool>(
-            value: false,
-            groupValue: _isAssetNameSelected,
-            onChanged: (value) {
-              setState(() {
-                _isAssetNameSelected = value!;
-                if (!_isAssetNameSelected) {
-                  // Clear the asset name input when switching to dropdown
-                  nameController.clear();
-                }
-              });
-            },
-          ),
-          Expanded(
-            child: HorizonUI.HorizonSearchableDropdownMenu(
-              key: _dropdownKey, // Add the key here
-              displayStringForOption: (fairminter) =>
-                  '${displayAssetName(fairminter.asset!, fairminter.assetLongname)}',
-              label: "Select a fairminter",
-              selectedValue:
-                  _isAssetNameSelected ? null : state.selectedFairminter,
-              items: fairminters
-                  .map((fairminter) => DropdownMenuItem(
-                      value: fairminter,
-                      child: Text(
-                          '${displayAssetName(fairminter.asset!, fairminter.assetLongname)}')))
-                  .toList(),
-              onChanged: _isAssetNameSelected
-                  ? null
-                  : (Fairminter? value) {
-                      if (!_isAssetNameSelected) {
-                        context
-                            .read<ComposeFairmintBloc>()
-                            .add(FairminterChanged(value: value));
-                      }
-                    },
-              enabled: !_isAssetNameSelected,
             ),
           ),
         ],
