@@ -190,13 +190,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
               });
             }
           });
-
           return SizedBox(
             height: 48,
             child: AssetDropdown(
               key: const Key('asset_dropdown'),
               loading: loading,
-              asset: asset,
+              asset: asset ?? balances[0].asset,
               controller: assetController,
               balances: balances,
               onSelected: (String? value) {

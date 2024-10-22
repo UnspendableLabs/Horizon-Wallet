@@ -113,13 +113,13 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                           controller: fromAddressController,
                           enabled: false,
                         ),
-                    const SizedBox(height: 16.0),
-                    const HorizonUI.HorizonTextFormField(
-                      label: "Select a fairminter",
-                        enabled: false,
-                      ),
-                      const SizedBox(height: 16.0),
-                      HorizonUI.HorizonTextFormField(
+                        const SizedBox(height: 16.0),
+                        const HorizonUI.HorizonTextFormField(
+                          label: "Select a fairminter",
+                          enabled: false,
+                        ),
+                        const SizedBox(height: 16.0),
+                        HorizonUI.HorizonTextFormField(
                             label: "Name of the asset to mint",
                             controller: nameController,
                             enabled: false),
