@@ -69,6 +69,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
               children: [
                 Expanded(
                   child: TextField(
+                    key: const Key('search_input'), // Add this line
                     controller: _searchController,
                     decoration: InputDecoration(
                       labelText: 'Search assets',
@@ -89,15 +90,19 @@ class BalancesDisplayState extends State<BalancesDisplay> {
                           _showOwnedOnly = value ?? false;
                         });
                       },
-                      fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
-                        return widget.isDarkTheme ? lightThemeInputColor : darkThemeInputColor; // Use transparent for unchecked state
+                      fillColor: WidgetStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) {
+                        return widget.isDarkTheme
+                            ? darkThemeInputColor
+                            : whiteLightTheme; // Use transparent for unchecked state
                       }),
+                      key: const Key('owned_checkbox'), // Add this line
                     ),
                     const Text('Owned'),
                   ],
                 ),
                 const SizedBox(width: 8),
-                                Row(
+                Row(
                   children: [
                     Checkbox(
                       value: _showIssuerOnly,
@@ -106,9 +111,13 @@ class BalancesDisplayState extends State<BalancesDisplay> {
                           _showIssuerOnly = value ?? false;
                         });
                       },
-                      fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
-                        return widget.isDarkTheme ? lightThemeInputColor : darkThemeInputColor; // Use transparent for unchecked state
+                      fillColor: WidgetStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) {
+                        return widget.isDarkTheme
+                            ? darkThemeInputColor
+                            : whiteLightTheme; // Use transparent for unchecked state
                       }),
+                      key: const Key('issuer_checkbox'), // Add this line
                     ),
                     const Text('Issuer'),
                   ],
@@ -245,9 +254,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
         final ownedAssetRows = ownedAssetsNotIncludedInEntries
             .where((asset) => _matchesSearch(asset.asset, asset.assetLongname))
-            .where((asset) => (widget.showIssuerOnly
-                ? _isIssuer(asset)
-                : true))
+            .where((asset) => (widget.showIssuerOnly ? _isIssuer(asset) : true))
             .map((asset) {
           final textColor = widget.isDarkTheme
               ? darkThemeAssetLinkColor
@@ -385,6 +392,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                         ..onTap = () => _launchAssetUrl(assetName))
                       : null,
                 ),
+                key: Key('assetName_$assetName'),
               );
             },
           ),
