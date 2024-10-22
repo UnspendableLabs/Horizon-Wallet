@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
@@ -16,7 +17,6 @@ import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dar
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class OnboardingImportPKPageWrapper extends StatelessWidget {
@@ -131,31 +131,35 @@ class OnboardingImportPKPageState extends State<OnboardingImportPKPage> {
                                     },
                                     backButtonText: 'CANCEL',
                                     continueButtonText: 'LOGIN',
-                                  ),
+                                    optionalErrorWidget: state.importState
+                                            is ImportStateError
+                                        ? Align(
+                                            alignment: Alignment.center,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              decoration: BoxDecoration(
+                                                color: redErrorTextTransparent,
+                                                borderRadius:
+                                                    BorderRadius.circular(40.0),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(Icons.info,
+                                                      color: redErrorText),
+                                                  const SizedBox(width: 4),
+                                                  SelectableText(
+                                                    state.importState.message,
+                                                    style: const TextStyle(
+                                                        color: redErrorText),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        : null),
                           ),
-                          if (state.importState is ImportStateError)
-                            Align(
-                              alignment: Alignment.center,
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: redErrorTextTransparent,
-                                  borderRadius: BorderRadius.circular(40.0),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.info, color: redErrorText),
-                                    const SizedBox(width: 4),
-                                    SelectableText(
-                                      state.importState.message,
-                                      style:
-                                          const TextStyle(color: redErrorText),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
                         ],
                       ),
                       if (state.importState is ImportStateLoading)
@@ -219,6 +223,12 @@ class _PKFieldState extends State<PKField> {
                       context
                           .read<OnboardingImportPKBloc>()
                           .add(PKChanged(pk: value));
+                    },
+                    onSubmitted: (value) {
+                      context.read<OnboardingImportPKBloc>().add(PKSubmit(
+                            pk: pkController.text,
+                            importFormat: selectedFormat!,
+                          ));
                     },
                     decoration: InputDecoration(
                       filled: true,

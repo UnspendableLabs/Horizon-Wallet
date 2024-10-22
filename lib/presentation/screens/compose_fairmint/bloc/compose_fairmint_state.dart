@@ -30,8 +30,7 @@ class ComposeFairmintState with _$ComposeFairmintState, ComposeStateBase {
       submitState: const SubmitInitial(),
       fairmintersState: const FairmintersState.initial(),
       initialFairminterTxHash: null,
-      selectedFairminter: null
-      );
+      selectedFairminter: null);
 }
 
 @freezed

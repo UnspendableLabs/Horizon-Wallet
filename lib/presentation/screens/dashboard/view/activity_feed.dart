@@ -330,18 +330,18 @@ class ActivityFeedListItem extends StatelessWidget {
           children: [
             TxHashDisplay(hash: hash, uriType: URIType.hoex),
             switch (params.status) {
-              EventStatusValid() => SizedBox.shrink(),
+              EventStatusValid() => const SizedBox.shrink(),
               EventStatusInvalid(reason: var reason) => Padding(
                   padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.warning_amber_rounded, // Warning icon
                         color: redErrorText, // Icon color
                         size: 16.0, // Small icon size
                       ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(2,0 , 0, 0),
+                        padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
                         child: SelectableText(reason,
                             style: const TextStyle(color: redErrorText)),
                       ),
