@@ -109,7 +109,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
       final escrowQuantity = event.params.escrowQuantity;
       final mainchainrate = event.params.mainchainrate;
 
-      final composed = await composeTransactionUseCase
+      final composeResponse = await composeTransactionUseCase
           .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
               feeRate: feeRate,
               source: source,
@@ -121,6 +121,9 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
                   mainchainrate: mainchainrate,
                   status: 10),
               composeFn: composeRepository.composeDispenserVerbose);
+      
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
 
       emit(state.copyWith(
           submitState:
@@ -128,6 +131,8 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(

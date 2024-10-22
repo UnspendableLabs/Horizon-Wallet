@@ -50,36 +50,28 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_send.ComposeSend> composeSendVerbose(
-      String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx,
-      int? fee,
-      int? feeRate,
-      List<Utxo>? inputsSet]) async {
-    inputsSet ??= [];
-
-    return await _retryOnInvalidUtxo<compose_send.ComposeSend>(
+  Future<compose_send.ComposeSendResponse> composeSendVerbose(int fee,
+      List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
+    return await _retryOnInvalidUtxo<compose_send.ComposeSendResponse>(
       (currentInputSet) async {
+        final source = params.source;
+        final destination = params.destination;
+        final asset = params.asset;
+        final quantity = params.quantity;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeSendVerbose(
-            sourceAddress,
-            destination,
-            asset,
-            quantity,
-            allowUnconfirmedTx,
-            fee,
-            feeRate,
-            inputsSetString);
+        final response = await api.composeSendVerbose(source, destination,
+            asset, quantity, true, fee, null, inputsSetString);
 
         if (response.result == null) {
           throw Exception('Failed to compose send');
         }
 
         final txVerbose = response.result!;
-        return compose_send.ComposeSend(
-            params: compose_send.ComposeSendParams(
+        return compose_send.ComposeSendResponse(
+            params: compose_send.ComposeSendResponseParams(
               source: txVerbose.params.source,
               destination: txVerbose.params.destination,
               asset: txVerbose.params.asset,
@@ -91,6 +83,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
                   divisible: txVerbose.params.assetInfo.divisible),
               quantityNormalized: txVerbose.params.quantityNormalized,
             ),
+            btcFee: txVerbose.btcFee,
             rawtransaction: txVerbose.rawtransaction,
             name: txVerbose.name);
       },
@@ -100,33 +93,26 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_issuance.ComposeIssuanceResponseVerbose>
-      composeIssuanceVerbose(
-    String sourceAddress,
-    String name,
-    int quantity, [
-    bool? divisible,
-    bool? lock,
-    bool? reset,
-    String? description,
-    String? transferDestination,
-    bool? unconfirmed,
-    int? fee,
-    List<Utxo>? inputsSet,
-  ]) async {
-    inputsSet ??= [];
-
-    if (inputsSet.isEmpty) {
-      throw Exception('Balance is too low');
-    }
-
+      composeIssuanceVerbose(int fee, List<Utxo> inputsSet,
+          compose_issuance.ComposeIssuanceParams params) async {
     return await _retryOnInvalidUtxo<
         compose_issuance.ComposeIssuanceResponseVerbose>(
       (currentInputSet) async {
+        final source = params.source;
+        final name = params.name;
+        final quantity = params.quantity;
+        final transferDestination = params.transferDestination;
+        final divisible = params.divisible;
+        final lock = params.lock;
+        final reset = params.reset;
+        final description = params.description;
+        final unconfirmed = true;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeIssuanceVerbose(
-            sourceAddress,
+            source,
             name,
             quantity,
             transferDestination,
@@ -144,6 +130,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final txVerbose = response.result!;
         return compose_issuance.ComposeIssuanceResponseVerbose(
             rawtransaction: txVerbose.rawtransaction,
+            btcFee: txVerbose.btcFee,
             params: compose_issuance.ComposeIssuanceResponseVerboseParams(
               reset: txVerbose.params.reset,
               source: txVerbose.params.source,

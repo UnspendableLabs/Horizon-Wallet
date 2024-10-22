@@ -4,6 +4,12 @@ import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
 
+class VirtualSize {
+  final int virtualSize;
+  final int adjustedVirtualSize;
+  VirtualSize(this.virtualSize, this.adjustedVirtualSize);
+}
+
 class ComposeTransactionException implements Exception {
   final String message;
   final StackTrace stackTrace;
@@ -19,7 +25,7 @@ class ComposeTransactionUseCase {
     required this.getVirtualSizeUseCase,
   });
 
-  Future<R> call<P extends ComposeParams, R extends ComposeResponse>({
+  Future<(R, VirtualSize)> call<P extends ComposeParams, R extends ComposeResponse>({
     required int feeRate,
     required String source,
     required P params,
@@ -30,19 +36,22 @@ class ComposeTransactionUseCase {
           await utxoRepository.getUnspentForAddress(source);
 
       // Get virtual size
-      final int virtualSize = await getVirtualSizeUseCase.call(
+      (int, int) tuple = await getVirtualSizeUseCase.call(
         params: params,
         composeFunction: composeFn,
         inputsSet: inputsSet,
       );
 
+      final int virtualSize = tuple.$1; // virtualSIze
+      final int adjustedVirtualSize = tuple.$2;
+
       // Calculate total fee
-      final int totalFee = virtualSize * feeRate;
+      final int totalFee = adjustedVirtualSize * feeRate;
 
       // Compose the final transaction with the calculated fee
       final R finalTx = await composeFn(totalFee, inputsSet, params);
 
-      return finalTx;
+      return (finalTx, VirtualSize(virtualSize, adjustedVirtualSize));
     } catch (e, stackTrace) {
       throw ComposeTransactionException(e.toString(), stackTrace);
     }

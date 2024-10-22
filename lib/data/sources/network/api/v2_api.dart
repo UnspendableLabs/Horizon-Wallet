@@ -1836,11 +1836,13 @@ class ComposeIssuanceParams {
 class ComposeIssuanceVerbose extends ComposeIssuance {
   @override
   final ComposeIssuanceVerboseParams params;
+  final int btcFee;
 
   ComposeIssuanceVerbose({
     required super.rawtransaction,
     required super.name,
     required this.params,
+    required this.btcFee,
   }) : super(params: params);
 
   factory ComposeIssuanceVerbose.fromJson(Map<String, dynamic> json) =>
@@ -2247,10 +2249,12 @@ class SendTxParamsVerbose extends SendTxParams {
 class SendTxVerbose extends SendTx {
   @override
   final SendTxParamsVerbose params;
+  final int btcFee;
 
   const SendTxVerbose({
     required this.params,
     required super.rawtransaction,
+    required this.btcFee,
     required super.name,
   }) : super(params: params);
 

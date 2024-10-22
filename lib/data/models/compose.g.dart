@@ -55,10 +55,10 @@ Map<String, dynamic> _$ComposeDispenseResponseModelToJson(
         ComposeDispenseResponseModel instance) =>
     <String, dynamic>{
       'rawtransaction': instance.rawtransaction,
+      'btc_fee': instance.btcFee,
       'name': instance.name,
       'btc_in': instance.btcIn,
       'btc_out': instance.btcOut,
       'btc_change': instance.btcChange,
-      'btc_fee': instance.btcFee,
       'params': instance.params,
     };

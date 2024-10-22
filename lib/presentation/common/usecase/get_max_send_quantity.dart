@@ -32,28 +32,33 @@ class GetMaxSendQuantity {
       return sendAsset.quantity;
     }
 
+    
+    throw Exception("invariant: GetMaxSendQuantity not supported for `BTC`");
+
     // we take quantity to max, less 1000 sat in the
     // case of btc, for computing the transaction size
     // tom make sure we accont for fee / change
-
-    final quantity = sendAsset.quantity - 1000;
+    //
+    // final quantity = sendAsset.quantity - 1000;
+    // //
+    // // final send = await composeRepository.composeSendVerbose(
+    // //     source, destination, asset, quantity, true, 1);
     //
     // final send = await composeRepository.composeSendVerbose(
-    //     source, destination, asset, quantity, true, 1);
-
-    final send = await composeRepository.composeSendVerbose(
-        source, source, asset, quantity, true, 1);
-
-    final virtualSize = transactionService.getVirtualSize(send.rawtransaction);
-
-    final totalCost = virtualSize * feeRate;
-
-    final max = sendAsset.quantity - totalCost;
-
-    if (max <= 0) {
-      throw Exception("Inadequate funds: try adjusting fee");
-    }
-
-    return max;
+    //
+    //
+    //     source, source, asset, quantity, true, 1);
+    //
+    // final virtualSize = transactionService.getVirtualSize(send.rawtransaction);
+    //
+    // final totalCost = virtualSize * feeRate;
+    //
+    // final max = sendAsset.quantity - totalCost;
+    //
+    // if (max <= 0) {
+    //   throw Exception("Inadequate funds: try adjusting fee");
+    // }
+    //
+    // return max;
   }
 }

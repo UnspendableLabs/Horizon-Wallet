@@ -20,12 +20,13 @@ class ComposeDispenseParams extends ComposeParams {
 class ComposeDispenseResponse implements ComposeResponse {
   @override
   final String rawtransaction;
+  @override
+  final int btcFee;
   final ComposeDispenseResponseParams params;
   final String name;
   final int btcIn;
   final int btcOut;
   final int? btcChange;
-  final int btcFee;
   // final String data;
 
   const ComposeDispenseResponse({

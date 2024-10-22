@@ -121,7 +121,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
       final source = event.sourceAddress;
       final asset = event.params.asset;
 
-      final composed = await composeTransactionUseCase
+      final composeResponse = await composeTransactionUseCase
           .call<ComposeFairminterParams, ComposeFairminterResponse>(
               feeRate: feeRate,
               source: source,
@@ -134,6 +134,9 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
                   divisible: event.params.divisible,
                   lockQuantity: event.params.isLocked),
               composeFn: composeRepository.composeFairminterVerbose);
+      
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
 
       emit(state.copyWith(
           submitState:
@@ -141,6 +144,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(

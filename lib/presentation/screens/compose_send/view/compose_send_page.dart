@@ -31,6 +31,7 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -49,6 +50,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => ComposeSendBloc(
+          composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           addressRepository: GetIt.I.get<AddressRepository>(),
@@ -175,7 +177,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         onConfirmationContinue: (composeSend, fee, formKey) {
           if (formKey.currentState!.validate()) {
             context.read<ComposeSendBloc>().add(
-                  FinalizeTransactionEvent<ComposeSend>(
+                  FinalizeTransactionEvent<ComposeSendResponse>(
                     composeTransaction: composeSend,
                     fee: fee,
                   ),
@@ -473,7 +475,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    final params = (composeTransaction as ComposeSend).params;
+    final params = (composeTransaction as ComposeSendResponse).params;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
