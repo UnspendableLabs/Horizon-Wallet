@@ -203,7 +203,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
           ));
     } else {
       setState(() {
-        error = 'Form is invalid';
+        error = 'unknown error: invalid form';
       });
     }
   }
