@@ -39,6 +39,7 @@ class BalancesDisplay extends StatefulWidget {
 class BalancesDisplayState extends State<BalancesDisplay> {
   final TextEditingController _searchController = TextEditingController();
   bool _showOwnedOnly = false;
+  bool _showIssuerOnly = false;
 
   @override
   void initState() {
@@ -88,8 +89,28 @@ class BalancesDisplayState extends State<BalancesDisplay> {
                           _showOwnedOnly = value ?? false;
                         });
                       },
+                      fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+                        return widget.isDarkTheme ? lightThemeInputColor : darkThemeInputColor; // Use transparent for unchecked state
+                      }),
                     ),
                     const Text('Owned'),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                                Row(
+                  children: [
+                    Checkbox(
+                      value: _showIssuerOnly,
+                      onChanged: (value) {
+                        setState(() {
+                          _showIssuerOnly = value ?? false;
+                        });
+                      },
+                      fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+                        return widget.isDarkTheme ? lightThemeInputColor : darkThemeInputColor; // Use transparent for unchecked state
+                      }),
+                    ),
+                    const Text('Issuer'),
                   ],
                 ),
               ],
@@ -102,6 +123,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
             initialItemCount: widget.initialItemCount,
             searchTerm: _searchController.text,
             showOwnedOnly: _showOwnedOnly,
+            showIssuerOnly: _showIssuerOnly,
           ),
         ],
       ),
@@ -116,6 +138,7 @@ class BalancesSliver extends StatefulWidget {
   final Address currentAddress;
   final String searchTerm;
   final bool showOwnedOnly;
+  final bool showIssuerOnly;
 
   const BalancesSliver({
     super.key,
@@ -125,6 +148,7 @@ class BalancesSliver extends StatefulWidget {
     required this.currentAddress,
     required this.searchTerm,
     required this.showOwnedOnly,
+    required this.showIssuerOnly,
   });
 
   @override
@@ -188,6 +212,10 @@ class BalancesSliverState extends State<BalancesSliver> {
                 ? _isOwned(ownedAssets
                     .firstWhereOrNull((asset) => asset.asset == entry.key))
                 : true))
+            .where((entry) => (widget.showIssuerOnly
+                ? _isIssuer(ownedAssets
+                    .firstWhereOrNull((asset) => asset.asset == entry.key))
+                : true))
             .map((entry) {
           final isClickable = entry.key != 'BTC';
 
@@ -217,6 +245,9 @@ class BalancesSliverState extends State<BalancesSliver> {
 
         final ownedAssetRows = ownedAssetsNotIncludedInEntries
             .where((asset) => _matchesSearch(asset.asset, asset.assetLongname))
+            .where((asset) => (widget.showIssuerOnly
+                ? _isIssuer(asset)
+                : true))
             .map((asset) {
           final textColor = widget.isDarkTheme
               ? darkThemeAssetLinkColor
@@ -299,6 +330,10 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   bool _isOwned(Asset? asset) {
     return asset?.owner == widget.currentAddress.address;
+  }
+
+  bool _isIssuer(Asset? asset) {
+    return asset?.issuer == widget.currentAddress.address;
   }
 
   Future<void> _launchAssetUrl(String asset) async {
