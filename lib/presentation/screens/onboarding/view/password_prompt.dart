@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 
 class PasswordPrompt extends StatefulWidget {
   final Function() onPressedBack;
   final Function(String) onPressedContinue;
   final String backButtonText;
   final String continueButtonText;
-  final Widget? optionalErrorWiget;
+  final Widget? optionalErrorWidget;
 
   const PasswordPrompt({
     super.key,
@@ -16,7 +16,7 @@ class PasswordPrompt extends StatefulWidget {
     required this.onPressedContinue,
     required this.backButtonText,
     required this.continueButtonText,
-    this.optionalErrorWiget,
+    this.optionalErrorWidget,
   });
 
   final dynamic state;
@@ -190,8 +190,13 @@ class PasswordPromptState extends State<PasswordPrompt> {
                       ),
                     ),
                   ),
-                  widget.optionalErrorWiget != null
-                      ? widget.optionalErrorWiget!
+                  widget.optionalErrorWidget != null
+                      ? Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            widget.optionalErrorWidget!,
+                          ],
+                        )
                       : const SizedBox.shrink(),
                   const Spacer(),
                   BackContinueButtons(
