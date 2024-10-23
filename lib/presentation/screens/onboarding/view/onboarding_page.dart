@@ -12,17 +12,9 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class OnboardingScreenState extends State<OnboardingScreen> {
-  bool _isMenuExpanded = false;
-
   @override
   void initState() {
     super.initState();
-  }
-
-  void _toggleMenu() {
-    setState(() {
-      _isMenuExpanded = !_isMenuExpanded;
-    });
   }
 
   @override
@@ -190,7 +182,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               width: 250,
                               child: Column(
                                 children: [
-                                  if (_isMenuExpanded)
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         overlayColor: noBackgroundColor,
@@ -221,34 +212,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                         ),
                                       ),
                                     ),
-                                  if (_isMenuExpanded)
-                                    const SizedBox(height: 20),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      overlayColor: noBackgroundColor,
-                                      elevation: 0,
-                                      backgroundColor: noBackgroundColor,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      shape: const CircleBorder(
-                                        side: BorderSide(
-                                            color: mainTextGreyTransparent),
-                                      ),
-                                      textStyle: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    onPressed: _toggleMenu,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: Icon(
-                                        _isMenuExpanded
-                                            ? Icons.arrow_drop_up
-                                            : Icons.arrow_drop_down,
-                                        color: mainTextGreyTransparent,
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
@@ -398,7 +361,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               width: 250,
                               child: Column(
                                 children: [
-                                  if (_isMenuExpanded)
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         overlayColor: Colors.transparent,
@@ -426,32 +388,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                         ),
                                       ),
                                     ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      overlayColor: noBackgroundColor,
-                                      elevation: 0,
-                                      backgroundColor: noBackgroundColor,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      shape: const CircleBorder(
-                                        side: BorderSide(
-                                            color: mainTextGreyTransparent),
-                                      ),
-                                      textStyle: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    onPressed: _toggleMenu,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: Icon(
-                                        _isMenuExpanded
-                                            ? Icons.arrow_drop_up
-                                            : Icons.arrow_drop_down,
-                                        color: mainTextGreyTransparent,
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
