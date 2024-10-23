@@ -25,6 +25,7 @@ import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart'
 import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:logger/logger.dart';
 
 class ComposeSendEventParams {
@@ -55,23 +56,25 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   final TransactionLocalRepository transactionLocalRepository;
   final AnalyticsService analyticsService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final ComposeTransactionUseCase composeTransactionUseCase;
 
-  ComposeSendBloc(
-      {required this.addressRepository,
-      required this.balanceRepository,
-      required this.composeRepository,
-      required this.utxoRepository,
-      required this.transactionService,
-      required this.bitcoindService,
-      required this.accountRepository,
-      required this.walletRepository,
-      required this.encryptionService,
-      required this.addressService,
-      required this.transactionRepository,
-      required this.transactionLocalRepository,
-      required this.analyticsService,
-      required this.getFeeEstimatesUseCase})
-      : super(ComposeSendState(
+  ComposeSendBloc({
+    required this.addressRepository,
+    required this.balanceRepository,
+    required this.composeRepository,
+    required this.utxoRepository,
+    required this.transactionService,
+    required this.bitcoindService,
+    required this.accountRepository,
+    required this.walletRepository,
+    required this.encryptionService,
+    required this.addressService,
+    required this.transactionRepository,
+    required this.transactionLocalRepository,
+    required this.analyticsService,
+    required this.getFeeEstimatesUseCase,
+    required this.composeTransactionUseCase,
+  }) : super(ComposeSendState(
           feeOption: FeeOption.Medium(),
           submitState: const SubmitInitial(),
           feeState: const FeeState.initial(),
@@ -260,7 +263,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   @override
   onFinalizeTransaction(event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSend>(
+        submitState: SubmitFinalizing<ComposeSendResponse>(
             loading: false,
             error: null,
             composeTransaction: event.composeTransaction,
@@ -269,50 +272,51 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    await composeTransaction<ComposeSend, ComposeSendState, void>(
-        state: state,
-        emit: emit,
-        event: event,
-        utxoRepository: utxoRepository,
-        composeRepository: composeRepository,
-        transactionService: transactionService,
-        logger: logger,
-        transactionHandler: (inputsSet, feeRate) async {
-          final sendParams = event.params;
-          // Dummy transaction to compute virtual size
-          final send = await composeRepository.composeSendVerbose(
-            event.sourceAddress,
-            sendParams.destinationAddress,
-            sendParams.asset,
-            sendParams.quantity,
-            true,
-            1,
-            null,
-            inputsSet,
-          );
+    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
-          final virtualSize =
-              transactionService.getVirtualSize(send.rawtransaction);
-          final int totalFee = virtualSize * feeRate;
+    try {
+      final feeRate = _getFeeRate();
+      final source = event.sourceAddress;
+      final destination = event.params.destinationAddress;
+      final asset = event.params.asset;
+      final quantity = event.params.quantity;
+      final useEnhancedSend = true;
 
-          final composeTransaction = await composeRepository.composeSendVerbose(
-            event.sourceAddress,
-            sendParams.destinationAddress,
-            sendParams.asset,
-            sendParams.quantity,
-            true,
-            totalFee,
-            null,
-            inputsSet,
-          );
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeSendParams, ComposeSendResponse>(
+        feeRate: feeRate,
+        source: source,
+        params: ComposeSendParams(
+          source: source,
+          destination: destination,
+          asset: asset,
+          quantity: quantity,
+        ),
+        composeFn: composeRepository.composeSendVerbose,
+      );
 
-          return (composeTransaction, virtualSize);
-        });
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
+
+      emit(state.copyWith(
+          submitState: SubmitComposingTransaction<ComposeSendResponse, void>(
+        composeTransaction: composed,
+        fee: composed.btcFee,
+        feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+      )));
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(
+              loading: false,
+              error: 'An unexpected error occurred: ${e.toString()}')));
+    }
   }
 
   @override
   onSignAndBroadcastTransaction(event, emit) async {
-    await signAndBroadcastTransaction<ComposeSend, ComposeSendState>(
+    await signAndBroadcastTransaction<ComposeSendResponse, ComposeSendState>(
         state: state,
         emit: emit,
         password: event.password,
@@ -331,7 +335,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
         logger: logger,
         extractParams: () {
           final sendParams =
-              (state.submitState as SubmitFinalizing<ComposeSend>)
+              (state.submitState as SubmitFinalizing<ComposeSendResponse>)
                   .composeTransaction;
 
           final source = sendParams.params.source;
@@ -376,5 +380,15 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
           analyticsService.trackEvent('broadcast_tx_send');
         });
+  }
+
+  int _getFeeRate() {
+    FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
+    return switch (state.feeOption) {
+      FeeOption.Fast() => feeEstimates.fast,
+      FeeOption.Medium() => feeEstimates.medium,
+      FeeOption.Slow() => feeEstimates.slow,
+      FeeOption.Custom(fee: var fee) => fee,
+    };
   }
 }

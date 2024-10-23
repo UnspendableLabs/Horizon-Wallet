@@ -16,4 +16,8 @@ abstract class TransactionService {
       {required String rawtransaction,
       required int expectedFee,
       required Map<String, Utxo> utxoMap});
+
+  int countSigOps({
+    required String rawtransaction,
+  });
 }

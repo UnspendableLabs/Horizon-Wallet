@@ -1732,6 +1732,7 @@ ComposeIssuanceVerbose _$ComposeIssuanceVerboseFromJson(
       name: json['name'] as String,
       params: ComposeIssuanceVerboseParams.fromJson(
           json['params'] as Map<String, dynamic>),
+      btcFee: (json['btc_fee'] as num).toInt(),
     );
 
 Map<String, dynamic> _$ComposeIssuanceVerboseToJson(
@@ -1740,6 +1741,7 @@ Map<String, dynamic> _$ComposeIssuanceVerboseToJson(
       'rawtransaction': instance.rawtransaction,
       'name': instance.name,
       'params': instance.params,
+      'btc_fee': instance.btcFee,
     };
 
 ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
@@ -2062,6 +2064,7 @@ SendTxVerbose _$SendTxVerboseFromJson(Map<String, dynamic> json) =>
       params:
           SendTxParamsVerbose.fromJson(json['params'] as Map<String, dynamic>),
       rawtransaction: json['rawtransaction'] as String,
+      btcFee: (json['btc_fee'] as num).toInt(),
       name: json['name'] as String,
     );
 
@@ -2070,6 +2073,7 @@ Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
       'rawtransaction': instance.rawtransaction,
       'name': instance.name,
       'params': instance.params,
+      'btc_fee': instance.btcFee,
     };
 
 Info _$InfoFromJson(Map<String, dynamic> json) => Info(

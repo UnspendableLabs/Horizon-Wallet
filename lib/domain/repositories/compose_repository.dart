@@ -7,22 +7,10 @@ import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
-  Future<ComposeSend> composeSendVerbose(
-      String sourceAddress, String destination, String asset, int quantity,
-      [bool? allowUnconfirmedTx,
-      int? fee,
-      int? feeRate,
-      List<Utxo>? inputsSet]);
+  Future<ComposeSendResponse> composeSendVerbose(
+      int fee, List<Utxo> inputsSet, ComposeSendParams params);
   Future<ComposeIssuanceResponseVerbose> composeIssuanceVerbose(
-      String sourceAddress, String name, int quantity,
-      [bool? divisible,
-      bool? lock,
-      bool? reset,
-      String? description,
-      String? transferDestination,
-      bool? unconfirmed,
-      int? fee,
-      List<Utxo>? inputsSet]);
+      int fee, List<Utxo> inputsSet, ComposeIssuanceParams params);
 
   Future<ComposeDispenserResponseVerbose> composeDispenserVerbose(
       int fee, List<Utxo> inputsSet, ComposeDispenserParams params);

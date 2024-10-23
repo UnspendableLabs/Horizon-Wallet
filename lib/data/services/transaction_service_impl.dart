@@ -10,6 +10,7 @@ import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/domain/repositories/config_repository.dart';
 
 bool addressIsSegwit(String sourceAddress) {
@@ -160,6 +161,13 @@ class TransactionServiceImpl implements TransactionService {
       }
     }
     return actualBTC == expectedBTC;
+  }
+
+  @override
+  int countSigOps({required String rawtransaction}) {
+    bitcoinjs.Transaction transaction =
+        bitcoinjs.Transaction.fromHex(rawtransaction);
+    return horizon_utils.countSigOps(transaction);
   }
 
   bool _isOpReturn(JSUint8Array script) {

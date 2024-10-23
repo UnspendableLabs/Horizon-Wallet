@@ -1,6 +1,30 @@
 import 'package:horizon/domain/entities/asset_info.dart';
+import "./compose_response.dart";
+import "./compose_fn.dart";
 
-class ComposeSendParams {
+class ComposeSendParams extends ComposeParams {
+  final String source;
+  final String destination;
+  final String asset;
+  final int quantity;
+
+  ComposeSendParams({
+    required this.source,
+    required this.destination,
+    required this.asset,
+    required this.quantity,
+  });
+
+  @override
+  List<Object> get props => [
+        source,
+        destination,
+        asset,
+        quantity,
+      ];
+}
+
+class ComposeSendResponseParams {
   final String source;
   final String destination;
   final String asset;
@@ -9,25 +33,30 @@ class ComposeSendParams {
   final AssetInfo assetInfo;
   final String quantityNormalized;
 
-  const ComposeSendParams({
+  ComposeSendResponseParams({
     required this.source,
     required this.destination,
     required this.asset,
     required this.quantity,
     required this.useEnhancedSend,
     required this.assetInfo,
-    required this.quantityNormalized,
+    required this.quantityNormalized
   });
+
 }
 
-class ComposeSend {
+class ComposeSendResponse extends ComposeResponse  {
+  @override
   final String rawtransaction;
-  final ComposeSendParams params;
+  @override
+  final int btcFee;
+  final ComposeSendResponseParams params;
   final String name;
 
-  const ComposeSend({
+   ComposeSendResponse({
     required this.rawtransaction,
     required this.params,
     required this.name,
+    required this.btcFee,
   });
 }

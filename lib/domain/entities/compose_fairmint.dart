@@ -33,6 +33,7 @@ class ComposeFairmintResponse extends ComposeResponse {
   final int btcIn;
   final int btcOut;
   final int btcChange;
+  @override
   final int btcFee;
   @override
   final String rawtransaction;

@@ -31,11 +31,14 @@ class ComposeDispenserParams extends ComposeParams {
 class ComposeDispenserResponse implements ComposeResponse {
   @override
   final String rawtransaction;
+  @override
+  final int btcFee;
   final ComposeDispenserParams params;
   final String name;
 
   const ComposeDispenserResponse({
     required this.rawtransaction,
+    required this.btcFee,
     required this.params,
     required this.name,
   });
