@@ -283,7 +283,7 @@ class VerboseDebitEvent extends VerboseEvent {
 }
 
 class NewFairmintParams {
-  final String asset;
+  final String? asset; // Asset might not exist
   final int? blockIndex;
   final int? commission;
   final int? earnQuantity;
