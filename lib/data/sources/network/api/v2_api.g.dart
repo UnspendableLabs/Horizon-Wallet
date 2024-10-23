@@ -4206,7 +4206,6 @@ class _V2Api implements V2Api {
     String addresses, [
     CursorModel? cursor,
     int? limit,
-    bool? showUnconfirmed,
     String? eventName,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -4214,7 +4213,6 @@ class _V2Api implements V2Api {
       r'addresses': addresses,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
-      r'show_unconfirmed': showUnconfirmed,
       r'event_name': eventName,
     };
     queryParameters.removeWhere((k, v) => v == null);

@@ -262,13 +262,13 @@ class DashboardActivityFeedBloc
       ).toList();
 
       int getPriority(ActivityFeedItem tx) {
-        if (tx.info != null) {
-          return 0; // Local items have highest priority
-        } else if ((tx.bitcoinTx != null && !tx.bitcoinTx!.status.confirmed) ||
+        if ((tx.bitcoinTx != null && !tx.bitcoinTx!.status.confirmed) ||
             (tx.event != null && tx.event!.state is EventStateMempool)) {
           return 1; // Mempool items have medium priority
-        } else {
+        } else if (tx.getBlockIndex() != null) {
           return 2; // Confirmed items have lowest priority
+        } else {
+          return 0; // Local items have highest priority
         }
       }
 
@@ -281,7 +281,8 @@ class DashboardActivityFeedBloc
         }
 
         if (priorityA == 2) {
-          return b.getBlockIndex()!.compareTo(a.getBlockIndex()!); }
+          return b.getBlockIndex()!.compareTo(a.getBlockIndex()!);
+        }
 
         return 0;
       });
