@@ -2299,6 +2299,46 @@ Map<String, dynamic> _$IssuanceInfoVerboseToJson(
       'unpacked_data': instance.unpackedData,
     };
 
+FairmintUnpackedVerbose _$FairmintUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    FairmintUnpackedVerbose(
+      asset: json['asset'] as String?,
+      price: (json['price'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$FairmintUnpackedVerboseToJson(
+        FairmintUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'price': instance.price,
+    };
+
+FairmintInfoVerbose _$FairmintInfoVerboseFromJson(Map<String, dynamic> json) =>
+    FairmintInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      unpackedData: FairmintUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$FairmintInfoVerboseToJson(
+        FairmintInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
 DispenserInfoVerbose _$DispenserInfoVerboseFromJson(
         Map<String, dynamic> json) =>
     DispenserInfoVerbose(

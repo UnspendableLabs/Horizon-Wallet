@@ -32,7 +32,6 @@ class GetMaxSendQuantity {
       return sendAsset.quantity;
     }
 
-    
     throw Exception("invariant: GetMaxSendQuantity not supported for `BTC`");
 
     // we take quantity to max, less 1000 sat in the

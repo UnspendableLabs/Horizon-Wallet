@@ -81,7 +81,7 @@ void main() {
       );
 
       // Assert
-      expect(result, (mockComposeResponse, VirtualSize(100, 500)));
+      expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
       verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,

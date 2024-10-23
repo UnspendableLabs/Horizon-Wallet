@@ -70,7 +70,7 @@ class ComposeIssuanceResponseVerbose implements ComposeResponse {
   @override
   final String rawtransaction;
   @override
-  final int  btcFee;
+  final int btcFee;
 
   final ComposeIssuanceResponseVerboseParams params;
   final String name;

@@ -292,6 +292,10 @@ class ActivityFeedListItem extends StatelessWidget {
       ) =>
         SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
       TransactionInfoDispense() => const SelectableText("Trigger Dispense"),
+      TransactionInfoFairmint(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText("New Fairmint for ${unpackedData.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -308,6 +312,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoDispense() => const Icon(Icons.paid, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
+      TransactionInfoFairmint() => const Icon(Icons.money, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
@@ -383,6 +388,8 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
+      TransactionInfoFairmint() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
       _ => const Icon(Icons.error),
     };
   }

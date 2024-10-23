@@ -7,7 +7,6 @@ class UnpackedVerboseMapper {
       case "enhanced_send":
         return EnhancedSendUnpackedVerboseMapper.toDomain(
             u as api.EnhancedSendUnpackedVerbose);
-
       case "issuance":
         return IssuanceUnpackedVerboseMapper.toDomain(
             u as api.IssuanceUnpackedVerbose);
@@ -17,6 +16,9 @@ class UnpackedVerboseMapper {
       case "dispense":
         return DispenseUnpackedVerboseMapper.toDomain(
             u as api.DispenseUnpackedVerbose);
+      case "fairmint":
+        return FairmintUnpackedVerboseMapper.toDomain(
+            u as api.FairmintUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -77,5 +79,14 @@ class DispenserUnpackedVerboseMapper {
 class DispenseUnpackedVerboseMapper {
   static DispenseUnpackedVerbose toDomain(api.DispenseUnpackedVerbose u) {
     return const DispenseUnpackedVerbose();
+  }
+}
+
+class FairmintUnpackedVerboseMapper {
+  static FairmintUnpackedVerbose toDomain(api.FairmintUnpackedVerbose u) {
+    return FairmintUnpackedVerbose(
+      asset: u.asset,
+      price: u.price,
+    );
   }
 }

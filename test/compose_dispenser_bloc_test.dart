@@ -245,19 +245,20 @@ void main() {
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits SubmitComposingTransaction when transaction composition succeeds',
       build: () {
-        when(() => mockComposeTransactionUseCase.call<ComposeDispenserParams,
+        when(
+            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
                     ComposeDispenserResponseVerbose>(
                   feeRate: any(named: 'feeRate'),
                   source: any(named: 'source'),
                   composeFn: any(named: 'composeFn'),
                   params: any(named: 'params'),
-                ))
-            .thenAnswer((_) async =>
-                (mockComposeDispenserResponseVerbose, FakeVirtualSize(
+                )).thenAnswer((_) async => (
+              mockComposeDispenserResponseVerbose,
+              FakeVirtualSize(
                 virtualSize: 100,
                 adjustedVirtualSize: 100,
-
-                )));
+              )
+            ));
 
         when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
 
@@ -294,19 +295,20 @@ void main() {
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits SubmitComposingTransaction when transaction composition succeeds ( Custom Fee )',
       build: () {
-        when(() => mockComposeTransactionUseCase.call<ComposeDispenserParams,
+        when(
+            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
                     ComposeDispenserResponseVerbose>(
                   feeRate: any(named: 'feeRate'),
                   source: any(named: 'source'),
                   composeFn: any(named: 'composeFn'),
                   params: any(named: 'params'),
-                ))
-            .thenAnswer((_) async =>
-                (mockComposeDispenserResponseVerbose, FakeVirtualSize(
+                )).thenAnswer((_) async => (
+              mockComposeDispenserResponseVerbose,
+              FakeVirtualSize(
                 virtualSize: 100,
                 adjustedVirtualSize: 100,
-
-                )));
+              )
+            ));
 
         when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
 

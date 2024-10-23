@@ -106,7 +106,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final lock = params.lock;
         final reset = params.reset;
         final description = params.description;
-        final unconfirmed = true;
+        const unconfirmed = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');

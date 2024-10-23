@@ -74,6 +74,7 @@ class ComposeDispenserResponseVerbose implements ComposeResponse {
   final int btcIn;
   final int btcOut;
   final int? btcChange;
+  @override
   final int btcFee;
   final String data;
 

@@ -99,7 +99,6 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
             otherParams: var otherPArams
           ) =>
             ComposeBaseConfirmationPage(
-              
               composeTransaction: composeTransaction,
               address: widget.address,
               fee: fee,

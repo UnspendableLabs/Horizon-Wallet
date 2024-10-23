@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/data/models/asset_info.dart';
+import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/cursor.dart';
-import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/dispenser.dart';
-import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/fairminter.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
@@ -2403,6 +2403,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return DispenserUnpackedVerbose.fromJson(json);
       case "dispense":
         return DispenseUnpackedVerbose.fromJson(json);
+      case "fairmint":
+        return FairmintUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -2734,6 +2736,8 @@ class InfoVerbose extends Info {
         return DispenserInfoVerbose.fromJson(json);
       case "dispense":
         return DispenseInfoVerbose.fromJson(json);
+      case "fairmint":
+        return FairmintInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -2854,6 +2858,45 @@ class IssuanceInfoVerbose extends InfoVerbose {
       _$IssuanceInfoVerboseFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$IssuanceInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class FairmintUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String? asset;
+  final int? price;
+
+  const FairmintUnpackedVerbose({
+    required this.asset,
+    required this.price,
+  }) : super(messageType: "fairmint");
+
+  factory FairmintUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return FairmintUnpackedVerbose(
+      asset: messageData["asset"],
+      price: messageData["quantity"],
+    );
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class FairmintInfoVerbose extends InfoVerbose {
+  final FairmintUnpackedVerbose unpackedData;
+  const FairmintInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+  factory FairmintInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$FairmintInfoVerboseFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$FairmintInfoVerboseToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

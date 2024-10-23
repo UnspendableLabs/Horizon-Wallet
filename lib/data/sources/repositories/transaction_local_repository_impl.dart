@@ -28,7 +28,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
     if (transactionInfo.domain.runtimeType != TransactionInfoDomainLocal) {
       throw Exception("Cannot save transaction that was not created locally");
     }
-
+    print('transactionInfo: $transactionInfo');
     String? unpacked = switch (transactionInfo) {
       TransactionInfoEnhancedSend(
         unpackedData: EnhancedSendUnpackedVerbose unpacked
@@ -81,6 +81,14 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
         }),
       TransactionInfoDispense(unpackedData: DispenseUnpackedVerbose _) =>
         jsonEncode({"message_type": "dispense", "message_data": {}}),
+      TransactionInfoFairmint(unpackedData: FairmintUnpackedVerbose unpacked) =>
+        jsonEncode({
+          "message_type": "fairmint",
+          "message_data": {
+            "asset": unpacked.asset,
+            "price": unpacked.price,
+          }
+        }),
       _ => null
     };
 
@@ -158,6 +166,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        FairmintUnpackedVerbose() => TransactionInfoFairmint(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -223,6 +242,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         DispenseUnpackedVerbose() => TransactionInfoDispense(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        FairmintUnpackedVerbose() => TransactionInfoFairmint(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

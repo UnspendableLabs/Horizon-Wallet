@@ -188,3 +188,10 @@ class DispenserUnpackedVerbose extends TransactionUnpacked {
 class DispenseUnpackedVerbose extends TransactionUnpacked {
   const DispenseUnpackedVerbose() : super(messageType: "dispense");
 }
+
+class FairmintUnpackedVerbose extends TransactionUnpacked {
+  final String? asset;
+  final int? price;
+  const FairmintUnpackedVerbose({required this.asset, required this.price})
+      : super(messageType: "fairmint");
+}

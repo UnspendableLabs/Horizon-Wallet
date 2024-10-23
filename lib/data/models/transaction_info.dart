@@ -4,6 +4,7 @@ import 'package:horizon/data/models/transaction_unpacked.dart';
 
 class InfoVerboseMapper {
   static TransactionInfo toDomain(api.InfoVerbose info) {
+    print("InfoVerboseMapper.toDomain: ${info.runtimeType}");
     return switch (info) {
       api.EnhancedSendInfoVerbose(unpackedData: var u) =>
         TransactionInfoEnhancedSend(
@@ -53,6 +54,18 @@ class InfoVerboseMapper {
           domain: TransactionInfoDomainLocal(
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: DispenseUnpackedVerboseMapper.toDomain(u),
+        ),
+      api.FairmintInfoVerbose(unpackedData: var u) => TransactionInfoFairmint(
+          btcAmountNormalized: info.btcAmountNormalized,
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: FairmintUnpackedVerboseMapper.toDomain(u),
         ),
       _ => TransactionInfo(
           btcAmountNormalized: info.btcAmountNormalized,

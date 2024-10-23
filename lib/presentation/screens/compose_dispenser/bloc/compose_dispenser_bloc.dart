@@ -123,8 +123,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-
-
     print("pre emit loading");
 
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
@@ -152,7 +150,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
-
 
       emit(state.copyWith(
           submitState:
