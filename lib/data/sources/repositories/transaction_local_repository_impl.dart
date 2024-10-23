@@ -28,7 +28,7 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
     if (transactionInfo.domain.runtimeType != TransactionInfoDomainLocal) {
       throw Exception("Cannot save transaction that was not created locally");
     }
-    print('transactionInfo: $transactionInfo');
+
     String? unpacked = switch (transactionInfo) {
       TransactionInfoEnhancedSend(
         unpackedData: EnhancedSendUnpackedVerbose unpacked

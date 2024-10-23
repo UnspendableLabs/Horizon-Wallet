@@ -19,6 +19,9 @@ class UnpackedVerboseMapper {
       case "fairmint":
         return FairmintUnpackedVerboseMapper.toDomain(
             u as api.FairmintUnpackedVerbose);
+      case "fairminter":
+        return FairminterUnpackedVerboseMapper.toDomain(
+            u as api.FairminterUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
