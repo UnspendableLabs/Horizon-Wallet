@@ -164,12 +164,9 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
     } on ComposeTransactionException catch (e) {
-      print("compose error");
       emit(state.copyWith(
           submitState: SubmitInitial(loading: false, error: e.message)));
     } catch (e) {
-      rethrow;
-      print("unepceted error");
       emit(state.copyWith(
           submitState: SubmitInitial(
               loading: false,
