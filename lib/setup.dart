@@ -66,7 +66,11 @@ import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart';
 
+import "package:horizon/domain/repositories/fee_estimates_repository.dart";
+import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempool_space_impl.dart';
+
 import 'package:horizon/data/sources/network/esplora_client.dart';
+import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
@@ -162,6 +166,24 @@ Future<void> setup() async {
         Duration(seconds: 2), // wait 2 sec before second retry
         Duration(seconds: 3), // wait 3 sec before third retry
         Duration(seconds: 5), // wait 3 sec before third retryh
+      ],
+    ), // Add the RetryInterceptor here
+  ]);
+
+  final mempoolspaceDio = Dio(BaseOptions(
+    baseUrl: config.esploraBase,
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
+
+  mempoolspaceDio.interceptors.addAll([
+    RetryInterceptor(
+      dio: mempoolspaceDio,
+      retries: 3,
+      retryDelays: const [
+        Duration(seconds: 1), // wait 1 sec before first retry
+        Duration(seconds: 1), // wait 2 sec before second retry
+        Duration(seconds: 1), // wait 3 sec before third retry
       ],
     ), // Add the RetryInterceptor here
   ]);
@@ -271,8 +293,15 @@ Future<void> setup() async {
     ),
   );
 
-  injector.registerSingleton<GetFeeEstimatesUseCase>(
-      GetFeeEstimatesUseCase(bitcoindService: GetIt.I.get<BitcoindService>()));
+  injector.registerSingleton<FeeEstimatesRespository>(
+      FeeEstimatesRespositoryMempoolSpaceImpl(
+          mempoolSpaceApi: MempoolSpaceApi(
+    dio: mempoolspaceDio,
+    configRepository: config,
+  )));
+
+  injector.registerSingleton<GetFeeEstimatesUseCase>(GetFeeEstimatesUseCase(
+      feeEstimatesRepository: GetIt.I.get<FeeEstimatesRespository>()));
 
   injector.registerSingleton<GetVirtualSizeUseCase>(GetVirtualSizeUseCase(
     transactionService: GetIt.I.get<TransactionService>(),
