@@ -302,119 +302,7 @@ void main() {
     });
 
     testWidgets(
-        'should filter and display only assets where current address is issuer when "Issuer" is selected',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      // Update the mock data to reflect that 'PEPENARDO' is issued by the current address
-      final asset1 = FakeAsset(
-        asset: 'PEPENARDO',
-        assetLongname: 'PEPENARDO.PEPE',
-        owner: '1TestAddress',
-        issuer: '1TestAddress', // Current address is the issuer
-        divisible: true,
-        locked: false,
-      );
-
-      final asset2 = FakeAsset(
-        asset: 'MAXVOLUME',
-        assetLongname: 'MAXVOLUME.PEPE',
-        owner: '1OtherAddress',
-        issuer: '1OtherIssuerAddress', // Issued by someone else
-        divisible: true,
-        locked: false,
-      );
-
-      final assetInfo1 = FakeAssetInfo(
-        assetLongname: 'PEPENARDO.PEPE',
-        issuer: '1TestAddress',
-        divisible: true,
-      );
-
-      final assetInfo2 = FakeAssetInfo(
-        assetLongname: 'MAXVOLUME.PEPE',
-        issuer: '1OtherIssuerAddress',
-        divisible: true,
-      );
-
-      final balance1 = FakeBalance(
-        asset: 'PEPENARDO',
-        quantity: 100000000,
-        quantityNormalized: '1.00000000',
-        address: '1TestAddress',
-        assetInfo: assetInfo1,
-      );
-
-      final balance2 = FakeBalance(
-        asset: 'MAXVOLUME',
-        quantity: 200000000,
-        quantityNormalized: '2.00000000',
-        address: '1TestAddress',
-        assetInfo: assetInfo2,
-      );
-
-      final balances = [balance1, balance2];
-      final aggregatedBalances = {
-        'PEPENARDO': balance1,
-        'MAXVOLUME': balance2,
-      };
-      final ownedAssets = [asset1, asset2];
-
-      // Mock the state with the updated data
-      when(() => mockBalancesBloc.state).thenReturn(
-        BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, ownedAssets),
-        ),
-      );
-
-      // Mock the stream
-      when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) => Stream<BalancesState>.value(
-          BalancesState.complete(
-            Result.ok(balances, aggregatedBalances, ownedAssets),
-          ),
-        ),
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    addresses: [address],
-                    accountUuid: 'test-account',
-                    currentAddress: address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Verify that both assets are displayed initially
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
-
-      // Tap the "Issuer" checkbox
-      await tester.tap(find.byKey(const Key('issuer_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that only the asset issued by the current address is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-    });
-
-    testWidgets(
-        'should filter and display assets based on search input, Owned, and Issuer filters combined',
+        'should filter and display assets based on search input and Owned filter combined',
         (WidgetTester tester) async {
       final address = FakeAddress(address: '1TestAddress');
 
@@ -438,7 +326,7 @@ void main() {
           divisible: true,
           locked: false,
         ),
-        // Asset not owned but issued by current address
+        // Asset not owned by current address
         FakeAsset(
           asset: 'ASSET3',
           assetLongname: 'ASSET3.LONG',
@@ -447,7 +335,7 @@ void main() {
           divisible: true,
           locked: false,
         ),
-        // Asset neither owned nor issued by current address
+        // Asset not owned by current address
         FakeAsset(
           asset: 'ASSET4',
           assetLongname: 'ASSET4.LONG',
@@ -456,7 +344,7 @@ void main() {
           divisible: true,
           locked: false,
         ),
-        // Asset owned and issued by someone else but matches search term
+        // Asset not owned by current address but matches search term
         FakeAsset(
           asset: 'FILTERME',
           assetLongname: 'FILTERME.LONG',
@@ -530,7 +418,7 @@ void main() {
       };
 
       final ownedAssets = [
-        assets[0], // ASSET1: Owned and issued by current address
+        assets[0], // ASSET1: Owned by current address
         assets[1], // ASSET2: Owned by current address
       ];
 
@@ -602,24 +490,11 @@ void main() {
       expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
       expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
 
-      // Tap the "Issuer" checkbox
-      await tester.tap(find.byKey(const Key('issuer_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that only assets that are owned and issued by current address with 'ASSET' in their name are displayed
-      expect(find.byKey(const Key('assetName_ASSET1')),
-          findsOneWidget); // Owned and issued by current address
-      expect(find.byKey(const Key('assetName_ASSET2')),
-          findsNothing); // Owned but not issued by current address
-      expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
-      expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
-
       // Change the search term to 'FILTERME'
       await tester.enterText(find.byKey(const Key('search_input')), 'FILTERME');
       await tester.pumpAndSettle();
 
-      // Verify that no assets are displayed since FILTERME is not owned or issued by current address
+      // Verify that no assets are displayed since FILTERME is not owned by current address
       expect(find.byKey(const Key('assetName_ASSET1')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET2')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
@@ -630,18 +505,13 @@ void main() {
       await tester.tap(find.byKey(const Key('owned_checkbox')));
       await tester.pumpAndSettle();
 
-      // Verify that assets issued by current address with 'FILTERME' in their name are displayed
+      // Verify that assets owned by current address with 'FILTERME' in their name are displayed
       expect(find.byKey(const Key('assetName_ASSET1')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET2')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
-      expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
 
-      // Uncheck "Issuer" filter
-      await tester.tap(find.byKey(const Key('issuer_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that 'FILTERME' asset is displayed now that filters are removed
+      // Verify that 'FILTERME' asset is displayed now that owned filter is removed
       expect(find.byKey(const Key('assetName_FILTERME')), findsOneWidget);
     });
 
