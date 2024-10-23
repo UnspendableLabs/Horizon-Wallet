@@ -238,7 +238,7 @@ class VerboseNewFairmintParamsMapper {
   static VerboseNewFairmintParams toDomain(
       api.VerboseNewFairmintParams apiParams) {
     return VerboseNewFairmintParams(
-      asset: apiParams.asset,
+      asset: apiParams.asset, // TODO: this is temporary hack
       blockIndex: apiParams.blockIndex,
       commission: apiParams.commission,
       earnQuantity: apiParams.earnQuantity,
