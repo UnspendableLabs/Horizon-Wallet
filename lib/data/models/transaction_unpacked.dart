@@ -90,3 +90,11 @@ class FairmintUnpackedVerboseMapper {
     );
   }
 }
+
+class FairminterUnpackedVerboseMapper {
+  static FairminterUnpackedVerbose toDomain(api.FairminterUnpackedVerbose u) {
+    return FairminterUnpackedVerbose(
+      asset: u.asset,
+    );
+  }
+}

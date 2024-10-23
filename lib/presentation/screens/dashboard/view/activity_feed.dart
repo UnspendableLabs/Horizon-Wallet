@@ -220,6 +220,8 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildDispenserUpdateTitle(params),
       VerboseNewFairmintEvent(params: var params) =>
         SelectableText("New Fairmint for ${params.asset}"),
+      VerboseNewFairminterEvent(params: var params) =>
+        SelectableText("New Fairminter for ${params.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -296,6 +298,10 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var unpackedData,
       ) =>
         SelectableText("New Fairmint for ${unpackedData.asset}"),
+      TransactionInfoFairminter(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText("New Fairminter for ${unpackedData.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -310,9 +316,11 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoDispenser() =>
         const Icon(Icons.account_balance, color: Colors.grey),
       TransactionInfoDispense() => const Icon(Icons.paid, color: Colors.grey),
+      TransactionInfoFairmint() => const Icon(Icons.money, color: Colors.grey),
+      TransactionInfoFairminter() =>
+        const Icon(Icons.print, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
-      TransactionInfoFairmint() => const Icon(Icons.money, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
@@ -370,6 +378,8 @@ class ActivityFeedListItem extends StatelessWidget {
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       VerboseNewFairmintEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseNewFairminterEvent(txHash: var hash) =>
+        TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -389,6 +399,8 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
       TransactionInfoFairmint() =>
+        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfoFairminter() =>
         TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
       _ => const Icon(Icons.error),
     };
@@ -445,6 +457,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.account_balance, color: Colors.grey),
       VerboseNewFairmintEvent(params: var _) =>
         const Icon(Icons.money, color: Colors.grey),
+      VerboseNewFairminterEvent(params: var _) =>
+        const Icon(Icons.print, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

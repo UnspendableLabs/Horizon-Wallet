@@ -195,3 +195,9 @@ class FairmintUnpackedVerbose extends TransactionUnpacked {
   const FairmintUnpackedVerbose({required this.asset, required this.price})
       : super(messageType: "fairmint");
 }
+
+class FairminterUnpackedVerbose extends TransactionUnpacked {
+  final String? asset;
+  const FairminterUnpackedVerbose({required this.asset})
+      : super(messageType: "fairminter");
+}

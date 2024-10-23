@@ -2405,6 +2405,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return DispenseUnpackedVerbose.fromJson(json);
       case "fairmint":
         return FairmintUnpackedVerbose.fromJson(json);
+      case "fairminter":
+        return FairminterUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -2738,6 +2740,8 @@ class InfoVerbose extends Info {
         return DispenseInfoVerbose.fromJson(json);
       case "fairmint":
         return FairmintInfoVerbose.fromJson(json);
+      case "fairminter":
+        return FairminterInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -2897,6 +2901,42 @@ class FairmintInfoVerbose extends InfoVerbose {
       _$FairmintInfoVerboseFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$FairmintInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class FairminterUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String? asset;
+
+  const FairminterUnpackedVerbose({
+    required this.asset,
+  }) : super(messageType: "fairminter");
+
+  factory FairminterUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return FairminterUnpackedVerbose(
+      asset: messageData[0],
+    );
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class FairminterInfoVerbose extends InfoVerbose {
+  final FairminterUnpackedVerbose unpackedData;
+  const FairminterInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+  factory FairminterInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$FairminterInfoVerboseFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$FairminterInfoVerboseToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
