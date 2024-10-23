@@ -189,6 +189,15 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
       Decimal maxMintPerTxInput = Decimal.parse(maxMintPerTxController.text);
       Decimal hardcapInput = Decimal.parse(hardcapController.text);
+      print(
+          'hardcapInput % maxMintPerTxInput: ${hardcapInput % maxMintPerTxInput}');
+
+      if (hardcapInput % maxMintPerTxInput != Decimal.zero) {
+        setState(() {
+          error = 'Hardcap must be divisible by max mint per transaction';
+        });
+        return;
+      }
 
       int maxMintPerTxDivisible =
           (maxMintPerTxInput * Decimal.fromInt(100000000)).toBigInt().toInt();
@@ -236,6 +245,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
             .toList(),
         onChanged: (Asset? value) => setState(() {
           asset = value;
+          error = null;
         }),
         selectedValue: asset,
         displayStringForOption: (Asset asset) =>
@@ -245,6 +255,11 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       HorizonUI.HorizonTextFormField(
         label: "Max mint per transaction",
         controller: maxMintPerTxController,
+        onChanged: (value) {
+          setState(() {
+            error = null;
+          });
+        },
         inputFormatters: [
           asset?.divisible == true
               ? DecimalTextInputFormatter(decimalRange: 20)
@@ -264,6 +279,11 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       HorizonUI.HorizonTextFormField(
         label: "Hard cap",
         controller: hardcapController,
+        onChanged: (value) {
+          setState(() {
+            error = null;
+          });
+        },
         inputFormatters: [
           asset?.divisible == true
               ? DecimalTextInputFormatter(decimalRange: 20)
@@ -288,6 +308,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
               onChanged: (value) {
                 setState(() {
                   isLocked = value ?? false;
+                  error = null;
                 });
               },
             ),
