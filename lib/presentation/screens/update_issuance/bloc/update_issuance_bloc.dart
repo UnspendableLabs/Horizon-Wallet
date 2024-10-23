@@ -23,7 +23,6 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
 import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
@@ -180,7 +179,6 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         virtualSize: virtualSize.virtualSize,
         adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
-
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
           submitState: SubmitInitial(loading: false, error: e.message)));

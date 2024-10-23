@@ -121,7 +121,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
                   mainchainrate: mainchainrate,
                   status: 10),
               composeFn: composeRepository.composeDispenserVerbose);
-      
+
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
 

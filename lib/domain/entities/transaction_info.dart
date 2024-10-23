@@ -259,3 +259,93 @@ class TransactionInfoDispense extends TransactionInfo {
     );
   }
 }
+
+class TransactionInfoFairmint extends TransactionInfo {
+  final FairmintUnpackedVerbose unpackedData;
+
+  const TransactionInfoFairmint({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required this.unpackedData,
+    required super.btcAmountNormalized,
+    // required super.unpackedData,
+  });
+
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+
+  @override
+  TransactionInfoFairmint copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    FairmintUnpackedVerbose? unpackedData,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoFairmint(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      unpackedData: unpackedData ?? this.unpackedData,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+    );
+  }
+}
+
+class TransactionInfoFairminter extends TransactionInfo {
+  final FairminterUnpackedVerbose unpackedData;
+
+  const TransactionInfoFairminter({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required this.unpackedData,
+    required super.btcAmountNormalized,
+    // required super.unpackedData,
+  });
+
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+
+  @override
+  TransactionInfoFairminter copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    FairminterUnpackedVerbose? unpackedData,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoFairminter(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      unpackedData: unpackedData ?? this.unpackedData,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+    );
+  }
+}

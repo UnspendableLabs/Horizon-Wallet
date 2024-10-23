@@ -134,7 +134,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
                   divisible: event.params.divisible,
                   lockQuantity: event.params.isLocked),
               composeFn: composeRepository.composeFairminterVerbose);
-      
+
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
 

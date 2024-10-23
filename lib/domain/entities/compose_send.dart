@@ -33,19 +33,17 @@ class ComposeSendResponseParams {
   final AssetInfo assetInfo;
   final String quantityNormalized;
 
-  ComposeSendResponseParams({
-    required this.source,
-    required this.destination,
-    required this.asset,
-    required this.quantity,
-    required this.useEnhancedSend,
-    required this.assetInfo,
-    required this.quantityNormalized
-  });
-
+  ComposeSendResponseParams(
+      {required this.source,
+      required this.destination,
+      required this.asset,
+      required this.quantity,
+      required this.useEnhancedSend,
+      required this.assetInfo,
+      required this.quantityNormalized});
 }
 
-class ComposeSendResponse extends ComposeResponse  {
+class ComposeSendResponse extends ComposeResponse {
   @override
   final String rawtransaction;
   @override
@@ -53,7 +51,7 @@ class ComposeSendResponse extends ComposeResponse  {
   final ComposeSendResponseParams params;
   final String name;
 
-   ComposeSendResponse({
+  ComposeSendResponse({
     required this.rawtransaction,
     required this.params,
     required this.name,

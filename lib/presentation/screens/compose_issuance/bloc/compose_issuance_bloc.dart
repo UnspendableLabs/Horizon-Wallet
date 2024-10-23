@@ -18,7 +18,6 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
 import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';

@@ -21,7 +21,6 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
 import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -280,7 +279,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       final destination = event.params.destinationAddress;
       final asset = event.params.asset;
       final quantity = event.params.quantity;
-      final useEnhancedSend = true;
+      const useEnhancedSend = true;
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeSendParams, ComposeSendResponse>(

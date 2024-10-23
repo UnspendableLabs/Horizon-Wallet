@@ -30,7 +30,6 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 
-
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
   final int virtualSize;
@@ -53,18 +52,18 @@ class FakeDispenser extends Fake implements Dispenser {
   final int _escrowQuantity;
   final int _status;
 
-  FakeDispenser({
-    required String asset,
-    required int giveQuantity,
-    required int satoshirate,
-    // required int giveRemaining,
-    // required AssetInfo assetInfo,
-    required String source,
-    required int escrowQuantity,
-    required int status,
-    required String giveQuantityNormalized,
-    required String satoshirateNormalized
-  })  : _asset = asset,
+  FakeDispenser(
+      {required String asset,
+      required int giveQuantity,
+      required int satoshirate,
+      // required int giveRemaining,
+      // required AssetInfo assetInfo,
+      required String source,
+      required int escrowQuantity,
+      required int status,
+      required String giveQuantityNormalized,
+      required String satoshirateNormalized})
+      : _asset = asset,
         _giveQuantity = giveQuantity,
         _giveQuantityNormalized = giveQuantityNormalized,
         _satoshirate = satoshirate,
@@ -102,7 +101,7 @@ class FakeDispenser extends Fake implements Dispenser {
   int get escrowQuantity => _escrowQuantity;
 
   @override
- String get escrowQuantityNormalized => "escrow-quantity-normalized";
+  String get escrowQuantityNormalized => "escrow-quantity-normalized";
 
   @override
   int get status => _status;
@@ -342,15 +341,14 @@ void main() {
                     satoshirateNormalized: "test-satoshi-rate-normalized",
                   ),
                   FakeDispenser(
-                    asset: 'ASSET2_NOT_DIVISIBLE',
-                    source: 'test-address',
-                    giveQuantity: 10,
-                    giveQuantityNormalized: 'test-give-quantity-normalized',
-                    escrowQuantity: 10,
-                    status: 0,
-                    satoshirate: 100,
-                    satoshirateNormalized: "test-satoshi-rate-normalized"
-                  ),
+                      asset: 'ASSET2_NOT_DIVISIBLE',
+                      source: 'test-address',
+                      giveQuantity: 10,
+                      giveQuantityNormalized: 'test-give-quantity-normalized',
+                      escrowQuantity: 10,
+                      status: 0,
+                      satoshirate: 100,
+                      satoshirateNormalized: "test-satoshi-rate-normalized"),
                 ]
               ));
 
