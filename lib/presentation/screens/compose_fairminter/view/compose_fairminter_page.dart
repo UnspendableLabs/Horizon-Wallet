@@ -189,8 +189,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
       Decimal maxMintPerTxInput = Decimal.parse(maxMintPerTxController.text);
       Decimal hardcapInput = Decimal.parse(hardcapController.text);
-      print(
-          'hardcapInput % maxMintPerTxInput: ${hardcapInput % maxMintPerTxInput}');
 
       if (hardcapInput % maxMintPerTxInput != Decimal.zero) {
         setState(() {
