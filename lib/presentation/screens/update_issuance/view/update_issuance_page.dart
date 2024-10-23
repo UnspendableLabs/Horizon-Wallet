@@ -31,6 +31,7 @@ import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuanc
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 class UpdateIssuancePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -53,6 +54,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(state.currentAccountUuid),
         create: (context) => UpdateIssuanceBloc(
+          composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           assetRepository: GetIt.I.get<AssetRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
           bitcoindService: GetIt.I.get<BitcoindService>(),

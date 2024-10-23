@@ -62,12 +62,20 @@ class SubmitComposingTransaction<T, O extends Object?> extends SubmitState {
   // final int virtualSize;
   final int fee;
   final int feeRate;
+  final int virtualSize;
+  final int adjustedVirtualSize;
+  // final int virtualSize;
+  // final int adjustedVirtualSize;
   const SubmitComposingTransaction({
     this.otherParams,
     required this.composeTransaction,
     // required this.virtualSize,
     required this.fee,
     required this.feeRate,
+    required this.virtualSize,
+    required this.adjustedVirtualSize,
+    // required this.virtualSize,
+    // required this.adjustedVirtualSize,
   });
 }
 

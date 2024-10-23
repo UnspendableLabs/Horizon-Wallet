@@ -56,19 +56,21 @@ void main() {
       final mockUtxos = [MockUtxo(), MockUtxo()];
 
       const virtualSize = 100;
-      const totalFee = virtualSize * feeRate;
-      final mockComposeTransaction = MockComposeResponse();
+      const adjustedVirtualSize = virtualSize * 5;
+      const totalFee = adjustedVirtualSize * feeRate;
+      final mockComposeResponse = MockComposeResponse();
 
       when(() => mockUtxoRepository.getUnspentForAddress(source))
           .thenAnswer((_) async => mockUtxos);
 
       when(() => mockGetVirtualSizeUseCase.call(
-          composeFunction: mockComposeFunction.call,
-          inputsSet: mockUtxos,
-          params: mockComposeParams)).thenAnswer((_) async => virtualSize);
+              composeFunction: mockComposeFunction.call,
+              inputsSet: mockUtxos,
+              params: mockComposeParams))
+          .thenAnswer((_) async => (virtualSize, adjustedVirtualSize));
 
       when(() => mockComposeFunction(totalFee, mockUtxos, mockComposeParams))
-          .thenAnswer((_) async => mockComposeTransaction);
+          .thenAnswer((_) async => mockComposeResponse);
 
       // Act
       final result = await composeTransactionUseCase.call(
@@ -79,7 +81,7 @@ void main() {
       );
 
       // Assert
-      expect(result, mockComposeTransaction);
+      expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
       verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,
@@ -168,7 +170,8 @@ void main() {
       const feeRate = 10;
       final mockUtxos = [MockUtxo(), MockUtxo()];
       const virtualSize = 100;
-      const totalFee = virtualSize * feeRate;
+      const adjustedVirtualSize = 5 * virtualSize;
+      const totalFee = adjustedVirtualSize * feeRate;
 
       when(() => mockUtxoRepository.getUnspentForAddress(source))
           .thenAnswer((_) async => mockUtxos);
@@ -177,7 +180,7 @@ void main() {
             params: mockComposeParams,
             composeFunction: mockComposeFunction.call,
             inputsSet: mockUtxos,
-          )).thenAnswer((_) async => virtualSize);
+          )).thenAnswer((_) async => (virtualSize, adjustedVirtualSize));
 
       when(() => mockComposeFunction(totalFee, mockUtxos, mockComposeParams))
           .thenThrow(Exception('Failed to compose transaction'));

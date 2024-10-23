@@ -123,7 +123,10 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+    print("pre emit loading");
+
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    print("post emit loading");
 
     try {
       final feeRate = _getFeeRate();
@@ -133,7 +136,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       final escrowQuantity = event.params.escrowQuantity;
       final mainchainrate = event.params.mainchainrate;
 
-      final composed = await composeTransactionUseCase
+      final composeResponse = await composeTransactionUseCase
           .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
               feeRate: feeRate,
               source: source,
@@ -145,12 +148,17 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
                   mainchainrate: mainchainrate),
               composeFn: composeRepository.composeDispenserVerbose);
 
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
+
       emit(state.copyWith(
           submitState:
               SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(

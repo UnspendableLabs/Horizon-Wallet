@@ -23,10 +23,10 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
 import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:logger/logger.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
@@ -63,6 +63,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   final BitcoinRepository bitcoinRepository;
   final AnalyticsService analyticsService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final ComposeTransactionUseCase composeTransactionUseCase;
 
   UpdateIssuanceBloc({
     required this.assetRepository,
@@ -81,6 +82,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     required this.bitcoinRepository,
     required this.analyticsService,
     required this.getFeeEstimatesUseCase,
+    required this.composeTransactionUseCase,
   }) : super(UpdateIssuanceState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
@@ -135,53 +137,57 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    await composeTransaction<ComposeIssuanceResponseVerbose,
-            UpdateIssuanceState, void>(
-        state: state,
-        emit: emit,
-        event: event,
-        utxoRepository: utxoRepository,
-        composeRepository: composeRepository,
-        transactionService: transactionService,
-        logger: logger,
-        transactionHandler: (inputsSet, feeRate) async {
-          final issuanceParams = event.params;
-          // Dummy transaction to compute virtual size
-          final issuance = await composeRepository.composeIssuanceVerbose(
-            event.sourceAddress,
-            issuanceParams.name,
-            issuanceParams.quantity,
-            issuanceParams.divisible,
-            issuanceParams.lock,
-            issuanceParams.reset,
-            issuanceParams.description,
-            issuanceParams.destination,
-            true,
-            1,
-            inputsSet,
-          );
+    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
-          final virtualSize =
-              transactionService.getVirtualSize(issuance.rawtransaction);
-          final int totalFee = virtualSize * feeRate;
+    try {
+      final feeRate = _getFeeRate();
+      final source = event.sourceAddress;
+      final name = event.params.name;
+      final quantity = event.params.quantity;
+      final divisible = event.params.divisible;
+      final lock = event.params.lock;
+      final reset = event.params.reset;
+      final description = event.params.description;
+      final destination = event.params.destinatin;
 
-          final composeTransaction =
-              await composeRepository.composeIssuanceVerbose(
-            event.sourceAddress,
-            issuanceParams.name,
-            issuanceParams.quantity,
-            issuanceParams.divisible,
-            issuanceParams.lock,
-            issuanceParams.reset,
-            issuanceParams.description,
-            issuanceParams.destination,
-            true,
-            totalFee,
-            inputsSet,
-          );
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeIssuanceParams, ComposeIssuanceResponseVerbose>(
+        source: source,
+        feeRate: feeRate,
+        params: ComposeIssuanceParams(
+          source: source,
+          name: name,
+          quantity: quantity,
+          divisible: divisible,
+          lock: lock,
+          reset: reset,
+          description: description,
+          transferDestination: destination,
+        ),
+        composeFn: composeRepository.composeIssuanceVerbose,
+      );
 
-          return (composeTransaction, virtualSize);
-        });
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
+
+      emit(state.copyWith(
+          submitState: SubmitComposingTransaction<
+              ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>(
+        composeTransaction: composed,
+        fee: composed.btcFee,
+        feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+      )));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(
+              loading: false,
+              error: 'An unexpected error occurred: ${e.toString()}')));
+    }
   }
 
   @override
@@ -245,5 +251,15 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
           analyticsService.trackEvent('broadcast_tx_issue');
         });
+  }
+
+  int _getFeeRate() {
+    FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
+    return switch (state.feeOption) {
+      FeeOption.Fast() => feeEstimates.fast,
+      FeeOption.Medium() => feeEstimates.medium,
+      FeeOption.Slow() => feeEstimates.slow,
+      FeeOption.Custom(fee: var fee) => fee,
+    };
   }
 }

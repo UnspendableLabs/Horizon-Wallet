@@ -94,6 +94,8 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
             composeTransaction: var composeTransaction,
             fee: var fee,
             feeRate: var feeRate,
+            virtualSize: var virtualSize,
+            adjustedVirtualSize: var adjustedVirtualSize,
             otherParams: var otherPArams
           ) =>
             ComposeBaseConfirmationPage(
@@ -101,6 +103,8 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               address: widget.address,
               fee: fee,
               feeRate: feeRate,
+              virtualSize: virtualSize,
+              adjustedVirtualSize: adjustedVirtualSize,
               buildConfirmationFormFields: (composeTransaction, formKey) =>
                   widget.buildConfirmationFormFields(
                       state.submitState as SubmitComposingTransaction,
@@ -248,6 +252,8 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
   final Address address;
   final int fee;
   final int feeRate;
+  final int virtualSize;
+  final int adjustedVirtualSize;
   final List<Widget> Function(dynamic, GlobalKey<FormState>)
       buildConfirmationFormFields;
   final void Function() onBack;
@@ -259,6 +265,8 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
     required this.address,
     required this.fee,
     required this.feeRate,
+    required this.virtualSize,
+    required this.adjustedVirtualSize,
     required this.buildConfirmationFormFields,
     required this.onBack,
     required this.onContinue,
@@ -291,9 +299,23 @@ class ComposeBaseConfirmationPageState
             ...widget.buildConfirmationFormFields(
                 widget.composeTransaction, _formKey),
             HorizonUI.HorizonTextFormField(
-              label: "Fee",
+              label: "Fee ",
               controller: TextEditingController(
                 text: "${widget.fee} sats (${widget.feeRate} sats/vbyte)",
+              ),
+              enabled: false,
+            ),
+            HorizonUI.HorizonTextFormField(
+              label: "Virtual Size",
+              controller: TextEditingController(
+                text: "${widget.virtualSize} vbytes",
+              ),
+              enabled: false,
+            ),
+            HorizonUI.HorizonTextFormField(
+              label: "Adjusted Virtual Size",
+              controller: TextEditingController(
+                text: "${widget.adjustedVirtualSize} vbytes",
               ),
               enabled: false,
             ),

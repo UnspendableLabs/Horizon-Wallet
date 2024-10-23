@@ -18,7 +18,6 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/compose_base/shared/compose_tx.dart';
 import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
@@ -26,6 +25,7 @@ import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:logger/logger.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 class ComposeIssuanceEventParams {
   final String name;
@@ -61,23 +61,25 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   final TransactionLocalRepository transactionLocalRepository;
   final AnalyticsService analyticsService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final ComposeTransactionUseCase composeTransactionUseCase;
 
-  ComposeIssuanceBloc({
-    required this.addressRepository,
-    required this.balanceRepository,
-    required this.composeRepository,
-    required this.utxoRepository,
-    required this.accountRepository,
-    required this.walletRepository,
-    required this.encryptionService,
-    required this.addressService,
-    required this.transactionService,
-    required this.bitcoindService,
-    required this.transactionRepository,
-    required this.transactionLocalRepository,
-    required this.analyticsService,
-    required this.getFeeEstimatesUseCase,
-  }) : super(ComposeIssuanceState(
+  ComposeIssuanceBloc(
+      {required this.addressRepository,
+      required this.balanceRepository,
+      required this.composeRepository,
+      required this.utxoRepository,
+      required this.accountRepository,
+      required this.walletRepository,
+      required this.encryptionService,
+      required this.addressService,
+      required this.transactionService,
+      required this.bitcoindService,
+      required this.transactionRepository,
+      required this.transactionLocalRepository,
+      required this.analyticsService,
+      required this.getFeeEstimatesUseCase,
+      required this.composeTransactionUseCase})
+      : super(ComposeIssuanceState(
             submitState: const SubmitInitial(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
@@ -142,53 +144,49 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    await composeTransaction<ComposeIssuanceResponseVerbose,
-            ComposeIssuanceState, void>(
-        state: state,
-        emit: emit,
-        event: event,
-        utxoRepository: utxoRepository,
-        composeRepository: composeRepository,
-        transactionService: transactionService,
-        logger: logger,
-        transactionHandler: (inputsSet, feeRate) async {
-          final issuanceParams = event.params;
-          // Dummy transaction to compute virtual size
-          final issuance = await composeRepository.composeIssuanceVerbose(
-            event.sourceAddress,
-            issuanceParams.name,
-            issuanceParams.quantity,
-            issuanceParams.divisible,
-            issuanceParams.lock,
-            issuanceParams.reset,
-            issuanceParams.description,
-            null,
-            true,
-            1,
-            inputsSet,
-          );
+    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
-          final virtualSize =
-              transactionService.getVirtualSize(issuance.rawtransaction);
-          final int totalFee = virtualSize * feeRate;
+    try {
+      final feeRate = _getFeeRate();
+      final source = event.sourceAddress;
 
-          final composeTransaction =
-              await composeRepository.composeIssuanceVerbose(
-            event.sourceAddress,
-            issuanceParams.name,
-            issuanceParams.quantity,
-            issuanceParams.divisible,
-            issuanceParams.lock,
-            issuanceParams.reset,
-            issuanceParams.description,
-            null,
-            true,
-            totalFee,
-            inputsSet,
-          );
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeIssuanceParams, ComposeIssuanceResponseVerbose>(
+        source: source,
+        feeRate: feeRate,
+        params: ComposeIssuanceParams(
+          source: event.sourceAddress,
+          name: event.params.name,
+          quantity: event.params.quantity,
+          description: event.params.description,
+          divisible: event.params.divisible,
+          lock: event.params.lock,
+          reset: event.params.reset,
+        ),
+        composeFn: composeRepository.composeIssuanceVerbose,
+      );
 
-          return (composeTransaction, virtualSize);
-        });
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
+
+      emit(state.copyWith(
+          submitState: SubmitComposingTransaction<
+              ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>(
+        composeTransaction: composed,
+        fee: composed.btcFee,
+        feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+      )));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(
+              loading: false,
+              error: 'An unexpected error occurred: ${e.toString()}')));
+    }
   }
 
   @override
@@ -252,5 +250,15 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
 
           analyticsService.trackEvent('broadcast_tx_issue');
         });
+  }
+
+  int _getFeeRate() {
+    FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
+    return switch (state.feeOption) {
+      FeeOption.Fast() => feeEstimates.fast,
+      FeeOption.Medium() => feeEstimates.medium,
+      FeeOption.Slow() => feeEstimates.slow,
+      FeeOption.Custom(fee: var fee) => fee,
+    };
   }
 }

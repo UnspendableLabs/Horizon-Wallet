@@ -147,12 +147,15 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       final source = event.sourceAddress;
       final asset = event.params.asset;
 
-      final composed = await composeTransactionUseCase
+      final composeResponse = await composeTransactionUseCase
           .call<ComposeFairmintParams, ComposeFairmintResponse>(
               feeRate: feeRate,
               source: source,
               params: ComposeFairmintParams(source: source, asset: asset),
               composeFn: composeRepository.composeFairmintVerbose);
+
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
 
       emit(state.copyWith(
           submitState:
@@ -160,6 +163,8 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
