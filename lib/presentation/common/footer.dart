@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const TAG = "v1.2.10";
+
 class Footer extends StatelessWidget {
   const Footer({super.key});
 
@@ -45,10 +47,10 @@ class Footer extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   launchUrl(Uri.parse(
-                      "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v1.2.8"));
+                      "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/$TAG"));
                 },
                 child: const Text(
-                  'v1.2.8',
+                  TAG,
                   style: TextStyle(
                     color: neonBlueDarkTheme,
                     fontSize: 16,
