@@ -36,7 +36,7 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
 class MockWriteLocalTransactionUseCase extends Mock
     implements WriteLocalTransactionUseCase {}
 
-class MockComposeDispenserVerbose extends Mock
+class MockComposeDispenserResponseVerbose extends Mock
     implements ComposeDispenserResponseVerbose {}
 
 class MockComposeDispenserResponseVerboseParams extends Mock
@@ -111,6 +111,16 @@ class FakeDispenser extends Fake implements Dispenser {
   int get status => _status;
 }
 
+class FakeVirtualSize extends Fake implements VirtualSize {
+  @override
+  final int virtualSize;
+  @override
+  final int adjustedVirtualSize;
+
+  FakeVirtualSize(
+      {required this.virtualSize, required this.adjustedVirtualSize});
+}
+
 void main() {
   late CloseDispenserBloc closeDispenserBloc;
   late MockComposeRepository mockComposeRepository;
@@ -132,7 +142,8 @@ void main() {
     status: 0,
   );
   final mockAddress = FakeAddress();
-  final mockComposeDispenserVerbose = MockComposeDispenserVerbose();
+  final mockComposeDispenserResponseVerbose =
+      MockComposeDispenserResponseVerbose();
   final composeTransactionParams = ComposeDispenserEventParams(
     asset: 'ASSET_NAME',
     giveQuantity: 1000,
@@ -294,15 +305,19 @@ void main() {
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitComposingTransaction when transaction composition succeeds',
       build: () {
-        when(() => mockComposeTransactionUseCase
-                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-              feeRate: any(named: 'feeRate'),
-              source: any(named: 'source'),
-              composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'),
-            )).thenAnswer((_) async => mockComposeDispenserVerbose);
+        when(
+            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
+                    ComposeDispenserResponseVerbose>(
+                  feeRate: any(named: 'feeRate'),
+                  source: any(named: 'source'),
+                  composeFn: any(named: 'composeFn'),
+                  params: any(named: 'params'),
+                )).thenAnswer((_) async => (
+              mockComposeDispenserResponseVerbose,
+              FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100)
+            ));
 
-        when(() => mockComposeDispenserVerbose.btcFee).thenReturn(250);
+        when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
 
         return closeDispenserBloc;
       },
@@ -327,7 +342,7 @@ void main() {
                     SubmitComposingTransaction<ComposeDispenserResponseVerbose,
                         void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
-                    mockComposeDispenserVerbose)
+                    mockComposeDispenserResponseVerbose)
                 .having((s) => s.fee, 'fee', 250)
                 .having((s) => s.feeRate, 'feeRate', 3) // default ( medium ),
             ),
@@ -337,15 +352,19 @@ void main() {
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitComposingTransaction when transaction composition succeeds ( Custom Fee )',
       build: () {
-        when(() => mockComposeTransactionUseCase
-                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-              feeRate: any(named: 'feeRate'),
-              source: any(named: 'source'),
-              composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'),
-            )).thenAnswer((_) async => mockComposeDispenserVerbose);
+        when(
+            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
+                    ComposeDispenserResponseVerbose>(
+                  feeRate: any(named: 'feeRate'),
+                  source: any(named: 'source'),
+                  composeFn: any(named: 'composeFn'),
+                  params: any(named: 'params'),
+                )).thenAnswer((_) async => (
+              mockComposeDispenserResponseVerbose,
+              FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100)
+            ));
 
-        when(() => mockComposeDispenserVerbose.btcFee).thenReturn(250);
+        when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
 
         return closeDispenserBloc;
       },
@@ -370,7 +389,7 @@ void main() {
                     SubmitComposingTransaction<ComposeDispenserResponseVerbose,
                         void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
-                    mockComposeDispenserVerbose)
+                    mockComposeDispenserResponseVerbose)
                 .having((s) => s.fee, 'fee', 250)
                 .having((s) => s.feeRate, 'feeRate', 10) // custom ,
             ),
@@ -423,7 +442,7 @@ void main() {
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => closeDispenserBloc,
       act: (bloc) => bloc.add(FinalizeTransactionEvent(
-        composeTransaction: mockComposeDispenserVerbose,
+        composeTransaction: mockComposeDispenserResponseVerbose,
         fee: fee,
       )),
       expect: () => [
@@ -434,7 +453,7 @@ void main() {
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserVerbose)
+                  mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', fee),
         ),
       ],
@@ -475,7 +494,7 @@ void main() {
             .thenAnswer((_) async {});
 
         // Set up composeTransaction mock
-        when(() => mockComposeDispenserVerbose.params)
+        when(() => mockComposeDispenserResponseVerbose.params)
             .thenReturn(mockComposeDispenserVerboseParams);
         // Set up params
         when(() => mockComposeDispenserVerboseParams.source)
@@ -489,7 +508,7 @@ void main() {
         when(() => mockComposeDispenserVerboseParams.mainchainrate)
             .thenReturn(1);
         when(() => mockComposeDispenserVerboseParams.status).thenReturn(10);
-        when(() => mockComposeDispenserVerbose.rawtransaction)
+        when(() => mockComposeDispenserResponseVerbose.rawtransaction)
             .thenReturn(txHex);
 
         return closeDispenserBloc;
@@ -501,7 +520,7 @@ void main() {
         submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
-          composeTransaction: mockComposeDispenserVerbose,
+          composeTransaction: mockComposeDispenserResponseVerbose,
           fee: 250,
         ),
         dispensersState: const DispenserState.initial(),
@@ -519,7 +538,7 @@ void main() {
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserVerbose)
+                  mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', 250),
         ),
         isA<CloseDispenserState>().having(
@@ -558,7 +577,7 @@ void main() {
             .thenAnswer((_) async {});
 
         // Set up composeTransaction mock
-        when(() => mockComposeDispenserVerbose.params)
+        when(() => mockComposeDispenserResponseVerbose.params)
             .thenReturn(mockComposeDispenserVerboseParams);
         // Set up params
         when(() => mockComposeDispenserVerboseParams.source)
@@ -572,7 +591,7 @@ void main() {
         when(() => mockComposeDispenserVerboseParams.mainchainrate)
             .thenReturn(1);
         when(() => mockComposeDispenserVerboseParams.status).thenReturn(10);
-        when(() => mockComposeDispenserVerbose.rawtransaction)
+        when(() => mockComposeDispenserResponseVerbose.rawtransaction)
             .thenReturn('raw-transaction');
 
         return closeDispenserBloc;
@@ -584,7 +603,7 @@ void main() {
         submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
-          composeTransaction: mockComposeDispenserVerbose,
+          composeTransaction: mockComposeDispenserResponseVerbose,
           fee: 250,
         ),
         dispensersState: const DispenserState.initial(),
@@ -600,7 +619,7 @@ void main() {
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserVerbose)
+                  mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', 250),
         ),
         isA<CloseDispenserState>().having(
@@ -610,7 +629,7 @@ void main() {
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserVerbose)
+                  mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', 250),
         ),
       ],

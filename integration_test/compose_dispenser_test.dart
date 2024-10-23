@@ -29,6 +29,16 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 
+class FakeVirtualSize extends Fake implements VirtualSize {
+  @override
+  final int virtualSize;
+  @override
+  final int adjustedVirtualSize;
+
+  FakeVirtualSize(
+      {required this.virtualSize, required this.adjustedVirtualSize});
+}
+
 class FakeComposeDispenserResponseVerbose extends Fake
     implements ComposeDispenserResponseVerbose {
   final int _btcFee;
@@ -557,12 +567,14 @@ void main() {
               ));
 
       when(() => mockComposeTransactionUseCase
-              .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-                  feeRate: 5, // medium
-                  source: "test-address",
-                  composeFn: any(named: 'composeFn'),
-                  params: any(named: 'params')))
-          .thenAnswer((_) async => composeDispenserResponse);
+          .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+              feeRate: 5, // medium
+              source: "test-address",
+              composeFn: any(named: 'composeFn'),
+              params: any(named: 'params'))).thenAnswer((_) async => (
+            composeDispenserResponse,
+            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500)
+          ));
 
       await tester.pumpWidget(
         MaterialApp(

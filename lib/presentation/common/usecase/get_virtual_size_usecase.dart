@@ -27,10 +27,6 @@ class GetVirtualSizeUseCase {
 
     final adjustedVirtualSize = max(virtualSize, sigops * 5);
 
-    print("sigops $sigops");
-    print("sigops * 5  ${sigops * 5 }");
-
-
     return (virtualSize, adjustedVirtualSize);
   }
 }

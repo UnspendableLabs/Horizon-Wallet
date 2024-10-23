@@ -30,10 +30,23 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 
+
+class FakeVirtualSize extends Fake implements VirtualSize {
+  @override
+  final int virtualSize;
+  @override
+  final int adjustedVirtualSize;
+
+  FakeVirtualSize(
+      {required this.virtualSize, required this.adjustedVirtualSize});
+}
+
 class FakeDispenser extends Fake implements Dispenser {
   final String _asset;
   final int _giveQuantity;
+  final String _giveQuantityNormalized;
   final int _satoshirate;
+  final String _satoshirateNormalized;
   // final int _giveRemaining;
   // final AssetInfo _assetInfo;
   final String _source;
@@ -49,9 +62,13 @@ class FakeDispenser extends Fake implements Dispenser {
     required String source,
     required int escrowQuantity,
     required int status,
+    required String giveQuantityNormalized,
+    required String satoshirateNormalized
   })  : _asset = asset,
         _giveQuantity = giveQuantity,
+        _giveQuantityNormalized = giveQuantityNormalized,
         _satoshirate = satoshirate,
+        _satoshirateNormalized = satoshirateNormalized,
         // _giveRemaining = giveRemaining,
         // _assetInfo = assetInfo,
         _source = source,
@@ -65,8 +82,13 @@ class FakeDispenser extends Fake implements Dispenser {
   int get giveQuantity => _giveQuantity;
 
   @override
+  String get giveQuantityNormalized => _giveQuantityNormalized;
+
+  @override
   int get satoshirate => _satoshirate;
 
+  @override
+  String get satoshirateNormalized => _satoshirateNormalized;
   // @override
   // int get giveRemaining => _giveRemaining;
   // //
@@ -78,6 +100,9 @@ class FakeDispenser extends Fake implements Dispenser {
 
   @override
   int get escrowQuantity => _escrowQuantity;
+
+  @override
+ String get escrowQuantityNormalized => "escrow-quantity-normalized";
 
   @override
   int get status => _status;
@@ -310,28 +335,34 @@ void main() {
                     asset: 'ASSET1_DIVISIBLE',
                     source: 'test-address',
                     giveQuantity: 100000000,
+                    giveQuantityNormalized: 'test-give-quantity-normalized',
                     escrowQuantity: 100000000,
                     status: 0,
                     satoshirate: 100000000,
+                    satoshirateNormalized: "test-satoshi-rate-normalized",
                   ),
                   FakeDispenser(
                     asset: 'ASSET2_NOT_DIVISIBLE',
                     source: 'test-address',
                     giveQuantity: 10,
+                    giveQuantityNormalized: 'test-give-quantity-normalized',
                     escrowQuantity: 10,
                     status: 0,
                     satoshirate: 100,
+                    satoshirateNormalized: "test-satoshi-rate-normalized"
                   ),
                 ]
               ));
 
       when(() => mockComposeTransactionUseCase
-              .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-                  feeRate: 5, // medium
-                  source: "test-address",
-                  composeFn: any(named: 'composeFn'),
-                  params: any(named: 'params')))
-          .thenAnswer((_) async => composeDispenserResponse);
+          .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+              feeRate: 5, // medium
+              source: "test-address",
+              composeFn: any(named: 'composeFn'),
+              params: any(named: 'params'))).thenAnswer((_) async => (
+            composeDispenserResponse,
+            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100)
+          ));
 
       await tester.pumpWidget(
         MaterialApp(
@@ -366,7 +397,7 @@ void main() {
       // Select the first item in the dropdown
       final firstItemFinder = find
           .text(
-            'test-address - ASSET1_DIVISIBLE - Quantity: 100000000 - Price: 100000000',
+            'ASSET1_DIVISIBLE - Quantity: test-give-quantity-normalized - Price: test-satoshi-rate-normalized',
           )
           .last;
       expect(firstItemFinder, findsOneWidget);

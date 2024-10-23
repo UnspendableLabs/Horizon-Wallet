@@ -3,11 +3,15 @@ import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dar
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
+import "package:equatable/equatable.dart";
 
-class VirtualSize {
+class VirtualSize extends Equatable {
   final int virtualSize;
   final int adjustedVirtualSize;
-  VirtualSize(this.virtualSize, this.adjustedVirtualSize);
+  const VirtualSize(this.virtualSize, this.adjustedVirtualSize);
+
+  @override
+  List<Object?> get props => [virtualSize, adjustedVirtualSize];
 }
 
 class ComposeTransactionException implements Exception {
@@ -25,7 +29,8 @@ class ComposeTransactionUseCase {
     required this.getVirtualSizeUseCase,
   });
 
-  Future<(R, VirtualSize)> call<P extends ComposeParams, R extends ComposeResponse>({
+  Future<(R, VirtualSize)>
+      call<P extends ComposeParams, R extends ComposeResponse>({
     required int feeRate,
     required String source,
     required P params,
