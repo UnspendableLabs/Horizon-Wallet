@@ -4,7 +4,6 @@ import 'package:horizon/data/models/transaction_unpacked.dart';
 
 class InfoVerboseMapper {
   static TransactionInfo toDomain(api.InfoVerbose info) {
-    print("InfoVerboseMapper.toDomain: ${info.runtimeType}");
     return switch (info) {
       api.EnhancedSendInfoVerbose(unpackedData: var u) =>
         TransactionInfoEnhancedSend(
