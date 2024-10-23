@@ -67,20 +67,19 @@ class OnboardingImportPKBloc
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
       final password = event.password;
+      Wallet wallet;
+      try {
+        wallet = await walletService.fromBase58(state.pk, password);
+      } catch (e) {
+        emit(state.copyWith(
+            importState: ImportStateError(
+                message:
+                    'Invalid Private Key; please ensure you are using a valid BIP32 master key')));
+        return;
+      }
       try {
         switch (state.importFormat) {
           case ImportFormat.horizon:
-            Wallet wallet;
-            try {
-              wallet = await walletService.fromBase58(state.pk, password);
-            } catch (e) {
-              emit(state.copyWith(
-                  importState: ImportStateError(
-                      message:
-                          'Invalid Private Key; please ensure you are using a valid BIP32 master key')));
-              return;
-            }
-
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, password);
 
@@ -112,8 +111,6 @@ class OnboardingImportPKBloc
             break;
 
           case ImportFormat.freewallet:
-            Wallet wallet = await walletService.fromBase58(state.pk, password);
-
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, password);
 
@@ -160,8 +157,6 @@ class OnboardingImportPKBloc
 
             break;
           case ImportFormat.counterwallet:
-            Wallet wallet = await walletService.fromBase58(state.pk, password);
-
             String decryptedPrivKey = await encryptionService.decrypt(
                 wallet.encryptedPrivKey, password);
 

@@ -756,7 +756,7 @@ Map<String, dynamic> _$NewFairmintEventToJson(NewFairmintEvent instance) =>
 
 NewFairmintParams _$NewFairmintParamsFromJson(Map<String, dynamic> json) =>
     NewFairmintParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       commission: (json['commission'] as num?)?.toInt(),
       earnQuantity: (json['earn_quantity'] as num?)?.toInt(),
@@ -810,7 +810,7 @@ Map<String, dynamic> _$VerboseNewFairmintEventToJson(
 VerboseNewFairmintParams _$VerboseNewFairmintParamsFromJson(
         Map<String, dynamic> json) =>
     VerboseNewFairmintParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       commission: (json['commission'] as num?)?.toInt(),
       earnQuantity: (json['earn_quantity'] as num?)?.toInt(),
@@ -820,8 +820,9 @@ VerboseNewFairmintParams _$VerboseNewFairmintParamsFromJson(
       status: json['status'] as String?,
       txHash: json['tx_hash'] as String?,
       txIndex: (json['tx_index'] as num?)?.toInt(),
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      assetInfo: json['asset_info'] == null
+          ? null
+          : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$VerboseNewFairmintParamsToJson(

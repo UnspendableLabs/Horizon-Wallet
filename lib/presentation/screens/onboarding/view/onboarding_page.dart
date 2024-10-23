@@ -12,17 +12,9 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class OnboardingScreenState extends State<OnboardingScreen> {
-  bool _isMenuExpanded = false;
-
   @override
   void initState() {
     super.initState();
-  }
-
-  void _toggleMenu() {
-    setState(() {
-      _isMenuExpanded = !_isMenuExpanded;
-    });
   }
 
   @override
@@ -190,62 +182,33 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               width: 250,
                               child: Column(
                                 children: [
-                                  if (_isMenuExpanded)
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        overlayColor: noBackgroundColor,
-                                        elevation: 0,
-                                        backgroundColor: isDarkMode
-                                            ? noBackgroundColor
-                                            : backdropBackgroundColor,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 32, vertical: 16),
-                                        textStyle: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        final shell =
-                                            context.read<ShellStateCubit>();
-                                        shell.onOnboardingImportPK();
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          'LOAD PRIVATE KEY',
-                                          style: TextStyle(
-                                              color: isDarkMode
-                                                  ? mainTextGrey
-                                                  : mainTextBlack),
-                                        ),
-                                      ),
-                                    ),
-                                  if (_isMenuExpanded)
-                                    const SizedBox(height: 20),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       overlayColor: noBackgroundColor,
                                       elevation: 0,
-                                      backgroundColor: noBackgroundColor,
+                                      backgroundColor: isDarkMode
+                                          ? noBackgroundColor
+                                          : backdropBackgroundColor,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      shape: const CircleBorder(
-                                        side: BorderSide(
-                                            color: mainTextGreyTransparent),
-                                      ),
+                                          horizontal: 32, vertical: 16),
                                       textStyle: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
-                                    onPressed: _toggleMenu,
+                                    onPressed: () {
+                                      final shell =
+                                          context.read<ShellStateCubit>();
+                                      shell.onOnboardingImportPK();
+                                    },
                                     child: Padding(
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: Icon(
-                                        _isMenuExpanded
-                                            ? Icons.arrow_drop_up
-                                            : Icons.arrow_drop_down,
-                                        color: mainTextGreyTransparent,
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'LOAD PRIVATE KEY',
+                                        style: TextStyle(
+                                            color: isDarkMode
+                                                ? mainTextGrey
+                                                : mainTextBlack),
                                       ),
                                     ),
                                   ),
@@ -398,57 +361,30 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               width: 250,
                               child: Column(
                                 children: [
-                                  if (_isMenuExpanded)
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        overlayColor: Colors.transparent,
-                                        elevation: 0,
-                                        backgroundColor: Colors.transparent,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 32, vertical: 16),
-                                        textStyle: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                      onPressed: () {
-                                        final shell =
-                                            context.read<ShellStateCubit>();
-                                        shell.onOnboardingImportPK();
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          'LOAD PRIVATE KEY',
-                                          style: TextStyle(
-                                              color: isDarkMode
-                                                  ? mainTextGrey
-                                                  : mainTextWhite),
-                                        ),
-                                      ),
-                                    ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      overlayColor: noBackgroundColor,
+                                      overlayColor: Colors.transparent,
                                       elevation: 0,
-                                      backgroundColor: noBackgroundColor,
+                                      backgroundColor: Colors.transparent,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      shape: const CircleBorder(
-                                        side: BorderSide(
-                                            color: mainTextGreyTransparent),
-                                      ),
+                                          horizontal: 32, vertical: 16),
                                       textStyle: const TextStyle(
                                           fontSize: 12,
-                                          fontWeight: FontWeight.w500),
+                                          fontWeight: FontWeight.w700),
                                     ),
-                                    onPressed: _toggleMenu,
+                                    onPressed: () {
+                                      final shell =
+                                          context.read<ShellStateCubit>();
+                                      shell.onOnboardingImportPK();
+                                    },
                                     child: Padding(
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: Icon(
-                                        _isMenuExpanded
-                                            ? Icons.arrow_drop_up
-                                            : Icons.arrow_drop_down,
-                                        color: mainTextGreyTransparent,
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'LOAD PRIVATE KEY',
+                                        style: TextStyle(
+                                            color: isDarkMode
+                                                ? mainTextGrey
+                                                : mainTextWhite),
                                       ),
                                     ),
                                   ),

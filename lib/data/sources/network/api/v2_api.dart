@@ -781,7 +781,7 @@ class NewFairmintEvent extends Event {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class NewFairmintParams {
-  final String asset;
+  final String? asset;
   final int? blockIndex;
   final int? commission;
   final int? earnQuantity;
@@ -830,7 +830,7 @@ class VerboseNewFairmintEvent extends VerboseEvent {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseNewFairmintParams extends NewFairmintParams {
-  final AssetInfoModel assetInfo;
+  final AssetInfoModel? assetInfo;
 
   VerboseNewFairmintParams({
     required super.asset,
