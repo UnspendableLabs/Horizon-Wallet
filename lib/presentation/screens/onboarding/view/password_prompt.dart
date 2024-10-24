@@ -32,6 +32,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
   bool _isPasswordConfirmationObscured = true;
   final passwordController = TextEditingController();
   final passwordConfirmationController = TextEditingController();
+  bool _submitted = false;
 
   @override
   void initState() {
@@ -94,8 +95,14 @@ class PasswordPromptState extends State<PasswordPrompt> {
                           ? screenSize.width
                           : screenSize.width / 3,
                       child: TextFormField(
+                        autovalidateMode: _submitted
+                            ? AutovalidateMode.onUserInteraction
+                            : AutovalidateMode.disabled,
                         validator: (value) => validatePassword(value),
                         onFieldSubmitted: (_) {
+                          setState(() {
+                            _submitted = true;
+                          });
                           if (formKey.currentState!.validate()) {
                             widget.onPressedContinue(passwordController.text);
                           }
@@ -145,10 +152,16 @@ class PasswordPromptState extends State<PasswordPrompt> {
                             ? screenSize.width
                             : screenSize.width / 3,
                         child: TextFormField(
+                          autovalidateMode: _submitted
+                              ? AutovalidateMode.onUserInteraction
+                              : AutovalidateMode.disabled,
                           validator: (value) => validatePasswordConfirmation(
                               passwordController.text,
                               passwordConfirmationController.text),
                           onFieldSubmitted: (_) {
+                            setState(() {
+                              _submitted = true;
+                            });
                             if (formKey.currentState!.validate()) {
                               widget.onPressedContinue(passwordController.text);
                             }
@@ -204,6 +217,9 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     isSmallScreenWidth: isSmallScreen,
                     onPressedBack: widget.onPressedBack,
                     onPressedContinue: () {
+                      setState(() {
+                        _submitted = true;
+                      });
                       if (formKey.currentState!.validate()) {
                         widget.onPressedContinue(passwordController.text);
                       }

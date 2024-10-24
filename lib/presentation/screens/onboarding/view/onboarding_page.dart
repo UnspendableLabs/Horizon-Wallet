@@ -380,7 +380,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text(
-                                        'LOAD PRIVATE KEY',
+                                        'LOAD MASTER PRIVATE KEY',
                                         style: TextStyle(
                                             color: isDarkMode
                                                 ? mainTextGrey
