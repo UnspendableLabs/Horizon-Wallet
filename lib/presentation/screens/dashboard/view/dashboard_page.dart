@@ -368,7 +368,7 @@ class AddressAction extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24.0),
               ),
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 6.0 : 10.0),
             ),
             onPressed: () {
               HorizonUI.HorizonDialog.show(context: context, body: dialog);
@@ -408,6 +408,116 @@ class AddressAction extends StatelessWidget {
                       ),
                     ],
                   ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OrderButtonMenu extends StatelessWidget {
+  final bool isDarkTheme;
+  final IconData icon;
+  final String text;
+  final double? iconSize;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+
+  const OrderButtonMenu({
+    super.key,
+    required this.isDarkTheme,
+    required this.icon,
+    required this.text,
+    this.iconSize,
+    required this.dashboardActivityFeedBloc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: SizedBox(
+          height: 65,
+          child: PopupMenuButton(
+            color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                  child: const Text("Open Order"),
+                  onTap: () {
+                    HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: "Create Dispenser",
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                          body: ComposeDispenserPageWrapper(
+                            dashboardActivityFeedBloc:
+                                dashboardActivityFeedBloc,
+                          ),
+                        ));
+                  }),
+              PopupMenuItem(
+                child: const Text("Cancel Order"),
+                onTap: () {
+                  HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Close Dispenser",
+                        body: CloseDispenserPageWrapper(
+                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                      ));
+                },
+              ),
+            ],
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+                borderRadius: BorderRadius.circular(24.0),
+              ),
+              child: isMobile
+                  ? Icon(
+                      icon,
+                      size: iconSize ?? 24.0,
+                      color: isDarkTheme
+                          ? greyDashboardButtonTextDarkTheme
+                          : greyDashboardButtonTextLightTheme,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: iconSize ?? 24.0,
+                          color: isDarkTheme
+                              ? greyDashboardButtonTextDarkTheme
+                              : greyDashboardButtonTextLightTheme,
+                        ),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDarkTheme
+                                  ? greyDashboardButtonTextDarkTheme
+                                  : greyDashboardButtonTextLightTheme,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
@@ -693,7 +803,7 @@ class AddressActions extends StatelessWidget {
               ),
               icon: Icons.send,
               text: "SEND",
-              iconSize: 22.0,
+              iconSize: 18.0,
             ),
             AddressAction(
               isDarkTheme: isDarkTheme,
@@ -708,6 +818,7 @@ class AddressActions extends StatelessWidget {
               ),
               icon: Icons.add,
               text: "ISSUE",
+              iconSize: 18.0,
             ),
             AddressAction(
                 isDarkTheme: isDarkTheme,
@@ -722,13 +833,15 @@ class AddressActions extends StatelessWidget {
                 ),
                 icon: Icons.qr_code,
                 text: "RECEIVE",
-                iconSize: 24.0),
+
+              iconSize: 18.0,
+                ),
             MintMenu(
               currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.print,
               text: "MINT",
-              iconSize: 24.0,
+              iconSize: 18.0,
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
             DispenserButtonMenu(
@@ -736,7 +849,14 @@ class AddressActions extends StatelessWidget {
               isDarkTheme: isDarkTheme,
               icon: Icons.more_vert,
               text: "DISPENSER",
-              iconSize: 24.0,
+              iconSize: 18.0,
+              dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            ),
+            OrderButtonMenu(
+              isDarkTheme: isDarkTheme,
+              icon: Icons.toc,
+              text: "Order",
+              iconSize: 18.0,
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
           ],
