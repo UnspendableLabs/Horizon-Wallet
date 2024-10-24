@@ -42,8 +42,7 @@ class MempoolSpaceApi {
           'MempoolSpace.getFeeEstimates not supported on regtest network.')
     };
 
-    final response =
-        await _dio.get(url);
+    final response = await _dio.get(url);
     return MempoolSpaceFeesRecommendedResponse.fromJson(response.data);
   }
 }
