@@ -410,7 +410,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   );
                 },
               ),
-            if (!isOwner) SizedBox(width: 38),
+            if (!isOwner) const SizedBox(width: 38),
             if (isOwner)
               PopupMenuButton<IssuanceActionType>(
                 icon: const Icon(Icons.more_vert),

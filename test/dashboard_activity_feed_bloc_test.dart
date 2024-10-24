@@ -1086,13 +1086,13 @@ void main() {
                     'transactions',
                     [
                       isA<ActivityFeedItem>()
-                          .having((item) => item.hash, 'hash', '0001')
+                          .having((item) => item.hash, 'hash', '0003')
                           .having(
                               (item) => item.event, 'event', isA<MockEvent>())
                           .having((item) => item.event!.state, 'state',
                               isA<EventStateConfirmed>())
                           .having((item) => item.confirmations, 'confirmations',
-                              97),
+                              95),
                       isA<ActivityFeedItem>()
                           .having((item) => item.hash, 'hash', '0002')
                           .having(
@@ -1102,13 +1102,13 @@ void main() {
                           .having((item) => item.confirmations, 'confirmations',
                               96),
                       isA<ActivityFeedItem>()
-                          .having((item) => item.hash, 'hash', '0003')
+                          .having((item) => item.hash, 'hash', '0001')
                           .having(
                               (item) => item.event, 'event', isA<MockEvent>())
                           .having((item) => item.event!.state, 'state',
                               isA<EventStateConfirmed>())
                           .having((item) => item.confirmations, 'confirmations',
-                              95),
+                              97),
                     ],
                   )
                   .having((state) => state.newTransactionCount,

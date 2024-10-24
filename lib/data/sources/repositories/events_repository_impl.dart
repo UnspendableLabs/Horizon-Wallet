@@ -530,16 +530,10 @@ class VerboseRefillDispenserParamsMapper {
 
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
-  // final _cache = <String, (List<VerboseEvent>, cursor_entity.Cursor?, int?)>{};
 
   EventsRepositoryImpl({
     required this.api_,
   });
-
-  String _generateCacheKey(
-      String address, int limit, cursor_entity.Cursor cursor) {
-    return '$address|$limit|${cursor_model.CursorMapper.toData(cursor)?.toJson()}';
-  }
 
   @override
   Future<
@@ -563,15 +557,6 @@ class EventsRepositoryImpl implements EventsRepository {
       events.addAll(mempoolEvents);
     }
 
-    // String? cacheKey;
-    // if (limit != null && cursor != null) {
-    //   cacheKey = _generateCacheKey(address, limit, cursor);
-    // }
-    //
-    // if (cacheKey != null && _cache.containsKey(cacheKey)) {
-    //   return _cache[cacheKey]!;
-    // }
-
     final addressesParam = address;
 
     final whitelist_ = whitelist?.join(",");
@@ -594,12 +579,7 @@ class EventsRepositoryImpl implements EventsRepository {
       return VerboseEventMapper.toDomain(event);
     }).toList();
 
-
     events.addAll(events_);
-
-    // if (cacheKey != null) {
-    //   _cache[cacheKey] = (events, nextCursor, response.resultCount);
-    // }
 
     return (events, nextCursor, response.resultCount);
   }
@@ -685,7 +665,7 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   Future<List<VerboseEvent>> _getAllMempoolVerboseEventsForAddress(
-      String address,  List<String>? whitelist) async {
+      String address, List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
     Cursor? cursor;
     bool hasMore = true;
