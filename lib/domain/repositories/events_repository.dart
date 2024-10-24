@@ -35,7 +35,6 @@ abstract class EventsRepository {
     required String address,
     int? limit,
     Cursor? cursor,
-    bool? unconfirmed = false,
     List<String>? whitelist,
   });
 }
