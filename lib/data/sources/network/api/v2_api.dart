@@ -3421,7 +3421,6 @@ abstract class V2Api {
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("event_name") String? eventName,
   ]);
 

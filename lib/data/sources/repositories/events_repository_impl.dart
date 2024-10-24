@@ -530,16 +530,10 @@ class VerboseRefillDispenserParamsMapper {
 
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
-  final _cache = <String, (List<VerboseEvent>, cursor_entity.Cursor?, int?)>{};
 
   EventsRepositoryImpl({
     required this.api_,
   });
-
-  String _generateCacheKey(
-      String address, int limit, cursor_entity.Cursor cursor) {
-    return '$address|$limit|${cursor_model.CursorMapper.toData(cursor)?.toJson()}';
-  }
 
   @override
   Future<
@@ -554,13 +548,13 @@ class EventsRepositoryImpl implements EventsRepository {
     bool? unconfirmed = false,
     List<String>? whitelist,
   }) async {
-    String? cacheKey;
-    if (limit != null && cursor != null) {
-      cacheKey = _generateCacheKey(address, limit, cursor);
-    }
+    List<VerboseEvent> events = [];
 
-    if (cacheKey != null && _cache.containsKey(cacheKey)) {
-      return _cache[cacheKey]!;
+    /// if unconfirmed, get mempool events
+    if (unconfirmed == true) {
+      final mempoolEvents =
+          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
+      events.addAll(mempoolEvents);
     }
 
     final addressesParam = address;
@@ -577,15 +571,15 @@ class EventsRepositoryImpl implements EventsRepository {
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
     }
+
     cursor_entity.Cursor? nextCursor =
         cursor_model.CursorMapper.toDomain(response.nextCursor);
-    List<VerboseEvent> events = response.result!.map((event) {
+
+    List<VerboseEvent> events_ = response.result!.map((event) {
       return VerboseEventMapper.toDomain(event);
     }).toList();
 
-    if (cacheKey != null) {
-      _cache[cacheKey] = (events, nextCursor, response.resultCount);
-    }
+    events.addAll(events_);
 
     return (events, nextCursor, response.resultCount);
   }
@@ -598,14 +592,6 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     final addresses = [address];
     final results = <List<VerboseEvent>>[];
-    if (unconfirmed == true) {
-      final mempoolFutures = addresses.map((address) =>
-          _getAllMempoolVerboseEventsForAddress(
-              address, unconfirmed, whitelist));
-
-      final mempoolResults = await Future.wait(mempoolFutures);
-      results.addAll(mempoolResults);
-    }
 
     final futures = addresses.map((address) =>
         _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
@@ -653,7 +639,6 @@ class EventsRepositoryImpl implements EventsRepository {
     required String address,
     cursor_entity.Cursor? cursor,
     int? limit,
-    bool? unconfirmed = false,
     List<String>? whitelist,
   }) async {
     final addressesParam = address;
@@ -664,7 +649,6 @@ class EventsRepositoryImpl implements EventsRepository {
         addressesParam,
         cursor_model.CursorMapper.toData(cursor),
         limit,
-        unconfirmed,
         whitelist_);
 
     if (response.error != null) {
@@ -681,7 +665,7 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   Future<List<VerboseEvent>> _getAllMempoolVerboseEventsForAddress(
-      String address, bool? unconfirmed, List<String>? whitelist) async {
+      String address, List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
     Cursor? cursor;
     bool hasMore = true;
@@ -691,7 +675,6 @@ class EventsRepositoryImpl implements EventsRepository {
         address: address,
         limit: 1000,
         cursor: cursor,
-        unconfirmed: unconfirmed,
       );
       final whitelistedEvents = events
           .where((event) => whitelist?.contains(event.event) ?? true)
