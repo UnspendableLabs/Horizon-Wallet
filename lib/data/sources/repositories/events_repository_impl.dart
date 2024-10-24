@@ -530,7 +530,7 @@ class VerboseRefillDispenserParamsMapper {
 
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
-  final _cache = <String, (List<VerboseEvent>, cursor_entity.Cursor?, int?)>{};
+  // final _cache = <String, (List<VerboseEvent>, cursor_entity.Cursor?, int?)>{};
 
   EventsRepositoryImpl({
     required this.api_,
@@ -563,14 +563,14 @@ class EventsRepositoryImpl implements EventsRepository {
       events.addAll(mempoolEvents);
     }
 
-    String? cacheKey;
-    if (limit != null && cursor != null) {
-      cacheKey = _generateCacheKey(address, limit, cursor);
-    }
-
-    if (cacheKey != null && _cache.containsKey(cacheKey)) {
-      return _cache[cacheKey]!;
-    }
+    // String? cacheKey;
+    // if (limit != null && cursor != null) {
+    //   cacheKey = _generateCacheKey(address, limit, cursor);
+    // }
+    //
+    // if (cacheKey != null && _cache.containsKey(cacheKey)) {
+    //   return _cache[cacheKey]!;
+    // }
 
     final addressesParam = address;
 
@@ -597,9 +597,9 @@ class EventsRepositoryImpl implements EventsRepository {
 
     events.addAll(events_);
 
-    if (cacheKey != null) {
-      _cache[cacheKey] = (events, nextCursor, response.resultCount);
-    }
+    // if (cacheKey != null) {
+    //   _cache[cacheKey] = (events, nextCursor, response.resultCount);
+    // }
 
     return (events, nextCursor, response.resultCount);
   }
