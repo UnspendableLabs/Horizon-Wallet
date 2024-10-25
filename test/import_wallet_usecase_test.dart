@@ -70,7 +70,6 @@ void main() {
       walletRepository: mockWalletRepository,
       encryptionService: mockEncryptionService,
       addressService: mockAddressService,
-      walletService: mockWalletService,
       config: mockConfig,
     );
   });
@@ -79,6 +78,7 @@ void main() {
     void runImportTest(String description, Network network,
         String expectedCoinType, ImportFormat importFormat) {
       test(description, () async {
+        // Setup
         const mnemonic = 'test mnemonic phrase for import';
         const password = 'testPassword';
         const wallet = Wallet(
@@ -96,7 +96,6 @@ void main() {
             .thenAnswer((_) async => wallet);
         when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
             .thenAnswer((_) async => wallet);
-        // Use `any()` to match any arguments
         when(() => mockEncryptionService.decrypt(any(), any()))
             .thenAnswer((_) async => decryptedPrivKey);
         when(() => mockAddressService.deriveAddressSegwit(
@@ -145,14 +144,27 @@ void main() {
         when(() => mockAddressRepository.insertMany(any()))
             .thenAnswer((_) async {});
 
-        onError(String error) {}
-
+        bool successCallbackInvoked = false;
+        bool errorCallbackInvoked = false;
         // Act
         await importWalletUseCase.call(
           password: password,
           importFormat: importFormat,
-          mnemonic: mnemonic,
-          onError: onError,
+          secret: mnemonic,
+          onError: (error) {
+            errorCallbackInvoked = true;
+          },
+          deriveWallet: (secret, password) => switch (importFormat) {
+            ImportFormat.horizon =>
+              mockWalletService.deriveRoot(secret, password),
+            ImportFormat.freewallet =>
+              mockWalletService.deriveRootFreewallet(secret, password),
+            ImportFormat.counterwallet =>
+              mockWalletService.deriveRootCounterwallet(secret, password),
+          },
+          onSuccess: () {
+            successCallbackInvoked = true;
+          },
         );
 
         // Assert
@@ -186,6 +198,8 @@ void main() {
             verify(() => mockWalletRepository.insert(any())).called(1);
             verify(() => mockAccountRepository.insert(any())).called(1);
             verify(() => mockAddressRepository.insert(any())).called(1);
+            expect(successCallbackInvoked, true);
+            expect(errorCallbackInvoked, false);
             break;
           case ImportFormat.freewallet:
             verify(() => mockAddressService.deriveAddressFreewalletRange(
@@ -209,6 +223,8 @@ void main() {
             verify(() => mockWalletRepository.insert(any())).called(1);
             verify(() => mockAccountRepository.insert(any())).called(1);
             verify(() => mockAddressRepository.insertMany(any())).called(2);
+            expect(successCallbackInvoked, true);
+            expect(errorCallbackInvoked, false);
             break;
           case ImportFormat.counterwallet:
             verify(() => mockAddressService.deriveAddressFreewalletRange(
@@ -232,8 +248,66 @@ void main() {
             verify(() => mockWalletRepository.insert(any())).called(1);
             verify(() => mockAccountRepository.insert(any())).called(1);
             verify(() => mockAddressRepository.insertMany(any())).called(2);
+            expect(successCallbackInvoked, true);
+            expect(errorCallbackInvoked, false);
             break;
         }
+      });
+
+      test('error callback is invoked when an error occurs: $importFormat',
+          () async {
+        // Setup
+        const mnemonic = 'test mnemonic phrase for import';
+        const password = 'testPassword';
+        when(() => mockWalletService.deriveRoot(any(), any()))
+            .thenThrow(Exception('error'));
+        when(() => mockWalletService.deriveRootFreewallet(any(), any()))
+            .thenThrow(Exception('error'));
+        when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
+            .thenThrow(Exception('error'));
+
+        bool errorCallbackInvoked = false;
+        bool successCallbackInvoked = false;
+
+        // Act
+        await importWalletUseCase.call(
+          password: password,
+          importFormat: importFormat,
+          secret: mnemonic,
+          onError: (error) {
+            errorCallbackInvoked = true;
+          },
+          deriveWallet: (secret, password) => switch (importFormat) {
+            ImportFormat.horizon =>
+              mockWalletService.deriveRoot(secret, password),
+            ImportFormat.freewallet =>
+              mockWalletService.deriveRootFreewallet(secret, password),
+            ImportFormat.counterwallet =>
+              mockWalletService.deriveRootCounterwallet(secret, password),
+          },
+          onSuccess: () {
+            successCallbackInvoked = true;
+          },
+        );
+
+        switch (importFormat) {
+          case ImportFormat.horizon:
+            verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
+            break;
+          case ImportFormat.freewallet:
+            verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
+                .called(1);
+            break;
+          case ImportFormat.counterwallet:
+            verify(() =>
+                    mockWalletService.deriveRootCounterwallet(any(), any()))
+                .called(1);
+            break;
+        }
+
+        // Assert
+        expect(errorCallbackInvoked, true);
+        expect(successCallbackInvoked, false);
       });
     }
 

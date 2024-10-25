@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
@@ -9,9 +10,11 @@ class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final MnemonicService mnemonicService;
   final ImportWalletUseCase importWalletUseCase;
+  final WalletService walletService;
   OnboardingImportBloc({
     required this.mnemonicService,
     required this.importWalletUseCase,
+    required this.walletService,
   }) : super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
@@ -80,15 +83,25 @@ class OnboardingImportBloc
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
       final password = event.password;
+
       await importWalletUseCase.call(
         password: password,
-        mnemonic: state.mnemonic,
+        secret: state.mnemonic,
         importFormat: state.importFormat,
+        deriveWallet: (secret, password) => switch (state.importFormat) {
+          ImportFormat.horizon => walletService.deriveRoot(secret, password),
+          ImportFormat.freewallet =>
+            walletService.deriveRootFreewallet(secret, password),
+          ImportFormat.counterwallet =>
+            walletService.deriveRootCounterwallet(secret, password),
+        },
         onError: (msg) {
           emit(state.copyWith(importState: ImportStateError(message: msg)));
         },
+        onSuccess: () {
+          emit(state.copyWith(importState: ImportStateSuccess()));
+        },
       );
-      emit(state.copyWith(importState: ImportStateSuccess()));
       return;
     });
   }

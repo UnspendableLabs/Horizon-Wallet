@@ -8,14 +8,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-
-class ImportWalletException implements Exception {
-  final String message;
-  ImportWalletException(
-      [this.message = 'An error occurred during the import process.']);
-}
 
 class ImportWalletUseCase {
   final AddressRepository addressRepository;
@@ -23,7 +16,6 @@ class ImportWalletUseCase {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
-  final WalletService walletService;
   final Config config;
 
   ImportWalletUseCase({
@@ -32,20 +24,21 @@ class ImportWalletUseCase {
     required this.walletRepository,
     required this.encryptionService,
     required this.addressService,
-    required this.walletService,
     required this.config,
   });
 
   Future<void> call({
     required String password,
     required ImportFormat importFormat,
-    required String mnemonic,
+    required String secret,
+    required Future<Wallet> Function(String, String) deriveWallet,
     required Function(String) onError,
+    required Function() onSuccess,
   }) async {
     try {
       switch (importFormat) {
         case ImportFormat.horizon:
-          Wallet wallet = await walletService.deriveRoot(mnemonic, password);
+          Wallet wallet = await deriveWallet(secret, password);
           String decryptedPrivKey = await encryptionService.decrypt(
               wallet.encryptedPrivKey, password);
 
@@ -77,8 +70,7 @@ class ImportWalletUseCase {
           break;
 
         case ImportFormat.freewallet:
-          Wallet wallet =
-              await walletService.deriveRootFreewallet(mnemonic, password);
+          Wallet wallet = await deriveWallet(secret, password);
 
           String decryptedPrivKey = await encryptionService.decrypt(
               wallet.encryptedPrivKey, password);
@@ -121,8 +113,7 @@ class ImportWalletUseCase {
 
           break;
         case ImportFormat.counterwallet:
-          Wallet wallet =
-              await walletService.deriveRootCounterwallet(mnemonic, password);
+          Wallet wallet = await deriveWallet(secret, password);
 
           String decryptedPrivKey = await encryptionService.decrypt(
               wallet.encryptedPrivKey, password);
@@ -170,10 +161,10 @@ class ImportWalletUseCase {
         default:
           throw UnimplementedError();
       }
+      onSuccess();
+      return;
     } catch (e) {
-      onError(e is ImportWalletException
-          ? e.message
-          : 'An unexpected error occurred.');
+      onError(e.toString());
     }
   }
 

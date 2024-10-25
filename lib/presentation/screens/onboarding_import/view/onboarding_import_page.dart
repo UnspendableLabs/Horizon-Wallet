@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
@@ -25,6 +26,7 @@ class OnboardingImportPageWrapper extends StatelessWidget {
         create: (context) => OnboardingImportBloc(
               mnemonicService: GetIt.I<MnemonicService>(),
               importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
+              walletService: GetIt.I<WalletService>(),
             ),
         child: const OnboardingImportPage());
   }
@@ -120,7 +122,34 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                                     },
                                     backButtonText: 'CANCEL',
                                     continueButtonText: 'LOGIN',
-                                  ),
+                                    optionalErrorWidget: state.importState
+                                            is ImportStateError
+                                        ? Align(
+                                            alignment: Alignment.center,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              decoration: BoxDecoration(
+                                                color: redErrorTextTransparent,
+                                                borderRadius:
+                                                    BorderRadius.circular(40.0),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(Icons.info,
+                                                      color: redErrorText),
+                                                  const SizedBox(width: 4),
+                                                  SelectableText(
+                                                    state.importState.message,
+                                                    style: const TextStyle(
+                                                        color: redErrorText),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        : null),
                           ),
                         ],
                       ),

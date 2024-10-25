@@ -365,7 +365,6 @@ Future<void> setup() async {
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 
   injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
-    walletService: GetIt.I.get<WalletService>(),
     addressService: GetIt.I.get<AddressService>(),
     config: GetIt.I.get<Config>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
