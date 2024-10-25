@@ -2915,7 +2915,7 @@ class FairminterUnpackedVerbose extends TransactionUnpackedVerbose {
     final messageData = json["message_data"];
 
     return FairminterUnpackedVerbose(
-      asset: messageData[0],
+      asset: messageData["asset"],
     );
   }
 }
