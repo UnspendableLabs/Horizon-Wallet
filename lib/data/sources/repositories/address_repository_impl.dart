@@ -24,10 +24,10 @@ class AddressRepositoryImpl implements AddressRepository {
   Future<void> insertMany(List<entity.Address> addresses) async {
     List<AddressModel> addresses_ = addresses
         .map((a) => AddressModel(
-              accountUuid: a.accountUuid,
-              address: a.address,
-              index: a.index,
-              encryptedPrivateKey: a.encryptedPrivateKey))
+            accountUuid: a.accountUuid,
+            address: a.address,
+            index: a.index,
+            encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
 
     _addressDao.insertMultipleAddresses(addresses_);
@@ -41,8 +41,7 @@ class AddressRepositoryImpl implements AddressRepository {
             accountUuid: addressModel.accountUuid,
             address: addressModel.address,
             index: addressModel.index,
-            encryptedPrivateKey: addressModel.encryptedPrivateKey
-            )
+            encryptedPrivateKey: addressModel.encryptedPrivateKey)
         : null;
   }
 

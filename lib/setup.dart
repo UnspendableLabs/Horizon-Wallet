@@ -74,6 +74,7 @@ import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
+import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -362,6 +363,16 @@ Future<void> setup() async {
 
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
+
+  injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
+    walletService: GetIt.I.get<WalletService>(),
+    addressService: GetIt.I.get<AddressService>(),
+    config: GetIt.I.get<Config>(),
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    accountRepository: GetIt.I.get<AccountRepository>(),
+    walletRepository: GetIt.I.get<WalletRepository>(),
+    encryptionService: GetIt.I.get<EncryptionService>(),
+  ));
 }
 
 class CustomDioException extends DioException {

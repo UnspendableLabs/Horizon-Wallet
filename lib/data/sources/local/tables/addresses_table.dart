@@ -13,7 +13,7 @@ class Addresses extends Table {
 
   @JsonKey('encryptedPrivateKey')
   TextColumn get encryptedPrivateKey => text().nullable()();
-  
+
   @override
   Set<Column> get primaryKey => {address};
 }

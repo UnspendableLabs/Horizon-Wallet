@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
@@ -13,14 +14,7 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 
 class OnboardingImportPageWrapper extends StatelessWidget {
   const OnboardingImportPageWrapper({super.key});
@@ -29,14 +23,8 @@ class OnboardingImportPageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => OnboardingImportBloc(
-              config: GetIt.I<Config>(),
-              accountRepository: GetIt.I<AccountRepository>(),
-              addressRepository: GetIt.I<AddressRepository>(),
-              walletRepository: GetIt.I<WalletRepository>(),
-              walletService: GetIt.I<WalletService>(),
-              addressService: GetIt.I<AddressService>(),
               mnemonicService: GetIt.I<MnemonicService>(),
-              encryptionService: GetIt.I<EncryptionService>(),
+              importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
             ),
         child: const OnboardingImportPage());
   }
