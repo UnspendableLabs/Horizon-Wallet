@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:get_it/get_it.dart';
@@ -6,33 +7,17 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/common/constants.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 
 class MockMnemonicService extends Mock implements MnemonicService {}
 
-class MockEncryptionService extends Mock implements EncryptionService {}
-
-class MockAddressService extends Mock implements AddressService {}
-
-class MockWalletRepository extends Mock implements WalletRepository {}
-
-class MockAccountRepository extends Mock implements AccountRepository {}
-
-class MockAddressRepository extends Mock implements AddressRepository {}
-
-class MockConfig extends Mock implements Config {}
+class MockImportWalletUseCase extends Mock implements ImportWalletUseCase {}
 
 // Fake classes for fallback values
 class FakeWallet extends Fake implements Wallet {}
@@ -44,12 +29,7 @@ class FakeAddress extends Fake implements Address {}
 void main() {
   late MockWalletService mockWalletService;
   late MockMnemonicService mockMnemonicService;
-  late MockEncryptionService mockEncryptionService;
-  late MockAddressService mockAddressService;
-  late MockWalletRepository mockWalletRepository;
-  late MockAccountRepository mockAccountRepository;
-  late MockAddressRepository mockAddressRepository;
-  late MockConfig mockConfig;
+  late MockImportWalletUseCase mockImportWalletUseCase;
 
   setUpAll(() {
     registerFallbackValue(FakeWallet());
@@ -60,24 +40,14 @@ void main() {
   setUp(() {
     mockMnemonicService = MockMnemonicService();
     mockWalletService = MockWalletService();
-    mockEncryptionService = MockEncryptionService();
-    mockAddressService = MockAddressService();
-    mockWalletRepository = MockWalletRepository();
-    mockAccountRepository = MockAccountRepository();
-    mockAddressRepository = MockAddressRepository();
-    mockConfig = MockConfig();
+    mockImportWalletUseCase = MockImportWalletUseCase();
 
     // Register mocks with GetIt
     // Register mocks with GetIt
 
     GetIt.I.registerSingleton<MnemonicService>(mockMnemonicService);
     GetIt.I.registerSingleton<WalletService>(mockWalletService);
-    GetIt.I.registerSingleton<EncryptionService>(mockEncryptionService);
-    GetIt.I.registerSingleton<AddressService>(mockAddressService);
-    GetIt.I.registerSingleton<WalletRepository>(mockWalletRepository);
-    GetIt.I.registerSingleton<AccountRepository>(mockAccountRepository);
-    GetIt.I.registerSingleton<AddressRepository>(mockAddressRepository);
-    GetIt.I.registerSingleton<Config>(mockConfig);
+    GetIt.I.registerSingleton<ImportWalletUseCase>(mockImportWalletUseCase);
   });
 
   tearDown(() {
@@ -87,43 +57,13 @@ void main() {
   group('OnboardingCreateBloc - CreateWallet', () {
     const mnemonic = 'test mnemonic';
     const password = 'testPassword';
-    const wallet = Wallet(
-        name: "Wallet #1",
-        uuid: 'wallet-uuid',
-        publicKey: "public-key",
-        encryptedPrivKey: 'encrypted',
-        chainCodeHex: 'chainCode');
-    const decryptedPrivKey = 'decrypted-private-key';
 
     void setupMocks(Network network, String expectedCoinType) {
-      final account = Account(
-          name: 'Account 0',
-          walletUuid: wallet.uuid,
-          purpose: '84\'',
-          coinType: '$expectedCoinType\'',
-          accountIndex: '0\'',
-          uuid: 'account-uuid',
-          importFormat: ImportFormat.horizon);
-      final address =
-          Address(index: 0, address: "0xdeadbeef", accountUuid: account.uuid);
-
-      when(() => mockConfig.network).thenReturn(network);
-      when(() => mockWalletService.deriveRoot(any(), any()))
-          .thenAnswer((_) async => wallet);
-      when(() => mockEncryptionService.decrypt(any(), any()))
-          .thenAnswer((_) async => decryptedPrivKey);
-      when(() => mockAddressService.deriveAddressSegwit(
-          privKey: any(named: 'privKey'),
-          chainCodeHex: any(named: 'chainCodeHex'),
-          accountUuid: any(named: 'accountUuid'),
-          purpose: any(named: 'purpose'),
-          coin: any(named: 'coin'),
-          account: any(named: 'account'),
-          change: any(named: 'change'),
-          index: any(named: 'index'))).thenAnswer((_) async => address);
-      when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
-      when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
-      when(() => mockAddressRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockImportWalletUseCase.callHorizon(
+            secret: any(named: 'secret'),
+            password: any(named: 'password'),
+            deriveWallet: any(named: 'deriveWallet'),
+          )).thenAnswer((_) async {});
     }
 
     blocTest<OnboardingCreateBloc, OnboardingCreateState>(
@@ -131,14 +71,9 @@ void main() {
       build: () {
         setupMocks(Network.mainnet, '0');
         return OnboardingCreateBloc(
-          config: mockConfig,
           mnmonicService: mockMnemonicService,
-          walletRepository: mockWalletRepository,
           walletService: mockWalletService,
-          accountRepository: mockAccountRepository,
-          addressRepository: mockAddressRepository,
-          encryptionService: mockEncryptionService,
-          addressService: mockAddressService,
+          importWalletUseCase: mockImportWalletUseCase,
         );
       },
       seed: () => OnboardingCreateState(
@@ -147,27 +82,18 @@ void main() {
       act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
-            (state) => state.createState is CreateStateLoading),
+          (state) => state.createState is CreateStateLoading,
+        ),
         predicate<OnboardingCreateState>(
-            (state) => state.createState is CreateStateSuccess),
+          (state) => state.createState is CreateStateSuccess,
+        ),
       ],
       verify: (_) {
-        verify(() => mockWalletService.deriveRoot(mnemonic, password))
-            .called(1);
-        verify(() => mockEncryptionService.decrypt(
-            wallet.encryptedPrivKey, password)).called(1);
-        verify(() => mockAddressService.deriveAddressSegwit(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: any(named: 'accountUuid'),
-            purpose: '84\'',
-            coin: '0\'',
-            account: '0\'',
-            change: '0',
-            index: 0)).called(1);
-        verify(() => mockWalletRepository.insert(any())).called(1);
-        verify(() => mockAccountRepository.insert(any())).called(1);
-        verify(() => mockAddressRepository.insert(any())).called(1);
+        verify(() => mockImportWalletUseCase.callHorizon(
+              secret: any(named: 'secret'),
+              password: any(named: 'password'),
+              deriveWallet: any(named: 'deriveWallet'),
+            )).called(1);
       },
     );
 
@@ -176,14 +102,9 @@ void main() {
       build: () {
         setupMocks(Network.testnet, '1');
         return OnboardingCreateBloc(
-          config: mockConfig,
           mnmonicService: mockMnemonicService,
-          walletRepository: mockWalletRepository,
           walletService: mockWalletService,
-          accountRepository: mockAccountRepository,
-          addressRepository: mockAddressRepository,
-          encryptionService: mockEncryptionService,
-          addressService: mockAddressService,
+          importWalletUseCase: mockImportWalletUseCase,
         );
       },
       seed: () => OnboardingCreateState(
@@ -192,20 +113,18 @@ void main() {
       act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
-            (state) => state.createState is CreateStateLoading),
+          (state) => state.createState is CreateStateLoading,
+        ),
         predicate<OnboardingCreateState>(
-            (state) => state.createState is CreateStateSuccess),
+          (state) => state.createState is CreateStateSuccess,
+        ),
       ],
       verify: (_) {
-        verify(() => mockAddressService.deriveAddressSegwit(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: any(named: 'accountUuid'),
-            purpose: '84\'',
-            coin: '1\'',
-            account: '0\'',
-            change: '0',
-            index: 0)).called(1);
+        verify(() => mockImportWalletUseCase.callHorizon(
+              secret: any(named: 'secret'),
+              password: any(named: 'password'),
+              deriveWallet: any(named: 'deriveWallet'),
+            )).called(1);
       },
     );
 
@@ -214,14 +133,9 @@ void main() {
       build: () {
         setupMocks(Network.regtest, '1');
         return OnboardingCreateBloc(
-          config: mockConfig,
           mnmonicService: mockMnemonicService,
-          walletRepository: mockWalletRepository,
           walletService: mockWalletService,
-          accountRepository: mockAccountRepository,
-          addressRepository: mockAddressRepository,
-          encryptionService: mockEncryptionService,
-          addressService: mockAddressService,
+          importWalletUseCase: mockImportWalletUseCase,
         );
       },
       seed: () => OnboardingCreateState(
@@ -230,20 +144,52 @@ void main() {
       act: (bloc) => bloc.add(CreateWallet(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
-            (state) => state.createState is CreateStateLoading),
+          (state) => state.createState is CreateStateLoading,
+        ),
         predicate<OnboardingCreateState>(
-            (state) => state.createState is CreateStateSuccess),
+          (state) => state.createState is CreateStateSuccess,
+        ),
       ],
       verify: (_) {
-        verify(() => mockAddressService.deriveAddressSegwit(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: any(named: 'accountUuid'),
-            purpose: '84\'',
-            coin: '1\'',
-            account: '0\'',
-            change: '0',
-            index: 0)).called(1);
+        verify(() => mockImportWalletUseCase.callHorizon(
+              secret: any(named: 'secret'),
+              password: any(named: 'password'),
+              deriveWallet: any(named: 'deriveWallet'),
+            )).called(1);
+      },
+    );
+    blocTest<OnboardingCreateBloc, OnboardingCreateState>(
+      'emits error states when creating wallet fails',
+      build: () {
+        when(() => mockImportWalletUseCase.callHorizon(
+              secret: any(named: 'secret'),
+              password: any(named: 'password'),
+              deriveWallet: any(named: 'deriveWallet'),
+            )).thenThrow(Exception('Failed to create wallet'));
+        return OnboardingCreateBloc(
+          mnmonicService: mockMnemonicService,
+          walletService: mockWalletService,
+          importWalletUseCase: mockImportWalletUseCase,
+        );
+      },
+      seed: () => OnboardingCreateState(
+        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+      ),
+      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      expect: () => [
+        predicate<OnboardingCreateState>(
+          (state) => state.createState is CreateStateLoading,
+        ),
+        predicate<OnboardingCreateState>(
+          (state) => state.createState is CreateStateError,
+        ),
+      ],
+      verify: (_) {
+        verify(() => mockImportWalletUseCase.callHorizon(
+              secret: any(named: 'secret'),
+              password: any(named: 'password'),
+              deriveWallet: any(named: 'deriveWallet'),
+            )).called(1);
       },
     );
   });

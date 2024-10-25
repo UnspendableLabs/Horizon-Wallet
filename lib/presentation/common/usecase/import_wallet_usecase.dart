@@ -38,35 +38,8 @@ class ImportWalletUseCase {
     try {
       switch (importFormat) {
         case ImportFormat.horizon:
-          Wallet wallet = await deriveWallet(secret, password);
-          String decryptedPrivKey = await encryptionService.decrypt(
-              wallet.encryptedPrivKey, password);
-
-          //m/84'/1'/0'/0
-          Account account0 = Account(
-            name: 'ACCOUNT 1',
-            walletUuid: wallet.uuid,
-            purpose: '84\'',
-            coinType: '${_getCoinType()}\'',
-            accountIndex: '0\'',
-            uuid: uuid.v4(),
-            importFormat: ImportFormat.horizon,
-          );
-
-          Address address = await addressService.deriveAddressSegwit(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account0.uuid,
-            purpose: account0.purpose,
-            coin: account0.coinType,
-            account: account0.accountIndex,
-            change: '0',
-            index: 0,
-          );
-
-          await walletRepository.insert(wallet);
-          await accountRepository.insert(account0);
-          await addressRepository.insert(address);
+          await callHorizon(
+              secret: secret, password: password, deriveWallet: deriveWallet);
           break;
 
         case ImportFormat.freewallet:
@@ -166,6 +139,42 @@ class ImportWalletUseCase {
     } catch (e) {
       onError(e.toString());
     }
+  }
+
+  Future<void> callHorizon({
+    required String secret,
+    required String password,
+    required Future<Wallet> Function(String, String) deriveWallet,
+  }) async {
+    Wallet wallet = await deriveWallet(secret, password);
+    String decryptedPrivKey =
+        await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+
+    // m/84'/1'/0'/0
+    Account account0 = Account(
+      name: 'ACCOUNT 1',
+      walletUuid: wallet.uuid,
+      purpose: '84\'',
+      coinType: '${_getCoinType()}\'',
+      accountIndex: '0\'',
+      uuid: uuid.v4(),
+      importFormat: ImportFormat.horizon,
+    );
+
+    Address address = await addressService.deriveAddressSegwit(
+      privKey: decryptedPrivKey,
+      chainCodeHex: wallet.chainCodeHex,
+      accountUuid: account0.uuid,
+      purpose: account0.purpose,
+      coin: account0.coinType,
+      account: account0.accountIndex,
+      change: '0',
+      index: 0,
+    );
+
+    await walletRepository.insert(wallet);
+    await accountRepository.insert(account0);
+    await addressRepository.insert(address);
   }
 
   String _getCoinType() => switch (config.network) {

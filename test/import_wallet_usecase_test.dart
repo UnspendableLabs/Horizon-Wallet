@@ -74,7 +74,7 @@ void main() {
     );
   });
 
-  group('ImportWalletUseCase', () {
+  group('ImportWalletUseCase call', () {
     void runImportTest(String description, Network network,
         String expectedCoinType, ImportFormat importFormat) {
       test(description, () async {
@@ -167,25 +167,12 @@ void main() {
           },
         );
 
-        // Assert
-        switch (importFormat) {
-          case ImportFormat.horizon:
-            verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
-            break;
-          case ImportFormat.freewallet:
-            verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
-                .called(1);
-            break;
-          case ImportFormat.counterwallet:
-            verify(() =>
-                    mockWalletService.deriveRootCounterwallet(any(), any()))
-                .called(1);
-            break;
-        }
         verify(() => mockEncryptionService.decrypt(
             wallet.encryptedPrivKey, password)).called(1);
         switch (importFormat) {
           case ImportFormat.horizon:
+            verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
+
             verify(() => mockAddressService.deriveAddressSegwit(
                 privKey: any(named: 'privKey'),
                 chainCodeHex: any(named: 'chainCodeHex'),
@@ -202,6 +189,8 @@ void main() {
             expect(errorCallbackInvoked, false);
             break;
           case ImportFormat.freewallet:
+            verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
+                .called(1);
             verify(() => mockAddressService.deriveAddressFreewalletRange(
                 type: AddressType.bech32,
                 privKey: any(named: 'privKey'),
@@ -227,6 +216,9 @@ void main() {
             expect(errorCallbackInvoked, false);
             break;
           case ImportFormat.counterwallet:
+            verify(() =>
+                    mockWalletService.deriveRootCounterwallet(any(), any()))
+                .called(1);
             verify(() => mockAddressService.deriveAddressFreewalletRange(
                 type: AddressType.bech32,
                 privKey: any(named: 'privKey'),
@@ -363,5 +355,65 @@ void main() {
         Network.regtest,
         '1',
         ImportFormat.counterwallet);
+  });
+
+  group('ImportWalletUseCase callHorizon', () {
+    test(
+        'emits correct states when importing wallet for mainnet using Horizon format',
+        () async {
+      // Setup
+      const mnemonic = 'test mnemonic phrase for import';
+      const password = 'testPassword';
+      const wallet = Wallet(
+          name: "Imported Wallet",
+          uuid: 'import-wallet-uuid',
+          publicKey: "imported-public-key",
+          encryptedPrivKey: 'encrypted',
+          chainCodeHex: 'chainCode');
+      const decryptedPrivKey = 'decrypted-private-key';
+
+      when(() => mockConfig.network).thenReturn(Network.mainnet);
+      when(() => mockWalletService.deriveRoot(any(), any()))
+          .thenAnswer((_) async => wallet);
+      when(() => mockEncryptionService.decrypt(any(), any()))
+          .thenAnswer((_) async => decryptedPrivKey);
+      when(() => mockAddressService.deriveAddressSegwit(
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              purpose: any(named: 'purpose'),
+              coin: any(named: 'coin'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              index: any(named: 'index')))
+          .thenAnswer((_) async => const Address(
+              index: 0, address: "0xdeadbeef", accountUuid: 'account-uuid'));
+      when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAddressRepository.insert(any())).thenAnswer((_) async {});
+
+      // Act
+      await importWalletUseCase.callHorizon(
+        password: password,
+        secret: mnemonic,
+        deriveWallet: (secret, password) =>
+            mockWalletService.deriveRoot(secret, password),
+      );
+
+      verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
+
+      verify(() => mockAddressService.deriveAddressSegwit(
+          privKey: any(named: 'privKey'),
+          chainCodeHex: any(named: 'chainCodeHex'),
+          accountUuid: any(named: 'accountUuid'),
+          purpose: '84\'',
+          coin: '0\'',
+          account: '0\'',
+          change: '0',
+          index: any(named: 'index'))).called(1);
+      verify(() => mockWalletRepository.insert(any())).called(1);
+      verify(() => mockAccountRepository.insert(any())).called(1);
+      verify(() => mockAddressRepository.insert(any())).called(1);
+    });
   });
 }
