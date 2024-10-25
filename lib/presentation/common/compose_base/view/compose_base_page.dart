@@ -298,6 +298,7 @@ class ComposeBaseConfirmationPageState
             const SizedBox(height: 16.0),
             ...widget.buildConfirmationFormFields(
                 widget.composeTransaction, _formKey),
+            const SizedBox(height: 16.0),
             HorizonUI.HorizonTextFormField(
               label: "Fee ",
               controller: TextEditingController(
@@ -305,6 +306,7 @@ class ComposeBaseConfirmationPageState
               ),
               enabled: false,
             ),
+            const SizedBox(height: 16.0),
             HorizonUI.HorizonTextFormField(
               label: "Virtual Size",
               controller: TextEditingController(
@@ -312,6 +314,7 @@ class ComposeBaseConfirmationPageState
               ),
               enabled: false,
             ),
+            const SizedBox(height: 16.0),
             HorizonUI.HorizonTextFormField(
               label: "Adjusted Virtual Size",
               controller: TextEditingController(

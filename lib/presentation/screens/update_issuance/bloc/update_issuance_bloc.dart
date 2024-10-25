@@ -148,7 +148,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       final lock = event.params.lock;
       final reset = event.params.reset;
       final description = event.params.description;
-      final destination = event.params.destinatin;
+      final destination = event.params.destination;
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeIssuanceParams, ComposeIssuanceResponseVerbose>(
