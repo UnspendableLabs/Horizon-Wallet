@@ -86,6 +86,7 @@ class AddressFormBloc
               change: "0",
               start: maxIndex + 1,
               end: maxIndex + 1,
+              password: event.password,
             );
 
             List<Address> bech32Addresses =
@@ -98,6 +99,7 @@ class AddressFormBloc
               change: "0",
               start: maxIndex + 1,
               end: maxIndex + 1,
+              password: event.password,
             );
 
             final newAddresses = [bech32Addresses[0], legacyAddresses[0]];
@@ -121,6 +123,7 @@ class AddressFormBloc
               change: "0",
               start: maxIndex + 1,
               end: maxIndex + 1,
+              password: event.password,
             );
 
             List<Address> bech32Addresses =
@@ -133,6 +136,7 @@ class AddressFormBloc
               change: "0",
               start: maxIndex + 1,
               end: maxIndex + 1,
+              password: event.password,
             );
             final newAddresses = [bech32Addresses[0], legacyAddresses[0]];
             await addressRepository.insertMany(newAddresses);

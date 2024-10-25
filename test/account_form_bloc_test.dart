@@ -95,6 +95,7 @@ void main() {
               account: '0\'',
               change: '0',
               index: 0,
+              password: password,
             )).thenAnswer((_) async => FakeAddress());
         return AccountFormBloc(
           accountRepository: mockAccountRepository,
@@ -147,6 +148,7 @@ void main() {
               account: '0\'',
               change: '0',
               index: 0,
+              password: password,
             )).called(1);
       },
     );

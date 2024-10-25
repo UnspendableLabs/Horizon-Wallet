@@ -66,7 +66,8 @@ class ImportWalletUseCase {
                   account: account.accountIndex,
                   change: '0',
                   start: 0,
-                  end: 9);
+                  end: 9,
+                  password: password);
 
           List<Address> addressesLegacy =
               await addressService.deriveAddressFreewalletRange(
@@ -77,7 +78,8 @@ class ImportWalletUseCase {
                   account: account.accountIndex,
                   change: '0',
                   start: 0,
-                  end: 9);
+                  end: 9,
+                  password: password);
 
           await walletRepository.insert(wallet);
           await accountRepository.insert(account);
@@ -109,7 +111,8 @@ class ImportWalletUseCase {
                   account: account.accountIndex,
                   change: '0',
                   start: 0,
-                  end: 9);
+                  end: 9,
+                  password: password);
 
           List<Address> addressesLegacy =
               await addressService.deriveAddressFreewalletRange(
@@ -122,7 +125,8 @@ class ImportWalletUseCase {
                   account: account.accountIndex,
                   change: '0',
                   start: 0,
-                  end: 9);
+                  end: 9,
+                  password: password);
 
           await walletRepository.insert(wallet);
           await accountRepository.insert(account);
@@ -150,7 +154,7 @@ class ImportWalletUseCase {
     String decryptedPrivKey =
         await encryptionService.decrypt(wallet.encryptedPrivKey, password);
 
-    // m/84'/1'/0'/0
+    // m/84'/0'/0'/0
     Account account0 = Account(
       name: 'ACCOUNT 1',
       walletUuid: wallet.uuid,
@@ -161,6 +165,9 @@ class ImportWalletUseCase {
       importFormat: ImportFormat.horizon,
     );
 
+    String addressChange = '0';
+    int addressIndex = 0;
+
     Address address = await addressService.deriveAddressSegwit(
       privKey: decryptedPrivKey,
       chainCodeHex: wallet.chainCodeHex,
@@ -168,8 +175,9 @@ class ImportWalletUseCase {
       purpose: account0.purpose,
       coin: account0.coinType,
       account: account0.accountIndex,
-      change: '0',
-      index: 0,
+      change: addressChange,
+      index: addressIndex,
+      password: password,
     );
 
     await walletRepository.insert(wallet);

@@ -244,8 +244,8 @@ Future<void> setup() async {
       .registerSingleton<EncryptionService>(EncryptionServiceWebWorkerImpl());
   injector
       .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
-  injector
-      .registerSingleton<AddressService>(AddressServiceImpl(config: config));
+  injector.registerSingleton<AddressService>(
+      AddressServiceImpl(injector(), config));
   injector.registerSingleton<MnemonicService>(
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(

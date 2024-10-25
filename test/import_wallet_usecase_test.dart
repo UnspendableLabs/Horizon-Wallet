@@ -106,7 +106,8 @@ void main() {
                 coin: any(named: 'coin'),
                 account: any(named: 'account'),
                 change: any(named: 'change'),
-                index: any(named: 'index')))
+                index: any(named: 'index'),
+                password: any(named: 'password')))
             .thenAnswer((_) async => const Address(
                 index: 0, address: "0xdeadbeef", accountUuid: 'account-uuid'));
 
@@ -118,7 +119,8 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end')))
+                end: any(named: 'end'),
+                password: any(named: 'password')))
             .thenAnswer((_) async => [
                   const Address(
                       index: 0, address: "bc1q...", accountUuid: 'account-uuid')
@@ -131,7 +133,8 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end')))
+                end: any(named: 'end'),
+                password: any(named: 'password')))
             .thenAnswer((_) async => [
                   const Address(
                       index: 1, address: "1M...", accountUuid: 'account-uuid')
@@ -181,7 +184,8 @@ void main() {
                 coin: expectedCoinType,
                 account: '0\'',
                 change: '0',
-                index: any(named: 'index'))).called(1);
+                index: any(named: 'index'),
+                password: any(named: 'password'))).called(1);
             verify(() => mockWalletRepository.insert(any())).called(1);
             verify(() => mockAccountRepository.insert(any())).called(1);
             verify(() => mockAddressRepository.insert(any())).called(1);
@@ -199,7 +203,8 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end'))).called(1);
+                end: any(named: 'end'),
+                password: any(named: 'password'))).called(1);
             verify(() => mockAddressService.deriveAddressFreewalletRange(
                 type: AddressType.legacy,
                 privKey: any(named: 'privKey'),
@@ -208,7 +213,8 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end'))).called(1);
+                end: any(named: 'end'),
+                password: any(named: 'password'))).called(1);
             verify(() => mockWalletRepository.insert(any())).called(1);
             verify(() => mockAccountRepository.insert(any())).called(1);
             verify(() => mockAddressRepository.insertMany(any())).called(2);
@@ -227,7 +233,8 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end'))).called(1);
+                end: any(named: 'end'),
+                password: any(named: 'password'))).called(1);
             verify(() => mockAddressService.deriveAddressFreewalletRange(
                 type: AddressType.legacy,
                 privKey: any(named: 'privKey'),
@@ -236,7 +243,8 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end'))).called(1);
+                end: any(named: 'end'),
+                password: any(named: 'password'))).called(1);
             verify(() => mockWalletRepository.insert(any())).called(1);
             verify(() => mockAccountRepository.insert(any())).called(1);
             verify(() => mockAddressRepository.insertMany(any())).called(2);
@@ -385,7 +393,8 @@ void main() {
               coin: any(named: 'coin'),
               account: any(named: 'account'),
               change: any(named: 'change'),
-              index: any(named: 'index')))
+              index: any(named: 'index'),
+              password: any(named: 'password')))
           .thenAnswer((_) async => const Address(
               index: 0, address: "0xdeadbeef", accountUuid: 'account-uuid'));
       when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
@@ -410,7 +419,8 @@ void main() {
           coin: '0\'',
           account: '0\'',
           change: '0',
-          index: any(named: 'index'))).called(1);
+          index: any(named: 'index'),
+          password: any(named: 'password'))).called(1);
       verify(() => mockWalletRepository.insert(any())).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insert(any())).called(1);

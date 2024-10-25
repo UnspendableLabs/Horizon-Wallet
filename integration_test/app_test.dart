@@ -5,6 +5,7 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
@@ -231,6 +232,7 @@ void main() {
         final addressRepository = GetIt.instance<AddressRepository>();
         final accountRepository = GetIt.instance<AccountRepository>();
         final walletRepository = GetIt.instance<WalletRepository>();
+        final encryptionService = GetIt.instance<EncryptionService>();
         final wallet = await walletRepository.getCurrentWallet();
         final account =
             await accountRepository.getAccountsByWalletUuid(wallet!.uuid);

@@ -80,6 +80,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
               account: account.accountIndex,
               change: '0',
               index: 0,
+              password: event.password,
             );
 
             await accountRepository.insert(account);
@@ -95,7 +96,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 9);
+                    end: 9,
+                    password: event.password);
 
             List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
@@ -106,7 +108,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 9);
+                    end: 9,
+                    password: event.password);
 
             await accountRepository.insert(account);
             await addressRepository.insertMany(addresses);
@@ -122,7 +125,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 0);
+                    end: 9,
+                    password: event.password);
 
             List<Address> addressesLegacy =
                 await addressService.deriveAddressFreewalletRange(
@@ -133,7 +137,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
                     account: account.accountIndex,
                     change: '0',
                     start: 0,
-                    end: 0);
+                    end: 9,
+                    password: event.password);
 
             await accountRepository.insert(account);
             await addressRepository.insertMany(addresses);

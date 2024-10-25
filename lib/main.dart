@@ -90,7 +90,8 @@ Future<void> setupRegtestWallet() async {
         account: account.accountIndex,
         change: '0',
         start: 0,
-        end: 9);
+        end: 9,
+        password: regtestPassword);
 
     await walletRepository.insert(wallet);
     await accountRepository.insert(account);

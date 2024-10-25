@@ -12,12 +12,17 @@ import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/domain/services/encryption_service.dart';
 
-class AddressServiceImpl extends AddressService {
+class AddressServiceImpl implements AddressService {
   final Config config;
-  final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
-  AddressServiceImpl({required this.config});
+  @override
+  EncryptionService encryptionService;
+
+  AddressServiceImpl(this.encryptionService, this.config);
+
+  final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
   @override
   Future<Address> deriveAddressSegwit(
@@ -28,7 +33,8 @@ class AddressServiceImpl extends AddressService {
       required String coin,
       required String account,
       required String change,
-      required int index}) async {
+      required int index,
+      required String password}) async {
     // final String basePath = 'm/84\'/1\'/0\'/0/';
     String path = 'm/$purpose/$coin/$account/$change/$index';
     final network = _getNetwork();
@@ -42,12 +48,20 @@ class AddressServiceImpl extends AddressService {
 
     bip32.BIP32Interface child = root.derivePath(path);
 
+    String addressPrivateKeyWif = child.toWIF();
+
+    // String addressPrivateKey = hex.encode(child.privateKey!.toDart);
+
+    String encryptedAddressPrivateKey =
+        await encryptionService.encrypt(addressPrivateKeyWif, password);
+
     String address = _bech32FromBip32(child);
 
     return Address(
       address: address,
       accountUuid: accountUuid,
       index: index,
+      encryptedPrivateKey: encryptedAddressPrivateKey,
     );
   }
 
@@ -61,7 +75,8 @@ class AddressServiceImpl extends AddressService {
       required String account,
       required String change,
       required int start,
-      required int end}) async {
+      required int end,
+      required String password}) async {
     if (start > end) {
       throw ArgumentError('Invalid range');
     }
@@ -78,6 +93,7 @@ class AddressServiceImpl extends AddressService {
         account: account,
         change: change,
         index: start + i,
+        password: password,
       ),
     );
 
@@ -93,7 +109,8 @@ class AddressServiceImpl extends AddressService {
       required String accountUuid,
       required String account,
       required String change,
-      required int index}) async {
+      required int index,
+      required String password}) async {
     /**
      * freewallet bip32 basePath takes the form of m/account'/change/address_index
      * ex: m/0'/0/0
@@ -110,10 +127,18 @@ class AddressServiceImpl extends AddressService {
       AddressType.legacy => _legacyFromBip32(child),
     };
 
+    // String addressPrivateKey =  hex.encode(child.privateKey!.toDart);
+
+    String addressPrivateKeyWif = child.toWIF();
+
+    String encryptedAddressPrivateKey =
+        await encryptionService.encrypt(addressPrivateKeyWif, password);
+
     return Address(
       address: address,
       accountUuid: accountUuid,
       index: index,
+      encryptedPrivateKey: encryptedAddressPrivateKey,
     );
   }
 
@@ -126,7 +151,8 @@ class AddressServiceImpl extends AddressService {
       required String account,
       required String change,
       required int start,
-      required int end}) async {
+      required int end,
+      required String password}) async {
     if (start > end) {
       throw ArgumentError('Invalid range');
     }
@@ -147,7 +173,8 @@ class AddressServiceImpl extends AddressService {
           accountUuid: accountUuid,
           account: account,
           change: change,
-          index: i);
+          index: i,
+          password: password);
       addresses.add(address);
     }
 

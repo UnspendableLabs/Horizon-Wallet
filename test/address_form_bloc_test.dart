@@ -151,6 +151,7 @@ void main() {
               account: any(named: "account"),
               change: any(named: "change"),
               index: any(named: "index"),
+              password: any(named: "password"),
             ));
       },
     );
@@ -175,6 +176,7 @@ void main() {
               change: any(named: 'change'),
               start: any(named: 'start'),
               end: any(named: 'end'),
+              password: any(named: 'password'),
             )).thenAnswer((_) async => [FakeAddress(index: 2)]);
         when(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
@@ -187,6 +189,7 @@ void main() {
               change: any(named: 'change'),
               start: any(named: 'start'),
               end: any(named: 'end'),
+              password: any(named: 'password'),
             )).thenAnswer((_) async => [FakeAddress(index: 2)]);
 
         when(() => mockAddressRepository.insertMany(any()))
@@ -227,6 +230,7 @@ void main() {
               change: '0',
               start: 2,
               end: 2,
+              password: any(named: 'password'),
             )).called(1);
         verify(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.bech32,
@@ -239,6 +243,7 @@ void main() {
               change: '0',
               start: 2,
               end: 2,
+              password: any(named: 'password'),
             )).called(1);
       },
     );
@@ -263,6 +268,7 @@ void main() {
               change: any(named: 'change'),
               start: any(named: 'start'),
               end: any(named: 'end'),
+              password: any(named: 'password'),
             )).thenAnswer((_) async => [FakeAddress(index: 2)]);
         when(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
@@ -275,6 +281,7 @@ void main() {
               change: any(named: 'change'),
               start: any(named: 'start'),
               end: any(named: 'end'),
+              password: any(named: 'password'),
             )).thenAnswer((_) async => [FakeAddress(index: 2)]);
 
         when(() => mockAddressRepository.insertMany(any()))
@@ -315,6 +322,7 @@ void main() {
               change: '0',
               start: 2,
               end: 2,
+              password: any(named: 'password'),
             )).called(1);
         verify(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.legacy,
@@ -327,6 +335,7 @@ void main() {
               change: '0',
               start: 2,
               end: 2,
+              password: any(named: 'password'),
             )).called(1);
       },
     );
