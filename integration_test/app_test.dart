@@ -12,7 +12,8 @@ import 'package:integration_test/integration_test.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const network = String.fromEnvironment('NETWORK', defaultValue: 'mainnet');
+  const network =
+      String.fromEnvironment('HORIZON_NETWORK', defaultValue: 'mainnet');
 
   // Define test cases
   final testCases_ = [
