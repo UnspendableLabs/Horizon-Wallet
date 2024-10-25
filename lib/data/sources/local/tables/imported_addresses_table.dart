@@ -12,6 +12,9 @@ class ImportedAddresses extends Table {
   TextColumn get encryptedPrivateKey =>
       text().customConstraint('UNIQUE NOT NULL')();
 
+  @JsonKey('walletUuid')
+  TextColumn get walletUuid => text()();
+
   @override
   Set<Column> get primaryKey => {address};
 }

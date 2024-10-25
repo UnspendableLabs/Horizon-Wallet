@@ -272,7 +272,7 @@ final class Schema3 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
-  late final Shape2 addresses = Shape2(
+  late final Shape5 addresses = Shape5(
       source: i0.VersionedTable(
         entityName: 'addresses',
         withoutRowId: false,
@@ -284,6 +284,7 @@ final class Schema3 extends i0.VersionedSchema {
           _column_10,
           _column_11,
           _column_12,
+          _column_23,
         ],
         attachedDatabase: database,
       ),
@@ -301,10 +302,10 @@ final class Schema3 extends i0.VersionedSchema {
           _column_14,
           _column_15,
           _column_16,
-          _column_23,
           _column_24,
-          _column_19,
           _column_25,
+          _column_19,
+          _column_26,
           _column_21,
         ],
         attachedDatabase: database,
@@ -331,13 +332,29 @@ class Shape4 extends i0.VersionedTable {
 i1.GeneratedColumn<String> _column_22(String aliasedName) =>
     i1.GeneratedColumn<String>('encrypted_mnemonic', aliasedName, true,
         type: i1.DriftSqlType.string);
-i1.GeneratedColumn<int> _column_23(String aliasedName) =>
+
+class Shape5 extends i0.VersionedTable {
+  Shape5({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get accountUuid =>
+      columnsByName['account_uuid']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get address =>
+      columnsByName['address']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get index =>
+      columnsByName['index']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get encryptedPrivateKey =>
+      columnsByName['encrypted_private_key']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_23(String aliasedName) =>
+    i1.GeneratedColumn<String>('encrypted_private_key', aliasedName, true,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<int> _column_24(String aliasedName) =>
     i1.GeneratedColumn<int>('btc_amount', aliasedName, true,
         type: i1.DriftSqlType.int);
-i1.GeneratedColumn<int> _column_24(String aliasedName) =>
+i1.GeneratedColumn<int> _column_25(String aliasedName) =>
     i1.GeneratedColumn<int>('fee', aliasedName, true,
         type: i1.DriftSqlType.int);
-i1.GeneratedColumn<String> _column_25(String aliasedName) =>
+i1.GeneratedColumn<String> _column_26(String aliasedName) =>
     i1.GeneratedColumn<String>('unpacked_data', aliasedName, true,
         type: i1.DriftSqlType.string);
 
@@ -402,7 +419,7 @@ final class Schema4 extends i0.VersionedSchema {
           _column_10,
           _column_11,
           _column_12,
-          _column_26,
+          _column_23,
         ],
         attachedDatabase: database,
       ),
@@ -420,10 +437,10 @@ final class Schema4 extends i0.VersionedSchema {
           _column_14,
           _column_15,
           _column_16,
-          _column_23,
           _column_24,
-          _column_19,
           _column_25,
+          _column_19,
+          _column_26,
           _column_21,
         ],
         attachedDatabase: database,
@@ -441,27 +458,12 @@ final class Schema4 extends i0.VersionedSchema {
           _column_11,
           _column_12,
           _column_27,
+          _column_5,
         ],
         attachedDatabase: database,
       ),
       alias: null);
 }
-
-class Shape5 extends i0.VersionedTable {
-  Shape5({required super.source, required super.alias}) : super.aliased();
-  i1.GeneratedColumn<String> get accountUuid =>
-      columnsByName['account_uuid']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get address =>
-      columnsByName['address']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<int> get index =>
-      columnsByName['index']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<String> get encryptedPrivateKey =>
-      columnsByName['encrypted_private_key']! as i1.GeneratedColumn<String>;
-}
-
-i1.GeneratedColumn<String> _column_26(String aliasedName) =>
-    i1.GeneratedColumn<String>('encrypted_private_key', aliasedName, true,
-        type: i1.DriftSqlType.string);
 
 class Shape6 extends i0.VersionedTable {
   Shape6({required super.source, required super.alias}) : super.aliased();
@@ -471,6 +473,8 @@ class Shape6 extends i0.VersionedTable {
       columnsByName['index']! as i1.GeneratedColumn<int>;
   i1.GeneratedColumn<String> get encryptedPrivateKey =>
       columnsByName['encrypted_private_key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get walletUuid =>
+      columnsByName['wallet_uuid']! as i1.GeneratedColumn<String>;
 }
 
 i1.GeneratedColumn<String> _column_27(String aliasedName) =>

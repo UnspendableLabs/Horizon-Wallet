@@ -65,6 +65,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Fetch Address, Account, and Wallet
       final address = await addressRepository.getAddress(source);
+
+      // if (address.)
       if (address == null) {
         throw SignAndBroadcastTransactionException('Address not found.');
       }

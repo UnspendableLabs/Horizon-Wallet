@@ -12,8 +12,7 @@ class Addresses extends Table {
   IntColumn get index => integer()();
 
   @JsonKey('encryptedPrivateKey')
-  TextColumn get encryptedPrivateKey => text().nullable()(); // New field
-
+  TextColumn get encryptedPrivateKey => text().nullable()();
   @override
   Set<Column> get primaryKey => {address};
 }
