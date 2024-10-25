@@ -5,24 +5,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/services/bitcoind_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_bloc.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
@@ -53,18 +47,14 @@ class ComposeSendPageWrapper extends StatelessWidget {
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
-          addressRepository: GetIt.I.get<AddressRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-          utxoRepository: GetIt.I.get<UtxoRepository>(),
           transactionService: GetIt.I.get<TransactionService>(),
-          bitcoindService: GetIt.I.get<BitcoindService>(),
-          accountRepository: GetIt.I.get<AccountRepository>(),
-          walletRepository: GetIt.I.get<WalletRepository>(),
-          encryptionService: GetIt.I.get<EncryptionService>(),
-          addressService: GetIt.I.get<AddressService>(),
-          transactionRepository: GetIt.I.get<TransactionRepository>(),
-          transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+          signAndBroadcastTransactionUseCase:
+              GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
+          writelocalTransactionUseCase:
+              GetIt.I.get<WriteLocalTransactionUseCase>(),
+          logger: GetIt.I.get<Logger>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeSendPage(
           address: state.currentAddress,

@@ -6,9 +6,9 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
-import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
+import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_bloc.dart';
+import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_event.dart';
+import 'package:horizon/presentation/screens/onboarding_import_pk/bloc/onboarding_import_pk_state.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockMnemonicService extends Mock implements MnemonicService {}
@@ -35,8 +35,8 @@ void main() {
     GetIt.I.reset();
   });
 
-  group('OnboardingImportBloc - ImportWallet', () {
-    const mnemonic = 'test mnemonic phrase for import';
+  group('OnboardingImportPKBloc - ImportWallet', () {
+    const privateKey = 'xprv';
     const password = 'testPassword';
 
     void setupMocksHorizon(Network network, String expectedCoinType) {
@@ -71,7 +71,7 @@ void main() {
 
     void runImportTest(String description, Network network,
         String expectedCoinType, ImportFormat importFormat) {
-      blocTest<OnboardingImportBloc, OnboardingImportState>(
+      blocTest<OnboardingImportPKBloc, OnboardingImportPKState>(
         description,
         build: () {
           switch (importFormat) {
@@ -85,25 +85,36 @@ void main() {
               setupMocksCounterwallet(network, expectedCoinType);
               break;
           }
-          return OnboardingImportBloc(
-            mnemonicService: mockMnemonicService,
-            importWalletUseCase: mockImportWalletUseCase,
+          return OnboardingImportPKBloc(
             walletService: mockWalletService,
+            importWalletUseCase: mockImportWalletUseCase,
           );
         },
-        seed: () => OnboardingImportState(
-            importFormat: importFormat, mnemonic: mnemonic),
+        seed: () => OnboardingImportPKState(
+          importFormat: importFormat,
+          pk: privateKey,
+          importState: ImportStatePKCollected(),
+        ),
         act: (bloc) => bloc.add(ImportWallet(password: password)),
         expect: () => [
-          predicate<OnboardingImportState>(
-              (state) => state.importState is ImportStateLoading),
+          predicate<OnboardingImportPKState>(
+            (state) =>
+                state.pkError == null &&
+                state.pk == privateKey &&
+                state.importState is ImportStateLoading &&
+                state.importFormat == importFormat,
+          ),
+          // Include this if simulating onSuccess or onError callbacks
+          // predicate<OnboardingImportPKState>(
+          //   (state) => state.importState is ImportStateSuccess,
+          // ),
         ],
         verify: (_) async {
           switch (importFormat) {
             case ImportFormat.horizon:
               verify(() => mockImportWalletUseCase.call(
                   password: password,
-                  secret: mnemonic,
+                  secret: privateKey,
                   importFormat: importFormat,
                   deriveWallet: any(named: 'deriveWallet'),
                   onError: any(named: 'onError'),
@@ -113,7 +124,7 @@ void main() {
             case ImportFormat.freewallet:
               verify(() => mockImportWalletUseCase.call(
                   password: password,
-                  secret: mnemonic,
+                  secret: privateKey,
                   importFormat: importFormat,
                   deriveWallet: any(named: 'deriveWallet'),
                   onError: any(named: 'onError'),
@@ -123,7 +134,7 @@ void main() {
               verify(() => mockImportWalletUseCase.call(
                   password: password,
                   importFormat: importFormat,
-                  secret: mnemonic,
+                  secret: privateKey,
                   deriveWallet: any(named: 'deriveWallet'),
                   onError: any(named: 'onError'),
                   onSuccess: any(named: 'onSuccess'))).called(1);
