@@ -1,31 +1,23 @@
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/bitcoind_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/compose_base/shared/sign_and_broadcast_tx.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_event.dart';
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:logger/logger.dart';
 
 class ComposeSendEventParams {
   final String destinationAddress;
@@ -40,39 +32,26 @@ class ComposeSendEventParams {
 }
 
 class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
-  final Logger logger = Logger();
-  final AddressRepository addressRepository;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
-  final UtxoRepository utxoRepository;
-  final TransactionService transactionService;
-  final BitcoindService bitcoindService;
-  final AccountRepository accountRepository;
-  final WalletRepository walletRepository;
-  final EncryptionService encryptionService;
-  final AddressService addressService;
-  final TransactionRepository transactionRepository;
-  final TransactionLocalRepository transactionLocalRepository;
   final AnalyticsService analyticsService;
+  final TransactionService transactionService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
+  final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
+  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final Logger logger;
 
   ComposeSendBloc({
-    required this.addressRepository,
     required this.balanceRepository,
     required this.composeRepository,
-    required this.utxoRepository,
-    required this.transactionService,
-    required this.bitcoindService,
-    required this.accountRepository,
-    required this.walletRepository,
-    required this.encryptionService,
-    required this.addressService,
-    required this.transactionRepository,
-    required this.transactionLocalRepository,
     required this.analyticsService,
+    required this.transactionService,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
+    required this.signAndBroadcastTransactionUseCase,
+    required this.writelocalTransactionUseCase,
+    required this.logger,
   }) : super(ComposeSendState(
           feeOption: FeeOption.Medium(),
           submitState: const SubmitInitial(),
@@ -314,70 +293,47 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   }
 
   @override
-  onSignAndBroadcastTransaction(event, emit) async {
-    await signAndBroadcastTransaction<ComposeSendResponse, ComposeSendState>(
-        state: state,
-        emit: emit,
+  void onSignAndBroadcastTransaction(
+      SignAndBroadcastTransactionEvent event, emit) async {
+    if (state.submitState is! SubmitFinalizing<ComposeSendResponse>) {
+      return;
+    }
+
+    final s = (state.submitState as SubmitFinalizing<ComposeSendResponse>);
+    final compose = s.composeTransaction;
+    final fee = s.fee;
+
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeSendResponse>(
+      loading: true,
+      error: null,
+      fee: fee,
+      composeTransaction: compose,
+    )));
+
+    await signAndBroadcastTransactionUseCase.call(
         password: event.password,
-        addressRepository: addressRepository,
-        accountRepository: accountRepository,
-        walletRepository: walletRepository,
-        utxoRepository: utxoRepository,
-        encryptionService: encryptionService,
-        addressService: addressService,
-        transactionService: transactionService,
-        bitcoindService: bitcoindService,
-        composeRepository: composeRepository,
-        transactionRepository: transactionRepository,
-        transactionLocalRepository: transactionLocalRepository,
-        analyticsService: analyticsService,
-        logger: logger,
-        extractParams: () {
-          final sendParams =
-              (state.submitState as SubmitFinalizing<ComposeSendResponse>)
-                  .composeTransaction;
+        source: compose.params.source,
+        rawtransaction: compose.rawtransaction,
+        onSuccess: (txHex, txHash) async {
+          await writelocalTransactionUseCase.call(txHex, txHash);
 
-          final source = sendParams.params.source;
-          final rawTx = sendParams.rawtransaction;
-          final destination = sendParams.params.destination;
-          final quantity = sendParams.params.quantity;
-          final asset = sendParams.params.asset;
-
-          return (source, rawTx, destination, quantity, asset);
-        },
-        successAction:
-            (txHex, txHash, source, destination, quantity, asset) async {
-          // for now we don't track btc sends
-          if (asset!.toLowerCase() != 'btc') {
-            TransactionInfo txInfo = await transactionRepository.getInfo(txHex);
-
-            await transactionLocalRepository.insert(txInfo.copyWith(
-                hash: txHash,
-                source:
-                    source // TODO: set this manually as a tmp hack because it can be undefined with btc sends
-                ));
-          } else {
-            // TODO: this is a bit of a hack
-            transactionLocalRepository.insert(TransactionInfo(
-              hash: txHash,
-              source: source!,
-              destination: destination,
-              btcAmount: quantity,
-              domain: TransactionInfoDomainLocal(
-                  raw: txHex, submittedAt: DateTime.now()),
-              btcAmountNormalized:
-                  quantity.toString(), //TODO: this is temporary
-              fee: 0, // dummy values
-              data: "",
-            ));
-          }
-          logger.d('send broadcasted txHash: $txHash');
-
+          logger.info('send broadcasted txHash: $txHash');
           emit(state.copyWith(
               submitState: SubmitSuccess(
-                  transactionHex: txHash, sourceAddress: source!)));
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
 
           analyticsService.trackEvent('broadcast_tx_send');
+        },
+        onError: (msg) {
+          emit(state.copyWith(
+              submitState: SubmitFinalizing<ComposeSendResponse>(
+            loading: false,
+            error: msg,
+            fee: fee,
+            composeTransaction: compose,
+          )));
         });
   }
 

@@ -16,7 +16,8 @@ class AddressRepositoryImpl implements AddressRepository {
     await _addressDao.insertAddress(AddressModel(
         accountUuid: address.accountUuid,
         address: address.address,
-        index: address.index));
+        index: address.index,
+        encryptedPrivateKey: address.encryptedPrivateKey));
   }
 
   @override
@@ -26,7 +27,7 @@ class AddressRepositoryImpl implements AddressRepository {
               accountUuid: a.accountUuid,
               address: a.address,
               index: a.index,
-            ))
+              encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
 
     _addressDao.insertMultipleAddresses(addresses_);
@@ -39,7 +40,9 @@ class AddressRepositoryImpl implements AddressRepository {
         ? entity.Address(
             accountUuid: addressModel.accountUuid,
             address: addressModel.address,
-            index: addressModel.index)
+            index: addressModel.index,
+            encryptedPrivateKey: addressModel.encryptedPrivateKey
+            )
         : null;
   }
 
@@ -50,7 +53,10 @@ class AddressRepositoryImpl implements AddressRepository {
 
     List<entity.Address> entityAddresses = addresses
         .map((a) => entity.Address(
-            accountUuid: a.accountUuid, address: a.address, index: a.index))
+            accountUuid: a.accountUuid,
+            address: a.address,
+            index: a.index,
+            encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
 
     entityAddresses.sort(addressSortComparator);
@@ -73,7 +79,10 @@ class AddressRepositoryImpl implements AddressRepository {
     List<AddressModel> addresses = await _addressDao.getAllAddresses();
     return addresses
         .map((a) => entity.Address(
-            accountUuid: a.accountUuid, address: a.address, index: a.index))
+            accountUuid: a.accountUuid,
+            address: a.address,
+            index: a.index,
+            encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
   }
 }
