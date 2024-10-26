@@ -24,6 +24,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
@@ -589,6 +590,8 @@ class MyApp extends StatelessWidget {
             encryptionService: GetIt.I<EncryptionService>(),
             addressService: GetIt.I<AddressService>(),
             addressRepository: GetIt.I<AddressRepository>(),
+            batchUpdateAddressPksUseCase:
+                GetIt.I<BatchUpdateAddressPksUseCase>(),
           ),
         ),
         BlocProvider<AddressFormBloc>(
@@ -599,6 +602,8 @@ class MyApp extends StatelessWidget {
             addressRepository: GetIt.I<AddressRepository>(),
             accountRepository: GetIt.I<AccountRepository>(),
             addressService: GetIt.I<AddressService>(),
+            batchUpdateAddressPksUseCase:
+                GetIt.I<BatchUpdateAddressPksUseCase>(),
           ),
         ),
         BlocProvider<ThemeBloc>(

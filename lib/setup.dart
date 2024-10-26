@@ -341,6 +341,16 @@ Future<void> setup() async {
           assetRepository: injector.get<AssetRepository>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
 
+  injector.registerSingleton<BatchUpdateAddressPksUseCase>(
+      BatchUpdateAddressPksUseCase(
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    encryptionService: GetIt.I.get<EncryptionService>(),
+    addressService: GetIt.I.get<AddressService>(),
+    walletRepository: GetIt.I.get<WalletRepository>(),
+    accountRepository: GetIt.I.get<AccountRepository>(),
+    logger: GetIt.I.get<Logger>(),
+  ));
+
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
     addressRepository: GetIt.I.get<AddressRepository>(),
@@ -352,6 +362,7 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
     bitcoindService: GetIt.I.get<BitcoindService>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+    batchUpdateAddressPksUseCase: GetIt.I.get<BatchUpdateAddressPksUseCase>(),
   ));
 
   injector.registerSingleton<WriteLocalTransactionUseCase>(
@@ -372,16 +383,6 @@ Future<void> setup() async {
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
-  ));
-
-  injector.registerSingleton<BatchUpdateAddressPksUseCase>(
-      BatchUpdateAddressPksUseCase(
-    addressRepository: GetIt.I.get<AddressRepository>(),
-    encryptionService: GetIt.I.get<EncryptionService>(),
-    addressService: GetIt.I.get<AddressService>(),
-    walletRepository: GetIt.I.get<WalletRepository>(),
-    accountRepository: GetIt.I.get<AccountRepository>(),
-    logger: GetIt.I.get<Logger>(),
   ));
 }
 

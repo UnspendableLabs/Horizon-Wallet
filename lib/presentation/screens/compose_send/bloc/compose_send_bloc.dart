@@ -288,7 +288,9 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       emit(state.copyWith(
           submitState: SubmitInitial(
               loading: false,
-              error: 'An unexpected error occurred: ${e.toString()}')));
+              error: e is ComposeTransactionException
+                  ? e.message
+                  : 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 

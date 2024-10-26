@@ -10,6 +10,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 
@@ -20,7 +21,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
   final EncryptionService encryptionService;
   final AddressService addressService;
   final AddressRepository addressRepository;
-
+  final BatchUpdateAddressPksUseCase batchUpdateAddressPksUseCase;
   AccountFormBloc({
     required this.accountRepository,
     required this.walletRepository,
@@ -28,6 +29,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
     required this.encryptionService,
     required this.addressService,
     required this.addressRepository,
+    required this.batchUpdateAddressPksUseCase,
   }) : super(AccountFormStep1()) {
     on<Finalize>((event, emit) async {
       emit(AccountFormStep2(state: Step2Initial()));
@@ -149,6 +151,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
         }
 
         emit(AccountFormStep2(state: Step2Success(account)));
+        await batchUpdateAddressPksUseCase
+            .populateEncryptedPrivateKeys(event.password);
       } catch (e) {
         emit(AccountFormStep2(state: Step2Error(e.toString())));
       }

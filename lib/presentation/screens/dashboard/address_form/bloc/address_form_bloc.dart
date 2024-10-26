@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
@@ -20,6 +21,7 @@ class AddressFormBloc
   final AddressRepository addressRepository;
   final AccountRepository accountRepository;
   final AddressService addressService;
+  final BatchUpdateAddressPksUseCase batchUpdateAddressPksUseCase;
 
   AddressFormBloc({
     required this.walletRepository,
@@ -28,6 +30,7 @@ class AddressFormBloc
     required this.addressRepository,
     required this.accountRepository,
     required this.addressService,
+    required this.batchUpdateAddressPksUseCase,
   }) : super(const RemoteDataState.initial()) {
     on<Submit>((event, emit) async {
       final currentState = state;
@@ -110,6 +113,7 @@ class AddressFormBloc
               'newAddresses': newAddresses,
               'accountUuid': event.accountUuid
             }));
+
             break;
 
           case ImportFormat.counterwallet:
@@ -147,6 +151,8 @@ class AddressFormBloc
             }));
             break;
         }
+        await batchUpdateAddressPksUseCase
+            .populateEncryptedPrivateKeys(event.password);
       } catch (e) {
         emit(RemoteDataState.error(e.toString()));
       }

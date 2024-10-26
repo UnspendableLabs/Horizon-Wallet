@@ -9,6 +9,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 
 class AddressNotFoundException implements Exception {
   final String message;
@@ -36,6 +37,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final TransactionService transactionService;
   final BitcoindService bitcoindService;
   final TransactionLocalRepository transactionLocalRepository;
+  final BatchUpdateAddressPksUseCase batchUpdateAddressPksUseCase;
 
   SignAndBroadcastTransactionUseCase({
     required this.addressRepository,
@@ -47,6 +49,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required this.transactionService,
     required this.bitcoindService,
     required this.transactionLocalRepository,
+    required this.batchUpdateAddressPksUseCase,
   });
 
   Future<void> call(
@@ -56,10 +59,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       required String source,
       required String rawtransaction}) async {
     try {
-      // Fetch UTXOs
-      final utxos = await utxoRepository.getUnspentForAddress(source);
-      final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
-
       // Fetch Address, Account, and Wallet
       final address = await addressRepository.getAddress(source);
       if (address == null) {
@@ -72,6 +71,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         try {
           decryptedPrivKey = await encryptionService.decrypt(
               address.encryptedPrivateKey!, password);
+          print('decryptedPrivKey: $decryptedPrivKey');
         } catch (e) {
           throw SignAndBroadcastTransactionException('Incorrect password.');
         }
@@ -79,6 +79,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         try {
           addressPrivKey = await addressService.addressPrivateKeyFromWIF(
               wif: decryptedPrivKey);
+          print('addressPrivKey: $addressPrivKey');
         } catch (e) {
           throw SignAndBroadcastTransactionException(
               'Failed to derive address private key.');
@@ -113,6 +114,11 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           importFormat: account.importFormat,
         );
       }
+
+      // Fetch UTXOs
+      final utxos = await utxoRepository.getUnspentForAddress(source);
+      final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
+
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
         rawtransaction,
@@ -129,6 +135,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         final String errorMessage = 'Failed to broadcast the transaction: $e';
         throw SignAndBroadcastTransactionException(errorMessage);
       }
+      await batchUpdateAddressPksUseCase.populateEncryptedPrivateKeys(password);
     } catch (e) {
       onError(e is SignAndBroadcastTransactionException
           ? e.message

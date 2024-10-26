@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -33,6 +34,9 @@ class MockAddressService extends Mock implements AddressService {}
 class MockTransactionService extends Mock implements TransactionService {}
 
 class MockBitcoindService extends Mock implements BitcoindService {}
+
+class MockBatchUpdateAddressPksUseCase extends Mock
+    implements BatchUpdateAddressPksUseCase {}
 
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
@@ -88,7 +92,7 @@ void main() {
   late MockTransactionService mockTransactionService;
   late MockBitcoindService mockBitcoindService;
   late MockTransactionLocalRepository mockTransactionLocalRepository;
-
+  late MockBatchUpdateAddressPksUseCase mockBatchUpdateAddressPksUseCase;
   setUpAll(() {
     registerFallbackValue(FakeTransactionInfo());
   });
@@ -103,6 +107,7 @@ void main() {
     mockTransactionService = MockTransactionService();
     mockBitcoindService = MockBitcoindService();
     mockTransactionLocalRepository = MockTransactionLocalRepository();
+    mockBatchUpdateAddressPksUseCase = MockBatchUpdateAddressPksUseCase();
 
     signAndBroadcastTransactionUseCase = SignAndBroadcastTransactionUseCase(
       addressRepository: mockAddressRepository,
@@ -114,6 +119,7 @@ void main() {
       transactionService: mockTransactionService,
       bitcoindService: mockBitcoindService,
       transactionLocalRepository: mockTransactionLocalRepository,
+      batchUpdateAddressPksUseCase: mockBatchUpdateAddressPksUseCase,
     );
   });
 
@@ -161,6 +167,8 @@ void main() {
           )).thenAnswer((_) async => txHex);
       when(() => mockBitcoindService.sendrawtransaction(txHex))
           .thenAnswer((_) async => txHash);
+      when(() => mockBatchUpdateAddressPksUseCase
+          .populateEncryptedPrivateKeys(any())).thenAnswer((_) async {});
 
       // Define callbacks
       var successCallbackInvoked = false;
