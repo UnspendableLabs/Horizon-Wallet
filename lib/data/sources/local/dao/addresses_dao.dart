@@ -40,4 +40,12 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
   Future<int> deleteAllAddresses() {
     return delete(addresses).go();
   }
+
+  Future<void> updateAddressEncryptedPrivateKey(
+      String address, String encryptedPrivateKey) async {
+    await (update(addresses)..where((tbl) => tbl.address.equals(address)))
+        .write(AddressesCompanion(
+      encryptedPrivateKey: Value(encryptedPrivateKey),
+    ));
+  }
 }

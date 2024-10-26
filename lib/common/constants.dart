@@ -67,3 +67,7 @@ String displayAssetName(String? assetName, String? assetLongname) {
       ? assetLongname
       : assetName!;
 }
+
+bool addressIsSegwit(String sourceAddress) {
+  return sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
+}

@@ -24,6 +24,9 @@ class AddressServiceImpl implements AddressService {
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
+  ecpair.ECPairFactory ecpairFactory =
+      ecpair.ECPairFactory(tinysecp256k1js.ecc);
+
   @override
   Future<Address> deriveAddressSegwit(
       {required String privKey,
@@ -208,6 +211,13 @@ class AddressServiceImpl implements AddressService {
     bip32.BIP32Interface child = root.derivePath(path);
 
     return hex.encode(child.privateKey!.toDart);
+  }
+
+  @override
+  Future<String> addressPrivateKeyFromWIF({required String wif}) async {
+    final addressPrivateKey =
+        ecpairFactory.fromWIF(wif, _getNetwork()).privateKey.toDart;
+    return hex.encode(addressPrivateKey);
   }
 
   String _legacyFromBip32(bip32.BIP32Interface child) {

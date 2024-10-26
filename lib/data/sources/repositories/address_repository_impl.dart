@@ -84,6 +84,13 @@ class AddressRepositoryImpl implements AddressRepository {
             encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
   }
+
+  @override
+  Future<void> updateAddressEncryptedPrivateKey(
+      String address, String encryptedPrivateKey) async {
+    await _addressDao.updateAddressEncryptedPrivateKey(
+        address, encryptedPrivateKey);
+  }
 }
 
 // Sort addresses by index, then by address type (legacy before bech32)

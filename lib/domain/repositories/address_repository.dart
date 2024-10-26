@@ -8,4 +8,6 @@ abstract class AddressRepository {
   Future<void> deleteAddresses(String walletUuid);
   Future<void> deleteAllAddresses();
   Future<List<Address>> getAll();
+  Future<void> updateAddressEncryptedPrivateKey(
+      String address, String encryptedPrivateKey);
 }
