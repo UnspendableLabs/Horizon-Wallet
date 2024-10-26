@@ -10,4 +10,7 @@ abstract class AddressRepository {
   Future<List<Address>> getAll();
   Future<void> updateAddressEncryptedPrivateKey(
       String address, String encryptedPrivateKey);
+  Future<List<Address>> getAddressesWithNullPrivateKey();
+  Future<void> updateAddressesEncryptedPrivateKeys(
+      Map<String, String> addressToEncryptedPrivateKey);
 }

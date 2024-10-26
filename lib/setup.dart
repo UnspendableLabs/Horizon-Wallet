@@ -74,6 +74,7 @@ import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
+import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
@@ -371,6 +372,16 @@ Future<void> setup() async {
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
+  ));
+
+  injector.registerSingleton<BatchUpdateAddressPksUseCase>(
+      BatchUpdateAddressPksUseCase(
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    encryptionService: GetIt.I.get<EncryptionService>(),
+    addressService: GetIt.I.get<AddressService>(),
+    walletRepository: GetIt.I.get<WalletRepository>(),
+    accountRepository: GetIt.I.get<AccountRepository>(),
+    logger: GetIt.I.get<Logger>(),
   ));
 }
 

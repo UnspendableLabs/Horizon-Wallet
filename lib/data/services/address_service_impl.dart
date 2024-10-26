@@ -40,16 +40,9 @@ class AddressServiceImpl implements AddressService {
       required String password}) async {
     // final String basePath = 'm/84\'/1\'/0\'/0/';
     String path = 'm/$purpose/$coin/$account/$change/$index';
-    final network = _getNetwork();
 
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
-    Buffer chainCodeJs =
-        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
-
-    final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
-
-    bip32.BIP32Interface child = root.derivePath(path);
+    bip32.BIP32Interface child = _deriveChildKey(
+        path: path, privKey: privKey, chainCodeHex: chainCodeHex);
 
     String addressPrivateKeyWif = child.toWIF();
 
@@ -159,13 +152,8 @@ class AddressServiceImpl implements AddressService {
     if (start > end) {
       throw ArgumentError('Invalid range');
     }
-    final network = _getNetwork();
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
-    Buffer chainCodeJs =
-        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
 
-    final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
+    final root = _deriveRoot(privKey: privKey, chainCodeHex: chainCodeHex);
 
     List<Address> addresses = [];
 
@@ -199,18 +187,30 @@ class AddressServiceImpl implements AddressService {
       _ => 'm/$account/$change/$index',
     };
 
-    final network = _getNetwork();
-
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(rootPrivKey)).toJS);
-    Buffer chainCodeJs =
-        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
-
-    final root = _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
-
-    bip32.BIP32Interface child = root.derivePath(path);
+    bip32.BIP32Interface child = _deriveChildKey(
+        path: path, privKey: rootPrivKey, chainCodeHex: chainCodeHex);
 
     return hex.encode(child.privateKey!.toDart);
+  }
+
+  @override
+  Future<String> deriveAddressWIF(
+      {required String rootPrivKey,
+      required String chainCodeHex,
+      required String purpose,
+      required String coin,
+      required String account,
+      required String change,
+      required int index,
+      required ImportFormat importFormat}) async {
+    String path = switch (importFormat) {
+      ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
+      _ => 'm/$account/$change/$index',
+    };
+
+    bip32.BIP32Interface child = _deriveChildKey(
+        path: path, privKey: rootPrivKey, chainCodeHex: chainCodeHex);
+    return child.toWIF();
   }
 
   @override
@@ -254,4 +254,23 @@ class AddressServiceImpl implements AddressService {
         Network.testnet => ecpair.testnet.bech32,
         Network.regtest => ecpair.regtest.bech32,
       };
+
+  bip32.BIP32Interface _deriveChildKey(
+      {required String path,
+      required String privKey,
+      required String chainCodeHex}) {
+    final root = _deriveRoot(privKey: privKey, chainCodeHex: chainCodeHex);
+    bip32.BIP32Interface child = root.derivePath(path);
+    return child;
+  }
+
+  bip32.BIP32Interface _deriveRoot(
+      {required String privKey, required String chainCodeHex}) {
+    final network = _getNetwork();
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privKey)).toJS);
+    Buffer chainCodeJs =
+        Buffer.from(Uint8List.fromList(hex.decode(chainCodeHex)).toJS);
+    return _bip32.fromPrivateKey(privKeyJS, chainCodeJs, network);
+  }
 }

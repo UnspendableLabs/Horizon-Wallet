@@ -61,4 +61,14 @@ abstract class AddressService {
   Future<String> addressPrivateKeyFromWIF({
     required String wif,
   });
+  Future<String> deriveAddressWIF({
+    required String rootPrivKey,
+    required String chainCodeHex,
+    required String purpose,
+    required String coin,
+    required String account,
+    required String change,
+    required int index,
+    required ImportFormat importFormat,
+  });
 }

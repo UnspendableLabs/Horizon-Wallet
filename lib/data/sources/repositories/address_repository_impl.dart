@@ -91,6 +91,26 @@ class AddressRepositoryImpl implements AddressRepository {
     await _addressDao.updateAddressEncryptedPrivateKey(
         address, encryptedPrivateKey);
   }
+
+  @override
+  Future<List<entity.Address>> getAddressesWithNullPrivateKey() async {
+    final addresses = await _addressDao.getAddressesWithNullPrivateKey();
+    return addresses
+        .map((a) => entity.Address(
+              accountUuid: a.accountUuid,
+              address: a.address,
+              index: a.index,
+              encryptedPrivateKey: a.encryptedPrivateKey,
+            ))
+        .toList();
+  }
+
+  @override
+  Future<void> updateAddressesEncryptedPrivateKeys(
+      Map<String, String> addressToEncryptedPrivateKey) async {
+    await _addressDao
+        .updateAddressesEncryptedPrivateKeys(addressToEncryptedPrivateKey);
+  }
 }
 
 // Sort addresses by index, then by address type (legacy before bech32)
