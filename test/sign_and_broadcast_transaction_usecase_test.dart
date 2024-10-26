@@ -50,6 +50,9 @@ class MockUtxo extends Mock implements Utxo {
 
 class MockAddress extends Mock implements Address {
   @override
+  final String? encryptedPrivateKey;
+  MockAddress({required this.encryptedPrivateKey});
+  @override
   final accountUuid = "test-account-uuid";
 
   @override
@@ -124,10 +127,12 @@ void main() {
   });
 
   group('SignAndBroadcastTransactionUseCase', () {
-    test('should sign and broadcast transaction successfully', () async {
+    test(
+        'should sign and broadcast transaction successfully with master private key',
+        () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
-      final mockAddress = MockAddress();
+      final mockAddress = MockAddress(encryptedPrivateKey: null);
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
       const String password = 'password';
@@ -217,6 +222,73 @@ void main() {
       verify(() => mockBitcoindService.sendrawtransaction(txHex)).called(1);
     });
 
+    test(
+        'should sign and broadcast transaction successfully with address private key',
+        () async {
+      // Arrange
+      final mockUtxos = [MockUtxo()];
+      const String password = 'password';
+      const String addressPrivKeyWIF = 'address_private_key_wif';
+      const String addressPrivKey = 'address_private_key';
+      const String txHex = 'transaction_hex';
+      const String txHash = 'transaction_hash';
+      final mockAddress = MockAddress(encryptedPrivateKey: addressPrivKey);
+
+      // Mock behaviors
+      when(() => mockUtxoRepository.getUnspentForAddress('source'))
+          .thenAnswer((_) async => mockUtxos);
+      when(() => mockAddressRepository.getAddress('source'))
+          .thenAnswer((_) async => mockAddress);
+      when(() => mockEncryptionService.decrypt(
+              mockAddress.encryptedPrivateKey!, password))
+          .thenAnswer((_) async => addressPrivKeyWIF);
+      when(() => mockAddressService.getAddressPrivateKeyFromWIF(
+          wif: addressPrivKeyWIF)).thenAnswer((_) async => addressPrivKey);
+      when(() => mockTransactionService.signTransaction(
+            'rawtransaction',
+            addressPrivKey,
+            'source',
+            {mockUtxos[0].txid: mockUtxos[0]},
+          )).thenAnswer((_) async => txHex);
+      when(() => mockBitcoindService.sendrawtransaction(txHex))
+          .thenAnswer((_) async => txHash);
+      when(() => mockBatchUpdateAddressPksUseCase
+          .populateEncryptedPrivateKeys(any())).thenAnswer((_) async {});
+
+      // Define callbacks
+      var successCallbackInvoked = false;
+      onSuccess(String txHex, String txHash) {
+        successCallbackInvoked = true;
+      }
+
+      onError(String error) {}
+
+      // Act
+      await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
+        password: password,
+        onSuccess: onSuccess,
+        onError: onError,
+      );
+
+      // Assert
+      expect(successCallbackInvoked, true);
+      verify(() => mockUtxoRepository.getUnspentForAddress('source')).called(1);
+      verify(() => mockAddressRepository.getAddress('source')).called(1);
+      verify(() => mockEncryptionService.decrypt(
+          mockAddress.encryptedPrivateKey!, password)).called(1);
+      verify(() => mockAddressService.getAddressPrivateKeyFromWIF(
+          wif: addressPrivKeyWIF)).called(1);
+      verify(() => mockTransactionService.signTransaction(
+            'rawtransaction',
+            addressPrivKey,
+            'source',
+            {mockUtxos[0].txid: mockUtxos[0]},
+          )).called(1);
+      verify(() => mockBitcoindService.sendrawtransaction(txHex)).called(1);
+    });
+
     test('should return error if address is not found', () async {
       // Arrange
 
@@ -251,9 +323,11 @@ void main() {
       verifyNever(() => mockWalletRepository.getWallet(any()));
     });
 
-    test('should return `Incorrect Password` if decrypt fails', () async {
+    test(
+        'should return `Incorrect Password` if decrypt master private key fails',
+        () async {
       // Arrange
-      final mockAddress = MockAddress();
+      final mockAddress = MockAddress(encryptedPrivateKey: null);
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
 
@@ -298,11 +372,58 @@ void main() {
           mockTransactionService.signTransaction(any(), any(), any(), any()));
       verifyNever(() => mockBitcoindService.sendrawtransaction(any()));
     });
+
+    test(
+        'should return `Incorrect Password` if decrypt address private key fails',
+        () async {
+      // Arrange
+      final mockAddress =
+          MockAddress(encryptedPrivateKey: 'encrypted_private_key');
+      // final mockAccount = MockAccount();
+      // final mockWallet = MockWallet();
+
+      final mockUtxos = [MockUtxo()];
+
+      when(() => mockUtxoRepository.getUnspentForAddress('source'))
+          .thenAnswer((_) async => mockUtxos);
+
+      when(() => mockAddressRepository.getAddress('source'))
+          .thenAnswer((_) async => mockAddress);
+
+      when(() => mockEncryptionService.decrypt(
+              mockAddress.encryptedPrivateKey!, "wrong_password"))
+          .thenThrow(
+              SignAndBroadcastTransactionException('Incorrect password.'));
+
+      var errorCallbackInvoked = false;
+      onSuccess(String txHex, String txHash) {}
+      onError(String error) {
+        expect(error, 'Incorrect password.');
+        errorCallbackInvoked = true;
+      }
+
+      // Act
+      await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
+        password: 'wrong_password',
+        onSuccess: onSuccess,
+        onError: onError,
+      );
+
+      // Assert
+      expect(errorCallbackInvoked, true);
+      verify(() => mockEncryptionService.decrypt(
+          mockAddress.encryptedPrivateKey!, 'wrong_password')).called(1);
+      verifyNever(() =>
+          mockTransactionService.signTransaction(any(), any(), any(), any()));
+      verifyNever(() => mockBitcoindService.sendrawtransaction(any()));
+    });
     //
     test('should return error if transaction broadcast fails', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
-      final mockAddress = MockAddress();
+      final mockAddress = MockAddress(encryptedPrivateKey: null);
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
       const String password = 'password';

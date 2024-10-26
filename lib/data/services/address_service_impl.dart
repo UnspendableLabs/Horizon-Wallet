@@ -123,8 +123,6 @@ class AddressServiceImpl implements AddressService {
       AddressType.legacy => _legacyFromBip32(child),
     };
 
-    // String addressPrivateKey =  hex.encode(child.privateKey!.toDart);
-
     String addressPrivateKeyWif = child.toWIF();
 
     String encryptedAddressPrivateKey =
@@ -194,7 +192,7 @@ class AddressServiceImpl implements AddressService {
   }
 
   @override
-  Future<String> deriveAddressWIF(
+  Future<String> getAddressWIFFromPrivateKey(
       {required String rootPrivKey,
       required String chainCodeHex,
       required String purpose,
@@ -214,7 +212,7 @@ class AddressServiceImpl implements AddressService {
   }
 
   @override
-  Future<String> addressPrivateKeyFromWIF({required String wif}) async {
+  Future<String> getAddressPrivateKeyFromWIF({required String wif}) async {
     final addressPrivateKey =
         ecpairFactory.fromWIF(wif, _getNetwork()).privateKey.toDart;
     return hex.encode(addressPrivateKey);

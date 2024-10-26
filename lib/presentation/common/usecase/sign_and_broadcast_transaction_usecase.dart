@@ -59,6 +59,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       required String source,
       required String rawtransaction}) async {
     try {
+      // Fetch UTXOs
+      final utxos = await utxoRepository.getUnspentForAddress(source);
+      final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
+
       // Fetch Address, Account, and Wallet
       final address = await addressRepository.getAddress(source);
       if (address == null) {
@@ -77,7 +81,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         }
 
         try {
-          addressPrivKey = await addressService.addressPrivateKeyFromWIF(
+          addressPrivKey = await addressService.getAddressPrivateKeyFromWIF(
               wif: decryptedPrivKey);
           print('addressPrivKey: $addressPrivKey');
         } catch (e) {
@@ -114,10 +118,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           importFormat: account.importFormat,
         );
       }
-
-      // Fetch UTXOs
-      final utxos = await utxoRepository.getUnspentForAddress(source);
-      final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
       // Sign Transaction
       final txHex = await transactionService.signTransaction(

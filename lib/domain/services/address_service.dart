@@ -58,10 +58,10 @@ abstract class AddressService {
     required int index,
     required ImportFormat importFormat,
   });
-  Future<String> addressPrivateKeyFromWIF({
+  Future<String> getAddressPrivateKeyFromWIF({
     required String wif,
   });
-  Future<String> deriveAddressWIF({
+  Future<String> getAddressWIFFromPrivateKey({
     required String rootPrivKey,
     required String chainCodeHex,
     required String purpose,

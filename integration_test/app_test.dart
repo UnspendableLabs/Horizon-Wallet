@@ -22,7 +22,7 @@ void main() {
       'passphrase':
           'voice flame certainly anyone former raw limit king rhythm tumble crystal earth',
       'format': ImportFormat.counterwallet.description,
-      'addresses': {
+      'addressToWIFMap': {
         'muYJYjRZDPmTEMfyEGe34BGN8tZ6rmRZCu':
             "cQeTd6ap99KQYNr3jaZkANTKfk32CEfYjnZVNZdLKDfHoPxjVn5K",
         'tb1qn8f324j40n5x4d6led6xs0hm5x779q2780rdxz':
@@ -70,7 +70,7 @@ void main() {
       "passphrase":
           "voice flame certainly anyone former raw limit king rhythm tumble crystal earth",
       'format': ImportFormat.counterwallet.description,
-      'addresses': {
+      'addressToWIFMap': {
         "1F2MFgLaQNLCTFCMWhffEG43GtxPxu6KWM":
             "KzHUABaxi5d9NwNnMAkco3xG3WjcXnZrfkR2G9App71HYetoX8Jy",
         "bc1qn8f324j40n5x4d6led6xs0hm5x779q27dfc7a3":
@@ -118,7 +118,7 @@ void main() {
       "passphrase":
           "stomach worry artefact bicycle finger doctor outdoor learn lecture powder agent body",
       'format': ImportFormat.horizon.description,
-      'addresses': {
+      'addressToWIFMap': {
         "bc1q2d0uhg8wupev6d22umufydd98jvznxngnvt5mm":
             "KyrpTEubafHDheWBJ9VRM4QVo78Zw5GFXmKv1sUr1gK1Fb4t3JeE"
       },
@@ -128,7 +128,7 @@ void main() {
       "passphrase":
           "stomach worry artefact bicycle finger doctor outdoor learn lecture powder agent body",
       'format': ImportFormat.horizon.description,
-      'addresses': {
+      'addressToWIFMap': {
         "tb1qtghcd3sh2lqcc7ylglelu77pj55684rqluukxe":
             "cT3WnVTsJFks9nkTWQ6SPxx3HAiACnysDPJKPZdvqLD5oEgEqNbf"
       },
@@ -138,7 +138,7 @@ void main() {
       "passphrase":
           "crash suffer render miss endorse plastic success choice cable check normal gadget",
       'format': ImportFormat.freewallet.description,
-      'addresses': {
+      'addressToWIFMap': {
         "1FP7TJfEnPYfg2jPvB89sPcPYH4pkV8xgA":
             "L2tnCtYkSsoAu5DiYteU5wPeVXWgF5HDDvWNCSYoQpfyGrtvqew4",
         "bc1qnhqye8y0tad8newu6hhhyusveh9gm8gu80t9uh":
@@ -186,7 +186,7 @@ void main() {
       "passphrase":
           "crash suffer render miss endorse plastic success choice cable check normal gadget",
       'format': ImportFormat.freewallet.description,
-      'addresses': {
+      'addressToWIFMap': {
         "muu4kMkDbQyvT9D1dk6XhJpiQGfXjdRuDZ":
             "cTFmfoYbswVS4WgywJTbTFti7kp5uXNuHxeqJs1JuwKyXbzh3g3h",
         "tb1qnhqye8y0tad8newu6hhhyusveh9gm8gudfsk8y":
@@ -312,7 +312,8 @@ void main() {
         await tester.tap(loginButton);
         await tester.pumpAndSettle();
 
-        final expectedAddresses = testCase['addresses'] as Map<String, String>;
+        final expectedAddresses =
+            testCase['addressToWIFMap'] as Map<String, String>;
 
         // Ensure addresses are returned in the correct order
         final addressRepository = GetIt.instance<AddressRepository>();

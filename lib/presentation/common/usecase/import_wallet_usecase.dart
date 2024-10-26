@@ -5,10 +5,10 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 
 class ImportWalletUseCase {
   final AddressRepository addressRepository;
@@ -165,9 +165,6 @@ class ImportWalletUseCase {
       importFormat: ImportFormat.horizon,
     );
 
-    String addressChange = '0';
-    int addressIndex = 0;
-
     Address address = await addressService.deriveAddressSegwit(
       privKey: decryptedPrivKey,
       chainCodeHex: wallet.chainCodeHex,
@@ -175,8 +172,8 @@ class ImportWalletUseCase {
       purpose: account0.purpose,
       coin: account0.coinType,
       account: account0.accountIndex,
-      change: addressChange,
-      index: addressIndex,
+      change: '0',
+      index: 0,
       password: password,
     );
 

@@ -49,12 +49,12 @@ class AddressesDao extends DatabaseAccessor<DB> with _$AddressesDaoMixin {
     ));
   }
 
-  /// Fetches addresses where [encryptedPrivateKey] is null.
+  // Fetches addresses where [encryptedPrivateKey] is null.
   Future<List<Address>> getAddressesWithNullPrivateKey() =>
       (select(addresses)..where((tbl) => tbl.encryptedPrivateKey.isNull()))
           .get();
 
-  /// Updates multiple addresses with their corresponding encrypted private keys.
+  // Updates multiple addresses with their corresponding encrypted private keys.
   Future<void> updateAddressesEncryptedPrivateKeys(
       Map<String, String> addressToEncryptedPrivateKey) async {
     await batch((batch) {
