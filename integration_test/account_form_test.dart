@@ -58,38 +58,59 @@ class MockAccountFormBloc extends Mock implements AccountFormBloc {
 }
 
 class MockShellStateCubit extends Mock implements ShellStateCubit {
-  final ShellState _state = ShellState.success(ShellStateSuccess(
-      accounts: [
-        Account(
-          uuid: 'test-account-uuid',
-          name: 'Test Account',
-          walletUuid: 'test-wallet-uuid',
-          purpose: "44'",
-          coinType: "0'",
-          accountIndex: "0'",
-          importFormat: ImportFormat.counterwallet,
-        )
-      ],
-      redirect: false,
-      wallet: const Wallet(
-          name: 'Test Wallet',
-          uuid: 'test-wallet-uuid',
-          publicKey: '',
-          encryptedPrivKey: '',
-          chainCodeHex: ''),
-      currentAccountUuid: 'test-account-uuid',
-      addresses: [],
-      currentAddress: const Address(
-        address: 'test-address',
-        accountUuid: 'test-account-uuid',
-        index: 1,
-      )));
+  final ShellState _state;
+
+  MockShellStateCubit(this._state);
 
   @override
   ShellState get state => _state;
 
   @override
   Stream<ShellState> get stream => Stream.value(_state);
+}
+
+ShellState createShellState({
+  List<Account>? accounts,
+  Wallet? wallet,
+  String? currentAccountUuid,
+  List<Address>? addresses,
+  Address? currentAddress,
+  bool redirect = false,
+}) {
+  // Define a default account
+  final defaultAccount = Account(
+    uuid: 'test-account-uuid',
+    name: 'Test Account',
+    walletUuid: 'test-wallet-uuid',
+    purpose: "44'",
+    coinType: "0'",
+    accountIndex: "0'",
+    importFormat: ImportFormat.counterwallet,
+  );
+
+  return ShellState.success(
+    ShellStateSuccess(
+      accounts: accounts ??
+          [defaultAccount], // Include default account if none provided
+      wallet: wallet ??
+          const Wallet(
+            name: 'Test Wallet',
+            uuid: 'test-wallet-uuid',
+            publicKey: '',
+            encryptedPrivKey: '',
+            chainCodeHex: '',
+          ),
+      currentAccountUuid: currentAccountUuid ?? defaultAccount.uuid,
+      addresses: addresses ?? [],
+      currentAddress: currentAddress ??
+          Address(
+            address: 'test-address',
+            accountUuid: defaultAccount.uuid,
+            index: 1,
+          ),
+      redirect: redirect,
+    ),
+  );
 }
 
 void main() {
@@ -105,7 +126,7 @@ void main() {
 
     setUp(() {
       mockBloc = MockAccountFormBloc();
-      mockShellCubit = MockShellStateCubit();
+      mockShellCubit = MockShellStateCubit(createShellState());
     });
 
     tearDown(() async {
@@ -153,8 +174,129 @@ void main() {
       // Wait for loading state to complete
       await tester.pumpAndSettle(const Duration(milliseconds: 600));
 
-      // Verify Submit event is added with correct parameters
-      verify(() => mockBloc.add(any(that: isA<Submit>()))).called(1);
+      // Capture the Submit event
+      final verificationResult = verify(() => mockBloc.add(captureAny()));
+
+      // Assert that the 2 events were added to the bloc
+      verificationResult.called(2);
+
+      // Retrieve the captured submit event
+      final capturedEvents = verificationResult.captured;
+      final submitEvent =
+          capturedEvents.firstWhere((event) => event is Submit) as Submit;
+
+      // Assert the properties of the Submit event
+      expect(submitEvent.name, 'Test Account');
+      expect(submitEvent.password, 'password123');
+      expect(submitEvent.accountIndex, "1'");
+      expect(submitEvent.walletUuid, 'test-wallet-uuid');
+      expect(submitEvent.purpose, "44'");
+      expect(submitEvent.coinType, "0'");
+      expect(submitEvent.importFormat, ImportFormat.counterwallet);
+    });
+
+    testWidgets('Test with custom accounts', (WidgetTester tester) async {
+      // Define custom accounts
+      final accounts = [
+        Account(
+          uuid: 'account-uuid-1',
+          name: 'Account 1',
+          walletUuid: 'wallet-uuid-1',
+          purpose: "44'",
+          coinType: "0'",
+          accountIndex: "0'",
+          importFormat: ImportFormat.counterwallet,
+        ),
+        Account(
+          uuid: 'account-uuid-2',
+          name: 'Account 2',
+          walletUuid: 'wallet-uuid-1',
+          purpose: "44'",
+          coinType: "0'",
+          accountIndex: "1'",
+          importFormat: ImportFormat.counterwallet,
+        ),
+        Account(
+          uuid: 'account-uuid-3',
+          name: 'Account 3',
+          walletUuid: 'wallet-uuid-1',
+          purpose: "44'",
+          coinType: "0'",
+          accountIndex: "2'",
+          importFormat: ImportFormat.counterwallet,
+        ),
+      ];
+
+      // Create a ShellState with these accounts
+      final shellState = createShellState(
+        accounts: accounts,
+        currentAccountUuid: 'account-uuid-2',
+      );
+
+      // Initialize MockShellStateCubit with the custom ShellState
+      final mockShellCubit = MockShellStateCubit(shellState);
+
+      // Initialize MockAccountFormBloc
+      final mockBloc = MockAccountFormBloc();
+
+      // Build your widget under test
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MultiBlocProvider(
+              providers: [
+                BlocProvider<AccountFormBloc>.value(value: mockBloc),
+                BlocProvider<ShellStateCubit>.value(value: mockShellCubit),
+              ],
+              child: const AddAccountForm(),
+            ),
+          ),
+        ),
+      );
+
+      // Enter account name
+      await tester.enterText(
+          find.byType(HorizonUI.HorizonTextFormField).first, 'Test Account');
+      await tester.pumpAndSettle();
+
+      // Tap CONTINUE button
+      await tester.tap(find.text('CONTINUE'));
+      await tester.pumpAndSettle();
+
+      // Verify Finalize event is added
+      verify(() => mockBloc.add(any(that: isA<Finalize>()))).called(1);
+
+      // Enter password
+      await tester.enterText(
+          find.byType(HorizonUI.HorizonTextFormField).last, 'password123');
+      await tester.pumpAndSettle();
+
+      // Tap SUBMIT button
+      await tester.tap(find.text('SUBMIT'));
+      await tester.pumpAndSettle();
+
+      // Wait for loading state to complete
+      await tester.pumpAndSettle(const Duration(milliseconds: 600));
+
+      // Capture the Submit event
+      final verificationResult = verify(() => mockBloc.add(captureAny()));
+
+      // Assert that the 2 events were added to the bloc
+      verificationResult.called(2);
+
+      // Retrieve the captured submit event
+      final capturedEvents = verificationResult.captured;
+      final submitEvent =
+          capturedEvents.firstWhere((event) => event is Submit) as Submit;
+
+      // Assert the properties of the Submit event
+      expect(submitEvent.name, 'Test Account');
+      expect(submitEvent.password, 'password123');
+      expect(submitEvent.accountIndex, "3'");
+      expect(submitEvent.walletUuid, 'wallet-uuid-1');
+      expect(submitEvent.purpose, "44'");
+      expect(submitEvent.coinType, "0'");
+      expect(submitEvent.importFormat, ImportFormat.counterwallet);
     });
   });
 }

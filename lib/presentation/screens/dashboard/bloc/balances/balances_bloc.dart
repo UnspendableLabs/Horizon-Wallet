@@ -131,4 +131,11 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
           "Error fetching balances for ${currentAddress.address}")));
     }
   }
+
+  @override
+  Future<void> close() {
+    // Cancel the timer to prevent adding events after the Bloc is closed
+    _timer?.cancel();
+    return super.close();
+  }
 }
