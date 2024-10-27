@@ -348,8 +348,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   String _formatMintQuantity() {
     final fairminter =
         context.read<ComposeFairmintBloc>().state.selectedFairminter;
-    print('fairminter.maxMintPerTx ${fairminter?.maxMintPerTx}');
-    print('fairminter.price ${fairminter?.price}');
 
     if (fairminter == null || fairminter.maxMintPerTx == null) {
       return '';

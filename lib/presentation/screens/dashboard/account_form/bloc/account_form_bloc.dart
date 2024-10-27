@@ -39,7 +39,6 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
       emit(AccountFormStep2(state: Step2Loading()));
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
-
         if (wallet == null) {
           throw Exception("invariant: wallet is null");
         }
@@ -73,6 +72,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
         switch (event.importFormat) {
           // if it's just segwit, only imprt single addy
           case ImportFormat.horizon:
+            print('deriving address');
             Address address = await addressService.deriveAddressSegwit(
               privKey: decryptedPrivKey,
               chainCodeHex: wallet.chainCodeHex,
@@ -151,6 +151,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
         }
 
         emit(AccountFormStep2(state: Step2Success(account)));
+
         await batchUpdateAddressPksUseCase
             .populateEncryptedPrivateKeys(event.password);
       } catch (e) {

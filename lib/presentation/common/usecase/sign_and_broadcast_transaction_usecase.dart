@@ -71,19 +71,17 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       String addressPrivKey;
       if (address.encryptedPrivateKey != null) {
-        String decryptedPrivKey;
+        String decryptedAddressPrivKeyWIF;
         try {
-          decryptedPrivKey = await encryptionService.decrypt(
+          decryptedAddressPrivKeyWIF = await encryptionService.decrypt(
               address.encryptedPrivateKey!, password);
-          print('decryptedPrivKey: $decryptedPrivKey');
         } catch (e) {
           throw SignAndBroadcastTransactionException('Incorrect password.');
         }
 
         try {
           addressPrivKey = await addressService.getAddressPrivateKeyFromWIF(
-              wif: decryptedPrivKey);
-          print('addressPrivKey: $addressPrivKey');
+              wif: decryptedAddressPrivKeyWIF);
         } catch (e) {
           throw SignAndBroadcastTransactionException(
               'Failed to derive address private key.');
@@ -106,8 +104,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           throw SignAndBroadcastTransactionException('Incorrect password.');
         }
 
-        // Derive Address Private Key
-        addressPrivKey = await addressService.deriveAddressPrivateKey(
+      final addressPrivKeyWIF = await addressService.getAddressWIFFromPrivateKey(
           rootPrivKey: decryptedRootPrivKey,
           chainCodeHex: wallet.chainCodeHex,
           purpose: account.purpose,
@@ -117,6 +114,17 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           index: address.index,
           importFormat: account.importFormat,
         );
+
+
+        try {
+          addressPrivKey = await addressService.getAddressPrivateKeyFromWIF(wif: addressPrivKeyWIF);
+        } catch (e) {
+          throw SignAndBroadcastTransactionException('Failed to derive address private key.');
+        }
+
+        final encryptedAddressPrivKey = await encryptionService.encrypt(addressPrivKeyWIF, password);
+        await addressRepository.updateAddressEncryptedPrivateKey(address.address, encryptedAddressPrivKey);
+
       }
 
       // Sign Transaction

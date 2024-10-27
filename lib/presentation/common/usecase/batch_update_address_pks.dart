@@ -23,6 +23,8 @@ class BatchUpdateAddressPksUseCase {
   });
 
   Future<void> populateEncryptedPrivateKeys(String password) async {
+    const batchSize = 10;
+
     final addresses = await addressRepository.getAddressesWithNullPrivateKey();
     if (addresses.isEmpty) return;
 
@@ -33,6 +35,7 @@ class BatchUpdateAddressPksUseCase {
     }
 
     String decryptedRootPrivKey;
+
     try {
       decryptedRootPrivKey =
           await encryptionService.decrypt(wallet.encryptedPrivKey, password);
@@ -41,38 +44,33 @@ class BatchUpdateAddressPksUseCase {
       return;
     }
 
-    const batchSize = 1000;
-    for (var i = 0; i < addresses.length; i += batchSize) {
-      final batch = addresses.skip(i).take(batchSize).toList();
-      final addressToEncryptedPrivateKey = <String, String>{};
+    final addressBatch = addresses.take(batchSize).toList();
 
-      await Future.wait(batch.map((address) async {
-        final account =
-            await accountRepository.getAccountByUuid(address.accountUuid);
-        if (account == null) {
-          logger.warn('BatchUpdateAddressPksUseCase: Account not found.');
-          return;
-        }
+    await Future.wait(addressBatch.map((address) async {
+      final account =
+          await accountRepository.getAccountByUuid(address.accountUuid);
+      if (account == null) {
+        logger.warn('BatchUpdateAddressPksUseCase: Account not found.');
+        return;
+      }
 
-        final addressPrivKeyWIF =
-            await addressService.getAddressWIFFromPrivateKey(
-          rootPrivKey: decryptedRootPrivKey,
-          chainCodeHex: wallet.chainCodeHex,
-          purpose: account.purpose,
-          coin: account.coinType,
-          account: account.accountIndex,
-          change: '0',
-          index: address.index,
-          importFormat: account.importFormat,
-        );
+      final addressPrivKeyWIF =
+          await addressService.getAddressWIFFromPrivateKey(
+        rootPrivKey: decryptedRootPrivKey,
+        chainCodeHex: wallet.chainCodeHex,
+        purpose: account.purpose,
+        coin: account.coinType,
+        account: account.accountIndex,
+        change: '0',
+        index: address.index,
+        importFormat: account.importFormat,
+      );
 
-        final encryptedPrivateKey =
-            await encryptionService.encrypt(addressPrivKeyWIF, password);
-        addressToEncryptedPrivateKey[address.address] = encryptedPrivateKey;
-      }).toList());
+      final encryptedPrivateKey =
+          await encryptionService.encrypt(addressPrivKeyWIF, password);
 
-      await addressRepository
-          .updateAddressesEncryptedPrivateKeys(addressToEncryptedPrivateKey);
-    }
+      await addressRepository.updateAddressEncryptedPrivateKey(
+          address.address, encryptedPrivateKey);
+    }).toList());
   }
 }
