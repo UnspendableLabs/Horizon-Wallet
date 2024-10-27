@@ -55,6 +55,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       required Function(String) onError,
       required String source,
       required String rawtransaction}) async {
+    String? addressPrivKeyWIF;
     try {
       // Fetch UTXOs
       final utxos = await utxoRepository.getUnspentForAddress(source);
@@ -102,8 +103,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           throw SignAndBroadcastTransactionException('Incorrect password.');
         }
 
-        final addressPrivKeyWIF =
-            await addressService.getAddressWIFFromPrivateKey(
+        addressPrivKeyWIF = await addressService.getAddressWIFFromPrivateKey(
           rootPrivKey: decryptedRootPrivKey,
           chainCodeHex: wallet.chainCodeHex,
           purpose: account.purpose,
@@ -121,11 +121,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           throw SignAndBroadcastTransactionException(
               'Failed to derive address private key.');
         }
-
-        final encryptedAddressPrivKey =
-            await encryptionService.encrypt(addressPrivKeyWIF, password);
-        await addressRepository.updateAddressEncryptedPrivateKey(
-            address.address, encryptedAddressPrivKey);
       }
 
       // Sign Transaction
@@ -143,6 +138,20 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       } catch (e) {
         final String errorMessage = 'Failed to broadcast the transaction: $e';
         throw SignAndBroadcastTransactionException(errorMessage);
+      }
+
+      if (addressPrivKeyWIF != null) {
+        // Update address with encrypted private key after successful broadcast -- we want to prioritize the transaction
+        try {
+          final encryptedAddressPrivKey =
+              await encryptionService.encrypt(addressPrivKeyWIF, password);
+          await addressRepository.updateAddressEncryptedPrivateKey(
+              address.address, encryptedAddressPrivKey);
+        } catch (e) {
+          print(
+              'SignAndBroadcastTransactionUseCase: Failed to update address encrypted private key: $e');
+          return;
+        }
       }
     } catch (e) {
       onError(e is SignAndBroadcastTransactionException
