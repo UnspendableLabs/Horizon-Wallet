@@ -362,7 +362,6 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
     bitcoindService: GetIt.I.get<BitcoindService>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-    batchUpdateAddressPksUseCase: GetIt.I.get<BatchUpdateAddressPksUseCase>(),
   ));
 
   injector.registerSingleton<WriteLocalTransactionUseCase>(

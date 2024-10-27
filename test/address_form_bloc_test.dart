@@ -11,7 +11,6 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
@@ -28,9 +27,6 @@ class MockWalletRepository extends Mock implements WalletRepository {}
 class MockAccountRepository extends Mock implements AccountRepository {}
 
 class MockAddressRepository extends Mock implements AddressRepository {}
-
-class MockBatchUpdateAddressPksUseCase extends Mock
-    implements BatchUpdateAddressPksUseCase {}
 
 class FakeWallet extends Fake implements Wallet {}
 
@@ -49,7 +45,6 @@ void main() {
   late MockWalletRepository mockWalletRepository;
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
-  late MockBatchUpdateAddressPksUseCase mockBatchUpdateAddressPksUseCase;
   setUpAll(() {
     registerFallbackValue(FakeWallet());
     registerFallbackValue(FakeAccount());
@@ -63,7 +58,6 @@ void main() {
     mockWalletRepository = MockWalletRepository();
     mockAccountRepository = MockAccountRepository();
     mockAddressRepository = MockAddressRepository();
-    mockBatchUpdateAddressPksUseCase = MockBatchUpdateAddressPksUseCase();
     GetIt.I.registerSingleton<WalletService>(mockWalletService);
     GetIt.I.registerSingleton<EncryptionService>(mockEncryptionService);
     GetIt.I.registerSingleton<AddressService>(mockAddressService);
@@ -117,8 +111,6 @@ void main() {
                 FakeAddress(index: 0),
                 FakeAddress(index: 1),
               ]);
-      when(() => mockBatchUpdateAddressPksUseCase
-          .populateEncryptedPrivateKeys(any())).thenAnswer((_) async {});
     }
 
     blocTest<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
@@ -137,7 +129,6 @@ void main() {
           addressRepository: mockAddressRepository,
           accountRepository: mockAccountRepository,
           addressService: mockAddressService,
-          batchUpdateAddressPksUseCase: mockBatchUpdateAddressPksUseCase,
         );
       },
       act: (bloc) => bloc.add(Submit(
@@ -209,7 +200,6 @@ void main() {
           addressRepository: mockAddressRepository,
           accountRepository: mockAccountRepository,
           addressService: mockAddressService,
-          batchUpdateAddressPksUseCase: mockBatchUpdateAddressPksUseCase,
         );
       },
       act: (bloc) => bloc.add(Submit(
@@ -302,7 +292,6 @@ void main() {
           addressRepository: mockAddressRepository,
           accountRepository: mockAccountRepository,
           addressService: mockAddressService,
-          batchUpdateAddressPksUseCase: mockBatchUpdateAddressPksUseCase,
         );
       },
       act: (bloc) => bloc.add(Submit(

@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -35,9 +34,6 @@ class MockTransactionService extends Mock implements TransactionService {}
 
 class MockBitcoindService extends Mock implements BitcoindService {}
 
-class MockBatchUpdateAddressPksUseCase extends Mock
-    implements BatchUpdateAddressPksUseCase {}
-
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
 
@@ -51,7 +47,10 @@ class MockUtxo extends Mock implements Utxo {
 class MockAddress extends Mock implements Address {
   @override
   final String? encryptedPrivateKey;
-  MockAddress({required this.encryptedPrivateKey});
+
+  @override
+  final String address;
+  MockAddress({required this.encryptedPrivateKey, required this.address});
   @override
   final accountUuid = "test-account-uuid";
 
@@ -95,7 +94,6 @@ void main() {
   late MockTransactionService mockTransactionService;
   late MockBitcoindService mockBitcoindService;
   late MockTransactionLocalRepository mockTransactionLocalRepository;
-  late MockBatchUpdateAddressPksUseCase mockBatchUpdateAddressPksUseCase;
   setUpAll(() {
     registerFallbackValue(FakeTransactionInfo());
   });
@@ -110,7 +108,6 @@ void main() {
     mockTransactionService = MockTransactionService();
     mockBitcoindService = MockBitcoindService();
     mockTransactionLocalRepository = MockTransactionLocalRepository();
-    mockBatchUpdateAddressPksUseCase = MockBatchUpdateAddressPksUseCase();
 
     signAndBroadcastTransactionUseCase = SignAndBroadcastTransactionUseCase(
       addressRepository: mockAddressRepository,
@@ -122,7 +119,6 @@ void main() {
       transactionService: mockTransactionService,
       bitcoindService: mockBitcoindService,
       transactionLocalRepository: mockTransactionLocalRepository,
-      batchUpdateAddressPksUseCase: mockBatchUpdateAddressPksUseCase,
     );
   });
 
@@ -132,12 +128,15 @@ void main() {
         () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
-      final mockAddress = MockAddress(encryptedPrivateKey: null);
+      final mockAddress =
+          MockAddress(encryptedPrivateKey: null, address: 'address');
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
       const String password = 'password';
       const String decryptedRootPrivKey = 'decrypted_private_key';
+      const String addressPrivKeyWIF = 'address_private_key_wif';
       const String addressPrivKey = 'address_private_key';
+      const String encryptedAddressPrivKeyWIF = 'encrypted_address_private_key';
       const String txHex = 'transaction_hex';
       const String txHash = 'transaction_hash';
 
@@ -154,7 +153,7 @@ void main() {
       when(() => mockEncryptionService.decrypt(
               mockWallet.encryptedPrivKey, password))
           .thenAnswer((_) async => decryptedRootPrivKey);
-      when(() => mockAddressService.deriveAddressPrivateKey(
+      when(() => mockAddressService.getAddressWIFFromPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: mockWallet.chainCodeHex,
             purpose: mockAccount.purpose,
@@ -163,7 +162,14 @@ void main() {
             change: '0',
             index: mockAddress.index,
             importFormat: mockAccount.importFormat,
-          )).thenAnswer((_) async => addressPrivKey);
+          )).thenAnswer((_) async => addressPrivKeyWIF);
+      when(() => mockAddressService.getAddressPrivateKeyFromWIF(
+          wif: addressPrivKeyWIF)).thenAnswer((_) async => addressPrivKey);
+      when(() => mockEncryptionService.encrypt(addressPrivKeyWIF, password))
+          .thenAnswer((_) async => encryptedAddressPrivKeyWIF);
+      when(() => mockAddressRepository.updateAddressEncryptedPrivateKey(
+              mockAddress.address, encryptedAddressPrivKeyWIF))
+          .thenAnswer((_) async {});
       when(() => mockTransactionService.signTransaction(
             'rawtransaction',
             addressPrivKey,
@@ -172,8 +178,6 @@ void main() {
           )).thenAnswer((_) async => txHex);
       when(() => mockBitcoindService.sendrawtransaction(txHex))
           .thenAnswer((_) async => txHash);
-      when(() => mockBatchUpdateAddressPksUseCase
-          .populateEncryptedPrivateKeys(any())).thenAnswer((_) async {});
 
       // Define callbacks
       var successCallbackInvoked = false;
@@ -203,7 +207,7 @@ void main() {
           .called(1);
       verify(() => mockEncryptionService.decrypt(
           mockWallet.encryptedPrivKey, password)).called(1);
-      verify(() => mockAddressService.deriveAddressPrivateKey(
+      verify(() => mockAddressService.getAddressWIFFromPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: mockWallet.chainCodeHex,
             purpose: mockAccount.purpose,
@@ -213,6 +217,12 @@ void main() {
             index: mockAddress.index,
             importFormat: mockAccount.importFormat,
           )).called(1);
+      verify(() => mockAddressService.getAddressPrivateKeyFromWIF(
+          wif: addressPrivKeyWIF)).called(1);
+      verify(() => mockEncryptionService.encrypt(addressPrivKeyWIF, password))
+          .called(1);
+      verify(() => mockAddressRepository.updateAddressEncryptedPrivateKey(
+          mockAddress.address, encryptedAddressPrivKeyWIF)).called(1);
       verify(() => mockTransactionService.signTransaction(
             'rawtransaction',
             addressPrivKey,
@@ -232,7 +242,8 @@ void main() {
       const String addressPrivKey = 'address_private_key';
       const String txHex = 'transaction_hex';
       const String txHash = 'transaction_hash';
-      final mockAddress = MockAddress(encryptedPrivateKey: addressPrivKey);
+      final mockAddress =
+          MockAddress(encryptedPrivateKey: addressPrivKey, address: 'address');
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source'))
@@ -252,8 +263,6 @@ void main() {
           )).thenAnswer((_) async => txHex);
       when(() => mockBitcoindService.sendrawtransaction(txHex))
           .thenAnswer((_) async => txHash);
-      when(() => mockBatchUpdateAddressPksUseCase
-          .populateEncryptedPrivateKeys(any())).thenAnswer((_) async {});
 
       // Define callbacks
       var successCallbackInvoked = false;
@@ -327,7 +336,8 @@ void main() {
         'should return `Incorrect Password` if decrypt master private key fails',
         () async {
       // Arrange
-      final mockAddress = MockAddress(encryptedPrivateKey: null);
+      final mockAddress =
+          MockAddress(encryptedPrivateKey: null, address: 'address');
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
 
@@ -377,8 +387,8 @@ void main() {
         'should return `Incorrect Password` if decrypt address private key fails',
         () async {
       // Arrange
-      final mockAddress =
-          MockAddress(encryptedPrivateKey: 'encrypted_private_key');
+      final mockAddress = MockAddress(
+          encryptedPrivateKey: 'encrypted_private_key', address: 'address');
       // final mockAccount = MockAccount();
       // final mockWallet = MockWallet();
 
@@ -423,11 +433,14 @@ void main() {
     test('should return error if transaction broadcast fails', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
-      final mockAddress = MockAddress(encryptedPrivateKey: null);
+      final mockAddress =
+          MockAddress(encryptedPrivateKey: null, address: 'address');
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
       const String password = 'password';
       const String decryptedRootPrivKey = 'decrypted_private_key';
+      const String addressPrivKeyWIF = 'address_private_key_wif';
+      const String encryptedAddressPrivKeyWIF = 'encrypted_address_private_key';
       const String addressPrivKey = 'address_private_key';
       const String txHex = 'transaction_hex';
 
@@ -444,7 +457,7 @@ void main() {
       when(() => mockEncryptionService.decrypt(
               mockWallet.encryptedPrivKey, password))
           .thenAnswer((_) async => decryptedRootPrivKey);
-      when(() => mockAddressService.deriveAddressPrivateKey(
+      when(() => mockAddressService.getAddressWIFFromPrivateKey(
             rootPrivKey: decryptedRootPrivKey,
             chainCodeHex: mockWallet.chainCodeHex,
             purpose: mockAccount.purpose,
@@ -453,7 +466,14 @@ void main() {
             change: '0',
             index: mockAddress.index,
             importFormat: mockAccount.importFormat,
-          )).thenAnswer((_) async => addressPrivKey);
+          )).thenAnswer((_) async => addressPrivKeyWIF);
+      when(() => mockAddressService.getAddressPrivateKeyFromWIF(
+          wif: addressPrivKeyWIF)).thenAnswer((_) async => addressPrivKey);
+      when(() => mockEncryptionService.encrypt(addressPrivKeyWIF, password))
+          .thenAnswer((_) async => encryptedAddressPrivKeyWIF);
+      when(() => mockAddressRepository.updateAddressEncryptedPrivateKey(
+              mockAddress.address, encryptedAddressPrivKeyWIF))
+          .thenAnswer((_) async {});
       when(() => mockTransactionService.signTransaction(
             'rawtransaction',
             addressPrivKey,

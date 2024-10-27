@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -28,9 +27,6 @@ class MockAccountRepository extends Mock implements AccountRepository {}
 
 class MockAddressRepository extends Mock implements AddressRepository {}
 
-class MockBatchUpdateAddressPksUseCase extends Mock
-    implements BatchUpdateAddressPksUseCase {}
-
 class FakeWallet extends Fake implements Wallet {}
 
 class FakeAccount extends Fake implements Account {}
@@ -44,7 +40,7 @@ void main() {
   late MockWalletRepository mockWalletRepository;
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
-  late MockBatchUpdateAddressPksUseCase mockBatchUpdateAddressPksUseCase;
+
   setUp(() {
     mockWalletService = MockWalletService();
     mockEncryptionService = MockEncryptionService();
@@ -52,7 +48,6 @@ void main() {
     mockWalletRepository = MockWalletRepository();
     mockAccountRepository = MockAccountRepository();
     mockAddressRepository = MockAddressRepository();
-    mockBatchUpdateAddressPksUseCase = MockBatchUpdateAddressPksUseCase();
   });
   setUpAll(() {
     registerFallbackValue(FakeWallet());
@@ -84,8 +79,6 @@ void main() {
       when(() => mockAddressRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAddressRepository.insertMany(any()))
           .thenAnswer((_) async {});
-      when(() => mockBatchUpdateAddressPksUseCase
-          .populateEncryptedPrivateKeys(any())).thenAnswer((_) async {});
     }
 
     // this test isn't super helpful as args are just passed through
@@ -111,7 +104,6 @@ void main() {
           encryptionService: mockEncryptionService,
           addressService: mockAddressService,
           addressRepository: mockAddressRepository,
-          batchUpdateAddressPksUseCase: mockBatchUpdateAddressPksUseCase,
         );
       },
       act: (bloc) => bloc.add(Submit(

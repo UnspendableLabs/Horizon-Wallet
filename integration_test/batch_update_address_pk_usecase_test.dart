@@ -1,5 +1,8 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/data/services/encryption_service_impl.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -7,20 +10,18 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
-import 'package:integration_test/integration_test.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/data/services/encryption_service_impl.dart';
 import 'package:horizon/main.dart';
+import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 import 'package:horizon/setup.dart';
+import 'package:integration_test/integration_test.dart';
+
 import 'fixtures/addresses_fixtures.dart' as fixtures;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('BatchUpdateAddressPksUseCase Integration Tests -- web worker', () {
+  group('BatchUpdateAddressPksUseCase Integration Tests', () {
     late EncryptionService encryptionService;
     late EncryptionServiceImpl fallbackEncryptionService;
     late BatchUpdateAddressPksUseCase batchUpdateAddressPksUseCase;
@@ -38,49 +39,6 @@ void main() {
         logger: GetIt.instance<Logger>(),
       );
     });
-
-    // Future<void> generateAddresses(int numAddresses, String accountUuid,
-    //     String decryptedPrivKey, String chainCodeHex, String password) async {
-    //   final List<Address> addresses = [];
-    //   for (var i = 0; i < numAddresses; i++) {
-    //     final Address address =
-    //         await GetIt.instance<AddressService>().deriveAddressSegwit(
-    //       privKey: decryptedPrivKey,
-    //       chainCodeHex: chainCodeHex,
-    //       accountUuid: accountUuid,
-    //       purpose: '84\'',
-    //       coin: '0\'',
-    //       account: '$i\'',
-    //       change: '0',
-    //       index: 0,
-    //       password: password,
-    //     );
-    //     addresses.add(address);
-    //   }
-    //   await GetIt.instance<AddressRepository>().insertMany(addresses);
-    // }
-
-    // Future<void> generateAccountsWithAddresses(
-    //     int numAccounts,
-    //     String walletUuid,
-    //     String decryptedPrivKey,
-    //     String chainCodeHex,
-    //     String password) async {
-    //   for (var i = 0; i < numAccounts; i++) {
-    //     final Account account = Account(
-    //       name: 'ACCOUNT $i',
-    //       walletUuid: walletUuid,
-    //       uuid: uuid.v4(),
-    //       purpose: '84\'',
-    //       coinType: '0\'',
-    //       accountIndex: '$i\'',
-    //       importFormat: ImportFormat.horizon,
-    //     );
-    //     await GetIt.instance<AccountRepository>().insert(account);
-    //     generateAddresses(
-    //         50, account.uuid, decryptedPrivKey, chainCodeHex, password);
-    //   }
-    // }
 
     Future<Wallet> setUpWallet(String password) async {
       // create a wallet with a known test private key
@@ -167,42 +125,36 @@ void main() {
     testWidgets(
         'Updates addresses in an account with null encrypted private keys',
         (WidgetTester tester) async {
-      print('starting test 1');
       await tester.pumpWidget(MyApp());
       const password = 'strongPassword123';
       final wallet = await setUpWallet(password);
       await setUpAccount(wallet.uuid, 0);
       final (initialAddresses, addressToWIF) = await getAddressesFixtures(
           'addresses_account_zero', 'account_0', password);
+
       await GetIt.instance<AddressRepository>().insertMany(initialAddresses);
 
       final addressesWithNullPrivateKeyBeforeUpdate =
           await GetIt.instance<AddressRepository>()
               .getAddressesWithNullPrivateKey();
-      expect(addressesWithNullPrivateKeyBeforeUpdate.length, 70);
+      expect(addressesWithNullPrivateKeyBeforeUpdate.length, 10);
 
-      print('starting batch update********************');
       final stopwatch = Stopwatch()..start();
       await batchUpdateAddressPksUseCase.populateEncryptedPrivateKeys(password);
       stopwatch.stop();
-      print('Operation took: ${stopwatch.elapsed}');
       GetIt.instance<Logger>().info('Operation took: ${stopwatch.elapsed}');
 
       final addressesWithNullPrivateKeyAfterUpdate =
           await GetIt.instance<AddressRepository>()
               .getAddressesWithNullPrivateKey();
-      expect(addressesWithNullPrivateKeyAfterUpdate.isEmpty, true);
+      expect(addressesWithNullPrivateKeyAfterUpdate.length, 0);
 
       for (var i = 0; i < initialAddresses.length; i++) {
         final address = initialAddresses[i];
-        final addressAfterUpdate = await GetIt.instance<AddressRepository>()
+        final updatedAddress = await GetIt.instance<AddressRepository>()
             .getAddress(address.address);
-        expect(addressAfterUpdate!.encryptedPrivateKey!.isNotEmpty, true,
-            reason:
-                'Address ${address.address} has null encrypted private key');
-
         final decryptedPrivateKey = await encryptionService.decrypt(
-            addressAfterUpdate.encryptedPrivateKey!, password);
+            updatedAddress!.encryptedPrivateKey!, password);
         expect(decryptedPrivateKey, addressToWIF[address.address],
             reason:
                 'Address ${address.address} has incorrect decrypted private key');
@@ -238,39 +190,43 @@ void main() {
           await GetIt.instance<AddressRepository>()
               .getAddressesWithNullPrivateKey();
       expect(addressesWithNullPrivateKeyBeforeUpdate.length,
-          60); // 35 from account zero + 25 from account one
+          10); // 5 from account zero + 5 from account one
 
-      print('starting batch update********************');
       final stopwatch = Stopwatch()..start();
       await batchUpdateAddressPksUseCase.populateEncryptedPrivateKeys(password);
       stopwatch.stop();
-      print('Operation took: ${stopwatch.elapsed}');
+
       GetIt.instance<Logger>().info('Operation took: ${stopwatch.elapsed}');
 
-      final addressesAccountZeroWithNullPrivateKeyAfterUpdate =
+      final addressesWithNullPrivateKeyAfterUpdate =
           await GetIt.instance<AddressRepository>()
               .getAddressesWithNullPrivateKey();
-      expect(addressesAccountZeroWithNullPrivateKeyAfterUpdate.isEmpty, true);
+      expect(addressesWithNullPrivateKeyAfterUpdate.length, 0);
 
-      for (var i = 0; i < addressesWithNullPrivateKeyBeforeUpdate.length; i++) {
-        final address = addressesWithNullPrivateKeyBeforeUpdate[i];
-        final addressAfterUpdate = await GetIt.instance<AddressRepository>()
+      for (var i = 0; i < initialAddressesAccountZero.length; i++) {
+        final address = initialAddressesAccountZero[i];
+
+        final updatedAddress = await GetIt.instance<AddressRepository>()
             .getAddress(address.address);
-        expect(addressAfterUpdate!.encryptedPrivateKey!.isNotEmpty, true,
-            reason:
-                'Address ${address.address} has null encrypted private key');
 
         final decryptedPrivateKey = await encryptionService.decrypt(
-            addressAfterUpdate.encryptedPrivateKey!, password);
-        if (address.accountUuid == 'account_0') {
-          expect(decryptedPrivateKey, addressToWIFAccountZero[address.address],
-              reason:
-                  'Address ${address.address} has incorrect decrypted private key');
-        } else {
-          expect(decryptedPrivateKey, addressToWIFAccountOne[address.address],
-              reason:
-                  'Address ${address.address} has incorrect decrypted private key');
-        }
+            updatedAddress!.encryptedPrivateKey!, password);
+        expect(decryptedPrivateKey, addressToWIFAccountZero[address.address],
+            reason:
+                'Address ${address.address} has incorrect decrypted private key');
+      }
+
+      for (var i = 0; i < initialAddressesAccountOne.length; i++) {
+        final address = initialAddressesAccountOne[i];
+
+        final updatedAddress = await GetIt.instance<AddressRepository>()
+            .getAddress(address.address);
+
+        final decryptedPrivateKey = await encryptionService.decrypt(
+            updatedAddress!.encryptedPrivateKey!, password);
+        expect(decryptedPrivateKey, addressToWIFAccountOne[address.address],
+            reason:
+                'Address ${address.address} has incorrect decrypted private key');
       }
 
       await tester.pumpAndSettle();

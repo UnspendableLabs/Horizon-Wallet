@@ -9,7 +9,6 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
-import 'package:horizon/presentation/common/usecase/batch_update_address_pks.dart';
 
 class AddressNotFoundException implements Exception {
   final String message;
@@ -37,7 +36,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final TransactionService transactionService;
   final BitcoindService bitcoindService;
   final TransactionLocalRepository transactionLocalRepository;
-  final BatchUpdateAddressPksUseCase batchUpdateAddressPksUseCase;
 
   SignAndBroadcastTransactionUseCase({
     required this.addressRepository,
@@ -49,7 +47,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required this.transactionService,
     required this.bitcoindService,
     required this.transactionLocalRepository,
-    required this.batchUpdateAddressPksUseCase,
   });
 
   Future<void> call(
@@ -96,6 +93,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         final wallet = await walletRepository.getWallet(account.walletUuid);
 
         // Decrypt Root Private Key
+
         String decryptedRootPrivKey;
         try {
           decryptedRootPrivKey = await encryptionService.decrypt(
@@ -104,7 +102,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           throw SignAndBroadcastTransactionException('Incorrect password.');
         }
 
-      final addressPrivKeyWIF = await addressService.getAddressWIFFromPrivateKey(
+        final addressPrivKeyWIF =
+            await addressService.getAddressWIFFromPrivateKey(
           rootPrivKey: decryptedRootPrivKey,
           chainCodeHex: wallet.chainCodeHex,
           purpose: account.purpose,
@@ -115,16 +114,18 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           importFormat: account.importFormat,
         );
 
-
         try {
-          addressPrivKey = await addressService.getAddressPrivateKeyFromWIF(wif: addressPrivKeyWIF);
+          addressPrivKey = await addressService.getAddressPrivateKeyFromWIF(
+              wif: addressPrivKeyWIF);
         } catch (e) {
-          throw SignAndBroadcastTransactionException('Failed to derive address private key.');
+          throw SignAndBroadcastTransactionException(
+              'Failed to derive address private key.');
         }
 
-        final encryptedAddressPrivKey = await encryptionService.encrypt(addressPrivKeyWIF, password);
-        await addressRepository.updateAddressEncryptedPrivateKey(address.address, encryptedAddressPrivKey);
-
+        final encryptedAddressPrivKey =
+            await encryptionService.encrypt(addressPrivKeyWIF, password);
+        await addressRepository.updateAddressEncryptedPrivateKey(
+            address.address, encryptedAddressPrivKey);
       }
 
       // Sign Transaction
@@ -143,7 +144,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         final String errorMessage = 'Failed to broadcast the transaction: $e';
         throw SignAndBroadcastTransactionException(errorMessage);
       }
-      await batchUpdateAddressPksUseCase.populateEncryptedPrivateKeys(password);
     } catch (e) {
       onError(e is SignAndBroadcastTransactionException
           ? e.message
