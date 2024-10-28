@@ -17,7 +17,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
     await _importedAddressDao.insertImportedAddress(ImportedAddressModel(
         walletUuid: address.walletUuid,
         address: address.address,
-        encryptedPrivateKey: address.encryptedPrivateKey));
+        encryptedPrivateKey: address.encryptedPrivateKey,
+        name: address.name));
   }
 
   @override
@@ -26,7 +27,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => ImportedAddressModel(
             walletUuid: a.walletUuid,
             address: a.address,
-            encryptedPrivateKey: a.encryptedPrivateKey))
+            encryptedPrivateKey: a.encryptedPrivateKey,
+            name: a.name))
         .toList();
 
     _importedAddressDao.insertMultipleImportedAddresses(addresses_);
@@ -40,7 +42,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         ? entity.ImportedAddress(
             walletUuid: addressModel.walletUuid,
             address: addressModel.address,
-            encryptedPrivateKey: addressModel.encryptedPrivateKey)
+            encryptedPrivateKey: addressModel.encryptedPrivateKey,
+            name: addressModel.name)
         : null;
   }
 
@@ -54,7 +57,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => entity.ImportedAddress(
             walletUuid: a.walletUuid,
             address: a.address,
-            encryptedPrivateKey: a.encryptedPrivateKey))
+            encryptedPrivateKey: a.encryptedPrivateKey,
+            name: a.name))
         .toList();
 
     return entityAddresses;
@@ -78,7 +82,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => entity.ImportedAddress(
             walletUuid: a.walletUuid,
             address: a.address,
-            encryptedPrivateKey: a.encryptedPrivateKey))
+            encryptedPrivateKey: a.encryptedPrivateKey,
+            name: a.name))
         .toList();
   }
 }

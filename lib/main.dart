@@ -25,20 +25,20 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
-import 'package:horizon/presentation/screens/privacy_policy.dart';
-import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
 
@@ -579,7 +579,8 @@ class MyApp extends StatelessWidget {
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               analyticsService: GetIt.I<AnalyticsService>(),
-              addressRepository: GetIt.I<AddressRepository>())
+              addressRepository: GetIt.I<AddressRepository>(),
+              importedAddressRepository: GetIt.I<ImportedAddressRepository>())
             ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
@@ -626,7 +627,7 @@ class MyApp extends StatelessWidget {
             return MaterialApp.router(
               theme: lightTheme,
               darkTheme: darkTheme,
-              themeMode: themeMode,
+              themeMode: ThemeMode.light,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,
               routeInformationProvider:

@@ -106,10 +106,16 @@ class DB extends _$DB {
                   schema.importedAddresses,
                   columnTransformer: {
                     // List all columns EXCEPT the one you want to remove
-                    schema.importedAddresses.address: schema.importedAddresses.address,
-                    schema.importedAddresses.walletUuid: schema.importedAddresses.walletUuid,
+                    schema.importedAddresses.address:
+                        schema.importedAddresses.address,
+                    schema.importedAddresses.walletUuid:
+                        schema.importedAddresses.walletUuid,
                   },
                 ));
+
+                // Add the new column to the Addresses table
+                await m.addColumn(
+                    schema.addresses, schema.addresses.encryptedPrivateKey);
               },
             ));
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
@@ -21,6 +20,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final pkController = TextEditingController();
+  final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final passwordFormKey = GlobalKey<FormState>();
 
@@ -29,12 +29,13 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
   @override
   void initState() {
     super.initState();
-    context.read<ImportAddressPkBloc>().add(Reset());
+    context.read<ImportAddressPkBloc>().add(ResetForm());
   }
 
   @override
   void dispose() {
     pkController.dispose();
+    nameController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -109,6 +110,18 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         HorizonUI.HorizonTextFormField(
+                          controller: nameController,
+                          label: "Name",
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a name';
+                            }
+                            return null;
+                          },
+                          onEditingComplete: handleSubmit,
+                        ),
+                        const SizedBox(height: 16),
+                        HorizonUI.HorizonTextFormField(
                           controller: pkController,
                           label: "Private Key",
                           validator: (String? value) {
@@ -161,6 +174,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                         pk: pk,
                         password: password,
                         format: selectedFormat!,
+                        name: nameController.text,
                       ));
                 }
               }
@@ -193,7 +207,6 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                           style: const TextStyle(color: Colors.red),
                         ),
                       ),
-                    const SizedBox(height: 16),
                     HorizonUI.HorizonDialogSubmitButton(
                       textChild: state is Step2Loading
                           ? const SizedBox(

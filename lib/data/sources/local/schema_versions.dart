@@ -578,6 +578,7 @@ final class Schema5 extends i0.VersionedSchema {
         ],
         columns: [
           _column_11,
+          _column_1,
           _column_27,
           _column_5,
         ],
@@ -590,6 +591,8 @@ class Shape7 extends i0.VersionedTable {
   Shape7({required super.source, required super.alias}) : super.aliased();
   i1.GeneratedColumn<String> get address =>
       columnsByName['address']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get name =>
+      columnsByName['name']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get encryptedPrivateKey =>
       columnsByName['encrypted_private_key']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get walletUuid =>

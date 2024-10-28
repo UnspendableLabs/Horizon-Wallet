@@ -1,8 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/common/uuid.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -40,121 +36,59 @@ class ImportAddressPkBloc
     on<Submit>((event, emit) async {
       emit(ImportAddressPkStep2(state: Step2Loading()));
       try {
-        print('WE HAVE SUBMITTED');
         Wallet? wallet = await walletRepository.getCurrentWallet();
 
         if (wallet == null) {
           throw Exception("invariant: wallet is null");
         }
+        late String decryptedPrivKey;
+        try {
+          decryptedPrivKey = await encryptionService.decrypt(
+              wallet.encryptedPrivKey, event.password);
+        } catch (e) {
+          emit(ImportAddressPkStep2(state: Step2Error("Incorrect password")));
+          return;
+        }
 
-        final String address = await addressService.getAddressFromWIF(wif: event.pk, format: event.format);
+        Wallet compareWallet = await walletService.fromPrivateKey(
+            decryptedPrivKey, wallet.chainCodeHex);
 
-        final String encryptedPrivateKey = await encryptionService.encrypt(event.pk, event.password);
+        if (wallet.publicKey != compareWallet.publicKey) {
+          throw Exception("invalid password");
+        }
+
+        late String address;
+        try {
+          address = await addressService.getAddressFromWIF(
+              wif: event.pk, format: event.format);
+        } catch (e) {
+          emit(ImportAddressPkStep2(
+              state: Step2Error('Invalid address private key')));
+          return;
+        }
+
+        final String encryptedPrivateKey =
+            await encryptionService.encrypt(event.pk, event.password);
 
         final ImportedAddress importedAddress = ImportedAddress(
           address: address,
           walletUuid: wallet.uuid,
           encryptedPrivateKey: encryptedPrivateKey,
+          name: event.name,
         );
 
-        await importedAddressRepository.insert(importedAddress);
-
-        // late String decryptedPrivKey;
-        // try {
-        //   decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, event.password);
-        // } catch (e) {
-        //   emit(ImportAddressPkStep2(state: Step2Error("Incorrect password")));
-        //   return;
-        // }
-
-        // Wallet compareWallet = await walletService.fromPrivateKey(decryptedPrivKey, wallet.chainCodeHex);
-
-        // if (wallet.publicKey != compareWallet.publicKey) {
-        //   throw Exception("invalid password");
-        // }
-
-
-
-        // final account = Account(
-        //   name: event.name,
-        //   uuid: uuid.v4(),
-        //   walletUuid: event.walletUuid,
-        //   purpose: event.purpose,
-        //   coinType: event.coinType,
-        //   accountIndex: event.accountIndex,
-        //   importFormat: event.importFormat,
-        // );
-
-        // switch (event.importFormat) {
-        //   // if it's just segwit, only imprt single addy
-        //   case ImportFormat.horizon:
-        //     Address address = await addressService.deriveAddressSegwit(
-        //       privKey: decryptedPrivKey,
-        //       chainCodeHex: wallet.chainCodeHex,
-        //       accountUuid: account.uuid,
-        //       purpose: account.purpose,
-        //       coin: account.coinType,
-        //       account: account.accountIndex,
-        //       change: '0',
-        //       index: 0,
-        //     );
-
-        //     await accountRepository.insert(account);
-        //     await addressRepository.insert(address);
-
-        //   case ImportFormat.freewallet:
-        //     List<Address> addresses = await addressService.deriveAddressFreewalletRange(
-        //         type: AddressType.bech32,
-        //         privKey: decryptedPrivKey,
-        //         chainCodeHex: wallet.chainCodeHex,
-        //         accountUuid: account.uuid,
-        //         account: account.accountIndex,
-        //         change: '0',
-        //         start: 0,
-        //         end: 9);
-
-        //     List<Address> addressesLegacy = await addressService.deriveAddressFreewalletRange(
-        //         type: AddressType.legacy,
-        //         privKey: decryptedPrivKey,
-        //         chainCodeHex: wallet.chainCodeHex,
-        //         accountUuid: account.uuid,
-        //         account: account.accountIndex,
-        //         change: '0',
-        //         start: 0,
-        //         end: 9);
-
-        //     await accountRepository.insert(account);
-        //     await addressRepository.insertMany(addresses);
-        //     await addressRepository.insertMany(addressesLegacy);
-
-        //   case ImportFormat.counterwallet:
-        //     List<Address> addresses = await addressService.deriveAddressFreewalletRange(
-        //         type: AddressType.bech32,
-        //         privKey: decryptedPrivKey,
-        //         chainCodeHex: wallet.chainCodeHex,
-        //         accountUuid: account.uuid,
-        //         account: account.accountIndex,
-        //         change: '0',
-        //         start: 0,
-        //         end: 0);
-
-        //     List<Address> addressesLegacy = await addressService.deriveAddressFreewalletRange(
-        //         type: AddressType.legacy,
-        //         privKey: decryptedPrivKey,
-        //         chainCodeHex: wallet.chainCodeHex,
-        //         accountUuid: account.uuid,
-        //         account: account.accountIndex,
-        //         change: '0',
-        //         start: 0,
-        //         end: 0);
-
-        //     await accountRepository.insert(account);
-        //     await addressRepository.insertMany(addresses);
-        //     await addressRepository.insertMany(addressesLegacy);
-
-        //   default:
-        //     throw Exception("invalid import format");
-        // }
+        try {
+          await importedAddressRepository.insert(importedAddress);
+        } catch (e) {
+          if (e.toString().contains("UNIQUE")) {
+            emit(ImportAddressPkStep2(
+                state: Step2Error(
+                    'Address ${event.format.name} $address already exists in your wallet')));
+          } else {
+            emit(ImportAddressPkStep2(state: Step2Error(e.toString())));
+          }
+          return;
+        }
 
         emit(ImportAddressPkStep2(state: Step2Success(importedAddress)));
       } catch (e) {
@@ -162,8 +96,8 @@ class ImportAddressPkBloc
       }
     });
 
-    on<Reset>((event, emit) {
-      // emit(AccountFormStep1());
+    on<ResetForm>((event, emit) {
+      emit(ImportAddressPkStep1());
     });
   }
 }

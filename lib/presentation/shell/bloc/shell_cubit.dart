@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -13,12 +15,14 @@ class ShellStateCubit extends Cubit<ShellState> {
   WalletRepository walletRepository;
   AccountRepository accountRepository;
   AddressRepository addressRepository;
+  ImportedAddressRepository importedAddressRepository;
   AnalyticsService analyticsService;
 
   ShellStateCubit(
       {required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
+      required this.importedAddressRepository,
       required this.analyticsService})
       : super(const ShellState.initial());
 
@@ -52,6 +56,9 @@ class ShellStateCubit extends Cubit<ShellState> {
 
       Address currentAddress = addresses.first;
 
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
         wallet: wallet,
@@ -59,6 +66,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         currentAccountUuid: currentAccount.uuid,
         addresses: addresses,
         currentAddress: currentAddress,
+        importedAddresses: importedAddresses,
       )));
     } catch (error) {
       emit(ShellState.error(error.toString()));
@@ -103,9 +111,10 @@ class ShellStateCubit extends Cubit<ShellState> {
         error: (_) => state,
         onboarding: (_) => state,
         success: (stateInner) => ShellState.success(stateInner.copyWith(
-            currentAccountUuid: account.uuid,
-            currentAddress: addresses.first,
-            addresses: addresses)));
+              currentAccountUuid: account.uuid,
+              currentAddress: addresses.first,
+              addresses: addresses,
+            )));
 
     emit(state_);
   }
@@ -144,6 +153,9 @@ class ShellStateCubit extends Cubit<ShellState> {
         throw Exception("invariant: no addresses for this account");
       }
 
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
         wallet: wallet,
@@ -151,6 +163,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         addresses: addresses,
         currentAccountUuid: accounts.last.uuid,
         currentAddress: addresses.first,
+        importedAddresses: importedAddresses,
       )));
     } catch (error) {
       emit(ShellState.error(error.toString()));
@@ -190,6 +203,9 @@ class ShellStateCubit extends Cubit<ShellState> {
         return element.address == address;
       });
 
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
         wallet: wallet,
@@ -197,6 +213,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         addresses: addresses,
         currentAccountUuid: account.uuid,
         currentAddress: newAddress,
+        importedAddresses: importedAddresses,
       )));
     } catch (error) {
       emit(ShellState.error(error.toString()));
