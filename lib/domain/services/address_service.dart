@@ -62,4 +62,8 @@ abstract class AddressService {
     required int index,
     required ImportFormat importFormat,
   });
+  Future<String> getAddressFromWIF({
+    required String wif,
+    required ImportAddressPkFormat format,
+  });
 }

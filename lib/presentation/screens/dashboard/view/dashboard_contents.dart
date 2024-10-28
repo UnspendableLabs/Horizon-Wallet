@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
@@ -384,52 +385,95 @@ class HorizonAppBarContent extends StatelessWidget {
                                 : royalBlueLightTheme,
                           ),
                           onSelected: (value) {
-                            if (value == 'reset') {
-                              HorizonUI.HorizonDialog.show(
-                                  context: context,
-                                  body: BlocProvider.value(
-                                    value: BlocProvider.of<LogoutBloc>(context),
-                                    child: HorizonUI.HorizonDialog(
-                                      title: 'Reset wallet',
-                                      body: Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              textAlign: TextAlign.center,
-                                              'This operation will result in the deletion of all wallet configuration data. You will be able to recover your funds only with your seed phrase. If you have created multiple accounts, you will need to recreate them manually after recovery. (Please note how many you have.)',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: isDarkTheme
-                                                    ? mainTextGrey
-                                                    : mainTextBlack,
+                            switch (value) {
+                              case 'reset':
+                                HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: BlocProvider.value(
+                                      value:
+                                          BlocProvider.of<LogoutBloc>(context),
+                                      child: HorizonUI.HorizonDialog(
+                                        title: 'Reset wallet',
+                                        body: Column(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                textAlign: TextAlign.center,
+                                                'This operation will result in the deletion of all wallet configuration data. You will be able to recover your funds only with your seed phrase. If you have created multiple accounts, you will need to recreate them manually after recovery. (Please note how many you have.)',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isDarkTheme
+                                                      ? mainTextGrey
+                                                      : mainTextBlack,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          BackContinueButtons(
-                                            isDarkMode: isDarkTheme,
-                                            isSmallScreenWidth: isSmallScreen,
-                                            onPressedContinue: () {
-                                              GoRouter.of(context).pop();
-                                            },
-                                            backButtonText: 'RESET WALLET',
-                                            continueButtonText:
-                                                'CANCEL', // The BackContinueButtons widget is the style/responiveness we want here, however we want the CANCEL button to be more prominent so that the user doesn't accidentally reset their wallet. In BackContinueButtons, the continue button is the one that is more prominent.
-                                            onPressedBack: () {
-                                              context
-                                                  .read<LogoutBloc>()
-                                                  .add(LogoutEvent());
-                                            },
-                                          ),
-                                        ],
+                                            BackContinueButtons(
+                                              isDarkMode: isDarkTheme,
+                                              isSmallScreenWidth: isSmallScreen,
+                                              onPressedContinue: () {
+                                                GoRouter.of(context).pop();
+                                              },
+                                              backButtonText: 'RESET WALLET',
+                                              continueButtonText:
+                                                  'CANCEL', // The BackContinueButtons widget is the style/responiveness we want here, however we want the CANCEL button to be more prominent so that the user doesn't accidentally reset their wallet. In BackContinueButtons, the continue button is the one that is more prominent.
+                                              onPressedBack: () {
+                                                context
+                                                    .read<LogoutBloc>()
+                                                    .add(LogoutEvent());
+                                              },
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ));
+                                    ));
+                              case 'import_address_pk':
+                                //                                             SizedBox(
+                                // width: double.infinity,
+                                // child: ElevatedButton(
+                                //   style: ElevatedButton.styleFrom(
+                                //     shape: const RoundedRectangleBorder(
+                                //       borderRadius: BorderRadius.zero,
+                                //     ),
+                                //     elevation: 0, // No shadow
+                                //   ),
+                                //   onPressed: () {
+                                HorizonUI.HorizonDialog.show(
+                                  context: context,
+                                  body: Builder(builder: (context) {
+                                    // final bloc = context.watch<AccountFormBloc>();
+
+                                    // final cb = switch (bloc.state) {
+                                    //   AccountFormStep2() => () {
+                                    //       bloc.add(Reset());
+                                    //     },
+                                    //   _ => () {
+                                    //       Navigator.of(context).pop();
+                                    //     },
+                                    // };
+
+                                    return HorizonUI.HorizonDialog(
+                                      onBackButtonPressed: () {},
+                                      title: "Import address private key",
+                                      body: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ImportAddressPkForm(),
+                                      ),
+                                    );
+                                  }),
+                                );
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'import_address_pk',
+                              child: Text('Import address private key'),
+                            ),
                             const PopupMenuItem<String>(
                               value: 'reset',
                               child: Text('Reset wallet'),

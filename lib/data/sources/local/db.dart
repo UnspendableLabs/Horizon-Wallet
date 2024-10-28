@@ -19,7 +19,7 @@ class DB extends _$DB {
   DB(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -99,6 +99,17 @@ class DB extends _$DB {
 
                 // Create the new ImportedAddresses table
                 await m.createTable(schema.importedAddresses);
+              },
+              from4To5: (m, schema) async {
+                // Remove the column from the imported addresses table
+                await m.alterTable(TableMigration(
+                  schema.importedAddresses,
+                  columnTransformer: {
+                    // List all columns EXCEPT the one you want to remove
+                    schema.importedAddresses.address: schema.importedAddresses.address,
+                    schema.importedAddresses.walletUuid: schema.importedAddresses.walletUuid,
+                  },
+                ));
               },
             ));
 

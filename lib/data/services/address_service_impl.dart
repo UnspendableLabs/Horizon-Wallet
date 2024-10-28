@@ -193,6 +193,24 @@ class AddressServiceImpl implements AddressService {
     return hex.encode(addressPrivateKey);
   }
 
+  @override
+  Future<String> getAddressFromWIF(
+      {required String wif, required ImportAddressPkFormat format}) async {
+    final ecpair.ECPair ecPair = ecpairFactory.fromWIF(wif, _getNetwork());
+
+    final network = _getNetwork();
+
+    final paymentOpts =
+        bitcoin.PaymentOptions(pubkey: ecPair.publicKey, network: network);
+
+    switch (format) {
+      case ImportAddressPkFormat.segwit:
+        return bitcoin.p2wpkh(paymentOpts).address;
+      case ImportAddressPkFormat.legacy:
+        return bitcoin.p2pkh(paymentOpts).address;
+    }
+  }
+
   String _legacyFromBip32(bip32.BIP32Interface child) {
     final network = _getNetwork();
 

@@ -952,22 +952,6 @@ class DashboardPageState extends State<DashboardPage> {
           orElse: () => null,
         );
 
-    Widget buildSearchBar() {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            labelText: 'Search assets',
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      );
-    }
-
     if (!isSmallScreen) {
       return Scaffold(
           bottomNavigationBar: const Footer(),

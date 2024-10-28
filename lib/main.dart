@@ -19,11 +19,13 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
@@ -598,6 +600,17 @@ class MyApp extends StatelessWidget {
             addressRepository: GetIt.I<AddressRepository>(),
             accountRepository: GetIt.I<AccountRepository>(),
             addressService: GetIt.I<AddressService>(),
+          ),
+        ),
+        BlocProvider<ImportAddressPkBloc>(
+          create: (context) => ImportAddressPkBloc(
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressService: GetIt.I<AddressService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+            accountRepository: GetIt.I<AccountRepository>(),
+            importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
           ),
         ),
         BlocProvider<ThemeBloc>(
