@@ -9,7 +9,6 @@ function registerProvider() {
   });
 }
 
-
 registerProvider();
 
 const provider = {
@@ -30,7 +29,7 @@ const provider = {
         if ("error" in response) return reject(response);
         return resolve(response);
       }
-      window.addEventListener("message");
+      window.addEventListener("message", handleMessage);
     });
   },
 };

@@ -16,9 +16,10 @@ function sendMessageToBackground(message) {
 
 chrome.runtime.onMessage.addListener((message) => {
   // TODO: refine this guard
-  if (message.source === MESSAGE_SOURCE) {
-    sendMessageToBackground(message);
-  }
+  // if (message.source === MESSAGE_SOURCE) {
+  //   sendMessageToBackground(message);
+  // }
+  console.log("message received", message);
 });
 
 function forwardDomEventToBackground({ payload, method }) {
@@ -30,6 +31,7 @@ function forwardDomEventToBackground({ payload, method }) {
 }
 
 document.addEventListener("request", (event) => {
+  console.log("request event received in content script", event);
   sendMessageToBackground({ source: MESSAGE_SOURCE, ...event.detail });
 });
 

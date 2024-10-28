@@ -1,19 +1,43 @@
+const CONTENT_SCRIPT_PORT = "content-script";
+
+export function getTabIdFromPort(port) {
+  return port?.sender?.tab?.id;
+}
+
+function rpcMessageHandler(message, port) {
+  // TODO: listen for origin tab close
+  //
+
+  const id = getTabIdFromPort(port);
+
+  switch (message.method) {
+    case "ping":
+      chrome.tabs.sendMessage(getTabIdFromPort(port), { msg: "pong" });
+      break;
+    case "getAddresses":
+      chrome.tabs.sendMessage(getTabIdFromPort(port), { msg: "0xdeadbeef" });
+      break;
+    default:
+      console.log("unknown method", message.method);
+  }
+}
+
 chrome.runtime.onConnect.addListener((port) => {
-  console.log("port.name is: " + port.name);
 
   if (port.name !== CONTENT_SCRIPT_PORT) return;
 
   port.onMessage.addListener((message, port) => {
+    console.log(
+      "message received in background script at port: " + port,
+      message,
+    );
 
-
-    console.log ("message received in background script at port: " + port, message);
-
-    if (!port.sender?.tab?.id) {
-      console.error(
-        "message reached background script :ithout a corresponding tab",
-      );
-      return;
-    }
+    // if (getTabIdFromPort(port)) {
+    //   console.error(
+    //     "message reached background script :ithout a corresponding tab",
+    //   );
+    //   return;
+    // }
 
     // Chromium/Firefox discrepancy
     const originUrl = port.sender?.origin ?? port.sender?.url;
@@ -23,9 +47,6 @@ chrome.runtime.onConnect.addListener((port) => {
       return;
     }
 
-    console.log(
-      "message received in background script at port: " + port,
-      message,
-    );
+    return rpcMessageHandler(message, port);
   });
 });
