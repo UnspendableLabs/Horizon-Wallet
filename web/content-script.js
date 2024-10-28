@@ -15,11 +15,7 @@ function sendMessageToBackground(message) {
 }
 
 chrome.runtime.onMessage.addListener((message) => {
-  // TODO: refine this guard
-  // if (message.source === MESSAGE_SOURCE) {
-  //   sendMessageToBackground(message);
-  // }
-  console.log("message received", message);
+    window.postMessage(message, window.location.origin);
 });
 
 function forwardDomEventToBackground({ payload, method }) {

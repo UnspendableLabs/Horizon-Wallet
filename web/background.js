@@ -12,10 +12,16 @@ function rpcMessageHandler(message, port) {
 
   switch (message.method) {
     case "ping":
-      chrome.tabs.sendMessage(getTabIdFromPort(port), { msg: "pong" });
+      chrome.tabs.sendMessage(getTabIdFromPort(port), {
+        msg: "pong",
+        id: message.id,
+      });
       break;
     case "getAddresses":
-      chrome.tabs.sendMessage(getTabIdFromPort(port), { msg: "0xdeadbeef" });
+      chrome.tabs.sendMessage(getTabIdFromPort(port), {
+          addresses: [{ address: "0xdeadbeef", type: "p2wpkh" }],
+          id: message.id,
+      });
       break;
     default:
       console.log("unknown method", message.method);
@@ -23,7 +29,6 @@ function rpcMessageHandler(message, port) {
 }
 
 chrome.runtime.onConnect.addListener((port) => {
-
   if (port.name !== CONTENT_SCRIPT_PORT) return;
 
   port.onMessage.addListener((message, port) => {
