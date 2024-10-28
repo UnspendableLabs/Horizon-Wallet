@@ -1,6 +1,9 @@
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
@@ -28,6 +31,7 @@ class SignAndBroadcastTransactionException implements Exception {
 //       might also want to split out sign / broadcast
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final AddressRepository addressRepository;
+  final ImportedAddressRepository importedAddressRepository;
   final AccountRepository accountRepository;
   final WalletRepository walletRepository;
   final UtxoRepository utxoRepository;
@@ -39,6 +43,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
   SignAndBroadcastTransactionUseCase({
     required this.addressRepository,
+    required this.importedAddressRepository,
     required this.accountRepository,
     required this.walletRepository,
     required this.utxoRepository,
@@ -57,46 +62,31 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       required String source,
       required String rawtransaction}) async {
     try {
-      // Extract parameters
+      late Address? address;
+      late ImportedAddress? importedAddress;
 
       // Fetch UTXOs
       final utxos = await utxoRepository.getUnspentForAddress(source);
       final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
 
       // Fetch Address, Account, and Wallet
-      final address = await addressRepository.getAddress(source);
+      address = await addressRepository.getAddress(source);
       if (address == null) {
+        importedAddress =
+            await importedAddressRepository.getImportedAddress(source);
+      }
+
+      if (address == null && importedAddress == null) {
         throw SignAndBroadcastTransactionException('Address not found.');
       }
 
-      final account =
-          await accountRepository.getAccountByUuid(address.accountUuid);
-      if (account == null) {
-        throw SignAndBroadcastTransactionException('Account not found.');
+      late String addressPrivKey;
+      if (address != null) {
+        addressPrivKey = await _getAddressPrivKeyForAddress(address, password);
+      } else {
+        addressPrivKey = await _getAddressPrivKeyForImportedAddress(
+            importedAddress!, password);
       }
-
-      final wallet = await walletRepository.getWallet(account.walletUuid);
-
-      // Decrypt Root Private Key
-      String decryptedRootPrivKey;
-      try {
-        decryptedRootPrivKey =
-            await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
-      } catch (e) {
-        throw SignAndBroadcastTransactionException('Incorrect password.');
-      }
-
-      // Derive Address Private Key
-      final addressPrivKey = await addressService.deriveAddressPrivateKey(
-        rootPrivKey: decryptedRootPrivKey,
-        chainCodeHex: wallet.chainCodeHex,
-        purpose: account.purpose,
-        coin: account.coinType,
-        account: account.accountIndex,
-        change: '0',
-        index: address.index,
-        importFormat: account.importFormat,
-      );
 
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
@@ -119,5 +109,55 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           ? e.message
           : 'An unexpected error occurred.');
     }
+  }
+
+  Future<String> _getAddressPrivKeyForAddress(
+      Address address, String password) async {
+    final account =
+        await accountRepository.getAccountByUuid(address.accountUuid);
+    if (account == null) {
+      throw SignAndBroadcastTransactionException('Account not found.');
+    }
+
+    final wallet = await walletRepository.getWallet(account.walletUuid);
+
+    // Decrypt Root Private Key
+    String decryptedRootPrivKey;
+    try {
+      decryptedRootPrivKey =
+          await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+    } catch (e) {
+      throw SignAndBroadcastTransactionException('Incorrect password.');
+    }
+
+    // Derive Address Private Key
+    final addressPrivKey = await addressService.deriveAddressPrivateKey(
+      rootPrivKey: decryptedRootPrivKey,
+      chainCodeHex: wallet.chainCodeHex,
+      purpose: account.purpose,
+      coin: account.coinType,
+      account: account.accountIndex,
+      change: '0',
+      index: address.index,
+      importFormat: account.importFormat,
+    );
+
+    return addressPrivKey;
+  }
+
+  Future<String> _getAddressPrivKeyForImportedAddress(
+      ImportedAddress importedAddress, String password) async {
+    late String decryptedAddressPrivKey;
+    try {
+      decryptedAddressPrivKey = await encryptionService.decrypt(
+          importedAddress.encryptedPrivateKey, password);
+    } catch (e) {
+      throw SignAndBroadcastTransactionException('Incorrect password.');
+    }
+
+    final addressPrivKey = await addressService.getAddressPrivateKeyFromWIF(
+        wif: decryptedAddressPrivKey);
+
+    return addressPrivKey;
   }
 }

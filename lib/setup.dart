@@ -347,6 +347,7 @@ Future<void> setup() async {
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
     addressRepository: GetIt.I.get<AddressRepository>(),
+    importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     utxoRepository: GetIt.I.get<UtxoRepository>(),
