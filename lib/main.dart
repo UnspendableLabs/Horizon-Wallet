@@ -204,9 +204,14 @@ class AppRouter {
                         // success
                         return shell.state.maybeWhen(
                           success: (state) {
-                            return DashboardPageWrapper(
-                                key: Key(
-                                    "${state.currentAccountUuid}:${state.currentAddress.address}"));
+                            late Key key;
+                            if (state.currentAccountUuid != null) {
+                              key = Key(
+                                  "${state.currentAccountUuid}:${state.currentAddress!.address}");
+                            } else if (state.currentImportedAddress != null) {
+                              key = Key(state.currentImportedAddress!.address);
+                            }
+                            return DashboardPageWrapper(key: key);
                           },
                           orElse: () => const SizedBox.shrink(),
                         );

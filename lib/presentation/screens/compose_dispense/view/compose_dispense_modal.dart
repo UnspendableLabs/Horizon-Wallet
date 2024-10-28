@@ -43,7 +43,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(state.currentAccountUuid!),
         create: (context) => ComposeDispenseBloc(
           logger: GetIt.I.get<Logger>(),
           estimateDispensesUseCase: GetIt.I.get<EstimateDispensesUseCase>(),
@@ -64,7 +64,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
             initialDispenserAddress: initialDispenserAddress)),
         child: ComposeDispensePage(
           initialDispenserAddress: initialDispenserAddress,
-          address: state.currentAddress,
+          address: state.currentAddress!,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),

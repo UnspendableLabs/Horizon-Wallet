@@ -41,7 +41,7 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(state.currentAccountUuid!),
         create: (context) => ComposeIssuanceBloc(
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -56,7 +56,7 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
           logger: GetIt.I.get<Logger>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeIssuancePage(
-          address: state.currentAddress,
+          address: state.currentAddress!,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),

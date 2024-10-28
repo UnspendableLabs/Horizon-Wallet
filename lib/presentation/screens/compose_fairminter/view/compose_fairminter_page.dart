@@ -38,7 +38,7 @@ class ComposeFairminterPageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(state.currentAccountUuid!),
         create: (context) => ComposeFairminterBloc(
           logger: GetIt.I.get<Logger>(),
           fetchFairminterFormDataUseCase:
@@ -53,7 +53,7 @@ class ComposeFairminterPageWrapper extends StatelessWidget {
           blockRepository: GetIt.I.get<BlockRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeFairminterPage(
-          address: state.currentAddress,
+          address: state.currentAddress!,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),

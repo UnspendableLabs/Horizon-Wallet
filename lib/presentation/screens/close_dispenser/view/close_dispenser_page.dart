@@ -32,7 +32,7 @@ class CloseDispenserPageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(state.currentAccountUuid!),
         create: (context) => CloseDispenserBloc(
           fetchCloseDispenserFormDataUseCase:
               GetIt.I.get<FetchCloseDispenserFormDataUseCase>(),
@@ -45,7 +45,7 @@ class CloseDispenserPageWrapper extends StatelessWidget {
           composeRepository: GetIt.I.get<ComposeRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: CloseDispenserPage(
-          address: state.currentAddress,
+          address: state.currentAddress!,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),

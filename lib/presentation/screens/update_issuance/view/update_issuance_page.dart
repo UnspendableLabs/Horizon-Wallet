@@ -43,7 +43,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(state.currentAccountUuid!),
         create: (context) => UpdateIssuanceBloc(
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           assetRepository: GetIt.I.get<AssetRepository>(),
@@ -59,7 +59,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
             assetName: assetName, currentAddress: state.currentAddress)),
         child: UpdateIssuancePage(
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-          address: state.currentAddress,
+          address: state.currentAddress!,
           actionType: actionType,
           assetName: assetName,
           assetLongname: assetLongname,

@@ -114,6 +114,7 @@ class ShellStateCubit extends Cubit<ShellState> {
               currentAccountUuid: account.uuid,
               currentAddress: addresses.first,
               addresses: addresses,
+              currentImportedAddress: null,
             )));
 
     emit(state_);
@@ -218,5 +219,18 @@ class ShellStateCubit extends Cubit<ShellState> {
     } catch (error) {
       emit(ShellState.error(error.toString()));
     }
+  }
+
+  void onImportedAddressChanged(ImportedAddress importedAddress) {
+    final state_ = state.when(
+        initial: () => state,
+        loading: () => state,
+        error: (_) => state,
+        onboarding: (_) => state,
+        success: (stateInner) => ShellState.success(stateInner.copyWith(
+            currentImportedAddress: importedAddress,
+            currentAddress: null,
+            currentAccountUuid: null)));
+    emit(state_);
   }
 }

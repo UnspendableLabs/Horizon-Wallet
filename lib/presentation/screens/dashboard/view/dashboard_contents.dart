@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
@@ -37,8 +39,8 @@ class AccountSidebar extends StatefulWidget {
 }
 
 class _AccountSidebarState extends State<AccountSidebar> {
-  final TextEditingController accountController = TextEditingController();
   Account? selectedAccount;
+  ImportedAddress? selectedImportedAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +181,19 @@ class _AccountSidebarState extends State<AccountSidebar> {
                                       ],
                                     ),
                                   ),
-                                  hoverColor: Colors.transparent,
+                                  hoverColor:
+                                      Colors.transparent, // No hover effect
+                                  selected: importedAddress.address ==
+                                      state.currentImportedAddress?.address,
+                                  onTap: () {
+                                    setState(() => selectedImportedAddress =
+                                        importedAddress);
+                                    context
+                                        .read<ShellStateCubit>()
+                                        .onImportedAddressChanged(
+                                            importedAddress);
+                                    GoRouter.of(context).go('/dashboard');
+                                  },
                                 ),
                                 if (index !=
                                     (state.importedAddresses?.length ?? 0) - 1)
@@ -292,8 +306,8 @@ class HorizonAppBarContent extends StatelessWidget {
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
 
-    final account = shell.state.maybeWhen(
-      success: (state) => state.accounts.firstWhere(
+    final Account? account = shell.state.maybeWhen(
+      success: (state) => state.accounts.firstWhereOrNull(
         (account) => account.uuid == state.currentAccountUuid,
       ),
       orElse: () => null,
@@ -338,7 +352,7 @@ class HorizonAppBarContent extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         )),
                     const SizedBox(width: 12),
-                    if (!isSmallScreen)
+                    if (!isSmallScreen && account != null)
                       shell.state.maybeWhen(
                         success: (state) => state.addresses.length > 1
                             ? Flexible(
@@ -613,7 +627,8 @@ class AddressSelectionButton extends StatelessWidget {
                   context.read<ShellStateCubit>().state.maybeWhen(
                         success: (state) => state.addresses
                             .firstWhere((address) =>
-                                address.address == state.currentAddress.address)
+                                address.address ==
+                                state.currentAddress!.address)
                             .address,
                         orElse: () => "Select Address",
                       ),
@@ -672,8 +687,8 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                           itemCount: state.addresses.length,
                           itemBuilder: (context, index) {
                             final address = state.addresses[index];
-                            final isSelected =
-                                address.address == state.currentAddress.address;
+                            final isSelected = address.address ==
+                                state.currentAddress!.address;
                             return ListTile(
                               title: Text(address.address),
                               selected: isSelected,
@@ -712,7 +727,7 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: AddAddressForm(
-                                      accountUuid: state.currentAccountUuid,
+                                      accountUuid: state.currentAccountUuid!,
                                       modalContext: modalSheetContext),
                                 ),
                                 onBackButtonPressed: () {

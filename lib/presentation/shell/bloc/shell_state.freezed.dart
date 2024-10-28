@@ -812,10 +812,12 @@ mixin _$ShellStateSuccess {
   bool get redirect => throw _privateConstructorUsedError;
   Wallet get wallet => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
-  String get currentAccountUuid => throw _privateConstructorUsedError;
+  String? get currentAccountUuid => throw _privateConstructorUsedError;
   List<Address> get addresses => throw _privateConstructorUsedError;
-  Address get currentAddress => throw _privateConstructorUsedError;
+  Address? get currentAddress => throw _privateConstructorUsedError;
   List<ImportedAddress>? get importedAddresses =>
+      throw _privateConstructorUsedError;
+  ImportedAddress? get currentImportedAddress =>
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -833,10 +835,11 @@ abstract class $ShellStateSuccessCopyWith<$Res> {
       {bool redirect,
       Wallet wallet,
       List<Account> accounts,
-      String currentAccountUuid,
+      String? currentAccountUuid,
       List<Address> addresses,
-      Address currentAddress,
-      List<ImportedAddress>? importedAddresses});
+      Address? currentAddress,
+      List<ImportedAddress>? importedAddresses,
+      ImportedAddress? currentImportedAddress});
 }
 
 /// @nodoc
@@ -855,10 +858,11 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
     Object? redirect = null,
     Object? wallet = null,
     Object? accounts = null,
-    Object? currentAccountUuid = null,
+    Object? currentAccountUuid = freezed,
     Object? addresses = null,
-    Object? currentAddress = null,
+    Object? currentAddress = freezed,
     Object? importedAddresses = freezed,
+    Object? currentImportedAddress = freezed,
   }) {
     return _then(_value.copyWith(
       redirect: null == redirect
@@ -873,22 +877,26 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
           ? _value.accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
-      currentAccountUuid: null == currentAccountUuid
+      currentAccountUuid: freezed == currentAccountUuid
           ? _value.currentAccountUuid
           : currentAccountUuid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       addresses: null == addresses
           ? _value.addresses
           : addresses // ignore: cast_nullable_to_non_nullable
               as List<Address>,
-      currentAddress: null == currentAddress
+      currentAddress: freezed == currentAddress
           ? _value.currentAddress
           : currentAddress // ignore: cast_nullable_to_non_nullable
-              as Address,
+              as Address?,
       importedAddresses: freezed == importedAddresses
           ? _value.importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
               as List<ImportedAddress>?,
+      currentImportedAddress: freezed == currentImportedAddress
+          ? _value.currentImportedAddress
+          : currentImportedAddress // ignore: cast_nullable_to_non_nullable
+              as ImportedAddress?,
     ) as $Val);
   }
 }
@@ -905,10 +913,11 @@ abstract class _$$ShellStateSuccessImplCopyWith<$Res>
       {bool redirect,
       Wallet wallet,
       List<Account> accounts,
-      String currentAccountUuid,
+      String? currentAccountUuid,
       List<Address> addresses,
-      Address currentAddress,
-      List<ImportedAddress>? importedAddresses});
+      Address? currentAddress,
+      List<ImportedAddress>? importedAddresses,
+      ImportedAddress? currentImportedAddress});
 }
 
 /// @nodoc
@@ -925,10 +934,11 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
     Object? redirect = null,
     Object? wallet = null,
     Object? accounts = null,
-    Object? currentAccountUuid = null,
+    Object? currentAccountUuid = freezed,
     Object? addresses = null,
-    Object? currentAddress = null,
+    Object? currentAddress = freezed,
     Object? importedAddresses = freezed,
+    Object? currentImportedAddress = freezed,
   }) {
     return _then(_$ShellStateSuccessImpl(
       redirect: null == redirect
@@ -943,22 +953,26 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
           ? _value._accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
-      currentAccountUuid: null == currentAccountUuid
+      currentAccountUuid: freezed == currentAccountUuid
           ? _value.currentAccountUuid
           : currentAccountUuid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       addresses: null == addresses
           ? _value._addresses
           : addresses // ignore: cast_nullable_to_non_nullable
               as List<Address>,
-      currentAddress: null == currentAddress
+      currentAddress: freezed == currentAddress
           ? _value.currentAddress
           : currentAddress // ignore: cast_nullable_to_non_nullable
-              as Address,
+              as Address?,
       importedAddresses: freezed == importedAddresses
           ? _value._importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
               as List<ImportedAddress>?,
+      currentImportedAddress: freezed == currentImportedAddress
+          ? _value.currentImportedAddress
+          : currentImportedAddress // ignore: cast_nullable_to_non_nullable
+              as ImportedAddress?,
     ));
   }
 }
@@ -973,7 +987,8 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
       required this.currentAccountUuid,
       required final List<Address> addresses,
       required this.currentAddress,
-      final List<ImportedAddress>? importedAddresses})
+      final List<ImportedAddress>? importedAddresses,
+      this.currentImportedAddress})
       : _accounts = accounts,
         _addresses = addresses,
         _importedAddresses = importedAddresses;
@@ -991,7 +1006,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   }
 
   @override
-  final String currentAccountUuid;
+  final String? currentAccountUuid;
   final List<Address> _addresses;
   @override
   List<Address> get addresses {
@@ -1001,7 +1016,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   }
 
   @override
-  final Address currentAddress;
+  final Address? currentAddress;
   final List<ImportedAddress>? _importedAddresses;
   @override
   List<ImportedAddress>? get importedAddresses {
@@ -1014,8 +1029,11 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   }
 
   @override
+  final ImportedAddress? currentImportedAddress;
+
+  @override
   String toString() {
-    return 'ShellStateSuccess(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses)';
+    return 'ShellStateSuccess(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
   }
 
   @override
@@ -1034,7 +1052,9 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
             (identical(other.currentAddress, currentAddress) ||
                 other.currentAddress == currentAddress) &&
             const DeepCollectionEquality()
-                .equals(other._importedAddresses, _importedAddresses));
+                .equals(other._importedAddresses, _importedAddresses) &&
+            (identical(other.currentImportedAddress, currentImportedAddress) ||
+                other.currentImportedAddress == currentImportedAddress));
   }
 
   @override
@@ -1046,7 +1066,8 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
       currentAccountUuid,
       const DeepCollectionEquality().hash(_addresses),
       currentAddress,
-      const DeepCollectionEquality().hash(_importedAddresses));
+      const DeepCollectionEquality().hash(_importedAddresses),
+      currentImportedAddress);
 
   @JsonKey(ignore: true)
   @override
@@ -1058,14 +1079,14 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
 
 abstract class _ShellStateSuccess implements ShellStateSuccess {
   const factory _ShellStateSuccess(
-          {required final bool redirect,
-          required final Wallet wallet,
-          required final List<Account> accounts,
-          required final String currentAccountUuid,
-          required final List<Address> addresses,
-          required final Address currentAddress,
-          final List<ImportedAddress>? importedAddresses}) =
-      _$ShellStateSuccessImpl;
+      {required final bool redirect,
+      required final Wallet wallet,
+      required final List<Account> accounts,
+      required final String? currentAccountUuid,
+      required final List<Address> addresses,
+      required final Address? currentAddress,
+      final List<ImportedAddress>? importedAddresses,
+      final ImportedAddress? currentImportedAddress}) = _$ShellStateSuccessImpl;
 
   @override
   bool get redirect;
@@ -1074,13 +1095,15 @@ abstract class _ShellStateSuccess implements ShellStateSuccess {
   @override
   List<Account> get accounts;
   @override
-  String get currentAccountUuid;
+  String? get currentAccountUuid;
   @override
   List<Address> get addresses;
   @override
-  Address get currentAddress;
+  Address? get currentAddress;
   @override
   List<ImportedAddress>? get importedAddresses;
+  @override
+  ImportedAddress? get currentImportedAddress;
   @override
   @JsonKey(ignore: true)
   _$$ShellStateSuccessImplCopyWith<_$ShellStateSuccessImpl> get copyWith =>

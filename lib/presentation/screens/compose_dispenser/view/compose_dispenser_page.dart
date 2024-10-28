@@ -38,7 +38,7 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(state.currentAccountUuid!),
         create: (context) => ComposeDispenserBloc(
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
@@ -51,7 +51,7 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
           composeRepository: GetIt.I.get<ComposeRepository>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeDispenserPage(
-          address: state.currentAddress,
+          address: state.currentAddress!,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),

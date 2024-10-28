@@ -22,10 +22,11 @@ class ShellStateSuccess with _$ShellStateSuccess {
     required bool redirect,
     required Wallet wallet,
     required List<Account> accounts,
-    required String currentAccountUuid,
+    required String? currentAccountUuid,
     required List<Address> addresses,
-    required Address currentAddress,
+    required Address? currentAddress,
     List<ImportedAddress>? importedAddresses,
+    ImportedAddress? currentImportedAddress,
   }) = _ShellStateSuccess;
 }
 

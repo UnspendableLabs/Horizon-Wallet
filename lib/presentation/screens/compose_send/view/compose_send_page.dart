@@ -42,7 +42,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(state.currentAccountUuid!),
         create: (context) => ComposeSendBloc(
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -57,7 +57,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
           logger: GetIt.I.get<Logger>(),
         )..add(FetchFormData(currentAddress: state.currentAddress)),
         child: ComposeSendPage(
-          address: state.currentAddress,
+          address: state.currentAddress!,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
           asset: asset,
         ),
