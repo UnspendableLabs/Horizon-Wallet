@@ -320,6 +320,7 @@ class DispenserButtonMenu extends StatelessWidget {
   final String text;
   final double? iconSize;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
 
   const DispenserButtonMenu({
     super.key,
@@ -328,6 +329,7 @@ class DispenserButtonMenu extends StatelessWidget {
     required this.text,
     this.iconSize,
     required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
   });
 
   @override
@@ -357,6 +359,7 @@ class DispenserButtonMenu extends StatelessWidget {
                           body: ComposeDispenserPageWrapper(
                             dashboardActivityFeedBloc:
                                 dashboardActivityFeedBloc,
+                            currentAddress: currentAddress,
                           ),
                         ));
                   }),
@@ -369,6 +372,7 @@ class DispenserButtonMenu extends StatelessWidget {
                         title: "Close Dispenser",
                         body: CloseDispenserPageWrapper(
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          currentAddress: currentAddress,
                         ),
                         includeBackButton: false,
                         includeCloseButton: true,
@@ -384,6 +388,7 @@ class DispenserButtonMenu extends StatelessWidget {
                         title: "Trigger Dispense",
                         body: ComposeDispensePageWrapper(
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          currentAddress: currentAddress,
                         ),
                         includeBackButton: false,
                         includeCloseButton: true,
@@ -445,6 +450,7 @@ class MintMenu extends StatelessWidget {
   final String text;
   final double? iconSize;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
 
   const MintMenu({
     super.key,
@@ -453,6 +459,7 @@ class MintMenu extends StatelessWidget {
     required this.text,
     this.iconSize,
     required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
   });
 
   @override
@@ -480,6 +487,7 @@ class MintMenu extends StatelessWidget {
                           includeBackButton: false,
                           includeCloseButton: true,
                           body: ComposeFairminterPageWrapper(
+                            currentAddress: currentAddress,
                             dashboardActivityFeedBloc:
                                 dashboardActivityFeedBloc,
                           ),
@@ -493,6 +501,7 @@ class MintMenu extends StatelessWidget {
                       body: HorizonUI.HorizonDialog(
                         title: "Compose Fairmint",
                         body: ComposeFairmintPageWrapper(
+                          currentAddress: currentAddress,
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                         ),
                         includeBackButton: false,
@@ -573,6 +582,7 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Send",
                 body: ComposeSendPageWrapper(
+                  currentAddress: currentAddress,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -587,6 +597,7 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Issuance",
                 body: ComposeIssuancePageWrapper(
+                  currentAddress: currentAddress,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -609,6 +620,7 @@ class AddressActions extends StatelessWidget {
                 text: "RECEIVE",
                 iconSize: 24.0),
             MintMenu(
+              currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.print,
               text: "MINT",
@@ -616,6 +628,7 @@ class AddressActions extends StatelessWidget {
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
             DispenserButtonMenu(
+              currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.more_vert,
               text: "DISPENSER",
@@ -912,6 +925,8 @@ class DashboardPageState extends State<DashboardPage> {
             title: "Trigger Dispense",
             body: ComposeDispensePageWrapper(
                 initialDispenserAddress: address,
+                currentAddress: widget.currentAddress?.address ??
+                    widget.currentImportedAddress!.address,
                 dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
   }
 
@@ -926,6 +941,8 @@ class DashboardPageState extends State<DashboardPage> {
           body: ComposeFairmintPageWrapper(
             initialFairminterTxHash: intitialFairminterTxHash,
             dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            currentAddress: widget.currentAddress?.address ??
+                widget.currentImportedAddress!.address,
           ),
           includeBackButton: false,
           includeCloseButton: true,

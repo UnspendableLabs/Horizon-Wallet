@@ -1,10 +1,9 @@
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 
 abstract class ComposeBaseEvent {}
 
 class FetchFormData extends ComposeBaseEvent {
-  Address? currentAddress;
+  String? currentAddress;
   String? assetName;
   String?
       initialDispenserAddress; // this is a total hack but necessary due to current base bloc implementation

@@ -1,4 +1,3 @@
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -94,10 +93,9 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     late FeeEstimates feeEstimates;
 
     try {
-      List<Address> addresses = [event.currentAddress!];
+      List<String> addresses = [event.currentAddress!];
 
-      balances =
-          await balanceRepository.getBalancesForAddress(addresses[0].address);
+      balances = await balanceRepository.getBalancesForAddress(addresses[0]);
     } catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(e.toString()),

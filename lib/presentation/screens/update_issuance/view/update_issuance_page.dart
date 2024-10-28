@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
@@ -29,12 +28,14 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
   final IssuanceActionType actionType;
   final String assetName;
   final String? assetLongname;
+  final String currentAddress;
 
   const UpdateIssuancePageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.actionType,
     required this.assetName,
     required this.assetLongname,
+    required this.currentAddress,
     super.key,
   });
 
@@ -43,7 +44,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid!),
+        key: Key(currentAddress),
         create: (context) => UpdateIssuanceBloc(
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           assetRepository: GetIt.I.get<AssetRepository>(),
@@ -56,10 +57,10 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
         )..add(FetchFormData(
-            assetName: assetName, currentAddress: state.currentAddress)),
+            assetName: assetName, currentAddress: currentAddress)),
         child: UpdateIssuancePage(
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-          address: state.currentAddress!,
+          address: currentAddress,
           actionType: actionType,
           assetName: assetName,
           assetLongname: assetLongname,
@@ -72,7 +73,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
 
 class UpdateIssuancePage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address address;
+  final String address;
   final IssuanceActionType actionType;
   final String assetName;
   final String? assetLongname;
@@ -131,7 +132,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         return state.assetState.maybeWhen(
           loading: () =>
               ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
-            address: widget.address,
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<UpdateIssuanceBloc>()
@@ -149,7 +149,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           ),
           success: (originalAsset) {
             return ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
-              address: widget.address,
               dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
               onFeeChange: (fee) => context
                   .read<UpdateIssuanceBloc>()
@@ -601,7 +600,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       }
 
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address.address,
+            sourceAddress: widget.address,
             params: UpdateIssuanceEventParams(
               name: name,
               quantity: quantity,

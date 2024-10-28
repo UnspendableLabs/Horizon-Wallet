@@ -388,6 +388,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                     body: HorizonUI.HorizonDialog(
                       title: 'Compose Send',
                       body: ComposeSendPageWrapper(
+                        currentAddress: widget.currentAddress,
                         dashboardActivityFeedBloc:
                             BlocProvider.of<DashboardActivityFeedBloc>(context),
                         asset: assetName,
@@ -408,6 +409,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                     body: HorizonUI.HorizonDialog(
                       title: "Update Issuance",
                       body: UpdateIssuancePageWrapper(
+                        currentAddress: widget.currentAddress,
                         assetName: currentOwnedAsset!.asset,
                         assetLongname: currentOwnedAsset.assetLongname,
                         actionType: result,

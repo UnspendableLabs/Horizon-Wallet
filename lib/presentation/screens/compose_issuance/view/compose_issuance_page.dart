@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -30,9 +29,10 @@ import 'dart:math';
 
 class ComposeIssuancePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-
+  final String currentAddress;
   const ComposeIssuancePageWrapper({
     required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
     super.key,
   });
 
@@ -54,9 +54,9 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(currentAddress: state.currentAddress)),
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeIssuancePage(
-          address: state.currentAddress!,
+          address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -67,7 +67,7 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
 
 class ComposeIssuancePage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address address;
+  final String address;
   const ComposeIssuancePage({
     super.key,
     required this.dashboardActivityFeedBloc,
@@ -98,13 +98,12 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   @override
   void initState() {
     super.initState();
-    fromAddressController.text = widget.address.address;
+    fromAddressController.text = widget.address;
   }
 
   @override
   Widget build(BuildContext context) {
     return ComposeBasePage<ComposeIssuanceBloc, ComposeIssuanceState>(
-      address: widget.address,
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
           context.read<ComposeIssuanceBloc>().add(ChangeFeeOption(value: fee)),
@@ -146,7 +145,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
       }
 
       context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address.address,
+            sourceAddress: widget.address,
             params: ComposeIssuanceEventParams(
               name: nameController.text,
               quantity: quantity,

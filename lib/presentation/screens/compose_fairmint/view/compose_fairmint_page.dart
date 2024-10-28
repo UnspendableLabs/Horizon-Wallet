@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/fairminter.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
@@ -27,10 +26,11 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 class ComposeFairmintPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String? initialFairminterTxHash;
-
+  final String currentAddress;
   const ComposeFairmintPageWrapper({
     required this.dashboardActivityFeedBloc,
     this.initialFairminterTxHash,
+    required this.currentAddress,
     super.key,
   });
 
@@ -39,7 +39,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid!),
+        key: Key(currentAddress),
         create: (context) => ComposeFairmintBloc(
           initialFairminterTxHash: initialFairminterTxHash,
           logger: GetIt.I.get<Logger>(),
@@ -53,9 +53,9 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(currentAddress: state.currentAddress)),
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeFairmintPage(
-          address: state.currentAddress!,
+          address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -66,7 +66,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
 
 class ComposeFairmintPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address address;
+  final String address;
   const ComposeFairmintPage({
     super.key,
     required this.dashboardActivityFeedBloc,
@@ -91,7 +91,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   @override
   void initState() {
     super.initState();
-    fromAddressController.text = widget.address.address;
+    fromAddressController.text = widget.address;
   }
 
   @override
@@ -102,7 +102,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         return state.fairmintersState.maybeWhen(
           loading: () =>
               ComposeBasePage<ComposeFairmintBloc, ComposeFairmintState>(
-                  address: widget.address,
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
                   onFeeChange: (fee) => context
                       .read<ComposeFairmintBloc>()
@@ -134,7 +133,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                   onFinalizeCancel: () {}),
           success: (fairminters) =>
               ComposeBasePage<ComposeFairmintBloc, ComposeFairmintState>(
-            address: widget.address,
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeFairmintBloc>()
@@ -194,7 +192,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       }
 
       context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address.address,
+            sourceAddress: widget.address,
             params: ComposeFairmintEventParams(
               asset: _isAssetNameSelected
                   ? state.selectedFairminter!.asset ?? nameController.text

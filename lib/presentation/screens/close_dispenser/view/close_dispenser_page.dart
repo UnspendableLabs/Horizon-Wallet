@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -21,9 +20,11 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class CloseDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
 
   const CloseDispenserPageWrapper({
     required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
     super.key,
   });
 
@@ -32,7 +33,7 @@ class CloseDispenserPageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid!),
+        key: Key(currentAddress),
         create: (context) => CloseDispenserBloc(
           fetchCloseDispenserFormDataUseCase:
               GetIt.I.get<FetchCloseDispenserFormDataUseCase>(),
@@ -43,9 +44,9 @@ class CloseDispenserPageWrapper extends StatelessWidget {
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(currentAddress: state.currentAddress)),
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: CloseDispenserPage(
-          address: state.currentAddress!,
+          address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -56,7 +57,7 @@ class CloseDispenserPageWrapper extends StatelessWidget {
 
 class CloseDispenserPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address address;
+  final String address;
 
   const CloseDispenserPage({
     super.key,
@@ -85,7 +86,6 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
       listener: (context, state) {},
       builder: (context, state) {
         return ComposeBasePage<CloseDispenserBloc, CloseDispenserState>(
-          address: widget.address,
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) => context
               .read<CloseDispenserBloc>()
@@ -116,7 +116,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
         success: (dispensers) => [
           HorizonUI.HorizonTextFormField(
             label: 'Source Address',
-            controller: TextEditingController(text: widget.address.address),
+            controller: TextEditingController(text: widget.address),
             enabled: false,
           ),
           HorizonUI.HorizonDropdownMenu<Dispenser>(
@@ -198,7 +198,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
     });
     if (formKey.currentState!.validate()) {
       context.read<CloseDispenserBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address.address,
+            sourceAddress: widget.address,
             params: CloseDispenserParams(
               asset: selectedDispenser!.asset,
               giveQuantity: 0,

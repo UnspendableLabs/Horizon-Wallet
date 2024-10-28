@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/domain/entities/address.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -20,7 +19,7 @@ class ComposeSendState with _$ComposeSendState, ComposeStateBase {
     // Specific properties
     required MaxValueState maxValue,
     required bool sendMax,
-    Address? source,
+    String? source,
     String? destination,
     String? asset,
     required String quantity,
