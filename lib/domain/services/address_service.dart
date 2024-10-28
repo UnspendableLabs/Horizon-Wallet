@@ -20,8 +20,6 @@ abstract class AddressService {
       required String account,
       required String change,
       required int index});
-  // Future<Address> deriveAddressFreewalletLegacy(String mnemonic, int index);
-  // Future<List<Address>> deriveAddressSegwitRange(String mnemonic, int start, int end);
   Future<List<Address>> deriveAddressSegwitRange(
       {required String privKey,
       required String chainCodeHex,
@@ -41,32 +39,27 @@ abstract class AddressService {
       required String change,
       required int start,
       required int end});
-  // Future<List<Address>> deriveAddressFreewalletLegacyRange(String mnemonic, int start, int end);
-  Future<String> deriveAddressPrivateKey(
-      {required String rootPrivKey,
-      required String chainCodeHex,
-      required String purpose,
-      required String coin,
-      required String account,
-      required String change,
-      required int index,
-      required ImportFormat importFormat});
-
-  // Future<Address> deriveAddressSegwitPublicKey(
-  //     {required String publicKey,
-  //     required String purpose,
-  //     required String coin,
-  //     required String account,
-  //     required String change,
-  //     required int index});
-  //
-  // Future<List<Address>> deriveAddressSegwitPublicKeyRange({
-  //   required String publicKey,
-  //   required String purpose,
-  //   required String coin,
-  //   required String account,
-  //   required String change,
-  //   required int start,
-  //   required int end,
-  // });
+  Future<String> deriveAddressPrivateKey({
+    required String rootPrivKey,
+    required String chainCodeHex,
+    required String purpose,
+    required String coin,
+    required String account,
+    required String change,
+    required int index,
+    required ImportFormat importFormat,
+  });
+  Future<String> getAddressPrivateKeyFromWIF({
+    required String wif,
+  });
+  Future<String> getAddressWIFFromPrivateKey({
+    required String rootPrivKey,
+    required String chainCodeHex,
+    required String purpose,
+    required String coin,
+    required String account,
+    required String change,
+    required int index,
+    required ImportFormat importFormat,
+  });
 }

@@ -421,10 +421,6 @@ _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
     return null;
   }
 
-  for (var balance in balances) {
-    print(balance.asset);
-  }
-
   return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
       balances[0];
 }
