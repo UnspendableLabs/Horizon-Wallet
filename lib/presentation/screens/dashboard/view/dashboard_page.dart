@@ -562,13 +562,15 @@ class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
+  final String? currentAccountUuid;
   final double screenWidth;
   const AddressActions(
       {super.key,
       required this.isDarkTheme,
       required this.dashboardActivityFeedBloc,
       required this.currentAddress,
-      required this.screenWidth});
+      required this.screenWidth,
+      this.currentAccountUuid});
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -612,6 +614,7 @@ class AddressActions extends StatelessWidget {
                   title: "Receive",
                   body: QRCodeDialog(
                     currentAddress: currentAddress,
+                    currentAccountUuid: currentAccountUuid,
                   ),
                   includeBackButton: false,
                   includeCloseButton: true,
@@ -693,8 +696,10 @@ class DashboardPageWrapper extends StatelessWidget {
 
 class QRCodeDialog extends StatelessWidget {
   final String currentAddress;
+  final String? currentAccountUuid;
 
-  const QRCodeDialog({super.key, required this.currentAddress});
+  const QRCodeDialog(
+      {super.key, required this.currentAddress, this.currentAccountUuid});
 
   @override
   Widget build(BuildContext context) {
@@ -813,44 +818,45 @@ class QRCodeDialog extends StatelessWidget {
             );
           },
         ),
-        Builder(builder: (context) {
-          final accountUuid = context.read<ShellStateCubit>().state.maybeWhen(
-                success: (state) => state.currentAccountUuid,
-                orElse: () => null,
-              );
+        if (currentAccountUuid != null)
+          Builder(builder: (context) {
+            final accountUuid = context.read<ShellStateCubit>().state.maybeWhen(
+                  success: (state) => state.currentAccountUuid,
+                  orElse: () => null,
+                );
 
-          // look up account
-          Account account = context.read<ShellStateCubit>().state.maybeWhen(
-                success: (state) => state.accounts
-                    .firstWhere((account) => account.uuid == accountUuid),
-                orElse: () => throw Exception("invariant: no account"),
-              );
+            // look up account
+            Account account = context.read<ShellStateCubit>().state.maybeWhen(
+                  success: (state) => state.accounts
+                      .firstWhere((account) => account.uuid == accountUuid),
+                  orElse: () => throw Exception("invariant: no account"),
+                );
 
-          // don't support address creation for horizon accounts
-          return switch (account.importFormat) {
-            ImportFormat.horizon => const SizedBox.shrink(),
-            _ => TextButton(
-                child: const Text("Add a new address"),
-                onPressed: () {
-                  HorizonUI.HorizonDialog.show(
-                    context: context,
-                    body: HorizonUI.HorizonDialog(
-                      title: "Add a new address\nto ${account.name}",
-                      titleAlign: Alignment.center,
-                      body: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: AddAddressForm(
-                          accountUuid: accountUuid!,
+            // don't support address creation for horizon accounts
+            return switch (account.importFormat) {
+              ImportFormat.horizon => const SizedBox.shrink(),
+              _ => TextButton(
+                  child: const Text("Add a new address"),
+                  onPressed: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Add a new address\nto ${account.name}",
+                        titleAlign: Alignment.center,
+                        body: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: AddAddressForm(
+                            accountUuid: accountUuid!,
+                          ),
                         ),
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
-                      onBackButtonPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  );
-                })
-          };
-        })
+                    );
+                  })
+            };
+          })
       ],
     );
   }
@@ -1058,6 +1064,8 @@ class DashboardPageState extends State<DashboardPage> {
                                                 widget.currentImportedAddress!
                                                     .address,
                                             screenWidth: screenWidth,
+                                            currentAccountUuid:
+                                                widget.accountUuid,
                                           );
                                         }),
                                         SizedBox(
