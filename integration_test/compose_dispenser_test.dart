@@ -147,7 +147,7 @@ void main() {
   late MockUtxoRepository mockUtxoRepository;
 
   setUpAll(() {
-    registerFallbackValue(FakeAddress());
+    registerFallbackValue(FakeAddress().address);
     registerFallbackValue(
         FakeComposeFunction<ComposeDispenserResponseVerbose>());
     registerFallbackValue(FakeComposeDispenserParams());
@@ -224,7 +224,7 @@ void main() {
                     value: mockDashboardActivityFeedBloc),
               ],
               child: ComposeDispenserPage(
-                address: FakeAddress(),
+                address: FakeAddress().address,
                 dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
               ),
             ),
@@ -232,7 +232,8 @@ void main() {
         ),
       );
 
-      composeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress()));
+      composeDispenserBloc
+          .add(FetchFormData(currentAddress: FakeAddress().address));
 
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')),
@@ -300,7 +301,7 @@ void main() {
                     value: mockDashboardActivityFeedBloc),
               ],
               child: ComposeDispenserPage(
-                address: FakeAddress(),
+                address: FakeAddress().address,
                 dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
               ),
             ),
@@ -308,7 +309,8 @@ void main() {
         ),
       );
 
-      composeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress()));
+      composeDispenserBloc
+          .add(FetchFormData(currentAddress: FakeAddress().address));
 
       await tester.pumpAndSettle();
 
@@ -413,7 +415,7 @@ void main() {
                     value: mockDashboardActivityFeedBloc),
               ],
               child: ComposeDispenserPage(
-                address: FakeAddress(),
+                address: FakeAddress().address,
                 dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
               ),
             ),
@@ -421,7 +423,8 @@ void main() {
         ),
       );
 
-      composeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress()));
+      composeDispenserBloc
+          .add(FetchFormData(currentAddress: FakeAddress().address));
 
       await tester.pumpAndSettle();
 
@@ -486,7 +489,7 @@ void main() {
                     value: mockDashboardActivityFeedBloc),
               ],
               child: ComposeDispenserPage(
-                address: FakeAddress(),
+                address: FakeAddress().address,
                 dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
               ),
             ),
@@ -494,7 +497,8 @@ void main() {
         ),
       );
 
-      composeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress()));
+      composeDispenserBloc
+          .add(FetchFormData(currentAddress: FakeAddress().address));
 
       await tester.pumpAndSettle();
 
@@ -587,7 +591,7 @@ void main() {
                     value: mockDashboardActivityFeedBloc),
               ],
               child: ComposeDispenserPage(
-                address: FakeAddress(),
+                address: FakeAddress().address,
                 dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
               ),
             ),
@@ -595,7 +599,8 @@ void main() {
         ),
       );
 
-      composeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress()));
+      composeDispenserBloc
+          .add(FetchFormData(currentAddress: FakeAddress().address));
 
       await tester.pumpAndSettle();
 

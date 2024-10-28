@@ -141,7 +141,7 @@ void main() {
     satoshirate: 1,
     status: 0,
   );
-  final mockAddress = FakeAddress();
+  final mockAddress = FakeAddress().address;
   final mockComposeDispenserResponseVerbose =
       MockComposeDispenserResponseVerbose();
   final composeTransactionParams = ComposeDispenserEventParams(
@@ -163,7 +163,7 @@ void main() {
   final List<Utxo> utxos = [FakeUtxo()];
 
   setUpAll(() {
-    registerFallbackValue(FakeAddress());
+    registerFallbackValue(FakeAddress().address);
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(utxos);
     registerFallbackValue(FeeOption.Medium());

@@ -104,8 +104,7 @@ void main() {
         .thenAnswer((_) => TaskEither.right([dispenser]));
 
     // Act
-    final result = await useCase.call(Address(
-        address: dispenser.source, index: 0, accountUuid: 'test-account-uuid'));
+    final result = await useCase.call(dispenser.source);
 
     // Assert
     expect(result.$1, feeEstimates);
@@ -130,7 +129,7 @@ void main() {
 
     // Act & Assert
     expect(
-      () => useCase.call(address),
+      () => useCase.call(address.address),
       throwsA(isA<FetchDispenserException>()),
     );
   });
@@ -152,7 +151,7 @@ void main() {
 
     // Act & Assert
     expect(
-      () => useCase.call(address),
+      () => useCase.call(address.address),
       throwsA(isA<FetchFeeEstimatesException>()),
     );
   });

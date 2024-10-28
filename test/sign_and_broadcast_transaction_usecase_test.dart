@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -19,6 +21,9 @@ import 'package:horizon/domain/entities/transaction_info.dart';
 
 // Mock classes
 class MockAddressRepository extends Mock implements AddressRepository {}
+
+class MockImportedAddressRepository extends Mock
+    implements ImportedAddressRepository {}
 
 class MockAccountRepository extends Mock implements AccountRepository {}
 
@@ -52,6 +57,20 @@ class MockAddress extends Mock implements Address {
   final index = 0;
 }
 
+class MockImportedAddress extends Mock implements ImportedAddress {
+  @override
+  final walletUuid = "test-wallet-uuid";
+
+  @override
+  final address = "test-address";
+
+  @override
+  final encryptedPrivateKey = "test-encrypted-private-key";
+
+  @override
+  final name = "test-name";
+}
+
 class MockAccount extends Mock implements Account {
   @override
   final walletUuid = "test-wallet-uuid";
@@ -80,6 +99,7 @@ class MockWallet extends Mock implements Wallet {
 void main() {
   late SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   late MockAddressRepository mockAddressRepository;
+  late MockImportedAddressRepository mockImportedAddressRepository;
   late MockAccountRepository mockAccountRepository;
   late MockWalletRepository mockWalletRepository;
   late MockUtxoRepository mockUtxoRepository;
@@ -95,6 +115,7 @@ void main() {
 
   setUp(() {
     mockAddressRepository = MockAddressRepository();
+    mockImportedAddressRepository = MockImportedAddressRepository();
     mockAccountRepository = MockAccountRepository();
     mockWalletRepository = MockWalletRepository();
     mockUtxoRepository = MockUtxoRepository();
@@ -106,6 +127,7 @@ void main() {
 
     signAndBroadcastTransactionUseCase = SignAndBroadcastTransactionUseCase(
       addressRepository: mockAddressRepository,
+      importedAddressRepository: mockImportedAddressRepository,
       accountRepository: mockAccountRepository,
       walletRepository: mockWalletRepository,
       utxoRepository: mockUtxoRepository,
@@ -117,6 +139,7 @@ void main() {
     );
   });
 
+  /// TODO : add test for imported address
   group('SignAndBroadcastTransactionUseCase', () {
     test('should sign and broadcast transaction successfully', () async {
       // Arrange
@@ -209,6 +232,76 @@ void main() {
       verify(() => mockBitcoindService.sendrawtransaction(txHex)).called(1);
     });
 
+    test(
+        'should sign and broadcast transaction successfully from imported address',
+        () async {
+      // Arrange
+      final mockUtxos = [MockUtxo()];
+      final mockImportedAddress = MockImportedAddress();
+      const String password = 'password';
+      const String decryptedAddressPrivKey = 'decrypted_address_private_key';
+      const String addressPrivKey = 'address_private_key';
+      const String txHex = 'transaction_hex';
+      const String txHash = 'transaction_hash';
+
+      // Mock behaviors
+      when(() => mockUtxoRepository.getUnspentForAddress('source'))
+          .thenAnswer((_) async => mockUtxos);
+      when(() => mockAddressRepository.getAddress('source'))
+          .thenAnswer((_) async => null);
+      when(() => mockImportedAddressRepository.getImportedAddress('source'))
+          .thenAnswer((_) async => mockImportedAddress);
+      when(() => mockEncryptionService.decrypt(
+              mockImportedAddress.encryptedPrivateKey, password))
+          .thenAnswer((_) async => decryptedAddressPrivKey);
+      when(() => mockAddressService.getAddressPrivateKeyFromWIF(
+              wif: decryptedAddressPrivKey))
+          .thenAnswer((_) async => addressPrivKey);
+      when(() => mockTransactionService.signTransaction(
+            'rawtransaction',
+            addressPrivKey,
+            'source',
+            {mockUtxos[0].txid: mockUtxos[0]},
+          )).thenAnswer((_) async => txHex);
+      when(() => mockBitcoindService.sendrawtransaction(txHex))
+          .thenAnswer((_) async => txHash);
+
+      // Define callbacks
+      var successCallbackInvoked = false;
+      onSuccess(String txHex, String txHash) {
+        successCallbackInvoked = true;
+      }
+
+      onError(String error) {}
+
+      // Act
+      await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
+        password: password,
+        onSuccess: onSuccess,
+        onError: onError,
+      );
+
+      // Assert
+      expect(successCallbackInvoked, true);
+      verify(() => mockUtxoRepository.getUnspentForAddress('source')).called(1);
+      verify(() => mockAddressRepository.getAddress('source')).called(1);
+      verify(() => mockImportedAddressRepository.getImportedAddress('source'))
+          .called(1);
+      verify(() => mockEncryptionService.decrypt(
+          mockImportedAddress.encryptedPrivateKey, password)).called(1);
+      verify(() => mockAddressService.getAddressPrivateKeyFromWIF(
+          wif: decryptedAddressPrivKey)).called(1);
+      verify(() => mockTransactionService.signTransaction(
+            'rawtransaction',
+            addressPrivKey,
+            'source',
+            {mockUtxos[0].txid: mockUtxos[0]},
+          )).called(1);
+      verify(() => mockBitcoindService.sendrawtransaction(txHex)).called(1);
+    });
+
     test('should return error if address is not found', () async {
       // Arrange
 
@@ -218,6 +311,9 @@ void main() {
           .thenAnswer((_) async => mockUtxos);
 
       when(() => mockAddressRepository.getAddress('source'))
+          .thenAnswer((_) async => null);
+
+      when(() => mockImportedAddressRepository.getImportedAddress('source'))
           .thenAnswer((_) async => null);
 
       var errorCallbackInvoked = false;
@@ -286,6 +382,51 @@ void main() {
       expect(errorCallbackInvoked, true);
       verify(() => mockEncryptionService.decrypt(
           mockWallet.encryptedPrivKey, 'wrong_password')).called(1);
+      verifyNever(() =>
+          mockTransactionService.signTransaction(any(), any(), any(), any()));
+      verifyNever(() => mockBitcoindService.sendrawtransaction(any()));
+    });
+
+    test(
+        'should return `Incorrect Password` if decrypt fails for imported address',
+        () async {
+      // Arrange
+      final mockImportedAddress = MockImportedAddress();
+
+      final mockUtxos = [MockUtxo()];
+
+      when(() => mockUtxoRepository.getUnspentForAddress('source'))
+          .thenAnswer((_) async => mockUtxos);
+
+      when(() => mockAddressRepository.getAddress('source'))
+          .thenAnswer((_) async => null);
+      when(() => mockImportedAddressRepository.getImportedAddress('source'))
+          .thenAnswer((_) async => mockImportedAddress);
+      when(() => mockEncryptionService.decrypt(
+              mockImportedAddress.encryptedPrivateKey, "wrong_password"))
+          .thenThrow(
+              SignAndBroadcastTransactionException('Incorrect password.'));
+
+      var errorCallbackInvoked = false;
+      onSuccess(String txHex, String txHash) {}
+      onError(String error) {
+        expect(error, 'Incorrect password.');
+        errorCallbackInvoked = true;
+      }
+
+      // Act
+      await signAndBroadcastTransactionUseCase.call(
+        source: "source",
+        rawtransaction: "rawtransaction",
+        password: 'wrong_password',
+        onSuccess: onSuccess,
+        onError: onError,
+      );
+
+      // Assert
+      expect(errorCallbackInvoked, true);
+      verify(() => mockEncryptionService.decrypt(
+          mockImportedAddress.encryptedPrivateKey, 'wrong_password')).called(1);
       verifyNever(() =>
           mockTransactionService.signTransaction(any(), any(), any(), any()));
       verifyNever(() => mockBitcoindService.sendrawtransaction(any()));
