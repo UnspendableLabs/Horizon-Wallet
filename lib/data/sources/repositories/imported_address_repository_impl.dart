@@ -17,7 +17,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
     await _importedAddressDao.insertImportedAddress(ImportedAddressModel(
         walletUuid: address.walletUuid,
         address: address.address,
-        index: address.index,
+        name: address.name,
         encryptedPrivateKey: address.encryptedPrivateKey));
   }
 
@@ -27,7 +27,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => ImportedAddressModel(
             walletUuid: a.walletUuid,
             address: a.address,
-            index: a.index,
+            name: a.name,
             encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
 
@@ -42,7 +42,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         ? entity.ImportedAddress(
             walletUuid: addressModel.walletUuid,
             address: addressModel.address,
-            index: addressModel.index,
+            name: addressModel.name,
             encryptedPrivateKey: addressModel.encryptedPrivateKey)
         : null;
   }
@@ -57,7 +57,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => entity.ImportedAddress(
             walletUuid: a.walletUuid,
             address: a.address,
-            index: a.index,
+            name: a.name,
             encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
 
@@ -82,7 +82,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => entity.ImportedAddress(
             walletUuid: a.walletUuid,
             address: a.address,
-            index: a.index,
+            name: a.name,
             encryptedPrivateKey: a.encryptedPrivateKey))
         .toList();
   }
