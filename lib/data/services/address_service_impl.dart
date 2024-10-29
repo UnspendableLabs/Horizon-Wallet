@@ -189,7 +189,6 @@ class AddressServiceImpl implements AddressService {
     return child.toWIF();
   }
 
-
   String _legacyFromBip32(bip32.BIP32Interface child) {
     final network = _getNetwork();
 
@@ -230,8 +229,8 @@ class AddressServiceImpl implements AddressService {
           required String coin,
           required String account,
           required String change,
-      required int index,
-      required ImportFormat importFormat}) =>
+          required int index,
+          required ImportFormat importFormat}) =>
       switch (importFormat) {
         ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
         _ => 'm/$account/$change/$index',

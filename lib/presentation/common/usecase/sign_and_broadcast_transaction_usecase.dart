@@ -158,8 +158,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }
 
-    final addressPrivKey = await importedAddressService.getAddressPrivateKeyFromWIF(
-        wif: decryptedAddressWif);
+    final addressPrivKey = await importedAddressService
+        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
 
     return addressPrivKey;
   }

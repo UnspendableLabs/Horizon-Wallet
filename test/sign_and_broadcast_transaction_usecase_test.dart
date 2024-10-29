@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -38,6 +39,9 @@ class MockAddressService extends Mock implements AddressService {}
 class MockTransactionService extends Mock implements TransactionService {}
 
 class MockBitcoindService extends Mock implements BitcoindService {}
+
+class MockImportedAddressService extends Mock
+    implements ImportedAddressService {}
 
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
@@ -108,7 +112,7 @@ void main() {
   late MockTransactionService mockTransactionService;
   late MockBitcoindService mockBitcoindService;
   late MockTransactionLocalRepository mockTransactionLocalRepository;
-
+  late MockImportedAddressService mockImportedAddressService;
   setUpAll(() {
     registerFallbackValue(FakeTransactionInfo());
   });
@@ -124,7 +128,7 @@ void main() {
     mockTransactionService = MockTransactionService();
     mockBitcoindService = MockBitcoindService();
     mockTransactionLocalRepository = MockTransactionLocalRepository();
-
+    mockImportedAddressService = MockImportedAddressService();
     signAndBroadcastTransactionUseCase = SignAndBroadcastTransactionUseCase(
       addressRepository: mockAddressRepository,
       importedAddressRepository: mockImportedAddressRepository,
@@ -136,6 +140,7 @@ void main() {
       transactionService: mockTransactionService,
       bitcoindService: mockBitcoindService,
       transactionLocalRepository: mockTransactionLocalRepository,
+      importedAddressService: mockImportedAddressService,
     );
   });
 
@@ -254,7 +259,7 @@ void main() {
       when(() => mockEncryptionService.decrypt(
               mockImportedAddress.encryptedWIF, password))
           .thenAnswer((_) async => decryptedAddressPrivKey);
-      when(() => mockAddressService.getAddressPrivateKeyFromWIF(
+      when(() => mockImportedAddressService.getAddressPrivateKeyFromWIF(
               wif: decryptedAddressPrivKey))
           .thenAnswer((_) async => addressPrivKey);
       when(() => mockTransactionService.signTransaction(
@@ -291,7 +296,7 @@ void main() {
           .called(1);
       verify(() => mockEncryptionService.decrypt(
           mockImportedAddress.encryptedWIF, password)).called(1);
-      verify(() => mockAddressService.getAddressPrivateKeyFromWIF(
+      verify(() => mockImportedAddressService.getAddressPrivateKeyFromWIF(
           wif: decryptedAddressPrivKey)).called(1);
       verify(() => mockTransactionService.signTransaction(
             'rawtransaction',

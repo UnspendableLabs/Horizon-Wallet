@@ -142,7 +142,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                   String password = passwordController.text;
 
                   context.read<ImportAddressPkBloc>().add(Submit(
-                          wif: wif,
+                        wif: wif,
                         password: password,
                         format: selectedFormat!,
                         name: nameController.text,

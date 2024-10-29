@@ -24,9 +24,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
   Future<void> insertMany(List<entity.ImportedAddress> addresses) async {
     List<ImportedAddressModel> addresses_ = addresses
         .map((a) => ImportedAddressModel(
-            address: a.address,
-            name: a.name,
-            encryptedWIF: a.encryptedWIF))
+            address: a.address, name: a.name, encryptedWIF: a.encryptedWIF))
         .toList();
 
     _importedAddressDao.insertMultipleImportedAddresses(addresses_);
@@ -55,9 +53,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         await _importedAddressDao.getAllImportedAddresses();
     return importedAddresses
         .map((a) => entity.ImportedAddress(
-            address: a.address,
-            name: a.name,
-            encryptedWIF: a.encryptedWIF))
+            address: a.address, name: a.name, encryptedWIF: a.encryptedWIF))
         .toList();
   }
 }

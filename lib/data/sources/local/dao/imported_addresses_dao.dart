@@ -13,7 +13,6 @@ class ImportedAddressesDao extends DatabaseAccessor<DB>
   Future<List<ImportedAddress>> getAllImportedAddresses() =>
       select(importedAddresses).get();
 
-
   Future<ImportedAddress?> getImportedAddress(String address) =>
       (select(importedAddresses)..where((tbl) => tbl.address.equals(address)))
           .getSingleOrNull();

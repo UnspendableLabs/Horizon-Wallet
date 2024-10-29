@@ -13,7 +13,8 @@ part "db.g.dart";
 // TODO: read from env
 const ENV = "dev";
 
-@DriftDatabase(tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses])
+@DriftDatabase(
+    tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses])
 class DB extends _$DB {
   DB(super.e);
 
@@ -66,27 +67,35 @@ class DB extends _$DB {
 
                 await m.alterTable(TableMigration(
                   schema.addresses,
-                  columnTransformer: {schema.addresses.index: const CustomExpression('address_index')},
+                  columnTransformer: {
+                    schema.addresses.index:
+                        const CustomExpression('address_index')
+                  },
                 ));
               },
               from2To3: (m, schema) async {
                 // add encryptedMnemonic column to wallets table
-                await m.addColumn(schema.wallets, schema.wallets.encryptedMnemonic);
+                await m.addColumn(
+                    schema.wallets, schema.wallets.encryptedMnemonic);
 
                 // // make btc_amount, fee, and unpacked_data nullable
                 // https://drift.simonbinder.eu/docs/migrations/api/#changing-the-type-of-a-column
                 await m.alterTable(TableMigration(
                   schema.transactions,
                   columnTransformer: {
-                    schema.transactions.btcAmount: schema.transactions.btcAmount.cast<int>(),
-                    schema.transactions.fee: schema.transactions.fee.cast<int>(),
-                    schema.transactions.unpackedData: schema.transactions.unpackedData.cast<String>()
+                    schema.transactions.btcAmount:
+                        schema.transactions.btcAmount.cast<int>(),
+                    schema.transactions.fee:
+                        schema.transactions.fee.cast<int>(),
+                    schema.transactions.unpackedData:
+                        schema.transactions.unpackedData.cast<String>()
                   },
                 ));
               },
               from3To4: (m, schema) async {
                 // Add the new column to the Addresses table
-                await m.addColumn(schema.addresses, schema.addresses.encryptedPrivateKey);
+                await m.addColumn(
+                    schema.addresses, schema.addresses.encryptedPrivateKey);
 
                 // Create the new ImportedAddresses table
                 await m.createTable(schema.importedAddresses);
@@ -143,8 +152,10 @@ class DB extends _$DB {
             ));
 
         if (ENV == "dev") {
-          final wrongForeignKeys = await customSelect('PRAGMA foreign_key_check').get();
-          assert(wrongForeignKeys.isEmpty, '${wrongForeignKeys.map((e) => e.data)}');
+          final wrongForeignKeys =
+              await customSelect('PRAGMA foreign_key_check').get();
+          assert(wrongForeignKeys.isEmpty,
+              '${wrongForeignKeys.map((e) => e.data)}');
         }
 
         await customStatement('PRAGMA foreign_keys = ON;');

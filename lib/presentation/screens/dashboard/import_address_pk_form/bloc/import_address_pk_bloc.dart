@@ -44,7 +44,7 @@ class ImportAddressPkBloc
         try {
           // TODO: this is a hack to ensure the user has the correct password
           // TODO: we should be able to check this without decrypting the wallet pk
-           await encryptionService.decrypt(
+          await encryptionService.decrypt(
               wallet.encryptedPrivKey, event.password);
         } catch (e) {
           emit(ImportAddressPkStep2(state: Step2Error("Incorrect password")));

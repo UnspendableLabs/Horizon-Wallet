@@ -10,23 +10,27 @@ import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 
 class ImportedAddressServiceImpl implements ImportedAddressService {
   final Config config;
-  ecpair.ECPairFactory ecpairFactory = ecpair.ECPairFactory(tinysecp256k1js.ecc);
+  ecpair.ECPairFactory ecpairFactory =
+      ecpair.ECPairFactory(tinysecp256k1js.ecc);
 
   ImportedAddressServiceImpl({required this.config});
 
   @override
   Future<String> getAddressPrivateKeyFromWIF({required String wif}) async {
-    final addressPrivateKey = ecpairFactory.fromWIF(wif, _getNetwork()).privateKey.toDart;
+    final addressPrivateKey =
+        ecpairFactory.fromWIF(wif, _getNetwork()).privateKey.toDart;
     return hex.encode(addressPrivateKey);
   }
 
   @override
-  Future<String> getAddressFromWIF({required String wif, required ImportAddressPkFormat format}) async {
+  Future<String> getAddressFromWIF(
+      {required String wif, required ImportAddressPkFormat format}) async {
     final ecpair.ECPair ecPair = ecpairFactory.fromWIF(wif, _getNetwork());
 
     final network = _getNetwork();
 
-    final paymentOpts = bitcoin.PaymentOptions(pubkey: ecPair.publicKey, network: network);
+    final paymentOpts =
+        bitcoin.PaymentOptions(pubkey: ecPair.publicKey, network: network);
 
     switch (format) {
       case ImportAddressPkFormat.segwit:
