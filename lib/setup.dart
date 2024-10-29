@@ -7,6 +7,7 @@ import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:horizon/data/services/imported_address_service_impl.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
@@ -39,6 +40,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
@@ -98,8 +100,6 @@ import 'dart:convert';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
-
-  logger.Logger.level = logger.Level.warning;
 
   injector.registerSingleton<Logger>(LoggerImpl(logger.Logger()));
 
@@ -248,6 +248,9 @@ Future<void> setup() async {
       .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
   injector
       .registerSingleton<AddressService>(AddressServiceImpl(config: config));
+
+  injector.registerSingleton<ImportedAddressService>(
+      ImportedAddressServiceImpl(config: config));
   injector.registerSingleton<MnemonicService>(
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
@@ -356,6 +359,7 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
     bitcoindService: GetIt.I.get<BitcoindService>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+    importedAddressService: GetIt.I.get<ImportedAddressService>(),
   ));
 
   injector.registerSingleton<WriteLocalTransactionUseCase>(

@@ -10,6 +10,7 @@ import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 
@@ -40,6 +41,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final TransactionService transactionService;
   final BitcoindService bitcoindService;
   final TransactionLocalRepository transactionLocalRepository;
+  final ImportedAddressService importedAddressService;
 
   SignAndBroadcastTransactionUseCase({
     required this.addressRepository,
@@ -52,6 +54,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required this.transactionService,
     required this.bitcoindService,
     required this.transactionLocalRepository,
+    required this.importedAddressService,
   });
 
   Future<void> call(
@@ -147,16 +150,16 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
   Future<String> _getAddressPrivKeyForImportedAddress(
       ImportedAddress importedAddress, String password) async {
-    late String decryptedAddressPrivKey;
+    late String decryptedAddressWif;
     try {
-      decryptedAddressPrivKey = await encryptionService.decrypt(
+      decryptedAddressWif = await encryptionService.decrypt(
           importedAddress.encryptedWIF, password);
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }
 
-    final addressPrivKey = await addressService.getAddressPrivateKeyFromWIF(
-        wif: decryptedAddressPrivKey);
+    final addressPrivKey = await importedAddressService.getAddressPrivateKeyFromWIF(
+        wif: decryptedAddressWif);
 
     return addressPrivKey;
   }

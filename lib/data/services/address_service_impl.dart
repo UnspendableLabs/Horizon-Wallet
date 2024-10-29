@@ -17,9 +17,6 @@ class AddressServiceImpl implements AddressService {
   final Config config;
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
-  ecpair.ECPairFactory ecpairFactory =
-      ecpair.ECPairFactory(tinysecp256k1js.ecc);
-
   AddressServiceImpl({required this.config});
 
   @override
@@ -155,10 +152,13 @@ class AddressServiceImpl implements AddressService {
       required String change,
       required int index,
       required ImportFormat importFormat}) async {
-    String path = switch (importFormat) {
-      ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
-      _ => 'm/$account/$change/$index',
-    };
+    String path = _getPathForImportFormat(
+        purpose: purpose,
+        coin: coin,
+        account: account,
+        change: change,
+        index: index,
+        importFormat: importFormat);
 
     bip32.BIP32Interface child = _deriveChildKey(
         path: path, privKey: rootPrivKey, chainCodeHex: chainCodeHex);
@@ -176,40 +176,19 @@ class AddressServiceImpl implements AddressService {
       required String change,
       required int index,
       required ImportFormat importFormat}) async {
-    String path = switch (importFormat) {
-      ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
-      _ => 'm/$account/$change/$index',
-    };
+    String path = _getPathForImportFormat(
+        purpose: purpose,
+        coin: coin,
+        account: account,
+        change: change,
+        index: index,
+        importFormat: importFormat);
 
     bip32.BIP32Interface child = _deriveChildKey(
         path: path, privKey: rootPrivKey, chainCodeHex: chainCodeHex);
     return child.toWIF();
   }
 
-  @override
-  Future<String> getAddressPrivateKeyFromWIF({required String wif}) async {
-    final addressPrivateKey =
-        ecpairFactory.fromWIF(wif, _getNetwork()).privateKey.toDart;
-    return hex.encode(addressPrivateKey);
-  }
-
-  @override
-  Future<String> getAddressFromWIF(
-      {required String wif, required ImportAddressPkFormat format}) async {
-    final ecpair.ECPair ecPair = ecpairFactory.fromWIF(wif, _getNetwork());
-
-    final network = _getNetwork();
-
-    final paymentOpts =
-        bitcoin.PaymentOptions(pubkey: ecPair.publicKey, network: network);
-
-    switch (format) {
-      case ImportAddressPkFormat.segwit:
-        return bitcoin.p2wpkh(paymentOpts).address;
-      case ImportAddressPkFormat.legacy:
-        return bitcoin.p2pkh(paymentOpts).address;
-    }
-  }
 
   String _legacyFromBip32(bip32.BIP32Interface child) {
     final network = _getNetwork();
@@ -244,6 +223,18 @@ class AddressServiceImpl implements AddressService {
         Network.mainnet => ecpair.bitcoin.bech32,
         Network.testnet => ecpair.testnet.bech32,
         Network.regtest => ecpair.regtest.bech32,
+      };
+
+  String _getPathForImportFormat(
+          {required String purpose,
+          required String coin,
+          required String account,
+          required String change,
+      required int index,
+      required ImportFormat importFormat}) =>
+      switch (importFormat) {
+        ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
+        _ => 'm/$account/$change/$index',
       };
 
   bip32.BIP32Interface _deriveChildKey(

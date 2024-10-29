@@ -18,7 +18,8 @@ class ShellState with _$ShellState {
 
 @freezed
 class ShellStateSuccess with _$ShellStateSuccess {
-  const factory ShellStateSuccess({
+  // Private constructor
+  const factory ShellStateSuccess._({
     required bool redirect,
     required Wallet wallet,
     required List<Account> accounts,
@@ -28,6 +29,49 @@ class ShellStateSuccess with _$ShellStateSuccess {
     List<ImportedAddress>? importedAddresses,
     ImportedAddress? currentImportedAddress,
   }) = _ShellStateSuccess;
+
+  // Factory for account/address state
+  factory ShellStateSuccess.withAccount({
+    required bool redirect,
+    required Wallet wallet,
+    required List<Account> accounts,
+    required String currentAccountUuid,
+    required List<Address> addresses,
+    required Address currentAddress,
+    List<ImportedAddress>? importedAddresses,
+  }) {
+    return ShellStateSuccess._(
+      redirect: redirect,
+      wallet: wallet,
+      accounts: accounts,
+      currentAccountUuid: currentAccountUuid,
+      addresses: addresses,
+      currentAddress: currentAddress,
+      importedAddresses: importedAddresses,
+      currentImportedAddress: null,
+    );
+  }
+
+  // Factory for imported address state
+  factory ShellStateSuccess.withImportedAddress({
+    required bool redirect,
+    required Wallet wallet,
+    required List<Account> accounts,
+    required List<Address> addresses,
+    required List<ImportedAddress> importedAddresses,
+    required ImportedAddress currentImportedAddress,
+  }) {
+    return ShellStateSuccess._(
+      redirect: redirect,
+      wallet: wallet,
+      accounts: accounts,
+      currentAccountUuid: null,
+      addresses: addresses,
+      currentAddress: null,
+      importedAddresses: importedAddresses,
+      currentImportedAddress: currentImportedAddress,
+    );
+  }
 }
 
 @freezed

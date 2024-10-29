@@ -59,7 +59,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(ShellState.success(ShellStateSuccess(
+      emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
         accounts: accounts,
@@ -157,7 +157,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(ShellState.success(ShellStateSuccess(
+      emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
         accounts: accounts,
@@ -207,7 +207,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(ShellState.success(ShellStateSuccess(
+      emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
         accounts: accounts,

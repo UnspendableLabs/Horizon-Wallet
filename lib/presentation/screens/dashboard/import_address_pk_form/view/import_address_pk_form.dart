@@ -19,7 +19,7 @@ class ImportAddressPkForm extends StatefulWidget {
 class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final pkController = TextEditingController();
+  final wifController = TextEditingController();
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final passwordFormKey = GlobalKey<FormState>();
@@ -34,7 +34,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
 
   @override
   void dispose() {
-    pkController.dispose();
+    wifController.dispose();
     nameController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -93,7 +93,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                         ),
                         const SizedBox(height: 16),
                         HorizonUI.HorizonTextFormField(
-                          controller: pkController,
+                          controller: wifController,
                           label: "Private Key",
                           validator: (String? value) {
                             if (value == null || value.isEmpty) {
@@ -138,11 +138,11 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                     return;
                   }
 
-                  String pk = pkController.text;
+                  String wif = wifController.text;
                   String password = passwordController.text;
 
                   context.read<ImportAddressPkBloc>().add(Submit(
-                        pk: pk,
+                          wif: wif,
                         password: password,
                         format: selectedFormat!,
                         name: nameController.text,
