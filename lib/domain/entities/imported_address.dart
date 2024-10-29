@@ -7,7 +7,7 @@ class ImportedAddress {
   const ImportedAddress({
     required this.walletUuid,
     required this.address,
-    required this.name,
     required this.encryptedWIF,
+    required this.name,
   });
 }

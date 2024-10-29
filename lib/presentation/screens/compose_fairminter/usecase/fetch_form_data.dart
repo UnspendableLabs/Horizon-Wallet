@@ -1,7 +1,6 @@
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchFairminterFormDataUseCase {
@@ -13,7 +12,7 @@ class FetchFairminterFormDataUseCase {
     required this.getFeeEstimatesUseCase,
   });
 
-  Future<(List<Asset>, FeeEstimates)> call(Address currentAddress) async {
+  Future<(List<Asset>, FeeEstimates)> call(String currentAddress) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
@@ -34,10 +33,10 @@ class FetchFairminterFormDataUseCase {
     }
   }
 
-  Future<List<Asset>> _fetchAssets(Address currentAddress) async {
+  Future<List<Asset>> _fetchAssets(String currentAddress) async {
     try {
-      final assets = await assetRepository
-          .getValidAssetsByOwnerVerbose(currentAddress.address);
+      final assets =
+          await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
       return assets;
     } catch (e) {
       throw FetchAssetsException(e.toString());

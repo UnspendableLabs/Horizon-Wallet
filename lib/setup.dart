@@ -21,6 +21,7 @@ import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -31,6 +32,7 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -257,6 +259,8 @@ Future<void> setup() async {
       WalletRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<AddressRepository>(
       AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<ImportedAddressRepository>(
+      ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<EventsRepository>(
       EventsRepositoryImpl(api_: GetIt.I.get<V2Api>()));
@@ -343,6 +347,7 @@ Future<void> setup() async {
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
     addressRepository: GetIt.I.get<AddressRepository>(),
+    importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     utxoRepository: GetIt.I.get<UtxoRepository>(),

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
@@ -60,7 +62,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                     ? dialogBackgroundColorDarkTheme
                     : dialogBackgroundColorLightTheme,
                 isTopBarLayerAlwaysVisible: true,
-                topBarTitle: Text('Select an account',
+                topBarTitle: Text('Select an Account',
                     style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -318,6 +320,7 @@ class DispenserButtonMenu extends StatelessWidget {
   final String text;
   final double? iconSize;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
 
   const DispenserButtonMenu({
     super.key,
@@ -326,6 +329,7 @@ class DispenserButtonMenu extends StatelessWidget {
     required this.text,
     this.iconSize,
     required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
   });
 
   @override
@@ -355,6 +359,7 @@ class DispenserButtonMenu extends StatelessWidget {
                           body: ComposeDispenserPageWrapper(
                             dashboardActivityFeedBloc:
                                 dashboardActivityFeedBloc,
+                            currentAddress: currentAddress,
                           ),
                         ));
                   }),
@@ -367,6 +372,7 @@ class DispenserButtonMenu extends StatelessWidget {
                         title: "Close Dispenser",
                         body: CloseDispenserPageWrapper(
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          currentAddress: currentAddress,
                         ),
                         includeBackButton: false,
                         includeCloseButton: true,
@@ -382,6 +388,7 @@ class DispenserButtonMenu extends StatelessWidget {
                         title: "Trigger Dispense",
                         body: ComposeDispensePageWrapper(
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          currentAddress: currentAddress,
                         ),
                         includeBackButton: false,
                         includeCloseButton: true,
@@ -443,6 +450,7 @@ class MintMenu extends StatelessWidget {
   final String text;
   final double? iconSize;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
 
   const MintMenu({
     super.key,
@@ -451,6 +459,7 @@ class MintMenu extends StatelessWidget {
     required this.text,
     this.iconSize,
     required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
   });
 
   @override
@@ -478,6 +487,7 @@ class MintMenu extends StatelessWidget {
                           includeBackButton: false,
                           includeCloseButton: true,
                           body: ComposeFairminterPageWrapper(
+                            currentAddress: currentAddress,
                             dashboardActivityFeedBloc:
                                 dashboardActivityFeedBloc,
                           ),
@@ -491,6 +501,7 @@ class MintMenu extends StatelessWidget {
                       body: HorizonUI.HorizonDialog(
                         title: "Compose Fairmint",
                         body: ComposeFairmintPageWrapper(
+                          currentAddress: currentAddress,
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                         ),
                         includeBackButton: false,
@@ -550,16 +561,16 @@ class MintMenu extends StatelessWidget {
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final String accountUuid;
-  final Address currentAddress;
+  final String currentAddress;
+  final String? currentAccountUuid;
   final double screenWidth;
   const AddressActions(
       {super.key,
       required this.isDarkTheme,
       required this.dashboardActivityFeedBloc,
-      required this.accountUuid,
       required this.currentAddress,
-      required this.screenWidth});
+      required this.screenWidth,
+      this.currentAccountUuid});
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -573,6 +584,7 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Send",
                 body: ComposeSendPageWrapper(
+                  currentAddress: currentAddress,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -587,6 +599,7 @@ class AddressActions extends StatelessWidget {
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Issuance",
                 body: ComposeIssuancePageWrapper(
+                  currentAddress: currentAddress,
                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                 ),
                 includeBackButton: false,
@@ -601,6 +614,7 @@ class AddressActions extends StatelessWidget {
                   title: "Receive",
                   body: QRCodeDialog(
                     currentAddress: currentAddress,
+                    currentAccountUuid: currentAccountUuid,
                   ),
                   includeBackButton: false,
                   includeCloseButton: true,
@@ -609,6 +623,7 @@ class AddressActions extends StatelessWidget {
                 text: "RECEIVE",
                 iconSize: 24.0),
             MintMenu(
+              currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.print,
               text: "MINT",
@@ -616,6 +631,7 @@ class AddressActions extends StatelessWidget {
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
             DispenserButtonMenu(
+              currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.more_vert,
               text: "DISPENSER",
@@ -639,8 +655,7 @@ class DashboardPageWrapper extends StatelessWidget {
         .state; // we should only ever get to this page if shell is success
     return shell.maybeWhen(
         success: (data) => MultiBlocProvider(
-              key: Key(
-                  "${data.currentAccountUuid}:${data.currentAddress.address}"),
+              key: key,
               providers: [
                 BlocProvider<BalancesBloc>(
                   create: (context) => BalancesBloc(
@@ -649,13 +664,15 @@ class DashboardPageWrapper extends StatelessWidget {
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     addressTxRepository: GetIt.I.get<AddressTxRepository>(),
                     assetRepository: GetIt.I.get<AssetRepository>(),
-                    currentAddress: data.currentAddress,
+                    currentAddress: data.currentAddress?.address ??
+                        data.currentImportedAddress!.address,
                   )..add(Start(pollingInterval: const Duration(seconds: 60))),
                 ),
                 BlocProvider<DashboardActivityFeedBloc>(
                   create: (context) => DashboardActivityFeedBloc(
                     logger: GetIt.I.get<Logger>(),
-                    currentAddress: data.currentAddress,
+                    currentAddress: data.currentAddress?.address ??
+                        data.currentImportedAddress!.address,
                     eventsRepository: GetIt.I.get<EventsRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
@@ -666,10 +683,10 @@ class DashboardPageWrapper extends StatelessWidget {
                 ),
               ],
               child: DashboardPage(
-                key: Key(
-                    "${data.currentAccountUuid}:${data.currentAddress.address}"),
+                key: key,
                 accountUuid: data.currentAccountUuid,
                 currentAddress: data.currentAddress,
+                currentImportedAddress: data.currentImportedAddress,
                 actionRepository: GetIt.instance<ActionRepository>(),
               ),
             ),
@@ -678,9 +695,11 @@ class DashboardPageWrapper extends StatelessWidget {
 }
 
 class QRCodeDialog extends StatelessWidget {
-  final Address currentAddress;
+  final String currentAddress;
+  final String? currentAccountUuid;
 
-  const QRCodeDialog({super.key, required this.currentAddress});
+  const QRCodeDialog(
+      {super.key, required this.currentAddress, this.currentAccountUuid});
 
   @override
   Widget build(BuildContext context) {
@@ -698,7 +717,7 @@ class QRCodeDialog extends StatelessWidget {
           eyeStyle: QrEyeStyle(
               eyeShape: QrEyeShape.square,
               color: isDarkTheme ? mainTextWhite : royalBlueLightTheme),
-          data: currentAddress.address,
+          data: currentAddress,
           version: QrVersions.auto,
           size: 230.0,
         ),
@@ -725,7 +744,7 @@ class QRCodeDialog extends StatelessWidget {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: SelectableText(
-                          currentAddress.address,
+                          currentAddress,
                           style: const TextStyle(
                               overflow: TextOverflow.ellipsis, fontSize: 16),
                         ),
@@ -744,8 +763,8 @@ class QRCodeDialog extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(
-                                    text: currentAddress.address));
+                                Clipboard.setData(
+                                    ClipboardData(text: currentAddress));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
@@ -764,8 +783,8 @@ class QRCodeDialog extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(
-                                    text: currentAddress.address));
+                                Clipboard.setData(
+                                    ClipboardData(text: currentAddress));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content:
@@ -799,58 +818,61 @@ class QRCodeDialog extends StatelessWidget {
             );
           },
         ),
-        Builder(builder: (context) {
-          final accountUuid = context.read<ShellStateCubit>().state.maybeWhen(
-                success: (state) => state.currentAccountUuid,
-                orElse: () => throw Exception("invariant: no account"),
-              );
+        if (currentAccountUuid != null)
+          Builder(builder: (context) {
+            final accountUuid = context.read<ShellStateCubit>().state.maybeWhen(
+                  success: (state) => state.currentAccountUuid,
+                  orElse: () => null,
+                );
 
-          // look up account
-          Account account = context.read<ShellStateCubit>().state.maybeWhen(
-                success: (state) => state.accounts
-                    .firstWhere((account) => account.uuid == accountUuid),
-                orElse: () => throw Exception("invariant: no account"),
-              );
+            // look up account
+            Account account = context.read<ShellStateCubit>().state.maybeWhen(
+                  success: (state) => state.accounts
+                      .firstWhere((account) => account.uuid == accountUuid),
+                  orElse: () => throw Exception("invariant: no account"),
+                );
 
-          // don't support address creation for horizon accounts
-          return switch (account.importFormat) {
-            ImportFormat.horizon => const SizedBox.shrink(),
-            _ => TextButton(
-                child: const Text("Add a new address"),
-                onPressed: () {
-                  HorizonUI.HorizonDialog.show(
-                    context: context,
-                    body: HorizonUI.HorizonDialog(
-                      title: "Add a new address\nto ${account.name}",
-                      titleAlign: Alignment.center,
-                      body: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: AddAddressForm(
-                          accountUuid: accountUuid,
+            // don't support address creation for horizon accounts
+            return switch (account.importFormat) {
+              ImportFormat.horizon => const SizedBox.shrink(),
+              _ => TextButton(
+                  child: const Text("Add a new address"),
+                  onPressed: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Add a new address\nto ${account.name}",
+                        titleAlign: Alignment.center,
+                        body: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: AddAddressForm(
+                            accountUuid: accountUuid!,
+                          ),
                         ),
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
-                      onBackButtonPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  );
-                })
-          };
-        })
+                    );
+                  })
+            };
+          })
       ],
     );
   }
 }
 
 class DashboardPage extends StatefulWidget {
-  final String accountUuid;
-  final Address currentAddress;
+  final String? accountUuid;
+  final Address? currentAddress;
+  final ImportedAddress? currentImportedAddress;
   final ActionRepository actionRepository;
 
   const DashboardPage({
     super.key,
     required this.accountUuid,
     required this.currentAddress,
+    required this.currentImportedAddress,
     required this.actionRepository,
   });
 
@@ -909,6 +931,8 @@ class DashboardPageState extends State<DashboardPage> {
             title: "Trigger Dispense",
             body: ComposeDispensePageWrapper(
                 initialDispenserAddress: address,
+                currentAddress: widget.currentAddress?.address ??
+                    widget.currentImportedAddress!.address,
                 dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
   }
 
@@ -923,6 +947,8 @@ class DashboardPageState extends State<DashboardPage> {
           body: ComposeFairmintPageWrapper(
             initialFairminterTxHash: intitialFairminterTxHash,
             dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            currentAddress: widget.currentAddress?.address ??
+                widget.currentImportedAddress!.address,
           ),
           includeBackButton: false,
           includeCloseButton: true,
@@ -946,27 +972,12 @@ class DashboardPageState extends State<DashboardPage> {
 
     final isSmallScreen = screenWidth < 600;
 
-    final account = context.read<ShellStateCubit>().state.maybeWhen(
-          success: (state) => state.accounts
-              .firstWhere((account) => account.uuid == widget.accountUuid),
+    final Account? account = context.read<ShellStateCubit>().state.maybeWhen(
+          success: (state) => state.accounts.firstWhereOrNull(
+            (account) => account.uuid == state.currentAccountUuid,
+          ),
           orElse: () => null,
         );
-
-    Widget buildSearchBar() {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            labelText: 'Search assets',
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      );
-    }
 
     if (!isSmallScreen) {
       return Scaffold(
@@ -1048,10 +1059,13 @@ class DashboardPageState extends State<DashboardPage> {
                                             isDarkTheme: isDarkTheme,
                                             dashboardActivityFeedBloc:
                                                 dashboardActivityFeedBloc,
-                                            accountUuid: widget.accountUuid,
-                                            currentAddress:
-                                                widget.currentAddress,
+                                            currentAddress: widget
+                                                    .currentAddress?.address ??
+                                                widget.currentImportedAddress!
+                                                    .address,
                                             screenWidth: screenWidth,
+                                            currentAccountUuid:
+                                                widget.accountUuid,
                                           );
                                         }),
                                         SizedBox(
@@ -1070,14 +1084,13 @@ class DashboardPageState extends State<DashboardPage> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   sliver: BalancesDisplay(
-                                                      accountUuid:
-                                                          widget.accountUuid,
                                                       isDarkTheme: isDarkTheme,
-                                                      addresses: [
-                                                        widget.currentAddress
-                                                      ],
-                                                      currentAddress:
-                                                          widget.currentAddress,
+                                                      currentAddress: widget
+                                                              .currentAddress
+                                                              ?.address ??
+                                                          widget
+                                                              .currentImportedAddress!
+                                                              .address,
                                                       initialItemCount:
                                                           isSmallScreen
                                                               ? 5
@@ -1105,13 +1118,18 @@ class DashboardPageState extends State<DashboardPage> {
                                                   sliver:
                                                       DashboardActivityFeedScreen(
                                                           key: Key(
-                                                            widget
-                                                                .currentAddress
-                                                                .address,
+                                                            widget.currentAddress
+                                                                    ?.address ??
+                                                                widget
+                                                                    .currentImportedAddress!
+                                                                    .address,
                                                           ),
                                                           addresses: [
-                                                            widget
-                                                                .currentAddress
+                                                            widget.currentAddress
+                                                                    ?.address ??
+                                                                widget
+                                                                    .currentImportedAddress!
+                                                                    .address
                                                           ],
                                                           initialItemCount:
                                                               isSmallScreen
@@ -1247,54 +1265,54 @@ class DashboardPageState extends State<DashboardPage> {
                                           ],
                                         ),
                                       )
-                                    : const SliverToBoxAdapter(
-                                        child: SizedBox.shrink()),
-                                isSmallScreen
-                                    ? SliverToBoxAdapter(
+                                    : SliverToBoxAdapter(
                                         child: AccountSelectionButton(
                                           isDarkTheme: isDarkTheme,
                                           onPressed: () => showAccountList(
                                               context, isDarkTheme),
                                         ),
-                                      )
-                                    : const SliverToBoxAdapter(
-                                        child: SizedBox.shrink()),
-                                isSmallScreen
-                                    ? Builder(builder: (context) {
-                                        return context
-                                            .read<ShellStateCubit>()
-                                            .state
-                                            .maybeWhen(
-                                                success: (state) => state
-                                                            .addresses.length >
-                                                        1
-                                                    ? SliverToBoxAdapter(
-                                                        child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .fromLTRB(8.0,
-                                                                8.0, 8.0, 0.0),
-                                                        child:
-                                                            AddressSelectionButton(
-                                                          isDarkTheme:
-                                                              isDarkTheme,
-                                                          onPressed: () =>
-                                                              showAddressList(
-                                                                  context,
-                                                                  isDarkTheme,
-                                                                  account),
-                                                        ),
-                                                      ))
-                                                    : const SliverToBoxAdapter(
-                                                        child:
-                                                            SizedBox.shrink()),
-                                                orElse: () =>
-                                                    const SliverToBoxAdapter(
-                                                        child:
-                                                            SizedBox.shrink()));
-                                      })
-                                    : const SliverToBoxAdapter(
-                                        child: SizedBox.shrink()),
+                                      ),
+                                if (account != null)
+                                  isSmallScreen
+                                      ? Builder(builder: (context) {
+                                          return context
+                                              .read<ShellStateCubit>()
+                                              .state
+                                              .maybeWhen(
+                                                  success: (state) => state
+                                                              .addresses
+                                                              .length >
+                                                          1
+                                                      ? SliverToBoxAdapter(
+                                                          child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .fromLTRB(
+                                                                  8.0,
+                                                                  8.0,
+                                                                  8.0,
+                                                                  0.0),
+                                                          child:
+                                                              AddressSelectionButton(
+                                                            isDarkTheme:
+                                                                isDarkTheme,
+                                                            onPressed: () =>
+                                                                showAddressList(
+                                                                    context,
+                                                                    isDarkTheme,
+                                                                    account),
+                                                          ),
+                                                        ))
+                                                      : const SliverToBoxAdapter(
+                                                          child: SizedBox
+                                                              .shrink()),
+                                                  orElse: () =>
+                                                      const SliverToBoxAdapter(
+                                                          child: SizedBox
+                                                              .shrink()));
+                                        })
+                                      : const SliverToBoxAdapter(
+                                          child: SizedBox.shrink()),
                                 SliverToBoxAdapter(
                                     child: Builder(builder: (context) {
                                   final dashboardActivityFeedBloc = BlocProvider
@@ -1303,8 +1321,9 @@ class DashboardPageState extends State<DashboardPage> {
                                     isDarkTheme: isDarkTheme,
                                     dashboardActivityFeedBloc:
                                         dashboardActivityFeedBloc,
-                                    accountUuid: widget.accountUuid,
-                                    currentAddress: widget.currentAddress,
+                                    currentAddress: widget
+                                            .currentAddress?.address ??
+                                        widget.currentImportedAddress!.address,
                                     screenWidth: screenWidth,
                                   );
                                 })),
@@ -1323,10 +1342,11 @@ class DashboardPageState extends State<DashboardPage> {
                                   SliverPadding(
                                     padding: const EdgeInsets.all(8.0),
                                     sliver: BalancesDisplay(
-                                        accountUuid: widget.accountUuid,
                                         isDarkTheme: isDarkTheme,
-                                        addresses: [widget.currentAddress],
-                                        currentAddress: widget.currentAddress,
+                                        currentAddress:
+                                            widget.currentAddress?.address ??
+                                                widget.currentImportedAddress!
+                                                    .address,
                                         initialItemCount:
                                             isSmallScreen ? 5 : 3),
                                   ),
@@ -1346,8 +1366,14 @@ class DashboardPageState extends State<DashboardPage> {
                                   SliverPadding(
                                     padding: const EdgeInsets.all(8.0),
                                     sliver: DashboardActivityFeedScreen(
-                                      key: Key(widget.currentAddress.address),
-                                      addresses: [widget.currentAddress],
+                                      key: Key(widget.currentAddress?.address ??
+                                          widget
+                                              .currentImportedAddress!.address),
+                                      addresses: [
+                                        widget.currentAddress?.address ??
+                                            widget
+                                                .currentImportedAddress!.address
+                                      ],
                                       initialItemCount: isSmallScreen ? 3 : 4,
                                     ),
                                   ),

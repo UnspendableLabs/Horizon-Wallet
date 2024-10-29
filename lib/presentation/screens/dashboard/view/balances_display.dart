@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
@@ -19,16 +18,12 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
-  final List<Address> addresses;
-  final String accountUuid;
-  final Address currentAddress;
+  final String currentAddress;
   final int initialItemCount;
 
   const BalancesDisplay(
       {super.key,
       required this.isDarkTheme,
-      required this.addresses,
-      required this.accountUuid,
       required this.currentAddress,
       required this.initialItemCount});
 
@@ -105,7 +100,6 @@ class BalancesDisplayState extends State<BalancesDisplay> {
           ),
           BalancesSliver(
             isDarkTheme: widget.isDarkTheme,
-            addresses: widget.addresses,
             currentAddress: widget.currentAddress,
             initialItemCount: widget.initialItemCount,
             searchTerm: _searchController.text,
@@ -119,16 +113,14 @@ class BalancesDisplayState extends State<BalancesDisplay> {
 
 class BalancesSliver extends StatefulWidget {
   final bool isDarkTheme;
-  final List<Address> addresses;
   final int initialItemCount;
-  final Address currentAddress;
+  final String currentAddress;
   final String searchTerm;
   final bool showOwnedOnly;
 
   const BalancesSliver({
     super.key,
     required this.isDarkTheme,
-    required this.addresses,
     required this.initialItemCount,
     required this.currentAddress,
     required this.searchTerm,
@@ -306,11 +298,7 @@ class BalancesSliverState extends State<BalancesSliver> {
   }
 
   bool _isOwned(Asset? asset) {
-    return asset?.owner == widget.currentAddress.address;
-  }
-
-  bool _isIssuer(Asset? asset) {
-    return asset?.issuer == widget.currentAddress.address;
+    return asset?.owner == widget.currentAddress;
   }
 
   Future<void> _launchAssetUrl(String asset) async {
@@ -400,6 +388,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                     body: HorizonUI.HorizonDialog(
                       title: 'Compose Send',
                       body: ComposeSendPageWrapper(
+                        currentAddress: widget.currentAddress,
                         dashboardActivityFeedBloc:
                             BlocProvider.of<DashboardActivityFeedBloc>(context),
                         asset: assetName,
@@ -420,6 +409,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                     body: HorizonUI.HorizonDialog(
                       title: "Update Issuance",
                       body: UpdateIssuancePageWrapper(
+                        currentAddress: widget.currentAddress,
                         assetName: currentOwnedAsset!.asset,
                         assetLongname: currentOwnedAsset.assetLongname,
                         actionType: result,

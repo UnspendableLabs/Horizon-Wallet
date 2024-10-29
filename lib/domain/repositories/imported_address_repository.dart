@@ -1,7 +1,7 @@
 import "package:horizon/domain/entities/imported_address.dart";
 
 abstract class ImportedAddressRepository {
-  Future<ImportedAddress?> getImportedAddress(String uuid);
+  Future<ImportedAddress?> getImportedAddress(String address);
   Future<List<ImportedAddress>> getAllByWalletUuid(String walletUuid);
   Future<void> insert(ImportedAddress address);
   Future<void> insertMany(List<ImportedAddress> addresses);

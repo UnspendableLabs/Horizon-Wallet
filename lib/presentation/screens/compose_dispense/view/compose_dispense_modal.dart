@@ -5,7 +5,6 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -31,10 +30,11 @@ import 'package:horizon/core/logging/logger.dart';
 class ComposeDispensePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String? initialDispenserAddress;
-
+  final String currentAddress;
   const ComposeDispensePageWrapper({
     required this.dashboardActivityFeedBloc,
     this.initialDispenserAddress,
+    required this.currentAddress,
     super.key,
   });
 
@@ -43,7 +43,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(currentAddress),
         create: (context) => ComposeDispenseBloc(
           logger: GetIt.I.get<Logger>(),
           estimateDispensesUseCase: GetIt.I.get<EstimateDispensesUseCase>(),
@@ -60,11 +60,11 @@ class ComposeDispensePageWrapper extends StatelessWidget {
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
         )..add(FetchFormData(
-            currentAddress: state.currentAddress,
+            currentAddress: currentAddress,
             initialDispenserAddress: initialDispenserAddress)),
         child: ComposeDispensePage(
           initialDispenserAddress: initialDispenserAddress,
-          address: state.currentAddress,
+          address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -75,7 +75,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
 
 class ComposeDispensePage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address address;
+  final String address;
   final String? initialDispenserAddress;
 
   const ComposeDispensePage({
@@ -101,14 +101,13 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   void initState() {
     super.initState();
     // TODO: not sure why we are doing this.
-    openAddressController.text = widget.address.address;
+    openAddressController.text = widget.address;
     dispenserController.text = widget.initialDispenserAddress ?? "";
   }
 
   @override
   Widget build(BuildContext context) {
     return ComposeBasePage<ComposeDispenseBloc, ComposeDispenseState>(
-      address: widget.address,
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
           context.read<ComposeDispenseBloc>().add(ChangeFeeOption(value: fee)),
@@ -143,9 +142,9 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 
       // Dispatch the event with the calculated values
       context.read<ComposeDispenseBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address.address,
+            sourceAddress: widget.address,
             params: ComposeDispenseEventParams(
-                address: widget.address.address,
+                address: widget.address,
                 dispenser: dispenser,
                 quantity: quantity),
           ));
@@ -419,10 +418,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
   if (balances.isEmpty) {
     return null;
-  }
-
-  for (var balance in balances) {
-    print(balance.asset);
   }
 
   return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
