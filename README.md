@@ -59,6 +59,10 @@ To run locally on the web:
 
 ❯ dart run drift_dev schema steps drift_schemas/ lib/data/sources/local/schema_versions.dart
 
+### gen migration tests
+
+❯ dart run drift_dev schema generate drift_schemas/ test/drift_migrations
+
 ### notes
 
 - esplora api only returns 50 txs in mempool with no addresses

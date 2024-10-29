@@ -17,8 +17,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
     await _importedAddressDao.insertImportedAddress(ImportedAddressModel(
         walletUuid: address.walletUuid,
         address: address.address,
-        index: address.index,
-        encryptedPrivateKey: address.encryptedPrivateKey));
+        name: address.name,
+        encryptedWIF: address.encryptedWIF));
   }
 
   @override
@@ -27,8 +27,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => ImportedAddressModel(
             walletUuid: a.walletUuid,
             address: a.address,
-            index: a.index,
-            encryptedPrivateKey: a.encryptedPrivateKey))
+            name: a.name,
+            encryptedWIF: a.encryptedWIF))
         .toList();
 
     _importedAddressDao.insertMultipleImportedAddresses(addresses_);
@@ -42,8 +42,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         ? entity.ImportedAddress(
             walletUuid: addressModel.walletUuid,
             address: addressModel.address,
-            index: addressModel.index,
-            encryptedPrivateKey: addressModel.encryptedPrivateKey)
+            name: addressModel.name,
+            encryptedWIF: addressModel.encryptedWIF)
         : null;
   }
 
@@ -57,8 +57,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => entity.ImportedAddress(
             walletUuid: a.walletUuid,
             address: a.address,
-            index: a.index,
-            encryptedPrivateKey: a.encryptedPrivateKey))
+            name: a.name,
+            encryptedWIF: a.encryptedWIF))
         .toList();
 
     return entityAddresses;
@@ -82,8 +82,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         .map((a) => entity.ImportedAddress(
             walletUuid: a.walletUuid,
             address: a.address,
-            index: a.index,
-            encryptedPrivateKey: a.encryptedPrivateKey))
+            name: a.name,
+            encryptedWIF: a.encryptedWIF))
         .toList();
   }
 }
