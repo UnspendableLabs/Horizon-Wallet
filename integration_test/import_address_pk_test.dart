@@ -214,8 +214,6 @@ void main() {
         .where((testCase) => testCase['network'] == network)
         .toList()[0]['addressToWIFMap'] as Map<String, String>;
 
-    print(addressToWIFMap);
-
     setUpAll(() async {
       // Perform any common setup here
       await setup();
@@ -312,7 +310,7 @@ void main() {
               await tester.pumpAndSettle();
 
               final importAddressPkButton =
-                  find.text('Import address private key');
+                  find.text('Import new address private key');
               expect(importAddressPkButton, findsOneWidget);
               await tester.tap(importAddressPkButton);
               await tester.pumpAndSettle();
@@ -329,7 +327,6 @@ void main() {
               await tester.pumpAndSettle();
 
               if (entry.key.startsWith('1') || entry.key.startsWith('m')) {
-                print('legacy');
                 final formatDropdown =
                     find.byType(DropdownButton<ImportAddressPkFormat>);
                 expect(formatDropdown, findsOneWidget);
