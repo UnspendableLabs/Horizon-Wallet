@@ -101,21 +101,27 @@ class DB extends _$DB {
                 await m.createTable(schema.importedAddresses);
               },
               from4To5: (m, schema) async {
-                // Remove the column from the imported addresses table
-                await m.alterTable(TableMigration(
-                  schema.importedAddresses,
-                  columnTransformer: {
-                    // List all columns EXCEPT the one you want to remove
-                    schema.importedAddresses.address:
-                        schema.importedAddresses.address,
-                    schema.importedAddresses.walletUuid:
-                        schema.importedAddresses.walletUuid,
-                  },
-                ));
+                // Create temporary table with new structure
+                await customStatement('''
+                  CREATE TABLE imported_addresses_temp (
+                    address TEXT NOT NULL UNIQUE,
+                    name TEXT NOT NULL DEFAULT '',
+                    encrypted_wif TEXT NOT NULL UNIQUE,
+                    wallet_uuid TEXT NOT NULL,
+                    PRIMARY KEY (address)
+                  );
 
-                // Add the new column to the Addresses table
-                await m.addColumn(
-                    schema.addresses, schema.addresses.encryptedPrivateKey);
+                  -- Copy data from old table to new table, renaming column
+                  INSERT INTO imported_addresses_temp (address, name, encrypted_wif, wallet_uuid)
+                  SELECT address, '', encrypted_private_key, wallet_uuid
+                  FROM imported_addresses;
+
+                  -- Drop old table
+                  DROP TABLE imported_addresses;
+
+                  -- Rename temp table to final name
+                  ALTER TABLE imported_addresses_temp RENAME TO imported_addresses;
+                ''');
               },
             ));
 

@@ -8,9 +8,8 @@ class ImportedAddresses extends Table {
   @JsonKey('name')
   TextColumn get name => text()();
 
-  @JsonKey('encryptedPrivateKey')
-  TextColumn get encryptedPrivateKey =>
-      text().customConstraint('UNIQUE NOT NULL')();
+  @JsonKey('encryptedWIF')
+  TextColumn get encryptedWIF => text().customConstraint('UNIQUE NOT NULL')();
 
   @JsonKey('walletUuid')
   TextColumn get walletUuid => text()();

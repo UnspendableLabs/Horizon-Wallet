@@ -225,7 +225,7 @@ void main() {
         const importedAddress = ImportedAddress(
           name: 'Imported Address',
           address: testAddress,
-          encryptedPrivateKey: testEncryptedPrivKey,
+          encryptedWIF: testEncryptedPrivKey,
           walletUuid: testWalletUuid,
         );
 

@@ -579,7 +579,7 @@ final class Schema5 extends i0.VersionedSchema {
         columns: [
           _column_11,
           _column_1,
-          _column_27,
+          _column_28,
           _column_5,
         ],
         attachedDatabase: database,
@@ -593,12 +593,15 @@ class Shape7 extends i0.VersionedTable {
       columnsByName['address']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get name =>
       columnsByName['name']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get encryptedPrivateKey =>
-      columnsByName['encrypted_private_key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get encryptedWIF =>
+      columnsByName['encrypted_w_i_f']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get walletUuid =>
       columnsByName['wallet_uuid']! as i1.GeneratedColumn<String>;
 }
 
+i1.GeneratedColumn<String> _column_28(String aliasedName) =>
+    i1.GeneratedColumn<String>('encrypted_w_i_f', aliasedName, false,
+        type: i1.DriftSqlType.string, $customConstraints: 'UNIQUE NOT NULL');
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

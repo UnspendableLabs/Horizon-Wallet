@@ -67,13 +67,13 @@ class ImportAddressPkBloc
           return;
         }
 
-        final String encryptedPrivateKey =
+        final String encryptedWIF =
             await encryptionService.encrypt(event.pk, event.password);
 
         final ImportedAddress importedAddress = ImportedAddress(
           address: address,
           walletUuid: wallet.uuid,
-          encryptedPrivateKey: encryptedPrivateKey,
+          encryptedWIF: encryptedWIF,
           name: event.name,
         );
 
