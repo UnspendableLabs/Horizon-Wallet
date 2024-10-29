@@ -44,35 +44,6 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
 
-    // List<Account>? accounts = shell.state.maybeWhen(success: (state) => state.accounts, orElse: () => null);
-
-    // if (accounts == null) {
-    //   throw Exception("invariant: accounts are null");
-    // }
-
-    // Account? currentHighestIndexAccount = shell.state.maybeWhen(
-    //     success: (state) {
-    //       // Find the account with the highest hardened account index
-    //       Account? highestAccount;
-    //       int maxIndex = -1;
-
-    //       for (var account in state.accounts) {
-    //         int currentIndex = int.parse(account.accountIndex.replaceAll("'", ""));
-    //         if (currentIndex > maxIndex) {
-    //           maxIndex = currentIndex;
-    //           highestAccount = account;
-    //         }
-    //       }
-    //       return highestAccount;
-    //     },
-    //     orElse: () => null);
-
-    // if (currentHighestIndexAccount == null) {
-    //   throw Exception("invariant: account is null");
-    // }
-
-    // int newAccountIndex = int.parse(currentHighestIndexAccount.accountIndex.replaceAll("'", "")) + 1;
-
     return BlocConsumer<ImportAddressPkBloc, ImportAddressPkState>(
       listener: (context, state) {
         final cb = switch (state) {
@@ -84,7 +55,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
               ));
 
               // Update accounts in shell
-              shell.refresh();
+              shell.refreshAndSelectNewImportedAddress(state.address);
             },
           _ => () => {} // TODO: add noop util
         };

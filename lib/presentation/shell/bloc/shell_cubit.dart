@@ -221,6 +221,35 @@ class ShellStateCubit extends Cubit<ShellState> {
     }
   }
 
+  void refreshAndSelectNewImportedAddress(
+      ImportedAddress importedAddress) async {
+    try {
+      Wallet? wallet = await walletRepository.getCurrentWallet();
+
+      if (wallet == null) {
+        emit(const ShellState.onboarding(Onboarding.initial()));
+        return;
+      }
+
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+
+      final state_ = state.when(
+          initial: () => state,
+          loading: () => state,
+          error: (_) => state,
+          onboarding: (_) => state,
+          success: (stateInner) => ShellState.success(stateInner.copyWith(
+              importedAddresses: importedAddresses,
+              currentImportedAddress: importedAddress,
+              currentAddress: null,
+              currentAccountUuid: null)));
+      emit(state_);
+    } catch (error) {
+      emit(ShellState.error(error.toString()));
+    }
+  }
+
   void onImportedAddressChanged(ImportedAddress importedAddress) {
     final state_ = state.when(
         initial: () => state,

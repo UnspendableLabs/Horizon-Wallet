@@ -16,6 +16,7 @@ import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bl
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
+import 'package:horizon/presentation/screens/dashboard/view_address_pk_form/view/view_address_pk_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
@@ -313,6 +314,13 @@ class HorizonAppBarContent extends StatelessWidget {
       orElse: () => null,
     );
 
+    final String? address = shell.state.maybeWhen(
+      success: (state) =>
+          state.currentAddress?.address ??
+          state.currentImportedAddress?.address,
+      orElse: () => null,
+    );
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -565,13 +573,31 @@ class HorizonAppBarContent extends StatelessWidget {
                                     );
                                   }),
                                 );
+                              case 'view_address_pk':
+                                HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: HorizonUI.HorizonDialog(
+                                      includeBackButton: false,
+                                      includeCloseButton: true,
+                                      title: "View address private key",
+                                      body: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ViewAddressPkFormWrapper(
+                                            address: address!),
+                                      ),
+                                    ));
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
                             const PopupMenuItem<String>(
                               value: 'import_address_pk',
-                              child: Text('Import address private key'),
+                              child: Text('Import new address private key'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'view_address_pk',
+                              child: Text('View current address private key'),
                             ),
                             const PopupMenuItem<String>(
                               value: 'reset',
