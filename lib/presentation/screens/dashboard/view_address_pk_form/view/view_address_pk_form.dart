@@ -44,6 +44,7 @@ class ViewAddressPkForm extends StatefulWidget {
 class _ViewAddressPkFormState extends State<ViewAddressPkForm> {
   final passwordFormKey = GlobalKey<FormState>();
   final passwordController = TextEditingController();
+  bool _showPrivateKey = false;
 
   @override
   void initState() {
@@ -89,9 +90,8 @@ class _ViewAddressPkFormState extends State<ViewAddressPkForm> {
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
-                const SizedBox(height: 16),
                 HorizonUI.HorizonDialogSubmitButton(
-                  textChild: const Text('SUBMIT'),
+                  textChild: const Text('CONFIRM'),
                   onPressed: handleSubmit,
                 )
               ],
@@ -104,6 +104,12 @@ class _ViewAddressPkFormState extends State<ViewAddressPkForm> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 HorizonUI.HorizonTextFormField(
+                  label: 'Name',
+                  controller: TextEditingController(text: success.name),
+                  enabled: false,
+                ),
+                const SizedBox(height: 16),
+                HorizonUI.HorizonTextFormField(
                   label: 'Address',
                   controller: TextEditingController(text: success.address),
                   enabled: false,
@@ -114,12 +120,24 @@ class _ViewAddressPkFormState extends State<ViewAddressPkForm> {
                   controller:
                       TextEditingController(text: success.privateKeyWif),
                   enabled: false,
+                  obscureText: !_showPrivateKey,
+                  suffix: IconButton(
+                    icon: Icon(
+                      _showPrivateKey ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _showPrivateKey = !_showPrivateKey;
+                      });
+                    },
+                  ),
+                  fitText: true,
                 ),
               ],
             ),
           ),
           error: (error) => Text(error),
-          orElse: () => const Text("ViewAddressPkForm"),
+          orElse: () => const SizedBox.shrink(),
         );
       },
     );

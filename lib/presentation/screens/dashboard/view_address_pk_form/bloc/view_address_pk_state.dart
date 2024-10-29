@@ -21,6 +21,7 @@ class ViewAddressPkStateInitial with _$ViewAddressPkStateInitial {
 @freezed
 class ViewAddressPkStateSuccess with _$ViewAddressPkStateSuccess {
   const factory ViewAddressPkStateSuccess({
+    required String name,
     required String address,
     required String privateKeyWif,
   }) = _ViewAddressPkStateSuccess;

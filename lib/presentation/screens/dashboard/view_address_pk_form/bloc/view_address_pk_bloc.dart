@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -48,15 +49,23 @@ class ViewAddressPkFormBloc
           return;
         }
         String privateKeyWif;
+        String name;
         if (address != null) {
-          privateKeyWif =
-              await _getPrivateKeyWifForAddress(address, event.password);
+          final account =
+              await accountRepository.getAccountByUuid(address.accountUuid);
+          if (account == null) {
+            throw ViewAddressPkError('Account not found for address');
+          }
+          privateKeyWif = await _getPrivateKeyWifForAddress(
+              account, address, event.password);
+          name = account.name;
         } else {
           privateKeyWif = await _getPrivateKeyWifForImportedAddress(
               importedAddress!, event.password);
+          name = importedAddress.name;
         }
         emit(ViewAddressPkState.success(ViewAddressPkStateSuccess(
-            privateKeyWif: privateKeyWif, address: event.address)));
+            privateKeyWif: privateKeyWif, address: event.address, name: name)));
       } on ViewAddressPkError catch (e) {
         emit(ViewAddressPkState.initial(
             ViewAddressPkStateInitial(error: e.message)));
@@ -66,12 +75,8 @@ class ViewAddressPkFormBloc
     });
   }
 
-  _getPrivateKeyWifForAddress(Address address, String password) async {
-    final account =
-        await accountRepository.getAccountByUuid(address.accountUuid);
-    if (account == null) {
-      throw ViewAddressPkError('Account not found for address');
-    }
+  _getPrivateKeyWifForAddress(
+      Account account, Address address, String password) async {
     final wallet = await walletRepository.getWallet(account.walletUuid);
     if (wallet == null) {
       throw ViewAddressPkError('Wallet not found');

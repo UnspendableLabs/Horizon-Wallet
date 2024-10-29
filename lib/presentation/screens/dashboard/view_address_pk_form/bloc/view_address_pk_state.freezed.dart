@@ -783,6 +783,7 @@ abstract class _ViewAddressPkStateInitial implements ViewAddressPkStateInitial {
 
 /// @nodoc
 mixin _$ViewAddressPkStateSuccess {
+  String get name => throw _privateConstructorUsedError;
   String get address => throw _privateConstructorUsedError;
   String get privateKeyWif => throw _privateConstructorUsedError;
 
@@ -797,7 +798,7 @@ abstract class $ViewAddressPkStateSuccessCopyWith<$Res> {
           $Res Function(ViewAddressPkStateSuccess) then) =
       _$ViewAddressPkStateSuccessCopyWithImpl<$Res, ViewAddressPkStateSuccess>;
   @useResult
-  $Res call({String address, String privateKeyWif});
+  $Res call({String name, String address, String privateKeyWif});
 }
 
 /// @nodoc
@@ -814,10 +815,15 @@ class _$ViewAddressPkStateSuccessCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? name = null,
     Object? address = null,
     Object? privateKeyWif = null,
   }) {
     return _then(_value.copyWith(
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
       address: null == address
           ? _value.address
           : address // ignore: cast_nullable_to_non_nullable
@@ -839,7 +845,7 @@ abstract class _$$ViewAddressPkStateSuccessImplCopyWith<$Res>
       __$$ViewAddressPkStateSuccessImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String address, String privateKeyWif});
+  $Res call({String name, String address, String privateKeyWif});
 }
 
 /// @nodoc
@@ -855,10 +861,15 @@ class __$$ViewAddressPkStateSuccessImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? name = null,
     Object? address = null,
     Object? privateKeyWif = null,
   }) {
     return _then(_$ViewAddressPkStateSuccessImpl(
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
       address: null == address
           ? _value.address
           : address // ignore: cast_nullable_to_non_nullable
@@ -875,8 +886,10 @@ class __$$ViewAddressPkStateSuccessImplCopyWithImpl<$Res>
 
 class _$ViewAddressPkStateSuccessImpl implements _ViewAddressPkStateSuccess {
   const _$ViewAddressPkStateSuccessImpl(
-      {required this.address, required this.privateKeyWif});
+      {required this.name, required this.address, required this.privateKeyWif});
 
+  @override
+  final String name;
   @override
   final String address;
   @override
@@ -884,7 +897,7 @@ class _$ViewAddressPkStateSuccessImpl implements _ViewAddressPkStateSuccess {
 
   @override
   String toString() {
-    return 'ViewAddressPkStateSuccess(address: $address, privateKeyWif: $privateKeyWif)';
+    return 'ViewAddressPkStateSuccess(name: $name, address: $address, privateKeyWif: $privateKeyWif)';
   }
 
   @override
@@ -892,13 +905,14 @@ class _$ViewAddressPkStateSuccessImpl implements _ViewAddressPkStateSuccess {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ViewAddressPkStateSuccessImpl &&
+            (identical(other.name, name) || other.name == name) &&
             (identical(other.address, address) || other.address == address) &&
             (identical(other.privateKeyWif, privateKeyWif) ||
                 other.privateKeyWif == privateKeyWif));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, address, privateKeyWif);
+  int get hashCode => Object.hash(runtimeType, name, address, privateKeyWif);
 
   @JsonKey(ignore: true)
   @override
@@ -910,9 +924,12 @@ class _$ViewAddressPkStateSuccessImpl implements _ViewAddressPkStateSuccess {
 
 abstract class _ViewAddressPkStateSuccess implements ViewAddressPkStateSuccess {
   const factory _ViewAddressPkStateSuccess(
-      {required final String address,
+      {required final String name,
+      required final String address,
       required final String privateKeyWif}) = _$ViewAddressPkStateSuccessImpl;
 
+  @override
+  String get name;
   @override
   String get address;
   @override

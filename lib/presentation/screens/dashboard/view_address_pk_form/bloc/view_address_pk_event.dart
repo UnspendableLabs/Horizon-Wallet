@@ -1,7 +1,11 @@
-abstract class ViewAddressPkFormEvent {}
+abstract class ViewAddressPkFormEvent {
+  const ViewAddressPkFormEvent();
+}
 
 class ViewAddressPk extends ViewAddressPkFormEvent {
   final String password;
   final String address;
-  ViewAddressPk({required this.password, required this.address});
+
+  const ViewAddressPk({required this.password, required this.address})
+      : super();
 }
