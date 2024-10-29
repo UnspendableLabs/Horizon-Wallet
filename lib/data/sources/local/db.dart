@@ -101,7 +101,6 @@ class DB extends _$DB {
                 await m.createTable(schema.importedAddresses);
               },
               from4To5: (m, schema) async {
-                print('from4To5');
                 // Create temporary table with new structure
                 await customStatement('''
                   CREATE TABLE imported_addresses_temp (
@@ -123,7 +122,6 @@ class DB extends _$DB {
                   -- Rename temp table to final name
                   ALTER TABLE imported_addresses_temp RENAME TO imported_addresses;
                 ''');
-                print('migration from 4 to 5 complete');
               },
             ));
 
