@@ -6,13 +6,10 @@ class ImportedAddresses extends Table {
   TextColumn get address => text().customConstraint('UNIQUE NOT NULL')();
 
   @JsonKey('name')
-  TextColumn get name => text()();
+  TextColumn get name => text().customConstraint("NOT NULL DEFAULT ''")();
 
-  @JsonKey('encryptedWIF')
-  TextColumn get encryptedWIF => text().customConstraint('UNIQUE NOT NULL')();
-
-  @JsonKey('walletUuid')
-  TextColumn get walletUuid => text()();
+  @JsonKey('encryptedWif')
+  TextColumn get encryptedWif => text().customConstraint('UNIQUE NOT NULL')();
 
   @override
   Set<Column> get primaryKey => {address};

@@ -104,16 +104,15 @@ class DB extends _$DB {
                 // Create temporary table with new structure
                 await customStatement('''
                   CREATE TABLE imported_addresses_temp (
-                    address TEXT NOT NULL UNIQUE,
+                    address TEXT UNIQUE NOT NULL,
                     name TEXT NOT NULL DEFAULT '',
-                    encrypted_wif TEXT NOT NULL UNIQUE,
-                    wallet_uuid TEXT NOT NULL,
+                    encrypted_wif TEXT UNIQUE NOT NULL,
                     PRIMARY KEY (address)
                   );
 
-                  -- Copy data from old table to new table, renaming column
-                  INSERT INTO imported_addresses_temp (address, name, encrypted_wif, wallet_uuid)
-                  SELECT address, '', encrypted_private_key, wallet_uuid
+                  -- Copy data from old table to new table, converting encrypted_private_key to encrypted_wif
+                  INSERT INTO imported_addresses_temp (address, name, encrypted_wif)
+                  SELECT address, '', encrypted_private_key
                   FROM imported_addresses;
 
                   -- Drop old table
