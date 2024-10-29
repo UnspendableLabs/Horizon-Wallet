@@ -226,7 +226,6 @@ void main() {
           name: 'Imported Address',
           address: testAddress,
           encryptedWIF: testEncryptedPrivKey,
-          walletUuid: testWalletUuid,
         );
 
         when(() => mockAddressRepository.getAddress(any()))

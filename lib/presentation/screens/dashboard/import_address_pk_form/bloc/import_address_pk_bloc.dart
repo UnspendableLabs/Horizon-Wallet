@@ -34,6 +34,7 @@ class ImportAddressPkBloc
     });
 
     on<Submit>((event, emit) async {
+      // TODO ADDRESS
       emit(ImportAddressPkStep2(state: Step2Loading()));
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
@@ -72,7 +73,6 @@ class ImportAddressPkBloc
 
         final ImportedAddress importedAddress = ImportedAddress(
           address: address,
-          walletUuid: wallet.uuid,
           encryptedWIF: encryptedWIF,
           name: event.name,
         );

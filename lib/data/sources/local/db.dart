@@ -13,13 +13,12 @@ part "db.g.dart";
 // TODO: read from env
 const ENV = "dev";
 
-@DriftDatabase(
-    tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses])
+@DriftDatabase(tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses])
 class DB extends _$DB {
   DB(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -67,35 +66,27 @@ class DB extends _$DB {
 
                 await m.alterTable(TableMigration(
                   schema.addresses,
-                  columnTransformer: {
-                    schema.addresses.index:
-                        const CustomExpression('address_index')
-                  },
+                  columnTransformer: {schema.addresses.index: const CustomExpression('address_index')},
                 ));
               },
               from2To3: (m, schema) async {
                 // add encryptedMnemonic column to wallets table
-                await m.addColumn(
-                    schema.wallets, schema.wallets.encryptedMnemonic);
+                await m.addColumn(schema.wallets, schema.wallets.encryptedMnemonic);
 
                 // // make btc_amount, fee, and unpacked_data nullable
                 // https://drift.simonbinder.eu/docs/migrations/api/#changing-the-type-of-a-column
                 await m.alterTable(TableMigration(
                   schema.transactions,
                   columnTransformer: {
-                    schema.transactions.btcAmount:
-                        schema.transactions.btcAmount.cast<int>(),
-                    schema.transactions.fee:
-                        schema.transactions.fee.cast<int>(),
-                    schema.transactions.unpackedData:
-                        schema.transactions.unpackedData.cast<String>()
+                    schema.transactions.btcAmount: schema.transactions.btcAmount.cast<int>(),
+                    schema.transactions.fee: schema.transactions.fee.cast<int>(),
+                    schema.transactions.unpackedData: schema.transactions.unpackedData.cast<String>()
                   },
                 ));
               },
               from3To4: (m, schema) async {
                 // Add the new column to the Addresses table
-                await m.addColumn(
-                    schema.addresses, schema.addresses.encryptedPrivateKey);
+                await m.addColumn(schema.addresses, schema.addresses.encryptedPrivateKey);
 
                 // Create the new ImportedAddresses table
                 await m.createTable(schema.importedAddresses);
@@ -123,13 +114,37 @@ class DB extends _$DB {
                   ALTER TABLE imported_addresses_temp RENAME TO imported_addresses;
                 ''');
               },
+              from5To6: (m, schema) async {
+                print('migrations 5 to 6');
+
+                // First, create the new table with the desired structure
+                await m.createTable(schema.importedAddresses);
+
+                // Copy data using drift's API instead of raw SQL
+                final oldData = await customSelect('''
+                  SELECT address, name, encrypted_wif
+                  FROM imported_addresses
+                ''').get();
+
+                // Drop the old table
+                await m.drop(schema.importedAddresses);
+
+                // Insert the data into the new table using raw values
+                for (final row in oldData) {
+                  await into(importedAddresses).insert(ImportedAddress(
+                    address: row.read<String>('address'),
+                    name: row.read<String>('name'),
+                    encryptedWIF: row.read<String>('encrypted_wif'),
+                  ));
+                }
+
+                print('completed');
+              },
             ));
 
         if (ENV == "dev") {
-          final wrongForeignKeys =
-              await customSelect('PRAGMA foreign_key_check').get();
-          assert(wrongForeignKeys.isEmpty,
-              '${wrongForeignKeys.map((e) => e.data)}');
+          final wrongForeignKeys = await customSelect('PRAGMA foreign_key_check').get();
+          assert(wrongForeignKeys.isEmpty, '${wrongForeignKeys.map((e) => e.data)}');
         }
 
         await customStatement('PRAGMA foreign_keys = ON;');

@@ -57,7 +57,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       Address currentAddress = addresses.first;
 
       List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+          await importedAddressRepository.getAll();
 
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
@@ -155,7 +155,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       }
 
       List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+          await importedAddressRepository.getAll();
 
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
@@ -205,7 +205,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       });
 
       List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+          await importedAddressRepository.getAll();
 
       emit(ShellState.success(ShellStateSuccess(
         redirect: true,
@@ -232,7 +232,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       }
 
       List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAllByWalletUuid(wallet.uuid);
+          await importedAddressRepository.getAll();
 
       final state_ = state.when(
           initial: () => state,
