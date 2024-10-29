@@ -102,6 +102,8 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'dart:convert';
 
+import 'package:horizon/js/chrome_runtime.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -400,6 +402,17 @@ Future<void> setup() async {
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
   ));
+
+
+
+print("me regis");
+  ChromeRuntime.instance.onMessage((message, sender, sendResponse) {
+
+    print('Received message in flutter: $message');
+  });
+
+
+
 }
 
 class CustomDioException extends DioException {

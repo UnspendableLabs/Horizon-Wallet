@@ -82,6 +82,8 @@ dependencies:
   posthog_flutter: ^4.5.0
   simple_rc4: ^0.3.0
   formz: ^0.8.0
+  chrome_extension: ^0.4.0
+  process_runner: ^4.2.0
 
 
 dev_dependencies:
