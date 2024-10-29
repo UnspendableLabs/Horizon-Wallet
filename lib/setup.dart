@@ -8,6 +8,15 @@ import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
+import 'package:chrome_extension/runtime.dart';
+import 'package:chrome_extension/tabs.dart';
+
+import "package:horizon/data/sources/local/dao/addresses_dao.dart";
+import "package:horizon/data/sources/local/db.dart" as local;
+import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+import "package:horizon/domain/repositories/address_repository.dart";
+import 'package:horizon/data/sources/local/db_manager.dart';
+import "package:horizon/domain/entities/address.dart";
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
@@ -404,15 +413,11 @@ Future<void> setup() async {
   ));
 
 
+  initExtensionListeners();
 
-print("me regis");
-  ChromeRuntime.instance.onMessage((message, sender, sendResponse) {
-
-    print('Received message in flutter: $message');
-  });
-
-
-
+  // background.init(
+  //   GetIt.I.get<AddressRepository>(),
+  // );
 }
 
 class CustomDioException extends DioException {
@@ -539,4 +544,78 @@ class SimpleLogInterceptor extends Interceptor {
     }
     handler.next(err);
   }
+
+
 }
+
+
+
+
+const CONTENT_SCRIPT_PORT = "content-script";
+
+
+int? getTabIdFromPort(Port port) {
+  return port.sender?.tab?.id;
+}
+
+void rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
+  String method = message["method"];
+
+  int? tabId = getTabIdFromPort(port);
+  //
+  if (tabId == null) {
+    return;
+  }
+
+  switch (method) {
+
+
+    case "getAddresses":
+
+    AddressRepository addressRepository = GetIt.I<AddressRepository>();
+      List<Address> addresses = await  addressRepository.getAll();
+        
+        
+      chrome.tabs.sendMessage(
+          tabId,
+          {
+            'addresses': [
+              {'address': addresses[0].address, 'type': 'p2wpkh'}
+            ],
+            'id': message['id'],
+          },
+          null);
+
+    default:
+      print('Unknown method: ${message['method']}');
+  }
+}
+
+void initExtensionListeners() async {
+
+    
+
+  await for (Port port in chrome.runtime.onConnect) {
+    print("aaa");
+    print(port.name);
+    if (port.name != CONTENT_SCRIPT_PORT) continue;
+
+    print("bbb");
+
+    await for (var event in port.onMessage) {
+      print(
+          'Background script received message from content script: ${event.message}');
+
+      String? originUrl = port.sender?.origin ?? port.sender?.url;
+
+      if (originUrl == null) {
+        print("no origin");
+        continue;
+      }
+
+      rpcMessageHandler(event.message as Map<dynamic, dynamic>, event.port);
+    }
+  }
+}
+
+

@@ -1,3 +1,4 @@
+
 import 'package:chrome_extension/runtime.dart';
 import 'package:chrome_extension/tabs.dart';
 import 'dart:js_interop';
@@ -10,16 +11,15 @@ import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
 import "package:horizon/domain/entities/address.dart";
-import 'package:get_it/get_it.dart';
 
 const CONTENT_SCRIPT_PORT = "content-script";
-
 
 int? getTabIdFromPort(Port port) {
   return port.sender?.tab?.id;
 }
 
-void rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
+
+void rpcMessageHandler(AddressRepository addressRepository, Map<dynamic, dynamic> message, Port port) async {
   String method = message["method"];
 
   int? tabId = getTabIdFromPort(port);
@@ -33,7 +33,6 @@ void rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
 
     case "getAddresses":
 
-    AddressRepository addressRepository = GetIt.I<AddressRepository>();
       List<Address> addresses = await  addressRepository.getAll();
         
         
@@ -52,10 +51,7 @@ void rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
   }
 }
 
-void main() async {
-
-    
-
+void init(AddressRepository addressRepository) async {
   await for (Port port in chrome.runtime.onConnect) {
     print("aaa");
     print(port.name);
@@ -74,7 +70,7 @@ void main() async {
         continue;
       }
 
-      rpcMessageHandler(event.message as Map<dynamic, dynamic>, event.port);
+      rpcMessageHandler(addressRepository, event.message as Map<dynamic, dynamic>, event.port);
     }
   }
 }
