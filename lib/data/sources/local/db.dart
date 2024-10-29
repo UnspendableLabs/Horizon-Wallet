@@ -106,14 +106,14 @@ class DB extends _$DB {
                   CREATE TABLE imported_addresses_temp (
                     address TEXT NOT NULL UNIQUE,
                     name TEXT NOT NULL DEFAULT '',
-                    encrypted_private_key TEXT NOT NULL UNIQUE,
+                    encrypted_wif TEXT NOT NULL UNIQUE,
                     wallet_uuid TEXT NOT NULL,
                     PRIMARY KEY (address)
                   );
 
-                  -- Copy data from old table to new table
-                  INSERT INTO imported_addresses_temp (address, encrypted_private_key, wallet_uuid)
-                  SELECT address, encrypted_private_key, wallet_uuid
+                  -- Copy data from old table to new table, renaming column
+                  INSERT INTO imported_addresses_temp (address, name, encrypted_wif, wallet_uuid)
+                  SELECT address, '', encrypted_private_key, wallet_uuid
                   FROM imported_addresses;
 
                   -- Drop old table

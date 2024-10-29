@@ -221,17 +221,17 @@ class ImportedAddresses extends Table with TableInfo {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  late final GeneratedColumn<String> encryptedPrivateKey =
-      GeneratedColumn<String>('encrypted_private_key', aliasedName, false,
-          type: DriftSqlType.string,
-          requiredDuringInsert: true,
-          $customConstraints: 'UNIQUE NOT NULL');
+  late final GeneratedColumn<String> encryptedWIF = GeneratedColumn<String>(
+      'encrypted_w_i_f', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
   late final GeneratedColumn<String> walletUuid = GeneratedColumn<String>(
       'wallet_uuid', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [address, name, encryptedPrivateKey, walletUuid];
+      [address, name, encryptedWIF, walletUuid];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
