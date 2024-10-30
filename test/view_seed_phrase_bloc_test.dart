@@ -9,7 +9,9 @@ import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/blo
 import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_state.dart';
 
 class MockWalletRepository extends Mock implements WalletRepository {}
+
 class MockEncryptionService extends Mock implements EncryptionService {}
+
 class FakeWallet extends Fake implements Wallet {}
 
 void main() {
@@ -110,9 +112,9 @@ void main() {
       verify: (_) {
         verify(() => mockWalletRepository.getCurrentWallet()).called(1);
         verify(() => mockEncryptionService.decrypt(
-          testEncryptedMnemonic,
-          testPassword,
-        )).called(1);
+              testEncryptedMnemonic,
+              testPassword,
+            )).called(1);
       },
     );
 
@@ -129,7 +131,8 @@ void main() {
             chainCodeHex: 'test-chain-code-hex',
           ),
         );
-        when(() => mockEncryptionService.decrypt(testEncryptedMnemonic, testPassword))
+        when(() => mockEncryptionService.decrypt(
+                testEncryptedMnemonic, testPassword))
             .thenAnswer((_) async => testDecryptedMnemonic);
         return bloc;
       },
@@ -143,9 +146,9 @@ void main() {
       verify: (_) {
         verify(() => mockWalletRepository.getCurrentWallet()).called(1);
         verify(() => mockEncryptionService.decrypt(
-          testEncryptedMnemonic,
-          testPassword,
-        )).called(1);
+              testEncryptedMnemonic,
+              testPassword,
+            )).called(1);
       },
     );
 
