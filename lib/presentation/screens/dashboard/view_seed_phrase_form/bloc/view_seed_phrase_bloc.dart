@@ -14,23 +14,35 @@ class ViewSeedPhraseBloc
   }) : super(const ViewSeedPhraseState.initial(ViewSeedPhraseStateInitial())) {
     on<ViewSeedPhrase>((event, emit) async {
       emit(const ViewSeedPhraseState.loading());
+      try {
+        final wallet = await walletRepository.getCurrentWallet();
+        if (wallet == null) {
+          emit(const ViewSeedPhraseState.initial(
+              ViewSeedPhraseStateInitial(error: 'Wallet not found')));
+          return;
+        }
 
-      final wallet = await walletRepository.getCurrentWallet();
-      if (wallet == null) {
-        emit(const ViewSeedPhraseState.error('Wallet not found'));
-        return;
+        if (wallet.encryptedMnemonic == null) {
+          emit(const ViewSeedPhraseState.initial(
+              ViewSeedPhraseStateInitial(error: 'Wallet mnemonic not found')));
+          return;
+        }
+
+        String seedPhrase;
+        try {
+          seedPhrase = await encryptionService.decrypt(
+              wallet.encryptedMnemonic!, event.password);
+        } catch (e) {
+          emit(const ViewSeedPhraseState.initial(
+              ViewSeedPhraseStateInitial(error: 'Invalid password')));
+          return;
+        }
+
+        emit(ViewSeedPhraseState.success(
+            ViewSeedPhraseStateSuccess(seedPhrase: seedPhrase)));
+      } catch (e) {
+        emit(const ViewSeedPhraseState.error('Error decrypting seed phrase'));
       }
-
-      if (wallet.encryptedMnemonic == null) {
-        emit(const ViewSeedPhraseState.error('Wallet mnemonic not found'));
-        return;
-      }
-
-      final seedPhrase = await encryptionService.decrypt(
-          wallet.encryptedMnemonic!, event.password);
-
-      emit(ViewSeedPhraseState.success(
-          ViewSeedPhraseStateSuccess(seedPhrase: seedPhrase)));
     });
   }
 }
