@@ -24,6 +24,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
@@ -205,9 +206,8 @@ class AppRouter {
                         return shell.state.maybeWhen(
                           success: (state) {
                             late Key key;
-                            if (state.currentAccountUuid != null) {
-                              key = Key(
-                                  "${state.currentAccountUuid}:${state.currentAddress!.address}");
+                            if (state.currentAddress != null) {
+                              key = Key(state.currentAddress!.address);
                             } else if (state.currentImportedAddress != null) {
                               key = Key(state.currentImportedAddress!.address);
                             }
@@ -615,8 +615,8 @@ class MyApp extends StatelessWidget {
             encryptionService: GetIt.I<EncryptionService>(),
             addressService: GetIt.I<AddressService>(),
             addressRepository: GetIt.I<AddressRepository>(),
-            accountRepository: GetIt.I<AccountRepository>(),
             importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+            importedAddressService: GetIt.I<ImportedAddressService>(),
           ),
         ),
         BlocProvider<ThemeBloc>(

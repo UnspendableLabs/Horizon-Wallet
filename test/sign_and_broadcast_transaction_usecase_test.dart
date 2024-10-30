@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -39,6 +40,9 @@ class MockTransactionService extends Mock implements TransactionService {}
 
 class MockBitcoindService extends Mock implements BitcoindService {}
 
+class MockImportedAddressService extends Mock
+    implements ImportedAddressService {}
+
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
 
@@ -65,7 +69,7 @@ class MockImportedAddress extends Mock implements ImportedAddress {
   final address = "test-address";
 
   @override
-  final encryptedWif = "test-encrypted-wif";
+  final encryptedWIF = "test-encrypted-wif";
 
   @override
   final name = "test-name";
@@ -108,7 +112,7 @@ void main() {
   late MockTransactionService mockTransactionService;
   late MockBitcoindService mockBitcoindService;
   late MockTransactionLocalRepository mockTransactionLocalRepository;
-
+  late MockImportedAddressService mockImportedAddressService;
   setUpAll(() {
     registerFallbackValue(FakeTransactionInfo());
   });
@@ -124,7 +128,7 @@ void main() {
     mockTransactionService = MockTransactionService();
     mockBitcoindService = MockBitcoindService();
     mockTransactionLocalRepository = MockTransactionLocalRepository();
-
+    mockImportedAddressService = MockImportedAddressService();
     signAndBroadcastTransactionUseCase = SignAndBroadcastTransactionUseCase(
       addressRepository: mockAddressRepository,
       importedAddressRepository: mockImportedAddressRepository,
@@ -136,6 +140,7 @@ void main() {
       transactionService: mockTransactionService,
       bitcoindService: mockBitcoindService,
       transactionLocalRepository: mockTransactionLocalRepository,
+      importedAddressService: mockImportedAddressService,
     );
   });
 
@@ -252,9 +257,9 @@ void main() {
       when(() => mockImportedAddressRepository.getImportedAddress('source'))
           .thenAnswer((_) async => mockImportedAddress);
       when(() => mockEncryptionService.decrypt(
-              mockImportedAddress.encryptedWif, password))
+              mockImportedAddress.encryptedWIF, password))
           .thenAnswer((_) async => decryptedAddressPrivKey);
-      when(() => mockAddressService.getAddressPrivateKeyFromWIF(
+      when(() => mockImportedAddressService.getAddressPrivateKeyFromWIF(
               wif: decryptedAddressPrivKey))
           .thenAnswer((_) async => addressPrivKey);
       when(() => mockTransactionService.signTransaction(
@@ -290,8 +295,8 @@ void main() {
       verify(() => mockImportedAddressRepository.getImportedAddress('source'))
           .called(1);
       verify(() => mockEncryptionService.decrypt(
-          mockImportedAddress.encryptedWif, password)).called(1);
-      verify(() => mockAddressService.getAddressPrivateKeyFromWIF(
+          mockImportedAddress.encryptedWIF, password)).called(1);
+      verify(() => mockImportedAddressService.getAddressPrivateKeyFromWIF(
           wif: decryptedAddressPrivKey)).called(1);
       verify(() => mockTransactionService.signTransaction(
             'rawtransaction',
@@ -403,7 +408,7 @@ void main() {
       when(() => mockImportedAddressRepository.getImportedAddress('source'))
           .thenAnswer((_) async => mockImportedAddress);
       when(() => mockEncryptionService.decrypt(
-              mockImportedAddress.encryptedWif, "wrong_password"))
+              mockImportedAddress.encryptedWIF, "wrong_password"))
           .thenThrow(
               SignAndBroadcastTransactionException('Incorrect password.'));
 
@@ -426,7 +431,7 @@ void main() {
       // Assert
       expect(errorCallbackInvoked, true);
       verify(() => mockEncryptionService.decrypt(
-            mockImportedAddress.encryptedWif, 'wrong_password')).called(1);
+          mockImportedAddress.encryptedWIF, 'wrong_password')).called(1);
       verifyNever(() =>
           mockTransactionService.signTransaction(any(), any(), any(), any()));
       verifyNever(() => mockBitcoindService.sendrawtransaction(any()));

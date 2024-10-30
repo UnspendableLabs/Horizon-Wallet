@@ -89,7 +89,7 @@ ShellState createShellState({
   );
 
   return ShellState.success(
-    ShellStateSuccess(
+    ShellStateSuccess.withAccount(
       accounts: accounts ??
           [defaultAccount], // Include default account if none provided
       wallet: wallet ??
