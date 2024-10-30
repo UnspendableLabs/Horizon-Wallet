@@ -58,7 +58,8 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
       return [
         context.read<ShellStateCubit>().state.maybeWhen(
               success: (state) {
-                final hasImportedAddresses = state.importedAddresses?.isNotEmpty ?? false;
+                final hasImportedAddresses =
+                    state.importedAddresses?.isNotEmpty ?? false;
 
                 return WoltModalSheetPage(
                   backgroundColor: isDarkTheme
@@ -69,7 +70,6 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                     'Select item to view balance',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
                       color: isDarkTheme ? mainTextWhite : mainTextBlack,
@@ -107,7 +107,8 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                 return Column(
                                   children: [
                                     ListTile(
-                                      leading: const Icon(Icons.account_balance_wallet_rounded),
+                                      leading: const Icon(
+                                          Icons.account_balance_wallet_rounded),
                                       title: Text(
                                         account.name,
                                         style: const TextStyle(
@@ -115,21 +116,71 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                           fontSize: 14,
                                         ),
                                       ),
-                                      selected: account.uuid == state.currentAccountUuid,
+                                      selected: account.uuid ==
+                                          state.currentAccountUuid,
                                       onTap: () {
-                                        context.read<ShellStateCubit>().onAccountChanged(account);
+                                        context
+                                            .read<ShellStateCubit>()
+                                            .onAccountChanged(account);
                                         Navigator.of(modalSheetContext).pop();
                                         GoRouter.of(context).go('/dashboard');
                                       },
                                     ),
                                     if (index != state.accounts.length - 1)
                                       const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 4.0),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 4.0),
                                         child: Divider(thickness: 1.0),
                                       ),
                                   ],
                                 );
                               }),
+
+                              // Add Account button
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 25.0),
+                                  backgroundColor: isDarkTheme
+                                      ? darkNavyDarkTheme
+                                      : lightBlueLightTheme,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  elevation: 0,
+                                ),
+                                onPressed: () {
+                                  Navigator.of(modalSheetContext).pop();
+                                  HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: Builder(builder: (context) {
+                                      final bloc =
+                                          context.watch<AccountFormBloc>();
+                                      final cb = switch (bloc.state) {
+                                        AccountFormStep2() => () {
+                                            bloc.add(Reset());
+                                          },
+                                        _ => () {
+                                            Navigator.of(context).pop();
+                                          },
+                                      };
+                                      return HorizonUI.HorizonDialog(
+                                        onBackButtonPressed: cb,
+                                        title: "Add an account",
+                                        body: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 16.0),
+                                          child: AddAccountForm(),
+                                        ),
+                                      );
+                                    }),
+                                  );
+                                },
+                                child: const Text("Add Account",
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600)),
+                              ),
 
                               // Imported addresses section
                               if (hasImportedAddresses) ...[
@@ -144,7 +195,10 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                     ),
                                   ),
                                 ),
-                                ...?state.importedAddresses?.asMap().entries.map((entry) {
+                                ...?state.importedAddresses
+                                    ?.asMap()
+                                    .entries
+                                    .map((entry) {
                                   final index = entry.key;
                                   final importedAddress = entry.value;
                                   return Column(
@@ -159,17 +213,24 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                           ),
                                         ),
                                         selected: importedAddress.address ==
-                                            state.currentImportedAddress?.address,
+                                            state.currentImportedAddress
+                                                ?.address,
                                         onTap: () {
-                                          context.read<ShellStateCubit>()
-                                              .onImportedAddressChanged(importedAddress);
+                                          context
+                                              .read<ShellStateCubit>()
+                                              .onImportedAddressChanged(
+                                                  importedAddress);
                                           Navigator.of(modalSheetContext).pop();
                                           GoRouter.of(context).go('/dashboard');
                                         },
                                       ),
-                                      if (index != (state.importedAddresses?.length ?? 0) - 1)
+                                      if (index !=
+                                          (state.importedAddresses?.length ??
+                                                  0) -
+                                              1)
                                         const Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 4.0),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4.0),
                                           child: Divider(thickness: 1.0),
                                         ),
                                     ],
@@ -177,45 +238,6 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                 }),
                               ],
                             ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 25.0),
-                              backgroundColor: isDarkTheme
-                                  ? darkNavyDarkTheme
-                                  : lightBlueLightTheme,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.zero,
-                              ),
-                              elevation: 0,
-                            ),
-                            onPressed: () {
-                              Navigator.of(modalSheetContext).pop();
-                              HorizonUI.HorizonDialog.show(
-                                context: context,
-                                body: Builder(builder: (context) {
-                                  final bloc = context.watch<AccountFormBloc>();
-                                  final cb = switch (bloc.state) {
-                                    AccountFormStep2() => () { bloc.add(Reset()); },
-                                    _ => () { Navigator.of(context).pop(); },
-                                  };
-                                  return HorizonUI.HorizonDialog(
-                                    onBackButtonPressed: cb,
-                                    title: "Add an account",
-                                    body: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                      child: AddAccountForm(),
-                                    ),
-                                  );
-                                }),
-                              );
-                            },
-                            child: const Text("Add Account",
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w600)),
                           ),
                         ),
                       ],
@@ -248,17 +270,16 @@ class WalletItemSelectionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedItem = context.read<ShellStateCubit>().state.maybeWhen(
           success: (state) {
-            final account = state.accounts
-              .firstWhereOrNull((account) =>
-                  account.uuid == state.currentAccountUuid);
+            final account = state.accounts.firstWhereOrNull(
+                (account) => account.uuid == state.currentAccountUuid);
             if (account != null) {
               return account.name;
             }
             final importedAddress = state.importedAddresses?.firstWhereOrNull(
-                  (importedAddress) =>
-                      importedAddress.address ==
-                      state.currentImportedAddress?.address);
-              return importedAddress?.name ?? "Select Item ";
+                (importedAddress) =>
+                    importedAddress.address ==
+                    state.currentImportedAddress?.address);
+            return importedAddress?.name ?? "Select Item ";
           },
           orElse: () => "Select Item",
         );
@@ -1119,7 +1140,7 @@ class DashboardPageState extends State<DashboardPage> {
                                         borderRadius:
                                             BorderRadius.circular(30.0),
                                       ),
-                                      child: const AccountSidebar())),
+                                      child: const WalletItemSidebar())),
                               const SizedBox(width: 8),
                               Expanded(
                                   flex: 3,
