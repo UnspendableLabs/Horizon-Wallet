@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const TAG = "v1.2.13";
+const TAG = "v1.3.0";
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
