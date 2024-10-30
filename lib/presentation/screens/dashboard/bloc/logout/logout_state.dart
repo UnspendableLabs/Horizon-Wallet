@@ -6,6 +6,8 @@ part 'logout_state.freezed.dart';
 class LogoutState with _$LogoutState {
   const factory LogoutState({
     @Default(LoggedIn) logoutState,
+    @Default(false) bool hasConfirmedUnderstanding,
+    @Default('') String resetConfirmationText,
   }) = _LogoutState;
 }
 

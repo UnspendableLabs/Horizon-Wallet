@@ -12,15 +12,14 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/logout/view/logout_dialog.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
 import 'package:horizon/presentation/screens/dashboard/view_address_pk_form/view/view_address_pk_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
@@ -520,55 +519,9 @@ class HorizonAppBarContent extends StatelessWidget {
                                     body: BlocProvider.value(
                                       value:
                                           BlocProvider.of<LogoutBloc>(context),
-                                      child: HorizonUI.HorizonDialog(
-                                        title: 'Reset wallet',
-                                        body: Column(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Text(
-                                                textAlign: TextAlign.center,
-                                                'This operation will result in the deletion of all wallet configuration data. You will be able to recover your funds only with your seed phrase. If you have created multiple accounts, you will need to recreate them manually after recovery. (Please note how many you have.)',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: isDarkTheme
-                                                      ? mainTextGrey
-                                                      : mainTextBlack,
-                                                ),
-                                              ),
-                                            ),
-                                            BackContinueButtons(
-                                              isDarkMode: isDarkTheme,
-                                              isSmallScreenWidth: isSmallScreen,
-                                              onPressedContinue: () {
-                                                GoRouter.of(context).pop();
-                                              },
-                                              backButtonText: 'RESET WALLET',
-                                              continueButtonText:
-                                                  'CANCEL', // The BackContinueButtons widget is the style/responiveness we want here, however we want the CANCEL button to be more prominent so that the user doesn't accidentally reset their wallet. In BackContinueButtons, the continue button is the one that is more prominent.
-                                              onPressedBack: () {
-                                                context
-                                                    .read<LogoutBloc>()
-                                                    .add(LogoutEvent());
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      child: const LogoutDialog(),
                                     ));
                               case 'import_address_pk':
-                                //                                             SizedBox(
-                                // width: double.infinity,
-                                // child: ElevatedButton(
-                                //   style: ElevatedButton.styleFrom(
-                                //     shape: const RoundedRectangleBorder(
-                                //       borderRadius: BorderRadius.zero,
-                                //     ),
-                                //     elevation: 0, // No shadow
-                                //   ),
-                                //   onPressed: () {
                                 HorizonUI.HorizonDialog.show(
                                   context: context,
                                   body: Builder(builder: (context) {
