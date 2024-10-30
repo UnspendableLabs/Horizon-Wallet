@@ -1033,7 +1033,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
 
   @override
   String toString() {
-    return 'ShellStateSuccess(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
+    return 'ShellStateSuccess._(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
   }
 
   @override
