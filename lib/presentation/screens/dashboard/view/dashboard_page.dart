@@ -57,119 +57,210 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
     pageListBuilder: (modalSheetContext) {
       return [
         context.read<ShellStateCubit>().state.maybeWhen(
-              success: (state) => WoltModalSheetPage(
-                backgroundColor: isDarkTheme
-                    ? dialogBackgroundColorDarkTheme
-                    : dialogBackgroundColorLightTheme,
-                isTopBarLayerAlwaysVisible: true,
-                topBarTitle: Text('Select an Account',
+              success: (state) {
+                final hasImportedAddresses =
+                    state.importedAddresses?.isNotEmpty ?? false;
+
+                return WoltModalSheetPage(
+                  backgroundColor: isDarkTheme
+                      ? dialogBackgroundColorDarkTheme
+                      : dialogBackgroundColorLightTheme,
+                  isTopBarLayerAlwaysVisible: true,
+                  topBarTitle: Text(
+                    'Select item to view balance',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkTheme ? mainTextWhite : mainTextBlack)),
-                trailingNavBarWidget: IconButton(
-                  padding: const EdgeInsets.all(pagePadding),
-                  icon: const Icon(Icons.close),
-                  onPressed: Navigator.of(modalSheetContext).pop,
-                ),
-                child: SizedBox(
-                  height: 400,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: state.accounts.length,
-                          itemBuilder: (context, index) {
-                            final account = state.accounts[index];
-                            final isSelected =
-                                account.uuid == state.currentAccountUuid;
-                            return ListTile(
-                              title: Text(account.name),
-                              selected: isSelected,
-                              onTap: () {
-                                context
-                                    .read<ShellStateCubit>()
-                                    .onAccountChanged(account);
-                                Navigator.of(modalSheetContext).pop();
-                                GoRouter.of(context).go('/dashboard');
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 25.0),
-                            backgroundColor: isDarkTheme
-                                ? darkNavyDarkTheme
-                                : lightBlueLightTheme,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkTheme ? mainTextWhite : mainTextBlack,
+                    ),
+                  ),
+                  trailingNavBarWidget: IconButton(
+                    padding: const EdgeInsets.all(pagePadding),
+                    icon: const Icon(Icons.close),
+                    onPressed: Navigator.of(modalSheetContext).pop,
+                  ),
+                  child: SizedBox(
+                    height: 400,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (hasImportedAddresses)
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(32, 16, 0, 8),
+                            child: Text(
+                              "Accounts",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                                color: mainTextGrey,
+                              ),
                             ),
-                            elevation: 0,
                           ),
-                          onPressed: () {
-                            Navigator.of(modalSheetContext).pop();
-                            HorizonUI.HorizonDialog.show(
-                              context: context,
-                              body: Builder(builder: (context) {
-                                final bloc = context.watch<AccountFormBloc>();
-
-                                final cb = switch (bloc.state) {
-                                  AccountFormStep2() => () {
-                                      bloc.add(Reset());
-                                    },
-                                  _ => () {
-                                      Navigator.of(context).pop();
-                                    },
-                                };
-
-                                return HorizonUI.HorizonDialog(
-                                  onBackButtonPressed: cb,
-                                  title: "Add an account",
-                                  body: const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 16.0),
-                                    child: AddAccountForm(),
-                                  ),
+                        Expanded(
+                          child: ListView(
+                            children: [
+                              // Regular accounts
+                              ...state.accounts.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final account = entry.value;
+                                return Column(
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(
+                                          Icons.account_balance_wallet_rounded),
+                                      title: Text(
+                                        account.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      selected: account.uuid ==
+                                          state.currentAccountUuid,
+                                      onTap: () {
+                                        context
+                                            .read<ShellStateCubit>()
+                                            .onAccountChanged(account);
+                                        Navigator.of(modalSheetContext).pop();
+                                        GoRouter.of(context).go('/dashboard');
+                                      },
+                                    ),
+                                    if (index != state.accounts.length - 1)
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 4.0),
+                                        child: Divider(thickness: 1.0),
+                                      ),
+                                  ],
                                 );
                               }),
-                            );
-                          },
-                          child: const Text("Add Account",
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
+
+                              // Add Account button
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 25.0),
+                                  backgroundColor: isDarkTheme
+                                      ? darkNavyDarkTheme
+                                      : lightBlueLightTheme,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  elevation: 0,
+                                ),
+                                onPressed: () {
+                                  Navigator.of(modalSheetContext).pop();
+                                  HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: Builder(builder: (context) {
+                                      final bloc =
+                                          context.watch<AccountFormBloc>();
+                                      final cb = switch (bloc.state) {
+                                        AccountFormStep2() => () {
+                                            bloc.add(Reset());
+                                          },
+                                        _ => () {
+                                            Navigator.of(context).pop();
+                                          },
+                                      };
+                                      return HorizonUI.HorizonDialog(
+                                        onBackButtonPressed: cb,
+                                        title: "Add an account",
+                                        body: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 16.0),
+                                          child: AddAccountForm(),
+                                        ),
+                                      );
+                                    }),
+                                  );
+                                },
+                                child: const Text("Add Account",
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600)),
+                              ),
+
+                              // Imported addresses section
+                              if (hasImportedAddresses) ...[
+                                const Padding(
+                                  padding: EdgeInsets.fromLTRB(32, 16, 0, 8),
+                                  child: Text(
+                                    "Imported Addresses",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                      color: mainTextGrey,
+                                    ),
+                                  ),
+                                ),
+                                ...?state.importedAddresses
+                                    ?.asMap()
+                                    .entries
+                                    .map((entry) {
+                                  final index = entry.key;
+                                  final importedAddress = entry.value;
+                                  return Column(
+                                    children: [
+                                      ListTile(
+                                        leading: const Icon(Icons.key),
+                                        title: Text(
+                                          importedAddress.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        selected: importedAddress.address ==
+                                            state.currentImportedAddress
+                                                ?.address,
+                                        onTap: () {
+                                          context
+                                              .read<ShellStateCubit>()
+                                              .onImportedAddressChanged(
+                                                  importedAddress);
+                                          Navigator.of(modalSheetContext).pop();
+                                          GoRouter.of(context).go('/dashboard');
+                                        },
+                                      ),
+                                      if (index !=
+                                          (state.importedAddresses?.length ??
+                                                  0) -
+                                              1)
+                                        const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4.0),
+                                          child: Divider(thickness: 1.0),
+                                        ),
+                                    ],
+                                  );
+                                }),
+                              ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
               orElse: () => SliverWoltModalSheetPage(),
             ),
       ];
     },
-    onModalDismissedWithBarrierTap: () {
-      print("dismissed with barrier tap");
-    },
     modalTypeBuilder: (context) {
       final size = MediaQuery.of(context).size.width;
-      if (size < 768.0) {
-        return WoltModalType.bottomSheet;
-      } else {
-        return WoltModalType.dialog;
-      }
+      return size < 768.0 ? WoltModalType.bottomSheet : WoltModalType.dialog;
     },
   );
 }
 
-class AccountSelectionButton extends StatelessWidget {
+class WalletItemSelectionButton extends StatelessWidget {
   final bool isDarkTheme;
   final VoidCallback onPressed;
 
-  const AccountSelectionButton({
+  const WalletItemSelectionButton({
     super.key,
     required this.isDarkTheme,
     required this.onPressed,
@@ -177,6 +268,21 @@ class AccountSelectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedItem = context.read<ShellStateCubit>().state.maybeWhen(
+          success: (state) {
+            final account = state.accounts.firstWhereOrNull(
+                (account) => account.uuid == state.currentAccountUuid);
+            if (account != null) {
+              return account.name;
+            }
+            final importedAddress = state.importedAddresses?.firstWhereOrNull(
+                (importedAddress) =>
+                    importedAddress.address ==
+                    state.currentImportedAddress?.address);
+            return importedAddress?.name ?? "Select Item ";
+          },
+          orElse: () => "Select Item",
+        );
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
       child: SizedBox(
@@ -205,13 +311,7 @@ class AccountSelectionButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 16.0),
                 Text(
-                  context.read<ShellStateCubit>().state.maybeWhen(
-                        success: (state) => state.accounts
-                            .firstWhere((account) =>
-                                account.uuid == state.currentAccountUuid)
-                            .name,
-                        orElse: () => "Select Account",
-                      ),
+                  selectedItem,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: isDarkTheme
@@ -980,6 +1080,7 @@ class DashboardPageState extends State<DashboardPage> {
         );
 
     if (!isSmallScreen) {
+      // Scaffold for desktop
       return Scaffold(
           bottomNavigationBar: const Footer(),
           body: Container(
@@ -1039,7 +1140,7 @@ class DashboardPageState extends State<DashboardPage> {
                                         borderRadius:
                                             BorderRadius.circular(30.0),
                                       ),
-                                      child: const AccountSidebar())),
+                                      child: const WalletItemSidebar())),
                               const SizedBox(width: 8),
                               Expanded(
                                   flex: 3,
@@ -1069,7 +1170,7 @@ class DashboardPageState extends State<DashboardPage> {
                                           );
                                         }),
                                         SizedBox(
-                                          height: isSmallScreen ? 352 : 258,
+                                          height: 258,
                                           child: Container(
                                             margin: const EdgeInsets.fromLTRB(
                                                 8, 4, 8, 8),
@@ -1091,17 +1192,14 @@ class DashboardPageState extends State<DashboardPage> {
                                                           widget
                                                               .currentImportedAddress!
                                                               .address,
-                                                      initialItemCount:
-                                                          isSmallScreen
-                                                              ? 5
-                                                              : 3),
+                                                      initialItemCount: 3),
                                                 ),
                                               ],
                                             ),
                                           ),
                                         ),
                                         SizedBox(
-                                          height: isSmallScreen ? 248 : 352,
+                                          height: 352,
                                           child: Container(
                                             margin: const EdgeInsets.fromLTRB(
                                                 8, 4, 8, 8),
@@ -1131,10 +1229,7 @@ class DashboardPageState extends State<DashboardPage> {
                                                                     .currentImportedAddress!
                                                                     .address
                                                           ],
-                                                          initialItemCount:
-                                                              isSmallScreen
-                                                                  ? 3
-                                                                  : 4),
+                                                          initialItemCount: 4),
                                                 )
                                               ],
                                             ),
@@ -1153,6 +1248,7 @@ class DashboardPageState extends State<DashboardPage> {
           ));
     }
 
+    // Scaffold for mobile
     return Scaffold(
         bottomNavigationBar: const Footer(),
         body: Container(
@@ -1178,11 +1274,10 @@ class DashboardPageState extends State<DashboardPage> {
                   child: CustomScrollView(
                     controller: _scrollController,
                     slivers: [
-                      SliverCrossAxisConstrained(
+                      const SliverCrossAxisConstrained(
                           maxCrossAxisExtent: maxWidth,
                           child: TransparentHorizonSliverAppBar(
-                            expandedHeight:
-                                isSmallScreen ? kToolbarHeight : 150,
+                            expandedHeight: kToolbarHeight,
                           )),
                       SliverCrossAxisConstrained(
                           maxCrossAxisExtent: maxWidth,
@@ -1214,105 +1309,43 @@ class DashboardPageState extends State<DashboardPage> {
                               padding:
                                   const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
                               sliver: MultiSliver(children: [
-                                !isSmallScreen
-                                    ? SliverToBoxAdapter(
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: AccountSelectionButton(
-                                                isDarkTheme: isDarkTheme,
-                                                onPressed: () =>
-                                                    showAccountList(
-                                                        context, isDarkTheme),
-                                              ),
-                                            ),
-                                            Builder(builder: (context) {
-                                              return context
-                                                  .read<ShellStateCubit>()
-                                                  .state
-                                                  .maybeWhen(
-                                                      success: (state) => state
-                                                                  .addresses
-                                                                  .length >
-                                                              1
-                                                          ? Expanded(
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .fromLTRB(
-                                                                        0.0,
-                                                                        8.0,
-                                                                        8.0,
-                                                                        0.0),
-                                                                child:
-                                                                    AddressSelectionButton(
-                                                                  isDarkTheme:
-                                                                      isDarkTheme,
-                                                                  onPressed: () =>
-                                                                      showAddressList(
-                                                                          context,
-                                                                          isDarkTheme,
-                                                                          account),
-                                                                ),
-                                                              ),
-                                                            )
-                                                          : const SizedBox
-                                                              .shrink(),
-                                                      orElse: () =>
-                                                          const SizedBox
-                                                              .shrink());
-                                            }),
-                                          ],
-                                        ),
-                                      )
-                                    : SliverToBoxAdapter(
-                                        child: AccountSelectionButton(
-                                          isDarkTheme: isDarkTheme,
-                                          onPressed: () => showAccountList(
-                                              context, isDarkTheme),
-                                        ),
-                                      ),
+                                SliverToBoxAdapter(
+                                  child: WalletItemSelectionButton(
+                                    isDarkTheme: isDarkTheme,
+                                    onPressed: () =>
+                                        showAccountList(context, isDarkTheme),
+                                  ),
+                                ),
                                 if (account != null)
-                                  isSmallScreen
-                                      ? Builder(builder: (context) {
-                                          return context
-                                              .read<ShellStateCubit>()
-                                              .state
-                                              .maybeWhen(
-                                                  success: (state) => state
-                                                              .addresses
-                                                              .length >
-                                                          1
-                                                      ? SliverToBoxAdapter(
-                                                          child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .fromLTRB(
-                                                                  8.0,
-                                                                  8.0,
-                                                                  8.0,
-                                                                  0.0),
-                                                          child:
-                                                              AddressSelectionButton(
-                                                            isDarkTheme:
-                                                                isDarkTheme,
-                                                            onPressed: () =>
-                                                                showAddressList(
-                                                                    context,
-                                                                    isDarkTheme,
-                                                                    account),
-                                                          ),
-                                                        ))
-                                                      : const SliverToBoxAdapter(
-                                                          child: SizedBox
-                                                              .shrink()),
-                                                  orElse: () =>
-                                                      const SliverToBoxAdapter(
-                                                          child: SizedBox
-                                                              .shrink()));
-                                        })
-                                      : const SliverToBoxAdapter(
-                                          child: SizedBox.shrink()),
+                                  Builder(builder: (context) {
+                                    return context
+                                        .read<ShellStateCubit>()
+                                        .state
+                                        .maybeWhen(
+                                            success: (state) => state
+                                                        .addresses.length >
+                                                    1
+                                                ? SliverToBoxAdapter(
+                                                    child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .fromLTRB(
+                                                        8.0, 8.0, 8.0, 0.0),
+                                                    child:
+                                                        AddressSelectionButton(
+                                                      isDarkTheme: isDarkTheme,
+                                                      onPressed: () =>
+                                                          showAddressList(
+                                                              context,
+                                                              isDarkTheme,
+                                                              account),
+                                                    ),
+                                                  ))
+                                                : const SliverToBoxAdapter(
+                                                    child: SizedBox.shrink()),
+                                            orElse: () =>
+                                                const SliverToBoxAdapter(
+                                                    child: SizedBox.shrink()));
+                                  }),
                                 SliverToBoxAdapter(
                                     child: Builder(builder: (context) {
                                   final dashboardActivityFeedBloc = BlocProvider
@@ -1347,8 +1380,7 @@ class DashboardPageState extends State<DashboardPage> {
                                             widget.currentAddress?.address ??
                                                 widget.currentImportedAddress!
                                                     .address,
-                                        initialItemCount:
-                                            isSmallScreen ? 5 : 3),
+                                        initialItemCount: 5),
                                   ),
                                 ]),
                                 SliverStack(children: [
@@ -1374,7 +1406,7 @@ class DashboardPageState extends State<DashboardPage> {
                                             widget
                                                 .currentImportedAddress!.address
                                       ],
-                                      initialItemCount: isSmallScreen ? 3 : 4,
+                                      initialItemCount: 3,
                                     ),
                                   ),
                                 ])

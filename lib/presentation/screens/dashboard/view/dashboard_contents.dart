@@ -33,15 +33,16 @@ import "package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 
-class AccountSidebar extends StatefulWidget {
-  const AccountSidebar({super.key});
+class WalletItemSidebar extends StatefulWidget {
+  const WalletItemSidebar({super.key});
   @override
-  State<AccountSidebar> createState() => _AccountSidebarState();
+  State<WalletItemSidebar> createState() => _WalletItemSidebarState();
 }
 
-class _AccountSidebarState extends State<AccountSidebar> {
+class _WalletItemSidebarState extends State<WalletItemSidebar> {
   Account? selectedAccount;
   ImportedAddress? selectedImportedAddress;
+  bool isImportedAddressesExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -139,116 +140,137 @@ class _AccountSidebarState extends State<AccountSidebar> {
                           );
                         }),
 
-                        // Imported addresses section
-                        if (hasImportedAddresses) ...[
-                          const Padding(
-                            padding: EdgeInsets.fromLTRB(32, 16, 0, 8),
-                            child: Text(
-                              "Imported Addresses",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                                color: mainTextGrey,
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
                               ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              HorizonUI.HorizonDialog.show(
+                                context: context,
+                                body: Builder(builder: (context) {
+                                  final bloc = context.watch<AccountFormBloc>();
+                                  final cb = switch (bloc.state) {
+                                    AccountFormStep2() => () {
+                                        bloc.add(Reset());
+                                      },
+                                    _ => () {
+                                        Navigator.of(context).pop();
+                                      },
+                                  };
+                                  return HorizonUI.HorizonDialog(
+                                    onBackButtonPressed: cb,
+                                    title: "Add an account",
+                                    body: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: AddAccountForm(),
+                                    ),
+                                  );
+                                }),
+                              );
+                            },
+                            child: const Text("Add Account",
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+
+                        if (hasImportedAddresses)
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              dividerColor: Colors
+                                  .transparent, // Removes the default divider
+                            ),
+                            child: ExpansionTile(
+                              initiallyExpanded: isImportedAddressesExpanded,
+                              onExpansionChanged: (expanded) {
+                                setState(() {
+                                  isImportedAddressesExpanded = expanded;
+                                });
+                              },
+                              title: const Text(
+                                "Imported Addresses",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  color: mainTextGrey,
+                                ),
+                              ),
+                              tilePadding:
+                                  const EdgeInsets.fromLTRB(32, 0, 16, 0),
+                              children: [
+                                ...state.importedAddresses
+                                        ?.asMap()
+                                        .entries
+                                        .map((entry) {
+                                      final index = entry.key;
+                                      final importedAddress = entry.value;
+                                      return Column(
+                                        children: [
+                                          ListTile(
+                                            title: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      0, 8, 0, 8),
+                                              child: Row(
+                                                children: [
+                                                  const SizedBox(width: 16.0),
+                                                  const Icon(Icons.key),
+                                                  const SizedBox(width: 16.0),
+                                                  Expanded(
+                                                    child: Text(
+                                                      importedAddress.name,
+                                                      textAlign: TextAlign.left,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            hoverColor: Colors.transparent,
+                                            selected: importedAddress.address ==
+                                                state.currentImportedAddress
+                                                    ?.address,
+                                            onTap: () {
+                                              setState(() =>
+                                                  selectedImportedAddress =
+                                                      importedAddress);
+                                              context
+                                                  .read<ShellStateCubit>()
+                                                  .onImportedAddressChanged(
+                                                      importedAddress);
+                                              GoRouter.of(context)
+                                                  .go('/dashboard');
+                                            },
+                                          ),
+                                          if (index !=
+                                              (state.importedAddresses
+                                                          ?.length ??
+                                                      0) -
+                                                  1)
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 4.0),
+                                              child: Divider(thickness: 1.0),
+                                            ),
+                                        ],
+                                      );
+                                    }).toList() ??
+                                    [],
+                              ],
                             ),
                           ),
-                          ...?state.importedAddresses
-                              ?.asMap()
-                              .entries
-                              .map((entry) {
-                            final index = entry.key;
-                            final importedAddress = entry.value;
-                            return Column(
-                              children: [
-                                ListTile(
-                                  title: Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                                    child: Row(
-                                      children: [
-                                        const SizedBox(width: 16.0),
-                                        const Icon(Icons.key),
-                                        const SizedBox(width: 16.0),
-                                        Expanded(
-                                          child: Text(
-                                            importedAddress.name,
-                                            textAlign: TextAlign.left,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  hoverColor:
-                                      Colors.transparent, // No hover effect
-                                  selected: importedAddress.address ==
-                                      state.currentImportedAddress?.address,
-                                  onTap: () {
-                                    setState(() => selectedImportedAddress =
-                                        importedAddress);
-                                    context
-                                        .read<ShellStateCubit>()
-                                        .onImportedAddressChanged(
-                                            importedAddress);
-                                    GoRouter.of(context).go('/dashboard');
-                                  },
-                                ),
-                                if (index !=
-                                    (state.importedAddresses?.length ?? 0) - 1)
-                                  const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 4.0),
-                                    child: Divider(thickness: 1.0),
-                                  ),
-                              ],
-                            );
-                          }),
-                        ],
                       ],
                     ),
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      elevation: 0, // No shadow
-                    ),
-                    onPressed: () {
-                      HorizonUI.HorizonDialog.show(
-                        context: context,
-                        body: Builder(builder: (context) {
-                          final bloc = context.watch<AccountFormBloc>();
-
-                          final cb = switch (bloc.state) {
-                            AccountFormStep2() => () {
-                                bloc.add(Reset());
-                              },
-                            _ => () {
-                                Navigator.of(context).pop();
-                              },
-                          };
-
-                          return HorizonUI.HorizonDialog(
-                            onBackButtonPressed: cb,
-                            title: "Add an account",
-                            body: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              child: AddAccountForm(),
-                            ),
-                          );
-                        }),
-                      );
-                    },
-                    child: const Text("Add Account",
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const Padding(
@@ -694,7 +716,7 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                     ? dialogBackgroundColorDarkTheme
                     : dialogBackgroundColorLightTheme,
                 isTopBarLayerAlwaysVisible: true,
-                topBarTitle: Text('Select an address',
+                topBarTitle: Text('Select Address',
                     style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
