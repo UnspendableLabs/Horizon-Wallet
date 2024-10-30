@@ -17,8 +17,6 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$LogoutState {
   dynamic get logoutState => throw _privateConstructorUsedError;
-  bool get hasConfirmedUnderstanding => throw _privateConstructorUsedError;
-  String get resetConfirmationText => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $LogoutStateCopyWith<LogoutState> get copyWith =>
@@ -31,10 +29,7 @@ abstract class $LogoutStateCopyWith<$Res> {
           LogoutState value, $Res Function(LogoutState) then) =
       _$LogoutStateCopyWithImpl<$Res, LogoutState>;
   @useResult
-  $Res call(
-      {dynamic logoutState,
-      bool hasConfirmedUnderstanding,
-      String resetConfirmationText});
+  $Res call({dynamic logoutState});
 }
 
 /// @nodoc
@@ -51,22 +46,12 @@ class _$LogoutStateCopyWithImpl<$Res, $Val extends LogoutState>
   @override
   $Res call({
     Object? logoutState = freezed,
-    Object? hasConfirmedUnderstanding = null,
-    Object? resetConfirmationText = null,
   }) {
     return _then(_value.copyWith(
       logoutState: freezed == logoutState
           ? _value.logoutState
           : logoutState // ignore: cast_nullable_to_non_nullable
               as dynamic,
-      hasConfirmedUnderstanding: null == hasConfirmedUnderstanding
-          ? _value.hasConfirmedUnderstanding
-          : hasConfirmedUnderstanding // ignore: cast_nullable_to_non_nullable
-              as bool,
-      resetConfirmationText: null == resetConfirmationText
-          ? _value.resetConfirmationText
-          : resetConfirmationText // ignore: cast_nullable_to_non_nullable
-              as String,
     ) as $Val);
   }
 }
@@ -79,10 +64,7 @@ abstract class _$$LogoutStateImplCopyWith<$Res>
       __$$LogoutStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {dynamic logoutState,
-      bool hasConfirmedUnderstanding,
-      String resetConfirmationText});
+  $Res call({dynamic logoutState});
 }
 
 /// @nodoc
@@ -97,19 +79,9 @@ class __$$LogoutStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? logoutState = freezed,
-    Object? hasConfirmedUnderstanding = null,
-    Object? resetConfirmationText = null,
   }) {
     return _then(_$LogoutStateImpl(
       logoutState: freezed == logoutState ? _value.logoutState! : logoutState,
-      hasConfirmedUnderstanding: null == hasConfirmedUnderstanding
-          ? _value.hasConfirmedUnderstanding
-          : hasConfirmedUnderstanding // ignore: cast_nullable_to_non_nullable
-              as bool,
-      resetConfirmationText: null == resetConfirmationText
-          ? _value.resetConfirmationText
-          : resetConfirmationText // ignore: cast_nullable_to_non_nullable
-              as String,
     ));
   }
 }
@@ -117,24 +89,15 @@ class __$$LogoutStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$LogoutStateImpl implements _LogoutState {
-  const _$LogoutStateImpl(
-      {this.logoutState = LoggedIn,
-      this.hasConfirmedUnderstanding = false,
-      this.resetConfirmationText = ''});
+  const _$LogoutStateImpl({this.logoutState = LoggedIn});
 
   @override
   @JsonKey()
   final dynamic logoutState;
-  @override
-  @JsonKey()
-  final bool hasConfirmedUnderstanding;
-  @override
-  @JsonKey()
-  final String resetConfirmationText;
 
   @override
   String toString() {
-    return 'LogoutState(logoutState: $logoutState, hasConfirmedUnderstanding: $hasConfirmedUnderstanding, resetConfirmationText: $resetConfirmationText)';
+    return 'LogoutState(logoutState: $logoutState)';
   }
 
   @override
@@ -143,20 +106,12 @@ class _$LogoutStateImpl implements _LogoutState {
         (other.runtimeType == runtimeType &&
             other is _$LogoutStateImpl &&
             const DeepCollectionEquality()
-                .equals(other.logoutState, logoutState) &&
-            (identical(other.hasConfirmedUnderstanding,
-                    hasConfirmedUnderstanding) ||
-                other.hasConfirmedUnderstanding == hasConfirmedUnderstanding) &&
-            (identical(other.resetConfirmationText, resetConfirmationText) ||
-                other.resetConfirmationText == resetConfirmationText));
+                .equals(other.logoutState, logoutState));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(logoutState),
-      hasConfirmedUnderstanding,
-      resetConfirmationText);
+      runtimeType, const DeepCollectionEquality().hash(logoutState));
 
   @JsonKey(ignore: true)
   @override
@@ -166,17 +121,10 @@ class _$LogoutStateImpl implements _LogoutState {
 }
 
 abstract class _LogoutState implements LogoutState {
-  const factory _LogoutState(
-      {final dynamic logoutState,
-      final bool hasConfirmedUnderstanding,
-      final String resetConfirmationText}) = _$LogoutStateImpl;
+  const factory _LogoutState({final dynamic logoutState}) = _$LogoutStateImpl;
 
   @override
   dynamic get logoutState;
-  @override
-  bool get hasConfirmedUnderstanding;
-  @override
-  String get resetConfirmationText;
   @override
   @JsonKey(ignore: true)
   _$$LogoutStateImplCopyWith<_$LogoutStateImpl> get copyWith =>

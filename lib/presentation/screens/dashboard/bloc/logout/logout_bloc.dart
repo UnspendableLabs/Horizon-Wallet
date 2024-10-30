@@ -19,46 +19,28 @@ class LogoutBloc extends Bloc<LogoutEvent, LogoutState> {
   final CacheProvider cacheProvider;
   final AnalyticsService analyticsService;
 
-  LogoutBloc({
-    required this.walletRepository,
-    required this.accountRepository,
-    required this.addressRepository,
-    required this.importedAddressRepository,
-    required this.analyticsService,
-    required this.cacheProvider,
-  }) : super(const LogoutState()) {
-    on<InitiateLogout>(_onInitiateLogout);
-    on<UpdateUnderstandingConfirmation>(_onUpdateUnderstanding);
-    on<UpdateResetConfirmationText>(_onUpdateResetText);
-    on<ConfirmLogout>(_onConfirmLogout);
+  LogoutBloc(
+      {required this.walletRepository,
+      required this.accountRepository,
+      required this.addressRepository,
+      required this.importedAddressRepository,
+      required this.analyticsService,
+      required this.cacheProvider})
+      : super(const LogoutState()) {
+    on<LogoutEvent>(_onLogout);
   }
 
-  void _onInitiateLogout(InitiateLogout event, Emitter emit) {
-    emit(state.copyWith(
-      hasConfirmedUnderstanding: false,
-      resetConfirmationText: '',
-    ));
-  }
+  void _onLogout(LogoutEvent event, Emitter emit) async {
+    logger.d('Logout event received');
+    await walletRepository.deleteAllWallets();
+    await accountRepository.deleteAllAccounts();
+    await addressRepository.deleteAllAddresses();
+    await importedAddressRepository.deleteAllImportedAddresses();
+    cacheProvider.removeAll();
 
-  void _onUpdateUnderstanding(
-      UpdateUnderstandingConfirmation event, Emitter emit) {
-    emit(state.copyWith(hasConfirmedUnderstanding: event.hasConfirmed));
-  }
+    analyticsService.reset();
 
-  void _onUpdateResetText(UpdateResetConfirmationText event, Emitter emit) {
-    emit(state.copyWith(resetConfirmationText: event.text));
-  }
-
-  void _onConfirmLogout(ConfirmLogout event, Emitter emit) async {
-    if (state.hasConfirmedUnderstanding &&
-        state.resetConfirmationText == 'RESET WALLET') {
-      await walletRepository.deleteAllWallets();
-      await accountRepository.deleteAllAccounts();
-      await addressRepository.deleteAllAddresses();
-      await importedAddressRepository.deleteAllImportedAddresses();
-      cacheProvider.removeAll();
-      analyticsService.reset();
-      emit(state.copyWith(logoutState: LoggedOut()));
-    }
+    logger.d('emit logout state');
+    emit(LogoutState(logoutState: LoggedOut()));
   }
 }
