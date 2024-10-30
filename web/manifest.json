@@ -19,7 +19,7 @@
     }
   ],
   "background": {
-    "service_worker": "main.dart.js",
+    "service_worker": "background.dart.js",
     "type": "module"
   },
   "manifest_version": 3

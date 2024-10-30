@@ -30,6 +30,10 @@ class ActionRepositoryImpl implements ActionRepository {
             giveAsset: giveAsset,
             getQuantity: int.tryParse(getQuantity)!,
             getAsset: getAsset),
+      ["getAddresses", String tabId, String requestId] => RPCGetAddressesAction(
+          int.tryParse(tabId)!, requestId), // TODO:be more paranoid
+      ["signPsbt", String tabId, String requestId, String psbt] =>
+        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt),
       _ => throw Exception()
     };
   }

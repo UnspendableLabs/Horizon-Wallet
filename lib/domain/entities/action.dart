@@ -30,3 +30,23 @@ class OpenOrderAction extends Action {
       required this.getQuantity,
       required this.getAsset});
 }
+
+
+abstract class RPCAction extends Action {
+  final int tabId;
+  final String requestId;
+  RPCAction(this.tabId, this.requestId);
+}
+
+class RPCGetAddressesAction extends RPCAction {
+  @override
+  String get action => 'getAddresses';
+  RPCGetAddressesAction(super.tabId, super.requestId);
+}
+
+class RPCSignPsbtAction extends RPCAction {
+  @override
+  String get action => 'signPsbt';
+  final String psbt;
+  RPCSignPsbtAction(super.tabId, super.requestId, this.psbt);
+}

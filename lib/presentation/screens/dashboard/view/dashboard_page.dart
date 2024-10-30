@@ -55,6 +55,124 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
+import 'package:chrome_extension/tabs.dart';
+
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+
+import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+
+class SignPsbtModal extends StatelessWidget {
+  final int tabId;
+  final String requestId;
+  final String unsignedPsbt;
+  final TransactionService transactionService;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+
+  const SignPsbtModal(
+      {Key? key,
+      required this.unsignedPsbt,
+      required this.transactionService,
+      required this.walletRepository,
+      required this.encryptionService,
+      required this.addressService,
+      required this.tabId,
+      required this.requestId})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => SignPsbtBloc(
+        unsignedPsbt: unsignedPsbt,
+        transactionService: transactionService,
+        walletRepository: walletRepository,
+        encryptionService: encryptionService,
+        addressService: addressService,
+      ),
+      child: SignPsbtForm(
+        key: Key(unsignedPsbt),
+        onSuccess: (signedPsbtHex) {
+          chrome.tabs.sendMessage(
+              tabId,
+              {
+                "id": requestId,
+                "hex": signedPsbtHex 
+              },
+              null);
+        },
+      ),
+    );
+  }
+}
+
+class AccountSelectModal extends StatefulWidget {
+  final int tabId;
+  final String requestId;
+
+  const AccountSelectModal({required this.tabId, required this.requestId});
+
+  @override
+  AccountSelectModalState createState() => AccountSelectModalState();
+}
+
+class AccountSelectModalState extends State<AccountSelectModal> {
+  TextEditingController accountController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.watch<ShellStateCubit>();
+
+    return shell.state.maybeWhen(
+        orElse: () => const SizedBox.shrink(),
+        success: (shell) {
+          return Column(
+            children: [
+              HorizonUI.HorizonDropdownMenu<String>(
+                  label: "Appprove get-addresses request",
+                  selectedValue: shell.currentAccountUuid,
+                  controller: accountController,
+                  onChanged: (value) => print(value),
+                  items:
+                      shell.accounts.map<DropdownMenuItem<String>>((account) {
+                    return HorizonUI.buildDropdownMenuItem(
+                        account.uuid, account.name);
+                  }).toList()),
+              HorizonUI.HorizonDialogSubmitButton(onPressed: () {
+                final addresses = shell.addresses
+                    .where((address) =>
+                        address.accountUuid == shell.currentAccountUuid)
+                    .toList();
+
+                chrome.tabs.sendMessage(
+                    widget.tabId,
+                    {
+                      "id": widget.requestId,
+                      "addresses": addresses.map((address) {
+                        return {
+                          "address": address.address,
+                          "type": "p2wpkh",
+                        };
+                      })
+                    },
+                    null);
+              })
+            ],
+          );
+        });
+  }
+}
+
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
 
@@ -1163,6 +1281,7 @@ class DashboardPageState extends State<DashboardPage> {
           _handleDispenseAction(address),
       URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
           _handleFairmintAction(fairminterTxHash),
+<<<<<<< HEAD
       URLAction.OpenOrderAction(
         giveQuantity: var giveQuantity,
         giveAsset: var giveAsset,
@@ -1171,6 +1290,19 @@ class DashboardPageState extends State<DashboardPage> {
       ) =>
         () =>
             _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
+=======
+      URLAction.RPCGetAddressesAction(
+        tabId: var tabId,
+        requestId: var requestId
+      ) =>
+        () => _handleRPCGetAddressesAction(tabId, requestId),
+      URLAction.RPCSignPsbtAction(
+        tabId: var tabId,
+        requestId: var requestId,
+        psbt: var psbt
+      ) =>
+        () => _handleRPCSignPsbtAction(tabId, requestId, psbt),
+>>>>>>> 96f6d3c5 (wip: e2e flow)
       _ => noop
     };
   }
@@ -1230,6 +1362,36 @@ class DashboardPageState extends State<DashboardPage> {
             dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             currentAddress: widget.currentAddress?.address ??
                 widget.currentImportedAddress!.address,
+          ),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCGetAddressesAction(int tabId, String requestId) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Get Addresses",
+          body: AccountSelectModal(tabId: tabId, requestId: requestId),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Sign Psbt",
+          body: SignPsbtModal(
+            tabId: tabId,
+            requestId: requestId,
+            unsignedPsbt: psbt,
+            transactionService: GetIt.I.get<TransactionService>(),
+            walletRepository: GetIt.I.get<WalletRepository>(),
+            encryptionService: GetIt.I.get<EncryptionService>(),
+            addressService: GetIt.I.get<AddressService>(),
           ),
           includeBackButton: false,
           includeCloseButton: true,

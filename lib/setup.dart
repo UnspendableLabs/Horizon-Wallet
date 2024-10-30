@@ -413,11 +413,6 @@ Future<void> setup() async {
   ));
 
 
-  initExtensionListeners();
-
-  // background.init(
-  //   GetIt.I.get<AddressRepository>(),
-  // );
 }
 
 class CustomDioException extends DioException {
@@ -590,32 +585,4 @@ void rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
       print('Unknown method: ${message['method']}');
   }
 }
-
-void initExtensionListeners() async {
-
-    
-
-  await for (Port port in chrome.runtime.onConnect) {
-    print("aaa");
-    print(port.name);
-    if (port.name != CONTENT_SCRIPT_PORT) continue;
-
-    print("bbb");
-
-    await for (var event in port.onMessage) {
-      print(
-          'Background script received message from content script: ${event.message}');
-
-      String? originUrl = port.sender?.origin ?? port.sender?.url;
-
-      if (originUrl == null) {
-        print("no origin");
-        continue;
-      }
-
-      rpcMessageHandler(event.message as Map<dynamic, dynamic>, event.port);
-    }
-  }
-}
-
 

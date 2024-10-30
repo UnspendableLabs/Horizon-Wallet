@@ -7102,6 +7102,8 @@ function getTaprootHashesForSig(
   return hashes.concat(tapLeafHashes);
 }
 function checkSighashTypeAllowed(sighashType, sighashTypes) {
+  console.log("\n\n\n\n")
+  console.log({ sighashType, sighashTypes })
   if (sighashTypes && sighashTypes.indexOf(sighashType) < 0) {
     const str = sighashTypeToString(sighashType);
     throw new Error(
