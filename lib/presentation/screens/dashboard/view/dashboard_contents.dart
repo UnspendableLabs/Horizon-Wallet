@@ -18,6 +18,7 @@ import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bl
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
 import 'package:horizon/presentation/screens/dashboard/view_address_pk_form/view/view_address_pk_form.dart';
+import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/view/view_seed_phrase_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
@@ -562,10 +563,27 @@ class HorizonAppBarContent extends StatelessWidget {
                                             address: address!),
                                       ),
                                     ));
+                              case 'view_seed_phrase':
+                                HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: const HorizonUI.HorizonDialog(
+                                      includeBackButton: false,
+                                      includeCloseButton: true,
+                                      title: "View wallet seed phrase",
+                                      body: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ViewSeedPhraseFormWrapper(),
+                                      ),
+                                    ));
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'view_seed_phrase',
+                              child: Text('View wallet seed phrase'),
+                            ),
                             const PopupMenuItem<String>(
                               value: 'import_address_pk',
                               child: Text('Import new address private key'),
