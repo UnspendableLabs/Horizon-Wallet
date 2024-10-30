@@ -117,7 +117,7 @@ class ViewAddressPkFormBloc
 
     try {
       decryptedPrivateKeyWif = await encryptionService.decrypt(
-          importedAddress.encryptedWIF, password);
+          importedAddress.encryptedWif, password);
     } catch (e) {
       throw ViewAddressPkError('Invalid password');
     }

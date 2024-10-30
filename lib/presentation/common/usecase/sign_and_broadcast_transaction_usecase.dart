@@ -150,7 +150,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     late String decryptedAddressPrivKey;
     try {
       decryptedAddressPrivKey = await encryptionService.decrypt(
-          importedAddress.encryptedWIF, password);
+          importedAddress.encryptedWif, password);
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }

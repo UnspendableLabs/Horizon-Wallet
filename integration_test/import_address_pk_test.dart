@@ -363,7 +363,7 @@ void main() {
 
               final decryptedPrivateKeyWif =
                   await GetIt.instance<EncryptionService>().decrypt(
-                      importedAddress.encryptedWIF, 'securepassword123');
+                      importedAddress.encryptedWif, 'securepassword123');
               expect(decryptedPrivateKeyWif, entry.value);
             }
 

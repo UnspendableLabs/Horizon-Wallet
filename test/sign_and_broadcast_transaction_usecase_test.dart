@@ -65,7 +65,7 @@ class MockImportedAddress extends Mock implements ImportedAddress {
   final address = "test-address";
 
   @override
-  final encryptedWIF = "test-encrypted-wif";
+  final encryptedWif = "test-encrypted-wif";
 
   @override
   final name = "test-name";
@@ -252,7 +252,7 @@ void main() {
       when(() => mockImportedAddressRepository.getImportedAddress('source'))
           .thenAnswer((_) async => mockImportedAddress);
       when(() => mockEncryptionService.decrypt(
-              mockImportedAddress.encryptedWIF, password))
+              mockImportedAddress.encryptedWif, password))
           .thenAnswer((_) async => decryptedAddressPrivKey);
       when(() => mockAddressService.getAddressPrivateKeyFromWIF(
               wif: decryptedAddressPrivKey))
@@ -290,7 +290,7 @@ void main() {
       verify(() => mockImportedAddressRepository.getImportedAddress('source'))
           .called(1);
       verify(() => mockEncryptionService.decrypt(
-          mockImportedAddress.encryptedWIF, password)).called(1);
+          mockImportedAddress.encryptedWif, password)).called(1);
       verify(() => mockAddressService.getAddressPrivateKeyFromWIF(
           wif: decryptedAddressPrivKey)).called(1);
       verify(() => mockTransactionService.signTransaction(
@@ -403,7 +403,7 @@ void main() {
       when(() => mockImportedAddressRepository.getImportedAddress('source'))
           .thenAnswer((_) async => mockImportedAddress);
       when(() => mockEncryptionService.decrypt(
-              mockImportedAddress.encryptedWIF, "wrong_password"))
+              mockImportedAddress.encryptedWif, "wrong_password"))
           .thenThrow(
               SignAndBroadcastTransactionException('Incorrect password.'));
 
@@ -426,7 +426,7 @@ void main() {
       // Assert
       expect(errorCallbackInvoked, true);
       verify(() => mockEncryptionService.decrypt(
-          mockImportedAddress.encryptedWIF, 'wrong_password')).called(1);
+            mockImportedAddress.encryptedWif, 'wrong_password')).called(1);
       verifyNever(() =>
           mockTransactionService.signTransaction(any(), any(), any(), any()));
       verifyNever(() => mockBitcoindService.sendrawtransaction(any()));

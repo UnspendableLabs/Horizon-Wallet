@@ -18,7 +18,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         walletUuid: address.walletUuid,
         address: address.address,
         name: address.name,
-        encryptedWIF: address.encryptedWIF));
+        encryptedWif: address.encryptedWif));
   }
 
   @override
@@ -28,7 +28,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
             walletUuid: a.walletUuid,
             address: a.address,
             name: a.name,
-            encryptedWIF: a.encryptedWIF))
+            encryptedWif: a.encryptedWif))
         .toList();
 
     _importedAddressDao.insertMultipleImportedAddresses(addresses_);
@@ -43,7 +43,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
             walletUuid: addressModel.walletUuid,
             address: addressModel.address,
             name: addressModel.name,
-            encryptedWIF: addressModel.encryptedWIF)
+            encryptedWif: addressModel.encryptedWif)
         : null;
   }
 
@@ -58,7 +58,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
             walletUuid: a.walletUuid,
             address: a.address,
             name: a.name,
-            encryptedWIF: a.encryptedWIF))
+            encryptedWif: a.encryptedWif))
         .toList();
 
     return entityAddresses;
@@ -83,7 +83,7 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
             walletUuid: a.walletUuid,
             address: a.address,
             name: a.name,
-            encryptedWIF: a.encryptedWIF))
+            encryptedWif: a.encryptedWif))
         .toList();
   }
 }
