@@ -79,8 +79,8 @@ class _LogoutDialogState extends State<LogoutDialog> {
                   const SizedBox(height: 16),
                   CheckboxListTile(
                     fillColor: WidgetStateProperty.all(isDarkTheme
-                        ? darkThemeInputColor
-                        : lightBlueLightTheme),
+                        ? darkThemeInputLabelColor
+                        : lightThemeInputLabelColor),
                     value: hasConfirmedUnderstanding,
                     onChanged: (value) {
                       setState(() {
@@ -145,6 +145,7 @@ class _LogoutDialogState extends State<LogoutDialog> {
                   ),
                   const SizedBox(height: 16),
                   TextField(
+                    key: const Key('resetConfirmationTextField'),
                     controller: resetConfirmationController,
                     decoration: const InputDecoration(
                       hintText: 'Enter text "RESET WALLET" to continue',

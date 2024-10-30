@@ -35,6 +35,7 @@ class BackContinueButtons extends StatelessWidget {
             child: SizedBox(
               width: isSmallScreenWidth ? double.infinity : 200,
               child: ElevatedButton(
+                key: const Key('backButton'),
                 style: ElevatedButton.styleFrom(
                   overlayColor: noBackgroundColor,
                   elevation: 0,
@@ -61,6 +62,7 @@ class BackContinueButtons extends StatelessWidget {
             child: SizedBox(
               width: isSmallScreenWidth ? double.infinity : 250,
               child: ElevatedButton(
+                key: const Key('continueButton'),
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   backgroundColor: continueButtonBackgroundColor,
