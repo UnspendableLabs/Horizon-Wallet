@@ -694,7 +694,7 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                     ? dialogBackgroundColorDarkTheme
                     : dialogBackgroundColorLightTheme,
                 isTopBarLayerAlwaysVisible: true,
-                topBarTitle: Text('Select an address',
+                topBarTitle: Text('Select Address',
                     style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,

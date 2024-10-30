@@ -62,7 +62,6 @@ class MockAddress extends Mock implements Address {
 }
 
 class MockImportedAddress extends Mock implements ImportedAddress {
-
   @override
   final address = "test-address";
 
