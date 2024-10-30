@@ -200,10 +200,10 @@ class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
 class MockShellStateCubit extends Mock implements ShellStateCubit {
   @override
-  ShellState get state => const ShellState.success(ShellStateSuccess(
+  ShellState get state => ShellState.success(ShellStateSuccess.withAccount(
         accounts: [],
         redirect: false,
-        wallet: Wallet(
+        wallet: const Wallet(
           name: 'Test Wallet',
           uuid: 'test-wallet-uuid',
           publicKey: '',
@@ -212,7 +212,7 @@ class MockShellStateCubit extends Mock implements ShellStateCubit {
         ),
         currentAccountUuid: 'test-account-uuid',
         addresses: [],
-        currentAddress: Address(
+        currentAddress: const Address(
           address: 'test-address',
           accountUuid: 'test-account-uuid',
           index: 0,

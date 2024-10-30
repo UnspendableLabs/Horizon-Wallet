@@ -5,17 +5,17 @@ abstract class ImportAddressPkEvent {}
 class Finalize extends ImportAddressPkEvent {}
 
 class ResetForm extends ImportAddressPkEvent {
-  final String? pk;
-  ResetForm({this.pk});
+  final String? wif;
+  ResetForm({this.wif});
 }
 
 class Submit extends ImportAddressPkEvent {
-  final String pk;
+  final String wif;
   final String password;
   final ImportAddressPkFormat format;
   final String name;
   Submit({
-    required this.pk,
+    required this.wif,
     required this.password,
     required this.format,
     required this.name,

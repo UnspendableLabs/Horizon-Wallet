@@ -49,9 +49,6 @@ abstract class AddressService {
     required int index,
     required ImportFormat importFormat,
   });
-  Future<String> getAddressPrivateKeyFromWIF({
-    required String wif,
-  });
   Future<String> getAddressWIFFromPrivateKey({
     required String rootPrivKey,
     required String chainCodeHex,
@@ -61,9 +58,5 @@ abstract class AddressService {
     required String change,
     required int index,
     required ImportFormat importFormat,
-  });
-  Future<String> getAddressFromWIF({
-    required String wif,
-    required ImportAddressPkFormat format,
   });
 }

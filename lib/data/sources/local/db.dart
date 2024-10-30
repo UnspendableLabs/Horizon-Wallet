@@ -19,7 +19,7 @@ class DB extends _$DB {
   DB(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -114,6 +114,28 @@ class DB extends _$DB {
                   -- Copy data from old table to new table, renaming column
                   INSERT INTO imported_addresses_temp (address, name, encrypted_wif, wallet_uuid)
                   SELECT address, '', encrypted_private_key, wallet_uuid
+                  FROM imported_addresses;
+
+                  -- Drop old table
+                  DROP TABLE imported_addresses;
+
+                  -- Rename temp table to final name
+                  ALTER TABLE imported_addresses_temp RENAME TO imported_addresses;
+                ''');
+              },
+              from5To6: (m, schema) async {
+                // Create temporary table without wallet_uuid
+                await customStatement('''
+                  CREATE TABLE imported_addresses_temp (
+                    address TEXT NOT NULL UNIQUE,
+                    name TEXT NOT NULL DEFAULT '',
+                    encrypted_wif TEXT NOT NULL UNIQUE,
+                    PRIMARY KEY (address)
+                  );
+
+                  -- Copy data from old table to new table, excluding wallet_uuid
+                  INSERT INTO imported_addresses_temp (address, name, encrypted_wif)
+                  SELECT address, name, encrypted_wif
                   FROM imported_addresses;
 
                   -- Drop old table
