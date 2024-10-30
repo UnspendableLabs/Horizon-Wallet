@@ -3,13 +3,13 @@ import 'package:drift/drift.dart';
 @DataClassName("ImportedAddress")
 class ImportedAddresses extends Table {
   @JsonKey('address')
-  TextColumn get address => text().customConstraint('UNIQUE NOT NULL')();
+  TextColumn get address => text().customConstraint('NOT NULL UNIQUE')();
 
   @JsonKey('name')
-  TextColumn get name => text()();
+  TextColumn get name => text().customConstraint("NOT NULL DEFAULT ''")();
 
-  @JsonKey('encryptedWIF')
-  TextColumn get encryptedWIF => text().customConstraint('UNIQUE NOT NULL')();
+  @JsonKey('encryptedWif')
+  TextColumn get encryptedWif => text().customConstraint('NOT NULL UNIQUE')();
 
   @JsonKey('walletUuid')
   TextColumn get walletUuid => text()();
