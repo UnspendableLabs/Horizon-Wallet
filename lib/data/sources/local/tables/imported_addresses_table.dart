@@ -11,9 +11,6 @@ class ImportedAddresses extends Table {
   @JsonKey('encryptedWif')
   TextColumn get encryptedWif => text().customConstraint('NOT NULL UNIQUE')();
 
-  @JsonKey('walletUuid')
-  TextColumn get walletUuid => text()();
-
   @override
   Set<Column> get primaryKey => {address};
 }

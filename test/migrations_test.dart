@@ -54,4 +54,12 @@ void main() {
     await verifier.migrateAndValidate(db, 5);
     await db.close();
   });
+
+  test('upgrade from v5 to v6', () async {
+    final connection = await verifier.startAt(5);
+    final db = DB(connection);
+
+    await verifier.migrateAndValidate(db, 6);
+    await db.close();
+  });
 }

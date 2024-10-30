@@ -76,7 +76,6 @@ class ImportAddressPkBloc
           address: address,
           encryptedWif: encryptedWIF,
           name: event.name,
-          walletUuid: wallet.uuid,
         );
 
         try {
