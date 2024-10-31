@@ -282,6 +282,9 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
         virtualSize: virtualSize.virtualSize,
         adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
           submitState: SubmitInitial(

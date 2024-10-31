@@ -138,7 +138,7 @@ class TransactionVerbose extends Transaction {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Balance {
-  final String address;
+  final String? address;
   final double quantity;
   final String asset;
 
@@ -159,7 +159,7 @@ class BalanceVerbose extends Balance {
   final AssetInfoModel assetInfo;
 
   BalanceVerbose(
-      {required super.address,
+      {super.address,
       required super.quantity,
       required super.asset,
       required this.assetInfo,
@@ -181,13 +181,11 @@ class MultiBalance {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class MultiBalanceVerbose {
-  final String address;
+  final String? address;
   final int quantity;
   final String quantityNormalized;
   MultiBalanceVerbose(
-      {required this.address,
-      required this.quantity,
-      required this.quantityNormalized});
+      {this.address, required this.quantity, required this.quantityNormalized});
 
   factory MultiBalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$MultiBalanceVerboseFromJson(json);
