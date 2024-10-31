@@ -7,7 +7,7 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchDispenserFormDataUseCase {
   final BalanceRepository balanceRepository;
-    final DispenserRepository dispenserRepository;
+  final DispenserRepository dispenserRepository;
 
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
 
@@ -17,7 +17,8 @@ class FetchDispenserFormDataUseCase {
     required this.dispenserRepository,
   });
 
-  Future<(List<Balance>, FeeEstimates, List<Dispenser>)> call(String currentAddress) async {
+  Future<(List<Balance>, FeeEstimates, List<Dispenser>)> call(
+      String currentAddress) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
@@ -29,6 +30,7 @@ class FetchDispenserFormDataUseCase {
       final balances = futures[0] as List<Balance>;
       final feeEstimates = futures[1] as FeeEstimates;
       final dispenser = futures[2] as List<Dispenser>;
+      print(dispenser);
 
       return (balances, feeEstimates, dispenser);
     } on FetchBalancesException catch (e) {
@@ -62,10 +64,14 @@ class FetchDispenserFormDataUseCase {
 
   Future<List<Dispenser>> _fetchDispensers(String currentAddress) async {
     try {
-      return await dispenserRepository.getDispensersByAddress(currentAddress).run().then((either) => either.fold(
-            (error) => throw FetchDispenserException(error.toString()), // Handle failure
-            (dispensers) => dispensers, // Handle success
-          ));
+      return await dispenserRepository
+          .getDispensersByAddress(currentAddress)
+          .run()
+          .then((either) => either.fold(
+                (error) => throw FetchDispenserException(
+                    error.toString()), // Handle failure
+                (dispensers) => dispensers, // Handle success
+              ));
     } catch (e) {
       throw FetchDispenserException(e.toString());
     }

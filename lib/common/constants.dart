@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:horizon/domain/entities/account.dart';
 
 enum ImportFormat {
   horizon("Horizon", "Horizon Native"),
@@ -75,4 +76,23 @@ String displayAssetName(String? assetName, String? assetLongname) {
   return assetLongname != '' && assetLongname != null
       ? assetLongname
       : assetName!;
+}
+
+Account getHighestIndexAccount(List<Account> accounts) {
+  if (accounts.isEmpty) {
+    throw Exception("invariant: no accounts found");
+  }
+
+  Account highestAccount = accounts.first;
+  int maxIndex = int.parse(highestAccount.accountIndex.replaceAll("'", ""));
+
+  for (var account in accounts.skip(1)) {
+    int currentIndex = int.parse(account.accountIndex.replaceAll("'", ""));
+    if (currentIndex > maxIndex) {
+      maxIndex = currentIndex;
+      highestAccount = account;
+    }
+  }
+
+  return highestAccount;
 }

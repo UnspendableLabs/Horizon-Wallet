@@ -18,3 +18,12 @@ class ChangeEscrowQuantity extends ComposeDispenserEvent {
   final String value;
   ChangeEscrowQuantity({required this.value});
 }
+
+class ChooseWorkFlow extends ComposeDispenserEvent {
+  final bool isCreateNewAddress;
+  ChooseWorkFlow({required this.isCreateNewAddress});
+}
+
+class ConfirmCreateNewAddressFlow extends ComposeDispenserEvent {}
+
+class CancelCreateNewAddressFlow extends ComposeDispenserEvent {}

@@ -85,6 +85,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   String? asset;
   Balance? balance_;
   bool _submitted = false;
+  bool hideInitialFee = true;
 
   @override
   void initState() {
@@ -95,6 +96,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   @override
   Widget build(BuildContext context) {
     return ComposeBasePage<ComposeDispenserBloc, ComposeDispenserState>(
+      hideInitialFee: hideInitialFee,
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
           context.read<ComposeDispenserBloc>().add(ChangeFeeOption(value: fee)),
@@ -392,23 +394,97 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
-  Widget _displayDispensers(ComposeDispenserState state, bool loading) {
-    return state.dispensersState.maybeWhen(orElse: () {
-      return const SizedBox.shrink();
-    }, success: (dispensers) {
-      if (dispensers.isEmpty) {
-        return const SizedBox.shrink();
-      }
-      return const Row(
+  Widget _displayDispensersWarning(ComposeDispenserState state, bool loading) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.warning),
-          SizedBox(width: 8.0),
-          const SelectableText(
-              'Address currently has open dispensers. Creating multiple dispensers on the same address will result in a multidispense.'),
+          Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.orange),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: SelectableText(
+                  'Address currently has open dispensers. Creating multiple dispensers on the same address will result in a multidispense.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            'How would you like to proceed?',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8.0),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Stack buttons vertically if width is less than 400px
+              if (constraints.maxWidth < 400) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildWarningButton(
+                      'Create Dispenser on a new address',
+                      true,
+                    ),
+                    const SizedBox(height: 8.0),
+                    _buildWarningButton(
+                      'Continue with existing address',
+                      false,
+                    ),
+                  ],
+                );
+              }
+              // Otherwise, show buttons side by side
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildWarningButton(
+                      'Create Dispenser on a new address',
+                      true,
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: _buildWarningButton(
+                      'Continue with existing address',
+                      false,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ],
-      );
+      ),
+    );
+  }
 
-    });
+  Widget _buildWarningButton(String label, bool isCreateNewAddress) {
+    return ElevatedButton(
+      onPressed: () {
+        if (!isCreateNewAddress) {
+          setState(() {
+            hideInitialFee = false;
+          });
+        }
+        context.read<ComposeDispenserBloc>().add(
+              ChooseWorkFlow(
+                isCreateNewAddress: isCreateNewAddress,
+              ),
+            );
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 12.0,
+        ),
+      ),
+      child: Text(label),
+    );
   }
 
   List<Widget> _buildInitialFormFields(
@@ -419,18 +495,30 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         controller: openAddressController,
         label: "Open Address",
       ),
-      const SizedBox(height: 16.0),
-      _displayDispensers(state, loading),
-      const SizedBox(height: 16.0),
-      _buildAssetInput(state, loading),
-      const SizedBox(height: 16.0),
-      _buildGiveQuantityInput(state, () {
-        _handleInitialSubmit(formKey);
-      }, loading, formKey),
-      const SizedBox(height: 16.0),
-      _buildEscrowQuantityInput(state, loading, formKey),
-      const SizedBox(height: 16.0),
-      _buildPricePerUnitInput(loading, formKey),
+      state.dispensersState.maybeWhen(orElse: () {
+        return const SizedBox.shrink();
+      }, successNormalFlow: () {
+        return Column(
+          children: [
+            const SizedBox(height: 16.0),
+            _buildAssetInput(state, loading),
+            const SizedBox(height: 16.0),
+            _buildGiveQuantityInput(state, () {
+              _handleInitialSubmit(formKey);
+            }, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildEscrowQuantityInput(state, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildPricePerUnitInput(loading, formKey),
+          ],
+        );
+      }, createNewAddressFlowConfirmation: () {
+        return const SizedBox.shrink();
+      }, successCreateNewAddressFlow: () {
+        return const SizedBox.shrink();
+      }, warning: () {
+        return _displayDispensersWarning(state, loading);
+      }),
     ];
   }
 

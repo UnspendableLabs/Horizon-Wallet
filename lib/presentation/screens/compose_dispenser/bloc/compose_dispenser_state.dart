@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/domain/entities/dispenser.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -44,7 +43,13 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
 class DispenserState with _$DispenserState {
   const factory DispenserState.initial() = _DispenserInitial;
   const factory DispenserState.loading() = _DispenserLoading;
-  const factory DispenserState.success(List<Dispenser> dispensers) =
-      _DispenserSuccess;
+  const factory DispenserState.successNormalFlow() =
+      _DispenserSuccessNormalFlow;
+  const factory DispenserState.successCreateNewAddressFlow() =
+      _DispenserSuccessCreateNewAddressFlow;
+  const factory DispenserState.createNewAddressFlowConfirmation() =
+      _DispenserCreateNewAddressFlowConfirmation;
+  const factory DispenserState.warning() = _DispenserWarning;
+
   const factory DispenserState.error(String error) = _DispenserError;
 }

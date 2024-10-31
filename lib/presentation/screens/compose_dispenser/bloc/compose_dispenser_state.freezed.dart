@@ -408,7 +408,10 @@ mixin _$DispenserState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<Dispenser> dispensers) success,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -416,7 +419,10 @@ mixin _$DispenserState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Dispenser> dispensers)? success,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -424,7 +430,10 @@ mixin _$DispenserState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Dispenser> dispensers)? success,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -433,7 +442,13 @@ mixin _$DispenserState {
   TResult map<TResult extends Object?>({
     required TResult Function(_DispenserInitial value) initial,
     required TResult Function(_DispenserLoading value) loading,
-    required TResult Function(_DispenserSuccess value) success,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
     required TResult Function(_DispenserError value) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -441,7 +456,12 @@ mixin _$DispenserState {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_DispenserInitial value)? initial,
     TResult? Function(_DispenserLoading value)? loading,
-    TResult? Function(_DispenserSuccess value)? success,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
     TResult? Function(_DispenserError value)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -449,7 +469,12 @@ mixin _$DispenserState {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_DispenserInitial value)? initial,
     TResult Function(_DispenserLoading value)? loading,
-    TResult Function(_DispenserSuccess value)? success,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
     TResult Function(_DispenserError value)? error,
     required TResult orElse(),
   }) =>
@@ -514,7 +539,10 @@ class _$DispenserInitialImpl implements _DispenserInitial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<Dispenser> dispensers) success,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
     required TResult Function(String error) error,
   }) {
     return initial();
@@ -525,7 +553,10 @@ class _$DispenserInitialImpl implements _DispenserInitial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Dispenser> dispensers)? success,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
     TResult? Function(String error)? error,
   }) {
     return initial?.call();
@@ -536,7 +567,10 @@ class _$DispenserInitialImpl implements _DispenserInitial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Dispenser> dispensers)? success,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -551,7 +585,13 @@ class _$DispenserInitialImpl implements _DispenserInitial {
   TResult map<TResult extends Object?>({
     required TResult Function(_DispenserInitial value) initial,
     required TResult Function(_DispenserLoading value) loading,
-    required TResult Function(_DispenserSuccess value) success,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
     required TResult Function(_DispenserError value) error,
   }) {
     return initial(this);
@@ -562,7 +602,12 @@ class _$DispenserInitialImpl implements _DispenserInitial {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_DispenserInitial value)? initial,
     TResult? Function(_DispenserLoading value)? loading,
-    TResult? Function(_DispenserSuccess value)? success,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
     TResult? Function(_DispenserError value)? error,
   }) {
     return initial?.call(this);
@@ -573,7 +618,12 @@ class _$DispenserInitialImpl implements _DispenserInitial {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_DispenserInitial value)? initial,
     TResult Function(_DispenserLoading value)? loading,
-    TResult Function(_DispenserSuccess value)? success,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
     TResult Function(_DispenserError value)? error,
     required TResult orElse(),
   }) {
@@ -628,7 +678,10 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<Dispenser> dispensers) success,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
     required TResult Function(String error) error,
   }) {
     return loading();
@@ -639,7 +692,10 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Dispenser> dispensers)? success,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
     TResult? Function(String error)? error,
   }) {
     return loading?.call();
@@ -650,7 +706,10 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Dispenser> dispensers)? success,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -665,7 +724,13 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
   TResult map<TResult extends Object?>({
     required TResult Function(_DispenserInitial value) initial,
     required TResult Function(_DispenserLoading value) loading,
-    required TResult Function(_DispenserSuccess value) success,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
     required TResult Function(_DispenserError value) error,
   }) {
     return loading(this);
@@ -676,7 +741,12 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_DispenserInitial value)? initial,
     TResult? Function(_DispenserLoading value)? loading,
-    TResult? Function(_DispenserSuccess value)? success,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
     TResult? Function(_DispenserError value)? error,
   }) {
     return loading?.call(this);
@@ -687,7 +757,12 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_DispenserInitial value)? initial,
     TResult Function(_DispenserLoading value)? loading,
-    TResult Function(_DispenserSuccess value)? success,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
     TResult Function(_DispenserError value)? error,
     required TResult orElse(),
   }) {
@@ -703,84 +778,55 @@ abstract class _DispenserLoading implements DispenserState {
 }
 
 /// @nodoc
-abstract class _$$DispenserSuccessImplCopyWith<$Res> {
-  factory _$$DispenserSuccessImplCopyWith(_$DispenserSuccessImpl value,
-          $Res Function(_$DispenserSuccessImpl) then) =
-      __$$DispenserSuccessImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({List<Dispenser> dispensers});
+abstract class _$$DispenserSuccessNormalFlowImplCopyWith<$Res> {
+  factory _$$DispenserSuccessNormalFlowImplCopyWith(
+          _$DispenserSuccessNormalFlowImpl value,
+          $Res Function(_$DispenserSuccessNormalFlowImpl) then) =
+      __$$DispenserSuccessNormalFlowImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$DispenserSuccessImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserSuccessImpl>
-    implements _$$DispenserSuccessImplCopyWith<$Res> {
-  __$$DispenserSuccessImplCopyWithImpl(_$DispenserSuccessImpl _value,
-      $Res Function(_$DispenserSuccessImpl) _then)
+class __$$DispenserSuccessNormalFlowImplCopyWithImpl<$Res>
+    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserSuccessNormalFlowImpl>
+    implements _$$DispenserSuccessNormalFlowImplCopyWith<$Res> {
+  __$$DispenserSuccessNormalFlowImplCopyWithImpl(
+      _$DispenserSuccessNormalFlowImpl _value,
+      $Res Function(_$DispenserSuccessNormalFlowImpl) _then)
       : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? dispensers = null,
-  }) {
-    return _then(_$DispenserSuccessImpl(
-      null == dispensers
-          ? _value._dispensers
-          : dispensers // ignore: cast_nullable_to_non_nullable
-              as List<Dispenser>,
-    ));
-  }
 }
 
 /// @nodoc
 
-class _$DispenserSuccessImpl implements _DispenserSuccess {
-  const _$DispenserSuccessImpl(final List<Dispenser> dispensers)
-      : _dispensers = dispensers;
-
-  final List<Dispenser> _dispensers;
-  @override
-  List<Dispenser> get dispensers {
-    if (_dispensers is EqualUnmodifiableListView) return _dispensers;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_dispensers);
-  }
+class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
+  const _$DispenserSuccessNormalFlowImpl();
 
   @override
   String toString() {
-    return 'DispenserState.success(dispensers: $dispensers)';
+    return 'DispenserState.successNormalFlow()';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$DispenserSuccessImpl &&
-            const DeepCollectionEquality()
-                .equals(other._dispensers, _dispensers));
+            other is _$DispenserSuccessNormalFlowImpl);
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_dispensers));
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$DispenserSuccessImplCopyWith<_$DispenserSuccessImpl> get copyWith =>
-      __$$DispenserSuccessImplCopyWithImpl<_$DispenserSuccessImpl>(
-          this, _$identity);
+  int get hashCode => runtimeType.hashCode;
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<Dispenser> dispensers) success,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
     required TResult Function(String error) error,
   }) {
-    return success(dispensers);
+    return successNormalFlow();
   }
 
   @override
@@ -788,10 +834,13 @@ class _$DispenserSuccessImpl implements _DispenserSuccess {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Dispenser> dispensers)? success,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
     TResult? Function(String error)? error,
   }) {
-    return success?.call(dispensers);
+    return successNormalFlow?.call();
   }
 
   @override
@@ -799,12 +848,15 @@ class _$DispenserSuccessImpl implements _DispenserSuccess {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Dispenser> dispensers)? success,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
-    if (success != null) {
-      return success(dispensers);
+    if (successNormalFlow != null) {
+      return successNormalFlow();
     }
     return orElse();
   }
@@ -814,10 +866,16 @@ class _$DispenserSuccessImpl implements _DispenserSuccess {
   TResult map<TResult extends Object?>({
     required TResult Function(_DispenserInitial value) initial,
     required TResult Function(_DispenserLoading value) loading,
-    required TResult Function(_DispenserSuccess value) success,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
     required TResult Function(_DispenserError value) error,
   }) {
-    return success(this);
+    return successNormalFlow(this);
   }
 
   @override
@@ -825,10 +883,15 @@ class _$DispenserSuccessImpl implements _DispenserSuccess {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_DispenserInitial value)? initial,
     TResult? Function(_DispenserLoading value)? loading,
-    TResult? Function(_DispenserSuccess value)? success,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
     TResult? Function(_DispenserError value)? error,
   }) {
-    return success?.call(this);
+    return successNormalFlow?.call(this);
   }
 
   @override
@@ -836,25 +899,455 @@ class _$DispenserSuccessImpl implements _DispenserSuccess {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_DispenserInitial value)? initial,
     TResult Function(_DispenserLoading value)? loading,
-    TResult Function(_DispenserSuccess value)? success,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
     TResult Function(_DispenserError value)? error,
     required TResult orElse(),
   }) {
-    if (success != null) {
-      return success(this);
+    if (successNormalFlow != null) {
+      return successNormalFlow(this);
     }
     return orElse();
   }
 }
 
-abstract class _DispenserSuccess implements DispenserState {
-  const factory _DispenserSuccess(final List<Dispenser> dispensers) =
-      _$DispenserSuccessImpl;
+abstract class _DispenserSuccessNormalFlow implements DispenserState {
+  const factory _DispenserSuccessNormalFlow() =
+      _$DispenserSuccessNormalFlowImpl;
+}
 
-  List<Dispenser> get dispensers;
-  @JsonKey(ignore: true)
-  _$$DispenserSuccessImplCopyWith<_$DispenserSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+/// @nodoc
+abstract class _$$DispenserSuccessCreateNewAddressFlowImplCopyWith<$Res> {
+  factory _$$DispenserSuccessCreateNewAddressFlowImplCopyWith(
+          _$DispenserSuccessCreateNewAddressFlowImpl value,
+          $Res Function(_$DispenserSuccessCreateNewAddressFlowImpl) then) =
+      __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl<$Res>
+    extends _$DispenserStateCopyWithImpl<$Res,
+        _$DispenserSuccessCreateNewAddressFlowImpl>
+    implements _$$DispenserSuccessCreateNewAddressFlowImplCopyWith<$Res> {
+  __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl(
+      _$DispenserSuccessCreateNewAddressFlowImpl _value,
+      $Res Function(_$DispenserSuccessCreateNewAddressFlowImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserSuccessCreateNewAddressFlowImpl
+    implements _DispenserSuccessCreateNewAddressFlow {
+  const _$DispenserSuccessCreateNewAddressFlowImpl();
+
+  @override
+  String toString() {
+    return 'DispenserState.successCreateNewAddressFlow()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DispenserSuccessCreateNewAddressFlowImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return successCreateNewAddressFlow();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return successCreateNewAddressFlow?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (successCreateNewAddressFlow != null) {
+      return successCreateNewAddressFlow();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return successCreateNewAddressFlow(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return successCreateNewAddressFlow?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (successCreateNewAddressFlow != null) {
+      return successCreateNewAddressFlow(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserSuccessCreateNewAddressFlow implements DispenserState {
+  const factory _DispenserSuccessCreateNewAddressFlow() =
+      _$DispenserSuccessCreateNewAddressFlowImpl;
+}
+
+/// @nodoc
+abstract class _$$DispenserCreateNewAddressFlowConfirmationImplCopyWith<$Res> {
+  factory _$$DispenserCreateNewAddressFlowConfirmationImplCopyWith(
+          _$DispenserCreateNewAddressFlowConfirmationImpl value,
+          $Res Function(_$DispenserCreateNewAddressFlowConfirmationImpl) then) =
+      __$$DispenserCreateNewAddressFlowConfirmationImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserCreateNewAddressFlowConfirmationImplCopyWithImpl<$Res>
+    extends _$DispenserStateCopyWithImpl<$Res,
+        _$DispenserCreateNewAddressFlowConfirmationImpl>
+    implements _$$DispenserCreateNewAddressFlowConfirmationImplCopyWith<$Res> {
+  __$$DispenserCreateNewAddressFlowConfirmationImplCopyWithImpl(
+      _$DispenserCreateNewAddressFlowConfirmationImpl _value,
+      $Res Function(_$DispenserCreateNewAddressFlowConfirmationImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserCreateNewAddressFlowConfirmationImpl
+    implements _DispenserCreateNewAddressFlowConfirmation {
+  const _$DispenserCreateNewAddressFlowConfirmationImpl();
+
+  @override
+  String toString() {
+    return 'DispenserState.createNewAddressFlowConfirmation()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DispenserCreateNewAddressFlowConfirmationImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return createNewAddressFlowConfirmation();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return createNewAddressFlowConfirmation?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (createNewAddressFlowConfirmation != null) {
+      return createNewAddressFlowConfirmation();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return createNewAddressFlowConfirmation(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return createNewAddressFlowConfirmation?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (createNewAddressFlowConfirmation != null) {
+      return createNewAddressFlowConfirmation(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserCreateNewAddressFlowConfirmation
+    implements DispenserState {
+  const factory _DispenserCreateNewAddressFlowConfirmation() =
+      _$DispenserCreateNewAddressFlowConfirmationImpl;
+}
+
+/// @nodoc
+abstract class _$$DispenserWarningImplCopyWith<$Res> {
+  factory _$$DispenserWarningImplCopyWith(_$DispenserWarningImpl value,
+          $Res Function(_$DispenserWarningImpl) then) =
+      __$$DispenserWarningImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserWarningImplCopyWithImpl<$Res>
+    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserWarningImpl>
+    implements _$$DispenserWarningImplCopyWith<$Res> {
+  __$$DispenserWarningImplCopyWithImpl(_$DispenserWarningImpl _value,
+      $Res Function(_$DispenserWarningImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserWarningImpl implements _DispenserWarning {
+  const _$DispenserWarningImpl();
+
+  @override
+  String toString() {
+    return 'DispenserState.warning()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$DispenserWarningImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return warning();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return warning?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (warning != null) {
+      return warning();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return warning(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return warning?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (warning != null) {
+      return warning(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserWarning implements DispenserState {
+  const factory _DispenserWarning() = _$DispenserWarningImpl;
 }
 
 /// @nodoc
@@ -924,7 +1417,10 @@ class _$DispenserErrorImpl implements _DispenserError {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<Dispenser> dispensers) success,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function() createNewAddressFlowConfirmation,
+    required TResult Function() warning,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -935,7 +1431,10 @@ class _$DispenserErrorImpl implements _DispenserError {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<Dispenser> dispensers)? success,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function()? createNewAddressFlowConfirmation,
+    TResult? Function()? warning,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -946,7 +1445,10 @@ class _$DispenserErrorImpl implements _DispenserError {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<Dispenser> dispensers)? success,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function()? createNewAddressFlowConfirmation,
+    TResult Function()? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -961,7 +1463,13 @@ class _$DispenserErrorImpl implements _DispenserError {
   TResult map<TResult extends Object?>({
     required TResult Function(_DispenserInitial value) initial,
     required TResult Function(_DispenserLoading value) loading,
-    required TResult Function(_DispenserSuccess value) success,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCreateNewAddressFlowConfirmation value)
+        createNewAddressFlowConfirmation,
+    required TResult Function(_DispenserWarning value) warning,
     required TResult Function(_DispenserError value) error,
   }) {
     return error(this);
@@ -972,7 +1480,12 @@ class _$DispenserErrorImpl implements _DispenserError {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_DispenserInitial value)? initial,
     TResult? Function(_DispenserLoading value)? loading,
-    TResult? Function(_DispenserSuccess value)? success,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult? Function(_DispenserWarning value)? warning,
     TResult? Function(_DispenserError value)? error,
   }) {
     return error?.call(this);
@@ -983,7 +1496,12 @@ class _$DispenserErrorImpl implements _DispenserError {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_DispenserInitial value)? initial,
     TResult Function(_DispenserLoading value)? loading,
-    TResult Function(_DispenserSuccess value)? success,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCreateNewAddressFlowConfirmation value)?
+        createNewAddressFlowConfirmation,
+    TResult Function(_DispenserWarning value)? warning,
     TResult Function(_DispenserError value)? error,
     required TResult orElse(),
   }) {

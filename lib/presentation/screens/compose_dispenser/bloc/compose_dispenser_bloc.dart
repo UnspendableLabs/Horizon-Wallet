@@ -1,4 +1,6 @@
 import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
@@ -38,6 +40,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   final Logger logger = Logger();
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
+  final AccountRepository accountRepository;
+  final AddressRepository addressRepository;
 
   final FetchDispenserFormDataUseCase fetchDispenserFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
@@ -45,6 +49,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
 
   ComposeDispenserBloc({
+    required this.accountRepository,
+    required this.addressRepository,
     required this.fetchDispenserFormDataUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
@@ -52,20 +58,23 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
   }) : super(ComposeDispenserState(
-            submitState: const SubmitInitial(),
-            feeOption: FeeOption.Medium(),
-            balancesState: const BalancesState.initial(),
-            feeState: const FeeState.initial(),
-            giveQuantity: '',
-            escrowQuantity: '',
-            mainchainrate: '',
-            status: 0,
-            dispensersState: const DispenserState.initial(),
-          )) {
+          submitState: const SubmitInitial(),
+          feeOption: FeeOption.Medium(),
+          balancesState: const BalancesState.initial(),
+          feeState: const FeeState.initial(),
+          giveQuantity: '',
+          escrowQuantity: '',
+          mainchainrate: '',
+          status: 0,
+          dispensersState: const DispenserState.initial(),
+        )) {
     // Event handlers specific to the dispenser
     on<ChangeAsset>(_onChangeAsset);
     on<ChangeGiveQuantity>(_onChangeGiveQuantity);
     on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
+    on<ChooseWorkFlow>(_onChooseWorkFlow);
+    on<ConfirmCreateNewAddressFlow>(_onConfirmCreateNewAddressFlow);
+    on<CancelCreateNewAddressFlow>(_onCancelCreateNewAddressFlow);
   }
 
   _onChangeEscrowQuantity(ChangeEscrowQuantity event, emit) {
@@ -81,6 +90,31 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   _onChangeAsset(ChangeAsset event, emit) {
     emit(state.copyWith(
       assetName: event.asset,
+    ));
+  }
+
+  _onChooseWorkFlow(ChooseWorkFlow event, emit) {
+    if (!event.isCreateNewAddress) {
+      emit(state.copyWith(
+        dispensersState: const DispenserState.successNormalFlow(),
+      ));
+    } else {
+      emit(state.copyWith(
+        dispensersState:
+            const DispenserState.createNewAddressFlowConfirmation(),
+      ));
+    }
+  }
+
+  _onConfirmCreateNewAddressFlow(ConfirmCreateNewAddressFlow event, emit) {
+    emit(state.copyWith(
+      dispensersState: const DispenserState.successCreateNewAddressFlow(),
+    ));
+  }
+
+  _onCancelCreateNewAddressFlow(CancelCreateNewAddressFlow event, emit) {
+    emit(state.copyWith(
+      dispensersState: const DispenserState.warning(),
     ));
   }
 
@@ -102,11 +136,19 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       final (balances, feeEstimates, dispensers) =
           await fetchDispenserFormDataUseCase.call(event.currentAddress!);
 
-      emit(state.copyWith(
-        balancesState: BalancesState.success(balances),
-        feeState: FeeState.success(feeEstimates),
-        dispensersState: DispenserState.success(dispensers),
-      ));
+      if (dispensers.isEmpty) {
+        emit(state.copyWith(
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          dispensersState: const DispenserState.successNormalFlow(),
+        ));
+      } else {
+        emit(state.copyWith(
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          dispensersState: const DispenserState.warning(),
+        ));
+      }
     } on FetchBalancesException catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(e.message),
