@@ -99,4 +99,47 @@ void main() {
       );
     });
   });
+  group(RPCGetAddressesAction, () {
+    test('should decode a valid RPCGetAddressesAction action', () {
+      // Arrange
+      const encodedString = 'getAddresses,1,def';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          expect(r, isA<RPCGetAddressesAction>());
+          final action = r as RPCGetAddressesAction;
+          expect(action.tabId, 1);
+          expect(action.requestId, 'def');
+        },
+      );
+    });
+  group(RPCSignPsbtAction, () {
+    test('should decode a valid RPCGetAddressesAction action', () {
+      // Arrange
+      const encodedString = 'signPsbt,1,def,psbt-hex';
+
+      // Act
+      final result = actionRepository.fromString(encodedString);
+
+      // Assert
+      expect(result.isRight(), true);
+      result.match(
+        (l) => fail('Expected Right but got Left: $l'),
+        (r) {
+          expect(r, isA<RPCSignPsbtAction>());
+          final action = r as RPCSignPsbtAction;
+          expect(action.tabId, 1);
+          expect(action.requestId, 'def');
+          expect(action.psbt, 'psbt-hex');
+        },
+      );
+    });
+  });
+  });
 }
