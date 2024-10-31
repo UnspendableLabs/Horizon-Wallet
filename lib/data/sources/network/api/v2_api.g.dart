@@ -137,7 +137,7 @@ Map<String, dynamic> _$TransactionVerboseToJson(TransactionVerbose instance) =>
     };
 
 Balance _$BalanceFromJson(Map<String, dynamic> json) => Balance(
-      address: json['address'] as String,
+      address: json['address'] as String?,
       quantity: (json['quantity'] as num).toDouble(),
       asset: json['asset'] as String,
     );
@@ -150,7 +150,7 @@ Map<String, dynamic> _$BalanceToJson(Balance instance) => <String, dynamic>{
 
 BalanceVerbose _$BalanceVerboseFromJson(Map<String, dynamic> json) =>
     BalanceVerbose(
-      address: json['address'] as String,
+      address: json['address'] as String?,
       quantity: (json['quantity'] as num).toDouble(),
       asset: json['asset'] as String,
       assetInfo:
@@ -180,7 +180,7 @@ Map<String, dynamic> _$MultiBalanceToJson(MultiBalance instance) =>
 
 MultiBalanceVerbose _$MultiBalanceVerboseFromJson(Map<String, dynamic> json) =>
     MultiBalanceVerbose(
-      address: json['address'] as String,
+      address: json['address'] as String?,
       quantity: (json['quantity'] as num).toInt(),
       quantityNormalized: json['quantity_normalized'] as String,
     );

@@ -1,7 +1,7 @@
 import 'package:horizon/domain/entities/asset_info.dart';
 
 class Balance {
-  final String address;
+  final String? address;
   final int quantity;
   final String quantityNormalized;
   final String asset;
