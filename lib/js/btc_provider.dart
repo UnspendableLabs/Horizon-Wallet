@@ -43,7 +43,7 @@
 //
 // void main() {
 //   final runtime = chrome['runtime'];
-//   
+//
 //   runtime.callMethod('onConnect').callMethod('addListener', [
 //     allowInterop((JSObject port) {
 //       if (port['name'] != CONTENT_SCRIPT_PORT) return;

@@ -55,7 +55,7 @@ class SignPsbtForm extends StatelessWidget {
                 if (state.submissionStatus.isFailure) ...[
                   Text(
                     state.error!,
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ] else if (state.submissionStatus.isSuccess) ...[
                   const Text(

@@ -14,7 +14,6 @@ import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'dart:js_interop';
 
 const DEFAULT_SEQUENCE = 0xffffffff;
 const SIGHASH_DEFAULT = 0x00;

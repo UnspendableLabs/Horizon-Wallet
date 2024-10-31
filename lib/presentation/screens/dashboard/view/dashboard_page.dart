@@ -75,15 +75,14 @@ class SignPsbtModal extends StatelessWidget {
   final AddressService addressService;
 
   const SignPsbtModal(
-      {Key? key,
+      {super.key,
       required this.unsignedPsbt,
       required this.transactionService,
       required this.walletRepository,
       required this.encryptionService,
       required this.addressService,
       required this.tabId,
-      required this.requestId})
-      : super(key: key);
+      required this.requestId});
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +98,7 @@ class SignPsbtModal extends StatelessWidget {
         key: Key(unsignedPsbt),
         onSuccess: (signedPsbtHex) {
           chrome.tabs.sendMessage(
-              tabId,
-              {
-                "id": requestId,
-                "hex": signedPsbtHex 
-              },
-              null);
+              tabId, {"id": requestId, "hex": signedPsbtHex}, null);
         },
       ),
     );
@@ -115,7 +109,8 @@ class AccountSelectModal extends StatefulWidget {
   final int tabId;
   final String requestId;
 
-  const AccountSelectModal({required this.tabId, required this.requestId});
+  const AccountSelectModal(
+      {super.key, required this.tabId, required this.requestId});
 
   @override
   AccountSelectModalState createState() => AccountSelectModalState();

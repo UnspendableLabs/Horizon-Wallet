@@ -52,7 +52,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       String privateKey = await encryptionService.decrypt(
           wallet.encryptedPrivKey, state.password.value);
 
-
       final addressPrivKey = await addressService.deriveAddressPrivateKey(
         rootPrivKey: privateKey,
         chainCodeHex: wallet.chainCodeHex,
