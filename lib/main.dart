@@ -125,11 +125,6 @@ class AppRouter {
       initialLocation: "/dashboard",
       routes: <RouteBase>[
         GoRoute(
-            path: "/get-addresses",
-            builder: (context, state) {
-              return const Text("get addresses");
-            }),
-        GoRoute(
             path: "/",
             builder: (context, state) {
               return const LoadingScreen();

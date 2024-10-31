@@ -1,5 +1,5 @@
 const CONTENT_SCRIPT_PORT = "content-script";
-const MESSAGE_SOURCE = "horizon-marketplace";
+const MESSAGE_SOURCE = "horizon";
 
 let backgroundPort = null;
 

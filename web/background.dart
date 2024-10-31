@@ -2,10 +2,6 @@ import 'package:chrome_extension/runtime.dart';
 import 'package:chrome_extension/tabs.dart';
 import 'package:chrome_extension/windows.dart';
 
-import "package:horizon/domain/repositories/address_repository.dart";
-import "package:horizon/domain/entities/address.dart";
-import 'package:get_it/get_it.dart';
-
 const CONTENT_SCRIPT_PORT = "content-script";
 
 class ListenForPopupCloseArgs {
@@ -79,24 +75,18 @@ Future<Window?> rpcGetAddresses(String requestId, Port port) {
   String? origin = getOriginFromPort(port);
   int? tabId = getTabIdFromPort(port);
 
-  return popup(PopupOptions(
-      url:
-          "/index.html#?action=getAddresses,$tabId,$requestId"));
+  return popup(
+      PopupOptions(url: "/index.html#?action=getAddresses,$tabId,$requestId"));
 }
 
 Future<Window?> rpcSignPsbt(String requestId, Port port, String psbt) {
   String? origin = getOriginFromPort(port);
   int? tabId = getTabIdFromPort(port);
 
-
   String url = "/index.html#?action=signPsbt,$tabId,$requestId,$psbt";
 
-  print("der url: $url");
-
-
   return popup(PopupOptions(
-      url:
-          "/index.html#?action=signPsbt,$tabId,$requestId,$psbt"));
+      url: "/index.html#?action=signPsbt,$tabId,$requestId,$psbt"));
 }
 
 Future<void> rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
@@ -120,11 +110,7 @@ Future<void> rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
 
 void main() async {
   await for (Port port in chrome.runtime.onConnect) {
-    print("aaa");
-    print(port.name);
     if (port.name != CONTENT_SCRIPT_PORT) continue;
-
-    print("bbb");
 
     await for (var event in port.onMessage) {
       print(

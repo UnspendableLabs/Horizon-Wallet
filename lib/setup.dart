@@ -7,14 +7,16 @@ import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
+<<<<<<< HEAD
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/runtime.dart';
 import 'package:chrome_extension/tabs.dart';
+=======
+>>>>>>> fa7140d (cleanup)
 
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
-import "package:horizon/domain/entities/address.dart";
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
@@ -532,37 +534,3 @@ class SimpleLogInterceptor extends Interceptor {
   }
 }
 
-const CONTENT_SCRIPT_PORT = "content-script";
-
-int? getTabIdFromPort(Port port) {
-  return port.sender?.tab?.id;
-}
-
-void rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
-  String method = message["method"];
-
-  int? tabId = getTabIdFromPort(port);
-  //
-  if (tabId == null) {
-    return;
-  }
-
-  switch (method) {
-    case "getAddresses":
-      AddressRepository addressRepository = GetIt.I<AddressRepository>();
-      List<Address> addresses = await addressRepository.getAll();
-
-      chrome.tabs.sendMessage(
-          tabId,
-          {
-            'addresses': [
-              {'address': addresses[0].address, 'type': 'p2wpkh'}
-            ],
-            'id': message['id'],
-          },
-          null);
-
-    default:
-      print('Unknown method: ${message['method']}');
-  }
-}
