@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -17,6 +18,7 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
     required SubmitState submitState,
 
     // Dispenser-specific properties
+    required DispenserState dispensersState,
     String? assetName,
     String? openAddress,
     required String giveQuantity,
@@ -34,5 +36,15 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
         escrowQuantity: '',
         mainchainrate: '',
         status: 0,
+        dispensersState: const DispenserState.initial(),
       );
+}
+
+@freezed
+class DispenserState with _$DispenserState {
+  const factory DispenserState.initial() = _DispenserInitial;
+  const factory DispenserState.loading() = _DispenserLoading;
+  const factory DispenserState.success(List<Dispenser> dispensers) =
+      _DispenserSuccess;
+  const factory DispenserState.error(String error) = _DispenserError;
 }

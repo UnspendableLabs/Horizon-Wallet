@@ -318,7 +318,8 @@ Future<void> setup() async {
   injector.registerSingleton<FetchDispenserFormDataUseCase>(
       FetchDispenserFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>()));
+          balanceRepository: injector.get<BalanceRepository>(),
+          dispenserRepository: injector.get<DispenserRepository>()));
 
   injector.registerSingleton<FetchDispenseFormDataUseCase>(
       FetchDispenseFormDataUseCase(

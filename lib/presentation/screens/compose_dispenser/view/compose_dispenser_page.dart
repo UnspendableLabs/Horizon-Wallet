@@ -392,6 +392,25 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
+  Widget _displayDispensers(ComposeDispenserState state, bool loading) {
+    return state.dispensersState.maybeWhen(orElse: () {
+      return const SizedBox.shrink();
+    }, success: (dispensers) {
+      if (dispensers.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      return const Row(
+        children: [
+          Icon(Icons.warning),
+          SizedBox(width: 8.0),
+          const SelectableText(
+              'Address currently has open dispensers. Creating multiple dispensers on the same address will result in a multidispense.'),
+        ],
+      );
+
+    });
+  }
+
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return [
@@ -400,6 +419,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         controller: openAddressController,
         label: "Open Address",
       ),
+      const SizedBox(height: 16.0),
+      _displayDispensers(state, loading),
       const SizedBox(height: 16.0),
       _buildAssetInput(state, loading),
       const SizedBox(height: 16.0),
