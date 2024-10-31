@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -13,12 +15,14 @@ class ShellStateCubit extends Cubit<ShellState> {
   WalletRepository walletRepository;
   AccountRepository accountRepository;
   AddressRepository addressRepository;
+  ImportedAddressRepository importedAddressRepository;
   AnalyticsService analyticsService;
 
   ShellStateCubit(
       {required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
+      required this.importedAddressRepository,
       required this.analyticsService})
       : super(const ShellState.initial());
 
@@ -52,13 +56,17 @@ class ShellStateCubit extends Cubit<ShellState> {
 
       Address currentAddress = addresses.first;
 
-      emit(ShellState.success(ShellStateSuccess(
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAll();
+
+      emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
         accounts: accounts,
         currentAccountUuid: currentAccount.uuid,
         addresses: addresses,
         currentAddress: currentAddress,
+        importedAddresses: importedAddresses,
       )));
     } catch (error) {
       emit(ShellState.error(error.toString()));
@@ -103,9 +111,11 @@ class ShellStateCubit extends Cubit<ShellState> {
         error: (_) => state,
         onboarding: (_) => state,
         success: (stateInner) => ShellState.success(stateInner.copyWith(
-            currentAccountUuid: account.uuid,
-            currentAddress: addresses.first,
-            addresses: addresses)));
+              currentAccountUuid: account.uuid,
+              currentAddress: addresses.first,
+              addresses: addresses,
+              currentImportedAddress: null,
+            )));
 
     emit(state_);
   }
@@ -144,13 +154,17 @@ class ShellStateCubit extends Cubit<ShellState> {
         throw Exception("invariant: no addresses for this account");
       }
 
-      emit(ShellState.success(ShellStateSuccess(
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAll();
+
+      emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: accounts.last.uuid,
         currentAddress: addresses.first,
+        importedAddresses: importedAddresses,
       )));
     } catch (error) {
       emit(ShellState.error(error.toString()));
@@ -190,16 +204,62 @@ class ShellStateCubit extends Cubit<ShellState> {
         return element.address == address;
       });
 
-      emit(ShellState.success(ShellStateSuccess(
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAll();
+
+      emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: account.uuid,
         currentAddress: newAddress,
+        importedAddresses: importedAddresses,
       )));
     } catch (error) {
       emit(ShellState.error(error.toString()));
     }
+  }
+
+  void refreshAndSelectNewImportedAddress(
+      ImportedAddress importedAddress) async {
+    try {
+      Wallet? wallet = await walletRepository.getCurrentWallet();
+
+      if (wallet == null) {
+        emit(const ShellState.onboarding(Onboarding.initial()));
+        return;
+      }
+
+      List<ImportedAddress> importedAddresses =
+          await importedAddressRepository.getAll();
+
+      final state_ = state.when(
+          initial: () => state,
+          loading: () => state,
+          error: (_) => state,
+          onboarding: (_) => state,
+          success: (stateInner) => ShellState.success(stateInner.copyWith(
+              importedAddresses: importedAddresses,
+              currentImportedAddress: importedAddress,
+              currentAddress: null,
+              currentAccountUuid: null)));
+      emit(state_);
+    } catch (error) {
+      emit(ShellState.error(error.toString()));
+    }
+  }
+
+  void onImportedAddressChanged(ImportedAddress importedAddress) {
+    final state_ = state.when(
+        initial: () => state,
+        loading: () => state,
+        error: (_) => state,
+        onboarding: (_) => state,
+        success: (stateInner) => ShellState.success(stateInner.copyWith(
+            currentImportedAddress: importedAddress,
+            currentAddress: null,
+            currentAccountUuid: null)));
+    emit(state_);
   }
 }

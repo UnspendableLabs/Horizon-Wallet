@@ -3,6 +3,7 @@
 import 'package:drift/drift.dart';
 import 'package:horizon/data/sources/local/tables/accounts_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
+import 'package:horizon/data/sources/local/tables/imported_addresses_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
 import "package:horizon/data/sources/local/tables/transactions_table.dart";
 import 'schema_versions.dart';
@@ -12,12 +13,13 @@ part "db.g.dart";
 // TODO: read from env
 const ENV = "dev";
 
-@DriftDatabase(tables: [Wallets, Accounts, Addresses, Transactions])
+@DriftDatabase(
+    tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses])
 class DB extends _$DB {
   DB(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -89,6 +91,59 @@ class DB extends _$DB {
                         schema.transactions.unpackedData.cast<String>()
                   },
                 ));
+              },
+              from3To4: (m, schema) async {
+                // Add the new column to the Addresses table
+                await m.addColumn(
+                    schema.addresses, schema.addresses.encryptedPrivateKey);
+
+                // Create the new ImportedAddresses table
+                await m.createTable(schema.importedAddresses);
+              },
+              from4To5: (m, schema) async {
+                // Create temporary table with new structure
+                await customStatement('''
+                  CREATE TABLE imported_addresses_temp (
+                    address TEXT NOT NULL UNIQUE,
+                    name TEXT NOT NULL DEFAULT '',
+                    encrypted_wif TEXT NOT NULL UNIQUE,
+                    wallet_uuid TEXT NOT NULL,
+                    PRIMARY KEY (address)
+                  );
+
+                  -- Copy data from old table to new table, renaming column
+                  INSERT INTO imported_addresses_temp (address, name, encrypted_wif, wallet_uuid)
+                  SELECT address, '', encrypted_private_key, wallet_uuid
+                  FROM imported_addresses;
+
+                  -- Drop old table
+                  DROP TABLE imported_addresses;
+
+                  -- Rename temp table to final name
+                  ALTER TABLE imported_addresses_temp RENAME TO imported_addresses;
+                ''');
+              },
+              from5To6: (m, schema) async {
+                // Create temporary table without wallet_uuid
+                await customStatement('''
+                  CREATE TABLE imported_addresses_temp (
+                    address TEXT NOT NULL UNIQUE,
+                    name TEXT NOT NULL DEFAULT '',
+                    encrypted_wif TEXT NOT NULL UNIQUE,
+                    PRIMARY KEY (address)
+                  );
+
+                  -- Copy data from old table to new table, excluding wallet_uuid
+                  INSERT INTO imported_addresses_temp (address, name, encrypted_wif)
+                  SELECT address, name, encrypted_wif
+                  FROM imported_addresses;
+
+                  -- Drop old table
+                  DROP TABLE imported_addresses;
+
+                  -- Rename temp table to final name
+                  ALTER TABLE imported_addresses_temp RENAME TO imported_addresses;
+                ''');
               },
             ));
 

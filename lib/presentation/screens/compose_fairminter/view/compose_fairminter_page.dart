@@ -6,7 +6,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
@@ -27,9 +26,11 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeFairminterPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
 
   const ComposeFairminterPageWrapper({
     required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
     super.key,
   });
 
@@ -38,7 +39,7 @@ class ComposeFairminterPageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(currentAddress),
         create: (context) => ComposeFairminterBloc(
           logger: GetIt.I.get<Logger>(),
           fetchFairminterFormDataUseCase:
@@ -51,9 +52,9 @@ class ComposeFairminterPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(currentAddress: state.currentAddress)),
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeFairminterPage(
-          address: state.currentAddress,
+          address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -64,7 +65,7 @@ class ComposeFairminterPageWrapper extends StatelessWidget {
 
 class ComposeFairminterPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address address;
+  final String address;
   const ComposeFairminterPage({
     super.key,
     required this.dashboardActivityFeedBloc,
@@ -91,7 +92,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
   @override
   void initState() {
     super.initState();
-    fromAddressController.text = widget.address.address;
+    fromAddressController.text = widget.address;
   }
 
   @override
@@ -102,7 +103,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         return state.assetState.maybeWhen(
           loading: () =>
               ComposeBasePage<ComposeFairminterBloc, ComposeFairminterState>(
-                  address: widget.address,
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
                   onFeeChange: (fee) => context
                       .read<ComposeFairminterBloc>()
@@ -144,7 +144,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
                   onFinalizeCancel: () {}),
           success: (assets) =>
               ComposeBasePage<ComposeFairminterBloc, ComposeFairminterState>(
-            address: widget.address,
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeFairminterBloc>()
@@ -203,7 +202,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
           (hardcapInput * Decimal.fromInt(100000000)).toBigInt().toInt();
 
       context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address.address,
+            sourceAddress: widget.address,
             params: ComposeFairminterEventParams(
               asset: asset!.asset,
               maxMintPerTx: asset!.divisible!

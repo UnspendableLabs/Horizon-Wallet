@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -69,7 +68,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final AddressRepository addressRepository;
   final AddressTxRepository addressTxRepository;
   final AssetRepository assetRepository;
-  final Address currentAddress;
+  final String currentAddress;
 
   Timer? _timer;
 
@@ -113,22 +112,28 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     );
 
     try {
-      final List<Address> addresses = [currentAddress];
+      final List<String> addresses = [currentAddress];
 
-      final List<Balance> balances = await balanceRepository
-          .getBalancesForAddresses(addresses.map((a) => a.address).toList());
-
+      final List<Balance> balances =
+          await balanceRepository.getBalancesForAddresses(addresses);
       final Map<String, Balance> aggregated =
           aggregateAndSortBalancesByAsset(balances);
 
-      final List<Asset> ownedAssets = await assetRepository
-          .getValidAssetsByOwnerVerbose(currentAddress.address);
+      final List<Asset> ownedAssets =
+          await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
 
       emit(
           BalancesState.complete(Result.ok(balances, aggregated, ownedAssets)));
     } catch (e) {
-      emit(BalancesState.complete(Result.error(
-          "Error fetching balances for ${currentAddress.address}")));
+      emit(BalancesState.complete(
+          Result.error("Error fetching balances for $currentAddress")));
     }
+  }
+
+  @override
+  Future<void> close() {
+    // Cancel the timer to prevent adding events after the Bloc is closed
+    _timer?.cancel();
+    return super.close();
   }
 }

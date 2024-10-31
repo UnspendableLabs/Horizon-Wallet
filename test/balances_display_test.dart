@@ -231,9 +231,7 @@ void main() {
                 slivers: [
                   BalancesDisplay(
                     isDarkTheme: false,
-                    addresses: [address],
-                    accountUuid: 'test-account',
-                    currentAddress: address,
+                    currentAddress: address.address,
                     initialItemCount: 10,
                   ),
                 ],
@@ -273,9 +271,7 @@ void main() {
                 slivers: [
                   BalancesDisplay(
                     isDarkTheme: false,
-                    addresses: [address],
-                    accountUuid: 'test-account',
-                    currentAddress: address,
+                    currentAddress: address.address,
                     initialItemCount: 10,
                   ),
                 ],
@@ -446,9 +442,7 @@ void main() {
                 slivers: [
                   BalancesDisplay(
                     isDarkTheme: false,
-                    addresses: [address],
-                    accountUuid: 'test-account',
-                    currentAddress: address,
+                    currentAddress: address.address,
                     initialItemCount: 10,
                   ),
                 ],
@@ -544,9 +538,7 @@ void main() {
                 slivers: [
                   BalancesDisplay(
                     isDarkTheme: false,
-                    addresses: [address],
-                    accountUuid: 'test-account',
-                    currentAddress: address,
+                    currentAddress: address.address,
                     initialItemCount: 10,
                   ),
                 ],
@@ -591,9 +583,7 @@ void main() {
                 slivers: [
                   BalancesDisplay(
                     isDarkTheme: false,
-                    addresses: [address],
-                    accountUuid: 'test-account',
-                    currentAddress: address,
+                    currentAddress: address.address,
                     initialItemCount: 10,
                   ),
                 ],
@@ -664,9 +654,7 @@ void main() {
                 slivers: [
                   BalancesDisplay(
                     isDarkTheme: false,
-                    addresses: [address],
-                    accountUuid: 'test-account',
-                    currentAddress: address,
+                    currentAddress: address.address,
                     initialItemCount: 10,
                   ),
                 ],

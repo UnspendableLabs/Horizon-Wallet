@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -17,14 +18,60 @@ class ShellState with _$ShellState {
 
 @freezed
 class ShellStateSuccess with _$ShellStateSuccess {
-  const factory ShellStateSuccess({
+  // Private constructor
+  const factory ShellStateSuccess._({
+    required bool redirect,
+    required Wallet wallet,
+    required List<Account> accounts,
+    required String? currentAccountUuid,
+    required List<Address> addresses,
+    required Address? currentAddress,
+    List<ImportedAddress>? importedAddresses,
+    ImportedAddress? currentImportedAddress,
+  }) = _ShellStateSuccess;
+
+  // Factory for account/address state
+  factory ShellStateSuccess.withAccount({
     required bool redirect,
     required Wallet wallet,
     required List<Account> accounts,
     required String currentAccountUuid,
     required List<Address> addresses,
     required Address currentAddress,
-  }) = _ShellStateSuccess;
+    List<ImportedAddress>? importedAddresses,
+  }) {
+    return ShellStateSuccess._(
+      redirect: redirect,
+      wallet: wallet,
+      accounts: accounts,
+      currentAccountUuid: currentAccountUuid,
+      addresses: addresses,
+      currentAddress: currentAddress,
+      importedAddresses: importedAddresses,
+      currentImportedAddress: null,
+    );
+  }
+
+  // Factory for imported address state
+  factory ShellStateSuccess.withImportedAddress({
+    required bool redirect,
+    required Wallet wallet,
+    required List<Account> accounts,
+    required List<Address> addresses,
+    required List<ImportedAddress> importedAddresses,
+    required ImportedAddress currentImportedAddress,
+  }) {
+    return ShellStateSuccess._(
+      redirect: redirect,
+      wallet: wallet,
+      accounts: accounts,
+      currentAccountUuid: null,
+      addresses: addresses,
+      currentAddress: null,
+      importedAddresses: importedAddresses,
+      currentImportedAddress: currentImportedAddress,
+    );
+  }
 }
 
 @freezed

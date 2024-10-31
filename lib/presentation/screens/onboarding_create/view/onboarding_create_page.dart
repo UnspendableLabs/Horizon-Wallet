@@ -6,14 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
@@ -100,14 +96,9 @@ class OnboardingCreatePageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => OnboardingCreateBloc(
-              config: GetIt.I<Config>(),
               mnmonicService: GetIt.I<MnemonicService>(),
-              walletRepository: GetIt.I<WalletRepository>(),
               walletService: GetIt.I<WalletService>(),
-              accountRepository: GetIt.I<AccountRepository>(),
-              addressRepository: GetIt.I<AddressRepository>(),
-              encryptionService: GetIt.I<EncryptionService>(),
-              addressService: GetIt.I<AddressService>(),
+              importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
             ),
         child: const OnboardingCreatePage());
   }

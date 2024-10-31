@@ -23,7 +23,7 @@ To run locally on the web:
    - To run the application as a web app
 
    ```
-   flutter run -d Chrome --dart-define=NETWORK=<mainnet|testnet>
+   flutter run -d Chrome --dart-define=HORIZON_NETWORK=<mainnet|testnet>
    ```
 
    - Run in regtest
@@ -33,7 +33,7 @@ To run locally on the web:
    ```
    flutter run -d Chrome --dart-define=REG_TEST_PK=<PK>  \
                          --dart-define=REG_TEST_PASSWORD=<PW> \
-                         --dart-define=NETWORK=regtest
+                         --dart-define=HORIZON_NETWORK=regtest
    ```
 
    - To run the application as a chrome extension:
@@ -58,6 +58,10 @@ To run locally on the web:
 ### derive migration step fn
 
 ❯ dart run drift_dev schema steps drift_schemas/ lib/data/sources/local/schema_versions.dart
+
+### gen migration tests
+
+❯ dart run drift_dev schema generate drift_schemas/ test/drift_migrations
 
 ### notes
 
@@ -99,6 +103,6 @@ https://docs.flutter.dev/testing/integration-tests#test-in-a-web-browser
 flutter drive   --driver=test_driver/integration_test.dart   --target=integration_test/app_test.dart   -d chrome
 
 # Testnet
-flutter drive   --driver=test_driver/integration_test.dart   --target=integration_test/app_test.dart   -d chrome --dart-define=NETWORK=testnet
+flutter drive   --driver=test_driver/integration_test.dart   --target=integration_test/app_test.dart   -d chrome --dart-define=HORIZON_NETWORK=testnet
 
 ```

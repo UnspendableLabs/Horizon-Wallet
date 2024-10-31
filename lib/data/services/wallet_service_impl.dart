@@ -138,19 +138,24 @@ class WalletServiceImpl implements WalletService {
 
   @override
   Future<entity.Wallet> fromBase58(String privateKey, String password) async {
-    bip32.BIP32Interface root = _bip32.fromBase58(privateKey, _getNetwork());
+    try {
+      bip32.BIP32Interface root = _bip32.fromBase58(privateKey, _getNetwork());
 
-    String privKey = hex.encode(root.privateKey!.toDart);
+      String privKey = hex.encode(root.privateKey!.toDart);
 
-    String encryptedPrivKey =
-        await encryptionService.encrypt(privKey, password);
+      String encryptedPrivKey =
+          await encryptionService.encrypt(privKey, password);
 
-    return entity.Wallet(
-        uuid: uuid.v4(),
-        name: 'Wallet 1',
-        encryptedPrivKey: encryptedPrivKey,
-        publicKey: root.neutered().toBase58(),
-        chainCodeHex: hex.encode(root.chainCode.toDart));
+      return entity.Wallet(
+          uuid: uuid.v4(),
+          name: 'Wallet 1',
+          encryptedPrivKey: encryptedPrivKey,
+          publicKey: root.neutered().toBase58(),
+          chainCodeHex: hex.encode(root.chainCode.toDart));
+    } catch (e) {
+      throw Exception(
+          'Invalid Private Key; please ensure you are using a valid BIP32 master key');
+    }
   }
 
   _getNetwork() => switch (config.network) {

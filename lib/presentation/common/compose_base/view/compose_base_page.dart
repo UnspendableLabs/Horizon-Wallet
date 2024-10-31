@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
@@ -13,7 +12,6 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
-  final Address address;
   final List<Widget> Function(S, bool, GlobalKey<FormState>)
       buildInitialFormFields;
   final void Function(FeeOption) onFeeChange;
@@ -32,7 +30,6 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
 
   const ComposeBasePage({
     super.key,
-    required this.address,
     required this.buildInitialFormFields,
     required this.onFeeChange,
     required this.onInitialCancel,
@@ -100,7 +97,6 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
           ) =>
             ComposeBaseConfirmationPage(
               composeTransaction: composeTransaction,
-              address: widget.address,
               fee: fee,
               feeRate: feeRate,
               virtualSize: virtualSize,
@@ -249,7 +245,6 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
 
 class ComposeBaseConfirmationPage extends StatefulWidget {
   final dynamic composeTransaction;
-  final Address address;
   final int fee;
   final int feeRate;
   final int virtualSize;
@@ -262,7 +257,6 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
   const ComposeBaseConfirmationPage({
     super.key,
     required this.composeTransaction,
-    required this.address,
     required this.fee,
     required this.feeRate,
     required this.virtualSize,

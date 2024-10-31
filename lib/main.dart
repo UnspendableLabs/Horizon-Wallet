@@ -19,24 +19,27 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
+import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
-import 'package:horizon/presentation/screens/privacy_policy.dart';
-import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/setup.dart';
 import 'package:logger/logger.dart';
 
@@ -202,9 +205,13 @@ class AppRouter {
                         // success
                         return shell.state.maybeWhen(
                           success: (state) {
-                            return DashboardPageWrapper(
-                                key: Key(
-                                    "${state.currentAccountUuid}:${state.currentAddress.address}"));
+                            late Key key;
+                            if (state.currentAddress != null) {
+                              key = Key(state.currentAddress!.address);
+                            } else if (state.currentImportedAddress != null) {
+                              key = Key(state.currentImportedAddress!.address);
+                            }
+                            return DashboardPageWrapper(key: key);
                           },
                           orElse: () => const SizedBox.shrink(),
                         );
@@ -577,7 +584,8 @@ class MyApp extends StatelessWidget {
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               analyticsService: GetIt.I<AnalyticsService>(),
-              addressRepository: GetIt.I<AddressRepository>())
+              addressRepository: GetIt.I<AddressRepository>(),
+              importedAddressRepository: GetIt.I<ImportedAddressRepository>())
             ..initialize(),
         ),
         BlocProvider<AccountFormBloc>(
@@ -598,6 +606,17 @@ class MyApp extends StatelessWidget {
             addressRepository: GetIt.I<AddressRepository>(),
             accountRepository: GetIt.I<AccountRepository>(),
             addressService: GetIt.I<AddressService>(),
+          ),
+        ),
+        BlocProvider<ImportAddressPkBloc>(
+          create: (context) => ImportAddressPkBloc(
+            walletRepository: GetIt.I<WalletRepository>(),
+            walletService: GetIt.I<WalletService>(),
+            encryptionService: GetIt.I<EncryptionService>(),
+            addressService: GetIt.I<AddressService>(),
+            addressRepository: GetIt.I<AddressRepository>(),
+            importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+            importedAddressService: GetIt.I<ImportedAddressService>(),
           ),
         ),
         BlocProvider<ThemeBloc>(

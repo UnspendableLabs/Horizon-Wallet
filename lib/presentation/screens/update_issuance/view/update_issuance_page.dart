@@ -4,27 +4,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/services/bitcoind_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/issuance_checkboxes.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_bloc.dart';
@@ -38,12 +28,14 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
   final IssuanceActionType actionType;
   final String assetName;
   final String? assetLongname;
+  final String currentAddress;
 
   const UpdateIssuancePageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.actionType,
     required this.assetName,
     required this.assetLongname,
+    required this.currentAddress,
     super.key,
   });
 
@@ -52,30 +44,23 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
       success: (state) => BlocProvider(
-        key: Key(state.currentAccountUuid),
+        key: Key(currentAddress),
         create: (context) => UpdateIssuanceBloc(
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           assetRepository: GetIt.I.get<AssetRepository>(),
-          balanceRepository: GetIt.I.get<BalanceRepository>(),
-          bitcoindService: GetIt.I.get<BitcoindService>(),
-          utxoRepository: GetIt.I.get<UtxoRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-          transactionService: GetIt.I.get<TransactionService>(),
-          addressRepository: GetIt.I.get<AddressRepository>(),
-          accountRepository: GetIt.I.get<AccountRepository>(),
-          walletRepository: GetIt.I.get<WalletRepository>(),
-          encryptionService: GetIt.I.get<EncryptionService>(),
-          addressService: GetIt.I.get<AddressService>(),
-          transactionRepository: GetIt.I.get<TransactionRepository>(),
-          transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-          bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          signAndBroadcastTransactionUseCase:
+              GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
+          writelocalTransactionUseCase:
+              GetIt.I.get<WriteLocalTransactionUseCase>(),
+          logger: GetIt.I.get<Logger>(),
         )..add(FetchFormData(
-            assetName: assetName, currentAddress: state.currentAddress)),
+            assetName: assetName, currentAddress: currentAddress)),
         child: UpdateIssuancePage(
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-          address: state.currentAddress,
+          address: currentAddress,
           actionType: actionType,
           assetName: assetName,
           assetLongname: assetLongname,
@@ -88,7 +73,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
 
 class UpdateIssuancePage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-  final Address address;
+  final String address;
   final IssuanceActionType actionType;
   final String assetName;
   final String? assetLongname;
@@ -147,7 +132,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         return state.assetState.maybeWhen(
           loading: () =>
               ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
-            address: widget.address,
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<UpdateIssuanceBloc>()
@@ -165,7 +149,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           ),
           success: (originalAsset) {
             return ComposeBasePage<UpdateIssuanceBloc, UpdateIssuanceState>(
-              address: widget.address,
               dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
               onFeeChange: (fee) => context
                   .read<UpdateIssuanceBloc>()
@@ -617,7 +600,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       }
 
       context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address.address,
+            sourceAddress: widget.address,
             params: UpdateIssuanceEventParams(
               name: name,
               quantity: quantity,

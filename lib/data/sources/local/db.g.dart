@@ -760,8 +760,15 @@ class $AddressesTable extends Addresses
   late final GeneratedColumn<int> index = GeneratedColumn<int>(
       'index', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _encryptedPrivateKeyMeta =
+      const VerificationMeta('encryptedPrivateKey');
   @override
-  List<GeneratedColumn> get $columns => [accountUuid, address, index];
+  late final GeneratedColumn<String> encryptedPrivateKey =
+      GeneratedColumn<String>('encrypted_private_key', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [accountUuid, address, index, encryptedPrivateKey];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -792,6 +799,12 @@ class $AddressesTable extends Addresses
     } else if (isInserting) {
       context.missing(_indexMeta);
     }
+    if (data.containsKey('encrypted_private_key')) {
+      context.handle(
+          _encryptedPrivateKeyMeta,
+          encryptedPrivateKey.isAcceptableOrUnknown(
+              data['encrypted_private_key']!, _encryptedPrivateKeyMeta));
+    }
     return context;
   }
 
@@ -807,6 +820,8 @@ class $AddressesTable extends Addresses
           .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
       index: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}index'])!,
+      encryptedPrivateKey: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}encrypted_private_key']),
     );
   }
 
@@ -820,14 +835,21 @@ class Address extends DataClass implements Insertable<Address> {
   final String accountUuid;
   final String address;
   final int index;
+  final String? encryptedPrivateKey;
   const Address(
-      {required this.accountUuid, required this.address, required this.index});
+      {required this.accountUuid,
+      required this.address,
+      required this.index,
+      this.encryptedPrivateKey});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['account_uuid'] = Variable<String>(accountUuid);
     map['address'] = Variable<String>(address);
     map['index'] = Variable<int>(index);
+    if (!nullToAbsent || encryptedPrivateKey != null) {
+      map['encrypted_private_key'] = Variable<String>(encryptedPrivateKey);
+    }
     return map;
   }
 
@@ -836,6 +858,9 @@ class Address extends DataClass implements Insertable<Address> {
       accountUuid: Value(accountUuid),
       address: Value(address),
       index: Value(index),
+      encryptedPrivateKey: encryptedPrivateKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(encryptedPrivateKey),
     );
   }
 
@@ -846,6 +871,8 @@ class Address extends DataClass implements Insertable<Address> {
       accountUuid: serializer.fromJson<String>(json['accountUuid']),
       address: serializer.fromJson<String>(json['address']),
       index: serializer.fromJson<int>(json['index']),
+      encryptedPrivateKey:
+          serializer.fromJson<String?>(json['encryptedPrivateKey']),
     );
   }
   @override
@@ -855,51 +882,65 @@ class Address extends DataClass implements Insertable<Address> {
       'accountUuid': serializer.toJson<String>(accountUuid),
       'address': serializer.toJson<String>(address),
       'index': serializer.toJson<int>(index),
+      'encryptedPrivateKey': serializer.toJson<String?>(encryptedPrivateKey),
     };
   }
 
-  Address copyWith({String? accountUuid, String? address, int? index}) =>
+  Address copyWith(
+          {String? accountUuid,
+          String? address,
+          int? index,
+          Value<String?> encryptedPrivateKey = const Value.absent()}) =>
       Address(
         accountUuid: accountUuid ?? this.accountUuid,
         address: address ?? this.address,
         index: index ?? this.index,
+        encryptedPrivateKey: encryptedPrivateKey.present
+            ? encryptedPrivateKey.value
+            : this.encryptedPrivateKey,
       );
   @override
   String toString() {
     return (StringBuffer('Address(')
           ..write('accountUuid: $accountUuid, ')
           ..write('address: $address, ')
-          ..write('index: $index')
+          ..write('index: $index, ')
+          ..write('encryptedPrivateKey: $encryptedPrivateKey')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(accountUuid, address, index);
+  int get hashCode =>
+      Object.hash(accountUuid, address, index, encryptedPrivateKey);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Address &&
           other.accountUuid == this.accountUuid &&
           other.address == this.address &&
-          other.index == this.index);
+          other.index == this.index &&
+          other.encryptedPrivateKey == this.encryptedPrivateKey);
 }
 
 class AddressesCompanion extends UpdateCompanion<Address> {
   final Value<String> accountUuid;
   final Value<String> address;
   final Value<int> index;
+  final Value<String?> encryptedPrivateKey;
   final Value<int> rowid;
   const AddressesCompanion({
     this.accountUuid = const Value.absent(),
     this.address = const Value.absent(),
     this.index = const Value.absent(),
+    this.encryptedPrivateKey = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AddressesCompanion.insert({
     required String accountUuid,
     required String address,
     required int index,
+    this.encryptedPrivateKey = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : accountUuid = Value(accountUuid),
         address = Value(address),
@@ -908,12 +949,15 @@ class AddressesCompanion extends UpdateCompanion<Address> {
     Expression<String>? accountUuid,
     Expression<String>? address,
     Expression<int>? index,
+    Expression<String>? encryptedPrivateKey,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (accountUuid != null) 'account_uuid': accountUuid,
       if (address != null) 'address': address,
       if (index != null) 'index': index,
+      if (encryptedPrivateKey != null)
+        'encrypted_private_key': encryptedPrivateKey,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -922,11 +966,13 @@ class AddressesCompanion extends UpdateCompanion<Address> {
       {Value<String>? accountUuid,
       Value<String>? address,
       Value<int>? index,
+      Value<String?>? encryptedPrivateKey,
       Value<int>? rowid}) {
     return AddressesCompanion(
       accountUuid: accountUuid ?? this.accountUuid,
       address: address ?? this.address,
       index: index ?? this.index,
+      encryptedPrivateKey: encryptedPrivateKey ?? this.encryptedPrivateKey,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -943,6 +989,10 @@ class AddressesCompanion extends UpdateCompanion<Address> {
     if (index.present) {
       map['index'] = Variable<int>(index.value);
     }
+    if (encryptedPrivateKey.present) {
+      map['encrypted_private_key'] =
+          Variable<String>(encryptedPrivateKey.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -955,6 +1005,7 @@ class AddressesCompanion extends UpdateCompanion<Address> {
           ..write('accountUuid: $accountUuid, ')
           ..write('address: $address, ')
           ..write('index: $index, ')
+          ..write('encryptedPrivateKey: $encryptedPrivateKey, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1422,16 +1473,249 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   }
 }
 
+class $ImportedAddressesTable extends ImportedAddresses
+    with TableInfo<$ImportedAddressesTable, ImportedAddress> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ImportedAddressesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _addressMeta =
+      const VerificationMeta('address');
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL UNIQUE');
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL DEFAULT \'\'');
+  static const VerificationMeta _encryptedWifMeta =
+      const VerificationMeta('encryptedWif');
+  @override
+  late final GeneratedColumn<String> encryptedWif = GeneratedColumn<String>(
+      'encrypted_wif', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL UNIQUE');
+  @override
+  List<GeneratedColumn> get $columns => [address, name, encryptedWif];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'imported_addresses';
+  @override
+  VerificationContext validateIntegrity(Insertable<ImportedAddress> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('address')) {
+      context.handle(_addressMeta,
+          address.isAcceptableOrUnknown(data['address']!, _addressMeta));
+    } else if (isInserting) {
+      context.missing(_addressMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('encrypted_wif')) {
+      context.handle(
+          _encryptedWifMeta,
+          encryptedWif.isAcceptableOrUnknown(
+              data['encrypted_wif']!, _encryptedWifMeta));
+    } else if (isInserting) {
+      context.missing(_encryptedWifMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {address};
+  @override
+  ImportedAddress map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ImportedAddress(
+      address: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      encryptedWif: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}encrypted_wif'])!,
+    );
+  }
+
+  @override
+  $ImportedAddressesTable createAlias(String alias) {
+    return $ImportedAddressesTable(attachedDatabase, alias);
+  }
+}
+
+class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
+  final String address;
+  final String name;
+  final String encryptedWif;
+  const ImportedAddress(
+      {required this.address, required this.name, required this.encryptedWif});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['address'] = Variable<String>(address);
+    map['name'] = Variable<String>(name);
+    map['encrypted_wif'] = Variable<String>(encryptedWif);
+    return map;
+  }
+
+  ImportedAddressesCompanion toCompanion(bool nullToAbsent) {
+    return ImportedAddressesCompanion(
+      address: Value(address),
+      name: Value(name),
+      encryptedWif: Value(encryptedWif),
+    );
+  }
+
+  factory ImportedAddress.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ImportedAddress(
+      address: serializer.fromJson<String>(json['address']),
+      name: serializer.fromJson<String>(json['name']),
+      encryptedWif: serializer.fromJson<String>(json['encryptedWif']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'address': serializer.toJson<String>(address),
+      'name': serializer.toJson<String>(name),
+      'encryptedWif': serializer.toJson<String>(encryptedWif),
+    };
+  }
+
+  ImportedAddress copyWith(
+          {String? address, String? name, String? encryptedWif}) =>
+      ImportedAddress(
+        address: address ?? this.address,
+        name: name ?? this.name,
+        encryptedWif: encryptedWif ?? this.encryptedWif,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('ImportedAddress(')
+          ..write('address: $address, ')
+          ..write('name: $name, ')
+          ..write('encryptedWif: $encryptedWif')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(address, name, encryptedWif);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ImportedAddress &&
+          other.address == this.address &&
+          other.name == this.name &&
+          other.encryptedWif == this.encryptedWif);
+}
+
+class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
+  final Value<String> address;
+  final Value<String> name;
+  final Value<String> encryptedWif;
+  final Value<int> rowid;
+  const ImportedAddressesCompanion({
+    this.address = const Value.absent(),
+    this.name = const Value.absent(),
+    this.encryptedWif = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ImportedAddressesCompanion.insert({
+    required String address,
+    required String name,
+    required String encryptedWif,
+    this.rowid = const Value.absent(),
+  })  : address = Value(address),
+        name = Value(name),
+        encryptedWif = Value(encryptedWif);
+  static Insertable<ImportedAddress> custom({
+    Expression<String>? address,
+    Expression<String>? name,
+    Expression<String>? encryptedWif,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (address != null) 'address': address,
+      if (name != null) 'name': name,
+      if (encryptedWif != null) 'encrypted_wif': encryptedWif,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ImportedAddressesCompanion copyWith(
+      {Value<String>? address,
+      Value<String>? name,
+      Value<String>? encryptedWif,
+      Value<int>? rowid}) {
+    return ImportedAddressesCompanion(
+      address: address ?? this.address,
+      name: name ?? this.name,
+      encryptedWif: encryptedWif ?? this.encryptedWif,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (encryptedWif.present) {
+      map['encrypted_wif'] = Variable<String>(encryptedWif.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportedAddressesCompanion(')
+          ..write('address: $address, ')
+          ..write('name: $name, ')
+          ..write('encryptedWif: $encryptedWif, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $AddressesTable addresses = $AddressesTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $ImportedAddressesTable importedAddresses =
+      $ImportedAddressesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [wallets, accounts, addresses, transactions];
+      [wallets, accounts, addresses, transactions, importedAddresses];
 }

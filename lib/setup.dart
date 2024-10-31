@@ -7,6 +7,7 @@ import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:horizon/data/services/imported_address_service_impl.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
@@ -21,6 +22,7 @@ import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -31,12 +33,14 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
@@ -74,6 +78,7 @@ import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
+import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -95,8 +100,6 @@ import 'dart:convert';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
-
-  logger.Logger.level = logger.Level.warning;
 
   injector.registerSingleton<Logger>(LoggerImpl(logger.Logger()));
 
@@ -245,6 +248,9 @@ Future<void> setup() async {
       .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
   injector
       .registerSingleton<AddressService>(AddressServiceImpl(config: config));
+
+  injector.registerSingleton<ImportedAddressService>(
+      ImportedAddressServiceImpl(config: config));
   injector.registerSingleton<MnemonicService>(
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
@@ -256,6 +262,8 @@ Future<void> setup() async {
       WalletRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<AddressRepository>(
       AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<ImportedAddressRepository>(
+      ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<EventsRepository>(
       EventsRepositoryImpl(api_: GetIt.I.get<V2Api>()));
@@ -342,6 +350,7 @@ Future<void> setup() async {
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
     addressRepository: GetIt.I.get<AddressRepository>(),
+    importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     utxoRepository: GetIt.I.get<UtxoRepository>(),
@@ -350,6 +359,7 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
     bitcoindService: GetIt.I.get<BitcoindService>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+    importedAddressService: GetIt.I.get<ImportedAddressService>(),
   ));
 
   injector.registerSingleton<WriteLocalTransactionUseCase>(
@@ -362,6 +372,15 @@ Future<void> setup() async {
 
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
+
+  injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
+    addressService: GetIt.I.get<AddressService>(),
+    config: GetIt.I.get<Config>(),
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    accountRepository: GetIt.I.get<AccountRepository>(),
+    walletRepository: GetIt.I.get<WalletRepository>(),
+    encryptionService: GetIt.I.get<EncryptionService>(),
+  ));
 }
 
 class CustomDioException extends DioException {

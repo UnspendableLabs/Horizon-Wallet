@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -5,14 +6,21 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/logout/view/logout_dialog.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
+import 'package:horizon/presentation/screens/dashboard/view_address_pk_form/view/view_address_pk_form.dart';
+import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/view/view_seed_phrase_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
@@ -25,15 +33,16 @@ import "package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 
-class AccountSidebar extends StatefulWidget {
-  const AccountSidebar({super.key});
+class WalletItemSidebar extends StatefulWidget {
+  const WalletItemSidebar({super.key});
   @override
-  State<AccountSidebar> createState() => _AccountSidebarState();
+  State<WalletItemSidebar> createState() => _WalletItemSidebarState();
 }
 
-class _AccountSidebarState extends State<AccountSidebar> {
-  final TextEditingController accountController = TextEditingController();
+class _WalletItemSidebarState extends State<WalletItemSidebar> {
   Account? selectedAccount;
+  ImportedAddress? selectedImportedAddress;
+  bool isImportedAddressesExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +59,9 @@ class _AccountSidebarState extends State<AccountSidebar> {
         ),
         child: shell.state.maybeWhen(
           success: (state) {
+            final hasImportedAddresses =
+                state.importedAddresses?.isNotEmpty ?? false;
+
             return Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -57,100 +69,208 @@ class _AccountSidebarState extends State<AccountSidebar> {
                   height: 554,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 16.0),
-                    child: ListView.builder(
+                    child: ListView(
                       scrollDirection: Axis.vertical,
-                      itemCount: state.accounts.length,
-                      itemBuilder: (context, index) {
-                        final account = state.accounts[index];
-                        return Column(
-                          children: [
-                            ListTile(
-                              title: Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                                child: Row(
-                                  children: [
-                                    const SizedBox(
-                                        width: 16.0), // Add some left padding
-                                    const Icon(
-                                        Icons.account_balance_wallet_rounded),
-                                    const SizedBox(width: 16.0),
-                                    Expanded(
-                                      child: Text(
-                                        account.name,
-                                        textAlign: TextAlign.left,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
+                      children: [
+                        if (hasImportedAddresses)
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(32, 8, 0, 8),
+                            child: Text(
+                              "Accounts",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                                color: mainTextGrey,
+                              ),
+                            ),
+                          ),
+                        // Regular accounts list
+                        ...state.accounts.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final account = entry.value;
+                          return Column(
+                            children: [
+                              ListTile(
+                                title: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                                  child: Row(
+                                    children: [
+                                      const SizedBox(
+                                          width: 16.0), // Add some left padding
+                                      const Icon(
+                                          Icons.account_balance_wallet_rounded),
+                                      const SizedBox(width: 16.0),
+                                      Expanded(
+                                        child: Text(
+                                          account.name,
+                                          textAlign: TextAlign.left,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
+                                hoverColor:
+                                    Colors.transparent, // No hover effect
+                                selected:
+                                    account.uuid == state.currentAccountUuid,
+                                onTap: () {
+                                  setState(() => selectedAccount = account);
+                                  context
+                                      .read<ShellStateCubit>()
+                                      .onAccountChanged(account);
+                                  GoRouter.of(context).go('/dashboard');
+                                },
                               ),
-                              hoverColor: Colors.transparent, // No hover effect
-                              selected:
-                                  account.uuid == state.currentAccountUuid,
-                              onTap: () {
-                                setState(() => selectedAccount = account);
-                                context
-                                    .read<ShellStateCubit>()
-                                    .onAccountChanged(account);
-                                GoRouter.of(context).go('/dashboard');
-                              },
-                            ),
-                            if (index !=
-                                state.accounts.length -
-                                    1) // Avoid underline for the last element
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                child: Divider(
-                                  thickness: 1.0,
+                              if (index !=
+                                  state.accounts.length -
+                                      1) // Avoid underline for the last element
+                                const Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 4.0),
+                                  child: Divider(
+                                    thickness: 1.0,
+                                  ),
                                 ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      elevation: 0, // No shadow
-                    ),
-                    onPressed: () {
-                      HorizonUI.HorizonDialog.show(
-                        context: context,
-                        body: Builder(builder: (context) {
-                          final bloc = context.watch<AccountFormBloc>();
-
-                          final cb = switch (bloc.state) {
-                            AccountFormStep2() => () {
-                                bloc.add(Reset());
-                              },
-                            _ => () {
-                                Navigator.of(context).pop();
-                              },
-                          };
-
-                          return HorizonUI.HorizonDialog(
-                            onBackButtonPressed: cb,
-                            title: "Add an account",
-                            body: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              child: AddAccountForm(),
-                            ),
+                            ],
                           );
                         }),
-                      );
-                    },
-                    child: const Text("Add Account",
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              HorizonUI.HorizonDialog.show(
+                                context: context,
+                                body: Builder(builder: (context) {
+                                  final bloc = context.watch<AccountFormBloc>();
+                                  final cb = switch (bloc.state) {
+                                    AccountFormStep2() => () {
+                                        bloc.add(Reset());
+                                      },
+                                    _ => () {
+                                        Navigator.of(context).pop();
+                                      },
+                                  };
+                                  return HorizonUI.HorizonDialog(
+                                    onBackButtonPressed: cb,
+                                    title: "Add an account",
+                                    body: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: AddAccountForm(),
+                                    ),
+                                  );
+                                }),
+                              );
+                            },
+                            child: const Text("Add Account",
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+
+                        if (hasImportedAddresses)
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              dividerColor: Colors
+                                  .transparent, // Removes the default divider
+                            ),
+                            child: ExpansionTile(
+                              initiallyExpanded: isImportedAddressesExpanded,
+                              onExpansionChanged: (expanded) {
+                                setState(() {
+                                  isImportedAddressesExpanded = expanded;
+                                });
+                              },
+                              title: const Text(
+                                "Imported Addresses",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  color: mainTextGrey,
+                                ),
+                              ),
+                              tilePadding:
+                                  const EdgeInsets.fromLTRB(32, 0, 16, 0),
+                              children: [
+                                ...state.importedAddresses
+                                        ?.asMap()
+                                        .entries
+                                        .map((entry) {
+                                      final index = entry.key;
+                                      final importedAddress = entry.value;
+                                      return Column(
+                                        children: [
+                                          ListTile(
+                                            title: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      0, 8, 0, 8),
+                                              child: Row(
+                                                children: [
+                                                  const SizedBox(width: 16.0),
+                                                  const Icon(Icons.key),
+                                                  const SizedBox(width: 16.0),
+                                                  Expanded(
+                                                    child: Text(
+                                                      importedAddress.name,
+                                                      textAlign: TextAlign.left,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            hoverColor: Colors.transparent,
+                                            selected: importedAddress.address ==
+                                                state.currentImportedAddress
+                                                    ?.address,
+                                            onTap: () {
+                                              setState(() =>
+                                                  selectedImportedAddress =
+                                                      importedAddress);
+                                              context
+                                                  .read<ShellStateCubit>()
+                                                  .onImportedAddressChanged(
+                                                      importedAddress);
+                                              GoRouter.of(context)
+                                                  .go('/dashboard');
+                                            },
+                                          ),
+                                          if (index !=
+                                              (state.importedAddresses
+                                                          ?.length ??
+                                                      0) -
+                                                  1)
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 4.0),
+                                              child: Divider(thickness: 1.0),
+                                            ),
+                                        ],
+                                      );
+                                    }).toList() ??
+                                    [],
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const Padding(
@@ -209,10 +329,17 @@ class HorizonAppBarContent extends StatelessWidget {
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
 
-    final account = shell.state.maybeWhen(
-      success: (state) => state.accounts.firstWhere(
+    final Account? account = shell.state.maybeWhen(
+      success: (state) => state.accounts.firstWhereOrNull(
         (account) => account.uuid == state.currentAccountUuid,
       ),
+      orElse: () => null,
+    );
+
+    final String? address = shell.state.maybeWhen(
+      success: (state) =>
+          state.currentAddress?.address ??
+          state.currentImportedAddress?.address,
       orElse: () => null,
     );
 
@@ -255,7 +382,7 @@ class HorizonAppBarContent extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         )),
                     const SizedBox(width: 12),
-                    if (!isSmallScreen)
+                    if (!isSmallScreen && account != null)
                       shell.state.maybeWhen(
                         success: (state) => state.addresses.length > 1
                             ? Flexible(
@@ -354,6 +481,8 @@ class HorizonAppBarContent extends StatelessWidget {
                     walletRepository: GetIt.I.get<WalletRepository>(),
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
+                    importedAddressRepository:
+                        GetIt.I.get<ImportedAddressRepository>(),
                     cacheProvider: GetIt.I.get<CacheProvider>(),
                     analyticsService: GetIt.I.get<AnalyticsService>(),
                   ),
@@ -384,52 +513,85 @@ class HorizonAppBarContent extends StatelessWidget {
                                 : royalBlueLightTheme,
                           ),
                           onSelected: (value) {
-                            if (value == 'reset') {
-                              HorizonUI.HorizonDialog.show(
+                            switch (value) {
+                              case 'reset':
+                                HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: BlocProvider.value(
+                                      value:
+                                          BlocProvider.of<LogoutBloc>(context),
+                                      child: const LogoutDialog(),
+                                    ));
+                              case 'import_address_pk':
+                                HorizonUI.HorizonDialog.show(
                                   context: context,
-                                  body: BlocProvider.value(
-                                    value: BlocProvider.of<LogoutBloc>(context),
-                                    child: HorizonUI.HorizonDialog(
-                                      title: 'Reset wallet',
-                                      body: Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              textAlign: TextAlign.center,
-                                              'This operation will result in the deletion of all wallet configuration data. You will be able to recover your funds only with your seed phrase. If you have created multiple accounts, you will need to recreate them manually after recovery. (Please note how many you have.)',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: isDarkTheme
-                                                    ? mainTextGrey
-                                                    : mainTextBlack,
-                                              ),
-                                            ),
-                                          ),
-                                          BackContinueButtons(
-                                            isDarkMode: isDarkTheme,
-                                            isSmallScreenWidth: isSmallScreen,
-                                            onPressedContinue: () {
-                                              GoRouter.of(context).pop();
-                                            },
-                                            backButtonText: 'RESET WALLET',
-                                            continueButtonText:
-                                                'CANCEL', // The BackContinueButtons widget is the style/responiveness we want here, however we want the CANCEL button to be more prominent so that the user doesn't accidentally reset their wallet. In BackContinueButtons, the continue button is the one that is more prominent.
-                                            onPressedBack: () {
-                                              context
-                                                  .read<LogoutBloc>()
-                                                  .add(LogoutEvent());
-                                            },
-                                          ),
-                                        ],
+                                  body: Builder(builder: (context) {
+                                    final bloc =
+                                        context.watch<ImportAddressPkBloc>();
+
+                                    final cb = switch (bloc.state) {
+                                      ImportAddressPkStep2() => () {
+                                          bloc.add(ResetForm());
+                                        },
+                                      _ => () {
+                                          Navigator.of(context).pop();
+                                        },
+                                    };
+
+                                    return HorizonUI.HorizonDialog(
+                                      onBackButtonPressed: cb,
+                                      title: "Import address private key",
+                                      body: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ImportAddressPkForm(),
                                       ),
-                                    ),
-                                  ));
+                                    );
+                                  }),
+                                );
+                              case 'view_address_pk':
+                                HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: HorizonUI.HorizonDialog(
+                                      includeBackButton: false,
+                                      includeCloseButton: true,
+                                      title: "View address private key",
+                                      body: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ViewAddressPkFormWrapper(
+                                            address: address!),
+                                      ),
+                                    ));
+                              case 'view_seed_phrase':
+                                HorizonUI.HorizonDialog.show(
+                                    context: context,
+                                    body: const HorizonUI.HorizonDialog(
+                                      includeBackButton: false,
+                                      includeCloseButton: true,
+                                      title: "View wallet seed phrase",
+                                      body: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ViewSeedPhraseFormWrapper(),
+                                      ),
+                                    ));
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'view_seed_phrase',
+                              child: Text('View wallet seed phrase'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'import_address_pk',
+                              child: Text('Import new address private key'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'view_address_pk',
+                              child: Text('View current address private key'),
+                            ),
                             const PopupMenuItem<String>(
                               value: 'reset',
                               child: Text('Reset wallet'),
@@ -484,7 +646,8 @@ class AddressSelectionButton extends StatelessWidget {
                   context.read<ShellStateCubit>().state.maybeWhen(
                         success: (state) => state.addresses
                             .firstWhere((address) =>
-                                address.address == state.currentAddress.address)
+                                address.address ==
+                                state.currentAddress!.address)
                             .address,
                         orElse: () => "Select Address",
                       ),
@@ -524,7 +687,7 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                     ? dialogBackgroundColorDarkTheme
                     : dialogBackgroundColorLightTheme,
                 isTopBarLayerAlwaysVisible: true,
-                topBarTitle: Text('Select an address',
+                topBarTitle: Text('Select Address',
                     style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -543,8 +706,8 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                           itemCount: state.addresses.length,
                           itemBuilder: (context, index) {
                             final address = state.addresses[index];
-                            final isSelected =
-                                address.address == state.currentAddress.address;
+                            final isSelected = address.address ==
+                                state.currentAddress!.address;
                             return ListTile(
                               title: Text(address.address),
                               selected: isSelected,
@@ -583,7 +746,7 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: AddAddressForm(
-                                      accountUuid: state.currentAccountUuid,
+                                      accountUuid: state.currentAccountUuid!,
                                       modalContext: modalSheetContext),
                                 ),
                                 onBackButtonPressed: () {
