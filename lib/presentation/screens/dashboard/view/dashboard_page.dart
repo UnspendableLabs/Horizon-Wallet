@@ -17,6 +17,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -113,20 +114,24 @@ class GetAddressesModal extends StatelessWidget {
   final String requestId;
   final List<Account> accounts;
   final AddressRepository addressRepository;
+  final ImportedAddressRepository importedAddressRepository;
 
-  const GetAddressesModal({
-    super.key,
-    required this.tabId,
-    required this.requestId,
-    required this.accounts,
-    required this.addressRepository,
-  });
+  const GetAddressesModal(
+      {super.key,
+      required this.tabId,
+      required this.requestId,
+      required this.accounts,
+      required this.addressRepository,
+      required this.importedAddressRepository});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => GetAddressesBloc(
-          accounts: accounts, addressRepository: addressRepository),
+        accounts: accounts,
+        addressRepository: addressRepository,
+        importedAddressRepository: importedAddressRepository,
+      ),
       child: GetAddressesForm(
         accounts: accounts,
         onSuccess: (addresses) {
@@ -1361,7 +1366,9 @@ class DashboardPageState extends State<DashboardPage> {
                       tabId: tabId,
                       requestId: requestId,
                       accounts: state.accounts,
-                      addressRepository: GetIt.I<AddressRepository>());
+                      addressRepository: GetIt.I<AddressRepository>(),
+                      importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+                      );
                 });
           }),
           includeBackButton: false,
