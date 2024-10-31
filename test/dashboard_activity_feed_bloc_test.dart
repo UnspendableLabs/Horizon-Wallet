@@ -330,7 +330,7 @@ void main() {
 
           return DashboardActivityFeedBloc(
             logger: LoggerFake(),
-            currentAddress: AddressMock(),
+            currentAddress: AddressMock().address,
             pageSize: 10,
             eventsRepository: mockEventsRepository,
             transactionLocalRepository: mockTransactionLocalRepository,
@@ -379,7 +379,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               eventsRepository: mockEventsRepository,
               addressRepository: mockAddressRepository,
@@ -426,7 +426,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               eventsRepository: mockEventsRepository,
               addressRepository: mockAddressRepository,
@@ -465,7 +465,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -515,7 +515,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -559,7 +559,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -626,7 +626,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -708,7 +708,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: mockBitcoinRepository,
@@ -788,7 +788,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: mockBitcoinRepository,
@@ -861,7 +861,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -955,7 +955,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -1059,7 +1059,7 @@ void main() {
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
-              currentAddress: AddressMock(),
+              currentAddress: AddressMock().address,
               transactionLocalRepository: mockTransactionLocalRepository,
               addressRepository: mockAddressRepository,
               bitcoinRepository: defaultBitcoinRepository,
@@ -1172,7 +1172,7 @@ void main() {
             return DashboardActivityFeedBloc(
                 logger: LoggerFake(),
                 pageSize: 10,
-                currentAddress: AddressMock(),
+                currentAddress: AddressMock().address,
                 transactionLocalRepository: mockTransactionLocalRepository,
                 addressRepository: mockAddressRepository,
                 bitcoinRepository: mockBitcoinRepository,
@@ -1247,7 +1247,7 @@ void main() {
             return DashboardActivityFeedBloc(
                 logger: LoggerFake(),
                 pageSize: 10,
-                currentAddress: AddressMock(),
+                currentAddress: AddressMock().address,
                 transactionLocalRepository: mockTransactionLocalRepository,
                 addressRepository: mockAddressRepository,
                 bitcoinRepository: mockBitcoinRepository,

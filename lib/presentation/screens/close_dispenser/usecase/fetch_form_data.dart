@@ -1,4 +1,3 @@
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
@@ -13,7 +12,7 @@ class FetchCloseDispenserFormDataUseCase {
     required this.dispenserRepository,
   });
 
-  Future<(FeeEstimates, List<Dispenser>)> call(Address currentAddress) async {
+  Future<(FeeEstimates, List<Dispenser>)> call(String currentAddress) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
@@ -42,10 +41,10 @@ class FetchCloseDispenserFormDataUseCase {
     }
   }
 
-  Future<List<Dispenser>> _fetchDispenser(Address currentAddress) async {
+  Future<List<Dispenser>> _fetchDispenser(String currentAddress) async {
     try {
       return await dispenserRepository
-          .getDispensersByAddress(currentAddress.address)
+          .getDispensersByAddress(currentAddress)
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchDispenserException(

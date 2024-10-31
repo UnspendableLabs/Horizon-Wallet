@@ -1,5 +1,4 @@
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
@@ -119,7 +118,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     emit(state.copyWith(maxValue: const MaxValueState.loading()));
 
     try {
-      final source = state.source!.address;
+      final source = state.source!;
       final asset = state.asset ?? "BTC";
       final feeRate = switch (state.feeOption) {
         FeeOption.Fast() => feeEstimates.fast,
@@ -172,7 +171,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     emit(state.copyWith(maxValue: const MaxValueState.loading()));
 
     try {
-      final source = state.source!.address;
+      final source = state.source!;
       final asset = state.asset ?? "BTC";
       final feeRate = switch (state.feeOption) {
         FeeOption.Fast() => feeEstimates.fast,
@@ -211,10 +210,9 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     late List<Balance> balances;
     late FeeEstimates feeEstimates;
     try {
-      List<Address> addresses = [event.currentAddress!];
+      List<String> addresses = [event.currentAddress!];
 
-      balances =
-          await balanceRepository.getBalancesForAddress(addresses[0].address);
+      balances = await balanceRepository.getBalancesForAddress(addresses[0]);
     } catch (e) {
       emit(state.copyWith(
           balancesState: BalancesState.error(e.toString()),
@@ -291,7 +289,9 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       emit(state.copyWith(
           submitState: SubmitInitial(
               loading: false,
-              error: 'An unexpected error occurred: ${e.toString()}')));
+              error: e is ComposeTransactionException
+                  ? e.message
+                  : 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 

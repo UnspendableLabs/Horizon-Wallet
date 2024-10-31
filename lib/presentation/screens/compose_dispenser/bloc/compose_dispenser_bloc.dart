@@ -123,10 +123,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    print("pre emit loading");
-
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
-    print("post emit loading");
 
     try {
       final feeRate = _getFeeRate();

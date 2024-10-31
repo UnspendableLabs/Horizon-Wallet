@@ -87,7 +87,7 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
-  final mockAddress = FakeAddress();
+  final mockAddress = FakeAddress().address;
   final mockBalances = [MockBalance()];
   final mockComposeDispenserResponseVerbose =
       MockComposeDispenserResponseVerbose();
@@ -110,7 +110,7 @@ void main() {
   final List<Utxo> utxos = [FakeUtxo()];
 
   setUpAll(() {
-    registerFallbackValue(FakeAddress());
+    registerFallbackValue(FakeAddress().address);
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(utxos);
     registerFallbackValue(FeeOption.Medium());

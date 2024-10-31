@@ -13,15 +13,9 @@ class ImportedAddressesDao extends DatabaseAccessor<DB>
   Future<List<ImportedAddress>> getAllImportedAddresses() =>
       select(importedAddresses).get();
 
-  Future<List<ImportedAddress>> getAllImportedAddressesByWalletUuid(
-          String walletUuid) =>
-      (select(importedAddresses)
-            ..where((tbl) => tbl.walletUuid.equals(walletUuid)))
-          .get();
-
   Future<ImportedAddress?> getImportedAddress(String address) =>
       (select(importedAddresses)..where((tbl) => tbl.address.equals(address)))
-          .getSingle();
+          .getSingleOrNull();
 
   Future<int> insertImportedAddress(ImportedAddressModel address) {
     return into(importedAddresses).insert(address);
@@ -39,11 +33,6 @@ class ImportedAddressesDao extends DatabaseAccessor<DB>
       update(importedAddresses).replace(address);
   Future<int> deleteImportedAddress(Insertable<ImportedAddressModel> address) =>
       delete(importedAddresses).delete(address);
-  Future<void> deleteImportedAddressesByWalletUuid(String walletUuid) async {
-    await (delete(importedAddresses)
-          ..where((tbl) => tbl.walletUuid.equals(walletUuid)))
-        .go();
-  }
 
   Future<int> deleteAllImportedAddresses() {
     return delete(importedAddresses).go();

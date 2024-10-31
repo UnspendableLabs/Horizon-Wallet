@@ -66,7 +66,7 @@ void main() {
         .thenAnswer((_) async => feeEstimates);
 
     // Act
-    final result = await useCase.call(address);
+    final result = await useCase.call(address.address);
 
     // Assert
     expect(result.$1, balances);
@@ -91,7 +91,7 @@ void main() {
 
     // Act & Assert
     expect(
-      () => useCase.call(address),
+      () => useCase.call(address.address),
       throwsA(isA<FetchBalancesException>()),
     );
   });
@@ -129,7 +129,7 @@ void main() {
 
     // Act & Assert
     expect(
-      () => useCase.call(address),
+      () => useCase.call(address.address),
       throwsA(isA<FetchFeeEstimatesException>()),
     );
   });

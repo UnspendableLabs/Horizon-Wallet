@@ -10,7 +10,6 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/entities/event.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/core/logging/logger.dart';
@@ -33,7 +32,7 @@ class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
   Logger logger;
   Timer? timer;
-  Address currentAddress;
+  String currentAddress;
   int pageSize;
   TransactionLocalRepository transactionLocalRepository;
   EventsRepository eventsRepository;
@@ -79,7 +78,7 @@ class DashboardActivityFeedBloc
     // emit(nextState);
 
     try {
-      String address = currentAddress.address;
+      String address = currentAddress;
 
       String? mostRecentCounterpartyEventHash =
           currentState.mostRecentCounterpartyEventHash;
@@ -385,16 +384,14 @@ class DashboardActivityFeedBloc
 
     try {
       // get most recent confirmed tx
-      final addresses_ = [currentAddress];
-
-      List<String> addresses = addresses_.map((a) => a.address).toList();
+      final addresses = [currentAddress];
 
       // query local transactions above mose recent confirmed event
       final localTransactions =
           await transactionLocalRepository.getAllByAddresses(addresses);
 
       final counterpartyEvents = await eventsRepository.getAllByAddressVerbose(
-          address: currentAddress.address,
+          address: currentAddress,
           unconfirmed: true,
           whitelist: DEFAULT_WHITELIST);
 

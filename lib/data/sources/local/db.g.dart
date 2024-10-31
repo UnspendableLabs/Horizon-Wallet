@@ -1486,29 +1486,24 @@ class $ImportedAddressesTable extends ImportedAddresses
       'address', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
-      $customConstraints: 'UNIQUE NOT NULL');
-  static const VerificationMeta _indexMeta = const VerificationMeta('index');
+      $customConstraints: 'NOT NULL UNIQUE');
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  late final GeneratedColumn<int> index = GeneratedColumn<int>(
-      'index', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _encryptedPrivateKeyMeta =
-      const VerificationMeta('encryptedPrivateKey');
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL DEFAULT \'\'');
+  static const VerificationMeta _encryptedWifMeta =
+      const VerificationMeta('encryptedWif');
   @override
-  late final GeneratedColumn<String> encryptedPrivateKey =
-      GeneratedColumn<String>('encrypted_private_key', aliasedName, false,
-          type: DriftSqlType.string,
-          requiredDuringInsert: true,
-          $customConstraints: 'UNIQUE NOT NULL');
-  static const VerificationMeta _walletUuidMeta =
-      const VerificationMeta('walletUuid');
+  late final GeneratedColumn<String> encryptedWif = GeneratedColumn<String>(
+      'encrypted_wif', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL UNIQUE');
   @override
-  late final GeneratedColumn<String> walletUuid = GeneratedColumn<String>(
-      'wallet_uuid', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns =>
-      [address, index, encryptedPrivateKey, walletUuid];
+  List<GeneratedColumn> get $columns => [address, name, encryptedWif];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1525,27 +1520,19 @@ class $ImportedAddressesTable extends ImportedAddresses
     } else if (isInserting) {
       context.missing(_addressMeta);
     }
-    if (data.containsKey('index')) {
+    if (data.containsKey('name')) {
       context.handle(
-          _indexMeta, index.isAcceptableOrUnknown(data['index']!, _indexMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
-      context.missing(_indexMeta);
+      context.missing(_nameMeta);
     }
-    if (data.containsKey('encrypted_private_key')) {
+    if (data.containsKey('encrypted_wif')) {
       context.handle(
-          _encryptedPrivateKeyMeta,
-          encryptedPrivateKey.isAcceptableOrUnknown(
-              data['encrypted_private_key']!, _encryptedPrivateKeyMeta));
+          _encryptedWifMeta,
+          encryptedWif.isAcceptableOrUnknown(
+              data['encrypted_wif']!, _encryptedWifMeta));
     } else if (isInserting) {
-      context.missing(_encryptedPrivateKeyMeta);
-    }
-    if (data.containsKey('wallet_uuid')) {
-      context.handle(
-          _walletUuidMeta,
-          walletUuid.isAcceptableOrUnknown(
-              data['wallet_uuid']!, _walletUuidMeta));
-    } else if (isInserting) {
-      context.missing(_walletUuidMeta);
+      context.missing(_encryptedWifMeta);
     }
     return context;
   }
@@ -1558,13 +1545,10 @@ class $ImportedAddressesTable extends ImportedAddresses
     return ImportedAddress(
       address: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
-      index: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}index'])!,
-      encryptedPrivateKey: attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}encrypted_private_key'])!,
-      walletUuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}wallet_uuid'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      encryptedWif: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}encrypted_wif'])!,
     );
   }
 
@@ -1576,30 +1560,24 @@ class $ImportedAddressesTable extends ImportedAddresses
 
 class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
   final String address;
-  final int index;
-  final String encryptedPrivateKey;
-  final String walletUuid;
+  final String name;
+  final String encryptedWif;
   const ImportedAddress(
-      {required this.address,
-      required this.index,
-      required this.encryptedPrivateKey,
-      required this.walletUuid});
+      {required this.address, required this.name, required this.encryptedWif});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['address'] = Variable<String>(address);
-    map['index'] = Variable<int>(index);
-    map['encrypted_private_key'] = Variable<String>(encryptedPrivateKey);
-    map['wallet_uuid'] = Variable<String>(walletUuid);
+    map['name'] = Variable<String>(name);
+    map['encrypted_wif'] = Variable<String>(encryptedWif);
     return map;
   }
 
   ImportedAddressesCompanion toCompanion(bool nullToAbsent) {
     return ImportedAddressesCompanion(
       address: Value(address),
-      index: Value(index),
-      encryptedPrivateKey: Value(encryptedPrivateKey),
-      walletUuid: Value(walletUuid),
+      name: Value(name),
+      encryptedWif: Value(encryptedWif),
     );
   }
 
@@ -1608,10 +1586,8 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ImportedAddress(
       address: serializer.fromJson<String>(json['address']),
-      index: serializer.fromJson<int>(json['index']),
-      encryptedPrivateKey:
-          serializer.fromJson<String>(json['encryptedPrivateKey']),
-      walletUuid: serializer.fromJson<String>(json['walletUuid']),
+      name: serializer.fromJson<String>(json['name']),
+      encryptedWif: serializer.fromJson<String>(json['encryptedWif']),
     );
   }
   @override
@@ -1619,98 +1595,81 @@ class ImportedAddress extends DataClass implements Insertable<ImportedAddress> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'address': serializer.toJson<String>(address),
-      'index': serializer.toJson<int>(index),
-      'encryptedPrivateKey': serializer.toJson<String>(encryptedPrivateKey),
-      'walletUuid': serializer.toJson<String>(walletUuid),
+      'name': serializer.toJson<String>(name),
+      'encryptedWif': serializer.toJson<String>(encryptedWif),
     };
   }
 
   ImportedAddress copyWith(
-          {String? address,
-          int? index,
-          String? encryptedPrivateKey,
-          String? walletUuid}) =>
+          {String? address, String? name, String? encryptedWif}) =>
       ImportedAddress(
         address: address ?? this.address,
-        index: index ?? this.index,
-        encryptedPrivateKey: encryptedPrivateKey ?? this.encryptedPrivateKey,
-        walletUuid: walletUuid ?? this.walletUuid,
+        name: name ?? this.name,
+        encryptedWif: encryptedWif ?? this.encryptedWif,
       );
   @override
   String toString() {
     return (StringBuffer('ImportedAddress(')
           ..write('address: $address, ')
-          ..write('index: $index, ')
-          ..write('encryptedPrivateKey: $encryptedPrivateKey, ')
-          ..write('walletUuid: $walletUuid')
+          ..write('name: $name, ')
+          ..write('encryptedWif: $encryptedWif')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(address, index, encryptedPrivateKey, walletUuid);
+  int get hashCode => Object.hash(address, name, encryptedWif);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ImportedAddress &&
           other.address == this.address &&
-          other.index == this.index &&
-          other.encryptedPrivateKey == this.encryptedPrivateKey &&
-          other.walletUuid == this.walletUuid);
+          other.name == this.name &&
+          other.encryptedWif == this.encryptedWif);
 }
 
 class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
   final Value<String> address;
-  final Value<int> index;
-  final Value<String> encryptedPrivateKey;
-  final Value<String> walletUuid;
+  final Value<String> name;
+  final Value<String> encryptedWif;
   final Value<int> rowid;
   const ImportedAddressesCompanion({
     this.address = const Value.absent(),
-    this.index = const Value.absent(),
-    this.encryptedPrivateKey = const Value.absent(),
-    this.walletUuid = const Value.absent(),
+    this.name = const Value.absent(),
+    this.encryptedWif = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ImportedAddressesCompanion.insert({
     required String address,
-    required int index,
-    required String encryptedPrivateKey,
-    required String walletUuid,
+    required String name,
+    required String encryptedWif,
     this.rowid = const Value.absent(),
   })  : address = Value(address),
-        index = Value(index),
-        encryptedPrivateKey = Value(encryptedPrivateKey),
-        walletUuid = Value(walletUuid);
+        name = Value(name),
+        encryptedWif = Value(encryptedWif);
   static Insertable<ImportedAddress> custom({
     Expression<String>? address,
-    Expression<int>? index,
-    Expression<String>? encryptedPrivateKey,
-    Expression<String>? walletUuid,
+    Expression<String>? name,
+    Expression<String>? encryptedWif,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (address != null) 'address': address,
-      if (index != null) 'index': index,
-      if (encryptedPrivateKey != null)
-        'encrypted_private_key': encryptedPrivateKey,
-      if (walletUuid != null) 'wallet_uuid': walletUuid,
+      if (name != null) 'name': name,
+      if (encryptedWif != null) 'encrypted_wif': encryptedWif,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   ImportedAddressesCompanion copyWith(
       {Value<String>? address,
-      Value<int>? index,
-      Value<String>? encryptedPrivateKey,
-      Value<String>? walletUuid,
+      Value<String>? name,
+      Value<String>? encryptedWif,
       Value<int>? rowid}) {
     return ImportedAddressesCompanion(
       address: address ?? this.address,
-      index: index ?? this.index,
-      encryptedPrivateKey: encryptedPrivateKey ?? this.encryptedPrivateKey,
-      walletUuid: walletUuid ?? this.walletUuid,
+      name: name ?? this.name,
+      encryptedWif: encryptedWif ?? this.encryptedWif,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1721,15 +1680,11 @@ class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
     if (address.present) {
       map['address'] = Variable<String>(address.value);
     }
-    if (index.present) {
-      map['index'] = Variable<int>(index.value);
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
     }
-    if (encryptedPrivateKey.present) {
-      map['encrypted_private_key'] =
-          Variable<String>(encryptedPrivateKey.value);
-    }
-    if (walletUuid.present) {
-      map['wallet_uuid'] = Variable<String>(walletUuid.value);
+    if (encryptedWif.present) {
+      map['encrypted_wif'] = Variable<String>(encryptedWif.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1741,9 +1696,8 @@ class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
   String toString() {
     return (StringBuffer('ImportedAddressesCompanion(')
           ..write('address: $address, ')
-          ..write('index: $index, ')
-          ..write('encryptedPrivateKey: $encryptedPrivateKey, ')
-          ..write('walletUuid: $walletUuid, ')
+          ..write('name: $name, ')
+          ..write('encryptedWif: $encryptedWif, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

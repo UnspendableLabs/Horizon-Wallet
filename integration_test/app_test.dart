@@ -255,7 +255,23 @@ void main() {
         await tester.tap(resetButton);
         await tester.pumpAndSettle();
 
-        final confirmResetButton = find.text('RESET WALLET');
+        final resetCheckbox = find.byType(CheckboxListTile);
+        expect(resetCheckbox, findsOneWidget);
+        await tester.tap(resetCheckbox);
+        await tester.pumpAndSettle();
+
+        final continueResetButton = find.text('CONTINUE');
+        expect(continueResetButton, findsOneWidget);
+        await tester.tap(continueResetButton);
+        await tester.pumpAndSettle();
+
+        final resetConfirmationField =
+            find.byKey(const Key('resetConfirmationTextField'));
+        expect(resetConfirmationField, findsOneWidget);
+        await tester.enterText(resetConfirmationField, 'RESET WALLET');
+        await tester.pumpAndSettle();
+
+        final confirmResetButton = find.byKey(const Key('continueButton'));
         expect(confirmResetButton, findsOneWidget);
         await tester.tap(confirmResetButton);
         await tester.pumpAndSettle();

@@ -24,7 +24,7 @@ mixin _$ComposeSendState {
       throw _privateConstructorUsedError; // Specific properties
   MaxValueState get maxValue => throw _privateConstructorUsedError;
   bool get sendMax => throw _privateConstructorUsedError;
-  Address? get source => throw _privateConstructorUsedError;
+  String? get source => throw _privateConstructorUsedError;
   String? get destination => throw _privateConstructorUsedError;
   String? get asset => throw _privateConstructorUsedError;
   String get quantity => throw _privateConstructorUsedError;
@@ -48,7 +48,7 @@ abstract class $ComposeSendStateCopyWith<$Res> {
       SubmitState submitState,
       MaxValueState maxValue,
       bool sendMax,
-      Address? source,
+      String? source,
       String? destination,
       String? asset,
       String quantity,
@@ -112,7 +112,7 @@ class _$ComposeSendStateCopyWithImpl<$Res, $Val extends ComposeSendState>
       source: freezed == source
           ? _value.source
           : source // ignore: cast_nullable_to_non_nullable
-              as Address?,
+              as String?,
       destination: freezed == destination
           ? _value.destination
           : destination // ignore: cast_nullable_to_non_nullable
@@ -172,7 +172,7 @@ abstract class _$$ComposeSendStateImplCopyWith<$Res>
       SubmitState submitState,
       MaxValueState maxValue,
       bool sendMax,
-      Address? source,
+      String? source,
       String? destination,
       String? asset,
       String quantity,
@@ -237,7 +237,7 @@ class __$$ComposeSendStateImplCopyWithImpl<$Res>
       source: freezed == source
           ? _value.source
           : source // ignore: cast_nullable_to_non_nullable
-              as Address?,
+              as String?,
       destination: freezed == destination
           ? _value.destination
           : destination // ignore: cast_nullable_to_non_nullable
@@ -290,7 +290,7 @@ class _$ComposeSendStateImpl extends _ComposeSendState {
   @override
   final bool sendMax;
   @override
-  final Address? source;
+  final String? source;
   @override
   final String? destination;
   @override
@@ -362,7 +362,7 @@ abstract class _ComposeSendState extends ComposeSendState {
       required final SubmitState submitState,
       required final MaxValueState maxValue,
       required final bool sendMax,
-      final Address? source,
+      final String? source,
       final String? destination,
       final String? asset,
       required final String quantity,
@@ -382,7 +382,7 @@ abstract class _ComposeSendState extends ComposeSendState {
   @override
   bool get sendMax;
   @override
-  Address? get source;
+  String? get source;
   @override
   String? get destination;
   @override

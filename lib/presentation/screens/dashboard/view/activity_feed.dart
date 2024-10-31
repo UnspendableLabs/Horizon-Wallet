@@ -7,7 +7,6 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
-import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
@@ -132,7 +131,7 @@ enum SendSide { source, destination }
 
 class ActivityFeedListItem extends StatelessWidget {
   final ActivityFeedItem item;
-  final List<Address> addresses;
+  final List<String> addresses;
   final bool isMobile;
 
   const ActivityFeedListItem(
@@ -165,7 +164,7 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   SendSide _getSendSide(String address) {
-    if (addresses.any((a) => a.address == address)) {
+    if (addresses.any((a) => a == address)) {
       return SendSide.source;
     } else {
       return SendSide.destination;
@@ -173,7 +172,7 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildBitcoinTxTitle(BitcoinTx tx) {
-    final addresses_ = addresses.map((a) => a.address).toList();
+    final addresses_ = addresses.map((a) => a).toList();
 
     return switch (tx.getTransactionType(addresses_)) {
       TransactionType.sender => SendTitle(
@@ -229,7 +228,7 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
     if (params.transfer) {
-      if (addresses.any((a) => a.address == params.source)) {
+      if (addresses.any((a) => a == params.source)) {
         return SelectableText(
             "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");
       } else {
@@ -464,9 +463,7 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Icon _getBitcoinTxLeadingIcon(BitcoinTx btx) {
-    final addresses_ = addresses.map((a) => a.address).toList();
-
-    return switch (btx.getTransactionType(addresses_)) {
+    return switch (btx.getTransactionType(addresses)) {
       TransactionType.sender => const Icon(Icons.arrow_back, color: Colors.red),
       // TODO: assumes single party send?
       TransactionType.recipient =>
@@ -517,7 +514,7 @@ class ActivityFeedListItem extends StatelessWidget {
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
-  final List<Address> addresses;
+  final List<String> addresses;
   final int initialItemCount;
   const DashboardActivityFeedScreen(
       {super.key, required this.addresses, required this.initialItemCount});
