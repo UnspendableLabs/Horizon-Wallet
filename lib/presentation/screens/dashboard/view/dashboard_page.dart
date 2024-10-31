@@ -68,6 +68,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -77,6 +78,7 @@ class SignPsbtModal extends StatelessWidget {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
+  final RPCSignPsbtSuccessCallback onSuccess;
 
   const SignPsbtModal(
       {super.key,
@@ -86,7 +88,8 @@ class SignPsbtModal extends StatelessWidget {
       required this.encryptionService,
       required this.addressService,
       required this.tabId,
-      required this.requestId});
+      required this.requestId,
+      required this.onSuccess});
 
   @override
   Widget build(BuildContext context) {
@@ -101,8 +104,8 @@ class SignPsbtModal extends StatelessWidget {
       child: SignPsbtForm(
         key: Key(unsignedPsbt),
         onSuccess: (signedPsbtHex) {
-          chrome.tabs.sendMessage(
-              tabId, {"id": requestId, "hex": signedPsbtHex}, null);
+          onSuccess(RPCSignPsbtSuccessCallbackArgs(
+              tabId: tabId, requestId: requestId, signedPsbt: signedPsbtHex));
         },
       ),
     );
@@ -115,6 +118,7 @@ class GetAddressesModal extends StatelessWidget {
   final List<Account> accounts;
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
+  final RPCGetAddressesSuccessCallback onSuccess;
 
   const GetAddressesModal(
       {super.key,
@@ -122,7 +126,8 @@ class GetAddressesModal extends StatelessWidget {
       required this.requestId,
       required this.accounts,
       required this.addressRepository,
-      required this.importedAddressRepository});
+      required this.importedAddressRepository,
+      required this.onSuccess});
 
   @override
   Widget build(BuildContext context) {
@@ -135,22 +140,8 @@ class GetAddressesModal extends StatelessWidget {
       child: GetAddressesForm(
         accounts: accounts,
         onSuccess: (addresses) {
-          chrome.tabs.sendMessage(
-            tabId,
-            {
-              "id": requestId,
-              "addresses": addresses.map((address) {
-                return {
-                  "address": address.address,
-                  "type": address.address.startsWith("bc") ||
-                          address.address.startsWith("tb")
-                      ? "p2wpkh"
-                      : "p2pkh",
-                };
-              }).toList(),
-            },
-            null,
-          );
+          onSuccess(RPCGetAddressesSuccessCallbackArgs(
+              tabId: tabId, requestId: requestId, addresses: addresses));
         },
       ),
     );
@@ -1367,8 +1358,9 @@ class DashboardPageState extends State<DashboardPage> {
                       requestId: requestId,
                       accounts: state.accounts,
                       addressRepository: GetIt.I<AddressRepository>(),
-                      importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
-                      );
+                      importedAddressRepository:
+                          GetIt.I<ImportedAddressRepository>(),
+                      onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
                 });
           }),
           includeBackButton: false,
@@ -1382,14 +1374,14 @@ class DashboardPageState extends State<DashboardPage> {
         body: HorizonUI.HorizonDialog(
           title: "Sign Psbt",
           body: SignPsbtModal(
-            tabId: tabId,
-            requestId: requestId,
-            unsignedPsbt: psbt,
-            transactionService: GetIt.I.get<TransactionService>(),
-            walletRepository: GetIt.I.get<WalletRepository>(),
-            encryptionService: GetIt.I.get<EncryptionService>(),
-            addressService: GetIt.I.get<AddressService>(),
-          ),
+              tabId: tabId,
+              requestId: requestId,
+              unsignedPsbt: psbt,
+              transactionService: GetIt.I.get<TransactionService>(),
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              encryptionService: GetIt.I.get<EncryptionService>(),
+              addressService: GetIt.I.get<AddressService>(),
+              onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
           includeBackButton: false,
           includeCloseButton: true,
         ));

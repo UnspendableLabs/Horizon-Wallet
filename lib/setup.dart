@@ -102,6 +102,7 @@ import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'dart:convert';
 
 Future<void> setup() async {
@@ -402,6 +403,49 @@ Future<void> setup() async {
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
   ));
+
+  injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "addresses": args.addresses.map((address) {
+                    return {
+                      "address": address.address,
+                      "type": address.address.startsWith("bc") ||
+                              address.address.startsWith("tb")
+                          ? "p2wpkh"
+                          : "p2pkh",
+                    };
+                  }).toList(),
+                },
+                null,
+              );
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+               RPCGetAddressesSuccessCallback called with:
+                  tabId: ${args.tabId}
+                  requestId: ${args.requestId}
+                  addresses: ${args.addresses}
+          """));
+
+  injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {"id": args.requestId, "hex": args.signedPsbt},
+                null,
+              );
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+               RPCGetSignPsbtCallback called with:
+                  tabId: ${args.tabId}
+                  requestId: ${args.requestId}
+                  signedPsbt: ${args.signedPsbt}
+          """));
 }
 
 class CustomDioException extends DioException {
@@ -529,4 +573,3 @@ class SimpleLogInterceptor extends Interceptor {
     handler.next(err);
   }
 }
-

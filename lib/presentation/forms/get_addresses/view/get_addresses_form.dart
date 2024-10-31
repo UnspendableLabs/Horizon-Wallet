@@ -10,7 +10,7 @@ import 'package:horizon/domain/entities/address.dart';
 
 class GetAddressesForm extends StatelessWidget {
   final List<Account> accounts;
-  final void Function(List<Address> addresses) onSuccess;
+  final void Function(List<Address>) onSuccess;
 
   const GetAddressesForm({
     super.key,
