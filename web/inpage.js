@@ -24,7 +24,6 @@ const provider = {
     return new Promise((resolve, reject) => {
       function handleMessage(event) {
         const response = event.data;
-        console.log("we got a message back", response)
         if (response.id != id) return;
         window.removeEventListener("message", handleMessage);
         if ("error" in response) return reject(response);
