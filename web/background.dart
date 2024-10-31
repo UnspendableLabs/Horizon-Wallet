@@ -10,20 +10,13 @@ class ListenForPopupCloseArgs {
 
   /// TabID from requesting tab, to which request should be returned
   final int? tabId;
-
-  /// The response to send back when the popup is closed
   final dynamic response;
-
   ListenForPopupCloseArgs({this.id, this.tabId, required this.response});
 }
 
 void listenForPopupClose(ListenForPopupCloseArgs args) {
-  // Add a listener for when windows are removed (closed)
   chrome.windows.onRemoved.listen((int winId) {
-    // Check if the closed window ID matches the one we're interested in
     if (winId != args.id || args.tabId == null) return;
-
-    // Send the response message to the specified tab
     chrome.tabs.sendMessage(args.tabId!, args.response, null);
   });
 }
@@ -71,22 +64,36 @@ String? getOriginFromPort(Port port) {
   return port.sender?.origin ?? port.sender?.url;
 }
 
-Future<Window?> rpcGetAddresses(String requestId, Port port) {
+Future<void> rpcGetAddresses(String requestId, Port port) async {
   String? origin = getOriginFromPort(port);
   int? tabId = getTabIdFromPort(port);
 
-  return popup(
+  Window? window = await popup(
       PopupOptions(url: "/index.html#?action=getAddresses,$tabId,$requestId"));
+
+  listenForPopupClose(ListenForPopupCloseArgs(
+      id: window?.id,
+      tabId: tabId,
+      response: {
+        "id": requestId,
+        "errror": "User rejected `getAddresses` request"
+      }));
 }
 
-Future<Window?> rpcSignPsbt(String requestId, Port port, String psbt) {
+Future<void> rpcSignPsbt(String requestId, Port port, String psbt) async {
   String? origin = getOriginFromPort(port);
   int? tabId = getTabIdFromPort(port);
 
-  String url = "/index.html#?action=signPsbt,$tabId,$requestId,$psbt";
-
-  return popup(PopupOptions(
+  Window? window = await popup(PopupOptions(
       url: "/index.html#?action=signPsbt,$tabId,$requestId,$psbt"));
+
+  listenForPopupClose(ListenForPopupCloseArgs(
+      id: window?.id,
+      tabId: tabId,
+      response: {
+        "id": requestId,
+        "errror": "User rejected `signPsbt` request"
+      }));
 }
 
 Future<void> rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
