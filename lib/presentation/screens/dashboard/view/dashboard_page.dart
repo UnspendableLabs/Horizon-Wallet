@@ -60,6 +60,9 @@ import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 
+import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
+import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
+
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -105,66 +108,47 @@ class SignPsbtModal extends StatelessWidget {
   }
 }
 
-class AccountSelectModal extends StatefulWidget {
+class GetAddressesModal extends StatelessWidget {
   final int tabId;
   final String requestId;
+  final List<Account> accounts;
+  final AddressRepository addressRepository;
 
-  const AccountSelectModal(
-      {super.key, required this.tabId, required this.requestId});
-
-  @override
-  AccountSelectModalState createState() => AccountSelectModalState();
-}
-
-class AccountSelectModalState extends State<AccountSelectModal> {
-  TextEditingController accountController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  const GetAddressesModal({
+    super.key,
+    required this.tabId,
+    required this.requestId,
+    required this.accounts,
+    required this.addressRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-
-    return shell.state.maybeWhen(
-        orElse: () => const SizedBox.shrink(),
-        success: (shell) {
-          return Column(
-            children: [
-              HorizonUI.HorizonDropdownMenu<String>(
-                  label: "Appprove get-addresses request",
-                  selectedValue: shell.currentAccountUuid,
-                  controller: accountController,
-                  onChanged: (value) => print(value),
-                  items:
-                      shell.accounts.map<DropdownMenuItem<String>>((account) {
-                    return HorizonUI.buildDropdownMenuItem(
-                        account.uuid, account.name);
-                  }).toList()),
-              HorizonUI.HorizonDialogSubmitButton(onPressed: () {
-                final addresses = shell.addresses
-                    .where((address) =>
-                        address.accountUuid == shell.currentAccountUuid)
-                    .toList();
-
-                chrome.tabs.sendMessage(
-                    widget.tabId,
-                    {
-                      "id": widget.requestId,
-                      "addresses": addresses.map((address) {
-                        return {
-                          "address": address.address,
-                          "type": "p2wpkh",
-                        };
-                      })
-                    },
-                    null);
-              })
-            ],
+    return BlocProvider(
+      create: (_) => GetAddressesBloc(
+          accounts: accounts, addressRepository: addressRepository),
+      child: GetAddressesForm(
+        accounts: accounts,
+        onSuccess: (addresses) {
+          chrome.tabs.sendMessage(
+            tabId,
+            {
+              "id": requestId,
+              "addresses": addresses.map((address) {
+                return {
+                  "address": address.address,
+                  "type": address.address.startsWith("bc") ||
+                          address.address.startsWith("tb")
+                      ? "p2wpkh"
+                      : "p2pkh",
+                };
+              }).toList(),
+            },
+            null,
           );
-        });
+        },
+      ),
+    );
   }
 }
 
@@ -1368,7 +1352,18 @@ class DashboardPageState extends State<DashboardPage> {
         context: context,
         body: HorizonUI.HorizonDialog(
           title: "Get Addresses",
-          body: AccountSelectModal(tabId: tabId, requestId: requestId),
+          body: Builder(builder: (context) {
+            final shell = context.watch<ShellStateCubit>();
+            return shell.state.maybeWhen(
+                orElse: () => const SizedBox.shrink(),
+                success: (state) {
+                  return GetAddressesModal(
+                      tabId: tabId,
+                      requestId: requestId,
+                      accounts: state.accounts,
+                      addressRepository: GetIt.I<AddressRepository>());
+                });
+          }),
           includeBackButton: false,
           includeCloseButton: true,
         ));

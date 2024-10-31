@@ -7,13 +7,9 @@ import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
-<<<<<<< HEAD
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/runtime.dart';
 import 'package:chrome_extension/tabs.dart';
-=======
->>>>>>> fa7140d (cleanup)
-
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
