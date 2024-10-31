@@ -25,17 +25,6 @@ extension type TxOutput._(JSObject _) implements JSObject {
 }
 
 extension type Transaction._(JSObject _) implements JSObject {
-  external static JSNumber DEFAULT_SEQUENCE;
-  external static JSNumber SIGHASH_DEFAULT;
-  external static JSNumber SIGHASH_ALL;
-  external static JSNumber SIGHASH_NONE;
-  external static JSNumber SIGHASH_SINGLE;
-  external static JSNumber SIGHASH_ANYONECANPAY;
-  external static JSNumber SIGHASH_OUTPUT_MASK;
-  external static JSNumber SIGHASH_INPUT_MASK;
-  external static JSNumber ADVANCED_TRANSACTION_MARKER;
-  external static JSNumber ADVANCED_TRANSACTION_FLAG;
-
   external static Transaction fromHex(String hex);
 
   external JSArray<TxInput> ins;
