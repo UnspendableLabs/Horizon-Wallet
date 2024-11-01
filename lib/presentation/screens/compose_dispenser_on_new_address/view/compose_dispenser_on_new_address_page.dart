@@ -1,6 +1,12 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
@@ -30,7 +36,13 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ComposeDispenserOnNewAddressBloc(),
+      create: (context) => ComposeDispenserOnNewAddressBloc(
+        accountRepository: GetIt.I.get<AccountRepository>(),
+        addressRepository: GetIt.I.get<AddressRepository>(),
+        walletRepository: GetIt.I.get<WalletRepository>(),
+        encryptionService: GetIt.I.get<EncryptionService>(),
+        addressService: GetIt.I.get<AddressService>(),
+      ),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
         asset: asset,
@@ -199,6 +211,7 @@ class _ComposeDispenserOnNewAddressPageState
                           context
                               .read<ComposeDispenserOnNewAddressBloc>()
                               .add(ComposeTransactions(
+                                password: passwordController.text,
                                 originalAddress: widget.originalAddress,
                                 divisible: widget.divisible,
                                 asset: widget.asset,

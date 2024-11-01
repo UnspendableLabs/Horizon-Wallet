@@ -8,13 +8,8 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -47,11 +42,6 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDispenserBloc(
-          accountRepository: GetIt.I.get<AccountRepository>(),
-          addressRepository: GetIt.I.get<AddressRepository>(),
-          walletRepository: GetIt.I.get<WalletRepository>(),
-          encryptionService: GetIt.I.get<EncryptionService>(),
-          addressService: GetIt.I.get<AddressService>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           signAndBroadcastTransactionUseCase:

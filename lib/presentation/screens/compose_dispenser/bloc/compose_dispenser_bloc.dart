@@ -1,11 +1,6 @@
 import 'package:horizon/domain/entities/compose_dispenser.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -43,11 +38,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   final Logger logger = Logger();
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
-  final WalletRepository walletRepository;
-  final AccountRepository accountRepository;
-  final AddressRepository addressRepository;
-  final EncryptionService encryptionService;
-  final AddressService addressService;
 
   final FetchDispenserFormDataUseCase fetchDispenserFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
@@ -55,17 +45,12 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
 
   ComposeDispenserBloc({
-    required this.accountRepository,
-    required this.addressRepository,
-    required this.walletRepository,
     required this.fetchDispenserFormDataUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.analyticsService,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
-    required this.encryptionService,
-    required this.addressService,
   }) : super(ComposeDispenserState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),

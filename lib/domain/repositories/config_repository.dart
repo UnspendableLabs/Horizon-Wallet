@@ -5,6 +5,9 @@ abstract class Config {
   String get counterpartyApiBase;
   String get counterpartyApiUsername;
   String get counterpartyApiPassword;
+  String get counterpartyApiBaseV1;
+  String get counterpartyV1Username;
+  String get counterpartyV1Password;
   String get esploraBase;
   // String get blockCypherBase;
   String get horizonExplorerBase;

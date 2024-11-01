@@ -3,6 +3,7 @@ abstract class ComposeDispenserOnNewAddressEvent {}
 class CollectPassword extends ComposeDispenserOnNewAddressEvent {}
 
 class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
+  final String password;
   final String originalAddress;
   final bool divisible;
   final String asset;
@@ -12,6 +13,7 @@ class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
   final int status;
 
   ComposeTransactions({
+    required this.password,
     required this.originalAddress,
     required this.divisible,
     required this.asset,

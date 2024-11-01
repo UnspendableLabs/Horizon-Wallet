@@ -27,6 +27,24 @@ class ConfigImpl implements Config {
       };
 
   @override
+  String get counterpartyApiBaseV1 {
+    const envValue = String.fromEnvironment('HORIZON_COUNTERPARTY_API_BASE_V1');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiBaseV1;
+  }
+
+  String get _defaultCounterpartyApiBaseV1 => switch (network) {
+        Network.mainnet => 'https://api.unspendablelabs.com:4000/v1',
+        Network.testnet => 'https://api.counterparty.io:14000/v1',
+        Network.regtest => 'http://localhost:24000/v1'
+      };
+
+  @override
+  String get counterpartyV1Username => 'rpc';
+
+  @override
+  String get counterpartyV1Password => 'rpc';
+
+  @override
   String get counterpartyApiUsername {
     const envValue =
         String.fromEnvironment('HORIZON_COUNTERPARTY_API_USERNAME');
