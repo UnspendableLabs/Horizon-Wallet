@@ -82,7 +82,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     on<ChangeGiveQuantity>(_onChangeGiveQuantity);
     on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
     on<ChooseWorkFlow>(_onChooseWorkFlow);
-    on<ConfirmTransactionOnNewAddress>(_onConfirmTransactionOnNewAddress);
+    // on<ConfirmTransactionOnNewAddress>(_onConfirmTransactionOnNewAddress);
     // on<CollectPassword>(_onCollectPassword);
     // on<ConfirmCreateNewAddressFlow>(_onConfirmCreateNewAddressFlow);
     // on<CancelCreateNewAddressFlow>(_onCancelCreateNewAddressFlow);
@@ -116,12 +116,12 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     }
   }
 
-  _onConfirmTransactionOnNewAddress(
-      ConfirmTransactionOnNewAddress event, emit) {
-    emit(state.copyWith(
-      dispensersState: const DispenserState.successCreateNewAddressFlow(),
-    ));
-  }
+  // _onConfirmTransactionOnNewAddress(
+  //     ConfirmTransactionOnNewAddress event, emit) {
+  //   emit(state.copyWith(
+  //     dispensersState: const DispenserState.successCreateNewAddressFlow(),
+  //   ));
+  // }
 
   // _onCollectPassword(CollectPassword event, emit) async {
   //   emit(state.copyWith(

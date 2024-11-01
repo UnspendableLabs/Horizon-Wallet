@@ -24,6 +24,7 @@ import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_disp
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/view/compose_dispenser_on_new_address_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
@@ -117,25 +118,49 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ComposeBasePage<ComposeDispenserBloc, ComposeDispenserState>(
-      hideInitialFee: hideInitialFee,
-      dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-      onFeeChange: (fee) =>
-          context.read<ComposeDispenserBloc>().add(ChangeFeeOption(value: fee)),
-      buildInitialFormFields: (state, loading, formKey) =>
-          _buildInitialFormFields(state, loading, formKey),
-      onInitialCancel: () => _handleInitialCancel(),
-      onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-      buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-          _buildConfirmationDetails(composeTransaction),
-      onConfirmationBack: () => _onConfirmationBack(),
-      onConfirmationContinue: (composeTransaction, fee, formKey) {
-        _onConfirmationContinue(composeTransaction, fee, formKey);
+    return BlocListener<ComposeDispenserBloc, ComposeDispenserState>(
+      listener: (context, state) {
+        state.dispensersState.maybeWhen(
+          successCreateNewAddressFlow: () {
+            // Close current dialog
+            Navigator.of(context).pop();
+
+            // Show new dialog
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: HorizonUI.HorizonDialog(
+                title: 'Create Dispenser on New Address',
+                body: ComposeDispenserOnNewAddressPageWrapper(
+                  currentAddress: widget.address,
+                  dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+                ),
+              ),
+            );
+          },
+          orElse: () {},
+        );
       },
-      onFinalizeSubmit: (password, formKey) {
-        _onFinalizeSubmit(password, formKey);
-      },
-      onFinalizeCancel: () => _onFinalizeCancel(),
+      child: ComposeBasePage<ComposeDispenserBloc, ComposeDispenserState>(
+        hideInitialFee: hideInitialFee,
+        dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+        onFeeChange: (fee) => context
+            .read<ComposeDispenserBloc>()
+            .add(ChangeFeeOption(value: fee)),
+        buildInitialFormFields: (state, loading, formKey) =>
+            _buildInitialFormFields(state, loading, formKey),
+        onInitialCancel: () => _handleInitialCancel(),
+        onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
+        buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+            _buildConfirmationDetails(composeTransaction),
+        onConfirmationBack: () => _onConfirmationBack(),
+        onConfirmationContinue: (composeTransaction, fee, formKey) {
+          _onConfirmationContinue(composeTransaction, fee, formKey);
+        },
+        onFinalizeSubmit: (password, formKey) {
+          _onFinalizeSubmit(password, formKey);
+        },
+        onFinalizeCancel: () => _onFinalizeCancel(),
+      ),
     );
   }
 
