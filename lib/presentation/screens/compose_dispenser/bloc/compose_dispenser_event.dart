@@ -24,6 +24,11 @@ class ChooseWorkFlow extends ComposeDispenserEvent {
   ChooseWorkFlow({required this.isCreateNewAddress});
 }
 
+class CollectPassword extends ComposeDispenserEvent {
+  final String password;
+  CollectPassword({required this.password});
+}
+
 class ConfirmCreateNewAddressFlow extends ComposeDispenserEvent {}
 
 class CancelCreateNewAddressFlow extends ComposeDispenserEvent {}

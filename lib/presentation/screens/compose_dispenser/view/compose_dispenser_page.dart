@@ -8,8 +8,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
@@ -41,6 +46,11 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDispenserBloc(
+          accountRepository: GetIt.I.get<AccountRepository>(),
+          addressRepository: GetIt.I.get<AddressRepository>(),
+          walletRepository: GetIt.I.get<WalletRepository>(),
+          encryptionService: GetIt.I.get<EncryptionService>(),
+          addressService: GetIt.I.get<AddressService>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           signAndBroadcastTransactionUseCase:
@@ -81,6 +91,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   TextEditingController mainchainrateController = TextEditingController();
   TextEditingController openAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
   String? asset;
   Balance? balance_;
@@ -91,6 +102,16 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   void initState() {
     super.initState();
     openAddressController.text = widget.address;
+  }
+
+  @override
+  void dispose() {
+    passwordController.dispose();
+    giveQuantityController.dispose();
+    escrowQuantityController.dispose();
+    mainchainrateController.dispose();
+    assetController.dispose();
+    super.dispose();
   }
 
   @override
@@ -428,12 +449,27 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                   children: [
                     _buildWarningButton(
                       'Create Dispenser on a new address',
-                      true,
+                      () {
+                        context.read<ComposeDispenserBloc>().add(
+                              ChooseWorkFlow(
+                                isCreateNewAddress: true,
+                              ),
+                            );
+                      },
                     ),
                     const SizedBox(height: 8.0),
                     _buildWarningButton(
                       'Continue with existing address',
-                      false,
+                      () {
+                        setState(() {
+                          hideInitialFee = false;
+                        });
+                        context.read<ComposeDispenserBloc>().add(
+                              ChooseWorkFlow(
+                                isCreateNewAddress: false,
+                              ),
+                            );
+                      },
                     ),
                   ],
                 );
@@ -444,14 +480,29 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                   Expanded(
                     child: _buildWarningButton(
                       'Create Dispenser on a new address',
-                      true,
+                      () {
+                        context.read<ComposeDispenserBloc>().add(
+                              ChooseWorkFlow(
+                                isCreateNewAddress: true,
+                              ),
+                            );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8.0),
                   Expanded(
                     child: _buildWarningButton(
                       'Continue with existing address',
-                      false,
+                      () {
+                        setState(() {
+                          hideInitialFee = false;
+                        });
+                        context.read<ComposeDispenserBloc>().add(
+                              ChooseWorkFlow(
+                                isCreateNewAddress: false,
+                              ),
+                            );
+                      },
                     ),
                   ),
                 ],
@@ -463,20 +514,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
-  Widget _buildWarningButton(String label, bool isCreateNewAddress) {
+  Widget _buildWarningButton(String label, VoidCallback onPressed) {
     return ElevatedButton(
-      onPressed: () {
-        if (!isCreateNewAddress) {
-          setState(() {
-            hideInitialFee = false;
-          });
-        }
-        context.read<ComposeDispenserBloc>().add(
-              ChooseWorkFlow(
-                isCreateNewAddress: isCreateNewAddress,
-              ),
-            );
-      },
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(
           horizontal: 16.0,
@@ -490,16 +530,16 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return [
-      HorizonUI.HorizonTextFormField(
-        enabled: false,
-        controller: openAddressController,
-        label: "Open Address",
-      ),
       state.dispensersState.maybeWhen(orElse: () {
         return const SizedBox.shrink();
       }, successNormalFlow: () {
         return Column(
           children: [
+                  HorizonUI.HorizonTextFormField(
+              enabled: false,
+              controller: openAddressController,
+              label: "Open Address",
+            ),
             const SizedBox(height: 16.0),
             _buildAssetInput(state, loading),
             const SizedBox(height: 16.0),
@@ -512,12 +552,111 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             _buildPricePerUnitInput(loading, formKey),
           ],
         );
-      }, createNewAddressFlowConfirmation: () {
-        return const SizedBox.shrink();
+      },
+      createNewAddressFlowCollectPassword: (error) {
+        return Column(
+          children: [
+            HorizonUI.HorizonTextFormField(
+              controller: passwordController,
+              obscureText: true,
+              label: "Password to create new account and address for dispenser",
+            ),
+            const SizedBox(height: 16.0),
+            if (error != null)
+              SelectableText(
+                error,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              ),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                _buildWarningButton(
+                  'Continue',
+              () {
+                context.read<ComposeDispenserBloc>().add(
+                      CollectPassword(password: passwordController.text),
+                    );
+              },
+
+            ),
+          const SizedBox(width: 16.0),
+            _buildWarningButton(
+              'Cancel',
+              () {
+                  context.read<ComposeDispenserBloc>().add(CancelCreateNewAddressFlow());
+                },
+              ),
+            ],
+          ),
+        ],
+      );
+      },
+      createNewAddressFlowLoading: () {
+        return Column(
+          children: [
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              controller: passwordController,
+              label: "Password to create new account and address for dispenser",
+              obscureText: true,
+              suffix: const CircularProgressIndicator(),
+            ),
+          ],
+        );
+      },
+      createNewAddressFlowConfirmation: (account, address) {
+        return Column(
+          children: [
+            const SizedBox(height: 16.0),
+            SelectableText(
+              'Creating a new account "${account.name}" with address "${address.address}" for opening a dispenser. Proceed?',
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildWarningButton(
+                    'Yes',
+                    () {
+                      setState(() {
+                        hideInitialFee = false;
+                      });
+                      context.read<ComposeDispenserBloc>().add(
+                            ConfirmCreateNewAddressFlow(),
+                          );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: _buildWarningButton(
+                    'No',
+                    () {
+                      context.read<ComposeDispenserBloc>().add(
+                            CancelCreateNewAddressFlow(),
+                          );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
       }, successCreateNewAddressFlow: () {
-        return const SizedBox.shrink();
+        return const SelectableText(
+          'Dispenser created successfully',
+        );
       }, warning: () {
-        return _displayDispensersWarning(state, loading);
+        return Column(
+          children: [
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              controller: openAddressController,
+              label: "Open Address",
+            ),
+            _displayDispensersWarning(state, loading),
+          ],
+        );
       }),
     ];
   }
