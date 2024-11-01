@@ -31,7 +31,7 @@ extension V1ApiX on V1Api {
     return createSend(
       request: JsonRpcRequest(
         method: 'create_send',
-        params: SendAssetParams(
+        params: CreateSendParams(
           source: source,
           destination: destination,
           asset: asset,

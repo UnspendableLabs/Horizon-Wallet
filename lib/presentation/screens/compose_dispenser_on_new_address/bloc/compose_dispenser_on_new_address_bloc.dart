@@ -3,8 +3,10 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/create_send_params.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/create_send_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -18,12 +20,15 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final AddressRepository addressRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
+  final CreateSendRepository createSendRepository;
+
   ComposeDispenserOnNewAddressBloc({
     required this.accountRepository,
     required this.addressRepository,
     required this.walletRepository,
     required this.encryptionService,
     required this.addressService,
+    required this.createSendRepository,
   }) : super(const ComposeDispenserOnNewAddressState.initial()) {
     on<CollectPassword>((event, emit) {
       emit(const ComposeDispenserOnNewAddressState.collectPassword());
@@ -73,6 +78,13 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
 
       await accountRepository.insert(newAccount);
       await addressRepository.insert(newAddress);
+
+      await createSendRepository.createSend(CreateSendParams(
+        source: event.originalAddress,
+        destination: newAddress.address,
+        asset: 'HZN',
+        quantity: 10,
+      ));
       emit(const ComposeDispenserOnNewAddressState.success());
     });
   }

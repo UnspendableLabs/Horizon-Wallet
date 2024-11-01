@@ -22,6 +22,7 @@ import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dar
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/create_send_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
@@ -33,6 +34,7 @@ import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/create_send_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -248,6 +250,9 @@ Future<void> setup() async {
   ]);
 
   injector.registerLazySingleton<V1Api>(() => V1Api(v1Dio));
+  injector.registerLazySingleton<CreateSendRepository>(
+      () => CreateSendRepositoryImpl(v1Api: GetIt.I.get<V1Api>()));
+
   injector.registerSingleton<AnalyticsService>(PostHogWebAnalyticsService(
     config,
     const String.fromEnvironment('HORIZON_POSTHOG_API_KEY').isNotEmpty
