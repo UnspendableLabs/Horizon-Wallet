@@ -1,6 +1,5 @@
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 
 abstract class ComposeDispenserEvent extends ComposeBaseEvent {}
 
@@ -26,18 +25,19 @@ class ChooseWorkFlow extends ComposeDispenserEvent {
 }
 
 class ConfirmTransactionOnNewAddress extends ComposeDispenserEvent {
-  final ComposeDispenserEventParams params;
+  final String originalAddress;
+  final bool divisible;
+  final String asset;
+  final String giveQuantity;
+  final String escrowQuantity;
+  final String mainchainrate;
 
   ConfirmTransactionOnNewAddress({
-    required this.params,
+    required this.originalAddress,
+    required this.divisible,
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
   });
 }
-
-// class CollectPassword extends ComposeDispenserEvent {
-//   final String password;
-//   CollectPassword({required this.password});
-// }
-
-// class ConfirmCreateNewAddressFlow extends ComposeDispenserEvent {}
-
-// class CancelCreateNewAddressFlow extends ComposeDispenserEvent {}

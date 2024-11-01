@@ -82,7 +82,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     on<ChangeGiveQuantity>(_onChangeGiveQuantity);
     on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
     on<ChooseWorkFlow>(_onChooseWorkFlow);
-    // on<ConfirmTransactionOnNewAddress>(_onConfirmTransactionOnNewAddress);
+    on<ConfirmTransactionOnNewAddress>(_onConfirmTransactionOnNewAddress);
     // on<CollectPassword>(_onCollectPassword);
     // on<ConfirmCreateNewAddressFlow>(_onConfirmCreateNewAddressFlow);
     // on<CancelCreateNewAddressFlow>(_onCancelCreateNewAddressFlow);
@@ -116,72 +116,19 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     }
   }
 
-  // _onConfirmTransactionOnNewAddress(
-  //     ConfirmTransactionOnNewAddress event, emit) {
-  //   emit(state.copyWith(
-  //     dispensersState: const DispenserState.successCreateNewAddressFlow(),
-  //   ));
-  // }
-
-  // _onCollectPassword(CollectPassword event, emit) async {
-  //   emit(state.copyWith(
-  //     dispensersState: const DispenserState.createNewAddressFlowLoading(),
-  //   ));
-
-  //   final Wallet? wallet = await walletRepository.getCurrentWallet();
-  //   if (wallet == null) {
-  //     throw Exception("invariant: wallet is null");
-  //   }
-
-  //   String? decryptedPrivKey;
-  //   try {
-  //     decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, event.password);
-  //   } catch (e) {
-  //     emit(state.copyWith(
-  //       dispensersState: const DispenserState.createNewAddressFlowCollectPassword(error: 'Incorrect password'),
-  //     ));
-  //     return;
-  //   }
-  //   final List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid);
-  //   final Account highestIndexAccount = getHighestIndexAccount(accounts);
-
-  //   final int newAccountIndex = int.parse(highestIndexAccount.accountIndex.replaceAll("'", "")) + 1;
-
-  //   final account = Account(
-  //     name: 'Dispenser Account',
-  //     uuid: uuid.v4(),
-  //     walletUuid: wallet.uuid,
-  //     purpose: highestIndexAccount.purpose,
-  //     coinType: highestIndexAccount.coinType,
-  //     accountIndex: newAccountIndex.toString(),
-  //     importFormat: highestIndexAccount.importFormat,
-  //   );
-  //   final address = await addressService.deriveAddressSegwit(
-  //       privKey: decryptedPrivKey,
-  //       chainCodeHex: wallet.chainCodeHex,
-  //       accountUuid: account.uuid,
-  //       purpose: account.purpose,
-  //       coin: account.coinType,
-  //       account: account.accountIndex,
-  //       change: '0',
-  //       index: 0);
-
-  //   emit(state.copyWith(
-  //     dispensersState: DispenserState.createNewAddressFlowConfirmation(account: account, address: address),
-  //   ));
-  // }
-
-  // _onConfirmCreateNewAddressFlow(ConfirmCreateNewAddressFlow event, emit) {
-  //   emit(state.copyWith(
-  //     dispensersState: const DispenserState.successCreateNewAddressFlow(),
-  //   ));
-  // }
-
-  // _onCancelCreateNewAddressFlow(CancelCreateNewAddressFlow event, emit) {
-  //   emit(state.copyWith(
-  //     dispensersState: const DispenserState.warning(),
-  //   ));
-  // }
+  _onConfirmTransactionOnNewAddress(
+      ConfirmTransactionOnNewAddress event, emit) {
+    emit(state.copyWith(
+      dispensersState: DispenserState.closeDialogAndOpenNewAddress(
+        originalAddress: event.originalAddress,
+        divisible: event.divisible,
+        asset: event.asset,
+        giveQuantity: event.giveQuantity,
+        escrowQuantity: event.escrowQuantity,
+        mainchainrate: event.mainchainrate,
+      ),
+    ));
+  }
 
   @override
   void onChangeFeeOption(ChangeFeeOption event, emit) async {

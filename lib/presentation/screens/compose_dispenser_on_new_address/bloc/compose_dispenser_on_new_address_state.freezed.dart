@@ -22,6 +22,7 @@ mixin _$ComposeDispenserOnNewAddressState {
     required TResult Function() loading,
     required TResult Function() success,
     required TResult Function(String error) error,
+    required TResult Function(String? error) collectPassword,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -30,6 +31,7 @@ mixin _$ComposeDispenserOnNewAddressState {
     TResult? Function()? loading,
     TResult? Function()? success,
     TResult? Function(String error)? error,
+    TResult? Function(String? error)? collectPassword,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -38,6 +40,7 @@ mixin _$ComposeDispenserOnNewAddressState {
     TResult Function()? loading,
     TResult Function()? success,
     TResult Function(String error)? error,
+    TResult Function(String? error)? collectPassword,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -51,6 +54,9 @@ mixin _$ComposeDispenserOnNewAddressState {
         success,
     required TResult Function(_ComposeDispenserOnNewAddressStateError value)
         error,
+    required TResult Function(
+            _ComposeDispenserOnNewAddressStateCollectPassword value)
+        collectPassword,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -59,6 +65,8 @@ mixin _$ComposeDispenserOnNewAddressState {
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult? Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult? Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult? Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -67,6 +75,8 @@ mixin _$ComposeDispenserOnNewAddressState {
     TResult Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -140,6 +150,7 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl
     required TResult Function() loading,
     required TResult Function() success,
     required TResult Function(String error) error,
+    required TResult Function(String? error) collectPassword,
   }) {
     return initial();
   }
@@ -151,6 +162,7 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl
     TResult? Function()? loading,
     TResult? Function()? success,
     TResult? Function(String error)? error,
+    TResult? Function(String? error)? collectPassword,
   }) {
     return initial?.call();
   }
@@ -162,6 +174,7 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl
     TResult Function()? loading,
     TResult Function()? success,
     TResult Function(String error)? error,
+    TResult Function(String? error)? collectPassword,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -181,6 +194,9 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl
         success,
     required TResult Function(_ComposeDispenserOnNewAddressStateError value)
         error,
+    required TResult Function(
+            _ComposeDispenserOnNewAddressStateCollectPassword value)
+        collectPassword,
   }) {
     return initial(this);
   }
@@ -192,6 +208,8 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult? Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult? Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult? Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
   }) {
     return initial?.call(this);
   }
@@ -203,6 +221,8 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl
     TResult Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -265,6 +285,7 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl
     required TResult Function() loading,
     required TResult Function() success,
     required TResult Function(String error) error,
+    required TResult Function(String? error) collectPassword,
   }) {
     return loading();
   }
@@ -276,6 +297,7 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl
     TResult? Function()? loading,
     TResult? Function()? success,
     TResult? Function(String error)? error,
+    TResult? Function(String? error)? collectPassword,
   }) {
     return loading?.call();
   }
@@ -287,6 +309,7 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl
     TResult Function()? loading,
     TResult Function()? success,
     TResult Function(String error)? error,
+    TResult Function(String? error)? collectPassword,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -306,6 +329,9 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl
         success,
     required TResult Function(_ComposeDispenserOnNewAddressStateError value)
         error,
+    required TResult Function(
+            _ComposeDispenserOnNewAddressStateCollectPassword value)
+        collectPassword,
   }) {
     return loading(this);
   }
@@ -317,6 +343,8 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult? Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult? Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult? Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
   }) {
     return loading?.call(this);
   }
@@ -328,6 +356,8 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl
     TResult Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -390,6 +420,7 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl
     required TResult Function() loading,
     required TResult Function() success,
     required TResult Function(String error) error,
+    required TResult Function(String? error) collectPassword,
   }) {
     return success();
   }
@@ -401,6 +432,7 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl
     TResult? Function()? loading,
     TResult? Function()? success,
     TResult? Function(String error)? error,
+    TResult? Function(String? error)? collectPassword,
   }) {
     return success?.call();
   }
@@ -412,6 +444,7 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl
     TResult Function()? loading,
     TResult Function()? success,
     TResult Function(String error)? error,
+    TResult Function(String? error)? collectPassword,
     required TResult orElse(),
   }) {
     if (success != null) {
@@ -431,6 +464,9 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl
         success,
     required TResult Function(_ComposeDispenserOnNewAddressStateError value)
         error,
+    required TResult Function(
+            _ComposeDispenserOnNewAddressStateCollectPassword value)
+        collectPassword,
   }) {
     return success(this);
   }
@@ -442,6 +478,8 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult? Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult? Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult? Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
   }) {
     return success?.call(this);
   }
@@ -453,6 +491,8 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl
     TResult Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
     required TResult orElse(),
   }) {
     if (success != null) {
@@ -543,6 +583,7 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl
     required TResult Function() loading,
     required TResult Function() success,
     required TResult Function(String error) error,
+    required TResult Function(String? error) collectPassword,
   }) {
     return error(this.error);
   }
@@ -554,6 +595,7 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl
     TResult? Function()? loading,
     TResult? Function()? success,
     TResult? Function(String error)? error,
+    TResult? Function(String? error)? collectPassword,
   }) {
     return error?.call(this.error);
   }
@@ -565,6 +607,7 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl
     TResult Function()? loading,
     TResult Function()? success,
     TResult Function(String error)? error,
+    TResult Function(String? error)? collectPassword,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -584,6 +627,9 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl
         success,
     required TResult Function(_ComposeDispenserOnNewAddressStateError value)
         error,
+    required TResult Function(
+            _ComposeDispenserOnNewAddressStateCollectPassword value)
+        collectPassword,
   }) {
     return error(this);
   }
@@ -595,6 +641,8 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult? Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult? Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult? Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
   }) {
     return error?.call(this);
   }
@@ -606,6 +654,8 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl
     TResult Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
     TResult Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
     TResult Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -624,5 +674,181 @@ abstract class _ComposeDispenserOnNewAddressStateError
   @JsonKey(ignore: true)
   _$$ComposeDispenserOnNewAddressStateErrorImplCopyWith<
           _$ComposeDispenserOnNewAddressStateErrorImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<
+    $Res> {
+  factory _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith(
+          _$ComposeDispenserOnNewAddressStateCollectPasswordImpl value,
+          $Res Function(_$ComposeDispenserOnNewAddressStateCollectPasswordImpl)
+              then) =
+      __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl<
+          $Res>;
+  @useResult
+  $Res call({String? error});
+}
+
+/// @nodoc
+class __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl<$Res>
+    extends _$ComposeDispenserOnNewAddressStateCopyWithImpl<$Res,
+        _$ComposeDispenserOnNewAddressStateCollectPasswordImpl>
+    implements
+        _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<$Res> {
+  __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl(
+      _$ComposeDispenserOnNewAddressStateCollectPasswordImpl _value,
+      $Res Function(_$ComposeDispenserOnNewAddressStateCollectPasswordImpl)
+          _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = freezed,
+  }) {
+    return _then(_$ComposeDispenserOnNewAddressStateCollectPasswordImpl(
+      error: freezed == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl
+    implements _ComposeDispenserOnNewAddressStateCollectPassword {
+  const _$ComposeDispenserOnNewAddressStateCollectPasswordImpl({this.error});
+
+  @override
+  final String? error;
+
+  @override
+  String toString() {
+    return 'ComposeDispenserOnNewAddressState.collectPassword(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ComposeDispenserOnNewAddressStateCollectPasswordImpl &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<
+          _$ComposeDispenserOnNewAddressStateCollectPasswordImpl>
+      get copyWith =>
+          __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl<
+                  _$ComposeDispenserOnNewAddressStateCollectPasswordImpl>(
+              this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() success,
+    required TResult Function(String error) error,
+    required TResult Function(String? error) collectPassword,
+  }) {
+    return collectPassword(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? success,
+    TResult? Function(String error)? error,
+    TResult? Function(String? error)? collectPassword,
+  }) {
+    return collectPassword?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? success,
+    TResult Function(String error)? error,
+    TResult Function(String? error)? collectPassword,
+    required TResult orElse(),
+  }) {
+    if (collectPassword != null) {
+      return collectPassword(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_ComposeDispenserOnNewAddressStateInitial value)
+        initial,
+    required TResult Function(_ComposeDispenserOnNewAddressStateLoading value)
+        loading,
+    required TResult Function(_ComposeDispenserOnNewAddressStateSuccess value)
+        success,
+    required TResult Function(_ComposeDispenserOnNewAddressStateError value)
+        error,
+    required TResult Function(
+            _ComposeDispenserOnNewAddressStateCollectPassword value)
+        collectPassword,
+  }) {
+    return collectPassword(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_ComposeDispenserOnNewAddressStateInitial value)? initial,
+    TResult? Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
+    TResult? Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
+    TResult? Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult? Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
+  }) {
+    return collectPassword?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_ComposeDispenserOnNewAddressStateInitial value)? initial,
+    TResult Function(_ComposeDispenserOnNewAddressStateLoading value)? loading,
+    TResult Function(_ComposeDispenserOnNewAddressStateSuccess value)? success,
+    TResult Function(_ComposeDispenserOnNewAddressStateError value)? error,
+    TResult Function(_ComposeDispenserOnNewAddressStateCollectPassword value)?
+        collectPassword,
+    required TResult orElse(),
+  }) {
+    if (collectPassword != null) {
+      return collectPassword(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ComposeDispenserOnNewAddressStateCollectPassword
+    implements ComposeDispenserOnNewAddressState {
+  const factory _ComposeDispenserOnNewAddressStateCollectPassword(
+          {final String? error}) =
+      _$ComposeDispenserOnNewAddressStateCollectPasswordImpl;
+
+  String? get error;
+  @JsonKey(ignore: true)
+  _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<
+          _$ComposeDispenserOnNewAddressStateCollectPasswordImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

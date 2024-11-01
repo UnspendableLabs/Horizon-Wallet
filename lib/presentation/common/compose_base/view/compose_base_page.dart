@@ -25,7 +25,8 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
       onConfirmationContinue;
   final void Function(String, GlobalKey<FormState>) onFinalizeSubmit;
   final void Function() onFinalizeCancel;
-  final bool hideInitialFee;
+  final bool? hideInitialFee;
+  final bool? hideSubmitButtons;
 
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
@@ -42,6 +43,7 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     required this.onFinalizeSubmit,
     required this.onFinalizeCancel,
     this.hideInitialFee = false,
+    this.hideSubmitButtons = false,
   });
 
   @override
@@ -84,7 +86,8 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               onFeeChange: widget.onFeeChange,
               onCancel: widget.onInitialCancel,
               onSubmit: (formKey) => widget.onInitialSubmit(formKey),
-              hideInitialFee: widget.hideInitialFee,
+              hideInitialFee: widget.hideInitialFee ?? false,
+              hideSubmitButtons: widget.hideSubmitButtons ?? false,
             ),
           SubmitError(error: var msg) => Padding(
               padding: const EdgeInsets.all(8.0),
@@ -147,7 +150,7 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
   final void Function() onCancel;
   final void Function(GlobalKey<FormState>) onSubmit;
   final bool hideInitialFee;
-
+  final bool hideSubmitButtons;
   const ComposeBaseInitialPage({
     super.key,
     required this.state,
@@ -158,6 +161,7 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
     required this.onCancel,
     required this.onSubmit,
     this.hideInitialFee = false,
+    this.hideSubmitButtons = false,
   });
 
   @override
@@ -196,7 +200,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
               }
               return formWidget;
             }),
-            const HorizonUI.HorizonDivider(),
+            if (!widget.hideInitialFee) const HorizonUI.HorizonDivider(),
             if (!widget.hideInitialFee)
               FeeSelectionV2(
                 value: widget.state.feeOption,
@@ -222,8 +226,8 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            if (!widget.hideInitialFee) const HorizonUI.HorizonDivider(),
-            if (!widget.hideInitialFee)
+            if (!widget.hideSubmitButtons) const HorizonUI.HorizonDivider(),
+            if (!widget.hideSubmitButtons)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
