@@ -1,8 +1,4 @@
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/common/uuid.dart';
-import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -86,9 +82,10 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     on<ChangeGiveQuantity>(_onChangeGiveQuantity);
     on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
     on<ChooseWorkFlow>(_onChooseWorkFlow);
-    on<CollectPassword>(_onCollectPassword);
-    on<ConfirmCreateNewAddressFlow>(_onConfirmCreateNewAddressFlow);
-    on<CancelCreateNewAddressFlow>(_onCancelCreateNewAddressFlow);
+    on<ConfirmTransactionOnNewAddress>(_onConfirmTransactionOnNewAddress);
+    // on<CollectPassword>(_onCollectPassword);
+    // on<ConfirmCreateNewAddressFlow>(_onConfirmCreateNewAddressFlow);
+    // on<CancelCreateNewAddressFlow>(_onCancelCreateNewAddressFlow);
   }
 
   _onChangeEscrowQuantity(ChangeEscrowQuantity event, emit) {
@@ -114,70 +111,77 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       ));
     } else {
       emit(state.copyWith(
-        dispensersState: const DispenserState.createNewAddressFlowCollectPassword(),
+        dispensersState: const DispenserState.successCreateNewAddressFlow(),
       ));
     }
   }
 
-  _onCollectPassword(CollectPassword event, emit) async {
-    emit(state.copyWith(
-      dispensersState: const DispenserState.createNewAddressFlowLoading(),
-    ));
-
-    final Wallet? wallet = await walletRepository.getCurrentWallet();
-    if (wallet == null) {
-      throw Exception("invariant: wallet is null");
-    }
-
-    String? decryptedPrivKey;
-    try {
-      decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, event.password);
-    } catch (e) {
-      emit(state.copyWith(
-        dispensersState: const DispenserState.createNewAddressFlowCollectPassword(error: 'Incorrect password'),
-      ));
-      return;
-    }
-    final List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid);
-    final Account highestIndexAccount = getHighestIndexAccount(accounts);
-
-    final int newAccountIndex = int.parse(highestIndexAccount.accountIndex.replaceAll("'", "")) + 1;
-
-    final account = Account(
-      name: 'Dispenser Account',
-      uuid: uuid.v4(),
-      walletUuid: wallet.uuid,
-      purpose: highestIndexAccount.purpose,
-      coinType: highestIndexAccount.coinType,
-      accountIndex: newAccountIndex.toString(),
-      importFormat: highestIndexAccount.importFormat,
-    );
-    final address = await addressService.deriveAddressSegwit(
-        privKey: decryptedPrivKey,
-        chainCodeHex: wallet.chainCodeHex,
-        accountUuid: account.uuid,
-        purpose: account.purpose,
-        coin: account.coinType,
-        account: account.accountIndex,
-        change: '0',
-        index: 0);
-
-    emit(state.copyWith(
-      dispensersState: DispenserState.createNewAddressFlowConfirmation(account: account, address: address),
-    ));
-  }
-
-  _onConfirmCreateNewAddressFlow(ConfirmCreateNewAddressFlow event, emit) {
+  _onConfirmTransactionOnNewAddress(
+      ConfirmTransactionOnNewAddress event, emit) {
     emit(state.copyWith(
       dispensersState: const DispenserState.successCreateNewAddressFlow(),
     ));
   }
 
-  _onCancelCreateNewAddressFlow(CancelCreateNewAddressFlow event, emit) {
-    emit(state.copyWith(
-      dispensersState: const DispenserState.warning(),
-    ));
-  }
+  // _onCollectPassword(CollectPassword event, emit) async {
+  //   emit(state.copyWith(
+  //     dispensersState: const DispenserState.createNewAddressFlowLoading(),
+  //   ));
+
+  //   final Wallet? wallet = await walletRepository.getCurrentWallet();
+  //   if (wallet == null) {
+  //     throw Exception("invariant: wallet is null");
+  //   }
+
+  //   String? decryptedPrivKey;
+  //   try {
+  //     decryptedPrivKey = await encryptionService.decrypt(wallet.encryptedPrivKey, event.password);
+  //   } catch (e) {
+  //     emit(state.copyWith(
+  //       dispensersState: const DispenserState.createNewAddressFlowCollectPassword(error: 'Incorrect password'),
+  //     ));
+  //     return;
+  //   }
+  //   final List<Account> accounts = await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+  //   final Account highestIndexAccount = getHighestIndexAccount(accounts);
+
+  //   final int newAccountIndex = int.parse(highestIndexAccount.accountIndex.replaceAll("'", "")) + 1;
+
+  //   final account = Account(
+  //     name: 'Dispenser Account',
+  //     uuid: uuid.v4(),
+  //     walletUuid: wallet.uuid,
+  //     purpose: highestIndexAccount.purpose,
+  //     coinType: highestIndexAccount.coinType,
+  //     accountIndex: newAccountIndex.toString(),
+  //     importFormat: highestIndexAccount.importFormat,
+  //   );
+  //   final address = await addressService.deriveAddressSegwit(
+  //       privKey: decryptedPrivKey,
+  //       chainCodeHex: wallet.chainCodeHex,
+  //       accountUuid: account.uuid,
+  //       purpose: account.purpose,
+  //       coin: account.coinType,
+  //       account: account.accountIndex,
+  //       change: '0',
+  //       index: 0);
+
+  //   emit(state.copyWith(
+  //     dispensersState: DispenserState.createNewAddressFlowConfirmation(account: account, address: address),
+  //   ));
+  // }
+
+  // _onConfirmCreateNewAddressFlow(ConfirmCreateNewAddressFlow event, emit) {
+  //   emit(state.copyWith(
+  //     dispensersState: const DispenserState.successCreateNewAddressFlow(),
+  //   ));
+  // }
+
+  // _onCancelCreateNewAddressFlow(CancelCreateNewAddressFlow event, emit) {
+  //   emit(state.copyWith(
+  //     dispensersState: const DispenserState.warning(),
+  //   ));
+  // }
 
   @override
   void onChangeFeeOption(ChangeFeeOption event, emit) async {
@@ -194,7 +198,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         submitState: const SubmitInitial()));
 
     try {
-      final (balances, feeEstimates, dispensers) = await fetchDispenserFormDataUseCase.call(event.currentAddress!);
+      final (balances, feeEstimates, dispensers) =
+          await fetchDispenserFormDataUseCase.call(event.currentAddress!);
 
       if (dispensers.isEmpty) {
         emit(state.copyWith(
@@ -223,9 +228,12 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       ));
     } catch (e) {
       emit(state.copyWith(
-        balancesState: BalancesState.error('An unexpected error occurred: ${e.toString()}'),
-        feeState: FeeState.error('An unexpected error occurred: ${e.toString()}'),
-        dispensersState: DispenserState.error('An unexpected error occurred: ${e.toString()}'),
+        balancesState: BalancesState.error(
+            'An unexpected error occurred: ${e.toString()}'),
+        feeState:
+            FeeState.error('An unexpected error occurred: ${e.toString()}'),
+        dispensersState: DispenserState.error(
+            'An unexpected error occurred: ${e.toString()}'),
       ));
     }
   }
@@ -242,22 +250,24 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       final escrowQuantity = event.params.escrowQuantity;
       final mainchainrate = event.params.mainchainrate;
 
-      final composeResponse = await composeTransactionUseCase.call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-          feeRate: feeRate,
-          source: source,
-          params: ComposeDispenserParams(
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+              feeRate: feeRate,
               source: source,
-              asset: asset,
-              giveQuantity: giveQuantity,
-              escrowQuantity: escrowQuantity,
-              mainchainrate: mainchainrate),
-          composeFn: composeRepository.composeDispenserVerbose);
+              params: ComposeDispenserParams(
+                  source: source,
+                  asset: asset,
+                  giveQuantity: giveQuantity,
+                  escrowQuantity: escrowQuantity,
+                  mainchainrate: mainchainrate),
+              composeFn: composeRepository.composeDispenserVerbose);
 
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
+          submitState:
+              SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
@@ -265,10 +275,13 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
     } on ComposeTransactionException catch (e) {
-      emit(state.copyWith(submitState: SubmitInitial(loading: false, error: e.message)));
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: 'An unexpected error occurred: ${e.toString()}')));
+          submitState: SubmitInitial(
+              loading: false,
+              error: 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 
@@ -294,12 +307,15 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   }
 
   @override
-  void onSignAndBroadcastTransaction(SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
+  void onSignAndBroadcastTransaction(
+      SignAndBroadcastTransactionEvent event, emit) async {
+    if (state.submitState
+        is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeDispenserResponseVerbose>);
+    final s = (state.submitState
+        as SubmitFinalizing<ComposeDispenserResponseVerbose>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
@@ -320,7 +336,10 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
           logger.d('dispenser broadcasted txHash: $txHash');
 
-          emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex, sourceAddress: compose.params.source)));
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
 
           analyticsService.trackEvent('broadcast_tx_dispenser');
         },

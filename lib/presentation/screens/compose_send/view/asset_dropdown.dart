@@ -53,6 +53,7 @@ class AssetDropdown extends StatefulWidget {
   final TextEditingController controller;
   final void Function(String?) onSelected;
   final bool loading;
+  final String? label;
 
   const AssetDropdown(
       {super.key,
@@ -60,7 +61,8 @@ class AssetDropdown extends StatefulWidget {
       required this.balances,
       required this.controller,
       required this.onSelected,
-      required this.loading});
+      required this.loading,
+      this.label});
 
   @override
   State<AssetDropdown> createState() => _AssetDropdownState();
@@ -108,7 +110,7 @@ class _AssetDropdownState extends State<AssetDropdown> {
     return HorizonUI.HorizonDropdownMenu<String>(
       enabled: !widget.loading,
       controller: widget.controller,
-      label: 'Asset',
+      label: widget.label ?? 'Asset',
       onChanged: widget.onSelected,
       selectedValue: _getSelectedValue(),
       items: orderedBalances.map<DropdownMenuItem<String>>((balance) {

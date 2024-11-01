@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -10,6 +11,8 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class MockBalanceRepository extends Mock implements BalanceRepository {}
 
+class MockDispenserRepository extends Mock implements DispenserRepository {}
+
 class MockGetFeeEstimatesUseCase extends Mock
     implements GetFeeEstimatesUseCase {}
 
@@ -17,7 +20,7 @@ void main() {
   late FetchDispenserFormDataUseCase useCase;
   late MockBalanceRepository mockBalanceRepository;
   late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
-
+  late MockDispenserRepository mockDispenserRepository;
   setUpAll(() {
     registerFallbackValue((1, 3, 6));
   });
@@ -25,10 +28,11 @@ void main() {
   setUp(() {
     mockBalanceRepository = MockBalanceRepository();
     mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
-
+    mockDispenserRepository = MockDispenserRepository();
     useCase = FetchDispenserFormDataUseCase(
       balanceRepository: mockBalanceRepository,
       getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
+      dispenserRepository: mockDispenserRepository,
     );
   });
 

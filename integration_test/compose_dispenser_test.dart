@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'package:mocktail/mocktail.dart';
@@ -63,6 +69,16 @@ class MockUtxoRepository extends Mock implements UtxoRepository {}
 
 class MockDashboardActivityFeedBloc extends Mock
     implements DashboardActivityFeedBloc {}
+
+class MockAccountRepository extends Mock implements AccountRepository {}
+
+class MockAddressRepository extends Mock implements AddressRepository {}
+
+class MockWalletRepository extends Mock implements WalletRepository {}
+
+class MockEncryptionService extends Mock implements EncryptionService {}
+
+class MockAddressService extends Mock implements AddressService {}
 
 class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
@@ -145,6 +161,11 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockUtxoRepository mockUtxoRepository;
+  late MockAccountRepository mockAccountRepository;
+  late MockAddressRepository mockAddressRepository;
+  late MockWalletRepository mockWalletRepository;
+  late MockEncryptionService mockEncryptionService;
+  late MockAddressService mockAddressService;
 
   setUpAll(() {
     registerFallbackValue(FakeAddress().address);
@@ -163,6 +184,11 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockComposeRepository = MockComposeRepository();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockAccountRepository = MockAccountRepository();
+    mockAddressRepository = MockAddressRepository();
+    mockWalletRepository = MockWalletRepository();
+    mockEncryptionService = MockEncryptionService();
+    mockAddressService = MockAddressService();
 
     composeDispenserBloc = ComposeDispenserBloc(
       signAndBroadcastTransactionUseCase:
@@ -172,6 +198,11 @@ void main() {
       analyticsService: mockAnalyticsService,
       composeRepository: mockComposeRepository,
       writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      accountRepository: mockAccountRepository,
+      addressRepository: mockAddressRepository,
+      walletRepository: mockWalletRepository,
+      encryptionService: mockEncryptionService,
+      addressService: mockAddressService,
     );
 
     mockDashboardActivityFeedBloc = MockDashboardActivityFeedBloc();
@@ -203,7 +234,32 @@ void main() {
                           divisible: false,
                           assetLongname: "ASSET2_NOT_DIVISIBLE")),
                 ],
-                const FeeEstimates(fast: 10, medium: 5, slow: 2)
+                const FeeEstimates(fast: 10, medium: 5, slow: 2),
+                [
+                  Dispenser(
+                    txIndex: 0,
+                    txHash: 'test-tx-hash',
+                    blockIndex: 0,
+                    source: 'test-source',
+                    asset: 'ASSET1_DIVISIBLE',
+                    giveQuantity: 100000000,
+                    giveQuantityNormalized: '1.0',
+                    escrowQuantity: 100000000,
+                    escrowQuantityNormalized: '1.0',
+                    satoshirate: 100000000,
+                    satoshirateNormalized: '1.0',
+                    status: 0,
+                    giveRemaining: 100000000,
+                    giveRemainingNormalized: '1.0',
+                    origin: 'test-origin',
+                    dispenseCount: 0,
+                    confirmed: true,
+                    assetInfo: const AssetInfo(
+                        divisible: true,
+                        assetLongname: "ASSET1_DIVISIBLE",
+                        description: "ASSET_DESCRIPTION"),
+                  )
+                ]
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
@@ -280,7 +336,32 @@ void main() {
                           assetLongname: "ASSET2_NOT_DIVISIBLE",
                           description: "ASSET_DESCRIPTION")),
                 ],
-                const FeeEstimates(fast: 10, medium: 5, slow: 2)
+                const FeeEstimates(fast: 10, medium: 5, slow: 2),
+                [
+                  Dispenser(
+                    txIndex: 0,
+                    txHash: 'test-tx-hash',
+                    blockIndex: 0,
+                    source: 'test-source',
+                    asset: 'ASSET1_DIVISIBLE',
+                    giveQuantity: 100000000,
+                    giveQuantityNormalized: '1.0',
+                    escrowQuantity: 100000000,
+                    escrowQuantityNormalized: '1.0',
+                    satoshirate: 100000000,
+                    satoshirateNormalized: '1.0',
+                    status: 0,
+                    giveRemaining: 100000000,
+                    giveRemainingNormalized: '1.0',
+                    origin: 'test-origin',
+                    dispenseCount: 0,
+                    confirmed: true,
+                    assetInfo: const AssetInfo(
+                        divisible: true,
+                        assetLongname: "ASSET1_DIVISIBLE",
+                        description: "ASSET_DESCRIPTION"),
+                  )
+                ]
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
@@ -394,7 +475,32 @@ void main() {
                           assetLongname: "ASSET2_NOT_DIVISIBLE",
                           description: "ASSET_DESCRIPTION")),
                 ],
-                const FeeEstimates(fast: 10, medium: 5, slow: 2)
+                const FeeEstimates(fast: 10, medium: 5, slow: 2),
+                [
+                  Dispenser(
+                    txIndex: 0,
+                    txHash: 'test-tx-hash',
+                    blockIndex: 0,
+                    source: 'test-source',
+                    asset: 'ASSET1_DIVISIBLE',
+                    giveQuantity: 100000000,
+                    giveQuantityNormalized: '1.0',
+                    escrowQuantity: 100000000,
+                    escrowQuantityNormalized: '1.0',
+                    satoshirate: 100000000,
+                    satoshirateNormalized: '1.0',
+                    status: 0,
+                    giveRemaining: 100000000,
+                    giveRemainingNormalized: '1.0',
+                    origin: 'test-origin',
+                    dispenseCount: 0,
+                    confirmed: true,
+                    assetInfo: const AssetInfo(
+                        divisible: true,
+                        assetLongname: "ASSET1_DIVISIBLE",
+                        description: "ASSET_DESCRIPTION"),
+                  )
+                ]
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
@@ -468,7 +574,32 @@ void main() {
                           assetLongname: "ASSET1_DIVISIBLE",
                           description: "ASSET_DESCRIPTION")),
                 ],
-                const FeeEstimates(fast: 10, medium: 5, slow: 2)
+                const FeeEstimates(fast: 10, medium: 5, slow: 2),
+                [
+                  Dispenser(
+                    txIndex: 0,
+                    txHash: 'test-tx-hash',
+                    blockIndex: 0,
+                    source: 'test-source',
+                    asset: 'ASSET1_DIVISIBLE',
+                    giveQuantity: 100000000,
+                    giveQuantityNormalized: '1.0',
+                    escrowQuantity: 100000000,
+                    escrowQuantityNormalized: '1.0',
+                    satoshirate: 100000000,
+                    satoshirateNormalized: '1.0',
+                    status: 0,
+                    giveRemaining: 100000000,
+                    giveRemainingNormalized: '1.0',
+                    origin: 'test-origin',
+                    dispenseCount: 0,
+                    confirmed: true,
+                    assetInfo: const AssetInfo(
+                        divisible: true,
+                        assetLongname: "ASSET1_DIVISIBLE",
+                        description: "ASSET_DESCRIPTION"),
+                  )
+                ]
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
@@ -567,7 +698,32 @@ void main() {
                           assetLongname: "ASSET1_DIVISIBLE",
                           description: "ASSET_DESCRIPTION")),
                 ],
-                const FeeEstimates(fast: 10, medium: 5, slow: 2)
+                const FeeEstimates(fast: 10, medium: 5, slow: 2),
+                [
+                  Dispenser(
+                    txIndex: 0,
+                    txHash: 'test-tx-hash',
+                    blockIndex: 0,
+                    source: 'test-source',
+                    asset: 'ASSET1_DIVISIBLE',
+                    giveQuantity: 100000000,
+                    giveQuantityNormalized: '1.0',
+                    escrowQuantity: 100000000,
+                    escrowQuantityNormalized: '1.0',
+                    satoshirate: 100000000,
+                    satoshirateNormalized: '1.0',
+                    status: 0,
+                    giveRemaining: 100000000,
+                    giveRemainingNormalized: '1.0',
+                    origin: 'test-origin',
+                    dispenseCount: 0,
+                    confirmed: true,
+                    assetInfo: const AssetInfo(
+                        divisible: true,
+                        assetLongname: "ASSET1_DIVISIBLE",
+                        description: "ASSET_DESCRIPTION"),
+                  )
+                ]
               ));
 
       when(() => mockComposeTransactionUseCase

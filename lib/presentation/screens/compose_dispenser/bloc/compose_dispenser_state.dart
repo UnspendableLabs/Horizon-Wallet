@@ -1,6 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -49,14 +47,14 @@ class DispenserState with _$DispenserState {
       _DispenserSuccessNormalFlow;
   const factory DispenserState.successCreateNewAddressFlow() =
       _DispenserSuccessCreateNewAddressFlow;
-  const factory DispenserState.createNewAddressFlowCollectPassword({String? error}) =
-      _DispenserCreateNewAddressFlowCollectPassword;
-  const factory DispenserState.createNewAddressFlowLoading() =
-      _DispenserCreateNewAddressFlowLoading;
-  const factory DispenserState.createNewAddressFlowConfirmation({
-    required Account account,
-    required Address address,
-  }) = _DispenserCreateNewAddressFlowConfirmation;
+  // const factory DispenserState.createNewAddressFlowCollectPassword({String? error}) =
+  //     _DispenserCreateNewAddressFlowCollectPassword;
+  // const factory DispenserState.createNewAddressFlowLoading() =
+  //     _DispenserCreateNewAddressFlowLoading;
+  // const factory DispenserState.createNewAddressFlowConfirmation({
+  //   required Account account,
+  //   required Address address,
+  // }) = _DispenserCreateNewAddressFlowConfirmation;
   const factory DispenserState.warning() = _DispenserWarning;
 
   const factory DispenserState.error(String error) = _DispenserError;

@@ -1,13 +1,13 @@
 import 'package:collection/collection.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/common/format.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -17,17 +17,17 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
-import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -97,6 +97,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   Balance? balance_;
   bool _submitted = false;
   bool hideInitialFee = true;
+  bool isCreateNewAddressFlow = false;
 
   @override
   void initState() {
@@ -179,20 +180,33 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
 
       // Dispatch the event with the calculated values
-      context.read<ComposeDispenserBloc>().add(ComposeTransactionEvent(
-            sourceAddress: widget.address,
-            params: ComposeDispenserEventParams(
+
+      if (!isCreateNewAddressFlow) {
+        context.read<ComposeDispenserBloc>().add(ComposeTransactionEvent(
+              sourceAddress: widget.address,
+              params: ComposeDispenserEventParams(
+                asset: asset!,
+                giveQuantity: giveQuantity,
+                escrowQuantity: escrowQuantity,
+                mainchainrate: mainchainrate,
+                status: 0, // TODO: get rid of this
+              ),
+            ));
+      } else {
+        context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(
+                params: ComposeDispenserEventParams(
               asset: asset!,
               giveQuantity: giveQuantity,
               escrowQuantity: escrowQuantity,
               mainchainrate: mainchainrate,
               status: 0, // TODO: get rid of this
-            ),
-          ));
+            )));
+      }
     }
   }
 
-  Widget _buildAssetInput(ComposeDispenserState state, bool loading) {
+  Widget _buildAssetInput(ComposeDispenserState state, bool loading,
+      [String? label]) {
     return state.balancesState.maybeWhen(
         orElse: () => const AssetDropdownLoading(),
         success: (balances) {
@@ -218,6 +232,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             child: AssetDropdown(
               key: const Key('asset_dropdown'),
               loading: loading,
+              label: label,
               asset: asset ?? balances[0].asset,
               controller: assetController,
               balances: balances,
@@ -449,27 +464,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                   children: [
                     _buildWarningButton(
                       'Create Dispenser on a new address',
-                      () {
-                        context.read<ComposeDispenserBloc>().add(
-                              ChooseWorkFlow(
-                                isCreateNewAddress: true,
-                              ),
-                            );
-                      },
+                      true,
                     ),
                     const SizedBox(height: 8.0),
                     _buildWarningButton(
                       'Continue with existing address',
-                      () {
-                        setState(() {
-                          hideInitialFee = false;
-                        });
-                        context.read<ComposeDispenserBloc>().add(
-                              ChooseWorkFlow(
-                                isCreateNewAddress: false,
-                              ),
-                            );
-                      },
+                      false,
                     ),
                   ],
                 );
@@ -480,29 +480,14 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                   Expanded(
                     child: _buildWarningButton(
                       'Create Dispenser on a new address',
-                      () {
-                        context.read<ComposeDispenserBloc>().add(
-                              ChooseWorkFlow(
-                                isCreateNewAddress: true,
-                              ),
-                            );
-                      },
+                      true,
                     ),
                   ),
                   const SizedBox(width: 8.0),
                   Expanded(
                     child: _buildWarningButton(
                       'Continue with existing address',
-                      () {
-                        setState(() {
-                          hideInitialFee = false;
-                        });
-                        context.read<ComposeDispenserBloc>().add(
-                              ChooseWorkFlow(
-                                isCreateNewAddress: false,
-                              ),
-                            );
-                      },
+                      false,
                     ),
                   ),
                 ],
@@ -514,9 +499,19 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
-  Widget _buildWarningButton(String label, VoidCallback onPressed) {
+  Widget _buildWarningButton(String label, bool isCreateNewAddress) {
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: () {
+        setState(() {
+          hideInitialFee = false;
+          isCreateNewAddressFlow = isCreateNewAddress;
+        });
+        context.read<ComposeDispenserBloc>().add(
+              ChooseWorkFlow(
+                isCreateNewAddress: isCreateNewAddress,
+              ),
+            );
+      },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(
           horizontal: 16.0,
@@ -535,7 +530,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       }, successNormalFlow: () {
         return Column(
           children: [
-                  HorizonUI.HorizonTextFormField(
+            HorizonUI.HorizonTextFormField(
               enabled: false,
               controller: openAddressController,
               label: "Open Address",
@@ -553,98 +548,115 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           ],
         );
       },
-      createNewAddressFlowCollectPassword: (error) {
-        return Column(
-          children: [
-            HorizonUI.HorizonTextFormField(
-              controller: passwordController,
-              obscureText: true,
-              label: "Password to create new account and address for dispenser",
-            ),
-            const SizedBox(height: 16.0),
-            if (error != null)
-              SelectableText(
-                error,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-              ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                _buildWarningButton(
-                  'Continue',
-              () {
-                context.read<ComposeDispenserBloc>().add(
-                      CollectPassword(password: passwordController.text),
-                    );
-              },
+          // createNewAddressFlowCollectPassword: (error) {
+          //   return Column(
+          //     children: [
+          //       HorizonUI.HorizonTextFormField(
+          //         controller: passwordController,
+          //         obscureText: true,
+          //         label: "Password to create new account and address for dispenser",
+          //       ),
+          //       const SizedBox(height: 16.0),
+          //       if (error != null)
+          //         SelectableText(
+          //           error,
+          //           style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+          //         ),
+          //       const SizedBox(height: 16.0),
+          //       Row(
+          //         children: [
+          //           _buildWarningButton(
+          //             'Continue',
+          //         () {
+          //           context.read<ComposeDispenserBloc>().add(
+          //                 CollectPassword(password: passwordController.text),
+          //               );
+          //         },
 
-            ),
-          const SizedBox(width: 16.0),
-            _buildWarningButton(
-              'Cancel',
-              () {
-                  context.read<ComposeDispenserBloc>().add(CancelCreateNewAddressFlow());
-                },
-              ),
-            ],
-          ),
-        ],
-      );
-      },
-      createNewAddressFlowLoading: () {
+          //       ),
+          //     const SizedBox(width: 16.0),
+          //       _buildWarningButton(
+          //         'Cancel',
+          //         () {
+          //             context.read<ComposeDispenserBloc>().add(CancelCreateNewAddressFlow());
+          //           },
+          //         ),
+          //       ],
+          //     ),
+          //   ],
+          // );
+          // },
+          // createNewAddressFlowLoading: () {
+          //   return Column(
+          //     children: [
+          //       HorizonUI.HorizonTextFormField(
+          //         enabled: false,
+          //         controller: passwordController,
+          //         label: "Password to create new account and address for dispenser",
+          //         obscureText: true,
+          //         suffix: const CircularProgressIndicator(),
+          //       ),
+          //     ],
+          //   );
+          // },
+          // createNewAddressFlowConfirmation: (account, address) {
+          //   return Column(
+          //     children: [
+          //       const SizedBox(height: 16.0),
+          //       SelectableText(
+          //         'Creating a new account "${account.name}" with address "${address.address}" for opening a dispenser. Proceed?',
+          //       ),
+          //       const SizedBox(height: 16.0),
+          //       Row(
+          //         children: [
+          //           Expanded(
+          //             child: _buildWarningButton(
+          //               'Yes',
+          //               () {
+          //                 setState(() {
+          //                   hideInitialFee = false;
+          //                 });
+          //                 context.read<ComposeDispenserBloc>().add(
+          //                       ConfirmCreateNewAddressFlow(),
+          //                     );
+          //               },
+          //             ),
+          //           ),
+          //           const SizedBox(width: 8.0),
+          //           Expanded(
+          //             child: _buildWarningButton(
+          //               'No',
+          //               () {
+          //                 context.read<ComposeDispenserBloc>().add(
+          //                       CancelCreateNewAddressFlow(),
+          //                     );
+          //               },
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ],
+          //   );
+          // },
+          successCreateNewAddressFlow: () {
         return Column(
           children: [
             HorizonUI.HorizonTextFormField(
               enabled: false,
-              controller: passwordController,
-              label: "Password to create new account and address for dispenser",
-              obscureText: true,
-              suffix: const CircularProgressIndicator(),
-            ),
-          ],
-        );
-      },
-      createNewAddressFlowConfirmation: (account, address) {
-        return Column(
-          children: [
-            const SizedBox(height: 16.0),
-            SelectableText(
-              'Creating a new account "${account.name}" with address "${address.address}" for opening a dispenser. Proceed?',
+              label: "Open Address",
+              controller: TextEditingController(text: 'To be created'),
             ),
             const SizedBox(height: 16.0),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildWarningButton(
-                    'Yes',
-                    () {
-                      setState(() {
-                        hideInitialFee = false;
-                      });
-                      context.read<ComposeDispenserBloc>().add(
-                            ConfirmCreateNewAddressFlow(),
-                          );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: _buildWarningButton(
-                    'No',
-                    () {
-                      context.read<ComposeDispenserBloc>().add(
-                            CancelCreateNewAddressFlow(),
-                          );
-                    },
-                  ),
-                ),
-              ],
-            ),
+            _buildAssetInput(state, loading, 'Asset to transfer'),
+            const SizedBox(height: 16.0),
+            _buildGiveQuantityInput(state, () {
+              _handleInitialSubmit(formKey);
+            }, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildEscrowQuantityInput(state, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildPricePerUnitInput(loading, formKey),
           ],
-        );
-      }, successCreateNewAddressFlow: () {
-        return const SelectableText(
-          'Dispenser created successfully',
         );
       }, warning: () {
         return Column(
