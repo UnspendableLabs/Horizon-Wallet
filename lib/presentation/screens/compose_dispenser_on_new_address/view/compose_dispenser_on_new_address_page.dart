@@ -4,13 +4,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/create_send_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
+import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
@@ -44,6 +49,11 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         encryptionService: GetIt.I.get<EncryptionService>(),
         addressService: GetIt.I.get<AddressService>(),
         createSendRepository: GetIt.I.get<CreateSendRepository>(),
+        composeRepository: GetIt.I.get<ComposeRepository>(),
+        utxoRepository: GetIt.I.get<UtxoRepository>(),
+        composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
+        fetchDispenserOnNewAddressFormDataUseCase:
+            GetIt.I.get<FetchDispenserOnNewAddressFormDataUseCase>(),
       ),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
@@ -86,6 +96,12 @@ class _ComposeDispenserOnNewAddressPageState
   final passwordFormKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    context.read<ComposeDispenserOnNewAddressBloc>().add(FetchFormData());
+  }
+
+  @override
   void dispose() {
     passwordController.dispose();
     super.dispose();
@@ -94,14 +110,19 @@ class _ComposeDispenserOnNewAddressPageState
   @override
   Widget build(BuildContext context) {
     return BlocListener<ComposeDispenserOnNewAddressBloc,
-        ComposeDispenserOnNewAddressState>(
+        ComposeDispenserOnNewAddressStateBase>(
       listener: (context, state) {
         // TODO: implement listener
       },
       child: BlocBuilder<ComposeDispenserOnNewAddressBloc,
-          ComposeDispenserOnNewAddressState>(
+          ComposeDispenserOnNewAddressStateBase>(
         builder: (context, state) {
-          return state.maybeWhen(
+          print(state.feeState);
+          print(state.composeDispenserOnNewAddressState);
+          return state.composeDispenserOnNewAddressState.maybeWhen(
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
+            ),
             initial: () => Form(
               key: initialFormKey,
               child: Padding(
@@ -164,6 +185,7 @@ class _ComposeDispenserOnNewAddressPageState
                   children: [
                     HorizonUI.HorizonTextFormField(
                       controller: passwordController,
+                      obscureText: true,
                       label: 'Password',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -172,6 +194,9 @@ class _ComposeDispenserOnNewAddressPageState
                         return null;
                       },
                     ),
+                    if (error != null)
+                      SelectableText(error,
+                          style: const TextStyle(color: redErrorText)),
                     _buildBackContinueButtons(
                       onBack: () {
                         Navigator.of(context).pop();
@@ -228,6 +253,9 @@ class _ComposeDispenserOnNewAddressPageState
                   ],
                 ),
               ),
+            ),
+            error: (error) => Center(
+              child: SelectableText(error),
             ),
             orElse: () => const SizedBox.shrink(),
           );

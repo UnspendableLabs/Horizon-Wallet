@@ -1,5 +1,7 @@
 abstract class ComposeDispenserOnNewAddressEvent {}
 
+class FetchFormData extends ComposeDispenserOnNewAddressEvent {}
+
 class CollectPassword extends ComposeDispenserOnNewAddressEvent {}
 
 class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
