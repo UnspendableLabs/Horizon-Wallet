@@ -56,23 +56,17 @@ class _FooterState extends State<_Footer> {
                 children: [
                   TextButton(
                     onPressed: () => context.go("/tos"),
-                    child: const Text(
+                    child: Text(
                       'Terms of Service',
-                      style: TextStyle(
-                        color: neonBlueDarkTheme,
-                        fontSize: 16,
-                      ),
+                      style: textStyle,
                     ),
                   ),
                   const SizedBox(width: 20),
                   TextButton(
                     onPressed: () => context.go("/privacy-policy"),
-                    child: const Text(
+                    child: Text(
                       'Privacy Policy',
-                      style: TextStyle(
-                        color: neonBlueDarkTheme,
-                        fontSize: 16,
-                      ),
+                      style: textStyle,
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -81,22 +75,26 @@ class _FooterState extends State<_Footer> {
                       launchUrl(Uri.parse(
                           "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/$TAG"));
                     },
-                    child: const Text(
+                    child: Text(
                       TAG,
-                      style: TextStyle(
-                        color: neonBlueDarkTheme,
-                        fontSize: 16,
-                      ),
+                      style: textStyle,
                     ),
                   ),
                   const SizedBox(width: 20),
-                  Text(
-                    'node version: ${state.nodeInfoState.when(
-                      initial: () => '',
-                      loading: () => '',
-                      error: (error) => error,
-                      success: (nodeInfo) => nodeInfo.version,
-                    )}',
+                  state.nodeInfoState.when(
+                    initial: () => const SizedBox.shrink(),
+                    loading: () => const SizedBox.shrink(),
+                    error: (error) => const SizedBox.shrink(),
+                    success: (nodeInfo) => TextButton(
+                      onPressed: () {
+                        launchUrl(Uri.parse(
+                            "https://github.com/CounterpartyXCP/counterparty-core/releases/tag/v${nodeInfo.version}"));
+                      },
+                      child: Text(
+                        'Counterparty Core: ${nodeInfo.version}',
+                        style: textStyle,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -106,4 +104,9 @@ class _FooterState extends State<_Footer> {
       },
     );
   }
+
+  TextStyle get textStyle => const TextStyle(
+        color: neonBlueDarkTheme,
+        fontSize: 16,
+      );
 }
