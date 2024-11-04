@@ -1,17 +1,3 @@
-/**
- * {
-    "server_ready": true,
-    "network": "mainnet",
-    "version": "10.6.1",
-    "backend_height": 868866,
-    "counterparty_height": 868866,
-    "documentation": "https://counterpartycore.docs.apiary.io/",
-    "routes": "http://api.counterparty.io:4000/v2/routes",
-    "blueprint": "https://raw.githubusercontent.com/CounterpartyXCP/counterparty-core/refs/heads/master/apiary.apib"
-  }
- */
-library;
-
 import 'package:horizon/domain/entities/node_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 
