@@ -41,72 +41,103 @@ class _FooterState extends State<_Footer> {
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return BlocBuilder<FooterBloc, FooterState>(
-      builder: (context, state) {
-        return Container(
-          decoration: BoxDecoration(
-            color: isDarkTheme ? darkNavyDarkTheme : greyLightTheme,
-          ),
-          child: SizedBox(
+    TextStyle textStyle() => TextStyle(
+          color: neonBlueDarkTheme,
+          fontSize: screenWidth < 600 ? 10 : 16,
+        );
+
+    return Material(
+      elevation: 0,
+      color: Colors.transparent,
+      child: BlocBuilder<FooterBloc, FooterState>(
+        builder: (context, state) {
+          return Container(
+            width: double.infinity,
             height: 30,
+            decoration: BoxDecoration(
+              color: isDarkTheme ? darkNavyDarkTheme : greyLightTheme,
+            ),
             child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: screenWidth < 600 ? 4 : 20,
+                runSpacing: 4,
                 children: [
                   TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth < 600 ? 4 : 16,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     onPressed: () => context.go("/tos"),
                     child: Text(
                       'Terms of Service',
-                      style: textStyle,
+                      style: textStyle(),
                     ),
                   ),
-                  const SizedBox(width: 20),
                   TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth < 600 ? 4 : 16,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     onPressed: () => context.go("/privacy-policy"),
                     child: Text(
                       'Privacy Policy',
-                      style: textStyle,
+                      style: textStyle(),
                     ),
                   ),
-                  const SizedBox(width: 20),
                   TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth < 600 ? 4 : 16,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     onPressed: () {
                       launchUrl(Uri.parse(
                           "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/$TAG"));
                     },
                     child: Text(
                       TAG,
-                      style: textStyle,
+                      style: textStyle(),
                     ),
                   ),
-                  const SizedBox(width: 20),
                   state.nodeInfoState.when(
                     initial: () => const SizedBox.shrink(),
                     loading: () => const SizedBox.shrink(),
                     error: (error) => const SizedBox.shrink(),
                     success: (nodeInfo) => TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth < 600 ? 4 : 16,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       onPressed: () {
                         launchUrl(Uri.parse(
                             "https://github.com/CounterpartyXCP/counterparty-core/releases/tag/v${nodeInfo.version}"));
                       },
                       child: Text(
-                        'Counterparty Core: ${nodeInfo.version}',
-                        style: textStyle,
+                        'Counterparty Core v${nodeInfo.version}',
+                        style: textStyle(),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
-
-  TextStyle get textStyle => const TextStyle(
-        color: neonBlueDarkTheme,
-        fontSize: 16,
-      );
 }
