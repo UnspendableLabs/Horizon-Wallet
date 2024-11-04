@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/entities/node_info.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_bloc.dart';
-import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
 
 class MockNodeInfoRepository extends Mock implements NodeInfoRepository {}

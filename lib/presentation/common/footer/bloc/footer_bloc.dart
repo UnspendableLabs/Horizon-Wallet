@@ -7,11 +7,11 @@ class FooterBloc extends Bloc<FooterEvent, FooterState> {
   final NodeInfoRepository nodeInfoRepository;
 
   FooterBloc({required this.nodeInfoRepository}) : super(const FooterState()) {
-    on<GetNodeInfo>(_onGetNodeInfo);
+    on<NodeInfoRequested>(_onNodeInfoRequested);
   }
 
-  Future<void> _onGetNodeInfo(
-      GetNodeInfo event, Emitter<FooterState> emit) async {
+  Future<void> _onNodeInfoRequested(
+      NodeInfoRequested event, Emitter<FooterState> emit) async {
     emit(const FooterState(nodeInfoState: NodeInfoState.loading()));
     try {
       final nodeInfo = await nodeInfoRepository.getNodeInfo();

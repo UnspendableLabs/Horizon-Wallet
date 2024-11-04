@@ -35,7 +35,7 @@ class _FooterState extends State<_Footer> {
   @override
   void initState() {
     super.initState();
-    context.read<FooterBloc>().add(GetNodeInfo());
+    context.read<FooterBloc>().add(NodeInfoRequested());
   }
 
   @override

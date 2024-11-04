@@ -1,3 +1,3 @@
 abstract class FooterEvent {}
 
-class GetNodeInfo extends FooterEvent {}
+class NodeInfoRequested extends FooterEvent {}
