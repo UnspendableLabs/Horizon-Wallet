@@ -243,9 +243,17 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         ? dialogBackgroundColorDarkTheme
         : dialogBackgroundColorLightTheme;
     final checkboxTextColor = isDarkMode ? mainTextWhite : mainTextBlack;
+
+    final validFairminters = fairminters.where((fairminter) {
+      return fairminter.status != null &&
+          fairminter.status == 'open' &&
+          fairminter.price != null &&
+          fairminter.price! == 0;
+    }).toList();
+
     final filteredFairminters = showLockedOnly
-        ? fairminters.where((f) => f.lockQuantity == true).toList()
-        : fairminters;
+        ? validFairminters.where((f) => f.lockQuantity == true).toList()
+        : validFairminters;
 
     return [
       HorizonUI.HorizonTextFormField(
@@ -288,6 +296,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             groupValue: _isAssetNameSelected,
             onChanged: (value) {
               setState(() {
+                error = null;
                 _isAssetNameSelected = value!;
                 if (!_isAssetNameSelected) {
                   // Clear the asset name input when switching to dropdown
@@ -337,6 +346,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             groupValue: _isAssetNameSelected,
             onChanged: (value) {
               setState(() {
+                error = null;
                 _isAssetNameSelected = value!;
                 if (_isAssetNameSelected) {
                   // Clear the dropdown value when switching to asset name input
@@ -373,6 +383,15 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
           ),
         ],
       ),
+      state.selectedFairminter != null
+          ? Column(
+              children: [
+                const SizedBox(height: 16.0),
+                SelectableText(
+                    'Quantity Locked After Fairminter Closes: ${state.selectedFairminter!.lockQuantity}'),
+              ],
+            )
+          : const SizedBox.shrink(),
       if (error != null)
         SelectableText(
           error!,
