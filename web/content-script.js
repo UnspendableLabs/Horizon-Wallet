@@ -1,5 +1,6 @@
 const CONTENT_SCRIPT_PORT = "content-script";
 const MESSAGE_SOURCE = "horizon";
+const VALID_METHODS = ["getAddresses", "signPsbt", "fairmint", "dispense"];
 
 let backgroundPort = null;
 
@@ -11,11 +12,15 @@ function connect() {
 connect();
 
 function sendMessageToBackground(message) {
-  backgroundPort.postMessage(message);
+  if (backgroundPort) {
+    backgroundPort.postMessage(message);
+  } else {
+    console.error("Background port is not connected.");
+  }
 }
 
 chrome.runtime.onMessage.addListener((message) => {
-    window.postMessage(message, window.location.origin);
+  window.postMessage(message, window.location.origin);
 });
 
 function forwardDomEventToBackground({ payload, method }) {
@@ -26,8 +31,109 @@ function forwardDomEventToBackground({ payload, method }) {
   });
 }
 
+const validators = {
+  signPsbt: (msg, errors) => {
+    if (!msg.params?.hex || typeof msg.params.hex !== "string") {
+      errors.push(
+        "Missing or invalid 'hex' parameter for 'signPsbt'. Expected a string.",
+      );
+    }
+  },
+  dispense: (msg, errors) => {
+    if (!msg.params?.address || typeof msg.params.address !== "string") {
+      errors.push(
+        "Missing or invalid 'address' parameter for 'dispense'. Expected a string.",
+      );
+    }
+  },
+  fairmint: (msg, errors) => {
+    if (
+      !msg.params?.fairminterTxHash ||
+      typeof msg.params.fairminterTxHash !== "string"
+    ) {
+      errors.push(
+        "Missing or invalid 'fairminterTxHash' parameter for 'fairmint'. Expected a string.",
+      );
+    }
+  },
+};
+
+const methodValidators = {
+  signPsbt: (msg) => {
+    const errors = [];
+    if (!msg.params?.hex || typeof msg.params.hex !== "string") {
+      errors.push(
+        "Missing or invalid 'hex' parameter for 'signPsbt'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+  dispense: (msg) => {
+    const errors = [];
+    if (!msg.params?.address || typeof msg.params.address !== "string") {
+      errors.push(
+        "Missing or invalid 'address' parameter for 'dispense'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+  fairmint: (msg) => {
+    const errors = [];
+    if (
+      !msg.params?.fairminterTxHash ||
+      typeof msg.params.fairminterTxHash !== "string"
+    ) {
+      errors.push(
+        "Missing or invalid 'fairminterTxHash' parameter for 'fairmint'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+};
+
+function validate(msg) {
+  const errors = [];
+
+  if (!msg || typeof msg !== "object") {
+    errors.push("Message is not an object or is missing.");
+    return errors;
+  }
+
+  const { method } = msg;
+
+  if (!method || !VALID_METHODS.includes(method)) {
+    errors.push(
+      `Invalid or missing method. Expected one of: ${VALID_METHODS.join(", ")}`,
+    );
+    return errors;
+  }
+
+  if (methodValidators[method]) {
+    errors.push(...methodValidators[method](msg));
+  }
+
+  return errors;
+}
+
 document.addEventListener("request", (event) => {
   console.log("request event received in content script", event);
+
+  const errors = validate(event.detail);
+
+  if (errors.length) {
+    const response = {
+      jsonrpc: "2.0",
+      id: event.detail.id,
+      error: {
+        code: -32600, // json rpc invalid reque`st`
+        message: "Invalid request",
+        data: errors,
+      },
+    };
+    window.postMessage(response, window.location.origin);
+    return;
+  }
+
   sendMessageToBackground({ source: MESSAGE_SOURCE, ...event.detail });
 });
 
@@ -38,4 +144,8 @@ function addProviderToPage() {
   document.body.appendChild(inpage);
 }
 
-requestAnimationFrame(addProviderToPage);
+document.onreadystatechange = () => {
+  if (document.readyState === "complete") {
+    addProviderToPage();
+  }
+};
