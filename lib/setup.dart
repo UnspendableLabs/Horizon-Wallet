@@ -23,6 +23,7 @@ import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -34,6 +35,7 @@ import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -307,6 +309,9 @@ Future<void> setup() async {
     dio: mempoolspaceDio,
     configRepository: config,
   )));
+
+  injector.registerSingleton<NodeInfoRepository>(
+      NodeInfoRepositoryImpl(GetIt.I.get<V2Api>()));
 
   injector.registerSingleton<GetFeeEstimatesUseCase>(GetFeeEstimatesUseCase(
       feeEstimatesRepository: GetIt.I.get<FeeEstimatesRespository>()));
