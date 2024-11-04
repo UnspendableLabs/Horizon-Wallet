@@ -101,57 +101,102 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       listener: (context, state) {},
       builder: (context, state) {
         return state.fairmintersState.maybeWhen(
-          loading: () =>
-              ComposeBasePage<ComposeFairmintBloc, ComposeFairmintState>(
-                  dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-                  onFeeChange: (fee) => context
-                      .read<ComposeFairmintBloc>()
-                      .add(ChangeFeeOption(value: fee)),
-                  buildInitialFormFields: (state, loading, formKey) => [
-                        HorizonUI.HorizonTextFormField(
-                          label: "Address that will be minting the asset",
-                          controller: fromAddressController,
-                          enabled: false,
-                        ),
-                        const SizedBox(height: 16.0),
-                        Row(
-                          children: [
-                            Checkbox(
-                              fillColor: WidgetStateProperty.all(
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? dialogBackgroundColorDarkTheme
-                                      : dialogBackgroundColorLightTheme),
-                              value: showLockedOnly,
-                              onChanged: null,
+          loading: () => ComposeBasePage<ComposeFairmintBloc,
+                  ComposeFairmintState>(
+              dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+              onFeeChange: (fee) => context
+                  .read<ComposeFairmintBloc>()
+                  .add(ChangeFeeOption(value: fee)),
+              buildInitialFormFields: (state, loading, formKey) => [
+                    HorizonUI.HorizonTextFormField(
+                      label: "Address that will be minting the asset",
+                      controller: fromAddressController,
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (showLockedOnly)
+                          TextButton.icon(
+                            onPressed: _isAssetNameSelected
+                                ? null
+                                : () {
+                                    setState(() {
+                                      showLockedOnly = false;
+                                      context
+                                          .read<ComposeFairmintBloc>()
+                                          .add(FairminterChanged(value: null));
+                                      _dropdownKey = UniqueKey();
+                                    });
+                                  },
+                            icon: const Icon(Icons.clear),
+                            label: const Text('Clear filter'),
+                            style: TextButton.styleFrom(
+                              foregroundColor:
+                                  _isAssetNameSelected ? Colors.grey : null,
                             ),
-                            const Text(
-                              "Show only locked quantity fairminters",
-                              style: TextStyle(
-                                color: Colors.grey,
+                          ),
+                        PopupMenuButton<bool>(
+                          enabled: !_isAssetNameSelected,
+                          icon: Icon(
+                            Icons.filter_list,
+                            color: _isAssetNameSelected ? Colors.grey : null,
+                          ),
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: true,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    showLockedOnly
+                                        ? Icons.check_box
+                                        : Icons.check_box_outline_blank,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Flexible(
+                                    child: Text(
+                                      'Show only locked quantity fairminters',
+                                      softWrap: true,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
+                          onSelected: (bool value) {
+                            setState(() {
+                              showLockedOnly = value;
+                              context
+                                  .read<ComposeFairmintBloc>()
+                                  .add(FairminterChanged(value: null));
+                              _dropdownKey = UniqueKey();
+                            });
+                          },
                         ),
-                        const SizedBox(height: 16.0),
-                        const HorizonUI.HorizonTextFormField(
-                          label: "Select a fairminter",
-                          enabled: false,
-                        ),
-                        const SizedBox(height: 16.0),
-                        HorizonUI.HorizonTextFormField(
-                            label: "Name of the asset to mint",
-                            controller: nameController,
-                            enabled: false),
                       ],
-                  onInitialCancel: () => _handleInitialCancel(),
-                  onInitialSubmit: (formKey) {},
-                  buildConfirmationFormFields:
-                      (state, composeTransaction, formKey) => [],
-                  onConfirmationBack: () {},
-                  onConfirmationContinue: (composeTransaction, fee, formKey) {},
-                  onFinalizeSubmit: (password, formKey) {},
-                  onFinalizeCancel: () {}),
+                    ),
+                    const SizedBox(height: 16.0),
+                    const HorizonUI.HorizonTextFormField(
+                      label: "Select a fairminter",
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 16.0),
+                    HorizonUI.HorizonTextFormField(
+                        label: "Name of the asset to mint",
+                        controller: nameController,
+                        enabled: false),
+                  ],
+              onInitialCancel: () => _handleInitialCancel(),
+              onInitialSubmit: (formKey) {},
+              buildConfirmationFormFields:
+                  (state, composeTransaction, formKey) => [],
+              onConfirmationBack: () {},
+              onConfirmationContinue: (composeTransaction, fee, formKey) {},
+              onFinalizeSubmit: (password, formKey) {},
+              onFinalizeCancel: () {}),
           success: (fairminters) =>
               ComposeBasePage<ComposeFairmintBloc, ComposeFairmintState>(
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
@@ -263,28 +308,65 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       ),
       const SizedBox(height: 16.0),
       Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Checkbox(
-            fillColor: WidgetStateProperty.all(
-                _isAssetNameSelected ? checkboxDisabledColor : checkboxColor),
-            value: showLockedOnly,
-            onChanged: _isAssetNameSelected
-                ? null // This disables the checkbox
-                : (bool? value) {
-                    setState(() {
-                      showLockedOnly = value ?? false;
-                      context
-                          .read<ComposeFairmintBloc>()
-                          .add(FairminterChanged(value: null));
-                      _dropdownKey = UniqueKey();
-                    });
-                  },
-          ),
-          Text(
-            "Show only locked quantity fairminters",
-            style: TextStyle(
-              color: _isAssetNameSelected ? Colors.grey : checkboxTextColor,
+          if (showLockedOnly)
+            TextButton.icon(
+              onPressed: _isAssetNameSelected
+                  ? null
+                  : () {
+                      setState(() {
+                        showLockedOnly = false;
+                        context
+                            .read<ComposeFairmintBloc>()
+                            .add(FairminterChanged(value: null));
+                        _dropdownKey = UniqueKey();
+                      });
+                    },
+              icon: const Icon(Icons.clear),
+              label: const Text('Clear filter'),
+              style: TextButton.styleFrom(
+                foregroundColor: _isAssetNameSelected ? Colors.grey : null,
+              ),
             ),
+          PopupMenuButton<bool>(
+            enabled: !_isAssetNameSelected,
+            icon: Icon(
+              Icons.filter_list,
+              color: _isAssetNameSelected ? Colors.grey : null,
+            ),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: true,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      showLockedOnly
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    const Flexible(
+                      child: Text(
+                        'Show only locked quantity fairminters',
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (bool value) {
+              setState(() {
+                showLockedOnly = value;
+                context
+                    .read<ComposeFairmintBloc>()
+                    .add(FairminterChanged(value: null));
+                _dropdownKey = UniqueKey();
+              });
+            },
           ),
         ],
       ),
