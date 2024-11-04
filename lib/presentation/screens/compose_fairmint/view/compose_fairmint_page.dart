@@ -87,6 +87,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   bool _isAssetNameSelected = false;
   // Add a key for the dropdown
   Key _dropdownKey = UniqueKey();
+  bool showLockedOnly = false;
 
   @override
   void initState() {
@@ -111,6 +112,26 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                           label: "Address that will be minting the asset",
                           controller: fromAddressController,
                           enabled: false,
+                        ),
+                        const SizedBox(height: 16.0),
+                        Row(
+                          children: [
+                            Checkbox(
+                              fillColor: WidgetStateProperty.all(
+                                  Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? dialogBackgroundColorDarkTheme
+                                      : dialogBackgroundColorLightTheme),
+                              value: showLockedOnly,
+                              onChanged: null,
+                            ),
+                            const Text(
+                              "Show only locked quantity fairminters",
+                              style: TextStyle(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16.0),
                         const HorizonUI.HorizonTextFormField(
@@ -213,11 +234,51 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         const SelectableText('No fairminters found'),
       ];
     }
+
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final checkboxColor =
+        isDarkMode ? darkThemeInputColor : lightThemeInputColor;
+    final checkboxDisabledColor = isDarkMode
+        ? dialogBackgroundColorDarkTheme
+        : dialogBackgroundColorLightTheme;
+    final checkboxTextColor = isDarkMode ? mainTextWhite : mainTextBlack;
+    final filteredFairminters = showLockedOnly
+        ? fairminters.where((f) => f.lockQuantity == true).toList()
+        : fairminters;
+
     return [
       HorizonUI.HorizonTextFormField(
         label: "Address that will be minting the asset",
         controller: fromAddressController,
         enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      Row(
+        children: [
+          Checkbox(
+            fillColor: WidgetStateProperty.all(
+                _isAssetNameSelected ? checkboxDisabledColor : checkboxColor),
+            value: showLockedOnly,
+            onChanged: _isAssetNameSelected
+                ? null // This disables the checkbox
+                : (bool? value) {
+                    setState(() {
+                      showLockedOnly = value ?? false;
+                      context
+                          .read<ComposeFairmintBloc>()
+                          .add(FairminterChanged(value: null));
+                      _dropdownKey = UniqueKey();
+                    });
+                  },
+          ),
+          Text(
+            "Show only locked quantity fairminters",
+            style: TextStyle(
+              color: _isAssetNameSelected ? Colors.grey : checkboxTextColor,
+            ),
+          ),
+        ],
       ),
       const SizedBox(height: 16.0),
       Row(
@@ -248,7 +309,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     label: "Select a fairminter",
                     selectedValue:
                         _isAssetNameSelected ? null : state.selectedFairminter,
-                    items: fairminters
+                    items: filteredFairminters
                         .map((fairminter) => DropdownMenuItem(
                             value: fairminter,
                             child: Text(displayAssetName(
@@ -284,6 +345,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                       .add(FairminterChanged(value: null));
                   // Reset the dropdown key to force a re-render
                   _dropdownKey = UniqueKey();
+                  showLockedOnly = false;
                 }
               });
             },
