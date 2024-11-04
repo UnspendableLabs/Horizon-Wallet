@@ -69,7 +69,7 @@ Future<void> rpcGetAddresses(String requestId, Port port) async {
   int? tabId = getTabIdFromPort(port);
 
   Window? window = await popup(
-      PopupOptions(url: "/index.html#?action=getAddresses,$tabId,$requestId"));
+      PopupOptions(url: "/index.html#?action=getAddresses:ext,$tabId,$requestId"));
 
   listenForPopupClose(ListenForPopupCloseArgs(
       id: window?.id,
@@ -85,7 +85,7 @@ Future<void> rpcSignPsbt(String requestId, Port port, String psbt) async {
   int? tabId = getTabIdFromPort(port);
 
   Window? window = await popup(PopupOptions(
-      url: "/index.html#?action=signPsbt,$tabId,$requestId,$psbt"));
+      url: "/index.html#?action=signPsbt:ext,$tabId,$requestId,$psbt"));
 
   listenForPopupClose(ListenForPopupCloseArgs(
       id: window?.id,
@@ -94,6 +94,19 @@ Future<void> rpcSignPsbt(String requestId, Port port, String psbt) async {
         "id": requestId,
         "errror": "User rejected `signPsbt` request"
       }));
+}
+
+Future<void> rpcDispense(String address) async {
+  // we just open the extension but for now we don't listen for extension closure
+  // or expect a response
+  await popup(PopupOptions(url: "/index.html#?action=dispense:ext,$address"));
+}
+
+Future<void> rpcFairmint(String fairminterTxHash) async {
+  // we just open the extension but for now we don't listen for extension closure
+  // or expect a response
+  await popup(
+      PopupOptions(url: "/index.html#?action=fairmint:ext,$fairminterTxHash"));
 }
 
 Future<void> rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
@@ -110,6 +123,10 @@ Future<void> rpcMessageHandler(Map<dynamic, dynamic> message, Port port) async {
       await rpcGetAddresses(message["id"], port);
     case "signPsbt":
       await rpcSignPsbt(message["id"], port, message["params"]["hex"]);
+    case "fairmint":
+      await rpcFairmint(message["params"]["fairminterTxHash"]);
+    case "dispense":
+      await rpcDispense(message["params"]["address"]);
     default:
       print('Unknown method: ${message['method']}');
   }
