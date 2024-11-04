@@ -87,6 +87,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   bool _isAssetNameSelected = false;
   // Add a key for the dropdown
   Key _dropdownKey = UniqueKey();
+  bool showLockedOnly = false;
 
   @override
   void initState() {
@@ -111,6 +112,20 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                           label: "Address that will be minting the asset",
                           controller: fromAddressController,
                           enabled: false,
+                        ),
+                        const SizedBox(height: 16.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            PopupMenuButton<bool>(
+                              enabled: false,
+                              icon: const Icon(
+                                Icons.filter_list,
+                              ),
+                              itemBuilder: (context) => [],
+                              onSelected: (bool value) {},
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16.0),
                         const HorizonUI.HorizonTextFormField(
@@ -213,11 +228,87 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         const SelectableText('No fairminters found'),
       ];
     }
+
+    final validFairminters = fairminters.where((fairminter) {
+      return fairminter.status != null &&
+          fairminter.status == 'open' &&
+          fairminter.price != null &&
+          fairminter.price! == 0;
+    }).toList();
+
+    final filteredFairminters = showLockedOnly
+        ? validFairminters.where((f) => f.lockQuantity == true).toList()
+        : validFairminters;
+
     return [
       HorizonUI.HorizonTextFormField(
         label: "Address that will be minting the asset",
         controller: fromAddressController,
         enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (showLockedOnly)
+            TextButton.icon(
+              onPressed: _isAssetNameSelected
+                  ? null
+                  : () {
+                      setState(() {
+                        showLockedOnly = false;
+                        context
+                            .read<ComposeFairmintBloc>()
+                            .add(FairminterChanged(value: null));
+                        _dropdownKey = UniqueKey();
+                      });
+                    },
+              icon: const Icon(Icons.clear),
+              label: const Text('Clear filter'),
+              style: TextButton.styleFrom(
+                foregroundColor: _isAssetNameSelected ? Colors.grey : null,
+              ),
+            ),
+          PopupMenuButton<bool>(
+            enabled: !_isAssetNameSelected,
+            icon: Icon(
+              Icons.filter_list,
+              color: _isAssetNameSelected ? Colors.grey : null,
+            ),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: true,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      showLockedOnly
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    const Flexible(
+                      child: Text(
+                        'Show only locked quantity fairminters',
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (bool value) {
+              setState(() {
+                showLockedOnly = value;
+                context
+                    .read<ComposeFairmintBloc>()
+                    .add(FairminterChanged(value: null));
+                _dropdownKey = UniqueKey();
+              });
+            },
+          ),
+        ],
       ),
       const SizedBox(height: 16.0),
       Row(
@@ -227,6 +318,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             groupValue: _isAssetNameSelected,
             onChanged: (value) {
               setState(() {
+                error = null;
                 _isAssetNameSelected = value!;
                 if (!_isAssetNameSelected) {
                   // Clear the asset name input when switching to dropdown
@@ -248,7 +340,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     label: "Select a fairminter",
                     selectedValue:
                         _isAssetNameSelected ? null : state.selectedFairminter,
-                    items: fairminters
+                    items: filteredFairminters
                         .map((fairminter) => DropdownMenuItem(
                             value: fairminter,
                             child: Text(displayAssetName(
@@ -276,6 +368,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             groupValue: _isAssetNameSelected,
             onChanged: (value) {
               setState(() {
+                error = null;
                 _isAssetNameSelected = value!;
                 if (_isAssetNameSelected) {
                   // Clear the dropdown value when switching to asset name input
@@ -284,6 +377,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                       .add(FairminterChanged(value: null));
                   // Reset the dropdown key to force a re-render
                   _dropdownKey = UniqueKey();
+                  showLockedOnly = false;
                 }
               });
             },
@@ -311,6 +405,15 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
           ),
         ],
       ),
+      state.selectedFairminter != null
+          ? Column(
+              children: [
+                const SizedBox(height: 16.0),
+                SelectableText(
+                    'Quantity Locked After Fairminter Closes: ${state.selectedFairminter!.lockQuantity}'),
+              ],
+            )
+          : const SizedBox.shrink(),
       if (error != null)
         SelectableText(
           error!,
