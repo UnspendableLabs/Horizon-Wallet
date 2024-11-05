@@ -34,6 +34,8 @@ class FetchFairminterFormDataUseCase {
       throw FetchAssetsException(e.message);
     } on FetchFeeEstimatesException catch (e) {
       throw FetchFeeEstimatesException(e.message);
+    } on FetchFairmintersException catch (e) {
+      throw FetchFairmintersException(e.message);
     } catch (e) {
       throw Exception('An unexpected error occurred: ${e.toString()}');
     }
