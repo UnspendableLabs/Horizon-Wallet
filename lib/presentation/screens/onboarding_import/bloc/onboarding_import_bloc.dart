@@ -28,16 +28,22 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        if (state.importFormat == ImportFormat.horizon ||
+        bool validMnemonic = false;
+
+        if (state.importFormat == ImportFormat.counterwallet) {
+          validMnemonic =
+              mnemonicService.validateCounterwalletMnemonic(event.mnemonic);
+        } else if (state.importFormat == ImportFormat.horizon ||
             state.importFormat == ImportFormat.freewallet) {
-          bool validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-          if (!validMnemonic) {
-            emit(state.copyWith(
-                mnemonicError: "Invalid seed phrase",
-                mnemonic: event.mnemonic));
-            return;
-          }
+          validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
         }
+
+        if (!validMnemonic) {
+          emit(state.copyWith(
+              mnemonicError: "Invalid seed phrase", mnemonic: event.mnemonic));
+          return;
+        }
+
         emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
       }
     });
@@ -59,15 +65,24 @@ class OnboardingImportBloc
       } else if (state.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(mnemonicError: "Seed phrase must be twelve words"));
         return;
-      } else if (event.importFormat == "Horizon" ||
-          event.importFormat == "Freewallet") {
-        // only validate mnemonic if importing from horizon or freewallet
-        bool validMnemonic = mnemonicService.validateMnemonic(state.mnemonic);
+      } else {
+        bool validMnemonic = false;
+
+        if (state.importFormat == ImportFormat.counterwallet) {
+          validMnemonic =
+              mnemonicService.validateCounterwalletMnemonic(event.mnemonic);
+        } else if (state.importFormat == ImportFormat.horizon ||
+            state.importFormat == ImportFormat.freewallet) {
+          validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
+        }
+
         if (!validMnemonic) {
-          emit(state.copyWith(mnemonicError: "Invalid seed phrase"));
+          emit(state.copyWith(
+              mnemonicError: "Invalid seed phrase", mnemonic: event.mnemonic));
           return;
         }
       }
+
       ImportFormat importFormat = switch (event.importFormat) {
         "Horizon" => ImportFormat.horizon,
         "Freewallet" => ImportFormat.freewallet,

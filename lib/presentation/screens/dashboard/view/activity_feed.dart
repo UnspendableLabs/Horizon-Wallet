@@ -219,8 +219,8 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildDispenserUpdateTitle(params),
       VerboseNewFairmintEvent(params: var params) =>
         SelectableText("New Fairmint for ${params.asset}"),
-      VerboseNewFairminterEvent(params: var params) =>
-        SelectableText("New Fairminter for ${params.asset}"),
+      VerboseNewFairminterEvent(params: var params) => SelectableText(
+          "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -246,6 +246,20 @@ class ActivityFeedListItem extends StatelessWidget {
       } else if (params.assetEvents == "lock_description reissuance") {
         return SelectableText(
             "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}");
+      } else if (params.assetEvents == "open_fairminter") {
+        return SelectableText(
+            "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}");
+      } else if (params.assetEvents == "fairmint") {
+        return SelectableText(
+            "Fairmint for ${displayAssetName(params.asset, params.assetLongname)}");
+      } else if (params.assetEvents == "transfer") {
+        if (addresses.any((a) => a == params.source)) {
+          return SelectableText(
+              "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");
+        } else {
+          return SelectableText(
+              "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}");
+        }
       }
     }
     if (params.asset == null || params.quantityNormalized == null) {
@@ -443,7 +457,7 @@ class ActivityFeedListItem extends StatelessWidget {
           when _getSendSide(params.source) == SendSide.destination =>
         const Icon(Icons.arrow_forward, color: Colors.green),
       VerboseAssetIssuanceEvent(params: var _) =>
-        const Icon(Icons.toll, color: Colors.grey),
+        _getAssetIssuanceLeadingIcon(event),
       VerboseResetIssuanceEvent(params: var _) =>
         const Icon(Icons.toll, color: Colors.grey),
       VerboseDispenseEvent(params: var _) =>
@@ -460,6 +474,15 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.print, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
+  }
+
+  Icon _getAssetIssuanceLeadingIcon(VerboseAssetIssuanceEvent event) {
+    if (event.params.assetEvents == "open_fairminter") {
+      return const Icon(Icons.print, color: Colors.grey);
+    } else if (event.params.assetEvents == "fairmint") {
+      return const Icon(Icons.money, color: Colors.grey);
+    }
+    return const Icon(Icons.toll, color: Colors.grey);
   }
 
   Icon _getBitcoinTxLeadingIcon(BitcoinTx btx) {

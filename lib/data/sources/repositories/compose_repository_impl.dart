@@ -275,6 +275,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
       (currentInputSet) async {
         final sourceAddress = params.source;
         final asset = params.asset;
+        final assetParent = params.assetParent;
         final maxMintPerTx = params.maxMintPerTx;
         final hardCap = params.hardCap;
         final startBlock = params.startBlock;
@@ -287,6 +288,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeFairminterVerbose(
             sourceAddress,
             asset,
+            assetParent,
             divisible,
             maxMintPerTx,
             hardCap,

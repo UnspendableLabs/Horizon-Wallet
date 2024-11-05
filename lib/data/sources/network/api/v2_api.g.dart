@@ -3723,6 +3723,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeFairminterVerboseModel>> composeFairminterVerbose(
     String address,
     String asset, [
+    String? assetParent,
     bool? divisible,
     int? maxMintPerTx,
     int? hardCap,
@@ -3734,6 +3735,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'asset': asset,
+      r'asset_parent': assetParent,
       r'divisible': divisible,
       r'max_mint_per_tx': maxMintPerTx,
       r'hard_cap': hardCap,
@@ -4427,6 +4429,36 @@ class _V2Api implements V2Api {
     final _value = Response<BalanceVerbose>.fromJson(
       _result.data!,
       (json) => BalanceVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<NodeInfoModel>> getNodeInfo() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<NodeInfoModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<NodeInfoModel>.fromJson(
+      _result.data!,
+      (json) => NodeInfoModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

@@ -7,6 +7,7 @@ import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/fairminter.dart';
+import 'package:horizon/data/models/node_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -3314,6 +3315,7 @@ abstract class V2Api {
   Future<Response<ComposeFairminterVerboseModel>> composeFairminterVerbose(
     @Path("address") String address,
     @Query("asset") String asset, [
+    @Query("asset_parent") String? assetParent,
     @Query("divisible") bool? divisible,
     @Query("max_mint_per_tx") int? maxMintPerTx,
     @Query("hard_cap") int? hardCap,
@@ -3613,6 +3615,8 @@ abstract class V2Api {
   //     Get Mempool Events By Name
   //
 
+  @GET("/")
+  Future<Response<NodeInfoModel>> getNodeInfo();
 // {
 //   "result": {
 //     "server_ready": true,
