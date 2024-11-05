@@ -57,6 +57,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
           assetState: const AssetState.initial(),
+          fairmintersState: const FairmintersState.initial(),
         ));
 
   @override
@@ -68,13 +69,14 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
         submitState: const SubmitInitial()));
 
     try {
-      final (assets, feeEstimates) =
+      final (assets, feeEstimates, fairminters) =
           await fetchFairminterFormDataUseCase.call(event.currentAddress!);
 
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
         feeState: FeeState.success(feeEstimates),
         assetState: AssetState.success(assets),
+        fairmintersState: FairmintersState.success(fairminters),
       ));
     } on FetchAssetsException catch (e) {
       emit(state.copyWith(

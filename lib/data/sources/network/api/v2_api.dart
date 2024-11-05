@@ -3303,6 +3303,16 @@ abstract class V2Api {
     @Query("offset") int? offset,
   ]);
 
+  @GET("/addresses/{address}/fairminters?verbose=true")
+  Future<Response<List<FairminterModel>>> getFairmintersByAddress(
+    @Path("address") String address, [
+    @Query("status") String? status,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+  ]);
+
   @GET("/addresses/{address}/compose/fairmint?verbose=true")
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     @Path("address") String address,

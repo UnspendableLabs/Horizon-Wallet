@@ -3679,6 +3679,55 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<List<FairminterModel>>> getFairmintersByAddress(
+    String address, [
+    String? status,
+    bool? showUnconfirmed,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'status': status,
+      r'show_unconfirmed': showUnconfirmed,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<FairminterModel>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/fairminters?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<FairminterModel>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<FairminterModel>(
+                  (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     String address,
     String asset, [

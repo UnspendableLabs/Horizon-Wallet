@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/entities/node_info.dart';
@@ -45,7 +46,7 @@ void main() {
             .thenAnswer((_) async => mockNodeInfo);
         return footerBloc;
       },
-      act: (bloc) => bloc.add(GetNodeInfo()),
+      act: (bloc) => bloc.add(NodeInfoRequested()),
       expect: () => [
         const FooterState(nodeInfoState: NodeInfoState.loading()),
         const FooterState(nodeInfoState: NodeInfoState.success(mockNodeInfo)),
@@ -62,7 +63,7 @@ void main() {
             .thenThrow(Exception('Failed to connect'));
         return footerBloc;
       },
-      act: (bloc) => bloc.add(GetNodeInfo()),
+      act: (bloc) => bloc.add(NodeInfoRequested()),
       expect: () => [
         const FooterState(nodeInfoState: NodeInfoState.loading()),
         const FooterState(
