@@ -983,8 +983,6 @@ class DashboardPage extends StatefulWidget {
 class DashboardPageState extends State<DashboardPage> {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
   final _scrollController = ScrollController();
-  final _searchController = TextEditingController();
-  String _searchTerm = '';
 
   @override
   void initState() {
@@ -995,20 +993,12 @@ class DashboardPageState extends State<DashboardPage> {
         _getHandler(action)();
       });
     });
-    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
     super.dispose();
-  }
-
-  void _onSearchChanged() {
-    setState(() {
-      _searchTerm = _searchController.text;
-    });
+    _scrollController.dispose();
   }
 
   void Function() _getHandler(URLAction.Action action) {
