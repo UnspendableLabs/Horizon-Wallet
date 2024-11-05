@@ -218,9 +218,9 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseDispenserUpdateEvent(params: var params) =>
         _buildDispenserUpdateTitle(params),
       VerboseNewFairmintEvent(params: var params) =>
-        SelectableText("New Fairmint for ${params.asset}"),
-      VerboseNewFairminterEvent(params: var params) => SelectableText(
-          "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}"),
+        _buildNewFairmintTitle(params),
+      VerboseNewFairminterEvent(params: var params) =>
+        _buildNewFairminterTitle(params),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -268,6 +268,22 @@ class ActivityFeedListItem extends StatelessWidget {
     }
     return SelectableText(
         "Issue ${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}");
+  }
+
+  Widget _buildNewFairmintTitle(VerboseNewFairmintParams params) {
+    if (params.status?.contains('invalid') ?? false) {
+      return const SelectableText('New Fairmint (INVALID)',
+          style: TextStyle(color: redErrorText));
+    }
+    return SelectableText("New Fairmint for ${params.asset}");
+  }
+
+  Widget _buildNewFairminterTitle(VerboseNewFairminterParams params) {
+    if (params.status?.contains('invalid') ?? false) {
+      return const SelectableText('New Fairminter (INVALID)',
+          style: TextStyle(color: redErrorText));
+    }
+    return SelectableText("New Fairminter for ${params.asset}");
   }
 
   Widget _buildDispenserUpdateTitle(VerboseDispenserUpdateParams params) {
