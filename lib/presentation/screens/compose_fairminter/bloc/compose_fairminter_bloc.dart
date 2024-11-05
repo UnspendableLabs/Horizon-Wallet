@@ -72,10 +72,16 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
       final (assets, feeEstimates, fairminters) =
           await fetchFairminterFormDataUseCase.call(event.currentAddress!);
 
+      final fairminterAssets =
+          fairminters.map((fairminter) => fairminter.asset).toList();
+      final validAssets = assets
+          .where((asset) => !fairminterAssets.contains(asset.asset))
+          .toList();
+
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
         feeState: FeeState.success(feeEstimates),
-        assetState: AssetState.success(assets),
+        assetState: AssetState.success(validAssets),
         fairmintersState: FairmintersState.success(fairminters),
       ));
     } on FetchAssetsException catch (e) {
@@ -86,6 +92,10 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
       ));
+    } on FetchFairmintersException catch (e) {
+      emit(state.copyWith(
+        fairmintersState: FairmintersState.error(e.message),
+      ));
     } catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(
@@ -94,6 +104,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
             AssetState.error('An unexpected error occurred: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),
+        fairmintersState: FairmintersState.error(
+            'An unexpected error occurred: ${e.toString()}'),
       ));
     }
   }

@@ -219,8 +219,8 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildDispenserUpdateTitle(params),
       VerboseNewFairmintEvent(params: var params) =>
         SelectableText("New Fairmint for ${params.asset}"),
-      VerboseNewFairminterEvent(params: var params) =>
-        SelectableText("New Fairminter for ${params.asset}"),
+      VerboseNewFairminterEvent(params: var params) => SelectableText(
+          "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
