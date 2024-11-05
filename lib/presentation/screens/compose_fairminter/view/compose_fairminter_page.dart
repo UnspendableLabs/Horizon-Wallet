@@ -200,11 +200,22 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
           (maxMintPerTxInput * Decimal.fromInt(100000000)).toBigInt().toInt();
       int hardcapDivisible =
           (hardcapInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+      String? parent;
+      String? subAsset;
+      final fullAssetName =
+          displayAssetName(asset!.asset, asset!.assetLongname);
+      if (fullAssetName.contains('.')) {
+        parent = fullAssetName.split('.')[0];
+        subAsset = fullAssetName.split('.')[1];
+      }
 
+      print('parent: $parent');
+      print('subAsset: $subAsset');
       context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeFairminterEventParams(
-              asset: asset!.asset,
+              parent: parent,
+              asset: subAsset ?? asset!.asset,
               maxMintPerTx: asset!.divisible!
                   ? maxMintPerTxDivisible
                   : int.parse(maxMintPerTxController.text),
@@ -262,6 +273,8 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
               ? DecimalTextInputFormatter(decimalRange: 20)
               : FilteringTextInputFormatter.digitsOnly,
         ],
+        autovalidateMode:
+            _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter a max mint per transaction';
@@ -286,6 +299,8 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
               ? DecimalTextInputFormatter(decimalRange: 20)
               : FilteringTextInputFormatter.digitsOnly,
         ],
+        autovalidateMode:
+            _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter a hardcap';
@@ -351,6 +366,9 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         quantityToQuantityNormalized(params.maxMintPerTx!, params.divisible!);
     final Decimal hardcapNormalized =
         quantityToQuantityNormalized(params.hardCap!, params.divisible!);
+    final String assetName = params.assetParent == null
+        ? params.asset
+        : "${params.assetParent}.${params.asset}";
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -360,7 +378,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Asset",
-        controller: TextEditingController(text: params.asset),
+        controller: TextEditingController(text: assetName),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
