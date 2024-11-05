@@ -24,7 +24,7 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/common/footer.dart';
+import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';

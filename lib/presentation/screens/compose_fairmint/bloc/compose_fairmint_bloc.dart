@@ -80,15 +80,8 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
           await fetchComposeFairmintFormDataUseCase.call();
       // final block = await blockRepository.getLastBlock();
 
-      final validFairminters = fairminters.where((fairminter) {
-        return fairminter.status != null &&
-            fairminter.status == 'open' &&
-            fairminter.price != null &&
-            fairminter.price! == 0;
-      }).toList();
-
       if (initialFairminterTxHash != null) {
-        final fairminter = validFairminters.firstWhereOrNull(
+        final fairminter = fairminters.firstWhereOrNull(
             (element) => element.txHash == initialFairminterTxHash);
 
         if (fairminter != null) {
@@ -99,7 +92,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
         feeState: FeeState.success(feeEstimates),
-        fairmintersState: FairmintersState.success(validFairminters),
+        fairmintersState: FairmintersState.success(fairminters),
         selectedFairminter: currentSelectedFairminter ?? initialFairminter,
       ));
     } on FetchFairmintersException catch (e) {

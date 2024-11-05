@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/common/footer.dart';
+import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 

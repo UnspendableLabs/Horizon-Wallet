@@ -137,7 +137,7 @@ Map<String, dynamic> _$TransactionVerboseToJson(TransactionVerbose instance) =>
     };
 
 Balance _$BalanceFromJson(Map<String, dynamic> json) => Balance(
-      address: json['address'] as String,
+      address: json['address'] as String?,
       quantity: (json['quantity'] as num).toDouble(),
       asset: json['asset'] as String,
     );
@@ -150,7 +150,7 @@ Map<String, dynamic> _$BalanceToJson(Balance instance) => <String, dynamic>{
 
 BalanceVerbose _$BalanceVerboseFromJson(Map<String, dynamic> json) =>
     BalanceVerbose(
-      address: json['address'] as String,
+      address: json['address'] as String?,
       quantity: (json['quantity'] as num).toDouble(),
       asset: json['asset'] as String,
       assetInfo:
@@ -180,7 +180,7 @@ Map<String, dynamic> _$MultiBalanceToJson(MultiBalance instance) =>
 
 MultiBalanceVerbose _$MultiBalanceVerboseFromJson(Map<String, dynamic> json) =>
     MultiBalanceVerbose(
-      address: json['address'] as String,
+      address: json['address'] as String?,
       quantity: (json['quantity'] as num).toInt(),
       quantityNormalized: json['quantity_normalized'] as String,
     );
@@ -4427,6 +4427,36 @@ class _V2Api implements V2Api {
     final _value = Response<BalanceVerbose>.fromJson(
       _result.data!,
       (json) => BalanceVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<NodeInfoModel>> getNodeInfo() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<NodeInfoModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<NodeInfoModel>.fromJson(
+      _result.data!,
+      (json) => NodeInfoModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

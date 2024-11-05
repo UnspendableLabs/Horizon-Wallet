@@ -7,6 +7,7 @@ import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/fairminter.dart';
+import 'package:horizon/data/models/node_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -138,7 +139,7 @@ class TransactionVerbose extends Transaction {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Balance {
-  final String address;
+  final String? address;
   final double quantity;
   final String asset;
 
@@ -159,7 +160,7 @@ class BalanceVerbose extends Balance {
   final AssetInfoModel assetInfo;
 
   BalanceVerbose(
-      {required super.address,
+      {super.address,
       required super.quantity,
       required super.asset,
       required this.assetInfo,
@@ -181,13 +182,11 @@ class MultiBalance {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class MultiBalanceVerbose {
-  final String address;
+  final String? address;
   final int quantity;
   final String quantityNormalized;
   MultiBalanceVerbose(
-      {required this.address,
-      required this.quantity,
-      required this.quantityNormalized});
+      {this.address, required this.quantity, required this.quantityNormalized});
 
   factory MultiBalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$MultiBalanceVerboseFromJson(json);
@@ -3615,6 +3614,8 @@ abstract class V2Api {
   //     Get Mempool Events By Name
   //
 
+  @GET("/")
+  Future<Response<NodeInfoModel>> getNodeInfo();
 // {
 //   "result": {
 //     "server_ready": true,
