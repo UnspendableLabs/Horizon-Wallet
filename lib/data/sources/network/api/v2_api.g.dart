@@ -3772,6 +3772,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeFairminterVerboseModel>> composeFairminterVerbose(
     String address,
     String asset, [
+    String? assetParent,
     bool? divisible,
     int? maxMintPerTx,
     int? hardCap,
@@ -3783,6 +3784,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'asset': asset,
+      r'asset_parent': assetParent,
       r'divisible': divisible,
       r'max_mint_per_tx': maxMintPerTx,
       r'hard_cap': hardCap,

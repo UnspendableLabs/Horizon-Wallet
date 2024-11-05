@@ -21,7 +21,7 @@ class ComposeFairminterEventParams {
   final bool divisible;
   final int? startBlock;
   final bool isLocked;
-
+  final String? parent;
   ComposeFairminterEventParams({
     required this.asset,
     required this.maxMintPerTx,
@@ -29,6 +29,7 @@ class ComposeFairminterEventParams {
     required this.divisible,
     this.startBlock,
     required this.isLocked,
+    this.parent,
   });
 }
 
@@ -133,7 +134,6 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
     try {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
-      final asset = event.params.asset;
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeFairminterParams, ComposeFairminterResponse>(
@@ -141,7 +141,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
               source: source,
               params: ComposeFairminterParams(
                   source: source,
-                  asset: asset,
+                  assetParent: event.params.parent,
+                  asset: event.params.asset,
                   maxMintPerTx: event.params.maxMintPerTx,
                   hardCap: event.params.hardCap,
                   startBlock: event.params.startBlock,
