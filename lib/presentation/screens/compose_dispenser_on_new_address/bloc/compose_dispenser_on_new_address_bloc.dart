@@ -3,9 +3,8 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
-import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -59,15 +58,15 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       emit(state.copyWith(
           feeState: FeeState.success(feeEstimates),
           composeDispenserOnNewAddressState:
-              const ComposeDispenserOnNewAddressState.initial()));
+              const ComposeDispenserOnNewAddressState.collectPassword(
+                  loading: false)));
     });
 
-    on<CollectPassword>((event, emit) {
+    on<ComposeTransactions>((event, emit) async {
       emit(state.copyWith(
           composeDispenserOnNewAddressState:
-              const ComposeDispenserOnNewAddressState.collectPassword()));
-    });
-    on<ComposeTransactions>((event, emit) async {
+              const ComposeDispenserOnNewAddressState.collectPassword(
+                  loading: true)));
       final wallet = await walletRepository.getCurrentWallet();
       print('WALLET: $wallet');
       if (wallet == null) {
@@ -88,9 +87,11 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         emit(const ComposeDispenserOnNewAddressStateBase(
             composeDispenserOnNewAddressState:
                 ComposeDispenserOnNewAddressState.collectPassword(
-                    error: 'Invalid password')));
+                    error: 'Invalid password', loading: false)));
         return;
       }
+
+      emit(state.copyWith(password: event.password));
       print('after decrypt');
       final List<Account> accountsInWallet =
           await accountRepository.getAccountsByWalletUuid(wallet.uuid);
@@ -120,24 +121,17 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       print('after newAddress');
       // await accountRepository.insert(newAccount);
       // await addressRepository.insert(newAddress);
-      // final tx = await composeRepository.composeSendVerbose(
-      //   0,
-      //   [],
-      //   ComposeSendParams(
-      //     source: event.originalAddress,
-      //     destination: newAddress.address,
-      //     asset: 'HZN',
-      //     quantity: event.giveQuantity,
-      //   ),
-      // );
+
       try {
         const feeRateSend = 0;
         final source = event.originalAddress;
         final destination = newAddress.address;
         final asset = event.asset;
         final quantity = event.giveQuantity;
+        final escrowQuantity = event.escrowQuantity;
+        final mainchainrate = event.mainchainrate;
 
-        final composeSendResponse = await composeTransactionUseCase
+        final composeSendResponse1 = await composeTransactionUseCase
             .call<ComposeSendParams, ComposeSendResponse>(
           feeRate: feeRateSend,
           source: source,
@@ -150,22 +144,26 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           composeFn: composeRepository.composeSendVerbose,
         );
 
-        final composedSend = composeSendResponse.$1;
-        final virtualSizeSend = composeSendResponse.$2;
+        final composedSend1 = composeSendResponse1.$1;
+        final virtualSizeSend1 = composeSendResponse1.$2;
 
-        // final composeDispenserResponse = await composeTransactionUseCase
-        //     .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-        //   feeRate: event.feeRate,
-        //   source: destination,
-        //   params: ComposeDispenserParams(
-        //     source: destination,
-        //     asset: asset,
-        //     giveQuantity: quantity,
-        //     escrowQuantity: quantity,
-        //     mainchainrate: 0,
-        //   ),
-        //   composeFn: composeRepository.composeDispenserVerbose,
-        // );
+        final composeDispenserResponse = await composeTransactionUseCase
+            .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+          feeRate: event.feeRate,
+          source: source,
+          params: ComposeDispenserParams(
+            source: source,
+            asset: asset,
+            giveQuantity: quantity,
+            escrowQuantity: escrowQuantity,
+            mainchainrate: mainchainrate,
+            status: 0,
+          ),
+          composeFn: composeRepository.composeDispenserVerbose,
+        );
+
+        final composedDispenser = composeDispenserResponse.$1;
+        final virtualSizeDispenser = composeDispenserResponse.$2;
 
         // final composedDispenser = composeDispenserResponse.$1;
         // final virtualSizeDispenser = composeDispenserResponse.$2;
@@ -190,7 +188,46 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         /**
          * fee = fee_rate * (adj_size_1 + adj_size_2)
          */
-        print(composeSendResponse);
+
+        // two sends will be created, so we need to multiply the adjusted virtual size by 2
+        final adjustedVirtualSizeSend =
+            virtualSizeSend1.adjustedVirtualSize * 2;
+
+        final int estimatedFee = event.feeRate *
+            (adjustedVirtualSizeSend +
+                virtualSizeDispenser.adjustedVirtualSize);
+
+        final composeSendResponse2 = await composeTransactionUseCase
+            .call<ComposeSendParams, ComposeSendResponse>(
+          feeRate: feeRateSend,
+          source: source,
+          params: ComposeSendParams(
+            source: source,
+            destination: destination,
+            asset: 'BTC',
+            quantity: estimatedFee,
+          ),
+          composeFn: composeRepository.composeSendVerbose,
+        );
+        final composedSend2 = composeSendResponse2.$1;
+        final virtualSizeSend2 = composeSendResponse2.$2;
+
+        print(composedDispenser);
+        emit(state.copyWith(
+            composeDispenserOnNewAddressState:
+                ComposeDispenserOnNewAddressState.confirm(
+          composeSendTransaction1: composedSend1,
+          composeSendTransaction2: composedSend2,
+          composeDispenserTransaction: composedDispenser,
+          fee: estimatedFee,
+          feeRate: event.feeRate,
+          totalVirtualSize: virtualSizeSend1.adjustedVirtualSize +
+              virtualSizeSend2.adjustedVirtualSize +
+              virtualSizeDispenser.adjustedVirtualSize,
+          totalAdjustedVirtualSize: virtualSizeSend1.adjustedVirtualSize +
+              virtualSizeSend2.adjustedVirtualSize +
+              virtualSizeDispenser.adjustedVirtualSize,
+        )));
       } catch (e) {
         emit(ComposeDispenserOnNewAddressStateBase(
             composeDispenserOnNewAddressState:
@@ -203,22 +240,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         //         loading: false,
         //         error: e is ComposeTransactionException ? e.message : 'An unexpected error occurred: ${e.toString()}')));
       }
-
-      // await createSendRepository.createSend(CreateSendParams(
-      //   source: event.originalAddress,
-      //   destination: newAddress.address,
-      //   asset: 'HZN',
-      //   quantity: 10,
-      // ));
     });
-  }
-  int _getFeeRate(FeeOption.FeeOption feeOption) {
-    FeeEstimates feeEstimates = state.feeState.feeEstimates;
-    return switch (feeOption) {
-      FeeOption.Fast() => feeEstimates.fast,
-      FeeOption.Medium() => feeEstimates.medium,
-      FeeOption.Slow() => feeEstimates.slow,
-      FeeOption.Custom(fee: var fee) => fee,
-    };
   }
 }

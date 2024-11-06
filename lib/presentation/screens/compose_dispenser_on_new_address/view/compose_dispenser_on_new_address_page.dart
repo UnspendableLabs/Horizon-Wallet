@@ -1,4 +1,3 @@
-import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -23,9 +22,9 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String originalAddress;
   final String asset;
-  final String giveQuantity;
-  final String escrowQuantity;
-  final String mainchainrate;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
   final bool divisible;
   final int feeRate;
 
@@ -73,9 +72,9 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
 class ComposeDispenserOnNewAddressPage extends StatefulWidget {
   final String originalAddress;
   final String asset;
-  final String giveQuantity;
-  final String escrowQuantity;
-  final String mainchainrate;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
   final bool divisible;
   final int feeRate;
   const ComposeDispenserOnNewAddressPage({
@@ -122,73 +121,18 @@ class _ComposeDispenserOnNewAddressPageState
       child: BlocBuilder<ComposeDispenserOnNewAddressBloc,
           ComposeDispenserOnNewAddressStateBase>(
         builder: (context, state) {
-          print(state.feeState);
-          print(state.composeDispenserOnNewAddressState);
           return state.composeDispenserOnNewAddressState.maybeWhen(
             loading: () => const Center(
               child: CircularProgressIndicator(),
             ),
-            initial: () => Form(
-              key: initialFormKey,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    HorizonUI.HorizonTextFormField(
-                      label: 'Open Address',
-                      enabled: false,
-                      controller: TextEditingController(text: 'To be created'),
-                    ),
-                    const SizedBox(height: 16.0),
-                    HorizonUI.HorizonTextFormField(
-                      label: 'Asset',
-                      enabled: false,
-                      controller: TextEditingController(text: widget.asset),
-                    ),
-                    const SizedBox(height: 16.0),
-                    HorizonUI.HorizonTextFormField(
-                      label: 'Give Quantity',
-                      enabled: false,
-                      controller:
-                          TextEditingController(text: widget.giveQuantity),
-                    ),
-                    const SizedBox(height: 16.0),
-                    HorizonUI.HorizonTextFormField(
-                      label: 'Escrow Quantity',
-                      enabled: false,
-                      controller:
-                          TextEditingController(text: widget.escrowQuantity),
-                    ),
-                    const SizedBox(height: 16.0),
-                    HorizonUI.HorizonTextFormField(
-                      label: 'Price Per Unit (BTC)',
-                      enabled: false,
-                      controller:
-                          TextEditingController(text: widget.mainchainrate),
-                    ),
-                    _buildBackContinueButtons(
-                      onBack: () {
-                        Navigator.of(context).pop();
-                      },
-                      onContinue: () {
-                        if (initialFormKey.currentState!.validate()) {
-                          context
-                              .read<ComposeDispenserOnNewAddressBloc>()
-                              .add(CollectPassword());
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            collectPassword: (error) => Form(
+            collectPassword: (error, loading) => Form(
               key: passwordFormKey,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
                     HorizonUI.HorizonTextFormField(
+                      enabled: !loading,
                       controller: passwordController,
                       obscureText: true,
                       label: 'Password',
@@ -198,67 +142,31 @@ class _ComposeDispenserOnNewAddressPageState
                         }
                         return null;
                       },
+                      onFieldSubmitted: (_) => _handleContinue(),
                     ),
                     if (error != null)
                       SelectableText(error,
                           style: const TextStyle(color: redErrorText)),
                     _buildBackContinueButtons(
+                      loading: loading,
                       onBack: () {
                         Navigator.of(context).pop();
                       },
-                      onContinue: () {
-                        if (passwordFormKey.currentState!.validate()) {
-                          Decimal giveInput =
-                              Decimal.parse(widget.giveQuantity);
-                          Decimal escrowInput =
-                              Decimal.parse(widget.escrowQuantity);
-                          Decimal mainchainrateBtc = Decimal.parse(
-                              widget.mainchainrate); // Price in BTC
-
-                          int giveQuantity;
-                          int escrowQuantity;
-
-                          // Handle divisibility for the give quantity
-                          if (widget.divisible) {
-                            giveQuantity =
-                                (giveInput * Decimal.fromInt(100000000))
-                                    .toBigInt()
-                                    .toInt();
-                            escrowQuantity =
-                                (escrowInput * Decimal.fromInt(100000000))
-                                    .toBigInt()
-                                    .toInt();
-                          } else {
-                            giveQuantity = giveInput.toBigInt().toInt();
-                            escrowQuantity = escrowInput.toBigInt().toInt();
-                          }
-
-                          int mainchainrate =
-                              (mainchainrateBtc * Decimal.fromInt(100000000))
-                                  .toBigInt()
-                                  .toInt();
-
-                          // Dispatch the event with the calculated values
-
-                          context
-                              .read<ComposeDispenserOnNewAddressBloc>()
-                              .add(ComposeTransactions(
-                                password: passwordController.text,
-                                originalAddress: widget.originalAddress,
-                                divisible: widget.divisible,
-                                asset: widget.asset,
-                                giveQuantity: giveQuantity,
-                                escrowQuantity: escrowQuantity,
-                                mainchainrate: mainchainrate,
-                                status: 0,
-                                feeRate: widget.feeRate,
-                              ));
-                        }
-                      },
+                      onContinue: loading ? () {} : _handleContinue,
                     ),
                   ],
                 ),
               ),
+            ),
+            confirm: (composeSendTransaction1,
+                    composeSendTransaction2,
+                    composeDispenserTransaction,
+                    fee,
+                    feeRate,
+                    totalVirtualSize,
+                    totalAdjustedVirtualSize) =>
+                const Center(
+              child: SelectableText('Confirming transaction...'),
             ),
             error: (error) => Center(
               child: SelectableText(error),
@@ -270,8 +178,46 @@ class _ComposeDispenserOnNewAddressPageState
     );
   }
 
+  void _handleContinue() {
+    if (passwordFormKey.currentState!.validate()) {
+      // Decimal giveInput = Decimal.parse(widget.giveQuantity);
+      // Decimal escrowInput = Decimal.parse(widget.escrowQuantity);
+      // Decimal mainchainrateBtc = Decimal.parse(widget.mainchainrate); // Price in BTC
+
+      // int giveQuantity;
+      // int escrowQuantity;
+
+      // // Handle divisibility for the give quantity
+      // if (widget.divisible) {
+      //   giveQuantity = (giveInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+      //   escrowQuantity = (escrowInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+      // } else {
+      //   giveQuantity = giveInput.toBigInt().toInt();
+      //   escrowQuantity = escrowInput.toBigInt().toInt();
+      // }
+
+      // int mainchainrate = (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
+
+      // // Dispatch the event with the calculated values
+
+      context.read<ComposeDispenserOnNewAddressBloc>().add(ComposeTransactions(
+            password: passwordController.text,
+            originalAddress: widget.originalAddress,
+            divisible: widget.divisible,
+            asset: widget.asset,
+            giveQuantity: widget.giveQuantity,
+            escrowQuantity: widget.escrowQuantity,
+            mainchainrate: widget.mainchainrate,
+            status: 0,
+            feeRate: widget.feeRate,
+          ));
+    }
+  }
+
   Widget _buildBackContinueButtons(
-      {required VoidCallback onBack, required VoidCallback onContinue}) {
+      {required VoidCallback onBack,
+      required VoidCallback onContinue,
+      required bool loading}) {
     return Column(
       children: [
         const HorizonUI.HorizonDivider(),
@@ -283,6 +229,7 @@ class _ComposeDispenserOnNewAddressPageState
               buttonText: 'BACK',
             ),
             HorizonUI.HorizonContinueButton(
+              loading: loading,
               onPressed: onContinue,
               buttonText: 'CONTINUE',
             ),

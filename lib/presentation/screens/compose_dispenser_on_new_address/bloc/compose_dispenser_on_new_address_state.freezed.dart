@@ -17,6 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$ComposeDispenserOnNewAddressStateBase {
   dynamic get feeState => throw _privateConstructorUsedError;
+  String get password => throw _privateConstructorUsedError;
   dynamic get composeDispenserOnNewAddressState =>
       throw _privateConstructorUsedError;
 
@@ -34,7 +35,10 @@ abstract class $ComposeDispenserOnNewAddressStateBaseCopyWith<$Res> {
       _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
           ComposeDispenserOnNewAddressStateBase>;
   @useResult
-  $Res call({dynamic feeState, dynamic composeDispenserOnNewAddressState});
+  $Res call(
+      {dynamic feeState,
+      String password,
+      dynamic composeDispenserOnNewAddressState});
 }
 
 /// @nodoc
@@ -52,6 +56,7 @@ class _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
   @override
   $Res call({
     Object? feeState = freezed,
+    Object? password = null,
     Object? composeDispenserOnNewAddressState = freezed,
   }) {
     return _then(_value.copyWith(
@@ -59,6 +64,10 @@ class _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
           ? _value.feeState
           : feeState // ignore: cast_nullable_to_non_nullable
               as dynamic,
+      password: null == password
+          ? _value.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String,
       composeDispenserOnNewAddressState: freezed ==
               composeDispenserOnNewAddressState
           ? _value.composeDispenserOnNewAddressState
@@ -77,7 +86,10 @@ abstract class _$$ComposeDispenserOnNewAddressStateBaseImplCopyWith<$Res>
       __$$ComposeDispenserOnNewAddressStateBaseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({dynamic feeState, dynamic composeDispenserOnNewAddressState});
+  $Res call(
+      {dynamic feeState,
+      String password,
+      dynamic composeDispenserOnNewAddressState});
 }
 
 /// @nodoc
@@ -94,10 +106,15 @@ class __$$ComposeDispenserOnNewAddressStateBaseImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? feeState = freezed,
+    Object? password = null,
     Object? composeDispenserOnNewAddressState = freezed,
   }) {
     return _then(_$ComposeDispenserOnNewAddressStateBaseImpl(
       feeState: freezed == feeState ? _value.feeState! : feeState,
+      password: null == password
+          ? _value.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String,
       composeDispenserOnNewAddressState:
           freezed == composeDispenserOnNewAddressState
               ? _value.composeDispenserOnNewAddressState!
@@ -112,6 +129,7 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
     implements _ComposeDispenserOnNewAddressStateBase {
   const _$ComposeDispenserOnNewAddressStateBaseImpl(
       {this.feeState = const FeeState.initial(),
+      this.password = '',
       this.composeDispenserOnNewAddressState =
           const ComposeDispenserOnNewAddressState.initial()});
 
@@ -120,11 +138,14 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
   final dynamic feeState;
   @override
   @JsonKey()
+  final String password;
+  @override
+  @JsonKey()
   final dynamic composeDispenserOnNewAddressState;
 
   @override
   String toString() {
-    return 'ComposeDispenserOnNewAddressStateBase(feeState: $feeState, composeDispenserOnNewAddressState: $composeDispenserOnNewAddressState)';
+    return 'ComposeDispenserOnNewAddressStateBase(feeState: $feeState, password: $password, composeDispenserOnNewAddressState: $composeDispenserOnNewAddressState)';
   }
 
   @override
@@ -133,6 +154,8 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
         (other.runtimeType == runtimeType &&
             other is _$ComposeDispenserOnNewAddressStateBaseImpl &&
             const DeepCollectionEquality().equals(other.feeState, feeState) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
             const DeepCollectionEquality().equals(
                 other.composeDispenserOnNewAddressState,
                 composeDispenserOnNewAddressState));
@@ -142,6 +165,7 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
   int get hashCode => Object.hash(
       runtimeType,
       const DeepCollectionEquality().hash(feeState),
+      password,
       const DeepCollectionEquality().hash(composeDispenserOnNewAddressState));
 
   @JsonKey(ignore: true)
@@ -157,11 +181,14 @@ abstract class _ComposeDispenserOnNewAddressStateBase
     implements ComposeDispenserOnNewAddressStateBase {
   const factory _ComposeDispenserOnNewAddressStateBase(
           {final dynamic feeState,
+          final String password,
           final dynamic composeDispenserOnNewAddressState}) =
       _$ComposeDispenserOnNewAddressStateBaseImpl;
 
   @override
   dynamic get feeState;
+  @override
+  String get password;
   @override
   dynamic get composeDispenserOnNewAddressState;
   @override
@@ -177,33 +204,51 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)
-        success,
+    required TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)
+        confirm,
     required TResult Function(String error) error,
-    required TResult Function(String? error) collectPassword,
+    required TResult Function(String? error, bool? loading) collectPassword,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult? Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult? Function(String error)? error,
-    TResult? Function(String? error)? collectPassword,
+    TResult? Function(String? error, bool? loading)? collectPassword,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult Function(String error)? error,
-    TResult Function(String? error)? collectPassword,
+    TResult Function(String? error, bool? loading)? collectPassword,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -216,8 +261,8 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
             _ComposeDispenserOnNewAddressStateLoading<T> value)
         loading,
     required TResult Function(
-            _ComposeDispenserOnNewAddressStateSuccess<T> value)
-        success,
+            _ComposeDispenserOnNewAddressStateConfirm<T> value)
+        confirm,
     required TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)
         error,
     required TResult Function(
@@ -231,8 +276,8 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
         initial,
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult? Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult? Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult? Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult? Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -245,8 +290,8 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
         initial,
     TResult Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -325,11 +370,17 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)
-        success,
+    required TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)
+        confirm,
     required TResult Function(String error) error,
-    required TResult Function(String? error) collectPassword,
+    required TResult Function(String? error, bool? loading) collectPassword,
   }) {
     return initial();
   }
@@ -339,11 +390,17 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult? Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult? Function(String error)? error,
-    TResult? Function(String? error)? collectPassword,
+    TResult? Function(String? error, bool? loading)? collectPassword,
   }) {
     return initial?.call();
   }
@@ -353,11 +410,17 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult Function(String error)? error,
-    TResult Function(String? error)? collectPassword,
+    TResult Function(String? error, bool? loading)? collectPassword,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -376,8 +439,8 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
             _ComposeDispenserOnNewAddressStateLoading<T> value)
         loading,
     required TResult Function(
-            _ComposeDispenserOnNewAddressStateSuccess<T> value)
-        success,
+            _ComposeDispenserOnNewAddressStateConfirm<T> value)
+        confirm,
     required TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)
         error,
     required TResult Function(
@@ -394,8 +457,8 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
         initial,
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult? Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult? Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult? Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult? Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -411,8 +474,8 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
         initial,
     TResult Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -480,11 +543,17 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)
-        success,
+    required TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)
+        confirm,
     required TResult Function(String error) error,
-    required TResult Function(String? error) collectPassword,
+    required TResult Function(String? error, bool? loading) collectPassword,
   }) {
     return loading();
   }
@@ -494,11 +563,17 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult? Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult? Function(String error)? error,
-    TResult? Function(String? error)? collectPassword,
+    TResult? Function(String? error, bool? loading)? collectPassword,
   }) {
     return loading?.call();
   }
@@ -508,11 +583,17 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult Function(String error)? error,
-    TResult Function(String? error)? collectPassword,
+    TResult Function(String? error, bool? loading)? collectPassword,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -531,8 +612,8 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
             _ComposeDispenserOnNewAddressStateLoading<T> value)
         loading,
     required TResult Function(
-            _ComposeDispenserOnNewAddressStateSuccess<T> value)
-        success,
+            _ComposeDispenserOnNewAddressStateConfirm<T> value)
+        confirm,
     required TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)
         error,
     required TResult Function(
@@ -549,8 +630,8 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
         initial,
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult? Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult? Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult? Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult? Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -566,8 +647,8 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
         initial,
     TResult Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -588,46 +669,58 @@ abstract class _ComposeDispenserOnNewAddressStateLoading<T>
 }
 
 /// @nodoc
-abstract class _$$ComposeDispenserOnNewAddressStateSuccessImplCopyWith<T,
+abstract class _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
     $Res> {
-  factory _$$ComposeDispenserOnNewAddressStateSuccessImplCopyWith(
-          _$ComposeDispenserOnNewAddressStateSuccessImpl<T> value,
-          $Res Function(_$ComposeDispenserOnNewAddressStateSuccessImpl<T>)
+  factory _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith(
+          _$ComposeDispenserOnNewAddressStateConfirmImpl<T> value,
+          $Res Function(_$ComposeDispenserOnNewAddressStateConfirmImpl<T>)
               then) =
-      __$$ComposeDispenserOnNewAddressStateSuccessImplCopyWithImpl<T, $Res>;
+      __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl<T, $Res>;
   @useResult
   $Res call(
-      {T composeTransaction,
+      {T composeSendTransaction1,
+      T composeSendTransaction2,
+      T composeDispenserTransaction,
       int fee,
       int feeRate,
-      int virtualSize,
-      int adjustedVirtualSize});
+      int totalVirtualSize,
+      int totalAdjustedVirtualSize});
 }
 
 /// @nodoc
-class __$$ComposeDispenserOnNewAddressStateSuccessImplCopyWithImpl<T, $Res>
+class __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl<T, $Res>
     extends _$ComposeDispenserOnNewAddressStateCopyWithImpl<T, $Res,
-        _$ComposeDispenserOnNewAddressStateSuccessImpl<T>>
+        _$ComposeDispenserOnNewAddressStateConfirmImpl<T>>
     implements
-        _$$ComposeDispenserOnNewAddressStateSuccessImplCopyWith<T, $Res> {
-  __$$ComposeDispenserOnNewAddressStateSuccessImplCopyWithImpl(
-      _$ComposeDispenserOnNewAddressStateSuccessImpl<T> _value,
-      $Res Function(_$ComposeDispenserOnNewAddressStateSuccessImpl<T>) _then)
+        _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T, $Res> {
+  __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl(
+      _$ComposeDispenserOnNewAddressStateConfirmImpl<T> _value,
+      $Res Function(_$ComposeDispenserOnNewAddressStateConfirmImpl<T>) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? composeTransaction = freezed,
+    Object? composeSendTransaction1 = freezed,
+    Object? composeSendTransaction2 = freezed,
+    Object? composeDispenserTransaction = freezed,
     Object? fee = null,
     Object? feeRate = null,
-    Object? virtualSize = null,
-    Object? adjustedVirtualSize = null,
+    Object? totalVirtualSize = null,
+    Object? totalAdjustedVirtualSize = null,
   }) {
-    return _then(_$ComposeDispenserOnNewAddressStateSuccessImpl<T>(
-      composeTransaction: freezed == composeTransaction
-          ? _value.composeTransaction
-          : composeTransaction // ignore: cast_nullable_to_non_nullable
+    return _then(_$ComposeDispenserOnNewAddressStateConfirmImpl<T>(
+      composeSendTransaction1: freezed == composeSendTransaction1
+          ? _value.composeSendTransaction1
+          : composeSendTransaction1 // ignore: cast_nullable_to_non_nullable
+              as T,
+      composeSendTransaction2: freezed == composeSendTransaction2
+          ? _value.composeSendTransaction2
+          : composeSendTransaction2 // ignore: cast_nullable_to_non_nullable
+              as T,
+      composeDispenserTransaction: freezed == composeDispenserTransaction
+          ? _value.composeDispenserTransaction
+          : composeDispenserTransaction // ignore: cast_nullable_to_non_nullable
               as T,
       fee: null == fee
           ? _value.fee
@@ -637,13 +730,13 @@ class __$$ComposeDispenserOnNewAddressStateSuccessImplCopyWithImpl<T, $Res>
           ? _value.feeRate
           : feeRate // ignore: cast_nullable_to_non_nullable
               as int,
-      virtualSize: null == virtualSize
-          ? _value.virtualSize
-          : virtualSize // ignore: cast_nullable_to_non_nullable
+      totalVirtualSize: null == totalVirtualSize
+          ? _value.totalVirtualSize
+          : totalVirtualSize // ignore: cast_nullable_to_non_nullable
               as int,
-      adjustedVirtualSize: null == adjustedVirtualSize
-          ? _value.adjustedVirtualSize
-          : adjustedVirtualSize // ignore: cast_nullable_to_non_nullable
+      totalAdjustedVirtualSize: null == totalAdjustedVirtualSize
+          ? _value.totalAdjustedVirtualSize
+          : totalAdjustedVirtualSize // ignore: cast_nullable_to_non_nullable
               as int,
     ));
   }
@@ -651,63 +744,77 @@ class __$$ComposeDispenserOnNewAddressStateSuccessImplCopyWithImpl<T, $Res>
 
 /// @nodoc
 
-class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
-    implements _ComposeDispenserOnNewAddressStateSuccess<T> {
-  const _$ComposeDispenserOnNewAddressStateSuccessImpl(
-      {required this.composeTransaction,
+class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
+    implements _ComposeDispenserOnNewAddressStateConfirm<T> {
+  const _$ComposeDispenserOnNewAddressStateConfirmImpl(
+      {required this.composeSendTransaction1,
+      required this.composeSendTransaction2,
+      required this.composeDispenserTransaction,
       required this.fee,
       required this.feeRate,
-      required this.virtualSize,
-      required this.adjustedVirtualSize});
+      required this.totalVirtualSize,
+      required this.totalAdjustedVirtualSize});
 
   @override
-  final T composeTransaction;
+  final T composeSendTransaction1;
+  @override
+  final T composeSendTransaction2;
+  @override
+  final T composeDispenserTransaction;
   @override
   final int fee;
   @override
   final int feeRate;
   @override
-  final int virtualSize;
+  final int totalVirtualSize;
   @override
-  final int adjustedVirtualSize;
+  final int totalAdjustedVirtualSize;
 
   @override
   String toString() {
-    return 'ComposeDispenserOnNewAddressState<$T>.success(composeTransaction: $composeTransaction, fee: $fee, feeRate: $feeRate, virtualSize: $virtualSize, adjustedVirtualSize: $adjustedVirtualSize)';
+    return 'ComposeDispenserOnNewAddressState<$T>.confirm(composeSendTransaction1: $composeSendTransaction1, composeSendTransaction2: $composeSendTransaction2, composeDispenserTransaction: $composeDispenserTransaction, fee: $fee, feeRate: $feeRate, totalVirtualSize: $totalVirtualSize, totalAdjustedVirtualSize: $totalAdjustedVirtualSize)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ComposeDispenserOnNewAddressStateSuccessImpl<T> &&
-            const DeepCollectionEquality()
-                .equals(other.composeTransaction, composeTransaction) &&
+            other is _$ComposeDispenserOnNewAddressStateConfirmImpl<T> &&
+            const DeepCollectionEquality().equals(
+                other.composeSendTransaction1, composeSendTransaction1) &&
+            const DeepCollectionEquality().equals(
+                other.composeSendTransaction2, composeSendTransaction2) &&
+            const DeepCollectionEquality().equals(
+                other.composeDispenserTransaction,
+                composeDispenserTransaction) &&
             (identical(other.fee, fee) || other.fee == fee) &&
             (identical(other.feeRate, feeRate) || other.feeRate == feeRate) &&
-            (identical(other.virtualSize, virtualSize) ||
-                other.virtualSize == virtualSize) &&
-            (identical(other.adjustedVirtualSize, adjustedVirtualSize) ||
-                other.adjustedVirtualSize == adjustedVirtualSize));
+            (identical(other.totalVirtualSize, totalVirtualSize) ||
+                other.totalVirtualSize == totalVirtualSize) &&
+            (identical(
+                    other.totalAdjustedVirtualSize, totalAdjustedVirtualSize) ||
+                other.totalAdjustedVirtualSize == totalAdjustedVirtualSize));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      const DeepCollectionEquality().hash(composeTransaction),
+      const DeepCollectionEquality().hash(composeSendTransaction1),
+      const DeepCollectionEquality().hash(composeSendTransaction2),
+      const DeepCollectionEquality().hash(composeDispenserTransaction),
       fee,
       feeRate,
-      virtualSize,
-      adjustedVirtualSize);
+      totalVirtualSize,
+      totalAdjustedVirtualSize);
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$ComposeDispenserOnNewAddressStateSuccessImplCopyWith<T,
-          _$ComposeDispenserOnNewAddressStateSuccessImpl<T>>
+  _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
+          _$ComposeDispenserOnNewAddressStateConfirmImpl<T>>
       get copyWith =>
-          __$$ComposeDispenserOnNewAddressStateSuccessImplCopyWithImpl<T,
-                  _$ComposeDispenserOnNewAddressStateSuccessImpl<T>>(
+          __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl<T,
+                  _$ComposeDispenserOnNewAddressStateConfirmImpl<T>>(
               this, _$identity);
 
   @override
@@ -715,14 +822,26 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)
-        success,
+    required TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)
+        confirm,
     required TResult Function(String error) error,
-    required TResult Function(String? error) collectPassword,
+    required TResult Function(String? error, bool? loading) collectPassword,
   }) {
-    return success(
-        composeTransaction, fee, feeRate, virtualSize, adjustedVirtualSize);
+    return confirm(
+        composeSendTransaction1,
+        composeSendTransaction2,
+        composeDispenserTransaction,
+        fee,
+        feeRate,
+        totalVirtualSize,
+        totalAdjustedVirtualSize);
   }
 
   @override
@@ -730,14 +849,26 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult? Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult? Function(String error)? error,
-    TResult? Function(String? error)? collectPassword,
+    TResult? Function(String? error, bool? loading)? collectPassword,
   }) {
-    return success?.call(
-        composeTransaction, fee, feeRate, virtualSize, adjustedVirtualSize);
+    return confirm?.call(
+        composeSendTransaction1,
+        composeSendTransaction2,
+        composeDispenserTransaction,
+        fee,
+        feeRate,
+        totalVirtualSize,
+        totalAdjustedVirtualSize);
   }
 
   @override
@@ -745,16 +876,28 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult Function(String error)? error,
-    TResult Function(String? error)? collectPassword,
+    TResult Function(String? error, bool? loading)? collectPassword,
     required TResult orElse(),
   }) {
-    if (success != null) {
-      return success(
-          composeTransaction, fee, feeRate, virtualSize, adjustedVirtualSize);
+    if (confirm != null) {
+      return confirm(
+          composeSendTransaction1,
+          composeSendTransaction2,
+          composeDispenserTransaction,
+          fee,
+          feeRate,
+          totalVirtualSize,
+          totalAdjustedVirtualSize);
     }
     return orElse();
   }
@@ -769,15 +912,15 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
             _ComposeDispenserOnNewAddressStateLoading<T> value)
         loading,
     required TResult Function(
-            _ComposeDispenserOnNewAddressStateSuccess<T> value)
-        success,
+            _ComposeDispenserOnNewAddressStateConfirm<T> value)
+        confirm,
     required TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)
         error,
     required TResult Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)
         collectPassword,
   }) {
-    return success(this);
+    return confirm(this);
   }
 
   @override
@@ -787,14 +930,14 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
         initial,
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult? Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult? Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult? Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult? Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
         collectPassword,
   }) {
-    return success?.call(this);
+    return confirm?.call(this);
   }
 
   @override
@@ -804,39 +947,43 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
         initial,
     TResult Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
         collectPassword,
     required TResult orElse(),
   }) {
-    if (success != null) {
-      return success(this);
+    if (confirm != null) {
+      return confirm(this);
     }
     return orElse();
   }
 }
 
-abstract class _ComposeDispenserOnNewAddressStateSuccess<T>
+abstract class _ComposeDispenserOnNewAddressStateConfirm<T>
     implements ComposeDispenserOnNewAddressState<T> {
-  const factory _ComposeDispenserOnNewAddressStateSuccess(
-          {required final T composeTransaction,
+  const factory _ComposeDispenserOnNewAddressStateConfirm(
+          {required final T composeSendTransaction1,
+          required final T composeSendTransaction2,
+          required final T composeDispenserTransaction,
           required final int fee,
           required final int feeRate,
-          required final int virtualSize,
-          required final int adjustedVirtualSize}) =
-      _$ComposeDispenserOnNewAddressStateSuccessImpl<T>;
+          required final int totalVirtualSize,
+          required final int totalAdjustedVirtualSize}) =
+      _$ComposeDispenserOnNewAddressStateConfirmImpl<T>;
 
-  T get composeTransaction;
+  T get composeSendTransaction1;
+  T get composeSendTransaction2;
+  T get composeDispenserTransaction;
   int get fee;
   int get feeRate;
-  int get virtualSize;
-  int get adjustedVirtualSize;
+  int get totalVirtualSize;
+  int get totalAdjustedVirtualSize;
   @JsonKey(ignore: true)
-  _$$ComposeDispenserOnNewAddressStateSuccessImplCopyWith<T,
-          _$ComposeDispenserOnNewAddressStateSuccessImpl<T>>
+  _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
+          _$ComposeDispenserOnNewAddressStateConfirmImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -914,11 +1061,17 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)
-        success,
+    required TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)
+        confirm,
     required TResult Function(String error) error,
-    required TResult Function(String? error) collectPassword,
+    required TResult Function(String? error, bool? loading) collectPassword,
   }) {
     return error(this.error);
   }
@@ -928,11 +1081,17 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult? Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult? Function(String error)? error,
-    TResult? Function(String? error)? collectPassword,
+    TResult? Function(String? error, bool? loading)? collectPassword,
   }) {
     return error?.call(this.error);
   }
@@ -942,11 +1101,17 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult Function(String error)? error,
-    TResult Function(String? error)? collectPassword,
+    TResult Function(String? error, bool? loading)? collectPassword,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -965,8 +1130,8 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
             _ComposeDispenserOnNewAddressStateLoading<T> value)
         loading,
     required TResult Function(
-            _ComposeDispenserOnNewAddressStateSuccess<T> value)
-        success,
+            _ComposeDispenserOnNewAddressStateConfirm<T> value)
+        confirm,
     required TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)
         error,
     required TResult Function(
@@ -983,8 +1148,8 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
         initial,
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult? Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult? Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult? Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult? Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -1000,8 +1165,8 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
         initial,
     TResult Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -1038,7 +1203,7 @@ abstract class _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<
       __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl<T,
           $Res>;
   @useResult
-  $Res call({String? error});
+  $Res call({String? error, bool? loading});
 }
 
 /// @nodoc
@@ -1059,12 +1224,17 @@ class __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl<T,
   @override
   $Res call({
     Object? error = freezed,
+    Object? loading = freezed,
   }) {
     return _then(_$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>(
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
               as String?,
+      loading: freezed == loading
+          ? _value.loading
+          : loading // ignore: cast_nullable_to_non_nullable
+              as bool?,
     ));
   }
 }
@@ -1073,14 +1243,17 @@ class __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl<T,
 
 class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
     implements _ComposeDispenserOnNewAddressStateCollectPassword<T> {
-  const _$ComposeDispenserOnNewAddressStateCollectPasswordImpl({this.error});
+  const _$ComposeDispenserOnNewAddressStateCollectPasswordImpl(
+      {this.error, this.loading});
 
   @override
   final String? error;
+  @override
+  final bool? loading;
 
   @override
   String toString() {
-    return 'ComposeDispenserOnNewAddressState<$T>.collectPassword(error: $error)';
+    return 'ComposeDispenserOnNewAddressState<$T>.collectPassword(error: $error, loading: $loading)';
   }
 
   @override
@@ -1089,11 +1262,12 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
         (other.runtimeType == runtimeType &&
             other
                 is _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T> &&
-            (identical(other.error, error) || other.error == error));
+            (identical(other.error, error) || other.error == error) &&
+            (identical(other.loading, loading) || other.loading == loading));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, error);
+  int get hashCode => Object.hash(runtimeType, error, loading);
 
   @JsonKey(ignore: true)
   @override
@@ -1110,13 +1284,19 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)
-        success,
+    required TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)
+        confirm,
     required TResult Function(String error) error,
-    required TResult Function(String? error) collectPassword,
+    required TResult Function(String? error, bool? loading) collectPassword,
   }) {
-    return collectPassword(this.error);
+    return collectPassword(this.error, this.loading);
   }
 
   @override
@@ -1124,13 +1304,19 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult? Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult? Function(String error)? error,
-    TResult? Function(String? error)? collectPassword,
+    TResult? Function(String? error, bool? loading)? collectPassword,
   }) {
-    return collectPassword?.call(this.error);
+    return collectPassword?.call(this.error, this.loading);
   }
 
   @override
@@ -1138,15 +1324,21 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(T composeTransaction, int fee, int feeRate,
-            int virtualSize, int adjustedVirtualSize)?
-        success,
+    TResult Function(
+            T composeSendTransaction1,
+            T composeSendTransaction2,
+            T composeDispenserTransaction,
+            int fee,
+            int feeRate,
+            int totalVirtualSize,
+            int totalAdjustedVirtualSize)?
+        confirm,
     TResult Function(String error)? error,
-    TResult Function(String? error)? collectPassword,
+    TResult Function(String? error, bool? loading)? collectPassword,
     required TResult orElse(),
   }) {
     if (collectPassword != null) {
-      return collectPassword(this.error);
+      return collectPassword(this.error, this.loading);
     }
     return orElse();
   }
@@ -1161,8 +1353,8 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
             _ComposeDispenserOnNewAddressStateLoading<T> value)
         loading,
     required TResult Function(
-            _ComposeDispenserOnNewAddressStateSuccess<T> value)
-        success,
+            _ComposeDispenserOnNewAddressStateConfirm<T> value)
+        confirm,
     required TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)
         error,
     required TResult Function(
@@ -1179,8 +1371,8 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
         initial,
     TResult? Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult? Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult? Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult? Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult? Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -1196,8 +1388,8 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
         initial,
     TResult Function(_ComposeDispenserOnNewAddressStateLoading<T> value)?
         loading,
-    TResult Function(_ComposeDispenserOnNewAddressStateSuccess<T> value)?
-        success,
+    TResult Function(_ComposeDispenserOnNewAddressStateConfirm<T> value)?
+        confirm,
     TResult Function(_ComposeDispenserOnNewAddressStateError<T> value)? error,
     TResult Function(
             _ComposeDispenserOnNewAddressStateCollectPassword<T> value)?
@@ -1214,10 +1406,11 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
 abstract class _ComposeDispenserOnNewAddressStateCollectPassword<T>
     implements ComposeDispenserOnNewAddressState<T> {
   const factory _ComposeDispenserOnNewAddressStateCollectPassword(
-          {final String? error}) =
+          {final String? error, final bool? loading}) =
       _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>;
 
   String? get error;
+  bool? get loading;
   @JsonKey(ignore: true)
   _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<T,
           _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>>

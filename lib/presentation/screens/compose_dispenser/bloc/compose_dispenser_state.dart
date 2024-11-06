@@ -51,9 +51,9 @@ class DispenserState with _$DispenserState {
       {required String originalAddress,
       required bool divisible,
       required String asset,
-      required String giveQuantity,
-      required String escrowQuantity,
-      required String mainchainrate,
+      required int giveQuantity,
+      required int escrowQuantity,
+      required int mainchainrate,
       required int feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
 
   const factory DispenserState.warning() = _DispenserWarning;

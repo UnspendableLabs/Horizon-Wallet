@@ -414,9 +414,9 @@ mixin _$DispenserState {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -433,9 +433,9 @@ mixin _$DispenserState {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -452,9 +452,9 @@ mixin _$DispenserState {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,
@@ -569,9 +569,9 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -591,9 +591,9 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -613,9 +613,9 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,
@@ -732,9 +732,9 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -754,9 +754,9 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -776,9 +776,9 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,
@@ -898,9 +898,9 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -920,9 +920,9 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -942,9 +942,9 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,
@@ -1067,9 +1067,9 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -1089,9 +1089,9 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -1111,9 +1111,9 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,
@@ -1196,9 +1196,9 @@ abstract class _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<$Res> {
       {String originalAddress,
       bool divisible,
       String asset,
-      String giveQuantity,
-      String escrowQuantity,
-      String mainchainrate,
+      int giveQuantity,
+      int escrowQuantity,
+      int mainchainrate,
       int feeRate});
 }
 
@@ -1239,15 +1239,15 @@ class __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl<$Res>
       giveQuantity: null == giveQuantity
           ? _value.giveQuantity
           : giveQuantity // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       escrowQuantity: null == escrowQuantity
           ? _value.escrowQuantity
           : escrowQuantity // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       mainchainrate: null == mainchainrate
           ? _value.mainchainrate
           : mainchainrate // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       feeRate: null == feeRate
           ? _value.feeRate
           : feeRate // ignore: cast_nullable_to_non_nullable
@@ -1276,11 +1276,11 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
   @override
   final String asset;
   @override
-  final String giveQuantity;
+  final int giveQuantity;
   @override
-  final String escrowQuantity;
+  final int escrowQuantity;
   @override
-  final String mainchainrate;
+  final int mainchainrate;
   @override
   final int feeRate;
 
@@ -1331,9 +1331,9 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -1354,9 +1354,9 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -1377,9 +1377,9 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,
@@ -1453,18 +1453,18 @@ abstract class _DispenserCloseDialogAndOpenNewAddress
           {required final String originalAddress,
           required final bool divisible,
           required final String asset,
-          required final String giveQuantity,
-          required final String escrowQuantity,
-          required final String mainchainrate,
+          required final int giveQuantity,
+          required final int escrowQuantity,
+          required final int mainchainrate,
           required final int feeRate}) =
       _$DispenserCloseDialogAndOpenNewAddressImpl;
 
   String get originalAddress;
   bool get divisible;
   String get asset;
-  String get giveQuantity;
-  String get escrowQuantity;
-  String get mainchainrate;
+  int get giveQuantity;
+  int get escrowQuantity;
+  int get mainchainrate;
   int get feeRate;
   @JsonKey(ignore: true)
   _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<
@@ -1518,9 +1518,9 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -1540,9 +1540,9 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -1562,9 +1562,9 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,
@@ -1708,9 +1708,9 @@ class _$DispenserErrorImpl implements _DispenserError {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function() warning,
@@ -1730,9 +1730,9 @@ class _$DispenserErrorImpl implements _DispenserError {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function()? warning,
@@ -1752,9 +1752,9 @@ class _$DispenserErrorImpl implements _DispenserError {
             String originalAddress,
             bool divisible,
             String asset,
-            String giveQuantity,
-            String escrowQuantity,
-            String mainchainrate,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function()? warning,

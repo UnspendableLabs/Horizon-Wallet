@@ -28,9 +28,9 @@ class ConfirmTransactionOnNewAddress extends ComposeDispenserEvent {
   final String originalAddress;
   final bool divisible;
   final String asset;
-  final String giveQuantity;
-  final String escrowQuantity;
-  final String mainchainrate;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
 
   ConfirmTransactionOnNewAddress({
     required this.originalAddress,

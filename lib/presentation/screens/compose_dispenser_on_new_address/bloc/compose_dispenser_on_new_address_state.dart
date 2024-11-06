@@ -8,6 +8,7 @@ class ComposeDispenserOnNewAddressStateBase
     with _$ComposeDispenserOnNewAddressStateBase {
   const factory ComposeDispenserOnNewAddressStateBase({
     @Default(FeeState.initial()) feeState,
+    @Default('') String password,
     @Default(ComposeDispenserOnNewAddressState.initial())
     composeDispenserOnNewAddressState,
   }) = _ComposeDispenserOnNewAddressStateBase;
@@ -20,17 +21,20 @@ class ComposeDispenserOnNewAddressState<T>
       _ComposeDispenserOnNewAddressStateInitial;
   const factory ComposeDispenserOnNewAddressState.loading() =
       _ComposeDispenserOnNewAddressStateLoading;
-  const factory ComposeDispenserOnNewAddressState.success({
-    required T composeTransaction,
+  const factory ComposeDispenserOnNewAddressState.confirm({
+    required T composeSendTransaction1,
+    required T composeSendTransaction2,
+    required T composeDispenserTransaction,
     required int fee,
     required int feeRate,
-    required int virtualSize,
-    required int adjustedVirtualSize,
-  }) = _ComposeDispenserOnNewAddressStateSuccess;
+    required int totalVirtualSize,
+    required int totalAdjustedVirtualSize,
+  }) = _ComposeDispenserOnNewAddressStateConfirm;
   const factory ComposeDispenserOnNewAddressState.error(String error) =
       _ComposeDispenserOnNewAddressStateError;
   const factory ComposeDispenserOnNewAddressState.collectPassword(
-      {String? error}) = _ComposeDispenserOnNewAddressStateCollectPassword;
+      {String? error,
+      bool? loading}) = _ComposeDispenserOnNewAddressStateCollectPassword;
 }
 
 /// FeeState represents the state of fee estimation.

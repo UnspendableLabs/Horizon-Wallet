@@ -184,17 +184,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       if (balance == null) {
         throw Exception("No balance found for selected asset");
       }
-      if (isCreateNewAddressFlow) {
-        context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(
-              originalAddress: widget.address,
-              divisible: balance.assetInfo.divisible,
-              asset: asset!,
-              giveQuantity: giveQuantityController.text,
-              escrowQuantity: escrowQuantityController.text,
-              mainchainrate: mainchainrateController.text,
-            ));
-        return;
-      }
+
       Decimal giveInput = Decimal.parse(giveQuantityController.text);
       Decimal escrowInput = Decimal.parse(escrowQuantityController.text);
       Decimal mainchainrateBtc =
@@ -216,6 +206,18 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
       int mainchainrate =
           (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
+      print('MAINCHAINRATE: $mainchainrate');
+      if (isCreateNewAddressFlow) {
+        context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(
+              originalAddress: widget.address,
+              divisible: balance.assetInfo.divisible,
+              asset: asset!,
+              giveQuantity: giveQuantity,
+              escrowQuantity: escrowQuantity,
+              mainchainrate: mainchainrate,
+            ));
+        return;
+      }
 
       // Dispatch the event with the calculated values
 
