@@ -124,8 +124,6 @@ flutter:
   assets:
     - assets/logo-black.svg
     - assets/logo-white.svg
-    - assets/open-quote.svg
-    - assets/closed-quote.svg
     - assets/logo-blue-3d.png
     - fonts/
 
