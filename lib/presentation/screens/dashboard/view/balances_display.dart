@@ -295,10 +295,10 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   bool _matchesSearch(String assetName, String? assetLongname) {
     final searchTerm = widget.searchTerm.toLowerCase();
-    return assetName.toLowerCase().startsWith(searchTerm) ||
+    return assetName.toLowerCase().contains(searchTerm) ||
         (assetLongname != null &&
             assetLongname.isNotEmpty &&
-            assetLongname.toLowerCase().startsWith(searchTerm));
+            assetLongname.toLowerCase().contains(searchTerm));
   }
 
   bool _isOwned(Asset? asset) {

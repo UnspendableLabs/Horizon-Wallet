@@ -164,7 +164,7 @@ void main() {
 
     final asset2 = FakeAsset(
       asset: 'MAXVOLUME',
-      assetLongname: 'MAXVOLUME.PEPE',
+      assetLongname: '',
       owner: '1OtherAddress',
       issuer: '1IssuerAddress',
       divisible: true,
@@ -172,13 +172,13 @@ void main() {
     );
 
     final assetInfo1 = FakeAssetInfo(
-      assetLongname: 'PEPENARDO.PEPE',
+      assetLongname: 'PEPENARDO.ASDF',
       issuer: '1IssuerAddress',
       divisible: true,
     );
 
     final assetInfo2 = FakeAssetInfo(
-      assetLongname: 'MAXVOLUME.PEPE',
+      assetLongname: '',
       issuer: '1IssuerAddress',
       divisible: true,
     );
@@ -265,8 +265,44 @@ void main() {
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
 
-      // Enter search term
       await tester.enterText(find.byKey(const Key('search_input')), 'pepe');
+      await tester.pumpAndSettle();
+
+      // Verify that only 'PEPENARDO' is displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+    });
+
+    testWidgets('should search by subasset name', (WidgetTester tester) async {
+      final address = FakeAddress(address: '1TestAddress');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<BalancesBloc>.value(
+            value: mockBalancesBloc,
+            child: Scaffold(
+              body: CustomScrollView(
+                slivers: [
+                  BalancesDisplay(
+                    isDarkTheme: false,
+                    currentAddress: address.address,
+                    initialItemCount: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Wait for the widget tree to build
+      await tester.pumpAndSettle();
+
+      // Verify that both assets are displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('search_input')), 'asdf');
       await tester.pumpAndSettle();
 
       // Verify that only 'PEPENARDO' is displayed
