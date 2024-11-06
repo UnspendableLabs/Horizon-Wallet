@@ -46,6 +46,9 @@ import 'package:horizon/presentation/screens/dashboard/view/balances_display.dar
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+
+import 'package:horizon/presentation/forms/order_buy_form/order_form_view.dart';
+
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -421,15 +424,16 @@ class OrderButtonMenu extends StatelessWidget {
   final String text;
   final double? iconSize;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final currentAddress;
 
-  const OrderButtonMenu({
-    super.key,
-    required this.isDarkTheme,
-    required this.icon,
-    required this.text,
-    this.iconSize,
-    required this.dashboardActivityFeedBloc,
-  });
+  const OrderButtonMenu(
+      {super.key,
+      required this.isDarkTheme,
+      required this.icon,
+      required this.text,
+      this.iconSize,
+      required this.dashboardActivityFeedBloc,
+      required this.currentAddress});
 
   @override
   Widget build(BuildContext context) {
@@ -447,19 +451,18 @@ class OrderButtonMenu extends StatelessWidget {
             ),
             itemBuilder: (context) => [
               PopupMenuItem(
-                  child: const Text("Open Order"),
+                  child: const Text("Open Buy Order"),
                   onTap: () {
                     HorizonUI.HorizonDialog.show(
-                        context: context,
-                        body: HorizonUI.HorizonDialog(
-                          title: "Create Dispenser",
-                          includeBackButton: false,
-                          includeCloseButton: true,
-                          body: ComposeDispenserPageWrapper(
-                            dashboardActivityFeedBloc:
-                                dashboardActivityFeedBloc,
-                          ),
-                        ));
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Open Buy Order",
+                        body: OrderBuyForm(
+                          currentAddress: currentAddress,
+                          balanceRepository: GetIt.I<BalanceRepository>(),
+                        ),
+                      ),
+                    );
                   }),
               PopupMenuItem(
                 child: const Text("Cancel Order"),
@@ -469,6 +472,7 @@ class OrderButtonMenu extends StatelessWidget {
                       body: HorizonUI.HorizonDialog(
                         title: "Close Dispenser",
                         body: CloseDispenserPageWrapper(
+                          currentAddress: currentAddress,
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                         ),
                         includeBackButton: false,
@@ -821,21 +825,20 @@ class AddressActions extends StatelessWidget {
               iconSize: 18.0,
             ),
             AddressAction(
-                isDarkTheme: isDarkTheme,
-                dialog: HorizonUI.HorizonDialog(
-                  title: "Receive",
-                  body: QRCodeDialog(
-                    currentAddress: currentAddress,
-                    currentAccountUuid: currentAccountUuid,
-                  ),
-                  includeBackButton: false,
-                  includeCloseButton: true,
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Receive",
+                body: QRCodeDialog(
+                  currentAddress: currentAddress,
+                  currentAccountUuid: currentAccountUuid,
                 ),
-                icon: Icons.qr_code,
-                text: "RECEIVE",
-
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.qr_code,
+              text: "RECEIVE",
               iconSize: 18.0,
-                ),
+            ),
             MintMenu(
               currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
@@ -853,6 +856,7 @@ class AddressActions extends StatelessWidget {
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
             OrderButtonMenu(
+              currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.toc,
               text: "Order",
