@@ -94,6 +94,7 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open
 import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
@@ -350,6 +351,12 @@ Future<void> setup() async {
   injector.registerSingleton<FetchFairminterFormDataUseCase>(
       FetchFairminterFormDataUseCase(
           assetRepository: injector.get<AssetRepository>(),
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          fairminterRepository: injector.get<FairminterRepository>()));
+
+  injector.registerSingleton<FetchIssuanceFormDataUseCase>(
+      FetchIssuanceFormDataUseCase(
+          balanceRepository: injector.get<BalanceRepository>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(

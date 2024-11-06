@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/fairminter.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 
@@ -68,6 +70,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final AddressRepository addressRepository;
   final AddressTxRepository addressTxRepository;
   final AssetRepository assetRepository;
+  final FairminterRepository fairminterRepository;
   final String currentAddress;
 
   Timer? _timer;
@@ -78,6 +81,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     required this.addressRepository,
     required this.addressTxRepository,
     required this.assetRepository,
+    required this.fairminterRepository,
     required this.currentAddress,
   }) : super(const BalancesState.initial()) {
     on<Start>(_onStart);
@@ -122,8 +126,20 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final List<Asset> ownedAssets =
           await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
 
-      emit(
-          BalancesState.complete(Result.ok(balances, aggregated, ownedAssets)));
+      final List<Fairminter> fairminters = await fairminterRepository
+          .getFairmintersByAddress(currentAddress, 'open')
+          .run()
+          .then((either) => either.fold(
+                (error) => throw FetchFairmintersException(
+                    error.toString()), // Handle failure
+                (fairminters) => fairminters, // Handle success
+              ));
+
+      emit(BalancesState.complete(
+          Result.ok(balances, aggregated, ownedAssets, fairminters)));
+    } on FetchFairmintersException catch (e) {
+      emit(BalancesState.complete(Result.error(
+          "Error fetching fairminters for $currentAddress: ${e.message}")));
     } catch (e) {
       emit(BalancesState.complete(
           Result.error("Error fetching balances for $currentAddress")));
@@ -136,4 +152,12 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     _timer?.cancel();
     return super.close();
   }
+}
+
+class FetchFairmintersException implements Exception {
+  final String message;
+  FetchFairmintersException(this.message);
+
+  @override
+  String toString() => 'FetchFairmintersException: $message';
 }

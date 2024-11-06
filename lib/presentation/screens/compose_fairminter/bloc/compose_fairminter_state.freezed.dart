@@ -23,6 +23,7 @@ mixin _$ComposeFairminterState {
   SubmitState get submitState =>
       throw _privateConstructorUsedError; // Fairminter specific properties
   AssetState get assetState => throw _privateConstructorUsedError;
+  FairmintersState get fairmintersState => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ComposeFairminterStateCopyWith<ComposeFairminterState> get copyWith =>
@@ -40,11 +41,13 @@ abstract class $ComposeFairminterStateCopyWith<$Res> {
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
-      AssetState assetState});
+      AssetState assetState,
+      FairmintersState fairmintersState});
 
   $FeeStateCopyWith<$Res> get feeState;
   $BalancesStateCopyWith<$Res> get balancesState;
   $AssetStateCopyWith<$Res> get assetState;
+  $FairmintersStateCopyWith<$Res> get fairmintersState;
 }
 
 /// @nodoc
@@ -66,6 +69,7 @@ class _$ComposeFairminterStateCopyWithImpl<$Res,
     Object? feeOption = null,
     Object? submitState = null,
     Object? assetState = null,
+    Object? fairmintersState = null,
   }) {
     return _then(_value.copyWith(
       feeState: null == feeState
@@ -88,6 +92,10 @@ class _$ComposeFairminterStateCopyWithImpl<$Res,
           ? _value.assetState
           : assetState // ignore: cast_nullable_to_non_nullable
               as AssetState,
+      fairmintersState: null == fairmintersState
+          ? _value.fairmintersState
+          : fairmintersState // ignore: cast_nullable_to_non_nullable
+              as FairmintersState,
     ) as $Val);
   }
 
@@ -114,6 +122,14 @@ class _$ComposeFairminterStateCopyWithImpl<$Res,
       return _then(_value.copyWith(assetState: value) as $Val);
     });
   }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $FairmintersStateCopyWith<$Res> get fairmintersState {
+    return $FairmintersStateCopyWith<$Res>(_value.fairmintersState, (value) {
+      return _then(_value.copyWith(fairmintersState: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -129,7 +145,8 @@ abstract class _$$ComposeFairmintStateImplCopyWith<$Res>
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
-      AssetState assetState});
+      AssetState assetState,
+      FairmintersState fairmintersState});
 
   @override
   $FeeStateCopyWith<$Res> get feeState;
@@ -137,6 +154,8 @@ abstract class _$$ComposeFairmintStateImplCopyWith<$Res>
   $BalancesStateCopyWith<$Res> get balancesState;
   @override
   $AssetStateCopyWith<$Res> get assetState;
+  @override
+  $FairmintersStateCopyWith<$Res> get fairmintersState;
 }
 
 /// @nodoc
@@ -156,6 +175,7 @@ class __$$ComposeFairmintStateImplCopyWithImpl<$Res>
     Object? feeOption = null,
     Object? submitState = null,
     Object? assetState = null,
+    Object? fairmintersState = null,
   }) {
     return _then(_$ComposeFairmintStateImpl(
       feeState: null == feeState
@@ -178,6 +198,10 @@ class __$$ComposeFairmintStateImplCopyWithImpl<$Res>
           ? _value.assetState
           : assetState // ignore: cast_nullable_to_non_nullable
               as AssetState,
+      fairmintersState: null == fairmintersState
+          ? _value.fairmintersState
+          : fairmintersState // ignore: cast_nullable_to_non_nullable
+              as FairmintersState,
     ));
   }
 }
@@ -190,7 +214,8 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
       required this.balancesState,
       required this.feeOption,
       required this.submitState,
-      required this.assetState})
+      required this.assetState,
+      required this.fairmintersState})
       : super._();
 
 // Inherited properties
@@ -205,10 +230,12 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
 // Fairminter specific properties
   @override
   final AssetState assetState;
+  @override
+  final FairmintersState fairmintersState;
 
   @override
   String toString() {
-    return 'ComposeFairminterState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, assetState: $assetState)';
+    return 'ComposeFairminterState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, assetState: $assetState, fairmintersState: $fairmintersState)';
   }
 
   @override
@@ -225,12 +252,14 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
             (identical(other.submitState, submitState) ||
                 other.submitState == submitState) &&
             (identical(other.assetState, assetState) ||
-                other.assetState == assetState));
+                other.assetState == assetState) &&
+            (identical(other.fairmintersState, fairmintersState) ||
+                other.fairmintersState == fairmintersState));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, feeState, balancesState, feeOption, submitState, assetState);
+  int get hashCode => Object.hash(runtimeType, feeState, balancesState,
+      feeOption, submitState, assetState, fairmintersState);
 
   @JsonKey(ignore: true)
   @override
@@ -243,11 +272,13 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
 
 abstract class _ComposeFairmintState extends ComposeFairminterState {
   const factory _ComposeFairmintState(
-      {required final FeeState feeState,
-      required final BalancesState balancesState,
-      required final FeeOption feeOption,
-      required final SubmitState submitState,
-      required final AssetState assetState}) = _$ComposeFairmintStateImpl;
+          {required final FeeState feeState,
+          required final BalancesState balancesState,
+          required final FeeOption feeOption,
+          required final SubmitState submitState,
+          required final AssetState assetState,
+          required final FairmintersState fairmintersState}) =
+      _$ComposeFairmintStateImpl;
   const _ComposeFairmintState._() : super._();
 
   @override // Inherited properties
@@ -260,6 +291,8 @@ abstract class _ComposeFairmintState extends ComposeFairminterState {
   SubmitState get submitState;
   @override // Fairminter specific properties
   AssetState get assetState;
+  @override
+  FairmintersState get fairmintersState;
   @override
   @JsonKey(ignore: true)
   _$$ComposeFairmintStateImplCopyWith<_$ComposeFairmintStateImpl>
@@ -859,5 +892,606 @@ abstract class _AssetError implements AssetState {
   String get error;
   @JsonKey(ignore: true)
   _$$AssetErrorImplCopyWith<_$AssetErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$FairmintersState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<Fairminter> fairminters) success,
+    required TResult Function(String error) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<Fairminter> fairminters)? success,
+    TResult? Function(String error)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<Fairminter> fairminters)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FairmintersInitial value) initial,
+    required TResult Function(_FairmintersLoading value) loading,
+    required TResult Function(_FairmintersSuccess value) success,
+    required TResult Function(_FairmintersError value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FairmintersInitial value)? initial,
+    TResult? Function(_FairmintersLoading value)? loading,
+    TResult? Function(_FairmintersSuccess value)? success,
+    TResult? Function(_FairmintersError value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FairmintersInitial value)? initial,
+    TResult Function(_FairmintersLoading value)? loading,
+    TResult Function(_FairmintersSuccess value)? success,
+    TResult Function(_FairmintersError value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $FairmintersStateCopyWith<$Res> {
+  factory $FairmintersStateCopyWith(
+          FairmintersState value, $Res Function(FairmintersState) then) =
+      _$FairmintersStateCopyWithImpl<$Res, FairmintersState>;
+}
+
+/// @nodoc
+class _$FairmintersStateCopyWithImpl<$Res, $Val extends FairmintersState>
+    implements $FairmintersStateCopyWith<$Res> {
+  _$FairmintersStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$FairmintersInitialImplCopyWith<$Res> {
+  factory _$$FairmintersInitialImplCopyWith(_$FairmintersInitialImpl value,
+          $Res Function(_$FairmintersInitialImpl) then) =
+      __$$FairmintersInitialImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$FairmintersInitialImplCopyWithImpl<$Res>
+    extends _$FairmintersStateCopyWithImpl<$Res, _$FairmintersInitialImpl>
+    implements _$$FairmintersInitialImplCopyWith<$Res> {
+  __$$FairmintersInitialImplCopyWithImpl(_$FairmintersInitialImpl _value,
+      $Res Function(_$FairmintersInitialImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$FairmintersInitialImpl implements _FairmintersInitial {
+  const _$FairmintersInitialImpl();
+
+  @override
+  String toString() {
+    return 'FairmintersState.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$FairmintersInitialImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<Fairminter> fairminters) success,
+    required TResult Function(String error) error,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<Fairminter> fairminters)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<Fairminter> fairminters)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FairmintersInitial value) initial,
+    required TResult Function(_FairmintersLoading value) loading,
+    required TResult Function(_FairmintersSuccess value) success,
+    required TResult Function(_FairmintersError value) error,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FairmintersInitial value)? initial,
+    TResult? Function(_FairmintersLoading value)? loading,
+    TResult? Function(_FairmintersSuccess value)? success,
+    TResult? Function(_FairmintersError value)? error,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FairmintersInitial value)? initial,
+    TResult Function(_FairmintersLoading value)? loading,
+    TResult Function(_FairmintersSuccess value)? success,
+    TResult Function(_FairmintersError value)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FairmintersInitial implements FairmintersState {
+  const factory _FairmintersInitial() = _$FairmintersInitialImpl;
+}
+
+/// @nodoc
+abstract class _$$FairmintersLoadingImplCopyWith<$Res> {
+  factory _$$FairmintersLoadingImplCopyWith(_$FairmintersLoadingImpl value,
+          $Res Function(_$FairmintersLoadingImpl) then) =
+      __$$FairmintersLoadingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$FairmintersLoadingImplCopyWithImpl<$Res>
+    extends _$FairmintersStateCopyWithImpl<$Res, _$FairmintersLoadingImpl>
+    implements _$$FairmintersLoadingImplCopyWith<$Res> {
+  __$$FairmintersLoadingImplCopyWithImpl(_$FairmintersLoadingImpl _value,
+      $Res Function(_$FairmintersLoadingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$FairmintersLoadingImpl implements _FairmintersLoading {
+  const _$FairmintersLoadingImpl();
+
+  @override
+  String toString() {
+    return 'FairmintersState.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$FairmintersLoadingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<Fairminter> fairminters) success,
+    required TResult Function(String error) error,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<Fairminter> fairminters)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<Fairminter> fairminters)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FairmintersInitial value) initial,
+    required TResult Function(_FairmintersLoading value) loading,
+    required TResult Function(_FairmintersSuccess value) success,
+    required TResult Function(_FairmintersError value) error,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FairmintersInitial value)? initial,
+    TResult? Function(_FairmintersLoading value)? loading,
+    TResult? Function(_FairmintersSuccess value)? success,
+    TResult? Function(_FairmintersError value)? error,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FairmintersInitial value)? initial,
+    TResult Function(_FairmintersLoading value)? loading,
+    TResult Function(_FairmintersSuccess value)? success,
+    TResult Function(_FairmintersError value)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FairmintersLoading implements FairmintersState {
+  const factory _FairmintersLoading() = _$FairmintersLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$FairmintersSuccessImplCopyWith<$Res> {
+  factory _$$FairmintersSuccessImplCopyWith(_$FairmintersSuccessImpl value,
+          $Res Function(_$FairmintersSuccessImpl) then) =
+      __$$FairmintersSuccessImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({List<Fairminter> fairminters});
+}
+
+/// @nodoc
+class __$$FairmintersSuccessImplCopyWithImpl<$Res>
+    extends _$FairmintersStateCopyWithImpl<$Res, _$FairmintersSuccessImpl>
+    implements _$$FairmintersSuccessImplCopyWith<$Res> {
+  __$$FairmintersSuccessImplCopyWithImpl(_$FairmintersSuccessImpl _value,
+      $Res Function(_$FairmintersSuccessImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? fairminters = null,
+  }) {
+    return _then(_$FairmintersSuccessImpl(
+      null == fairminters
+          ? _value._fairminters
+          : fairminters // ignore: cast_nullable_to_non_nullable
+              as List<Fairminter>,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$FairmintersSuccessImpl implements _FairmintersSuccess {
+  const _$FairmintersSuccessImpl(final List<Fairminter> fairminters)
+      : _fairminters = fairminters;
+
+  final List<Fairminter> _fairminters;
+  @override
+  List<Fairminter> get fairminters {
+    if (_fairminters is EqualUnmodifiableListView) return _fairminters;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_fairminters);
+  }
+
+  @override
+  String toString() {
+    return 'FairmintersState.success(fairminters: $fairminters)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FairmintersSuccessImpl &&
+            const DeepCollectionEquality()
+                .equals(other._fairminters, _fairminters));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, const DeepCollectionEquality().hash(_fairminters));
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FairmintersSuccessImplCopyWith<_$FairmintersSuccessImpl> get copyWith =>
+      __$$FairmintersSuccessImplCopyWithImpl<_$FairmintersSuccessImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<Fairminter> fairminters) success,
+    required TResult Function(String error) error,
+  }) {
+    return success(fairminters);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<Fairminter> fairminters)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return success?.call(fairminters);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<Fairminter> fairminters)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(fairminters);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FairmintersInitial value) initial,
+    required TResult Function(_FairmintersLoading value) loading,
+    required TResult Function(_FairmintersSuccess value) success,
+    required TResult Function(_FairmintersError value) error,
+  }) {
+    return success(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FairmintersInitial value)? initial,
+    TResult? Function(_FairmintersLoading value)? loading,
+    TResult? Function(_FairmintersSuccess value)? success,
+    TResult? Function(_FairmintersError value)? error,
+  }) {
+    return success?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FairmintersInitial value)? initial,
+    TResult Function(_FairmintersLoading value)? loading,
+    TResult Function(_FairmintersSuccess value)? success,
+    TResult Function(_FairmintersError value)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FairmintersSuccess implements FairmintersState {
+  const factory _FairmintersSuccess(final List<Fairminter> fairminters) =
+      _$FairmintersSuccessImpl;
+
+  List<Fairminter> get fairminters;
+  @JsonKey(ignore: true)
+  _$$FairmintersSuccessImplCopyWith<_$FairmintersSuccessImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$FairmintersErrorImplCopyWith<$Res> {
+  factory _$$FairmintersErrorImplCopyWith(_$FairmintersErrorImpl value,
+          $Res Function(_$FairmintersErrorImpl) then) =
+      __$$FairmintersErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String error});
+}
+
+/// @nodoc
+class __$$FairmintersErrorImplCopyWithImpl<$Res>
+    extends _$FairmintersStateCopyWithImpl<$Res, _$FairmintersErrorImpl>
+    implements _$$FairmintersErrorImplCopyWith<$Res> {
+  __$$FairmintersErrorImplCopyWithImpl(_$FairmintersErrorImpl _value,
+      $Res Function(_$FairmintersErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$FairmintersErrorImpl(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$FairmintersErrorImpl implements _FairmintersError {
+  const _$FairmintersErrorImpl(this.error);
+
+  @override
+  final String error;
+
+  @override
+  String toString() {
+    return 'FairmintersState.error(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FairmintersErrorImpl &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FairmintersErrorImplCopyWith<_$FairmintersErrorImpl> get copyWith =>
+      __$$FairmintersErrorImplCopyWithImpl<_$FairmintersErrorImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<Fairminter> fairminters) success,
+    required TResult Function(String error) error,
+  }) {
+    return error(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<Fairminter> fairminters)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return error?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<Fairminter> fairminters)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FairmintersInitial value) initial,
+    required TResult Function(_FairmintersLoading value) loading,
+    required TResult Function(_FairmintersSuccess value) success,
+    required TResult Function(_FairmintersError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FairmintersInitial value)? initial,
+    TResult? Function(_FairmintersLoading value)? loading,
+    TResult? Function(_FairmintersSuccess value)? success,
+    TResult? Function(_FairmintersError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FairmintersInitial value)? initial,
+    TResult Function(_FairmintersLoading value)? loading,
+    TResult Function(_FairmintersSuccess value)? success,
+    TResult Function(_FairmintersError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _FairmintersError implements FairmintersState {
+  const factory _FairmintersError(final String error) = _$FairmintersErrorImpl;
+
+  String get error;
+  @JsonKey(ignore: true)
+  _$$FairmintersErrorImplCopyWith<_$FairmintersErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

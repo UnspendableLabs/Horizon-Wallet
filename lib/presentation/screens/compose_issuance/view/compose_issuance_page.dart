@@ -18,6 +18,7 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
+import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
@@ -54,6 +55,8 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
+          fetchIssuanceFormDataUseCase:
+              GetIt.I.get<FetchIssuanceFormDataUseCase>(),
         )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeIssuancePage(
           address: currentAddress,
