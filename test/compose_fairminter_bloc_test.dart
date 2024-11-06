@@ -157,6 +157,7 @@ void main() {
           feeState: const FeeState.loading(),
           assetState: const AssetState.loading(),
           submitState: const SubmitInitial(),
+          fairmintersState: const FairmintersState.loading(),
         ),
         composeFairminterBloc.state.copyWith(
           balancesState: const BalancesState.success([]),

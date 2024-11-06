@@ -67,7 +67,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         assetState: const AssetState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const SubmitInitial(),
+        fairmintersState: const FairmintersState.loading()));
 
     try {
       final (assets, feeEstimates, fairminters) =
