@@ -87,7 +87,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   String? asset;
   Balance? balance_;
   bool _submitted = false;
-  bool hideInitialFee = true;
   bool hideSubmitButtons = true;
   bool isCreateNewAddressFlow = false;
 
@@ -113,7 +112,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       listener: (context, state) {
         state.dispensersState.maybeWhen(
           closeDialogAndOpenNewAddress: (originalAddress, divisible, asset,
-              giveQuantity, escrowQuantity, mainchainrate) {
+              giveQuantity, escrowQuantity, mainchainrate, feeRate) {
             // Close current dialog
             Navigator.of(context).pop();
 
@@ -135,6 +134,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                   escrowQuantity: escrowQuantity,
                   mainchainrate: mainchainrate,
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+                  feeRate: feeRate,
                 ),
               ),
             );
@@ -143,7 +143,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         );
       },
       child: ComposeBasePage<ComposeDispenserBloc, ComposeDispenserState>(
-        hideInitialFee: hideInitialFee,
         hideSubmitButtons: hideSubmitButtons,
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
         onFeeChange: (fee) => context
@@ -531,7 +530,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     return ElevatedButton(
       onPressed: () {
         setState(() {
-          hideInitialFee = isCreateNewAddress;
           isCreateNewAddressFlow = isCreateNewAddress;
           hideSubmitButtons = false;
         });

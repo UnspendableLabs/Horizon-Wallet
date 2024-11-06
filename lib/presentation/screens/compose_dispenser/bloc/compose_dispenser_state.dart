@@ -53,7 +53,8 @@ class DispenserState with _$DispenserState {
       required String asset,
       required String giveQuantity,
       required String escrowQuantity,
-      required String mainchainrate}) = _DispenserCloseDialogAndOpenNewAddress;
+      required String mainchainrate,
+      required int feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
 
   const factory DispenserState.warning() = _DispenserWarning;
 

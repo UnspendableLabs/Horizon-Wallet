@@ -25,7 +25,6 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
       onConfirmationContinue;
   final void Function(String, GlobalKey<FormState>) onFinalizeSubmit;
   final void Function() onFinalizeCancel;
-  final bool? hideInitialFee;
   final bool? hideSubmitButtons;
 
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -42,7 +41,6 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     required this.onConfirmationContinue,
     required this.onFinalizeSubmit,
     required this.onFinalizeCancel,
-    this.hideInitialFee = false,
     this.hideSubmitButtons = false,
   });
 
@@ -86,7 +84,6 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               onFeeChange: widget.onFeeChange,
               onCancel: widget.onInitialCancel,
               onSubmit: (formKey) => widget.onInitialSubmit(formKey),
-              hideInitialFee: widget.hideInitialFee ?? false,
               hideSubmitButtons: widget.hideSubmitButtons ?? false,
             ),
           SubmitError(error: var msg) => Padding(
@@ -149,7 +146,6 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
   final void Function(FeeOption) onFeeChange;
   final void Function() onCancel;
   final void Function(GlobalKey<FormState>) onSubmit;
-  final bool hideInitialFee;
   final bool hideSubmitButtons;
   const ComposeBaseInitialPage({
     super.key,
@@ -160,7 +156,6 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
     required this.onFeeChange,
     required this.onCancel,
     required this.onSubmit,
-    this.hideInitialFee = false,
     this.hideSubmitButtons = false,
   });
 
@@ -200,8 +195,8 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
               }
               return formWidget;
             }),
-            if (!widget.hideInitialFee) const HorizonUI.HorizonDivider(),
-            if (!widget.hideInitialFee)
+            if (!widget.hideSubmitButtons) const HorizonUI.HorizonDivider(),
+            if (!widget.hideSubmitButtons)
               FeeSelectionV2(
                 value: widget.state.feeOption,
                 feeEstimates: widget.state.feeState.maybeWhen(

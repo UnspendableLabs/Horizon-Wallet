@@ -13,6 +13,7 @@ class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
   final int escrowQuantity;
   final int mainchainrate;
   final int status;
+  final int feeRate;
 
   ComposeTransactions({
     required this.password,
@@ -23,5 +24,6 @@ class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
     required this.escrowQuantity,
     required this.mainchainrate,
     required this.status,
+    required this.feeRate,
   });
 }

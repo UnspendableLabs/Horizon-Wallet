@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/asset_info.dart';
+import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
@@ -3023,6 +3024,11 @@ abstract class V2Api {
   @POST("/bitcoin/transactions")
   Future<Response<String>> createTransaction(
     @Query("signedhex") String signedhex,
+  );
+
+  @POST("/bitcoin/transactions/decode")
+  Future<Response<DecodedTxModel>> decodeTransaction(
+    @Query("rawtx") String rawtx,
   );
   //     Get Balances by address
   @GET("/addresses/{address}/balances")

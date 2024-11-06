@@ -3,17 +3,16 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/create_send_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
@@ -27,8 +26,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final AddressRepository addressRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
-  final CreateSendRepository createSendRepository;
   final ComposeRepository composeRepository;
+  final BitcoindService bitcoindService;
   final UtxoRepository utxoRepository;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final FetchDispenserOnNewAddressFormDataUseCase
@@ -40,8 +39,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.walletRepository,
     required this.encryptionService,
     required this.addressService,
-    required this.createSendRepository,
     required this.composeRepository,
+    required this.bitcoindService,
     required this.utxoRepository,
     required this.composeTransactionUseCase,
     required this.fetchDispenserOnNewAddressFormDataUseCase,
@@ -119,9 +118,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         index: 0,
       );
       print('after newAddress');
-      await accountRepository.insert(newAccount);
-      await addressRepository.insert(newAddress);
-
+      // await accountRepository.insert(newAccount);
+      // await addressRepository.insert(newAddress);
       // final tx = await composeRepository.composeSendVerbose(
       //   0,
       //   [],
@@ -155,33 +153,32 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         final composedSend = composeSendResponse.$1;
         final virtualSizeSend = composeSendResponse.$2;
 
-        final feeRate = _getFeeRate(FeeOption.Fast());
-        final composeDispenserResponse = await composeTransactionUseCase
-            .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-          feeRate: feeRate,
-          source: destination,
-          params: ComposeDispenserParams(
-            source: destination,
-            asset: asset,
-            giveQuantity: quantity,
-            escrowQuantity: quantity,
-            mainchainrate: 0,
-          ),
-          composeFn: composeRepository.composeDispenserVerbose,
-        );
+        // final composeDispenserResponse = await composeTransactionUseCase
+        //     .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+        //   feeRate: event.feeRate,
+        //   source: destination,
+        //   params: ComposeDispenserParams(
+        //     source: destination,
+        //     asset: asset,
+        //     giveQuantity: quantity,
+        //     escrowQuantity: quantity,
+        //     mainchainrate: 0,
+        //   ),
+        //   composeFn: composeRepository.composeDispenserVerbose,
+        // );
 
-        final composedDispenser = composeDispenserResponse.$1;
-        final virtualSizeDispenser = composeDispenserResponse.$2;
+        // final composedDispenser = composeDispenserResponse.$1;
+        // final virtualSizeDispenser = composeDispenserResponse.$2;
 
-        emit(state.copyWith(
-            composeDispenserOnNewAddressState:
-                ComposeDispenserOnNewAddressState.success(
-          composeTransaction: composedDispenser,
-          fee: composedDispenser.btcFee,
-          feeRate: feeRate,
-          virtualSize: virtualSizeDispenser.virtualSize,
-          adjustedVirtualSize: virtualSizeDispenser.adjustedVirtualSize,
-        )));
+        // emit(state.copyWith(
+        //     composeDispenserOnNewAddressState:
+        //         ComposeDispenserOnNewAddressState.success(
+        //   composeTransaction: composedDispenser,
+        //   fee: composedDispenser.btcFee,
+        //   feeRate: event.feeRate,
+        //   virtualSize: virtualSizeDispenser.virtualSize,
+        //   adjustedVirtualSize: virtualSizeDispenser.adjustedVirtualSize,
+        // )));
         // emit(state.copyWith(
         //     submitState: SubmitComposingTransaction<ComposeSendResponse, void>(
         //   composeTransaction: composed,
@@ -216,7 +213,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     });
   }
   int _getFeeRate(FeeOption.FeeOption feeOption) {
-    FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
+    FeeEstimates feeEstimates = state.feeState.feeEstimates;
     return switch (feeOption) {
       FeeOption.Fast() => feeEstimates.fast,
       FeeOption.Medium() => feeEstimates.medium,

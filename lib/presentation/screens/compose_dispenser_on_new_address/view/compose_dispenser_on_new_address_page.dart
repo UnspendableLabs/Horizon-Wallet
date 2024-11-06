@@ -5,10 +5,10 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/create_send_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -27,6 +27,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final String escrowQuantity;
   final String mainchainrate;
   final bool divisible;
+  final int feeRate;
 
   const ComposeDispenserOnNewAddressPageWrapper({
     required this.dashboardActivityFeedBloc,
@@ -36,6 +37,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
     required this.giveQuantity,
     required this.escrowQuantity,
     required this.mainchainrate,
+    required this.feeRate,
     super.key,
   });
 
@@ -48,8 +50,8 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         walletRepository: GetIt.I.get<WalletRepository>(),
         encryptionService: GetIt.I.get<EncryptionService>(),
         addressService: GetIt.I.get<AddressService>(),
-        createSendRepository: GetIt.I.get<CreateSendRepository>(),
         composeRepository: GetIt.I.get<ComposeRepository>(),
+        bitcoindService: GetIt.I.get<BitcoindService>(),
         utxoRepository: GetIt.I.get<UtxoRepository>(),
         composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
         fetchDispenserOnNewAddressFormDataUseCase:
@@ -62,6 +64,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         escrowQuantity: escrowQuantity,
         mainchainrate: mainchainrate,
         divisible: divisible,
+        feeRate: feeRate,
       ),
     );
   }
@@ -74,6 +77,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
   final String escrowQuantity;
   final String mainchainrate;
   final bool divisible;
+  final int feeRate;
   const ComposeDispenserOnNewAddressPage({
     required this.originalAddress,
     required this.asset,
@@ -81,6 +85,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
     required this.escrowQuantity,
     required this.mainchainrate,
     required this.divisible,
+    required this.feeRate,
     super.key,
   });
 
@@ -246,6 +251,7 @@ class _ComposeDispenserOnNewAddressPageState
                                 escrowQuantity: escrowQuantity,
                                 mainchainrate: mainchainrate,
                                 status: 0,
+                                feeRate: widget.feeRate,
                               ));
                         }
                       },

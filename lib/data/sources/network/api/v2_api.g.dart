@@ -2526,6 +2526,36 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<DecodedTxModel>> decodeTransaction(String rawtx) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'rawtx': rawtx};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<DecodedTxModel>>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/transactions/decode',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<DecodedTxModel>.fromJson(
+      _result.data!,
+      (json) => DecodedTxModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<Balance>>> getBalancesByAddress(
     String address,
     bool verbose, [

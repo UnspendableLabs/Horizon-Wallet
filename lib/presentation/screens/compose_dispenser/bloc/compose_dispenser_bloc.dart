@@ -103,6 +103,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
   _onConfirmTransactionOnNewAddress(
       ConfirmTransactionOnNewAddress event, emit) {
+    final feeRate = _getFeeRate();
+
     emit(state.copyWith(
       dispensersState: DispenserState.closeDialogAndOpenNewAddress(
         originalAddress: event.originalAddress,
@@ -111,6 +113,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         giveQuantity: event.giveQuantity,
         escrowQuantity: event.escrowQuantity,
         mainchainrate: event.mainchainrate,
+        feeRate: feeRate,
       ),
     ));
   }

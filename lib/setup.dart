@@ -13,7 +13,6 @@ import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
-import 'package:horizon/data/sources/network/api/v1_api.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
@@ -22,7 +21,6 @@ import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dar
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/create_send_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
@@ -35,7 +33,6 @@ import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/create_send_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
@@ -210,51 +207,6 @@ Future<void> setup() async {
 //     return handler.next(options);
 //   },
 // ));
-
-  final v1Dio = Dio(BaseOptions(
-    baseUrl: config.counterpartyApiBaseV1,
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Accept': 'application/json, text/javascript',
-    },
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  ));
-
-  // Add basic auth interceptor
-  v1Dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) {
-      // Add basic auth header
-      String username = config.counterpartyV1Username;
-      String password = config.counterpartyV1Password;
-      String basicAuth =
-          'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-      options.headers['Authorization'] = basicAuth;
-      return handler.next(options);
-    },
-  ));
-
-  v1Dio.interceptors.addAll([
-    TimeoutInterceptor(),
-    ConnectionErrorInterceptor(),
-    BadResponseInterceptor(),
-    BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
-    RetryInterceptor(
-      dio: v1Dio, // Note: changed from dio to v1Dio
-      retries: 3,
-      retryableExtraStatuses: {400},
-      retryDelays: const [
-        Duration(seconds: 1),
-        Duration(seconds: 1),
-        Duration(seconds: 1),
-      ],
-    ),
-  ]);
-
-  injector.registerLazySingleton<V1Api>(() => V1Api(v1Dio));
-  injector.registerLazySingleton<CreateSendRepository>(
-      () => CreateSendRepositoryImpl(v1Api: GetIt.I.get<V1Api>()));
 
   injector.registerSingleton<AnalyticsService>(PostHogWebAnalyticsService(
     config,
