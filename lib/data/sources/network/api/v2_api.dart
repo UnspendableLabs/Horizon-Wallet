@@ -3181,7 +3181,7 @@ abstract class V2Api {
   ]);
 
   @GET("/transactions/unpack?verbose=true")
-  Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
+  Future<Response<dynamic>> unpackTransactionVerbose(
     @Query("datahex") String datahex, [
     @Query("block_index") int? blockIndex,
     @Query("verbose") bool? verbose,

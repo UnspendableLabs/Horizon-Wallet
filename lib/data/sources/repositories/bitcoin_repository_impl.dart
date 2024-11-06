@@ -1,4 +1,6 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/data/sources/network/api/bitcoin_api.dart';
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -7,9 +9,13 @@ import 'package:horizon/data/sources/network/esplora_client.dart';
 
 class BitcoinRepositoryImpl extends BitcoinRepository {
   final EsploraApi _esploraApi;
+  final BitcoinRpcClient _bitcoinRpcClient;
 
-  BitcoinRepositoryImpl({required EsploraApi esploraApi})
-      : _esploraApi = esploraApi;
+  BitcoinRepositoryImpl({
+    required EsploraApi esploraApi,
+    required BitcoinRpcClient bitcoinRpcClient,
+  })  : _esploraApi = esploraApi,
+        _bitcoinRpcClient = bitcoinRpcClient;
 
   @override
   Future<Either<Failure, Map<String, double>>> getFeeEstimates() async {
@@ -213,6 +219,18 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
     }
 
     return allTransactions;
+  }
+
+  @override
+  Future<Either<Failure, BitcoinDecodedTx>> decodeRawTransaction(String hexString) async {
+    try {
+      final decodedTx = await _bitcoinRpcClient.decodeRawTx(hexString);
+      return Right(decodedTx.toDomain());
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
   }
 
 //   Future<List<BitcoinTx>> _fetchAllTransactionsForAddressBlockCypher(

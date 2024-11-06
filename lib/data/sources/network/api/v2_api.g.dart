@@ -3263,7 +3263,7 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<TransactionUnpackedVerbose>> unpackTransactionVerbose(
+  Future<Response<dynamic>> unpackTransactionVerbose(
     String datahex, [
     int? blockIndex,
     bool? verbose,
@@ -3277,8 +3277,8 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<TransactionUnpackedVerbose>>(Options(
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<dynamic>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -3294,10 +3294,9 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final _value = Response<TransactionUnpackedVerbose>.fromJson(
+    final _value = Response<dynamic>.fromJson(
       _result.data!,
-      (json) =>
-          TransactionUnpackedVerbose.fromJson(json as Map<String, dynamic>),
+      (json) => json as dynamic,
     );
     return _value;
   }

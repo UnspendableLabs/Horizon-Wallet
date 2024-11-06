@@ -13,6 +13,7 @@ import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/data/sources/network/api/bitcoin_api.dart';
 import 'package:horizon/data/sources/network/api/v1_api.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
@@ -140,7 +141,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -166,7 +167,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -239,7 +240,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: v1Dio, // Note: changed from dio to v1Dio
       retries: 3,
@@ -251,6 +252,51 @@ Future<void> setup() async {
       ],
     ),
   ]);
+
+  // Bitcoin RPC client setup
+  final bitcoinDio = Dio(BaseOptions(
+    baseUrl: config.bitcoinApiBase,
+    headers: {
+      'Content-Type': 'text/plain',
+      'X-HTTP-Method-Override': 'POST', // Force POST
+    },
+    method: 'POST',  // Set default method
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
+
+  // Add basic auth interceptor
+  bitcoinDio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) {
+      String username = config.bitcoinUsername;
+      String password = config.bitcoinPassword;
+      String basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+      options.headers['Authorization'] = basicAuth;
+      return handler.next(options);
+    },
+  ));
+
+  bitcoinDio.interceptors.addAll([
+    TimeoutInterceptor(),
+    ConnectionErrorInterceptor(),
+    BadResponseInterceptor(),
+    BadCertificateInterceptor(),
+    RetryInterceptor(
+      dio: bitcoinDio,
+      retries: 3,
+      retryDelays: const [
+        Duration(seconds: 1),
+        Duration(seconds: 2),
+        Duration(seconds: 3),
+      ],
+    ),
+  ]);
+
+  injector.registerLazySingleton<BitcoinRpcClient>(() => BitcoinRpcClient(
+    bitcoinDio,
+    baseUrl: config.bitcoinApiBase,
+
+  ));
 
   injector.registerLazySingleton<V1Api>(() => V1Api(v1Dio));
   injector.registerLazySingleton<CreateSendRepository>(
@@ -268,6 +314,7 @@ Future<void> setup() async {
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraApi: EsploraApi(dio: esploraDio),
+    bitcoinRpcClient: GetIt.I.get<BitcoinRpcClient>(),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
 

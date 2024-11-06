@@ -1,5 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/entities/address_info.dart';
 
@@ -17,4 +18,5 @@ abstract class BitcoinRepository {
   Future<Either<Failure, String>> getTransactionHex(String txid);
   Future<Either<Failure, int>> getBlockHeight();
   Future<Either<Failure, AddressInfo>> getAddressInfo(String address);
+  Future<Either<Failure, BitcoinDecodedTx>> decodeRawTransaction(String hexString);
 }

@@ -8,6 +8,9 @@ abstract class Config {
   String get counterpartyApiBaseV1;
   String get counterpartyV1Username;
   String get counterpartyV1Password;
+  String get bitcoinApiBase;
+  String get bitcoinUsername;
+  String get bitcoinPassword;
   String get esploraBase;
   // String get blockCypherBase;
   String get horizonExplorerBase;

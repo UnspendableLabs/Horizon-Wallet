@@ -21,8 +21,8 @@ class ConfigImpl implements Config {
   }
 
   String get _defaultCounterpartyApiBase => switch (network) {
-        Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
-        Network.testnet => 'https://api.counterparty.io:14000/v2',
+        Network.mainnet => 'https://dev.counterparty.io:4000/v2',
+        Network.testnet => 'https://dev.counterparty.io:14000/v2',
         Network.regtest => 'http://localhost:24000/v2'
       };
 
@@ -37,6 +37,24 @@ class ConfigImpl implements Config {
         Network.testnet => 'https://api.counterparty.io:14000/v1',
         Network.regtest => 'http://localhost:24000/v1'
       };
+
+  @override
+  String get bitcoinApiBase {
+    const envValue = String.fromEnvironment('HORIZON_BITCOIN_API_BASE');
+    return envValue.isNotEmpty ? envValue : _defaultBitcoinApiBase;
+  }
+
+  String get _defaultBitcoinApiBase => switch (network) {
+        Network.mainnet => 'https://api.counterparty.io:8332',
+        Network.testnet => 'https://api.counterparty.io:18332',
+        Network.regtest => 'http://localhost:28332'
+      };
+
+  @override
+  String get bitcoinUsername => 'rpc';
+
+  @override
+  String get bitcoinPassword => 'rpc';
 
   @override
   String get counterpartyV1Username => 'rpc';

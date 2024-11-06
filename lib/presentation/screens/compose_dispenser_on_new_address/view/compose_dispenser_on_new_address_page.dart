@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/create_send_repository.dart';
+import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -51,6 +53,8 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         createSendRepository: GetIt.I.get<CreateSendRepository>(),
         composeRepository: GetIt.I.get<ComposeRepository>(),
         utxoRepository: GetIt.I.get<UtxoRepository>(),
+        transactionRepository: GetIt.I.get<TransactionRepository>(),
+        bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
         composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
         fetchDispenserOnNewAddressFormDataUseCase:
             GetIt.I.get<FetchDispenserOnNewAddressFormDataUseCase>(),
