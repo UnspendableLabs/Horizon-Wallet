@@ -10,6 +10,11 @@ void main(List<String> args) async {
   final apiUsername = Platform.environment['HORIZON_COUNTERPARTY_API_USERNAME'];
   final apiPassword = Platform.environment['HORIZON_COUNTERPARTY_API_PASSWORD'];
 
+  if (browser == "firefox") {
+    print('Firefox is not supported for extension build. See https://bugzilla.mozilla.org/show_bug.cgi?id=1688314');
+    exit(1);
+  }
+
   if (browser == null || (browser != 'chromium' && browser != 'firefox')) {
     print(
         'Please set the TARGET_BROWSER environment variable to "chromium" or "firefox".');
@@ -42,6 +47,8 @@ Future<void> buildFlutter(
     '--web-renderer',
     'html',
     '--csp',
+    '--no-web-resources-cdn',
+    '--release',
     '--dart-define=HORIZON_NETWORK=$network',
     '--dart-define=HORIZON_ENABLE_DB_VIEWER=true',
     '--dart-define=HORIZON_COUNTERPARTY_API_USERNAME=$username',
