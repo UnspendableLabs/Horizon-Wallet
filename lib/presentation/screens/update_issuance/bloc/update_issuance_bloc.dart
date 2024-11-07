@@ -199,12 +199,12 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('update issuance broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_update_issuance');
+
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_update_issuance');
         },
         onError: (msg) {
           emit(state.copyWith(

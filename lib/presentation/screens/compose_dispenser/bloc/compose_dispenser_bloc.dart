@@ -218,13 +218,12 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.d('dispenser broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_dispenser');
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_dispenser');
         },
         onError: (msg) {
           emit(state.copyWith(
