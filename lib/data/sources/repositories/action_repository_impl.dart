@@ -20,10 +20,10 @@ class ActionRepositoryImpl implements ActionRepository {
       ["fairmint", String fairminterTxHash] => FairmintAction(fairminterTxHash),
       [
         "order",
+        String giveAsset,
+        String giveQuantity,
         String getAsset,
         String getQuantity,
-        String giveAsset,
-        String giveQuantity
       ] =>
         OrderAction(
             giveQuantity: int.tryParse(giveQuantity)!,

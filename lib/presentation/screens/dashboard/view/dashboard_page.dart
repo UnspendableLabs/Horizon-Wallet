@@ -1148,6 +1148,8 @@ class DashboardPageState extends State<DashboardPage> {
 
   void _handleOrderAction(
       int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
+    print("handle order action giveQuantity $giveQuantity giveAsset $giveAsset");
+
     HorizonUI.HorizonDialog.show(
       context: context,
       body: HorizonUI.HorizonDialog(

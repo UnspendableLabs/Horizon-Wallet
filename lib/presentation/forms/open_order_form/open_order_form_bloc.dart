@@ -271,7 +271,13 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           await balanceRepository.getBalancesForAddress(currentAddress);
       emit(state.copyWith(giveAssets: Success(balances)));
 
+      print("initialGiveAsset: ${event.initialGiveAsset}");
+      print("initialGiveQuantity: ${event.initialGiveQuantity}");
+
       if (event.initialGiveAsset != null) {
+
+        
+
         String initialGiveAsset = event.initialGiveAsset!;
 
         final balanceForAsset = balances.firstWhereOrNull(

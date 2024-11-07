@@ -126,7 +126,7 @@ Future<void> setup() async {
       String password = config.counterpartyApiPassword;
       String basicAuth =
           'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-      options.headers['Authorization'] = basicAuth;
+      options.headers['Authorizationa'] = basicAuth;
       return handler.next(options);
     },
   ));
@@ -137,7 +137,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       // retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -163,7 +163,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
