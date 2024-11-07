@@ -1,4 +1,5 @@
-const CONTENT_SCRIPT_PORT = "content-script";
+
+const CONTENT_SCRIPT_PORT = "horizon-wallet-content-script";
 const MESSAGE_SOURCE = "horizon";
 const VALID_METHODS = ["getAddresses", "signPsbt", "fairmint", "dispense"];
 
