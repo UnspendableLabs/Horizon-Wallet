@@ -1,4 +1,3 @@
-import 'package:posthog_flutter/posthog_flutter.dart';
 import 'package:logger/logger.dart';
 import 'dart:js' as js;
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -58,8 +57,8 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void trackEvent(String eventName, {Map<String, Object>? properties}) async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
-      await Posthog().capture(eventName: eventName, properties: properties);
-      logger.i('Even capture: $eventName, $properties');
+      js.context.callMethod('posthog.capture', [eventName, properties]);
+      logger.i('Event capture: $eventName, $properties');
     } catch (e) {
       logger.e("Error tracking event: $e");
     }
@@ -69,7 +68,7 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void identify(String userId) async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
-      await Posthog().identify(userId: userId);
+      js.context.callMethod('posthog.identify', [userId]);
       logger.i('User identified: $userId');
     } catch (e) {
       logger.e("Error identifying user: $e");
@@ -80,7 +79,7 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void reset() async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
-      await Posthog().reset();
+      js.context.callMethod('posthog.reset');
       logger.d('Analytics reset.');
     } catch (e) {
       logger.e("Error resetting analytics: $e");
