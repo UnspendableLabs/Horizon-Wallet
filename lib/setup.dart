@@ -140,7 +140,7 @@ Future<void> setup() async {
     SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
-      retryableExtraStatuses: {400}, // to handle backend bug with compose
+      // retryableExtraStatuses: {400}, // to handle backend bug with compose
       retryDelays: const [
         // set delays between retries (optional)
         Duration(seconds: 1), // wait 1 sec before first retry

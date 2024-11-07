@@ -4420,28 +4420,25 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<AssetVerbose>> getAssetVerbose(String asset) async {
+  Future<Response<AssetVerbose>> getAssetVerbose(
+    String asset, [
+    Options? options,
+  ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<AssetVerbose>>(Options(
+    final newOptions = newRequestOptions(options);
+    newOptions.extra.addAll(_extra);
+    newOptions.headers.addAll(_dio.options.headers);
+    newOptions.headers.addAll(_headers);
+    final _result = await _dio.fetch<Map<String, dynamic>>(newOptions.copyWith(
       method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/assets/${asset}?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
+      baseUrl: baseUrl ?? _dio.options.baseUrl,
+      queryParameters: queryParameters,
+      path: '/assets/${asset}?verbose=true',
+    )..data = _data);
     final _value = Response<AssetVerbose>.fromJson(
       _result.data!,
       (json) => AssetVerbose.fromJson(json as Map<String, dynamic>),
@@ -4510,6 +4507,31 @@ class _V2Api implements V2Api {
       (json) => NodeInfoModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
+  }
+
+  RequestOptions newRequestOptions(Object? options) {
+    if (options is RequestOptions) {
+      return options as RequestOptions;
+    }
+    if (options is Options) {
+      return RequestOptions(
+        method: options.method,
+        sendTimeout: options.sendTimeout,
+        receiveTimeout: options.receiveTimeout,
+        extra: options.extra,
+        headers: options.headers,
+        responseType: options.responseType,
+        contentType: options.contentType.toString(),
+        validateStatus: options.validateStatus,
+        receiveDataWhenStatusError: options.receiveDataWhenStatusError,
+        followRedirects: options.followRedirects,
+        maxRedirects: options.maxRedirects,
+        requestEncoder: options.requestEncoder,
+        responseDecoder: options.responseDecoder,
+        path: '',
+      );
+    }
+    return RequestOptions(path: '');
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

@@ -3569,7 +3569,11 @@ abstract class V2Api {
   Future<Response<Asset>> getAsset(@Path("asset") String asset);
 
   @GET("/assets/{asset}?verbose=true")
-  Future<Response<AssetVerbose>> getAssetVerbose(@Path("asset") String asset);
+  Future<Response<AssetVerbose>> getAssetVerbose(
+    @Path("asset") String asset, [
+    @DioOptions() Options? options,
+  ]);
+
   @GET("/addresses/{address}/balances/{asset}?verbose=true")
   Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
     @Path("address") String address,

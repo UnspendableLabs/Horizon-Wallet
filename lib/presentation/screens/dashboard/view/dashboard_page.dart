@@ -47,7 +47,7 @@ import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.d
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
-import 'package:horizon/presentation/forms/order_buy_form/order_form_view.dart';
+import 'package:horizon/presentation/forms/open_order_form/open_order_form_view.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -457,9 +457,10 @@ class OrderButtonMenu extends StatelessWidget {
                       context: context,
                       body: HorizonUI.HorizonDialog(
                         title: "Open Buy Order",
-                        body: OrderBuyForm(
+                        body: OpenOrderForm(
                           currentAddress: currentAddress,
                           balanceRepository: GetIt.I<BalanceRepository>(),
+                          assetRepository: GetIt.I<AssetRepository>(),
                         ),
                       ),
                     );
