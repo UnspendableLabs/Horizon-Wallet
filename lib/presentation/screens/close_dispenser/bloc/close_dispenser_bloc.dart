@@ -195,12 +195,12 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.d('dispenser broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_dispenser_close');
+
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_dispenser_close');
         },
         onError: (msg) {
           emit(state.copyWith(

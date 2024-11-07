@@ -213,12 +213,12 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('fairminter broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_fairminter');
+
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_fairminter');
         },
         onError: (msg) {
           emit(state.copyWith(

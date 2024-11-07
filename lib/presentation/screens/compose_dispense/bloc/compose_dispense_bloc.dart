@@ -263,13 +263,12 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.error('dispense broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_dispense');
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_dispense');
         },
         onError: (msg) {
           emit(state.copyWith(
