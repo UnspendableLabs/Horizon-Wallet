@@ -419,7 +419,8 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         ],
       IssuanceActionType.issueSubasset => [
           // Issue a subasset of the asset
-          _buildSubassetNameField(formKey, originalAsset),
+          buildSubassetNameField(formKey, originalAsset, _subassetController,
+              (_) => _handleInitialSubmit(formKey, originalAsset)),
           const SizedBox(height: 16),
           _buildQuantityField(formKey, originalAsset, 'Quantity'),
           const SizedBox(height: 16),
@@ -491,64 +492,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       autovalidateMode: _submitted
           ? AutovalidateMode.onUserInteraction
           : AutovalidateMode.disabled,
-    );
-  }
-
-  Widget _buildSubassetNameField(
-      GlobalKey<FormState> formKey, Asset originalAsset) {
-    return Stack(
-      children: [
-        HorizonUI.HorizonTextFormField(
-          controller: _subassetController,
-          textCapitalization: TextCapitalization.characters,
-          label: 'Subasset Name',
-          validator: (value) {
-            if (value == null ||
-                value.isEmpty ||
-                value ==
-                    '${displayAssetName(originalAsset.asset, originalAsset.assetLongname)}.') {
-              return 'Please enter a subasset name';
-            }
-            return null;
-          },
-          onChanged: (value) {
-            final prefix =
-                '${displayAssetName(originalAsset.asset, originalAsset.assetLongname)}.';
-            if (value.length < prefix.length) {
-              // If the user is trying to delete the prefix, keep it intact
-              _subassetController.value = TextEditingValue(
-                text: prefix,
-                selection: TextSelection.collapsed(offset: prefix.length),
-              );
-            } else {
-              // Allow typing after the prefix, but ensure the prefix is always there
-              String subAssetPart = value.substring(prefix.length);
-              // Filter and capitalize alphanumeric characters
-              String filteredPart = '';
-              for (int i = 0;
-                  i < subAssetPart.length && filteredPart.length < 20;
-                  i++) {
-                String char = subAssetPart[i].toUpperCase();
-                if ((char.codeUnitAt(0) >= 65 &&
-                        char.codeUnitAt(0) <= 90) || // A-Z
-                    (char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57)) {
-                  // 0-9
-                  filteredPart += char;
-                }
-              }
-
-              final issueSubassetName = '$prefix$filteredPart';
-
-              _subassetController.value = TextEditingValue(
-                text: issueSubassetName,
-                selection:
-                    TextSelection.collapsed(offset: issueSubassetName.length),
-              );
-            }
-          },
-          onFieldSubmitted: (_) => _handleInitialSubmit(formKey, originalAsset),
-        ),
-      ],
     );
   }
 
@@ -841,8 +784,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         label: "Description",
         controller: TextEditingController(text: description),
         enabled: false,
-        textColor: actionType != IssuanceActionType.lockDescription &&
-                description != originalAsset.description
+        textColor: actionType == IssuanceActionType.changeDescription
             ? Colors.green
             : null,
       );
@@ -904,4 +846,65 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
     }
     return quantity;
   }
+}
+
+Widget buildSubassetNameField(
+    GlobalKey<FormState> formKey,
+    Asset originalAsset,
+    TextEditingController subassetController,
+    Function(String) onFieldSubmitted) {
+  return Stack(
+    children: [
+      HorizonUI.HorizonTextFormField(
+        controller: subassetController,
+        textCapitalization: TextCapitalization.none,
+        label: 'Subasset Name',
+        validator: (value) {
+          final prefix =
+              '${displayAssetName(originalAsset.asset, originalAsset.assetLongname)}.';
+          if (value == null || value.isEmpty || value == prefix) {
+            return 'Please enter a subasset name';
+          }
+          if (value.length < prefix.length + 1 || value.length > 250) {
+            return 'Subasset name must be between 1 and 250 characters';
+          }
+          if (value.startsWith('.') || value.endsWith('.')) {
+            return 'Subasset name cannot start or end with a period';
+          }
+          if (value.contains('..')) {
+            return 'Subasset name cannot contain consecutive periods';
+          }
+          return null;
+        },
+        onChanged: (value) {
+          final prefix =
+              '${displayAssetName(originalAsset.asset, originalAsset.assetLongname)}.';
+          if (value.length < prefix.length) {
+            subassetController.value = TextEditingValue(
+              text: prefix,
+              selection: TextSelection.collapsed(offset: prefix.length),
+            );
+          } else {
+            String subAssetPart = value.substring(prefix.length);
+            String filteredPart = '';
+            for (int i = 0;
+                i < subAssetPart.length && filteredPart.length < 250;
+                i++) {
+              String char = subAssetPart[i];
+              if (RegExp(r'[a-zA-Z0-9._@!-]').hasMatch(char)) {
+                filteredPart += char;
+              }
+            }
+            final issueSubassetName = '$prefix$filteredPart';
+            subassetController.value = TextEditingValue(
+              text: issueSubassetName,
+              selection:
+                  TextSelection.collapsed(offset: issueSubassetName.length),
+            );
+          }
+        },
+        onFieldSubmitted: onFieldSubmitted,
+      ),
+    ],
+  );
 }
