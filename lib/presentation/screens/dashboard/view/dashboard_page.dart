@@ -22,6 +22,7 @@ import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
@@ -764,6 +765,7 @@ class DashboardPageWrapper extends StatelessWidget {
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     addressTxRepository: GetIt.I.get<AddressTxRepository>(),
                     assetRepository: GetIt.I.get<AssetRepository>(),
+                    fairminterRepository: GetIt.I.get<FairminterRepository>(),
                     currentAddress: data.currentAddress?.address ??
                         data.currentImportedAddress!.address,
                   )..add(Start(pollingInterval: const Duration(seconds: 60))),
@@ -983,8 +985,6 @@ class DashboardPage extends StatefulWidget {
 class DashboardPageState extends State<DashboardPage> {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
   final _scrollController = ScrollController();
-  final _searchController = TextEditingController();
-  String _searchTerm = '';
 
   @override
   void initState() {
@@ -995,20 +995,12 @@ class DashboardPageState extends State<DashboardPage> {
         _getHandler(action)();
       });
     });
-    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
     super.dispose();
-  }
-
-  void _onSearchChanged() {
-    setState(() {
-      _searchTerm = _searchController.text;
-    });
+    _scrollController.dispose();
   }
 
   void Function() _getHandler(URLAction.Action action) {
