@@ -1134,8 +1134,34 @@ class DashboardPageState extends State<DashboardPage> {
           _handleDispenseAction(address),
       URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
           _handleFairmintAction(fairminterTxHash),
+      URLAction.OrderAction(
+        giveQuantity: var giveQuantity,
+        giveAsset: var giveAsset,
+        getQuantity: var getQuantity,
+        getAsset: var getAsset
+      ) =>
+        () =>
+            _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
       _ => noop
     };
+  }
+
+  void _handleOrderAction(
+      int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
+    HorizonUI.HorizonDialog.show(
+      context: context,
+      body: HorizonUI.HorizonDialog(
+        title: "Open Buy Order",
+        body: OpenOrderForm(
+          currentAddress: widget.currentAddress?.address ??
+              widget.currentImportedAddress!.address,
+          balanceRepository: GetIt.I<BalanceRepository>(),
+          assetRepository: GetIt.I<AssetRepository>(),
+          initialGiveQuantity: giveQuantity,
+          initialGiveAsset: giveAsset,
+        ),
+      ),
+    );
   }
 
   void _handleDispenseAction(String address) {

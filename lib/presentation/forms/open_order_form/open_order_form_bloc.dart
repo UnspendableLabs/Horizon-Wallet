@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -62,8 +64,6 @@ class GiveQuantityInput
   @override
   GiveQuantityValidationError? validator(String value) {
     if (value == null || value.isEmpty) {
-      print("value: $value");
-      print("value was null");
       return GiveQuantityValidationError.invalid;
     }
 
@@ -115,6 +115,16 @@ abstract class FormEvent extends Equatable {
 
   @override
   List<Object?> get props => [];
+}
+
+class InitializeForm extends FormEvent {
+  final String? initialGiveAsset;
+  final int? initialGiveQuantity;
+
+  const InitializeForm({this.initialGiveAsset, this.initialGiveQuantity});
+
+  @override
+  List<Object?> get props => [initialGiveAsset, initialGiveQuantity];
 }
 
 class LoadGiveAssets extends FormEvent {}
@@ -230,11 +240,13 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   final AssetRepository assetRepository;
   final currentAddress;
 
-  OpenOrderFormBloc(
-      {required this.assetRepository,
-      required this.balanceRepository,
-      required this.currentAddress})
-      : super(FormStateModel(
+  OpenOrderFormBloc({
+    required this.assetRepository,
+    required this.balanceRepository,
+    required this.currentAddress,
+    String? initialGiveAsset,
+    int? initialGiveQuantity,
+  }) : super(FormStateModel(
             giveAssets: NotAsked(),
             getAssets: NotAsked(),
             getAssetValidationStatus: NotAsked())) {
@@ -244,7 +256,81 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         transformer: debounce(const Duration(milliseconds: 300)));
     on<GetQuantityChanged>(_onGetQuantityChanged);
     on<GiveQuantityChanged>(_onGiveQuantityChanged);
+
     on<FormSubmitted>(_onFormSubmitted);
+    on<InitializeForm>(_onInitializeForm);
+  }
+  Future<void> _onInitializeForm(
+    InitializeForm event,
+    Emitter<FormStateModel> emit,
+  ) async {
+    emit(state.copyWith(giveAssets: Loading()));
+
+    try {
+      final balances =
+          await balanceRepository.getBalancesForAddress(currentAddress);
+      emit(state.copyWith(giveAssets: Success(balances)));
+
+      if (event.initialGiveAsset != null) {
+        String initialGiveAsset = event.initialGiveAsset!;
+
+        final balanceForAsset = balances.firstWhereOrNull(
+          (balance) => balance.asset == initialGiveAsset,
+        );
+
+        if (balanceForAsset == null) {
+          // Case: No balance for the initial asset
+          emit(state.copyWith(
+            giveAsset: GiveAssetInput.dirty(initialGiveAsset),
+            giveAssets: Success(balances),
+            errorMessage:
+                'No balance available for the initial asset $initialGiveAsset',
+          ));
+          return;
+        }
+
+        if (event.initialGiveQuantity != null) {
+          int initialGiveQuantity = event.initialGiveQuantity!;
+
+          final initialGiveQuantityNormalized =
+              balanceForAsset.assetInfo.divisible
+                  ? (initialGiveQuantity / 100000000)
+                  : initialGiveQuantity;
+
+          if (initialGiveQuantity > balanceForAsset.quantity) {
+            // Case: Insufficient balance
+            emit(state.copyWith(
+              giveAsset: GiveAssetInput.dirty(initialGiveAsset),
+              giveAssets: Success(balances),
+              giveQuantity: GiveQuantityInput.dirty(
+                initialGiveQuantityNormalized.toString(),
+                balance: balanceForAsset.quantity,
+                isDivisible: balanceForAsset.assetInfo.divisible,
+              ),
+              errorMessage:
+                  'Insufficient balance for the initial quantity of $initialGiveQuantity',
+            ));
+          } else {
+            // Case: Valid initial balance and quantity
+            emit(state.copyWith(
+              giveAsset: GiveAssetInput.dirty(initialGiveAsset),
+              giveAssets: Success(balances),
+              giveQuantity: GiveQuantityInput.dirty(
+                initialGiveQuantityNormalized.toString(),
+                balance: balanceForAsset.quantity,
+                isDivisible: balanceForAsset.assetInfo.divisible,
+              ),
+            ));
+          }
+        }
+      } else {
+        emit(state.copyWith(giveAssets: Success(balances)));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        giveAssets: Failure('Failed to load give assets: ${e.toString()}'),
+      ));
+    }
   }
 
   Future<void> _onLoadGiveAssets(

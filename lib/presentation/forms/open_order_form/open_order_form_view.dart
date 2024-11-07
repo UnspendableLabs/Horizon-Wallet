@@ -14,11 +14,17 @@ class OpenOrderForm extends StatelessWidget {
   final AssetRepository assetRepository;
   final String currentAddress;
 
-  const OpenOrderForm(
-      {super.key,
-      required this.assetRepository,
-      required this.balanceRepository,
-      required this.currentAddress});
+  final String? initialGiveAsset;
+  final int? initialGiveQuantity;
+
+  const OpenOrderForm({
+    super.key,
+    required this.assetRepository,
+    required this.balanceRepository,
+    required this.currentAddress,
+    this.initialGiveAsset,
+    this.initialGiveQuantity,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +34,9 @@ class OpenOrderForm extends StatelessWidget {
             assetRepository: assetRepository,
             balanceRepository: balanceRepository,
             currentAddress: currentAddress)
-          ..add(LoadGiveAssets());
+          ..add(InitializeForm(
+              initialGiveAsset: initialGiveAsset,
+              initialGiveQuantity: initialGiveQuantity));
       },
       child: OpenOrderForm_(),
     );
@@ -63,8 +71,14 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OrderBuyFormBloc, FormStateModel>(
+    return BlocListener<OpenOrderFormBloc, FormStateModel>(
       listener: (context, state) {
+
+        print("state.giveQuantity ${state.giveQuantity.value}");
+
+
+        _giveQuantityController.text = state.giveQuantity.value ?? '';
+
         if (_giveQuantityController.text != state.giveQuantity.value) {
           // Preserve cursor position
           _giveQuantityController.text = state.giveQuantity.value ?? '';
@@ -127,7 +141,7 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
 class GiveAssetInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OrderBuyFormBloc, FormStateModel>(
+    return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       buildWhen: (previous, current) =>
           previous.giveAssets != current.giveAssets ||
           previous.giveAsset != current.giveAsset,
@@ -144,7 +158,7 @@ class GiveAssetInputField extends StatelessWidget {
             onChanged: (selectedAsset) {
               if (selectedAsset != null) {
                 context
-                    .read<OrderBuyFormBloc>()
+                    .read<OpenOrderFormBloc>()
                     .add(GiveAssetChanged(selectedAsset));
               }
             },
@@ -168,14 +182,14 @@ class GiveAssetInputField extends StatelessWidget {
 class GetAssetInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OrderBuyFormBloc, FormStateModel>(
+    return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       buildWhen: (previous, current) =>
           previous.getAsset != current.getAsset ||
           previous.getAssetValidationStatus != current.getAssetValidationStatus,
       builder: (context, state) {
         return TextField(
           onChanged: (value) =>
-              context.read<OrderBuyFormBloc>().add(GetAssetChanged(value)),
+              context.read<OpenOrderFormBloc>().add(GetAssetChanged(value)),
           decoration: InputDecoration(
               labelText: 'Get Asset',
               errorText: state.getAssetValidationStatus is Failure
@@ -205,7 +219,7 @@ class GiveQuantityInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OrderBuyFormBloc, FormStateModel>(
+    return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       buildWhen: (previous, current) =>
           previous.giveQuantity != current.giveQuantity ||
           previous.giveAsset != current.giveAsset,
@@ -216,7 +230,7 @@ class GiveQuantityInputField extends StatelessWidget {
         return TextField(
           controller: controller,
           onChanged: (value) =>
-              context.read<OrderBuyFormBloc>().add(GiveQuantityChanged(value)),
+              context.read<OpenOrderFormBloc>().add(GiveQuantityChanged(value)),
           decoration: InputDecoration(
             labelText: 'Give Quantity',
             errorText:
@@ -244,7 +258,7 @@ class GetQuantityInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OrderBuyFormBloc, FormStateModel>(
+    return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       buildWhen: (previous, current) =>
           previous.getQuantity != current.getQuantity ||
           previous.getAsset != previous.getAsset,
@@ -255,13 +269,12 @@ class GetQuantityInputField extends StatelessWidget {
         return TextField(
           controller: controller,
           onChanged: (value) =>
-              context.read<OrderBuyFormBloc>().add(GetQuantityChanged(value)),
+              context.read<OpenOrderFormBloc>().add(GetQuantityChanged(value)),
           decoration: InputDecoration(
             labelText: 'Get Quantity',
-            errorText:
-                !state.getQuantity.isPure && state.getQuantity.isNotValid
-                    ? 'Invalid quantity'
-                    : null,
+            errorText: !state.getQuantity.isPure && state.getQuantity.isNotValid
+                ? 'Invalid quantity'
+                : null,
             // errorText: state.quantity.invalid ? 'Invalid quantity' : null,
           ),
           keyboardType: isDivisible
@@ -276,7 +289,7 @@ class GetQuantityInputField extends StatelessWidget {
 class SubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OrderBuyFormBloc, FormStateModel>(
+    return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       buildWhen: (previous, current) =>
           previous.submissionStatus != current.submissionStatus,
       builder: (context, state) {

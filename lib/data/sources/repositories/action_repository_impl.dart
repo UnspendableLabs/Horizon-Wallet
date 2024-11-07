@@ -15,9 +15,21 @@ class ActionRepositoryImpl implements ActionRepository {
     final arr =
         str.split(',').map((element) => Uri.decodeComponent(element)).toList();
 
-    return switch ((arr[0], arr[1])) {
-      ("dispense", String address) => DispenseAction(address),
-      ("fairmint", String fairminterTxHash) => FairmintAction(fairminterTxHash),
+    return switch (arr) {
+      ["dispense", String address] => DispenseAction(address),
+      ["fairmint", String fairminterTxHash] => FairmintAction(fairminterTxHash),
+      [
+        "order",
+        String getAsset,
+        String getQuantity,
+        String giveAsset,
+        String giveQuantity
+      ] =>
+        OrderAction(
+            giveQuantity: int.tryParse(giveQuantity)!,
+            giveAsset: giveAsset,
+            getQuantity: int.tryParse(getQuantity)!,
+            getAsset: getAsset),
       _ => throw Exception()
     };
   }
