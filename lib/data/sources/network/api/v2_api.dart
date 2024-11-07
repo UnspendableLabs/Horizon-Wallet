@@ -3026,7 +3026,7 @@ abstract class V2Api {
     @Query("signedhex") String signedhex,
   );
 
-  @POST("/bitcoin/transactions/decode")
+  @GET("/bitcoin/transactions/decode")
   Future<Response<DecodedTxModel>> decodeTransaction(
     @Query("rawtx") String rawtx,
   );

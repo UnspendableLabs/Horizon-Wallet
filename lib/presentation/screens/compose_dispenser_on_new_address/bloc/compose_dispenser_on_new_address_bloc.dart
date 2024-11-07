@@ -3,8 +3,8 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -18,6 +18,9 @@ import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bl
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/usecase/fetch_form_data.dart';
 
+// this number comes from the adjusted size for a similar asset send (~166) + the adjusted size for a  create dispenser (~193) + ajuste size of ~166 for a btc + wiggle room
+const int ADJUSTED_VIRTUAL_SIZE = 1000;
+
 class ComposeDispenserOnNewAddressBloc extends Bloc<
     ComposeDispenserOnNewAddressEvent, ComposeDispenserOnNewAddressStateBase> {
   final WalletRepository walletRepository;
@@ -29,6 +32,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final BitcoindService bitcoindService;
   final UtxoRepository utxoRepository;
   final ComposeTransactionUseCase composeTransactionUseCase;
+
   final FetchDispenserOnNewAddressFormDataUseCase
       fetchDispenserOnNewAddressFormDataUseCase;
 
@@ -123,7 +127,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       // await addressRepository.insert(newAddress);
 
       try {
-        const feeRateSend = 0;
         final source = event.originalAddress;
         final destination = newAddress.address;
         final asset = event.asset;
@@ -131,103 +134,129 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         final escrowQuantity = event.escrowQuantity;
         final mainchainrate = event.mainchainrate;
 
-        final composeSendResponse1 = await composeTransactionUseCase
+        // final assetSendResponse = await composeTransactionUseCase.call<ComposeSendParams, ComposeSendResponse>(
+        //   feeRate: 0,
+        //   source: source,
+        //   params: ComposeSendParams(
+        //     source: source,
+        //     destination: destination,
+        //     asset: asset,
+        //     quantity: quantity,
+        //   ),
+        //   composeFn: composeRepository.composeSendVerbose,
+        // );
+
+        // final assetSend = assetSendResponse.$1;
+        // final virtualSizeAssetSend = assetSendResponse.$2;
+
+        // final decodedAssetSend = await bitcoindService.decoderawtransaction(assetSend.rawtransaction);
+        // print('decodedAssetSend: $decodedAssetSend');
+
+        final feeToCoverAllTransactions = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
+
+        final bitcoinSendResponse = await composeTransactionUseCase
             .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: feeRateSend,
-          source: source,
-          params: ComposeSendParams(
-            source: source,
-            destination: destination,
-            asset: asset,
-            quantity: quantity,
-          ),
-          composeFn: composeRepository.composeSendVerbose,
-        );
-
-        final composedSend1 = composeSendResponse1.$1;
-        final virtualSizeSend1 = composeSendResponse1.$2;
-
-        final composeDispenserResponse = await composeTransactionUseCase
-            .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-          feeRate: event.feeRate,
-          source: source,
-          params: ComposeDispenserParams(
-            source: source,
-            asset: asset,
-            giveQuantity: quantity,
-            escrowQuantity: escrowQuantity,
-            mainchainrate: mainchainrate,
-            status: 0,
-          ),
-          composeFn: composeRepository.composeDispenserVerbose,
-        );
-
-        final composedDispenser = composeDispenserResponse.$1;
-        final virtualSizeDispenser = composeDispenserResponse.$2;
-
-        // final composedDispenser = composeDispenserResponse.$1;
-        // final virtualSizeDispenser = composeDispenserResponse.$2;
-
-        // emit(state.copyWith(
-        //     composeDispenserOnNewAddressState:
-        //         ComposeDispenserOnNewAddressState.success(
-        //   composeTransaction: composedDispenser,
-        //   fee: composedDispenser.btcFee,
-        //   feeRate: event.feeRate,
-        //   virtualSize: virtualSizeDispenser.virtualSize,
-        //   adjustedVirtualSize: virtualSizeDispenser.adjustedVirtualSize,
-        // )));
-        // emit(state.copyWith(
-        //     submitState: SubmitComposingTransaction<ComposeSendResponse, void>(
-        //   composeTransaction: composed,
-        //   fee: composed.btcFee,
-        //   feeRate: feeRate,
-        //   virtualSize: virtualSize.virtualSize,
-        //   adjustedVirtualSize: virtualSize.adjustedVirtualSize,
-        // )));
-        /**
-         * fee = fee_rate * (adj_size_1 + adj_size_2)
-         */
-
-        // two sends will be created, so we need to multiply the adjusted virtual size by 2
-        final adjustedVirtualSizeSend =
-            virtualSizeSend1.adjustedVirtualSize * 2;
-
-        final int estimatedFee = event.feeRate *
-            (adjustedVirtualSizeSend +
-                virtualSizeDispenser.adjustedVirtualSize);
-
-        final composeSendResponse2 = await composeTransactionUseCase
-            .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: feeRateSend,
+          feeRate: 0,
           source: source,
           params: ComposeSendParams(
             source: source,
             destination: destination,
             asset: 'BTC',
-            quantity: estimatedFee,
+            quantity: feeToCoverAllTransactions,
           ),
           composeFn: composeRepository.composeSendVerbose,
         );
-        final composedSend2 = composeSendResponse2.$1;
-        final virtualSizeSend2 = composeSendResponse2.$2;
 
-        print(composedDispenser);
-        emit(state.copyWith(
-            composeDispenserOnNewAddressState:
-                ComposeDispenserOnNewAddressState.confirm(
-          composeSendTransaction1: composedSend1,
-          composeSendTransaction2: composedSend2,
-          composeDispenserTransaction: composedDispenser,
-          fee: estimatedFee,
-          feeRate: event.feeRate,
-          totalVirtualSize: virtualSizeSend1.adjustedVirtualSize +
-              virtualSizeSend2.adjustedVirtualSize +
-              virtualSizeDispenser.adjustedVirtualSize,
-          totalAdjustedVirtualSize: virtualSizeSend1.adjustedVirtualSize +
-              virtualSizeSend2.adjustedVirtualSize +
-              virtualSizeDispenser.adjustedVirtualSize,
-        )));
+        final bitcoinSend = bitcoinSendResponse.$1;
+
+        final decodedBtcSend = await bitcoindService
+            .decoderawtransaction(bitcoinSend.rawtransaction);
+        print('decodedBtcSend: $decodedBtcSend');
+
+        final btcOutput = decodedBtcSend.vout[0];
+        final int value = (btcOutput.value * 100000000).toInt();
+        final List<Utxo> btcSendInputs = [
+          Utxo(
+              txid: decodedBtcSend.hash,
+              vout: btcOutput.n,
+              height: null,
+              value: value,
+              address: source)
+        ];
+
+        final assetSendResponse = await composeRepository.composeSendVerbose(
+          0,
+          btcSendInputs,
+          ComposeSendParams(
+            source: source,
+            destination: destination,
+            asset: asset,
+            quantity: escrowQuantity,
+          ),
+        );
+
+        final decodedAssetSend = await bitcoindService
+            .decoderawtransaction(assetSendResponse.rawtransaction);
+        print('decodedAssetSend: $decodedAssetSend');
+        // final composeDispenserResponse = await composeTransactionUseCase
+        //     .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+        //   feeRate: event.feeRate,
+        //   source: source,
+        //   params: ComposeDispenserParams(
+        //     source: source,
+        //     asset: asset,
+        //     giveQuantity: quantity,
+        //     escrowQuantity: escrowQuantity,
+        //     mainchainrate: mainchainrate,
+        //     status: 0,
+        //   ),
+        //   composeFn: composeRepository.composeDispenserVerbose,
+        // );
+
+        // final composedDispenser = composeDispenserResponse.$1;
+        // final virtualSizeDispenser = composeDispenserResponse.$2;
+
+        // two sends will be created, so we need to multiply the adjusted virtual size by 2
+        // final adjustedVirtualSizeSend =
+        //     virtualSizeSend1.adjustedVirtualSize * 2;
+
+        // final int estimatedFee = event.feeRate *
+        //     (adjustedVirtualSizeSend +
+        //         virtualSizeDispenser.adjustedVirtualSize);
+
+        // final composeSendResponse2 = await composeTransactionUseCase
+        //     .call<ComposeSendParams, ComposeSendResponse>(
+        //   feeRate: feeRateSend,
+        //   source: source,
+        //   params: ComposeSendParams(
+        //     source: source,
+        //     destination: destination,
+        //     asset: 'BTC',
+        //     quantity: totalFee,
+        //   ),
+        //   composeFn: composeRepository.composeSendVerbose,
+        // );
+        // final composedSend2 = composeSendResponse2.$1;
+        // final virtualSizeSend2 = composeSendResponse2.$2;
+
+        // print(composedDispenser);
+        // emit(state.copyWith(
+        //     composeDispenserOnNewAddressState:
+        //         ComposeDispenserOnNewAddressState.confirm(
+        //   newAccountName: newAccount.name,
+        //   newAddress: newAddress.address,
+        //   composeSendTransaction1: assetSend1,
+        //   composeSendTransaction2: composedSend2,
+        //   composeDispenserTransaction: composedDispenser,
+        //   fee: totalFee,
+        //   feeRate: event.feeRate,
+        //   totalVirtualSize: virtualSizeAssetSend1.adjustedVirtualSize +
+        //       virtualSizeSend2.adjustedVirtualSize +
+        //       virtualSizeDispenser.adjustedVirtualSize,
+        //   totalAdjustedVirtualSize: virtualSizeAssetSend1.adjustedVirtualSize +
+        //       virtualSizeSend2.adjustedVirtualSize +
+        //       virtualSizeDispenser.adjustedVirtualSize,
+        // )));
       } catch (e) {
         emit(ComposeDispenserOnNewAddressStateBase(
             composeDispenserOnNewAddressState:

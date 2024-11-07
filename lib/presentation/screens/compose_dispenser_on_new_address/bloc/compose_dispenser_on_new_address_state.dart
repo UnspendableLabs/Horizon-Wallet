@@ -22,6 +22,8 @@ class ComposeDispenserOnNewAddressState<T>
   const factory ComposeDispenserOnNewAddressState.loading() =
       _ComposeDispenserOnNewAddressStateLoading;
   const factory ComposeDispenserOnNewAddressState.confirm({
+    required String newAccountName,
+    required String newAddress,
     required T composeSendTransaction1,
     required T composeSendTransaction2,
     required T composeDispenserTransaction,

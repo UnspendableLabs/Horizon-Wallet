@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -158,16 +161,167 @@ class _ComposeDispenserOnNewAddressPageState
                 ),
               ),
             ),
-            confirm: (composeSendTransaction1,
-                    composeSendTransaction2,
-                    composeDispenserTransaction,
-                    fee,
-                    feeRate,
-                    totalVirtualSize,
-                    totalAdjustedVirtualSize) =>
-                const Center(
-              child: SelectableText('Confirming transaction...'),
-            ),
+            confirm: (newAccountName,
+                newAddress,
+                composeSendTransaction1,
+                composeSendTransaction2,
+                composeDispenserTransaction,
+                fee,
+                feeRate,
+                totalVirtualSize,
+                totalAdjustedVirtualSize) {
+              final send1Params =
+                  (composeSendTransaction1 as ComposeSendResponse).params;
+              final send2Params =
+                  (composeSendTransaction2 as ComposeSendResponse).params;
+              final dispenserParams = (composeDispenserTransaction
+                      as ComposeDispenserResponseVerbose)
+                  .params;
+              return Column(
+                children: [
+                  const Center(
+                    child: SelectableText(
+                      'New Address',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  HorizonUI.HorizonTextFormField(
+                    controller: TextEditingController(
+                        text: "$newAddress at new account $newAccountName"),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  const Center(
+                    child: SelectableText(
+                      'Confirm Compose Send Asset',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Source Address",
+                    controller: TextEditingController(text: send1Params.source),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Destination Address",
+                    controller:
+                        TextEditingController(text: send1Params.destination),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: HorizonUI.HorizonTextFormField(
+                          label: "Quantity",
+                          controller: TextEditingController(
+                              text: send1Params.quantityNormalized),
+                          enabled: false,
+                        ),
+                      ),
+                      const SizedBox(width: 16.0), // Spacing between inputs
+                      Expanded(
+                        child: HorizonUI.HorizonTextFormField(
+                          label: "Asset",
+                          controller:
+                              TextEditingController(text: send1Params.asset),
+                          enabled: false,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  const Center(
+                    child: SelectableText(
+                      'Confirm Compose Send Asset',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Source Address",
+                    controller: TextEditingController(text: send2Params.source),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Destination Address",
+                    controller:
+                        TextEditingController(text: send2Params.destination),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: HorizonUI.HorizonTextFormField(
+                          label: "Quantity",
+                          controller: TextEditingController(
+                              text: send2Params.quantityNormalized),
+                          enabled: false,
+                        ),
+                      ),
+                      const SizedBox(width: 16.0), // Spacing between inputs
+                      Expanded(
+                        child: HorizonUI.HorizonTextFormField(
+                          label: "Asset",
+                          controller:
+                              TextEditingController(text: send2Params.asset),
+                          enabled: false,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  const Center(
+                    child: SelectableText(
+                      'Confirm Compose Dispenser',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Source Address",
+                    controller:
+                        TextEditingController(text: dispenserParams.source),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Asset",
+                    controller:
+                        TextEditingController(text: dispenserParams.asset),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Give Quantity",
+                    controller: TextEditingController(
+                        text: dispenserParams.giveQuantityNormalized),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Escrow Quantity",
+                    controller: TextEditingController(
+                        text: dispenserParams.escrowQuantityNormalized),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  HorizonUI.HorizonTextFormField(
+                    label: 'Price Per Unit (BTC)',
+                    controller: TextEditingController(
+                        text: satoshisToBtc(dispenserParams.mainchainrate)
+                            .toStringAsFixed(8)),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                ],
+              );
+            },
             error: (error) => Center(
               child: SelectableText(error),
             ),

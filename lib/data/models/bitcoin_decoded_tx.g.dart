@@ -40,7 +40,7 @@ VinModel _$VinModelFromJson(Map<String, dynamic> json) => VinModel(
       txid: json['txid'] as String,
       vout: (json['vout'] as num).toInt(),
       scriptSig:
-          ScriptSigModel.fromJson(json['script_sig'] as Map<String, dynamic>),
+          ScriptSigModel.fromJson(json['scriptSig'] as Map<String, dynamic>),
       txinwitness: (json['txinwitness'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
@@ -50,7 +50,7 @@ VinModel _$VinModelFromJson(Map<String, dynamic> json) => VinModel(
 Map<String, dynamic> _$VinModelToJson(VinModel instance) => <String, dynamic>{
       'txid': instance.txid,
       'vout': instance.vout,
-      'script_sig': instance.scriptSig,
+      'scriptSig': instance.scriptSig,
       'txinwitness': instance.txinwitness,
       'sequence': instance.sequence,
     };
@@ -59,13 +59,13 @@ VoutModel _$VoutModelFromJson(Map<String, dynamic> json) => VoutModel(
       value: (json['value'] as num).toDouble(),
       n: (json['n'] as num).toInt(),
       scriptPubKey: ScriptPubKeyModel.fromJson(
-          json['script_pub_key'] as Map<String, dynamic>),
+          json['scriptPubKey'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$VoutModelToJson(VoutModel instance) => <String, dynamic>{
       'value': instance.value,
       'n': instance.n,
-      'script_pub_key': instance.scriptPubKey,
+      'scriptPubKey': instance.scriptPubKey,
     };
 
 ScriptSigModel _$ScriptSigModelFromJson(Map<String, dynamic> json) =>

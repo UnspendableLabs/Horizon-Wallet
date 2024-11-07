@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'bitcoin_decoded_tx.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.none)
 class DecodedTxModel {
   final String txid;
   final String hash;
@@ -45,7 +45,7 @@ class DecodedTxModel {
       );
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.none)
 class VinModel {
   final String txid;
   final int vout;
@@ -74,7 +74,7 @@ class VinModel {
       );
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.none)
 class VoutModel {
   final double value;
   final int n;
@@ -97,7 +97,7 @@ class VoutModel {
       );
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.none)
 class ScriptSigModel {
   final String asm;
   final String hex;
@@ -117,7 +117,7 @@ class ScriptSigModel {
       );
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.none)
 class ScriptPubKeyModel {
   final String asm;
   final String desc;
