@@ -57,7 +57,7 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void trackEvent(String eventName, {Map<String, Object>? properties}) async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
-      js.context.callMethod('posthog.capture', [eventName, properties]);
+      js.context['posthog'].callMethod('capture', [eventName, properties]);
       logger.i('Event capture: $eventName, $properties');
     } catch (e) {
       logger.e("Error tracking event: $e");
@@ -68,7 +68,7 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void identify(String userId) async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
-      js.context.callMethod('posthog.identify', [userId]);
+      js.context['posthog'].callMethod('identify', [userId]);
       logger.i('User identified: $userId');
     } catch (e) {
       logger.e("Error identifying user: $e");
@@ -79,7 +79,7 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void reset() async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
-      js.context.callMethod('posthog.reset');
+      js.context['posthog'].callMethod('reset', []);
       logger.d('Analytics reset.');
     } catch (e) {
       logger.e("Error resetting analytics: $e");
