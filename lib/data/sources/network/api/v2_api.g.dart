@@ -595,7 +595,7 @@ Map<String, dynamic> _$NewFairminterEventToJson(NewFairminterEvent instance) =>
 
 NewFairminterParams _$NewFairminterParamsFromJson(Map<String, dynamic> json) =>
     NewFairminterParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
       assetParent: json['asset_parent'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
@@ -679,7 +679,7 @@ Map<String, dynamic> _$VerboseNewFairminterEventToJson(
 VerboseNewFairminterParams _$VerboseNewFairminterParamsFromJson(
         Map<String, dynamic> json) =>
     VerboseNewFairminterParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
       assetParent: json['asset_parent'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),

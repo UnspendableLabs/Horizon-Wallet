@@ -654,7 +654,7 @@ class NewFairminterEvent extends Event {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class NewFairminterParams {
-  final String asset;
+  final String? asset;
   final String? assetLongname;
   final String? assetParent;
   final int? blockIndex;
