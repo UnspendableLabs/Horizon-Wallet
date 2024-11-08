@@ -86,7 +86,7 @@ Account getHighestIndexAccount(List<Account> accounts) {
   Account highestAccount = accounts.first;
   int maxIndex = int.parse(highestAccount.accountIndex.replaceAll("'", ""));
 
-  for (var account in accounts.skip(1)) {
+  for (var account in accounts) {
     int currentIndex = int.parse(account.accountIndex.replaceAll("'", ""));
     if (currentIndex > maxIndex) {
       maxIndex = currentIndex;

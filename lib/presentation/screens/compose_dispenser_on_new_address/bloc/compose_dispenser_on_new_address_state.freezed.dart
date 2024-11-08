@@ -18,6 +18,8 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$ComposeDispenserOnNewAddressStateBase {
   dynamic get feeState => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
+  Account? get newAccount => throw _privateConstructorUsedError;
+  Address? get newAddress => throw _privateConstructorUsedError;
   dynamic get composeDispenserOnNewAddressState =>
       throw _privateConstructorUsedError;
 
@@ -38,6 +40,8 @@ abstract class $ComposeDispenserOnNewAddressStateBaseCopyWith<$Res> {
   $Res call(
       {dynamic feeState,
       String password,
+      Account? newAccount,
+      Address? newAddress,
       dynamic composeDispenserOnNewAddressState});
 }
 
@@ -57,6 +61,8 @@ class _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
   $Res call({
     Object? feeState = freezed,
     Object? password = null,
+    Object? newAccount = freezed,
+    Object? newAddress = freezed,
     Object? composeDispenserOnNewAddressState = freezed,
   }) {
     return _then(_value.copyWith(
@@ -68,6 +74,14 @@ class _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
               as String,
+      newAccount: freezed == newAccount
+          ? _value.newAccount
+          : newAccount // ignore: cast_nullable_to_non_nullable
+              as Account?,
+      newAddress: freezed == newAddress
+          ? _value.newAddress
+          : newAddress // ignore: cast_nullable_to_non_nullable
+              as Address?,
       composeDispenserOnNewAddressState: freezed ==
               composeDispenserOnNewAddressState
           ? _value.composeDispenserOnNewAddressState
@@ -89,6 +103,8 @@ abstract class _$$ComposeDispenserOnNewAddressStateBaseImplCopyWith<$Res>
   $Res call(
       {dynamic feeState,
       String password,
+      Account? newAccount,
+      Address? newAddress,
       dynamic composeDispenserOnNewAddressState});
 }
 
@@ -107,6 +123,8 @@ class __$$ComposeDispenserOnNewAddressStateBaseImplCopyWithImpl<$Res>
   $Res call({
     Object? feeState = freezed,
     Object? password = null,
+    Object? newAccount = freezed,
+    Object? newAddress = freezed,
     Object? composeDispenserOnNewAddressState = freezed,
   }) {
     return _then(_$ComposeDispenserOnNewAddressStateBaseImpl(
@@ -115,6 +133,14 @@ class __$$ComposeDispenserOnNewAddressStateBaseImplCopyWithImpl<$Res>
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
               as String,
+      newAccount: freezed == newAccount
+          ? _value.newAccount
+          : newAccount // ignore: cast_nullable_to_non_nullable
+              as Account?,
+      newAddress: freezed == newAddress
+          ? _value.newAddress
+          : newAddress // ignore: cast_nullable_to_non_nullable
+              as Address?,
       composeDispenserOnNewAddressState:
           freezed == composeDispenserOnNewAddressState
               ? _value.composeDispenserOnNewAddressState!
@@ -130,6 +156,8 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
   const _$ComposeDispenserOnNewAddressStateBaseImpl(
       {this.feeState = const FeeState.initial(),
       this.password = '',
+      this.newAccount = null,
+      this.newAddress = null,
       this.composeDispenserOnNewAddressState =
           const ComposeDispenserOnNewAddressState.initial()});
 
@@ -141,11 +169,17 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
   final String password;
   @override
   @JsonKey()
+  final Account? newAccount;
+  @override
+  @JsonKey()
+  final Address? newAddress;
+  @override
+  @JsonKey()
   final dynamic composeDispenserOnNewAddressState;
 
   @override
   String toString() {
-    return 'ComposeDispenserOnNewAddressStateBase(feeState: $feeState, password: $password, composeDispenserOnNewAddressState: $composeDispenserOnNewAddressState)';
+    return 'ComposeDispenserOnNewAddressStateBase(feeState: $feeState, password: $password, newAccount: $newAccount, newAddress: $newAddress, composeDispenserOnNewAddressState: $composeDispenserOnNewAddressState)';
   }
 
   @override
@@ -156,6 +190,10 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
             const DeepCollectionEquality().equals(other.feeState, feeState) &&
             (identical(other.password, password) ||
                 other.password == password) &&
+            (identical(other.newAccount, newAccount) ||
+                other.newAccount == newAccount) &&
+            (identical(other.newAddress, newAddress) ||
+                other.newAddress == newAddress) &&
             const DeepCollectionEquality().equals(
                 other.composeDispenserOnNewAddressState,
                 composeDispenserOnNewAddressState));
@@ -166,6 +204,8 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
       runtimeType,
       const DeepCollectionEquality().hash(feeState),
       password,
+      newAccount,
+      newAddress,
       const DeepCollectionEquality().hash(composeDispenserOnNewAddressState));
 
   @JsonKey(ignore: true)
@@ -182,6 +222,8 @@ abstract class _ComposeDispenserOnNewAddressStateBase
   const factory _ComposeDispenserOnNewAddressStateBase(
           {final dynamic feeState,
           final String password,
+          final Account? newAccount,
+          final Address? newAddress,
           final dynamic composeDispenserOnNewAddressState}) =
       _$ComposeDispenserOnNewAddressStateBaseImpl;
 
@@ -189,6 +231,10 @@ abstract class _ComposeDispenserOnNewAddressStateBase
   dynamic get feeState;
   @override
   String get password;
+  @override
+  Account? get newAccount;
+  @override
+  Address? get newAddress;
   @override
   dynamic get composeDispenserOnNewAddressState;
   @override

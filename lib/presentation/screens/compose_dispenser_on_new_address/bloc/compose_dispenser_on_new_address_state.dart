@@ -1,4 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 
 part 'compose_dispenser_on_new_address_state.freezed.dart';
@@ -9,6 +11,8 @@ class ComposeDispenserOnNewAddressStateBase
   const factory ComposeDispenserOnNewAddressStateBase({
     @Default(FeeState.initial()) feeState,
     @Default('') String password,
+    @Default(null) Account? newAccount,
+    @Default(null) Address? newAddress,
     @Default(ComposeDispenserOnNewAddressState.initial())
     composeDispenserOnNewAddressState,
   }) = _ComposeDispenserOnNewAddressStateBase;

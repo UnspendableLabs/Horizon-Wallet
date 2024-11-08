@@ -17,9 +17,8 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
-import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/usecase/fetch_form_data.dart';
 
-// this number comes from the adjusted size for a similar asset send (~166) + the adjusted size for a  create dispenser (~193) + ajuste size of ~166 for a btc + wiggle room
+// this number should cover the adjust vsize of 3 transactions: 2 sends and 1 dispenser. a similar send will hae an adjusted vsize of ~166 and a similar dispenser will have an adjusted vsize of ~193. so send1 + send2 + dispenser + plenty of wiggle room = 1000
 const int ADJUSTED_VIRTUAL_SIZE = 1000;
 
 class ComposeDispenserOnNewAddressBloc extends Bloc<
@@ -35,9 +34,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignTransactionUseCase signTransactionUseCase;
 
-  final FetchDispenserOnNewAddressFormDataUseCase
-      fetchDispenserOnNewAddressFormDataUseCase;
-
   ComposeDispenserOnNewAddressBloc({
     required this.accountRepository,
     required this.addressRepository,
@@ -49,47 +45,41 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.utxoRepository,
     required this.composeTransactionUseCase,
     required this.signTransactionUseCase,
-    required this.fetchDispenserOnNewAddressFormDataUseCase,
   }) : super(const ComposeDispenserOnNewAddressStateBase(
           composeDispenserOnNewAddressState:
-              ComposeDispenserOnNewAddressState.loading(),
+              ComposeDispenserOnNewAddressState.collectPassword(loading: false),
           feeState: FeeState.initial(),
         )) {
-    on<FetchFormData>((event, emit) async {
-      emit(state.copyWith(
-          feeState: const FeeState.loading(),
-          composeDispenserOnNewAddressState:
-              const ComposeDispenserOnNewAddressState.loading()));
-      final feeEstimates =
-          await fetchDispenserOnNewAddressFormDataUseCase.call();
-      emit(state.copyWith(
-          feeState: FeeState.success(feeEstimates),
-          composeDispenserOnNewAddressState:
-              const ComposeDispenserOnNewAddressState.collectPassword(
-                  loading: false)));
-    });
-
     on<ComposeTransactions>((event, emit) async {
+      /**
+       * The steps for chaining transactions are:
+       *
+       * 1. collect password
+       * 2. derive new account + address
+       * 3. send btc to the new address to cover fees
+       * 4. send the asset that will be dispensed to the new address
+       * 5. create the dispenser on the new address
+       *
+       * The actual chaining occurs from signing + decoding each tx and passing the output of the tx as the input for the following tx
+       * The first 2 transactions are sent with 0 fee, and the last transaction is sent with a fee to cover the cost of all transactions. This works bc of the nature of chaining the transactions.
+       */
       emit(state.copyWith(
           composeDispenserOnNewAddressState:
               const ComposeDispenserOnNewAddressState.collectPassword(
                   loading: true)));
       final wallet = await walletRepository.getCurrentWallet();
-      print('WALLET: $wallet');
+
       if (wallet == null) {
         emit(const ComposeDispenserOnNewAddressStateBase(
             composeDispenserOnNewAddressState:
                 ComposeDispenserOnNewAddressState.error('Wallet not found')));
         return;
       }
-      print('before decryptedPrivKey');
 
       String? decryptedPrivKey;
       try {
-        print('before decrypt');
         decryptedPrivKey = await encryptionService.decrypt(
             wallet.encryptedPrivKey, event.password);
-        print('after decrypt');
       } catch (e) {
         emit(const ComposeDispenserOnNewAddressStateBase(
             composeDispenserOnNewAddressState:
@@ -99,7 +89,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       }
 
       emit(state.copyWith(password: event.password));
-      print('after decrypt');
+
+      // Step 1. Derive new account + address
       final List<Account> accountsInWallet =
           await accountRepository.getAccountsByWalletUuid(wallet.uuid);
       final highestIndexAccount = getHighestIndexAccount(accountsInWallet);
@@ -114,7 +105,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         coinType: highestIndexAccount.coinType,
         importFormat: highestIndexAccount.importFormat,
       );
-      print('after newAccount');
       final Address newAddress = await addressService.deriveAddressSegwit(
         privKey: decryptedPrivKey,
         chainCodeHex: wallet.chainCodeHex,
@@ -136,41 +126,27 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         index: 0,
         importFormat: newAccount.importFormat,
       );
-      print('after newAddress');
-      // await accountRepository.insert(newAccount);
-      // await addressRepository.insert(newAddress);
+
+      emit(state.copyWith(newAccount: newAccount, newAddress: newAddress));
 
       try {
-        final source = event.originalAddress;
-        final destination = newAddress.address;
-        final assetToSend = event.asset;
-        final assetQuantityToDispense = event.giveQuantity;
-        final escrowQuantityToSend = event.escrowQuantity;
+        final source = event
+            .originalAddress; // the current address which has the btc + asset to be dispensed
+        final destination = newAddress.address; // the new address
+        final assetToSend = event.asset; // the asset that will be dispensed
+        final assetQuantityToDispense =
+            event.giveQuantity; // the quantity of each dispense
+        final escrowQuantityToSend = event
+            .escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
         final mainchainrate = event.mainchainrate;
 
-        // final assetSendResponse = await composeTransactionUseCase.call<ComposeSendParams, ComposeSendResponse>(
-        //   feeRate: 0,
-        //   source: source,
-        //   params: ComposeSendParams(
-        //     source: source,
-        //     destination: destination,
-        //     asset: asset,
-        //     quantity: quantity,
-        //   ),
-        //   composeFn: composeRepository.composeSendVerbose,
-        // );
+        final feeToCoverAllTransactions = event.feeRate *
+            ADJUSTED_VIRTUAL_SIZE; // estimated fee to cover all transactions and the amount of btc to be sent to the new address to cover these fees
 
-        // final assetSend = assetSendResponse.$1;
-        // final virtualSizeAssetSend = assetSendResponse.$2;
-
-        // final decodedAssetSend = await bitcoindService.decoderawtransaction(assetSend.rawtransaction);
-        // print('decodedAssetSend: $decodedAssetSend');
-
-        final feeToCoverAllTransactions = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
-
+        // Step 2. Send btc to the new address to cover fees
         final bitcoinSendResponse = await composeTransactionUseCase
             .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: 0,
+          feeRate: 0, //
           source: source,
           params: ComposeSendParams(
             source: source,
@@ -183,6 +159,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
 
         final bitcoinSend = bitcoinSendResponse.$1;
 
+        // sign + decode the btc send
         final signedBitcoinSendHex = await signTransactionUseCase.call(
           source: source,
           rawtransaction: bitcoinSend.rawtransaction,
@@ -192,11 +169,11 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         final decodedSignedBitcoinSend =
             await bitcoindService.decoderawtransaction(signedBitcoinSendHex);
 
-        print('decodedSignedBitcoinSend: $decodedSignedBitcoinSend');
-
+        // Step 3. Send the asset that will be dispensed to the new address
         final assetSendResponse = await composeRepository.composeSendChain(
           0,
           decodedSignedBitcoinSend,
+          'BTC',
           ComposeSendParams(
             source: source,
             destination: destination,
@@ -205,21 +182,20 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           ),
         );
 
-        print('assetSendResponse: $assetSendResponse');
-
+        // sign + decode the asset send
         final signedAssetSendHex = await signTransactionUseCase.call(
           source: source,
           rawtransaction: assetSendResponse.rawtransaction,
           password: event.password,
           prevDecodedTransaction: decodedSignedBitcoinSend,
+          prevAssetSend: 'BTC',
         );
 
         final decodedSignedAssetSend =
             await bitcoindService.decoderawtransaction(signedAssetSendHex);
 
-        print('decodedSignedAssetSend: $decodedSignedAssetSend');
-
-        final composeDispenserResponse =
+        // Step 4. Create the dispenser on the new address
+        final ComposeDispenserResponseVerbose composeDispenserResponse =
             await composeRepository.composeDispenserChain(
           feeToCoverAllTransactions,
           decodedSignedAssetSend,
@@ -233,92 +209,17 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           ),
         );
 
-        print('composeDispenserResponse: $composeDispenserResponse');
-        // <txid>:<vout>:<amount>:<scriptpubkey>
+        // sign the dispenser
+        final signedDispenserHex = await signTransactionUseCase.call(
+          source: destination,
+          rawtransaction: composeDispenserResponse.rawtransaction,
+          password: event.password,
+          prevDecodedTransaction: decodedSignedAssetSend,
+          addressPrivKey: newAddressPrivKey,
+          prevAssetSend: assetToSend,
+        );
 
-        // print('btcSendInput: $btcSendInput');
-        // final List<Utxo> btcSendInputs = [
-        //   Utxo(
-        //       txid: decodedBtcSend.hash,
-        //       vout: btcOutput.n,
-        //       height: null,
-        //       value: value,
-        //       address: source)
-        // ];
-
-        // final assetSendResponse = await composeRepository.composeSendVerbose(
-        //   0,
-        //   btcSendInputs,
-        //   ComposeSendParams(
-        //     source: source,
-        //     destination: destination,
-        //     asset: asset,
-        //     quantity: escrowQuantity,
-        //   ),
-        // );
-
-        // final decodedAssetSend = await bitcoindService
-        //     .decoderawtransaction(assetSendResponse.rawtransaction);
-        // print('decodedAssetSend: $decodedAssetSend');
-        // final composeDispenserResponse = await composeTransactionUseCase
-        //     .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-        //   feeRate: event.feeRate,
-        //   source: source,
-        //   params: ComposeDispenserParams(
-        //     source: source,
-        //     asset: asset,
-        //     giveQuantity: quantity,
-        //     escrowQuantity: escrowQuantity,
-        //     mainchainrate: mainchainrate,
-        //     status: 0,
-        //   ),
-        //   composeFn: composeRepository.composeDispenserVerbose,
-        // );
-
-        // final composedDispenser = composeDispenserResponse.$1;
-        // final virtualSizeDispenser = composeDispenserResponse.$2;
-
-        // two sends will be created, so we need to multiply the adjusted virtual size by 2
-        // final adjustedVirtualSizeSend =
-        //     virtualSizeSend1.adjustedVirtualSize * 2;
-
-        // final int estimatedFee = event.feeRate *
-        //     (adjustedVirtualSizeSend +
-        //         virtualSizeDispenser.adjustedVirtualSize);
-
-        // final composeSendResponse2 = await composeTransactionUseCase
-        //     .call<ComposeSendParams, ComposeSendResponse>(
-        //   feeRate: feeRateSend,
-        //   source: source,
-        //   params: ComposeSendParams(
-        //     source: source,
-        //     destination: destination,
-        //     asset: 'BTC',
-        //     quantity: totalFee,
-        //   ),
-        //   composeFn: composeRepository.composeSendVerbose,
-        // );
-        // final composedSend2 = composeSendResponse2.$1;
-        // final virtualSizeSend2 = composeSendResponse2.$2;
-
-        // print(composedDispenser);
-        // emit(state.copyWith(
-        //     composeDispenserOnNewAddressState:
-        //         ComposeDispenserOnNewAddressState.confirm(
-        //   newAccountName: newAccount.name,
-        //   newAddress: newAddress.address,
-        //   composeSendTransaction1: assetSend1,
-        //   composeSendTransaction2: composedSend2,
-        //   composeDispenserTransaction: composedDispenser,
-        //   fee: totalFee,
-        //   feeRate: event.feeRate,
-        //   totalVirtualSize: virtualSizeAssetSend1.adjustedVirtualSize +
-        //       virtualSizeSend2.adjustedVirtualSize +
-        //       virtualSizeDispenser.adjustedVirtualSize,
-        //   totalAdjustedVirtualSize: virtualSizeAssetSend1.adjustedVirtualSize +
-        //       virtualSizeSend2.adjustedVirtualSize +
-        //       virtualSizeDispenser.adjustedVirtualSize,
-        // )));
+        print('signedDispenserHex: $signedDispenserHex');
       } on SignTransactionException catch (e) {
         emit(ComposeDispenserOnNewAddressStateBase(
             composeDispenserOnNewAddressState:
@@ -330,10 +231,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
                     e is ComposeTransactionException
                         ? e.message
                         : 'An unexpected error occurred: ${e.toString()}')));
-        // emit(state.copyWith(
-        //     submitState: SubmitInitial(
-        //         loading: false,
-        //         error: e is ComposeTransactionException ? e.message : 'An unexpected error occurred: ${e.toString()}')));
       }
     });
   }

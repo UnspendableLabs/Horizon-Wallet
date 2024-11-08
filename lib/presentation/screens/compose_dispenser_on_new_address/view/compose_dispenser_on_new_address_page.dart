@@ -18,7 +18,6 @@ import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dar
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
-import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
@@ -58,8 +57,6 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         utxoRepository: GetIt.I.get<UtxoRepository>(),
         composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
         signTransactionUseCase: GetIt.I.get<SignTransactionUseCase>(),
-        fetchDispenserOnNewAddressFormDataUseCase:
-            GetIt.I.get<FetchDispenserOnNewAddressFormDataUseCase>(),
       ),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
@@ -107,7 +104,7 @@ class _ComposeDispenserOnNewAddressPageState
   @override
   void initState() {
     super.initState();
-    context.read<ComposeDispenserOnNewAddressBloc>().add(FetchFormData());
+    // context.read<ComposeDispenserOnNewAddressBloc>().add(FetchFormData());
   }
 
   @override

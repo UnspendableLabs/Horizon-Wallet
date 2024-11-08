@@ -312,18 +312,24 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_send.ComposeSendResponse> composeSendChain(
       int fee,
       DecodedTx prevDecodedTransaction,
+      String previousSentAsset,
       compose_send.ComposeSendParams params) async {
     final source = params.source;
     final destination = params.destination;
     final asset = params.asset;
     final quantity = params.quantity;
 
-    final prevTxOutput = prevDecodedTransaction.vout[0];
+    // if the previous sent asset is btc, then the first output represents the change send to the destination
+    // if the previous sent asset is not btc, then the second output represents the change send to the destination
+    final prevOutputIndex = previousSentAsset == 'BTC' ? 0 : 1;
+
+    final prevTxOutput = prevDecodedTransaction.vout[prevOutputIndex];
     final scriptPubKey = prevTxOutput.scriptPubKey;
     final int value = (prevTxOutput.value * 100000000).toInt();
     final String txid = prevDecodedTransaction.txid;
     final int vout = prevTxOutput.n;
 
+    // for chaining transactions, the backend can't validate the utxos, so we need to give the backend the necessary information
     final newSendInput = '$txid:$vout:$value:${scriptPubKey.hex}';
 
     final response = await api.composeSendVerbose(source, destination, asset,
@@ -363,6 +369,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final mainchainrate = params.mainchainrate;
     final status = params.status ?? 0;
 
+    // the second output represents the change send to the destination
     final prevTxOutput = prevDecodedTransaction.vout[1];
     final scriptPubKey = prevTxOutput.scriptPubKey;
     final int value = (prevTxOutput.value * 100000000).toInt();

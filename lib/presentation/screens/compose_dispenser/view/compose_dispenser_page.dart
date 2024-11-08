@@ -111,6 +111,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     return BlocListener<ComposeDispenserBloc, ComposeDispenserState>(
       listener: (context, state) {
         state.dispensersState.maybeWhen(
+          // if the current address has open dispensers and the user chooses to open on a new address, proceed to the new address flow
           closeDialogAndOpenNewAddress: (originalAddress, divisible, asset,
               giveQuantity, escrowQuantity, mainchainrate, feeRate) {
             // Close current dialog

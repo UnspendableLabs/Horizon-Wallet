@@ -1924,7 +1924,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
   final ComposeDispenserVerboseParams params;
   final int btcIn;
   final int btcOut;
-  final int btcChange;
+  final int? btcChange;
   final int btcFee;
   final String data;
 

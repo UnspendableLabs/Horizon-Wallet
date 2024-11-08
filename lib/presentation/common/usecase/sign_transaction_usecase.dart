@@ -55,18 +55,16 @@ class SignTransactionUseCase {
     required String source,
     required String rawtransaction,
     DecodedTx? prevDecodedTransaction,
+    String? prevAssetSend,
     String? addressPrivKey,
   }) async {
     try {
-      // late Address? address;
-      // late ImportedAddress? importedAddress;
       List<Utxo>? utxosToSign;
 
-      if (prevDecodedTransaction == null) {
-        // // Fetch UTXOs
-        utxosToSign = await utxoRepository.getUnspentForAddress(source);
-      } else {
-        final vout = prevDecodedTransaction.vout[0];
+      if (prevDecodedTransaction != null) {
+        final voutIndex = prevAssetSend == 'BTC' ? 0 : 1;
+        // for chaining transactions, we construct the utxo to use based on the previous transaction output
+        final vout = prevDecodedTransaction.vout[voutIndex];
         utxosToSign = [
           Utxo(
               txid: prevDecodedTransaction.txid,
@@ -75,6 +73,9 @@ class SignTransactionUseCase {
               value: (vout.value * 100000000).toInt(),
               address: vout.scriptPubKey.address!)
         ];
+      } else {
+        // otherwise, fetch the utxos for the source address
+        utxosToSign = await utxoRepository.getUnspentForAddress(source);
       }
       final Map<String, Utxo> utxoMap = {for (var e in utxosToSign) e.txid: e};
       String? privKey = addressPrivKey;

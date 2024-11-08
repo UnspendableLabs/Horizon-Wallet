@@ -26,7 +26,10 @@ abstract class ComposeRepository {
       int fee, List<Utxo> inputsSet, ComposeFairminterParams params);
 
   Future<ComposeSendResponse> composeSendChain(
-      int fee, DecodedTx prevDecodedTransaction, ComposeSendParams params);
+      int fee,
+      DecodedTx prevDecodedTransaction,
+      String previousSentAsset,
+      ComposeSendParams params);
 
   Future<ComposeDispenserResponseVerbose> composeDispenserChain(
       int fee, DecodedTx prevDecodedTransaction, ComposeDispenserParams params);

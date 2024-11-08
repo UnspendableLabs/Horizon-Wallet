@@ -1,7 +1,5 @@
 abstract class ComposeDispenserOnNewAddressEvent {}
 
-class FetchFormData extends ComposeDispenserOnNewAddressEvent {}
-
 class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
   final String password;
   final String originalAddress;
