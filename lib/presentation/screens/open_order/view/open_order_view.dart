@@ -5,22 +5,37 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/forms/open_order_form/open_order_form_bloc.dart';
+import 'package:flow_builder/flow_builder.dart';
 
-class OpenOrderParams {
-  final String initialGiveAsset;
-  final int initialGiveQuantity;
-  final String initialGetAsset;
-  final int initialGetQuantity;
 
-  OpenOrderParams({
-    required this.initialGiveAsset,
-    required this.initialGiveQuantity,
-    required this.initialGetAsset,
-    required this.initialGetQuantity,
-  });
+
+enum ComposeTransactionStep {
+  form,
+  confirm,
+  signAndBroadcast,
 }
 
-class OpenOrderFlow {}
+
+
+
+
+// class OrderTransactionParams {
+//   final String initialGiveAsset;
+//   final int initialGiveQuantity;
+//   final String initialGetAsset;
+//   final int initialGetQuantity;
+//
+//   OrderTransactionParams({
+//     required this.initialGiveAsset,
+//     required this.initialGiveQuantity,
+//     required this.initialGetAsset,
+//     required this.initialGetQuantity,
+//   });
+// }
+//
+// class OpenOrderFlow {
+//   final OrderTransactionParams? params;
+// }
 
 class OpenOrderWizard extends StatelessWidget {
   final BalanceRepository balanceRepository;

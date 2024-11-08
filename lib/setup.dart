@@ -104,6 +104,9 @@ import 'dart:convert';
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
+
+  logger.Logger.level = logger.Level.debug;
+  
   injector.registerSingleton<Logger>(LoggerImpl(logger.Logger()));
 
   Config config = ConfigImpl();
