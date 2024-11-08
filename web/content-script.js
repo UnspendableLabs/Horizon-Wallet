@@ -1,4 +1,3 @@
-
 const CONTENT_SCRIPT_PORT = "horizon-wallet-content-script";
 const MESSAGE_SOURCE = "horizon";
 const VALID_METHODS = ["getAddresses", "signPsbt", "fairmint", "dispense"];
@@ -117,7 +116,7 @@ function validate(msg) {
 }
 
 document.addEventListener("request", (event) => {
-  console.log("request event received in content script", event);
+
 
   const errors = validate(event.detail);
 
@@ -140,7 +139,7 @@ document.addEventListener("request", (event) => {
 
 function addProviderToPage() {
   const inpage = document.createElement("script");
-  inpage.src = chrome.runtime.getURL("inpage.js");
+  inpage.src = chrome.runtime.getURL("horizon-provider.js");
   inpage.id = "horizon-wallet-provider";
   document.body.appendChild(inpage);
 }

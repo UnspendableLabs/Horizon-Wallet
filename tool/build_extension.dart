@@ -28,13 +28,11 @@ void main(List<String> args) async {
   }
 
   final originalIndexHtml = await buildIndexHtml();
-  await buildBackgroundJS();
   final originalManifest = await buildManifest(browser);
   await buildFlutter(network, apiUsername, apiPassword);
 
   // reset index.html
   await resetFile('web/index.html', originalIndexHtml);
-  // await resetFile('web/manifest.json', originalManifest);
 }
 
 Future<void> buildFlutter(
@@ -49,6 +47,8 @@ Future<void> buildFlutter(
     '--csp',
     '--no-web-resources-cdn',
     '--release',
+
+    '--dart-define=HORIZON_IS_EXTENSION=true',
     '--dart-define=HORIZON_NETWORK=$network',
     '--dart-define=HORIZON_ENABLE_DB_VIEWER=true',
     '--dart-define=HORIZON_COUNTERPARTY_API_USERNAME=$username',
@@ -104,18 +104,6 @@ Future<String> buildIndexHtml() async {
 
   return content;
 }
-
-Future<void> buildBackgroundJS() async {
-  await _process.runProcess([
-    Platform.resolvedExecutable,
-    'compile',
-    'js',
-    'web/background.dart',
-    '--output',
-    'build/web/background.js'
-  ]);
-}
-
 Future<void> resetFile(String path, String content) async {
   final outputFile = File(path);
   await outputFile.writeAsString(content);

@@ -12,7 +12,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "inpage.js"
+        "horizon-provider.js"
       ],
       "matches": [
         "*://*/*"
