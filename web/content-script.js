@@ -115,7 +115,7 @@ function validate(msg) {
   return errors;
 }
 
-document.addEventListener("request", (event) => {
+document.addEventListener("horizon-provider-request", (event) => {
 
 
   const errors = validate(event.detail);

@@ -20,7 +20,7 @@ const provider = {
       method,
       params,
     };
-    document.dispatchEvent(new CustomEvent("request", { detail: rpcRequest }));
+    document.dispatchEvent(new CustomEvent("horizon-provider-request", { detail: rpcRequest }));
     return new Promise((resolve, reject) => {
       function handleMessage(event) {
         const response = event.data;
