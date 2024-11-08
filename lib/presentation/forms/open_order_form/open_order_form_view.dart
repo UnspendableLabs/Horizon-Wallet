@@ -326,7 +326,7 @@ class SubmitButton extends StatelessWidget {
             ? CircularProgressIndicator()
             : ElevatedButton(
                 onPressed: () {
-                  print("safd");
+                  context.read<OpenOrderFormBloc>().add(FormSubmitted());
                 },
                 child: Text('Submit'),
               );

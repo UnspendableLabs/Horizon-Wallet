@@ -474,6 +474,31 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       FormSubmitted event, Emitter<FormStateModel> emit) async {
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
+    final String getAsset = state.getAsset.value;
+    final String giveAsset = state.giveAsset.value;
+
+    final int getQuantity = (state.getQuantity.isDivisible
+        ? (double.parse(state.getQuantity.value) * 100000000).round()
+        : int.parse(state.getQuantity.value));
+
+    final int giveQuantity = (state.giveQuantity.isDivisible
+        ? (double.parse(state.giveQuantity.value) * 100000000).round()
+        : int.parse(state.giveQuantity.value));
+
+
+   // Denormalized values ready to be submitted
+    final Map<String, dynamic> submissionData = {
+      "get_asset": getAsset,
+      "get_quantity": getQuantity,
+      "give_asset": giveAsset,
+      "give_quantity": giveQuantity,
+    };
+
+
+  print(submissionData);
+
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
+
     try {
       await Future.delayed(const Duration(seconds: 2)); // Simulate API call
 

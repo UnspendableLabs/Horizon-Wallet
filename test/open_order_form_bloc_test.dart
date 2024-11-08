@@ -336,11 +336,10 @@ void main() {
               (state) => state.giveQuantity.value, 'giveQuantity.value', '0.5')
           .having((state) => state.giveQuantity.isDivisible,
               'giveQuantity.isDivisible', true)
-          .having((state) => state.giveQuantity.isValid, 'giveQuantity',
-              true),
+          .having((state) => state.giveQuantity.isValid, 'giveQuantity', true),
     ],
   );
-  
+
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'does not accept decimal input for giveQuantity when giveAsset is not divisible',
     build: () => bloc,
@@ -358,8 +357,8 @@ void main() {
             assetInfo: FakeAssetInfo(divisible: false),
           ),
         ]),
-        giveQuantity:
-            const GiveQuantityInput.pure(balance: 100000000, isDivisible: false),
+        giveQuantity: const GiveQuantityInput.pure(
+            balance: 100000000, isDivisible: false),
       );
     },
     act: (bloc) =>
@@ -370,13 +369,9 @@ void main() {
               (state) => state.giveQuantity.value, 'giveQuantity.value', '0.5')
           .having((state) => state.giveQuantity.isDivisible,
               'giveQuantity.isDivisible', false)
-          .having((state) => state.giveQuantity.isValid, 'giveQuantity',
-              false),
+          .having((state) => state.giveQuantity.isValid, 'giveQuantity', false),
     ],
   );
-
-
-
 
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'updates getQuantity when GetQuantityChanged is added',
@@ -430,6 +425,67 @@ void main() {
               GetQuantityValidationError.invalid)
           .having((state) => state.errorMessage, 'errorMessage', isNull),
     ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'denormalizes values correctly on FormSubmitted',
+    build: () {
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100000000,
+            quantityNormalized: "1",
+            assetInfo: FakeAssetInfo(divisible:false),
+          ),
+        ],
+      );
+
+      when(() => assetRepository.getAssetVerbose(any())).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET2',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      return bloc;
+    },
+    seed: () {
+      // Initial state with getAsset and giveAsset as divisible assets
+      return bloc.state.copyWith(
+        giveAsset: const GiveAssetInput.dirty('ASSET1'),
+        giveQuantity: const GiveQuantityInput.dirty('5', isDivisible: false),
+        getAsset: const GetAssetInput.dirty('ASSET2'),
+        getQuantity: const GetQuantityInput.dirty('2.5', isDivisible: true),
+      );
+    },
+    act: (bloc) => bloc.add(FormSubmitted()),
+    expect: () => [
+      isA<FormStateModel>().having(
+        (state) => state.submissionStatus,
+        'submissionStatus',
+        FormzSubmissionStatus.inProgress,
+      ),
+    ],
+    verify: (_) {
+      // Retrieve and check denormalized values
+      final state = bloc.state;
+
+      final expectedGetQuantity = (2.5 * 100000000).toInt();
+      final expectedGiveQuantity = 5;
+
+      expect(state.getQuantity.value, equals('2.5'));
+      expect(state.giveQuantity.value, equals('5'));
+      expect(state.getQuantity.isDivisible, isTrue);
+      expect(state.giveQuantity.isDivisible, isFalse);
+
+      // Verify denormalization
+      expect(expectedGetQuantity, 250000000);
+      expect(expectedGiveQuantity, 5);
+    },
   );
 
   // blocTest<OpenOrderFormBloc, FormStateModel>(
