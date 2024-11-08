@@ -53,10 +53,12 @@ class OpenOrderForm_ extends StatefulWidget {
 class _OpenOrderForm extends State<OpenOrderForm_> {
   late TextEditingController _giveQuantityController;
   late TextEditingController _getQuantityController;
+  late TextEditingController _giveAssetController;
 
   @override
   void initState() {
     super.initState();
+    _giveAssetController = TextEditingController();
     _giveQuantityController = TextEditingController();
     _getQuantityController = TextEditingController();
   }
@@ -64,6 +66,7 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
   @override
   void dispose() {
     // TODO: implement dispose
+    _giveAssetController.dispose();
     _giveQuantityController.dispose();
     _getQuantityController.dispose();
     super.dispose();
@@ -73,18 +76,15 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
   Widget build(BuildContext context) {
     return BlocListener<OpenOrderFormBloc, FormStateModel>(
       listener: (context, state) {
-
-        print("state.giveQuantity ${state.giveQuantity.value}");
-
-
-        _giveQuantityController.text = state.giveQuantity.value ?? '';
+        if (_giveAssetController.text != state.giveAsset.value) {
+          print("setting give asset controllter to ${state.giveAsset.value}");
+          _giveAssetController.text = state.giveAsset.value ?? '';
+        }
 
         if (_giveQuantityController.text != state.giveQuantity.value) {
-          // Preserve cursor position
           _giveQuantityController.text = state.giveQuantity.value ?? '';
         }
         if (_getQuantityController.text != state.getQuantity.value) {
-          // Preserve cursor position
           _getQuantityController.text = state.getQuantity.value ?? '';
         }
         if (state.submissionStatus.isSuccess) {
@@ -153,8 +153,8 @@ class GiveAssetInputField extends StatelessWidget {
 
           return HorizonUI.HorizonDropdownMenu<String>(
             enabled: true,
-            controller: TextEditingController(text: state.giveAsset.value),
             label: 'Give Asset',
+            selectedValue: state.giveAsset.value.isNotEmpty? state.giveAsset.value : null,
             onChanged: (selectedAsset) {
               if (selectedAsset != null) {
                 context

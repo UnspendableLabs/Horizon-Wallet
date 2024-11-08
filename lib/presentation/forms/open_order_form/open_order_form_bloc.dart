@@ -281,13 +281,13 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         String initialGiveAsset = event.initialGiveAsset!;
 
         final balanceForAsset = balances.firstWhereOrNull(
-          (balance) => balance.asset == initialGiveAsset,
+          (balance) => balance.asset.toLowerCase() == initialGiveAsset.toLowerCase(),
         );
+
 
         if (balanceForAsset == null) {
           // Case: No balance for the initial asset
           emit(state.copyWith(
-            giveAsset: GiveAssetInput.dirty(initialGiveAsset),
             giveAssets: Success(balances),
             errorMessage:
                 'No balance available for the initial asset $initialGiveAsset',
@@ -296,17 +296,20 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         }
 
         if (event.initialGiveQuantity != null) {
-          int initialGiveQuantity = event.initialGiveQuantity!;
+          int initialGiveQuantityNormalized = event.initialGiveQuantity!;
 
-          final initialGiveQuantityNormalized =
+          final initialGiveQuantity =
               balanceForAsset.assetInfo.divisible
-                  ? (initialGiveQuantity / 100000000)
-                  : initialGiveQuantity;
+                  ? (initialGiveQuantityNormalized * 100000000)
+                  : initialGiveQuantityNormalized;
+
+          print("initialGiveQuantity $initialGiveQuantity");
+          print("initialGiveQuantityNormalized $initialGiveQuantityNormalized");
 
           if (initialGiveQuantity > balanceForAsset.quantity) {
             // Case: Insufficient balance
             emit(state.copyWith(
-              giveAsset: GiveAssetInput.dirty(initialGiveAsset),
+              giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
               giveAssets: Success(balances),
               giveQuantity: GiveQuantityInput.dirty(
                 initialGiveQuantityNormalized.toString(),
@@ -319,7 +322,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           } else {
             // Case: Valid initial balance and quantity
             emit(state.copyWith(
-              giveAsset: GiveAssetInput.dirty(initialGiveAsset),
+              giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
               giveAssets: Success(balances),
               giveQuantity: GiveQuantityInput.dirty(
                 initialGiveQuantityNormalized.toString(),
