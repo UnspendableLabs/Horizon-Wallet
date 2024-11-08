@@ -117,14 +117,32 @@ abstract class FormEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class InitializeForm extends FormEvent {
-  final String? initialGiveAsset;
-  final int? initialGiveQuantity;
+class InitializeParams {
+  final String initialGiveAsset;
+  final int initialGiveQuantity;
+  final String initialGetAsset;
+  final int initialGetQuantity;
 
-  const InitializeForm({this.initialGiveAsset, this.initialGiveQuantity});
+  InitializeParams({
+    required this.initialGiveAsset,
+    required this.initialGiveQuantity,
+    required this.initialGetAsset,
+    required this.initialGetQuantity,
+  });
+}
+
+class InitializeForm extends FormEvent {
+  final InitializeParams? params;
+
+  const InitializeForm({this.params});
 
   @override
-  List<Object?> get props => [initialGiveAsset, initialGiveQuantity];
+  List<Object?> get props => [
+        params?.initialGetQuantity,
+        params?.initialGetAsset,
+        params?.initialGiveQuantity,
+        params?.initialGiveAsset
+      ];
 }
 
 class LoadGiveAssets extends FormEvent {}
@@ -269,75 +287,96 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     try {
       final balances =
           await balanceRepository.getBalancesForAddress(currentAddress);
-      emit(state.copyWith(giveAssets: Success(balances)));
 
-      print("initialGiveAsset: ${event.initialGiveAsset}");
-      print("initialGiveQuantity: ${event.initialGiveQuantity}");
-
-      if (event.initialGiveAsset != null) {
-
-        
-
-        String initialGiveAsset = event.initialGiveAsset!;
+      if (event.params == null) {
+        print("parsms is null");
+        emit(state.copyWith(giveAssets: Success(balances)));
+      } else {
+        final InitializeParams params = event.params!;
 
         final balanceForAsset = balances.firstWhereOrNull(
-          (balance) => balance.asset.toLowerCase() == initialGiveAsset.toLowerCase(),
+          (balance) =>
+              balance.asset.toLowerCase() ==
+              params.initialGiveAsset.toLowerCase(),
         );
-
 
         if (balanceForAsset == null) {
           // Case: No balance for the initial asset
           emit(state.copyWith(
             giveAssets: Success(balances),
             errorMessage:
-                'No balance available for the initial asset $initialGiveAsset',
+                'No balance available for the initial asset ${params.initialGiveAsset}',
           ));
           return;
         }
 
-        if (event.initialGiveQuantity != null) {
-          int initialGiveQuantityNormalized = event.initialGiveQuantity!;
+        int initialGiveQuantity = event.params!.initialGiveQuantity;
 
-          final initialGiveQuantity =
-              balanceForAsset.assetInfo.divisible
-                  ? (initialGiveQuantityNormalized * 100000000)
-                  : initialGiveQuantityNormalized;
+        final initialGiveQuantityNormalized =
+            balanceForAsset.assetInfo.divisible
+                ? (initialGiveQuantity / 100000000)
+                : initialGiveQuantity;
 
-          print("initialGiveQuantity $initialGiveQuantity");
-          print("initialGiveQuantityNormalized $initialGiveQuantityNormalized");
+        if (initialGiveQuantity > balanceForAsset.quantity) {
+          // Case: Insufficient balance
+          emit(state.copyWith(
+            giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
+            giveAssets: Success(balances),
+            giveQuantity: GiveQuantityInput.dirty(
+              initialGiveQuantityNormalized.toString(),
+              balance: balanceForAsset.quantity,
+              isDivisible: balanceForAsset.assetInfo.divisible,
+            ),
+            errorMessage:
+                'Insufficient balance for the initial quantity of $initialGiveQuantity',
+          ));
+        } else {
+          // there is adequate give asset balance
+          emit(state.copyWith(
+            giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
+            giveAssets: Success(balances),
+            giveQuantity: GiveQuantityInput.dirty(
+              initialGiveQuantityNormalized.toString(),
+              balance: balanceForAsset.quantity,
+              isDivisible: balanceForAsset.assetInfo.divisible,
+            ),
+          ));
 
-          if (initialGiveQuantity > balanceForAsset.quantity) {
-            // Case: Insufficient balance
+          // now validate the get asset
+
+          emit(state.copyWith(
+            getAsset: GetAssetInput.dirty(params.initialGetAsset),
+            getAssetValidationStatus: Loading(),
+          ));
+
+          try {
+            final asset =
+                await assetRepository.getAssetVerbose(params.initialGetAsset);
+
+            int initialGetQuantity = event.params!.initialGetQuantity;
+
+            final initialGetQuantityNormalized = asset.divisible ?? false
+                ? (initialGetQuantity / 100000000)
+                : initialGetQuantity;
+
             emit(state.copyWith(
-              giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
-              giveAssets: Success(balances),
-              giveQuantity: GiveQuantityInput.dirty(
-                initialGiveQuantityNormalized.toString(),
-                balance: balanceForAsset.quantity,
-                isDivisible: balanceForAsset.assetInfo.divisible,
+              getQuantity: GetQuantityInput.dirty(
+                initialGetQuantityNormalized.toString(),
+                isDivisible: asset.divisible ?? false,
               ),
-              errorMessage:
-                  'Insufficient balance for the initial quantity of $initialGiveQuantity',
+              getAssetValidationStatus: Success(asset),
             ));
-          } else {
-            // Case: Valid initial balance and quantity
+          } catch (e) {
             emit(state.copyWith(
-              giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
-              giveAssets: Success(balances),
-              giveQuantity: GiveQuantityInput.dirty(
-                initialGiveQuantityNormalized.toString(),
-                balance: balanceForAsset.quantity,
-                isDivisible: balanceForAsset.assetInfo.divisible,
-              ),
+              getAssetValidationStatus: Failure('Asset not found'),
             ));
+            return;
           }
         }
-      } else {
-        emit(state.copyWith(giveAssets: Success(balances)));
       }
     } catch (e) {
       emit(state.copyWith(
-        giveAssets: Failure('Failed to load give assets: ${e.toString()}'),
+        errorMessage: "Invalid order details",
       ));
     }
   }

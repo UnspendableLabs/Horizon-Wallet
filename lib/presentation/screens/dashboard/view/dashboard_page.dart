@@ -1148,7 +1148,8 @@ class DashboardPageState extends State<DashboardPage> {
 
   void _handleOrderAction(
       int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
-    print("handle order action giveQuantity $giveQuantity giveAsset $giveAsset");
+    print(
+        "handle order action giveQuantity $giveQuantity giveAsset $giveAsset");
 
     HorizonUI.HorizonDialog.show(
       context: context,
@@ -1161,6 +1162,8 @@ class DashboardPageState extends State<DashboardPage> {
           assetRepository: GetIt.I<AssetRepository>(),
           initialGiveQuantity: giveQuantity,
           initialGiveAsset: giveAsset,
+          initialGetQuantity: getQuantity,
+          initialGetAsset: getAsset,
         ),
       ),
     );

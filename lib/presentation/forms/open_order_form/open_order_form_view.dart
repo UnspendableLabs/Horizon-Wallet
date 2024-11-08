@@ -16,15 +16,18 @@ class OpenOrderForm extends StatelessWidget {
 
   final String? initialGiveAsset;
   final int? initialGiveQuantity;
+  final String? initialGetAsset;
+  final int? initialGetQuantity;
 
-  const OpenOrderForm({
-    super.key,
-    required this.assetRepository,
-    required this.balanceRepository,
-    required this.currentAddress,
-    this.initialGiveAsset,
-    this.initialGiveQuantity,
-  });
+  const OpenOrderForm(
+      {super.key,
+      required this.assetRepository,
+      required this.balanceRepository,
+      required this.currentAddress,
+      this.initialGiveAsset,
+      this.initialGiveQuantity,
+      this.initialGetAsset,
+      this.initialGetQuantity});
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +37,24 @@ class OpenOrderForm extends StatelessWidget {
             assetRepository: assetRepository,
             balanceRepository: balanceRepository,
             currentAddress: currentAddress)
-          ..add(InitializeForm(
-              initialGiveAsset: initialGiveAsset,
-              initialGiveQuantity: initialGiveQuantity));
+          ..add(InitializeForm(params: _getInitializeParams()));
       },
       child: OpenOrderForm_(),
     );
+  }
+
+  _getInitializeParams() {
+    if (initialGiveAsset != null &&
+        initialGiveQuantity != null &&
+        initialGetAsset != null &&
+        initialGetQuantity != null) {
+      return InitializeParams(
+        initialGiveAsset: initialGiveAsset!,
+        initialGiveQuantity: initialGiveQuantity!,
+        initialGetQuantity: initialGetQuantity!,
+        initialGetAsset: initialGetAsset!,
+      );
+    }
   }
 }
 
@@ -54,6 +69,7 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
   late TextEditingController _giveQuantityController;
   late TextEditingController _getQuantityController;
   late TextEditingController _giveAssetController;
+  late TextEditingController _getAssetController;
 
   @override
   void initState() {
@@ -61,6 +77,7 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
     _giveAssetController = TextEditingController();
     _giveQuantityController = TextEditingController();
     _getQuantityController = TextEditingController();
+    _getAssetController = TextEditingController();
   }
 
   @override
@@ -69,6 +86,7 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
     _giveAssetController.dispose();
     _giveQuantityController.dispose();
     _getQuantityController.dispose();
+    _getAssetController.dispose();
     super.dispose();
   }
 
@@ -77,16 +95,20 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
     return BlocListener<OpenOrderFormBloc, FormStateModel>(
       listener: (context, state) {
         if (_giveAssetController.text != state.giveAsset.value) {
-          print("setting give asset controllter to ${state.giveAsset.value}");
-          _giveAssetController.text = state.giveAsset.value ?? '';
+          _giveAssetController.text = state.giveAsset.value;
         }
 
         if (_giveQuantityController.text != state.giveQuantity.value) {
-          _giveQuantityController.text = state.giveQuantity.value ?? '';
+          _giveQuantityController.text = state.giveQuantity.value;
         }
         if (_getQuantityController.text != state.getQuantity.value) {
-          _getQuantityController.text = state.getQuantity.value ?? '';
+          _getQuantityController.text = state.getQuantity.value;
         }
+
+        if (_getAssetController.text != state.getAsset.value) {
+          _getAssetController.text = state.getAsset.value;
+        }
+
         if (state.submissionStatus.isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Dispenser Created Successfully')));
@@ -127,7 +149,8 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
                   controller: _getQuantityController,
                 )),
                 const SizedBox(width: 16),
-                Expanded(child: GetAssetInputField()),
+                Expanded(
+                    child: GetAssetInputField(controller: _getAssetController))
               ],
             ),
             SubmitButton(),
@@ -154,7 +177,8 @@ class GiveAssetInputField extends StatelessWidget {
           return HorizonUI.HorizonDropdownMenu<String>(
             enabled: true,
             label: 'Give Asset',
-            selectedValue: state.giveAsset.value.isNotEmpty? state.giveAsset.value : null,
+            selectedValue:
+                state.giveAsset.value.isNotEmpty ? state.giveAsset.value : null,
             onChanged: (selectedAsset) {
               if (selectedAsset != null) {
                 context
@@ -180,6 +204,10 @@ class GiveAssetInputField extends StatelessWidget {
 }
 
 class GetAssetInputField extends StatelessWidget {
+  TextEditingController controller;
+
+  GetAssetInputField({super.key, required this.controller});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
@@ -188,6 +216,7 @@ class GetAssetInputField extends StatelessWidget {
           previous.getAssetValidationStatus != current.getAssetValidationStatus,
       builder: (context, state) {
         return TextField(
+          controller: controller,
           onChanged: (value) =>
               context.read<OpenOrderFormBloc>().add(GetAssetChanged(value)),
           decoration: InputDecoration(
