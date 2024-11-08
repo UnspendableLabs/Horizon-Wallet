@@ -81,6 +81,7 @@ import 'package:horizon/data/sources/network/mempool_space_client.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -384,6 +385,18 @@ Future<void> setup() async {
       WriteLocalTransactionUseCase(
     transactionRepository: GetIt.I.get<TransactionRepository>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+  ));
+
+  injector.registerSingleton<SignTransactionUseCase>(SignTransactionUseCase(
+    addressRepository: GetIt.I.get<AddressRepository>(),
+    importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
+    accountRepository: GetIt.I.get<AccountRepository>(),
+    walletRepository: GetIt.I.get<WalletRepository>(),
+    encryptionService: GetIt.I.get<EncryptionService>(),
+    addressService: GetIt.I.get<AddressService>(),
+    transactionService: GetIt.I.get<TransactionService>(),
+    importedAddressService: GetIt.I.get<ImportedAddressService>(),
+    utxoRepository: GetIt.I.get<UtxoRepository>(),
   ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());

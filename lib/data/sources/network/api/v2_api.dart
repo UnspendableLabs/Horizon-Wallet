@@ -3257,6 +3257,8 @@ abstract class V2Api {
     @Query("exact_fee") int? fee,
     @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
+    @Query("validate") bool? validate,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/sends")
@@ -3355,6 +3357,8 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("unconfirmed") bool? unconfirmed,
+    @Query("validate") bool? validate,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/dispensers")

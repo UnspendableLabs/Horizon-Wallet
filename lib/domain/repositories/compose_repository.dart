@@ -1,3 +1,4 @@
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
@@ -23,4 +24,10 @@ abstract class ComposeRepository {
 
   Future<ComposeFairminterResponse> composeFairminterVerbose(
       int fee, List<Utxo> inputsSet, ComposeFairminterParams params);
+
+  Future<ComposeSendResponse> composeSendChain(
+      int fee, DecodedTx prevDecodedTransaction, ComposeSendParams params);
+
+  Future<ComposeDispenserResponseVerbose> composeDispenserChain(
+      int fee, DecodedTx prevDecodedTransaction, ComposeDispenserParams params);
 }

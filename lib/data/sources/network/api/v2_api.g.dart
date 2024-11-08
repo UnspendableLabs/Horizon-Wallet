@@ -3435,6 +3435,8 @@ class _V2Api implements V2Api {
     int? fee,
     int? feePerKB,
     String? inputsSet,
+    bool? validate,
+    bool? disableUtxoLocks,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -3445,6 +3447,8 @@ class _V2Api implements V2Api {
       r'exact_fee': fee,
       r'fee_per_kb': feePerKB,
       r'inputs_set': inputsSet,
+      r'validate': validate,
+      r'disable_utxo_locks': disableUtxoLocks,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -3865,6 +3869,8 @@ class _V2Api implements V2Api {
     int? exactFee,
     String? inputsSet,
     bool? unconfirmed,
+    bool? validate,
+    bool? disableUtxoLocks,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -3879,6 +3885,8 @@ class _V2Api implements V2Api {
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
       r'unconfirmed': unconfirmed,
+      r'validate': validate,
+      r'disable_utxo_locks': disableUtxoLocks,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

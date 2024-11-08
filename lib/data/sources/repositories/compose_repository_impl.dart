@@ -1,5 +1,6 @@
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart'
     as compose_issuance;
 import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
@@ -305,6 +306,112 @@ class ComposeRepositoryImpl extends ComposeRepository {
       },
       inputsSet,
     );
+  }
+
+  @override
+  Future<compose_send.ComposeSendResponse> composeSendChain(
+      int fee,
+      DecodedTx prevDecodedTransaction,
+      compose_send.ComposeSendParams params) async {
+    final source = params.source;
+    final destination = params.destination;
+    final asset = params.asset;
+    final quantity = params.quantity;
+
+    final prevTxOutput = prevDecodedTransaction.vout[0];
+    final scriptPubKey = prevTxOutput.scriptPubKey;
+    final int value = (prevTxOutput.value * 100000000).toInt();
+    final String txid = prevDecodedTransaction.txid;
+    final int vout = prevTxOutput.n;
+
+    final newSendInput = '$txid:$vout:$value:${scriptPubKey.hex}';
+
+    final response = await api.composeSendVerbose(source, destination, asset,
+        quantity, true, fee, null, newSendInput, false, true);
+
+    if (response.result == null) {
+      throw Exception('Failed to compose send');
+    }
+
+    final txVerbose = response.result!;
+    return compose_send.ComposeSendResponse(
+        params: compose_send.ComposeSendResponseParams(
+          source: txVerbose.params.source,
+          destination: txVerbose.params.destination,
+          asset: txVerbose.params.asset,
+          quantity: txVerbose.params.quantity,
+          useEnhancedSend: txVerbose.params.useEnhancedSend,
+          assetInfo: asset_info.AssetInfo(
+              assetLongname: txVerbose.params.assetInfo.assetLongname,
+              description: txVerbose.params.assetInfo.description,
+              divisible: txVerbose.params.assetInfo.divisible),
+          quantityNormalized: txVerbose.params.quantityNormalized,
+        ),
+        btcFee: txVerbose.btcFee,
+        rawtransaction: txVerbose.rawtransaction,
+        name: txVerbose.name);
+  }
+
+  @override
+  Future<compose_dispenser.ComposeDispenserResponseVerbose>
+      composeDispenserChain(int fee, DecodedTx prevDecodedTransaction,
+          compose_dispenser.ComposeDispenserParams params) async {
+    final source = params.source;
+    final asset = params.asset;
+    final giveQuantity = params.giveQuantity;
+    final escrowQuantity = params.escrowQuantity;
+    final mainchainrate = params.mainchainrate;
+    final status = params.status ?? 0;
+
+    final prevTxOutput = prevDecodedTransaction.vout[1];
+    final scriptPubKey = prevTxOutput.scriptPubKey;
+    final int value = (prevTxOutput.value * 100000000).toInt();
+    final String txid = prevDecodedTransaction.txid;
+    final int vout = prevTxOutput.n;
+
+    final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
+
+    final response = await api.composeDispenserVerbose(
+        source,
+        asset,
+        giveQuantity,
+        escrowQuantity,
+        mainchainrate,
+        status,
+        null,
+        null,
+        true,
+        fee,
+        newInputSet,
+        null,
+        false,
+        true);
+
+    if (response.result == null) {
+      throw Exception('Failed to compose send');
+    }
+
+    final txVerbose = response.result!;
+    return compose_dispenser.ComposeDispenserResponseVerbose(
+        rawtransaction: txVerbose.rawtransaction,
+        btcIn: txVerbose.btcIn,
+        btcOut: txVerbose.btcOut,
+        btcChange: txVerbose.btcChange,
+        btcFee: txVerbose.btcFee,
+        data: txVerbose.data,
+        params: compose_dispenser.ComposeDispenserResponseVerboseParams(
+          source: txVerbose.params.source,
+          asset: txVerbose.params.asset,
+          giveQuantity: txVerbose.params.giveQuantity,
+          escrowQuantity: txVerbose.params.escrowQuantity,
+          mainchainrate: txVerbose.params.mainchainrate,
+          status: txVerbose.params.status,
+          openAddress: txVerbose.params.openAddress,
+          oracleAddress: txVerbose.params.oracleAddress,
+          giveQuantityNormalized: txVerbose.params.giveQuantityNormalized,
+          escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
+        ),
+        name: txVerbose.name);
   }
 }
 
