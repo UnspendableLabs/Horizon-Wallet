@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
+import 'package:horizon/domain/entities/fairminter.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -101,6 +103,13 @@ class FakeBalance extends Fake implements Balance {
   });
 }
 
+class FakeFairminter extends Fake implements Fairminter {
+  @override
+  final String asset;
+
+  FakeFairminter({required this.asset});
+}
+
 void main() {
   final getIt = GetIt.instance;
   late BalancesBloc mockBalancesBloc;
@@ -109,6 +118,7 @@ void main() {
   late List<Balance> balances;
   late Map<String, Balance> aggregatedBalances;
   late List<Asset> ownedAssets;
+  late List<Fairminter> fairminterAssets;
 
   setUp(() {
     // Register mock Config
@@ -154,7 +164,7 @@ void main() {
 
     final asset2 = FakeAsset(
       asset: 'MAXVOLUME',
-      assetLongname: 'MAXVOLUME.PEPE',
+      assetLongname: '',
       owner: '1OtherAddress',
       issuer: '1IssuerAddress',
       divisible: true,
@@ -162,13 +172,13 @@ void main() {
     );
 
     final assetInfo1 = FakeAssetInfo(
-      assetLongname: 'PEPENARDO.PEPE',
+      assetLongname: 'PEPENARDO.ASDF',
       issuer: '1IssuerAddress',
       divisible: true,
     );
 
     final assetInfo2 = FakeAssetInfo(
-      assetLongname: 'MAXVOLUME.PEPE',
+      assetLongname: '',
       issuer: '1IssuerAddress',
       divisible: true,
     );
@@ -194,12 +204,18 @@ void main() {
       'PEPENARDO': balance1,
       'MAXVOLUME': balance2,
     };
+
+    final fairminterAsset1 = FakeFairminter(
+      asset: 'PEPENARDO',
+    );
+
+    fairminterAssets = [fairminterAsset1];
     ownedAssets = [asset1];
 
     // Mock the state
     when(() => mockBalancesBloc.state).thenReturn(
       BalancesState.complete(
-        Result.ok(balances, aggregatedBalances, ownedAssets),
+        Result.ok(balances, aggregatedBalances, ownedAssets, fairminterAssets),
       ),
     );
 
@@ -207,7 +223,8 @@ void main() {
     when(() => mockBalancesBloc.stream).thenAnswer(
       (_) => Stream<BalancesState>.value(
         BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, ownedAssets),
+          Result.ok(
+              balances, aggregatedBalances, ownedAssets, fairminterAssets),
         ),
       ),
     );
@@ -248,8 +265,44 @@ void main() {
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
 
-      // Enter search term
       await tester.enterText(find.byKey(const Key('search_input')), 'pepe');
+      await tester.pumpAndSettle();
+
+      // Verify that only 'PEPENARDO' is displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+    });
+
+    testWidgets('should search by subasset name', (WidgetTester tester) async {
+      final address = FakeAddress(address: '1TestAddress');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<BalancesBloc>.value(
+            value: mockBalancesBloc,
+            child: Scaffold(
+              body: CustomScrollView(
+                slivers: [
+                  BalancesDisplay(
+                    isDarkTheme: false,
+                    currentAddress: address.address,
+                    initialItemCount: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Wait for the widget tree to build
+      await tester.pumpAndSettle();
+
+      // Verify that both assets are displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('search_input')), 'asdf');
       await tester.pumpAndSettle();
 
       // Verify that only 'PEPENARDO' is displayed
@@ -421,14 +474,16 @@ void main() {
       // Mock the BalancesBloc state and stream with the new data
       when(() => mockBalancesBloc.state).thenReturn(
         BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, ownedAssets),
+          Result.ok(
+              balances, aggregatedBalances, ownedAssets, fairminterAssets),
         ),
       );
 
       when(() => mockBalancesBloc.stream).thenAnswer(
         (_) => Stream<BalancesState>.value(
           BalancesState.complete(
-            Result.ok(balances, aggregatedBalances, ownedAssets),
+            Result.ok(
+                balances, aggregatedBalances, ownedAssets, fairminterAssets),
           ),
         ),
       );
@@ -562,14 +617,14 @@ void main() {
       // Mock the BalancesBloc to return an empty list of balances
       when(() => mockBalancesBloc.state).thenReturn(
         const BalancesState.complete(
-          Result.ok([], {}, []),
+          Result.ok([], {}, [], []),
         ),
       );
 
       when(() => mockBalancesBloc.stream).thenAnswer(
         (_) => Stream<BalancesState>.value(
           const BalancesState.complete(
-            Result.ok([], {}, []),
+            Result.ok([], {}, [], []),
           ),
         ),
       );
@@ -633,14 +688,16 @@ void main() {
       // Mock the BalancesBloc state and stream with the new data
       when(() => mockBalancesBloc.state).thenReturn(
         BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, ownedAssets),
+          Result.ok(
+              balances, aggregatedBalances, ownedAssets, fairminterAssets),
         ),
       );
 
       when(() => mockBalancesBloc.stream).thenAnswer(
         (_) => Stream<BalancesState>.value(
           BalancesState.complete(
-            Result.ok(balances, aggregatedBalances, ownedAssets),
+            Result.ok(
+                balances, aggregatedBalances, ownedAssets, fairminterAssets),
           ),
         ),
       );
@@ -671,6 +728,189 @@ void main() {
       final sendButton = find.byIcon(Icons.send).first;
 
       expect(sendButton, findsOneWidget);
+    });
+
+    testWidgets(
+        'should show correct popup menu items based on asset properties',
+        (WidgetTester tester) async {
+      final address = FakeAddress(address: '1TestAddress');
+
+      // Create test assets with different properties
+      final unlockedAsset = FakeAsset(
+        asset: 'UNLOCKED',
+        assetLongname: 'UNLOCKED.TEST',
+        owner: '1TestAddress', // owned by current address
+        issuer: '1TestAddress',
+        divisible: true,
+        locked: false,
+      );
+
+      final lockedAsset = FakeAsset(
+        asset: 'LOCKED',
+        assetLongname: 'LOCKED.TEST',
+        owner: '1TestAddress', // owned by current address
+        issuer: '1TestAddress',
+        divisible: true,
+        locked: true,
+      );
+
+      final fairmintAsset = FakeAsset(
+        asset: 'FAIRMINT',
+        assetLongname: 'FAIRMINT.TEST',
+        owner: '1TestAddress', // owned by current address
+        issuer: '1TestAddress',
+        divisible: true,
+        locked: false,
+      );
+
+      final fairminter = FakeFairminter(
+        asset: 'FAIRMINT', // matches fairmintAsset
+      );
+
+      // Create corresponding balances
+      final balances = [
+        FakeBalance(
+          asset: 'UNLOCKED',
+          quantity: 100000000,
+          quantityNormalized: '1.00000000',
+          address: '1TestAddress',
+          assetInfo: FakeAssetInfo(
+            assetLongname: 'UNLOCKED.TEST',
+            issuer: '1TestAddress',
+            divisible: true,
+          ),
+        ),
+        FakeBalance(
+          asset: 'LOCKED',
+          quantity: 200000000,
+          quantityNormalized: '2.00000000',
+          address: '1TestAddress',
+          assetInfo: FakeAssetInfo(
+            assetLongname: 'LOCKED.TEST',
+            issuer: '1TestAddress',
+            divisible: true,
+          ),
+        ),
+        FakeBalance(
+          asset: 'FAIRMINT',
+          quantity: 300000000,
+          quantityNormalized: '3.00000000',
+          address: '1TestAddress',
+          assetInfo: FakeAssetInfo(
+            assetLongname: 'FAIRMINT.TEST',
+            issuer: '1TestAddress',
+            divisible: true,
+          ),
+        ),
+      ];
+
+      final aggregatedBalances = {
+        'UNLOCKED': balances[0],
+        'LOCKED': balances[1],
+        'FAIRMINT': balances[2],
+      };
+
+      final ownedAssets = [unlockedAsset, lockedAsset, fairmintAsset];
+      final fairminterAssets = [fairminter];
+
+      // Mock the BalancesBloc state and stream
+      when(() => mockBalancesBloc.state).thenReturn(
+        BalancesState.complete(
+          Result.ok(
+              balances, aggregatedBalances, ownedAssets, fairminterAssets),
+        ),
+      );
+
+      when(() => mockBalancesBloc.stream).thenAnswer(
+        (_) => Stream<BalancesState>.value(
+          BalancesState.complete(
+            Result.ok(
+                balances, aggregatedBalances, ownedAssets, fairminterAssets),
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<BalancesBloc>.value(
+            value: mockBalancesBloc,
+            child: Scaffold(
+              body: CustomScrollView(
+                slivers: [
+                  BalancesDisplay(
+                    isDarkTheme: false,
+                    currentAddress: address.address,
+                    initialItemCount: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Wait for the widget tree to build
+      await tester.pumpAndSettle();
+
+      // Test unlocked asset menu
+      await tester.tap(find.byType(PopupMenuButton<IssuanceActionType>).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reset Asset'), findsOneWidget);
+      expect(find.text('Lock Quantity'), findsOneWidget);
+      expect(find.text('Lock Description'), findsOneWidget);
+      expect(find.text('Change Description'), findsOneWidget);
+      expect(find.text('Issue More'), findsOneWidget);
+      expect(find.text('Issue Subasset'), findsOneWidget);
+      expect(find.text('Transfer Ownership'), findsOneWidget);
+
+      // All menu items should be enabled for unlocked asset
+      final menuItems = find.byType(PopupMenuItem<String>);
+      for (final menuItem in menuItems.evaluate()) {
+        expect((menuItem.widget as PopupMenuItem<String>).enabled, isTrue);
+      }
+
+      // Dismiss the menu
+      await tester.tapAt(const Offset(0, 0));
+      await tester.pumpAndSettle();
+
+      // Test locked asset menu
+      await tester.tap(find.byType(PopupMenuButton<IssuanceActionType>).at(1));
+      await tester.pumpAndSettle();
+
+      // Most items should be disabled for locked asset except Transfer Ownership
+      final lockedMenuItems = find.byType(PopupMenuItem<String>);
+      for (final menuItem in lockedMenuItems.evaluate()) {
+        final popupMenuItem = menuItem.widget as PopupMenuItem<String>;
+        if (popupMenuItem.child is Text &&
+            ((popupMenuItem.child as Text).data == 'Transfer Ownership' ||
+                (popupMenuItem.child as Text).data == 'Issue Subasset')) {
+          expect(popupMenuItem.enabled, isTrue);
+        } else {
+          expect(popupMenuItem.enabled, isFalse);
+        }
+      }
+
+      // Dismiss the menu
+      await tester.tapAt(const Offset(0, 0));
+      await tester.pumpAndSettle();
+
+      // Test fairminted asset menu
+      await tester.tap(find.byType(PopupMenuButton<IssuanceActionType>).last);
+      await tester.pumpAndSettle();
+
+      // Most items should be disabled for fairminted asset except Transfer Ownership
+      final fairmintMenuItems = find.byType(PopupMenuItem<String>);
+      for (final menuItem in fairmintMenuItems.evaluate()) {
+        final popupMenuItem = menuItem.widget as PopupMenuItem<String>;
+        if (popupMenuItem.child is Text &&
+            ((popupMenuItem.child as Text).data == 'Transfer Ownership' ||
+                (popupMenuItem.child as Text).data == 'Issue Subasset')) {
+          expect(popupMenuItem.enabled, isTrue);
+        } else {
+          expect(popupMenuItem.enabled, isFalse);
+        }
+      }
     });
   });
 }

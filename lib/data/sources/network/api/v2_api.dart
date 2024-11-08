@@ -655,7 +655,7 @@ class NewFairminterEvent extends Event {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class NewFairminterParams {
-  final String asset;
+  final String? asset;
   final String? assetLongname;
   final String? assetParent;
   final int? blockIndex;
@@ -3303,6 +3303,16 @@ abstract class V2Api {
 
   @GET("/fairminters?verbose=true")
   Future<Response<List<FairminterModel>>> getAllFairminters([
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+  ]);
+
+  @GET("/addresses/{address}/fairminters?verbose=true")
+  Future<Response<List<FairminterModel>>> getFairmintersByAddress(
+    @Path("address") String address, [
+    @Query("status") String? status,
     @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,

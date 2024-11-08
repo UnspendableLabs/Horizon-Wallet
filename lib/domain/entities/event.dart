@@ -354,7 +354,7 @@ class VerboseNewFairmintParams extends NewFairmintParams {
 }
 
 class NewFairminterParams {
-  final String asset;
+  final String? asset;
   final String? assetLongname;
   final String? assetParent;
   final int? blockIndex;

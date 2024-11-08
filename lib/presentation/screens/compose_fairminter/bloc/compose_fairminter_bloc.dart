@@ -58,6 +58,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
           assetState: const AssetState.initial(),
+          fairmintersState: const FairmintersState.initial(),
         ));
 
   @override
@@ -66,16 +67,24 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         assetState: const AssetState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const SubmitInitial(),
+        fairmintersState: const FairmintersState.loading()));
 
     try {
-      final (assets, feeEstimates) =
+      final (assets, feeEstimates, fairminters) =
           await fetchFairminterFormDataUseCase.call(event.currentAddress!);
+
+      final fairminterAssets =
+          fairminters.map((fairminter) => fairminter.asset).toList();
+      final validAssets = assets
+          .where((asset) => !fairminterAssets.contains(asset.asset))
+          .toList();
 
       emit(state.copyWith(
         balancesState: const BalancesState.success([]),
         feeState: FeeState.success(feeEstimates),
-        assetState: AssetState.success(assets),
+        assetState: AssetState.success(validAssets),
+        fairmintersState: FairmintersState.success(fairminters),
       ));
     } on FetchAssetsException catch (e) {
       emit(state.copyWith(
@@ -85,6 +94,10 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
       ));
+    } on FetchFairmintersException catch (e) {
+      emit(state.copyWith(
+        fairmintersState: FairmintersState.error(e.message),
+      ));
     } catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(
@@ -93,6 +106,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
             AssetState.error('An unexpected error occurred: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),
+        fairmintersState: FairmintersState.error(
+            'An unexpected error occurred: ${e.toString()}'),
       ));
     }
   }
@@ -198,12 +213,12 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('fairminter broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_fairminter');
+
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_fairminter');
         },
         onError: (msg) {
           emit(state.copyWith(

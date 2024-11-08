@@ -16,6 +16,7 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 
 class ComposeIssuanceEventParams {
   final String name;
@@ -45,6 +46,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final Logger logger;
+  final FetchIssuanceFormDataUseCase fetchIssuanceFormDataUseCase;
 
   ComposeIssuanceBloc(
       {required this.balanceRepository,
@@ -55,7 +57,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       required this.composeTransactionUseCase,
       required this.signAndBroadcastTransactionUseCase,
       required this.writelocalTransactionUseCase,
-      required this.logger})
+      required this.logger,
+      required this.fetchIssuanceFormDataUseCase})
       : super(ComposeIssuanceState(
             submitState: const SubmitInitial(),
             feeOption: FeeOption.Medium(),
@@ -86,36 +89,31 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   @override
   void onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
-        balancesState: const BalancesState.loading(),
-        submitState: const SubmitInitial()));
-
-    late List<Balance> balances;
-    late FeeEstimates feeEstimates;
+      balancesState: const BalancesState.loading(),
+      feeState: const FeeState.loading(),
+      submitState: const SubmitInitial(),
+    ));
 
     try {
-      List<String> addresses = [event.currentAddress!];
+      final (assets, feeEstimates) =
+          await fetchIssuanceFormDataUseCase.call(event.currentAddress!);
 
-      balances = await balanceRepository.getBalancesForAddress(addresses[0]);
+      emit(state.copyWith(
+        balancesState: const BalancesState.success([]),
+        feeState: FeeState.success(feeEstimates),
+      ));
+    } on FetchFeeEstimatesException catch (e) {
+      emit(state.copyWith(
+        feeState: FeeState.error(e.message),
+      ));
     } catch (e) {
       emit(state.copyWith(
-        balancesState: BalancesState.error(e.toString()),
+        balancesState: BalancesState.error(
+            'An unexpected error occurred: ${e.toString()}'),
+        feeState:
+            FeeState.error('An unexpected error occurred: ${e.toString()}'),
       ));
-      return;
     }
-
-    try {
-      feeEstimates = await getFeeEstimatesUseCase.call(
-        targets: (1, 3, 6),
-      );
-    } catch (e) {
-      emit(state.copyWith(feeState: FeeState.error(e.toString())));
-      return;
-    }
-
-    emit(state.copyWith(
-      balancesState: BalancesState.success(balances),
-      feeState: FeeState.success(feeEstimates),
-    ));
   }
 
   @override
@@ -205,12 +203,12 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('issuance broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_issue');
+
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_issue');
         },
         onError: (msg) {
           emit(state.copyWith(

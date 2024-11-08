@@ -50,4 +50,31 @@ class FairminterRepositoryImpl implements FairminterRepository {
 
     return fairminters;
   }
+
+  @override
+  TaskEither<String, List<e.Fairminter>> getFairmintersByAddress(
+      String address, String? status) {
+    return TaskEither.tryCatch(() => _getFairmintersByAddress(address, status),
+        (error, stacktrace) {
+      logger?.error(
+          "FairmintRepositoryImpl.getFairmintersByAddress", null, stacktrace);
+      return "GetFairmintersByAddress failure";
+    });
+  }
+
+  Future<List<e.Fairminter>> _getFairmintersByAddress(
+      String address, String? status) async {
+    int limit = 50;
+    cursor_model.CursorModel? cursor;
+    final List<e.Fairminter> fairminters = [];
+    do {
+      final response = await api.getFairmintersByAddress(
+          address, status, null, cursor, limit);
+      for (FairminterModel a in response.result ?? []) {
+        fairminters.add(a.toDomain());
+      }
+      cursor = response.nextCursor;
+    } while (cursor != null);
+    return fairminters;
+  }
 }

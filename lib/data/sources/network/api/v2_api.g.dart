@@ -595,7 +595,7 @@ Map<String, dynamic> _$NewFairminterEventToJson(NewFairminterEvent instance) =>
 
 NewFairminterParams _$NewFairminterParamsFromJson(Map<String, dynamic> json) =>
     NewFairminterParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
       assetParent: json['asset_parent'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
@@ -679,7 +679,7 @@ Map<String, dynamic> _$VerboseNewFairminterEventToJson(
 VerboseNewFairminterParams _$VerboseNewFairminterParamsFromJson(
         Map<String, dynamic> json) =>
     VerboseNewFairminterParams(
-      asset: json['asset'] as String,
+      asset: json['asset'] as String?,
       assetLongname: json['asset_longname'] as String?,
       assetParent: json['asset_parent'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
@@ -3688,6 +3688,55 @@ class _V2Api implements V2Api {
             .compose(
               _dio.options,
               '/fairminters?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<FairminterModel>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<FairminterModel>(
+                  (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<List<FairminterModel>>> getFairmintersByAddress(
+    String address, [
+    String? status,
+    bool? showUnconfirmed,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'status': status,
+      r'show_unconfirmed': showUnconfirmed,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<FairminterModel>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/fairminters?verbose=true',
               queryParameters: queryParameters,
               data: _data,
             )

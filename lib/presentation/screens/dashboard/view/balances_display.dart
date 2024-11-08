@@ -150,7 +150,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated, ownedAssets) {
+      ok: (balances, aggregated, ownedAssets, fairminters) {
         if (balances.isEmpty && ownedAssets.isEmpty) {
           return [
             const NoData(
@@ -179,6 +179,9 @@ class BalancesSliverState extends State<BalancesSliver> {
             .where((asset) =>
                 !orderedEntries.any((entry) => entry.key == asset.asset))
             .toList();
+
+        final fairminterAssets =
+            fairminters.map((fairminter) => fairminter.asset!).toList();
 
         final List<TableRow> rows = [];
         final balanceRows = orderedEntries
@@ -210,7 +213,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   isClickable, textColor),
               _buildTableCell2(entry.value.quantityNormalized, textColor),
               _buildTableCell3(entry.key, textColor, isOwner, currentOwnedAsset,
-                  entry.value.quantity)
+                  entry.value.quantity, fairminterAssets)
             ],
           );
         }).toList();
@@ -227,7 +230,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                   asset.asset, asset.assetLongname, true, textColor),
               _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
                   textColor), // these are zero balances
-              _buildTableCell3(asset.asset, textColor, true, asset, 0)
+              _buildTableCell3(
+                  asset.asset, textColor, true, asset, 0, fairminterAssets)
             ],
           );
         }).toList();
@@ -291,10 +295,10 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   bool _matchesSearch(String assetName, String? assetLongname) {
     final searchTerm = widget.searchTerm.toLowerCase();
-    return assetName.toLowerCase().startsWith(searchTerm) ||
+    return assetName.toLowerCase().contains(searchTerm) ||
         (assetLongname != null &&
             assetLongname.isNotEmpty &&
-            assetLongname.toLowerCase().startsWith(searchTerm));
+            assetLongname.toLowerCase().contains(searchTerm));
   }
 
   bool _isOwned(Asset? asset) {
@@ -370,7 +374,7 @@ class BalancesSliverState extends State<BalancesSliver> {
       );
 
   TableCell _buildTableCell3(String assetName, Color textColor, bool isOwner,
-      Asset? currentOwnedAsset, int quantity) {
+      Asset? currentOwnedAsset, int quantity, List<String> fairminterAssets) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: Container(
@@ -428,27 +432,32 @@ class BalancesSliverState extends State<BalancesSliver> {
                     <PopupMenuEntry<IssuanceActionType>>[
                   PopupMenuItem<IssuanceActionType>(
                     value: IssuanceActionType.reset,
-                    enabled: currentOwnedAsset?.locked != true,
+                    enabled: currentOwnedAsset?.locked != true &&
+                        !fairminterAssets.contains(currentOwnedAsset?.asset),
                     child: const Text('Reset Asset'),
                   ),
                   PopupMenuItem<IssuanceActionType>(
                     value: IssuanceActionType.lockQuantity,
-                    enabled: currentOwnedAsset?.locked != true,
+                    enabled: currentOwnedAsset?.locked != true &&
+                        !fairminterAssets.contains(currentOwnedAsset?.asset),
                     child: const Text('Lock Quantity'),
                   ),
                   PopupMenuItem<IssuanceActionType>(
                     value: IssuanceActionType.lockDescription,
-                    enabled: currentOwnedAsset?.locked != true,
+                    enabled: currentOwnedAsset?.locked != true &&
+                        !fairminterAssets.contains(currentOwnedAsset?.asset),
                     child: const Text('Lock Description'),
                   ),
                   PopupMenuItem<IssuanceActionType>(
                     value: IssuanceActionType.changeDescription,
-                    enabled: currentOwnedAsset?.locked != true,
+                    enabled: currentOwnedAsset?.locked != true &&
+                        !fairminterAssets.contains(currentOwnedAsset?.asset),
                     child: const Text('Change Description'),
                   ),
                   PopupMenuItem<IssuanceActionType>(
                     value: IssuanceActionType.issueMore,
-                    enabled: currentOwnedAsset?.locked != true,
+                    enabled: currentOwnedAsset?.locked != true &&
+                        !fairminterAssets.contains(currentOwnedAsset?.asset),
                     child: const Text('Issue More'),
                   ),
                   const PopupMenuItem<IssuanceActionType>(
