@@ -84,7 +84,6 @@ dependencies:
   formz: ^0.8.0
   chrome_extension: ^0.4.0
   process_runner: ^4.2.0
-  formz: ^0.8.0
 
 
 dev_dependencies:

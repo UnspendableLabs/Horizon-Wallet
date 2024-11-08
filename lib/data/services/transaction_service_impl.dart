@@ -54,8 +54,6 @@ class TransactionServiceImpl implements TransactionService {
           (SIGHASH_ALL | SIGHASH_ANYONECANPAY).toJS
         ].toJS);
 
-    psbt.finalizeAllInputs();
-
     return psbt.toHex();
   }
 

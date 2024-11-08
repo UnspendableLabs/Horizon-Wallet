@@ -1256,7 +1256,6 @@ class DashboardPageState extends State<DashboardPage> {
           _handleDispenseAction(address),
       URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
           _handleFairmintAction(fairminterTxHash),
-<<<<<<< HEAD
       URLAction.OpenOrderAction(
         giveQuantity: var giveQuantity,
         giveAsset: var giveAsset,
@@ -1265,7 +1264,6 @@ class DashboardPageState extends State<DashboardPage> {
       ) =>
         () =>
             _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
-=======
       URLAction.RPCGetAddressesAction(
         tabId: var tabId,
         requestId: var requestId
@@ -1277,7 +1275,6 @@ class DashboardPageState extends State<DashboardPage> {
         psbt: var psbt
       ) =>
         () => _handleRPCSignPsbtAction(tabId, requestId, psbt),
->>>>>>> 96f6d3c5 (wip: e2e flow)
       _ => noop
     };
   }
