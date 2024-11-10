@@ -23,3 +23,7 @@ class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
     required this.feeRate,
   });
 }
+
+class BroadcastTransactions extends ComposeDispenserOnNewAddressEvent {
+
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
@@ -12,6 +13,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
@@ -20,6 +22,7 @@ import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bl
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -57,6 +60,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         utxoRepository: GetIt.I.get<UtxoRepository>(),
         composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
         signTransactionUseCase: GetIt.I.get<SignTransactionUseCase>(),
+        transactionService: GetIt.I.get<TransactionService>(),
       ),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
@@ -118,7 +122,26 @@ class _ComposeDispenserOnNewAddressPageState
     return BlocListener<ComposeDispenserOnNewAddressBloc,
         ComposeDispenserOnNewAddressStateBase>(
       listener: (context, state) {
-        // TODO: implement listener
+        state.composeDispenserOnNewAddressState.maybeWhen(
+          success: () async {
+            Navigator.of(context).pop();
+            context.read<ShellStateCubit>().refreshAndSelectNewAddress(
+                state.newAddress!.address, state.newAccount!.uuid);
+             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: 'Success',
+                  onPressed: () {
+                    // Clipboard.setData(ClipboardData(text: txHash));
+                  },
+                ),
+                content: const Text('Success'),
+                behavior: SnackBarBehavior.floating));
+                                  await Future.delayed(const Duration(milliseconds: 500));
+
+          },
+          orElse: () {},
+        );
       },
       child: BlocBuilder<ComposeDispenserOnNewAddressBloc,
           ComposeDispenserOnNewAddressStateBase>(
@@ -166,9 +189,7 @@ class _ComposeDispenserOnNewAddressPageState
                 composeSendTransaction2,
                 composeDispenserTransaction,
                 fee,
-                feeRate,
-                totalVirtualSize,
-                totalAdjustedVirtualSize) {
+                ) {
               final send1Params =
                   (composeSendTransaction1 as ComposeSendResponse).params;
               final send2Params =
@@ -318,6 +339,23 @@ class _ComposeDispenserOnNewAddressPageState
                     enabled: false,
                   ),
                   const SizedBox(height: 16.0),
+                              HorizonUI.HorizonTextFormField(
+                    label: "Fee ",
+                    controller: TextEditingController(
+                      text: "$fee sats",
+                    ),
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildBackContinueButtons(
+                      loading: false,
+                      onBack: () {
+                        Navigator.of(context).pop();
+                      },
+                      onContinue:
+                             () {
+                              context.read<ComposeDispenserOnNewAddressBloc>().add(BroadcastTransactions());
+                            }),
                 ],
               );
             },

@@ -13,6 +13,9 @@ class ComposeDispenserOnNewAddressStateBase
     @Default('') String password,
     @Default(null) Account? newAccount,
     @Default(null) Address? newAddress,
+    @Default(null) String? signedBtcSend,
+    @Default(null) String? signedAssetSend,
+    @Default(null) String? signedDispenser,
     @Default(ComposeDispenserOnNewAddressState.initial())
     composeDispenserOnNewAddressState,
   }) = _ComposeDispenserOnNewAddressStateBase;
@@ -32,15 +35,17 @@ class ComposeDispenserOnNewAddressState<T>
     required T composeSendTransaction2,
     required T composeDispenserTransaction,
     required int fee,
-    required int feeRate,
-    required int totalVirtualSize,
-    required int totalAdjustedVirtualSize,
+    // required int feeRate,
+    // required int totalVirtualSize,
+    // required int totalAdjustedVirtualSize,
   }) = _ComposeDispenserOnNewAddressStateConfirm;
   const factory ComposeDispenserOnNewAddressState.error(String error) =
       _ComposeDispenserOnNewAddressStateError;
   const factory ComposeDispenserOnNewAddressState.collectPassword(
       {String? error,
       bool? loading}) = _ComposeDispenserOnNewAddressStateCollectPassword;
+  const factory ComposeDispenserOnNewAddressState.success() =
+      _ComposeDispenserOnNewAddressStateSuccess;
 }
 
 /// FeeState represents the state of fee estimation.

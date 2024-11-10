@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
@@ -13,6 +15,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
@@ -33,6 +36,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final UtxoRepository utxoRepository;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignTransactionUseCase signTransactionUseCase;
+  final TransactionService transactionService;
 
   ComposeDispenserOnNewAddressBloc({
     required this.accountRepository,
@@ -45,6 +49,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.utxoRepository,
     required this.composeTransactionUseCase,
     required this.signTransactionUseCase,
+    required this.transactionService,
   }) : super(const ComposeDispenserOnNewAddressStateBase(
           composeDispenserOnNewAddressState:
               ComposeDispenserOnNewAddressState.collectPassword(loading: false),
@@ -70,9 +75,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       final wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
-        emit(const ComposeDispenserOnNewAddressStateBase(
-            composeDispenserOnNewAddressState:
-                ComposeDispenserOnNewAddressState.error('Wallet not found')));
+        emit(state.copyWith(composeDispenserOnNewAddressState:
+            const ComposeDispenserOnNewAddressState.error('Wallet not found')));
         return;
       }
 
@@ -81,9 +85,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         decryptedPrivKey = await encryptionService.decrypt(
             wallet.encryptedPrivKey, event.password);
       } catch (e) {
-        emit(const ComposeDispenserOnNewAddressStateBase(
-            composeDispenserOnNewAddressState:
-                ComposeDispenserOnNewAddressState.collectPassword(
+        emit(state.copyWith(composeDispenserOnNewAddressState:
+            const ComposeDispenserOnNewAddressState.collectPassword(
                     error: 'Invalid password', loading: false)));
         return;
       }
@@ -146,7 +149,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         // Step 2. Send btc to the new address to cover fees
         final bitcoinSendResponse = await composeTransactionUseCase
             .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: 0, //
+          feeRate: 3, // minrelaytxfee  is 0.00001 BTC / Kb (1 satoshi/byte)
           source: source,
           params: ComposeSendParams(
             source: source,
@@ -158,6 +161,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         );
 
         final bitcoinSend = bitcoinSendResponse.$1;
+        final virtualSize = bitcoinSendResponse.$2;
 
         // sign + decode the btc send
         final signedBitcoinSendHex = await signTransactionUseCase.call(
@@ -166,12 +170,22 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           password: event.password,
         );
 
+        emit(state.copyWith(signedBtcSend: signedBitcoinSendHex));
+        // final virtualSize = transactionService.getVirtualSize(bitcoinSend.rawtransaction);
+
+        // final sigops = transactionService.countSigOps(
+        //   rawtransaction: bitcoinSend.rawtransaction,
+        // );
+
+        final feeForAssetSend = virtualSize.adjustedVirtualSize * 1;
+        // final adjustedVirtualSizeBtcSend = max(virtualSize, sigops * 5);
+
         final decodedSignedBitcoinSend =
             await bitcoindService.decoderawtransaction(signedBitcoinSendHex);
 
         // Step 3. Send the asset that will be dispensed to the new address
         final assetSendResponse = await composeRepository.composeSendChain(
-          0,
+          400,
           decodedSignedBitcoinSend,
           'BTC',
           ComposeSendParams(
@@ -191,13 +205,37 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           prevAssetSend: 'BTC',
         );
 
+        emit(state.copyWith(signedAssetSend: signedAssetSendHex));
+
         final decodedSignedAssetSend =
             await bitcoindService.decoderawtransaction(signedAssetSendHex);
+
+        // final virtualSizeAssetSend = transactionService.getVirtualSize(assetSendResponse.rawtransaction);
+
+        // final sigopsAssetSend = transactionService.countSigOps(
+        //   rawtransaction: assetSendResponse.rawtransaction,
+        // );
+
+        // final adjustedVirtualSizeAssetSend = max(virtualSizeAssetSend, sigopsAssetSend * 5);
+
+
+        // Now that we have some actual virtual sizes, we can adjust the fee to cover all transactions. They should be smaller than the original estimated fee
+        // final adjustedFeeToCoverAllTransactions = event.feeRate *
+        //     (adjustedVirtualSizeBtcSend + adjustedVirtualSizeAssetSend + 300); // 300 is an overestimated guess for the dispenser send
+
+        // if (adjustedFeeToCoverAllTransactions > estimatedFeeToCoverAllTransactions) {
+        //   // TODO: fix
+        //   emit(state.copyWith(composeDispenserOnNewAddressState:
+        //       const ComposeDispenserOnNewAddressState.error(
+        //               'Fee too low to cover all transactions')));
+        //   return;
+        // }
+        // final adjustedFeeForDispenser = adjustedVirtualSizeAssetSend * event.feeRate;
 
         // Step 4. Create the dispenser on the new address
         final ComposeDispenserResponseVerbose composeDispenserResponse =
             await composeRepository.composeDispenserChain(
-          feeToCoverAllTransactions,
+          600,
           decodedSignedAssetSend,
           ComposeDispenserParams(
             source: destination, // open dispenser on the new address
@@ -219,19 +257,51 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           prevAssetSend: assetToSend,
         );
 
-        print('signedDispenserHex: $signedDispenserHex');
+        emit(state.copyWith(signedDispenser: signedDispenserHex));
+
+        emit(state.copyWith(composeDispenserOnNewAddressState:
+            ComposeDispenserOnNewAddressState.confirm(
+                    newAccountName: newAccount.name,
+                    newAddress: newAddress.address,
+                    composeSendTransaction1: bitcoinSend,
+                    composeSendTransaction2: assetSendResponse,
+                    composeDispenserTransaction: composeDispenserResponse,
+                    fee: feeToCoverAllTransactions)));
       } on SignTransactionException catch (e) {
-        emit(ComposeDispenserOnNewAddressStateBase(
-            composeDispenserOnNewAddressState:
-                ComposeDispenserOnNewAddressState.error(e.message)));
+        emit(state.copyWith(composeDispenserOnNewAddressState:
+            ComposeDispenserOnNewAddressState.error(e.message)));
       } catch (e) {
-        emit(ComposeDispenserOnNewAddressStateBase(
-            composeDispenserOnNewAddressState:
-                ComposeDispenserOnNewAddressState.error(
+        emit(state.copyWith(composeDispenserOnNewAddressState:
+            ComposeDispenserOnNewAddressState.error(
                     e is ComposeTransactionException
                         ? e.message
                         : 'An unexpected error occurred: ${e.toString()}')));
       }
+    });
+    on<BroadcastTransactions>((event, emit) async {
+      emit(state.copyWith(
+          composeDispenserOnNewAddressState:
+              const ComposeDispenserOnNewAddressState.loading()));
+      print('DO WE GET HERE???');
+      await accountRepository.insert(state.newAccount!);
+      await addressRepository.insert(state.newAddress!);
+
+
+      print('AFTER INSERT');
+
+      await bitcoindService.sendrawtransaction(state.signedBtcSend!);
+
+      Future.delayed(const Duration(seconds: 10));
+      await bitcoindService.sendrawtransaction(state.signedAssetSend!);
+
+      Future.delayed(const Duration(seconds: 10));
+      await bitcoindService.sendrawtransaction(state.signedDispenser!);
+
+      print('AFTER SEND');
+
+      emit(state.copyWith(
+          composeDispenserOnNewAddressState:
+              const ComposeDispenserOnNewAddressState.success()));
     });
   }
 }

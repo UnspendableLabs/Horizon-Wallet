@@ -62,16 +62,23 @@ class SignTransactionUseCase {
       List<Utxo>? utxosToSign;
 
       if (prevDecodedTransaction != null) {
-        final voutIndex = prevAssetSend == 'BTC' ? 0 : 1;
+        // final voutIndex = prevAssetSend == 'BTC' ? 0 : 1;
         // for chaining transactions, we construct the utxo to use based on the previous transaction output
-        final vout = prevDecodedTransaction.vout[voutIndex];
+        final vout0 = prevDecodedTransaction.vout[0];
+        final vout1 = prevDecodedTransaction.vout[1];
         utxosToSign = [
           Utxo(
               txid: prevDecodedTransaction.txid,
-              vout: vout.n,
+              vout: vout0.n,
               height: null,
-              value: (vout.value * 100000000).toInt(),
-              address: vout.scriptPubKey.address!)
+              value: (vout0.value * 100000000).toInt(),
+              address: vout1.scriptPubKey.address!),
+          Utxo(
+              txid: prevDecodedTransaction.txid,
+              vout: vout1.n,
+              height: null,
+              value: (vout1.value * 100000000).toInt(),
+              address: vout1.scriptPubKey.address!)
         ];
       } else {
         // otherwise, fetch the utxos for the source address
