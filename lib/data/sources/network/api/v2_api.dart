@@ -4,6 +4,7 @@ import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
+import 'package:horizon/data/models/compose_order.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/fairminter.dart';
@@ -3345,6 +3346,21 @@ abstract class V2Api {
     @Query("status") int status, [
     @Query("open_address") String? openAddress,
     @Query("oracle_address") String? oracleAddress,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
+  @GET("/addresses/{address}/compose/order?verbose=true")
+  Future<Response<ComposeOrderResponseModel>> composeOrder(
+    @Path("address") String address,
+    @Query("give_asset") String giveAsset,
+    @Query("give_quantity") int giveQuantity,
+    @Query("get_asset") String getAsset,
+    @Query("get_quantity") int getQuantity,
+    @Query("expiration") int expiration,
+    @Query("fee_required") int feeRequired, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,

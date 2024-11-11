@@ -3878,6 +3878,61 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<ComposeOrderResponseModel>> composeOrder(
+    String address,
+    String giveAsset,
+    int giveQuantity,
+    String getAsset,
+    int getQuantity,
+    int expiration,
+    int feeRequired, [
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'give_asset': giveAsset,
+      r'give_quantity': giveQuantity,
+      r'get_asset': getAsset,
+      r'get_quantity': getQuantity,
+      r'expiration': expiration,
+      r'fee_required': feeRequired,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeOrderResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/order?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeOrderResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeOrderResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<Dispenser>>> getDispenserByAddress(
     String address, [
     String? status,
