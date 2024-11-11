@@ -1,7 +1,7 @@
-import 'package:test/test.dart';
-import 'package:horizon/domain/repositories/action_repository.dart';
-import 'package:horizon/domain/entities/action.dart';
 import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
+import 'package:horizon/domain/entities/action.dart';
+import 'package:horizon/domain/repositories/action_repository.dart';
+import 'package:test/test.dart';
 
 void main() {
   late ActionRepository actionRepository;

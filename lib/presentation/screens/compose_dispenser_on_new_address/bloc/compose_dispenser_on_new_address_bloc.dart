@@ -146,69 +146,95 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         final feeToCoverAllTransactions = event.feeRate *
             ADJUSTED_VIRTUAL_SIZE; // estimated fee to cover all transactions and the amount of btc to be sent to the new address to cover these fees
 
-        // Step 2. Send btc to the new address to cover fees
-        final bitcoinSendResponse = await composeTransactionUseCase
-            .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: 3, // minrelaytxfee  is 0.00001 BTC / Kb (1 satoshi/byte)
-          source: source,
-          params: ComposeSendParams(
-            source: source,
-            destination: destination,
-            asset: 'BTC',
-            quantity: feeToCoverAllTransactions,
-          ),
-          composeFn: composeRepository.composeSendVerbose,
-        );
+        // // Step 2. Send btc to the new address to cover fees
+        // final bitcoinSendResponse = await composeTransactionUseCase
+        //     .call<ComposeSendParams, ComposeSendResponse>(
+        //   feeRate: 3, // minrelaytxfee  is 0.00001 BTC / Kb (1 satoshi/byte)
+        //   source: source,
+        //   params: ComposeSendParams(
+        //     source: source,
+        //     destination: destination,
+        //     asset: 'BTC',
+        //     quantity: feeToCoverAllTransactions,
+        //   ),
+        //   composeFn: composeRepository.composeSendVerbose,
+        // );
 
-        final bitcoinSend = bitcoinSendResponse.$1;
-        final virtualSize = bitcoinSendResponse.$2;
+        // final bitcoinSend = bitcoinSendResponse.$1;
+        // final virtualSize = bitcoinSendResponse.$2;
+
+        // final decodedBitcoinSendUnsigned = await bitcoindService.decoderawtransaction(bitcoinSend.rawtransaction);
 
         // sign + decode the btc send
-        final signedBitcoinSendHex = await signTransactionUseCase.call(
-          source: source,
-          rawtransaction: bitcoinSend.rawtransaction,
-          password: event.password,
-        );
+        // final signedBitcoinSendHex = await signTransactionUseCase.call(
+        //   source: source,
+        //   rawtransaction: bitcoinSend.rawtransaction,
+        //   password: event.password,
+        // );
 
-        emit(state.copyWith(signedBtcSend: signedBitcoinSendHex));
+        // emit(state.copyWith(signedBtcSend: signedBitcoinSendHex));
         // final virtualSize = transactionService.getVirtualSize(bitcoinSend.rawtransaction);
 
         // final sigops = transactionService.countSigOps(
         //   rawtransaction: bitcoinSend.rawtransaction,
         // );
 
-        final feeForAssetSend = virtualSize.adjustedVirtualSize * 1;
-        // final adjustedVirtualSizeBtcSend = max(virtualSize, sigops * 5);
+        // final feeForAssetSend = virtualSize.adjustedVirtualSize * 1;
+        // // final adjustedVirtualSizeBtcSend = max(virtualSize, sigops * 5);
 
-        final decodedSignedBitcoinSend =
-            await bitcoindService.decoderawtransaction(signedBitcoinSendHex);
+        // final decodedSignedBitcoinSend =
+        //     await bitcoindService.decoderawtransaction(signedBitcoinSendHex);
 
-        // Step 3. Send the asset that will be dispensed to the new address
-        final assetSendResponse = await composeRepository.composeSendChain(
-          400,
-          decodedSignedBitcoinSend,
-          'BTC',
-          ComposeSendParams(
+        // // Step 3. Send the asset that will be dispensed to the new address
+        // final assetSendResponse = await composeRepository.composeSendChain(
+        //   400,
+        //   decodedSignedBitcoinSend,
+        //   'BTC',
+        //   ComposeSendParams(
+        //     source: source,
+        //     destination: destination,
+        //     asset: assetToSend,
+        //     quantity: escrowQuantityToSend,
+        //   ),
+        // );
+
+        final assetSend = await composeTransactionUseCase.call<ComposeSendParams, ComposeSendResponse>(
+          feeRate: event.feeRate,
+          source: source,
+          params: ComposeSendParams(
             source: source,
             destination: destination,
             asset: assetToSend,
             quantity: escrowQuantityToSend,
           ),
+          composeFn: composeRepository.composeSendVerbose,
+        );
+
+        final decodedAssetSend = await bitcoindService.decoderawtransaction(assetSend.$1.rawtransaction);
+
+        final utxos = await utxoRepository.getUnspentForAddress(source);
+
+        final utxoMap = {
+          for (var utxo in utxos) utxo.txid: utxo,
+        };
+
+        final constructedAssetSend = await transactionService.constructTransaction(
+          unsignedTransaction: assetSend.$1.rawtransaction,
+          sourceAddress: source,
+          utxoMap: utxoMap,
         );
 
         // sign + decode the asset send
-        final signedAssetSendHex = await signTransactionUseCase.call(
-          source: source,
-          rawtransaction: assetSendResponse.rawtransaction,
-          password: event.password,
-          prevDecodedTransaction: decodedSignedBitcoinSend,
-          prevAssetSend: 'BTC',
-        );
+        // final signedAssetSendHex = await signTransactionUseCase.call(
+        //   source: source,
+        //   rawtransaction: assetSend.$1.rawtransaction,
+        //   password: event.password,
+        // );
 
-        emit(state.copyWith(signedAssetSend: signedAssetSendHex));
+        // emit(state.copyWith(signedAssetSend: signedAssetSendHex));
 
-        final decodedSignedAssetSend =
-            await bitcoindService.decoderawtransaction(signedAssetSendHex);
+        // final decodedSignedAssetSend =
+        //     await bitcoindService.decoderawtransaction(signedAssetSendHex);
 
         // final virtualSizeAssetSend = transactionService.getVirtualSize(assetSendResponse.rawtransaction);
 
@@ -233,40 +259,40 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         // final adjustedFeeForDispenser = adjustedVirtualSizeAssetSend * event.feeRate;
 
         // Step 4. Create the dispenser on the new address
-        final ComposeDispenserResponseVerbose composeDispenserResponse =
-            await composeRepository.composeDispenserChain(
-          600,
-          decodedSignedAssetSend,
-          ComposeDispenserParams(
-            source: destination, // open dispenser on the new address
-            asset: assetToSend,
-            giveQuantity: assetQuantityToDispense,
-            escrowQuantity: escrowQuantityToSend,
-            mainchainrate: mainchainrate,
-            status: 0,
-          ),
-        );
+        // final ComposeDispenserResponseVerbose composeDispenserResponse =
+        //     await composeRepository.composeDispenserChain(
+        //   600,
+        //   decodedSignedAssetSend,
+        //   ComposeDispenserParams(
+        //     source: destination, // open dispenser on the new address
+        //     asset: assetToSend,
+        //     giveQuantity: assetQuantityToDispense,
+        //     escrowQuantity: escrowQuantityToSend,
+        //     mainchainrate: mainchainrate,
+        //     status: 0,
+        //   ),
+        // );
 
-        // sign the dispenser
-        final signedDispenserHex = await signTransactionUseCase.call(
-          source: destination,
-          rawtransaction: composeDispenserResponse.rawtransaction,
-          password: event.password,
-          prevDecodedTransaction: decodedSignedAssetSend,
-          addressPrivKey: newAddressPrivKey,
-          prevAssetSend: assetToSend,
-        );
+        // // sign the dispenser
+        // final signedDispenserHex = await signTransactionUseCase.call(
+        //   source: destination,
+        //   rawtransaction: composeDispenserResponse.rawtransaction,
+        //   password: event.password,
+        //   prevDecodedTransaction: decodedSignedAssetSend,
+        //   addressPrivKey: newAddressPrivKey,
+        //   prevAssetSend: assetToSend,
+        // );
 
-        emit(state.copyWith(signedDispenser: signedDispenserHex));
+        // emit(state.copyWith(signedDispenser: signedDispenserHex));
 
-        emit(state.copyWith(composeDispenserOnNewAddressState:
-            ComposeDispenserOnNewAddressState.confirm(
-                    newAccountName: newAccount.name,
-                    newAddress: newAddress.address,
-                    composeSendTransaction1: bitcoinSend,
-                    composeSendTransaction2: assetSendResponse,
-                    composeDispenserTransaction: composeDispenserResponse,
-                    fee: feeToCoverAllTransactions)));
+        // emit(state.copyWith(composeDispenserOnNewAddressState:
+        //     ComposeDispenserOnNewAddressState.confirm(
+        //             newAccountName: newAccount.name,
+        //             newAddress: newAddress.address,
+        //             composeSendTransaction1: bitcoinSend,
+        //             composeSendTransaction2: assetSendResponse,
+        //             composeDispenserTransaction: composeDispenserResponse,
+        //             fee: feeToCoverAllTransactions)));
       } on SignTransactionException catch (e) {
         emit(state.copyWith(composeDispenserOnNewAddressState:
             ComposeDispenserOnNewAddressState.error(e.message)));

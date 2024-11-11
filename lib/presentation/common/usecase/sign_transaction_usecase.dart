@@ -64,7 +64,7 @@ class SignTransactionUseCase {
       if (prevDecodedTransaction != null) {
         // final voutIndex = prevAssetSend == 'BTC' ? 0 : 1;
         // for chaining transactions, we construct the utxo to use based on the previous transaction output
-        final vout0 = prevDecodedTransaction.vout[0];
+        // final vout0 = prevDecodedTransaction.vout[0];
         final vout1 = prevDecodedTransaction.vout[1];
         utxosToSign = [
           // Utxo(

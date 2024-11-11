@@ -20,4 +20,10 @@ abstract class TransactionService {
   int countSigOps({
     required String rawtransaction,
   });
+
+  Future<String> constructTransaction(
+      {required String unsignedTransaction,
+      required String sourceAddress,
+      required Map<String, Utxo> utxoMap,
+      });
 }
