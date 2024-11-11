@@ -1,4 +1,3 @@
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -9,7 +8,6 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_event.dart';
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_state.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/fee_estimates.dart';
@@ -66,18 +64,6 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
             feeState: const FeeState.initial(),
             quantity: '')) {
     // Event handlers specific to issuance
-    on<FetchBalances>(_onFetchBalances);
-  }
-
-  _onFetchBalances(FetchBalances event, emit) async {
-    emit(state.copyWith(balancesState: const BalancesState.loading()));
-    try {
-      List<Balance> balances =
-          await balanceRepository.getBalancesForAddress(event.address);
-      emit(state.copyWith(balancesState: BalancesState.success(balances)));
-    } catch (e) {
-      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-    }
   }
 
   @override
@@ -95,11 +81,11 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     ));
 
     try {
-      final (assets, feeEstimates) =
+      final (balances, feeEstimates) =
           await fetchIssuanceFormDataUseCase.call(event.currentAddress!);
 
       emit(state.copyWith(
-        balancesState: const BalancesState.success([]),
+        balancesState: BalancesState.success(balances),
         feeState: FeeState.success(feeEstimates),
       ));
     } on FetchFeeEstimatesException catch (e) {
