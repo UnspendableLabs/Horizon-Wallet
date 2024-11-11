@@ -12,68 +12,6 @@ import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import './open_order_form_bloc.dart';
 
-// class OpenOrderFormWithBloc extends StatelessWidget {
-//   final BalanceRepository balanceRepository;
-//   final AssetRepository assetRepository;
-//   final String currentAddress;
-//   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
-//
-//   final String? initialGiveAsset;
-//   final int? initialGiveQuantity;
-//   final String? initialGetAsset;
-//   final int? initialGetQuantity;
-//   final void Function(SubmitArgs) onFormSubmitted;
-//   final String? submissionError;
-//
-//   const OpenOrderFormWithBloc(
-//       {super.key,
-//       required this.assetRepository,
-//       required this.balanceRepository,
-//       required this.currentAddress,
-//       required this.getFeeEstimatesUseCase,
-//       required this.onFormSubmitted,
-//       this.initialGiveAsset,
-//       this.initialGiveQuantity,
-//       this.initialGetAsset,
-//       this.initialGetQuantity,
-//       this.submissionError});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocProvider(
-//       create: (context) {
-//         return OpenOrderFormBloc(
-//             onFormSubmitted: onFormSubmitted,
-//             onFormS
-//             onFormCancelled: () {
-//               // TODO: could move this up the tree
-//               Navigator.of(context).pop();
-//             },
-//             getFeeEstimatesUseCase: getFeeEstimatesUseCase,
-//             assetRepository: assetRepository,
-//             balanceRepository: balanceRepository,
-//             currentAddress: currentAddress)
-//           ..add(InitializeForm(params: _getInitializeParams()));
-//       },
-//       child: OpenOrderForm(),
-//     );
-//   }
-//
-//   _getInitializeParams() {
-//     if (initialGiveAsset != null &&
-//         initialGiveQuantity != null &&
-//         initialGetAsset != null &&
-//         initialGetQuantity != null) {
-//       return InitializeParams(
-//         initialGiveAsset: initialGiveAsset!,
-//         initialGiveQuantity: initialGiveQuantity!,
-//         initialGetQuantity: initialGetQuantity!,
-//         initialGetAsset: initialGetAsset!,
-//       );
-//     }
-//   }
-// }
-
 class OpenOrderForm extends StatefulWidget {
   final String? submissionError;
 
@@ -275,6 +213,9 @@ class GiveAssetInputField extends StatelessWidget {
           return Center(child: CircularProgressIndicator());
         } else if (state.giveAssets is Success<List<Balance>>) {
           final giveAssets = (state.giveAssets as Success<List<Balance>>).data;
+          final hasError =
+              !state.giveAsset.isPure && state.giveAsset.error != null;
+          final errorMessage = 'Please select an asset';
 
           return HorizonUI.HorizonDropdownMenu<String>(
             enabled: true,
@@ -293,6 +234,8 @@ class GiveAssetInputField extends StatelessWidget {
               return HorizonUI.buildDropdownMenuItem(
                   balance.asset, balance.asset);
             }).toList(),
+            errorText: hasError ? errorMessage : null,
+            helperText: hasError ? null : ' ',
           );
         } else if (state.giveAssets is Failure) {
           return Text('Failed to load assets',
@@ -313,9 +256,9 @@ class GetAssetInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      // buildWhen: (previous, current) =>
-      //     previous.getAsset != current.getAsset ||
-      //     previous.getAssetValidationStatus != current.getAssetValidationStatus,
+      buildWhen: (previous, current) =>
+          previous.getAsset != current.getAsset ||
+          previous.getAssetValidationStatus != current.getAssetValidationStatus,
       builder: (context, state) {
         return TextField(
           controller: controller,
@@ -323,6 +266,7 @@ class GetAssetInputField extends StatelessWidget {
               context.read<OpenOrderFormBloc>().add(GetAssetChanged(value)),
           decoration: InputDecoration(
               labelText: 'Get Asset',
+              helperText: " ",
               errorText: state.getAssetValidationStatus is Failure
                   ? 'Asset not found'
                   : null,
@@ -357,6 +301,12 @@ class GiveQuantityInputField extends StatelessWidget {
       builder: (context, state) {
         final isDivisible = state.giveQuantity.isDivisible; //
         final isAssetSelected = state.giveAsset.value.isNotEmpty;
+        final hasError =
+            !state.giveQuantity.isPure && state.giveQuantity.isNotValid;
+        final errorMessage = state.giveQuantity.error ==
+                GiveQuantityValidationError.exceedsBalance
+            ? 'Quantity exceeds available balance'
+            : 'Invalid quantity';
 
         return TextField(
           controller: controller,
@@ -364,13 +314,8 @@ class GiveQuantityInputField extends StatelessWidget {
               context.read<OpenOrderFormBloc>().add(GiveQuantityChanged(value)),
           decoration: InputDecoration(
             labelText: 'Give Quantity',
-            errorText:
-                !state.giveQuantity.isPure && state.giveQuantity.isNotValid
-                    ? state.giveQuantity.error ==
-                            GiveQuantityValidationError.exceedsBalance
-                        ? 'Quantity exceeds available balance'
-                        : 'Invalid quantity'
-                    : null,
+            errorText: hasError ? errorMessage : null,
+            helperText: hasError ? null : ' ',
           ),
           keyboardType: isDivisible
               ? TextInputType.numberWithOptions(decimal: true)
@@ -396,6 +341,8 @@ class GetQuantityInputField extends StatelessWidget {
       builder: (context, state) {
         final isDivisible = state.getQuantity.isDivisible; //
         final isAssetSelected = state.getAsset.value.isNotEmpty;
+        final hasError =
+            !state.getQuantity.isPure && state.getQuantity.isNotValid;
 
         return TextField(
           controller: controller,
@@ -403,9 +350,8 @@ class GetQuantityInputField extends StatelessWidget {
               context.read<OpenOrderFormBloc>().add(GetQuantityChanged(value)),
           decoration: InputDecoration(
             labelText: 'Get Quantity',
-            errorText: !state.getQuantity.isPure && state.getQuantity.isNotValid
-                ? 'Invalid quantity'
-                : null,
+            errorText: hasError ? 'Invalid quantity' : null,
+            helperText: hasError ? null : ' ',
             // errorText: state.quantity.invalid ? 'Invalid quantity' : null,
           ),
           keyboardType: isDivisible

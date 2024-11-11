@@ -1160,7 +1160,7 @@ class DashboardPageState extends State<DashboardPage> {
     HorizonUI.HorizonDialog.show(
       context: context,
       body: HorizonUI.HorizonDialog(
-        title: "Open Buy Order",
+        title: "Open Order",
         body: ComposeOrderPageWrapper(
           currentAddress: widget.currentAddress?.address ??
               widget.currentImportedAddress!.address,
