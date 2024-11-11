@@ -452,12 +452,12 @@ class OrderButtonMenu extends StatelessWidget {
             ),
             itemBuilder: (context) => [
               PopupMenuItem(
-                  child: const Text("Open Buy Order"),
+                  child: const Text("Open Order"),
                   onTap: () {
                     HorizonUI.HorizonDialog.show(
                       context: context,
                       body: HorizonUI.HorizonDialog(
-                        title: "Open Buy Order",
+                        title: "Open Order",
                         body: ComposeOrderPageWrapper(
                           composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
                           currentAddress: currentAddress,
