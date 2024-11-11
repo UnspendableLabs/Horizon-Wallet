@@ -523,8 +523,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       "give_quantity": giveQuantity,
     };
 
-
-  print(submissionData);
+    print(submissionData);
 
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
@@ -544,7 +543,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.initial));
     onFormCancelled();
   }
-
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {

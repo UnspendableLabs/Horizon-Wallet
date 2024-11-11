@@ -34,11 +34,21 @@ class ComposeOrderPageWrapper extends StatelessWidget {
   final AssetRepository assetRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
 
+
+  final String? initialGiveAsset;
+  final int? initialGiveQuantity;
+  final String? initialGetAsset;
+  final int? initialGetQuantity;
+
   const ComposeOrderPageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.currentAddress,
     required this.getFeeEstimatesUseCase,
     required this.assetRepository,
+    this.initialGiveAsset,
+    this.initialGiveQuantity,
+    this.initialGetAsset,
+    this.initialGetQuantity,
     super.key,
   });
 
@@ -65,6 +75,10 @@ class ComposeOrderPageWrapper extends StatelessWidget {
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
           balanceRepository: GetIt.I.get<BalanceRepository>(),
           assetRepository: GetIt.I.get<AssetRepository>(),
+          initialGiveAsset: initialGiveAsset,
+          initialGiveQuantity: initialGiveQuantity,
+          initialGetAsset: initialGetAsset,
+          initialGetQuantity: initialGetQuantity
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -117,60 +131,13 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
                 assetRepository: widget.assetRepository,
                 balanceRepository: widget.balanceRepository,
                 currentAddress: widget.address,
+                initialGiveAsset: widget.initialGiveAsset,
+                initialGiveQuantity: widget.initialGiveQuantity,
+                initialGetAsset: widget.initialGetAsset,
+                initialGetQuantity: widget.initialGetQuantity,
               ),
-            _ => Text("foo")
+            _ => Text("some other form state")
           };
-
-          // return ComposeBasePage<ComposeOrderBloc, ComposeOrderState>(
-          //   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-          //   onFeeChange: (fee) => context
-          //       .read<ComposeOrderBloc>()
-          //       .add(ChangeFeeOption(value: fee)),
-          //   buildInitialFormFields: (state, loading, formKey) => [jj
-          //   // this is a total hack until we can refactor base bloc to be more flexible
-          //     OpenOrderForm(
-          //       formKey: formKey,
-          //       assetRepository: widget.assetRepository,
-          //       balanceRepository: widget.balanceRepository,
-          //       currentAddress: widget.address,
-          //     )
-          //
-          //   ],
-          //   onInitialCancel: () => Navigator.of(context).pop(),
-          //   onInitialSubmit: _handleInitialSubmit,
-          //   buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-          //       [
-          //     OpenOrderForm(
-          //       formKey: formKey,
-          //       assetRepository: widget.assetRepository,
-          //       balanceRepository: widget.balanceRepository,
-          //       currentAddress: widget.address,
-          //     )
-          //   ],
-          //   onConfirmationBack: () => context
-          //       .read<ComposeOrderBloc>()
-          //       .add(FetchFormData(currentAddress: widget.address)),
-          //   onConfirmationContinue: (composeSend, fee, formKey) {
-          //     context.read<ComposeOrderBloc>().add(
-          //           FinalizeTransactionEvent<ComposeOrderResponse>(
-          //             composeTransaction: composeSend,
-          //             fee: fee,
-          //           ),
-          //         );
-          //   },
-          //   onFinalizeSubmit: (password, formKey) {
-          //     if (formKey.currentState!.validate()) {
-          //       context.read<ComposeOrderBloc>().add(
-          //             SignAndBroadcastTransactionEvent(
-          //               password: password,
-          //             ),
-          //           );
-          //     }
-          //   },
-          //   onFinalizeCancel: () => context
-          //       .read<ComposeOrderBloc>()
-          //       .add(FetchFormData(currentAddress: widget.address)),
-          // );
         });
   }
 }

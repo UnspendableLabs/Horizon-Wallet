@@ -49,8 +49,6 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
-
-
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -462,7 +460,8 @@ class OrderButtonMenu extends StatelessWidget {
                         body: ComposeOrderPageWrapper(
                           currentAddress: currentAddress,
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                          getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+                          getFeeEstimatesUseCase:
+                              GetIt.I<GetFeeEstimatesUseCase>(),
 
                           // balanceRepository: GetIt.I<BalanceRepository>(),
                           assetRepository: GetIt.I<AssetRepository>(),
@@ -1153,24 +1152,31 @@ class DashboardPageState extends State<DashboardPage> {
 
   void _handleOrderAction(
       int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
-    print(
-        "handle order action giveQuantity $giveQuantity giveAsset $giveAsset");
+    final dashboardActivityFeedBloc =
+        BlocProvider.of<DashboardActivityFeedBloc>(context);
 
+    print("fucking handfler");
+    print("giveQuantity: $giveQuantity");
+    print("giveAsset: $giveAsset");
+    print("getQuantity: $getQuantity");
+    print("getAsset: $getAsset");
+    print("fucking handfler\n\n");
     HorizonUI.HorizonDialog.show(
       context: context,
       body: HorizonUI.HorizonDialog(
         title: "Open Buy Order",
-        body: Text("foo"),
-        // body: OpenOrderWizard(
-        //   currentAddress: widget.currentAddress?.address ??
-        //       widget.currentImportedAddress!.address,
-        //   balanceRepository: GetIt.I<BalanceRepository>(),
-        //   assetRepository: GetIt.I<AssetRepository>(),
-        //   initialGiveQuantity: giveQuantity,
-        //   initialGiveAsset: giveAsset,
-        //   initialGetQuantity: getQuantity,
-        //   initialGetAsset: getAsset,
-        // ),
+        body: ComposeOrderPageWrapper(
+          currentAddress: widget.currentAddress?.address ??
+              widget.currentImportedAddress!.address,
+          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+          getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+          // balanceRepository: GetIt.I<BalanceRepository>(),
+          assetRepository: GetIt.I<AssetRepository>(),
+          initialGiveAsset: giveAsset,
+          initialGiveQuantity: giveQuantity,
+          initialGetAsset: getAsset,
+          initialGetQuantity: getQuantity,
+        ),
       ),
     );
   }
