@@ -68,7 +68,10 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     // Initial emit with loading state
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+
+    
+    // loading state is now delegated fo form bloc
+    // emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
     print("compose called with event: $event");
 

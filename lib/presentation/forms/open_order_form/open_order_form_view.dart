@@ -12,71 +12,78 @@ import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import './open_order_form_bloc.dart';
 
-class OpenOrderForm extends StatelessWidget {
-  final BalanceRepository balanceRepository;
-  final AssetRepository assetRepository;
-  final String currentAddress;
-  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+// class OpenOrderFormWithBloc extends StatelessWidget {
+//   final BalanceRepository balanceRepository;
+//   final AssetRepository assetRepository;
+//   final String currentAddress;
+//   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+//
+//   final String? initialGiveAsset;
+//   final int? initialGiveQuantity;
+//   final String? initialGetAsset;
+//   final int? initialGetQuantity;
+//   final void Function(SubmitArgs) onFormSubmitted;
+//   final String? submissionError;
+//
+//   const OpenOrderFormWithBloc(
+//       {super.key,
+//       required this.assetRepository,
+//       required this.balanceRepository,
+//       required this.currentAddress,
+//       required this.getFeeEstimatesUseCase,
+//       required this.onFormSubmitted,
+//       this.initialGiveAsset,
+//       this.initialGiveQuantity,
+//       this.initialGetAsset,
+//       this.initialGetQuantity,
+//       this.submissionError});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocProvider(
+//       create: (context) {
+//         return OpenOrderFormBloc(
+//             onFormSubmitted: onFormSubmitted,
+//             onFormS
+//             onFormCancelled: () {
+//               // TODO: could move this up the tree
+//               Navigator.of(context).pop();
+//             },
+//             getFeeEstimatesUseCase: getFeeEstimatesUseCase,
+//             assetRepository: assetRepository,
+//             balanceRepository: balanceRepository,
+//             currentAddress: currentAddress)
+//           ..add(InitializeForm(params: _getInitializeParams()));
+//       },
+//       child: OpenOrderForm(),
+//     );
+//   }
+//
+//   _getInitializeParams() {
+//     if (initialGiveAsset != null &&
+//         initialGiveQuantity != null &&
+//         initialGetAsset != null &&
+//         initialGetQuantity != null) {
+//       return InitializeParams(
+//         initialGiveAsset: initialGiveAsset!,
+//         initialGiveQuantity: initialGiveQuantity!,
+//         initialGetQuantity: initialGetQuantity!,
+//         initialGetAsset: initialGetAsset!,
+//       );
+//     }
+//   }
+// }
 
-  final String? initialGiveAsset;
-  final int? initialGiveQuantity;
-  final String? initialGetAsset;
-  final int? initialGetQuantity;
-  final void Function(SubmitArgs) onFormSubmitted;
+class OpenOrderForm extends StatefulWidget {
+  final String? submissionError;
 
-  const OpenOrderForm(
-      {super.key,
-      required this.assetRepository,
-      required this.balanceRepository,
-      required this.currentAddress,
-      required this.getFeeEstimatesUseCase,
-      required this.onFormSubmitted,
-      this.initialGiveAsset,
-      this.initialGiveQuantity,
-      this.initialGetAsset,
-      this.initialGetQuantity});
+  const OpenOrderForm({super.key, this.submissionError});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) {
-        return OpenOrderFormBloc(
-            onFormSubmitted: onFormSubmitted,
-            onFormCancelled: () {
-              // TODO: could move this up the tree
-              Navigator.of(context).pop();
-            },
-            getFeeEstimatesUseCase: getFeeEstimatesUseCase,
-            assetRepository: assetRepository,
-            balanceRepository: balanceRepository,
-            currentAddress: currentAddress)
-          ..add(InitializeForm(params: _getInitializeParams()));
-      },
-      child: OpenOrderForm_(),
-    );
-  }
-
-  _getInitializeParams() {
-    if (initialGiveAsset != null &&
-        initialGiveQuantity != null &&
-        initialGetAsset != null &&
-        initialGetQuantity != null) {
-      return InitializeParams(
-        initialGiveAsset: initialGiveAsset!,
-        initialGiveQuantity: initialGiveQuantity!,
-        initialGetQuantity: initialGetQuantity!,
-        initialGetAsset: initialGetAsset!,
-      );
-    }
-  }
+  State<OpenOrderForm> createState() => _OpenOrderForm();
 }
 
-class OpenOrderForm_ extends StatefulWidget {
-  @override
-  State<OpenOrderForm_> createState() => _OpenOrderForm();
-}
-
-class _OpenOrderForm extends State<OpenOrderForm_> {
+class _OpenOrderForm extends State<OpenOrderForm> {
   late TextEditingController _giveQuantityController;
   late TextEditingController _getQuantityController;
   late TextEditingController _giveAssetController;
@@ -191,6 +198,14 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
                   : FeeSelectionLayout.column,
             ),
             const HorizonUI.HorizonDivider(),
+            if (state.submissionStatus.isFailure)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: SelectableText(
+                  state.errorMessage ?? "Submit failure",
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

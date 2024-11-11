@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -13,6 +14,8 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
+import 'package:horizon/domain/entities/compose_order.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 
@@ -113,10 +116,6 @@ class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
   }
 }
 
-
-
-
-
 // Events
 
 abstract class FormEvent extends Equatable {
@@ -203,6 +202,15 @@ class FormSubmitted extends FormEvent {}
 
 class FormCancelled extends FormEvent {}
 
+class SubmissionFailed extends FormEvent {
+  final String errorMessage;
+
+  const SubmissionFailed(this.errorMessage);
+
+  @override
+  List<Object?> get props => [errorMessage];
+}
+
 // State
 
 class FormStateModel extends Equatable {
@@ -249,8 +257,6 @@ class FormStateModel extends Equatable {
     FeeOption.FeeOption? feeOption,
     RemoteData<FeeEstimates>? feeEstimates,
   }) {
-
-
     return FormStateModel(
       giveAssets: giveAssets ?? this.giveAssets,
       getAssets: getAssets ?? this.getAssets,
@@ -300,6 +306,18 @@ class SubmitArgs {
   });
 }
 
+class OnSubmitSuccessArgs {
+  final ComposeOrderResponse response;
+  final VirtualSize virtualSize;
+  final int feeRate;
+
+  OnSubmitSuccessArgs({
+    required this.response,
+    required this.virtualSize,
+    required this.feeRate,
+  });
+}
+
 class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   final BalanceRepository balanceRepository;
   final AssetRepository assetRepository;
@@ -307,12 +325,19 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final void Function() onFormCancelled;
   final void Function(SubmitArgs) onFormSubmitted;
+  final void Function(OnSubmitSuccessArgs) onSubmitSuccess;
+
+  final ComposeTransactionUseCase composeTransactionUseCase;
+  final ComposeRepository composeRepository;
 
   OpenOrderFormBloc({
+    required this.onSubmitSuccess,
     required this.assetRepository,
     required this.balanceRepository,
     required this.currentAddress,
     required this.getFeeEstimatesUseCase,
+    required this.composeTransactionUseCase,
+    required this.composeRepository,
     required this.onFormCancelled,
     required this.onFormSubmitted,
     String? initialGiveAsset,
@@ -335,12 +360,15 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     on<FormSubmitted>(_onFormSubmitted);
     on<FormCancelled>(_onFormCancelled);
     on<InitializeForm>(_onInitializeForm);
+    on<SubmissionFailed>(_onSubmissionFailed);
   }
   Future<void> _onInitializeForm(
     InitializeForm event,
     Emitter<FormStateModel> emit,
   ) async {
     emit(state.copyWith(giveAssets: Loading(), feeEstimates: Loading()));
+
+    print("event.parnsm ${event.params}");
 
     try {
       final [balances as List<Balance>, feeEstimates as FeeEstimates] =
@@ -480,7 +508,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   void _onGetAssetChanged(
       GetAssetChanged event, Emitter<FormStateModel> emit) async {
-    // todo change to modal
     final getAssetInput = GetAssetInput.dirty(event.getAssetId);
     emit(state.copyWith(
       getQuantity: const GetQuantityInput.pure(),
@@ -529,66 +556,68 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   Future<void> _onFeeOptionChanged(
       FeeOptionChanged event, Emitter<FormStateModel> emit) async {
-
     final nextState = state.copyWith(feeOption: event.feeOption);
 
     emit(nextState);
-
-
   }
 
   Future<void> _onFormSubmitted(
       FormSubmitted event, Emitter<FormStateModel> emit) async {
-
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
+    try {
+      final feeRate = _getFeeRate();
+      final String getAsset = state.getAsset.value;
+      final String giveAsset = state.giveAsset.value;
+      final int getQuantity = (state.getQuantity.isDivisible
+          ? (double.parse(state.getQuantity.value) * 100000000).round()
+          : int.parse(state.getQuantity.value));
+      final int giveQuantity = (state.giveQuantity.isDivisible
+          ? (double.parse(state.giveQuantity.value) * 100000000).round()
+          : int.parse(state.giveQuantity.value));
 
-    final String getAsset = state.getAsset.value;
-    final String giveAsset = state.giveAsset.value;
+      // Making the compose transaction call
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeOrderParams, ComposeOrderResponse>(
+        source: currentAddress,
+        feeRate: feeRate,
+        params: ComposeOrderParams(
+          source: currentAddress,
+          giveQuantity: giveQuantity,
+          giveAsset: giveAsset,
+          getQuantity: getQuantity,
+          getAsset: getAsset,
+        ),
+        composeFn: composeRepository.composeOrder,
+      );
 
-    final int getQuantity = (state.getQuantity.isDivisible
-        ? (double.parse(state.getQuantity.value) * 100000000).round()
-        : int.parse(state.getQuantity.value));
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
 
-    final int giveQuantity = (state.giveQuantity.isDivisible
-        ? (double.parse(state.giveQuantity.value) * 100000000).round()
-        : int.parse(state.giveQuantity.value));
+      onFormSubmitted(SubmitArgs(
+        getAsset: getAsset,
+        getQuantity: getQuantity,
+        giveAsset: giveAsset,
+        giveQuantity: giveQuantity,
+        feeRateSatsVByte: _getFeeRate(),
+      ));
+    } on ComposeTransactionException catch (e, _) {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          errorMessage: 'An unexpected error occurred: ${e.toString()}'));
+    }
+  }
 
-
-      
-
-
-
-    // // Denormalized values ready to be submitted
-    // final Map<String, dynamic> submissionData = {
-    //   "get_asset": getAsset,
-    //   "get_quantity": getQuantity,
-    //   "give_asset": giveAsset,
-    //   "give_quantity": giveQuantity,
-    // };
-
-    onFormSubmitted(SubmitArgs(
-      getAsset: getAsset,
-      getQuantity: getQuantity,
-      giveAsset: giveAsset,
-      giveQuantity: giveQuantity,
-      feeRateSatsVByte: _getFeeRate(),
+  void _onSubmissionFailed(
+      SubmissionFailed event, Emitter<FormStateModel> emit) {
+    emit(state.copyWith(
+      submissionStatus: FormzSubmissionStatus.failure,
+      errorMessage: event.errorMessage,
     ));
-
-    // emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
-    //
-    //
-    //
-    // try {
-    //   await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-    //
-    //   emit(state.copyWith(submissionStatus: FormzSubmissionStatus.success));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //     submissionStatus: FormzSubmissionStatus.failure,
-    //     errorMessage: 'Form submission failed',
-    //   ));
-    // }
   }
 
   void _onFormCancelled(FormCancelled event, Emitter<FormStateModel> emit) {

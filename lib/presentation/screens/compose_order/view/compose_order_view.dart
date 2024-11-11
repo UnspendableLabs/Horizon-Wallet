@@ -16,6 +16,7 @@ import 'package:horizon/domain/services/analytics_service.dart';
 
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
@@ -29,12 +30,14 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/forms/open_order_form/open_order_form_bloc.dart';
 
 class ComposeOrderPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
   final AssetRepository assetRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final ComposeTransactionUseCase composeTransactionUseCase;
 
   final String? initialGiveAsset;
   final int? initialGiveQuantity;
@@ -42,6 +45,7 @@ class ComposeOrderPageWrapper extends StatelessWidget {
   final int? initialGetQuantity;
 
   const ComposeOrderPageWrapper({
+    required this.composeTransactionUseCase,
     required this.dashboardActivityFeedBloc,
     required this.currentAddress,
     required this.getFeeEstimatesUseCase,
@@ -57,32 +61,74 @@ class ComposeOrderPageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
     return shell.state.maybeWhen(
-      success: (state) => BlocProvider(
-        key: Key(currentAddress),
-        create: (context) => ComposeOrderBloc(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          logger: GetIt.I.get<Logger>(),
-          writelocalTransactionUseCase:
-              GetIt.I.get<WriteLocalTransactionUseCase>(),
-          signAndBroadcastTransactionUseCase:
-              GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
-          composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
-          analyticsService: GetIt.I.get<AnalyticsService>(),
-          composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
-        child: ComposeOrderPage(
-            getFeeEstimatesUseCase: getFeeEstimatesUseCase,
-            address: currentAddress,
-            dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-            balanceRepository: GetIt.I.get<BalanceRepository>(),
-            assetRepository: GetIt.I.get<AssetRepository>(),
-            initialGiveAsset: initialGiveAsset,
-            initialGiveQuantity: initialGiveQuantity,
-            initialGetAsset: initialGetAsset,
-            initialGetQuantity: initialGetQuantity),
-      ),
-      orElse: () => const SizedBox.shrink(),
-    );
+        success: (state) => BlocProvider(
+              key: Key(currentAddress),
+              create: (context) => ComposeOrderBloc(
+                getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+                logger: GetIt.I.get<Logger>(),
+                writelocalTransactionUseCase:
+                    GetIt.I.get<WriteLocalTransactionUseCase>(),
+                signAndBroadcastTransactionUseCase:
+                    GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
+                composeTransactionUseCase:
+                    GetIt.I.get<ComposeTransactionUseCase>(),
+                analyticsService: GetIt.I.get<AnalyticsService>(),
+                composeRepository: GetIt.I.get<ComposeRepository>(),
+              )..add(FetchFormData(currentAddress: currentAddress)),
+              child: BlocProvider(
+                create: (context) => OpenOrderFormBloc(
+                    composeRepository: GetIt.I.get<ComposeRepository>(),
+                    onSubmitSuccess: (submit) {},
+                    onFormSubmitted: (SubmitArgs args) {
+                      context
+                          .read<ComposeOrderBloc>()
+                          .add(ComposeTransactionEvent(
+                              sourceAddress: currentAddress,
+                              params: ComposeOrderEventParams(
+                                feeRate: args.feeRateSatsVByte,
+                                giveAsset: args.giveAsset,
+                                giveQuantity: args.giveQuantity,
+                                getAsset: args.getAsset,
+                                getQuantity: args.getQuantity,
+                              )));
+                    },
+                    onFormCancelled: () {
+                      // TODO: could move this up the tree
+                      Navigator.of(context).pop();
+                    },
+                    getFeeEstimatesUseCase: getFeeEstimatesUseCase,
+                    composeTransactionUseCase: composeTransactionUseCase,
+                    assetRepository: assetRepository,
+                    balanceRepository: GetIt.I.get<BalanceRepository>(),
+                    currentAddress: currentAddress)
+                  ..add(InitializeForm(params: _getInitializeParams())),
+                child: ComposeOrderPage(
+                    getFeeEstimatesUseCase: getFeeEstimatesUseCase,
+                    address: currentAddress,
+                    dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                    balanceRepository: GetIt.I.get<BalanceRepository>(),
+                    assetRepository: GetIt.I.get<AssetRepository>(),
+                    initialGiveAsset: initialGiveAsset,
+                    initialGiveQuantity: initialGiveQuantity,
+                    initialGetAsset: initialGetAsset,
+                    initialGetQuantity: initialGetQuantity),
+              ),
+            ),
+        orElse: () => const SizedBox.shrink());
+  }
+
+  _getInitializeParams() {
+    if (initialGiveAsset != null &&
+        initialGiveQuantity != null &&
+        initialGetAsset != null &&
+        initialGetQuantity != null) {
+      return InitializeParams(
+        initialGiveAsset: initialGiveAsset!,
+        initialGiveQuantity: initialGiveQuantity!,
+        initialGetQuantity: initialGetQuantity!,
+        initialGetAsset: initialGetAsset!,
+      );
+    }
   }
 }
 
@@ -145,15 +191,7 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
         builder: (context, state) {
           return switch (state.submitState) {
             SubmitInitial(error: var error) => OpenOrderForm(
-                onFormSubmitted: onFormSubmitted,
-                getFeeEstimatesUseCase: widget.getFeeEstimatesUseCase,
-                assetRepository: widget.assetRepository,
-                balanceRepository: widget.balanceRepository,
-                currentAddress: widget.address,
-                initialGiveAsset: widget.initialGiveAsset,
-                initialGiveQuantity: widget.initialGiveQuantity,
-                initialGetAsset: widget.initialGetAsset,
-                initialGetQuantity: widget.initialGetQuantity,
+                submissionError: error,
               ),
             SubmitComposingTransaction(
               composeTransaction: var composeTransaction,

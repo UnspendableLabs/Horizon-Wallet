@@ -48,6 +48,7 @@ import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.d
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -458,6 +459,7 @@ class OrderButtonMenu extends StatelessWidget {
                       body: HorizonUI.HorizonDialog(
                         title: "Open Buy Order",
                         body: ComposeOrderPageWrapper(
+                          composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
                           currentAddress: currentAddress,
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                           getFeeEstimatesUseCase:
@@ -1155,12 +1157,6 @@ class DashboardPageState extends State<DashboardPage> {
     final dashboardActivityFeedBloc =
         BlocProvider.of<DashboardActivityFeedBloc>(context);
 
-    print("fucking handfler");
-    print("giveQuantity: $giveQuantity");
-    print("giveAsset: $giveAsset");
-    print("getQuantity: $getQuantity");
-    print("getAsset: $getAsset");
-    print("fucking handfler\n\n");
     HorizonUI.HorizonDialog.show(
       context: context,
       body: HorizonUI.HorizonDialog(
@@ -1170,6 +1166,8 @@ class DashboardPageState extends State<DashboardPage> {
               widget.currentImportedAddress!.address,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
           getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+          composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
+                   
           // balanceRepository: GetIt.I<BalanceRepository>(),
           assetRepository: GetIt.I<AssetRepository>(),
           initialGiveAsset: giveAsset,
