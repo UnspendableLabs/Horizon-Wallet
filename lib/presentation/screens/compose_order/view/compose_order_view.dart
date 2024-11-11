@@ -28,12 +28,13 @@ import 'package:flow_builder/flow_builder.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+
 class ComposeOrderPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
   final AssetRepository assetRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
-
 
   final String? initialGiveAsset;
   final int? initialGiveQuantity;
@@ -70,16 +71,15 @@ class ComposeOrderPageWrapper extends StatelessWidget {
           composeRepository: GetIt.I.get<ComposeRepository>(),
         )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeOrderPage(
-          getFeeEstimatesUseCase: getFeeEstimatesUseCase,
-          address: currentAddress,
-          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-          balanceRepository: GetIt.I.get<BalanceRepository>(),
-          assetRepository: GetIt.I.get<AssetRepository>(),
-          initialGiveAsset: initialGiveAsset,
-          initialGiveQuantity: initialGiveQuantity,
-          initialGetAsset: initialGetAsset,
-          initialGetQuantity: initialGetQuantity
-        ),
+            getFeeEstimatesUseCase: getFeeEstimatesUseCase,
+            address: currentAddress,
+            dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            balanceRepository: GetIt.I.get<BalanceRepository>(),
+            assetRepository: GetIt.I.get<AssetRepository>(),
+            initialGiveAsset: initialGiveAsset,
+            initialGiveQuantity: initialGiveQuantity,
+            initialGetAsset: initialGetAsset,
+            initialGetQuantity: initialGetQuantity),
       ),
       orElse: () => const SizedBox.shrink(),
     );
@@ -116,8 +116,26 @@ class ComposeOrderPage extends StatefulWidget {
 }
 
 class ComposeOrderPageState extends State<ComposeOrderPage> {
-  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
-    print(formKey.currentState);
+  void onFormSubmitted(SubmitArgs composeOrderArgs) {
+    // send message to parent block
+
+    context.read<ComposeOrderBloc>().add(ComposeTransactionEvent(
+        sourceAddress: widget.address,
+        params: ComposeOrderEventParams(
+          feeRate: composeOrderArgs.feeRateSatsVByte,
+          giveAsset: composeOrderArgs.giveAsset,
+          giveQuantity: composeOrderArgs.giveQuantity,
+          getAsset: composeOrderArgs.getAsset,
+          getQuantity: composeOrderArgs.getQuantity,
+        )));
+
+    // context.read<ComposeOrderBloc>().add(SubmitOrder(order: order));
+  }
+
+  void onConfirmationContinue(ComposeOrderResponse composeTransaction, int fee,
+      GlobalKey<FormState> formKey) {
+    context.read<ComposeOrderBloc>().add(FinalizeTransactionEvent(
+        composeTransaction: composeTransaction, fee: fee));
   }
 
   @override
@@ -127,6 +145,7 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
         builder: (context, state) {
           return switch (state.submitState) {
             SubmitInitial(error: var error) => OpenOrderForm(
+                onFormSubmitted: onFormSubmitted,
                 getFeeEstimatesUseCase: widget.getFeeEstimatesUseCase,
                 assetRepository: widget.assetRepository,
                 balanceRepository: widget.balanceRepository,
@@ -135,6 +154,77 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
                 initialGiveQuantity: widget.initialGiveQuantity,
                 initialGetAsset: widget.initialGetAsset,
                 initialGetQuantity: widget.initialGetQuantity,
+              ),
+            SubmitComposingTransaction(
+              composeTransaction: var composeTransaction,
+              fee: var fee,
+              feeRate: var feeRate,
+              virtualSize: var virtualSize,
+              adjustedVirtualSize: var adjustedVirtualSize,
+            ) =>
+              ComposeBaseConfirmationPage(
+                  composeTransaction: composeTransaction,
+                  fee: fee,
+                  feeRate: feeRate,
+                  virtualSize: virtualSize,
+                  adjustedVirtualSize: adjustedVirtualSize,
+                  buildConfirmationFormFields: (composeTransaction, formKey) {
+                    final params =
+                        (composeTransaction as ComposeOrderResponse).params;
+
+                    return [
+                      HorizonUI.HorizonTextFormField(
+                        label: "Give Asset",
+                        controller:
+                            TextEditingController(text: params.giveAsset),
+                        enabled: false,
+                      ),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Give Quantity",
+                        controller: TextEditingController(
+                            text: params.giveQuantityNormalized),
+                        enabled: false,
+                      ),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Get Asset",
+                        controller:
+                            TextEditingController(text: params.getAsset),
+                        enabled: false,
+                      ),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Get Quantity",
+                        controller: TextEditingController(
+                            text: params.getQuantityNormalized),
+                        enabled: false,
+                      ),
+                    ];
+                  },
+                  onBack: () {},
+                  onContinue: (composeTransaction, fee, formKey) => {
+                        onConfirmationContinue(
+                            composeTransaction, fee, formKey),
+                      }
+                  // .onConfirmationContinue(composeTransaction, fee, formKey),
+                  ),
+            SubmitFinalizing(
+              composeTransaction: var composeTransaction,
+              fee: var fee,
+              error: var error,
+              loading: var loading
+            ) =>
+              ComposeBaseFinalizePage(
+                state: state,
+                composeTransaction: composeTransaction,
+                fee: fee,
+                error: error,
+                loading: loading,
+                onSubmit: (password, formKey) {
+                  context.read<ComposeOrderBloc>().add(
+                      SignAndBroadcastTransactionEvent(password: password));
+                },
+                onCancel: () {
+                  print("finalize cancel");
+                },
               ),
             _ => Text("some other form state")
           };

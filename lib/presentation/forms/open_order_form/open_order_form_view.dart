@@ -22,6 +22,7 @@ class OpenOrderForm extends StatelessWidget {
   final int? initialGiveQuantity;
   final String? initialGetAsset;
   final int? initialGetQuantity;
+  final void Function(SubmitArgs) onFormSubmitted;
 
   const OpenOrderForm(
       {super.key,
@@ -29,6 +30,7 @@ class OpenOrderForm extends StatelessWidget {
       required this.balanceRepository,
       required this.currentAddress,
       required this.getFeeEstimatesUseCase,
+      required this.onFormSubmitted,
       this.initialGiveAsset,
       this.initialGiveQuantity,
       this.initialGetAsset,
@@ -39,6 +41,7 @@ class OpenOrderForm extends StatelessWidget {
     return BlocProvider(
       create: (context) {
         return OpenOrderFormBloc(
+            onFormSubmitted: onFormSubmitted,
             onFormCancelled: () {
               // TODO: could move this up the tree
               Navigator.of(context).pop();
@@ -117,13 +120,12 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
         _getAssetController.text = state.getAsset.value;
       }
 
-
       if (state.submissionStatus.isSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Dispenser Created Successfully')));
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(content: Text('Dispenser Created Successfully')));
       } else if (state.submissionStatus.isFailure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Submission Failed')));
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(content: Text(state.errorMessage ?? 'Submission Failed')));
       }
     }, builder: (context, state) {
       return Padding(
@@ -172,12 +174,18 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
               },
               onFieldSubmitted: () {},
 
+              // TODO: replicate this functionality
+
               // state.feeState.maybeWhen(
               //   success: (feeEstimates) =>
               //       FeeEstimateSuccess(feeEstimates: feeEstimates),
               //   orElse: () => FeeEstimateLoading(),
               // ),
-              onSelected: (feeOption) {},
+              onSelected: (feeOption) {
+                context
+                    .read<OpenOrderFormBloc>()
+                    .add(FeeOptionChanged(feeOption));
+              },
               layout: MediaQuery.of(context).size.width > 768
                   ? FeeSelectionLayout.row
                   : FeeSelectionLayout.column,

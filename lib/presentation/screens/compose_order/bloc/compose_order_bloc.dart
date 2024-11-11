@@ -17,15 +17,17 @@ import "./compose_order_state.dart";
 // import "./compose_order_event.dart";
 
 class ComposeOrderEventParams {
-  final String initialGiveAsset;
-  final int initialGiveQuantity;
-  final String initialGetAsset;
-  final int initialGetQuantity;
+  final int feeRate;
+  final String giveAsset;
+  final int giveQuantity;
+  final String getAsset;
+  final int getQuantity;
   ComposeOrderEventParams({
-    required this.initialGiveAsset,
-    required this.initialGiveQuantity,
-    required this.initialGetAsset,
-    required this.initialGetQuantity,
+    required this.feeRate,
+    required this.giveAsset,
+    required this.giveQuantity,
+    required this.getAsset,
+    required this.getQuantity,
   });
 }
 
@@ -55,50 +57,41 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
-    if (event.assetName == null || event.currentAddress == null) {
-      return;
-    }
-
-    emit(state.copyWith(
-      balancesState: const BalancesState.loading(),
-      submitState: const SubmitInitial(),
-    ));
-
-    late FeeEstimates feeEstimates;
-
-    try {
-      feeEstimates = await getFeeEstimatesUseCase.call(
-        targets: (1, 3, 6),
-      );
-    } catch (e) {
-      emit(state.copyWith(feeState: FeeState.error(e.toString())));
-      return;
-    }
-
-    emit(state.copyWith(
-      balancesState: const BalancesState.success([]),
-      feeState: FeeState.success(feeEstimates),
-    ));
+    // delegated to fom
   }
 
   @override
   void onChangeFeeOption(ChangeFeeOption event, emit) async {
-    final value = event.value;
-    emit(state.copyWith(feeOption: value));
+    // delegated to fom
   }
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+    // Initial emit with loading state
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
+    print("compose called with event: $event");
+
     try {
-      final feeRate = _getFeeRate();
+      // Logging fee rate calculation
+
+      final feeRate = event.params.feeRate;
+
+      // Logging event parameter details
       final source = event.sourceAddress;
       final giveQuantity = event.params.giveQuantity;
       final giveAsset = event.params.giveAsset;
       final getQuantity = event.params.getQuantity;
       final getAsset = event.params.getAsset;
 
+      print("Transaction Details:");
+      print("  Source Address: $source");
+      print("  Give Asset: $giveAsset");
+      print("  Give Quantity: $giveQuantity");
+      print("  Get Asset: $getAsset");
+      print("  Get Quantity: $getQuantity");
+
+      // Making the compose transaction call
       final composeResponse = await composeTransactionUseCase
           .call<ComposeOrderParams, ComposeOrderResponse>(
         source: source,
@@ -113,28 +106,93 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
         composeFn: composeRepository.composeOrder,
       );
 
+      // Logging response from compose transaction
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
 
+      print("Compose Response:");
+      print("  BTC Fee: ${composed.btcFee}");
+      print("  Virtual Size: ${virtualSize.virtualSize}");
+      print("  Adjusted Virtual Size: ${virtualSize.adjustedVirtualSize}");
+
+      // Emitting success state with composed transaction details
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeOrderResponse,
-              ComposeOrderEventParams>(
-        composeTransaction: composed,
-        fee: composed.btcFee,
-        feeRate: feeRate,
-        virtualSize: virtualSize.virtualSize,
-        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
-      )));
+        submitState: SubmitComposingTransaction<ComposeOrderResponse,
+            ComposeOrderEventParams>(
+          composeTransaction: composed,
+          fee: composed.btcFee,
+          feeRate: feeRate,
+          virtualSize: virtualSize.virtualSize,
+          adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+        ),
+      ));
     } on ComposeTransactionException catch (e) {
+      // Handling known exceptions with specific error message
+      print("ComposeTransactionException caught: ${e.message}");
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+        submitState: SubmitInitial(loading: false, error: e.message),
+      ));
     } catch (e) {
+      // Catching any unexpected errors with generic message
+      print("Unexpected error occurred: ${e.toString()}");
       emit(state.copyWith(
-          submitState: SubmitInitial(
-              loading: false,
-              error: 'An unexpected error occurred: ${e.toString()}')));
+        submitState: SubmitInitial(
+          loading: false,
+          error: 'An unexpected error occurred: ${e.toString()}',
+        ),
+      ));
     }
   }
+
+  // @override
+  // void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+  //   emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+  //
+  //   print("compose called biatch $event");
+  //   try {
+  //     final feeRate = _getFeeRate();
+  //     final source = event.sourceAddress;
+  //     final giveQuantity = event.params.giveQuantity;
+  //     final giveAsset = event.params.giveAsset;
+  //     final getQuantity = event.params.getQuantity;
+  //     final getAsset = event.params.getAsset;
+  //
+  //     final composeResponse = await composeTransactionUseCase
+  //         .call<ComposeOrderParams, ComposeOrderResponse>(
+  //       source: source,
+  //       feeRate: feeRate,
+  //       params: ComposeOrderParams(
+  //         source: source,
+  //         giveQuantity: giveQuantity,
+  //         giveAsset: giveAsset,
+  //         getQuantity: getQuantity,
+  //         getAsset: getAsset,
+  //       ),
+  //       composeFn: composeRepository.composeOrder,
+  //     );
+  //
+  //     final composed = composeResponse.$1;
+  //     final virtualSize = composeResponse.$2;
+  //
+  //     emit(state.copyWith(
+  //         submitState: SubmitComposingTransaction<ComposeOrderResponse,
+  //             ComposeOrderEventParams>(
+  //       composeTransaction: composed,
+  //       fee: composed.btcFee,
+  //       feeRate: feeRate,
+  //       virtualSize: virtualSize.virtualSize,
+  //       adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+  //     )));
+  //   } on ComposeTransactionException catch (e) {
+  //     emit(state.copyWith(
+  //         submitState: SubmitInitial(loading: false, error: e.message)));
+  //   } catch (e) {
+  //     emit(state.copyWith(
+  //         submitState: SubmitInitial(
+  //             loading: false,
+  //             error: 'An unexpected error occurred: ${e.toString()}')));
+  //   }
+  // }
 
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {

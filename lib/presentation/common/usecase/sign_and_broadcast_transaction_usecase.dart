@@ -101,8 +101,11 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Broadcast Transaction
       try {
-        final txHash = await bitcoindService.sendrawtransaction(txHex);
-        await onSuccess(txHex, txHash);
+
+        print("rawtransaction: $rawtransaction");
+
+        // final txHash = await bitcoindService.sendrawtransaction(txHex);
+        // await onSuccess(txHex, txHash);
       } catch (e) {
         final String errorMessage = 'Failed to broadcast the transaction: $e';
         throw SignAndBroadcastTransactionException(errorMessage);
