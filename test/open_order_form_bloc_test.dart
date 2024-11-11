@@ -6,13 +6,39 @@ import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/forms/open_order_form/open_order_form_bloc.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_order.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+
+class MockOnFormCancelled extends Mock {
+  void call();
+}
+
+class MockOnFormSubmitted extends Mock {
+  void call(SubmitArgs args);
+}
+
+class MockOnSubmitSuccess extends Mock {
+  void call(OnSubmitSuccessArgs args);
+}
+
+class MockComposeTransactionUseCase extends Mock
+    implements ComposeTransactionUseCase {}
 
 class MockBalanceRepository extends Mock implements BalanceRepository {}
 
 class MockAssetRepository extends Mock implements AssetRepository {}
+
+class MockComposeRepository extends Mock implements ComposeRepository {}
+
+class MockGetFeeEstimatesUseCase extends Mock
+    implements GetFeeEstimatesUseCase {}
 
 class FakeAsset extends Fake implements Asset {
   @override
@@ -37,6 +63,8 @@ class FakeAsset extends Fake implements Asset {
     required this.locked,
   });
 }
+
+class FakeComposeOrderResponse extends Fake implements ComposeOrderResponse {}
 
 class FakeAssetInfo extends Fake implements AssetInfo {
   @override
@@ -78,16 +106,34 @@ void main() {
   late OpenOrderFormBloc bloc;
   late MockBalanceRepository balanceRepository;
   late MockAssetRepository assetRepository;
+  late MockComposeRepository composeRepository;
+  late MockGetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  late MockComposeTransactionUseCase composeTransactionUseCase;
+  late MockOnFormCancelled onFormCancelled;
+  late MockOnSubmitSuccess onSubmitSuccess;
   const testAddress = 'test_address';
 
+  setUpAll(() {
+    registerFallbackValue((0, 0, 0)); // Fallback for (int, int, int)
+  });
+
   setUp(() {
+    composeTransactionUseCase = MockComposeTransactionUseCase();
     balanceRepository = MockBalanceRepository();
     assetRepository = MockAssetRepository();
+    getFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
+    composeRepository = MockComposeRepository();
+    onFormCancelled = MockOnFormCancelled();
+    onSubmitSuccess = MockOnSubmitSuccess();
     bloc = OpenOrderFormBloc(
-      assetRepository: assetRepository,
-      balanceRepository: balanceRepository,
-      currentAddress: testAddress,
-    );
+        assetRepository: assetRepository,
+        balanceRepository: balanceRepository,
+        composeRepository: composeRepository,
+        currentAddress: testAddress,
+        getFeeEstimatesUseCase: getFeeEstimatesUseCase,
+        composeTransactionUseCase: composeTransactionUseCase,
+        onFormCancelled: onFormCancelled.call,
+        onSubmitSuccess: onSubmitSuccess.call);
   });
 
   tearDown(() {
@@ -428,8 +474,28 @@ void main() {
   );
 
   blocTest<OpenOrderFormBloc, FormStateModel>(
-    'denormalizes values correctly on FormSubmitted',
+    'FormSubmitted succcess',
     build: () {
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => composeTransactionUseCase
+                  .call<ComposeOrderParams, ComposeOrderResponse>(
+                source: testAddress,
+                feeRate: 30,
+                params: ComposeOrderParams(
+                  source: testAddress,
+                  giveQuantity: 5,
+                  giveAsset: 'ASSET1',
+                  getQuantity: (2.5 * 100000000).toInt(),
+                  getAsset: 'ASSET2',
+                ),
+                composeFn: any(named: 'composeFn'),
+              ))
+          .thenAnswer(
+              (_) async => (FakeComposeOrderResponse(), VirtualSize(100, 100)));
+
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
           FakeBalance(
@@ -437,7 +503,7 @@ void main() {
             asset: 'ASSET1',
             quantity: 100000000,
             quantityNormalized: "1",
-            assetInfo: FakeAssetInfo(divisible:false),
+            assetInfo: FakeAssetInfo(divisible: false),
           ),
         ],
       );
@@ -460,6 +526,9 @@ void main() {
         giveQuantity: const GiveQuantityInput.dirty('5', isDivisible: false),
         getAsset: const GetAssetInput.dirty('ASSET2'),
         getQuantity: const GetQuantityInput.dirty('2.5', isDivisible: true),
+        submissionStatus: FormzSubmissionStatus.initial,
+        feeOption: FeeOption.Medium(),
+        feeEstimates: Success(FeeEstimates(fast: 50, medium: 30, slow: 10)),
       );
     },
     act: (bloc) => bloc.add(FormSubmitted()),
@@ -469,75 +538,28 @@ void main() {
         'submissionStatus',
         FormzSubmissionStatus.inProgress,
       ),
+      isA<FormStateModel>().having(
+        (state) => state.submissionStatus,
+        'submissionStatus',
+        FormzSubmissionStatus.success,
+      ),
     ],
     verify: (_) {
       // Retrieve and check denormalized values
-      final state = bloc.state;
-
-      final expectedGetQuantity = (2.5 * 100000000).toInt();
-      final expectedGiveQuantity = 5;
-
-      expect(state.getQuantity.value, equals('2.5'));
-      expect(state.giveQuantity.value, equals('5'));
-      expect(state.getQuantity.isDivisible, isTrue);
-      expect(state.giveQuantity.isDivisible, isFalse);
-
-      // Verify denormalization
-      expect(expectedGetQuantity, 250000000);
-      expect(expectedGiveQuantity, 5);
+      verify(() => composeTransactionUseCase
+              .call<ComposeOrderParams, ComposeOrderResponse>(
+            source: testAddress,
+            feeRate: 30,
+            params: ComposeOrderParams(
+              source: testAddress,
+              giveQuantity: 5,
+              giveAsset: 'ASSET1',
+              getQuantity: (2.5 * 100000000).toInt(),
+              getAsset: 'ASSET2',
+            ),
+            composeFn: composeRepository.composeOrder,
+          )).called(1);
     },
   );
 
-  // blocTest<OpenOrderFormBloc, FormStateModel>(
-  //   'emits inProgress and then success when FormSubmitted is added and submission succeeds',
-  //   build: () => bloc,
-  //   act: (bloc) => bloc.add(FormSubmitted()),
-  //   expect: () => [
-  //     isA<FormStateModel>().having(
-  //       (state) => state.submissionStatus,
-  //       'submissionStatus',
-  //       FormzSubmissionStatus.inProgress,
-  //     ),
-  //     isA<FormStateModel>().having(
-  //       (state) => state.submissionStatus,
-  //       'submissionStatus',
-  //       FormzSubmissionStatus.success,
-  //     ),
-  //   ],
-  // );
-
-  // blocTest<OpenOrderFormBloc, FormStateModel>(
-  //   'emits inProgress and then failure when FormSubmitted is added and submission fails',
-  //   build: () {
-  //     // Override the _onFormSubmitted method to simulate an exception
-  //     return OpenOrderFormBloc(
-  //       assetRepository: assetRepository,
-  //       balanceRepository: balanceRepository,
-  //       currentAddress: testAddress,
-  //     )..on<FormSubmitted>(
-  //         (event, emit) async {
-  //           emit(state.copyWith(
-  //               submissionStatus: FormzSubmissionStatus.inProgress));
-  //           // Simulate an exception
-  //           emit(state.copyWith(
-  //             submissionStatus: FormzSubmissionStatus.failure,
-  //             errorMessage: 'Form submission failed',
-  //           ));
-  //         },
-  //       );
-  //   },
-  //   act: (bloc) => bloc.add(FormSubmitted()),
-  //   expect: () => [
-  //     isA<FormStateModel>().having(
-  //       (state) => state.submissionStatus,
-  //       'submissionStatus',
-  //       FormzSubmissionStatus.inProgress,
-  //     ),
-  //     isA<FormStateModel>()
-  //         .having((state) => state.submissionStatus, 'submissionStatus',
-  //             FormzSubmissionStatus.failure)
-  //         .having((state) => state.errorMessage, 'errorMessage',
-  //             'Form submission failed'),
-  //   ],
-  // );
 }

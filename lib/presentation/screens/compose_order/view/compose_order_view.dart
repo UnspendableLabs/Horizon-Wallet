@@ -262,7 +262,11 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
                       SignAndBroadcastTransactionEvent(password: password));
                 },
                 onCancel: () {
-                  print("finalize cancel");
+
+                  // for now we just go all the way back to step 1
+                  onConfirmationBack();
+
+
                 },
               ),
             _ => Text("some other form state")
@@ -270,52 +274,3 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
         });
   }
 }
-
-// class ComposeOrderWizard extends StatelessWidget {
-//   final BalanceRepository balanceRepository;
-//   final AssetRepository assetRepository;
-//   final String currentAddress;
-//
-//   final String? initialGiveAsset;
-//   final int? initialGiveQuantity;
-//   final String? initialGetAsset;
-//   final int? initialGetQuantity;
-//
-//   const ComposeOrderWizard(
-//       {super.key,
-//       required this.assetRepository,
-//       required this.balanceRepository,
-//       required this.currentAddress,
-//       this.initialGiveAsset,
-//       this.initialGiveQuantity,
-//       this.initialGetAsset,
-//       this.initialGetQuantity});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocProvider(
-//       create: (context) {
-//         return OpenOrderFormBloc(
-//             assetRepository: assetRepository,
-//             balanceRepository: balanceRepository,
-//             currentAddress: currentAddress)
-//           ..add(InitializeForm(params: _getInitializeParams()));
-//       },
-//       child: OpenOrderForm_(),
-//     );
-//   }
-//
-//   _getInitializeParams() {
-//     if (initialGiveAsset != null &&
-//         initialGiveQuantity != null &&
-//         initialGetAsset != null &&
-//         initialGetQuantity != null) {
-//       return InitializeParams(
-//         initialGiveAsset: initialGiveAsset!,
-//         initialGiveQuantity: initialGiveQuantity!,
-//         initialGetQuantity: initialGetQuantity!,
-//         initialGetAsset: initialGetAsset!,
-//       );
-//     }
-//   }
-// }
