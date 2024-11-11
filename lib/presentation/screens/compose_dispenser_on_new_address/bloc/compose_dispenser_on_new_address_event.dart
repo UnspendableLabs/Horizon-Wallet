@@ -24,6 +24,4 @@ class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
   });
 }
 
-class BroadcastTransactions extends ComposeDispenserOnNewAddressEvent {
-
-}
+class BroadcastTransactions extends ComposeDispenserOnNewAddressEvent {}

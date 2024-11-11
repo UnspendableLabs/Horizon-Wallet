@@ -24,6 +24,9 @@ abstract class TransactionService {
   Future<String> constructTransaction(
       {required String unsignedTransaction,
       required String sourceAddress,
-      required Map<String, Utxo> utxoMap,
-      });
+      required List<Utxo> utxos,
+      required int btcQuantity,
+      required String sourcePrivKey,
+      required String destinationPrivKey,
+      required int fee});
 }

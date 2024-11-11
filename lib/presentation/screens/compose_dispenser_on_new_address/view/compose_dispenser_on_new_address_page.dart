@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
@@ -127,7 +126,7 @@ class _ComposeDispenserOnNewAddressPageState
             Navigator.of(context).pop();
             context.read<ShellStateCubit>().refreshAndSelectNewAddress(
                 state.newAddress!.address, state.newAccount!.uuid);
-             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 duration: const Duration(seconds: 5),
                 action: SnackBarAction(
                   label: 'Success',
@@ -137,8 +136,7 @@ class _ComposeDispenserOnNewAddressPageState
                 ),
                 content: const Text('Success'),
                 behavior: SnackBarBehavior.floating));
-                                  await Future.delayed(const Duration(milliseconds: 500));
-
+            await Future.delayed(const Duration(milliseconds: 500));
           },
           orElse: () {},
         );
@@ -183,13 +181,14 @@ class _ComposeDispenserOnNewAddressPageState
                 ),
               ),
             ),
-            confirm: (newAccountName,
-                newAddress,
-                composeSendTransaction1,
-                composeSendTransaction2,
-                composeDispenserTransaction,
-                fee,
-                ) {
+            confirm: (
+              newAccountName,
+              newAddress,
+              composeSendTransaction1,
+              composeSendTransaction2,
+              composeDispenserTransaction,
+              fee,
+            ) {
               final send1Params =
                   (composeSendTransaction1 as ComposeSendResponse).params;
               final send2Params =
@@ -339,7 +338,7 @@ class _ComposeDispenserOnNewAddressPageState
                     enabled: false,
                   ),
                   const SizedBox(height: 16.0),
-                              HorizonUI.HorizonTextFormField(
+                  HorizonUI.HorizonTextFormField(
                     label: "Fee ",
                     controller: TextEditingController(
                       text: "$fee sats",
@@ -352,10 +351,11 @@ class _ComposeDispenserOnNewAddressPageState
                       onBack: () {
                         Navigator.of(context).pop();
                       },
-                      onContinue:
-                             () {
-                              context.read<ComposeDispenserOnNewAddressBloc>().add(BroadcastTransactions());
-                            }),
+                      onContinue: () {
+                        context
+                            .read<ComposeDispenserOnNewAddressBloc>()
+                            .add(BroadcastTransactions());
+                      }),
                 ],
               );
             },

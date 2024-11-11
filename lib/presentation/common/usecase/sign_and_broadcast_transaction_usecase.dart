@@ -98,7 +98,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         source,
         utxoMap,
       );
-
+      final decodedTx = await bitcoindService.decoderawtransaction(txHex);
       // Broadcast Transaction
       try {
         final txHash = await bitcoindService.sendrawtransaction(txHex);

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
@@ -369,12 +370,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final mainchainrate = params.mainchainrate;
     final status = params.status ?? 0;
 
+    final Vout? outputForChaining = prevDecodedTransaction.vout
+        .firstWhereOrNull((vout) => vout.scriptPubKey.address == params.source);
+
+    if (outputForChaining == null) {
+      throw Exception('Output for chaining not found');
+    }
+
     // the second output represents the change send to the destination
-    final prevTxOutput = prevDecodedTransaction.vout[1];
-    final scriptPubKey = prevTxOutput.scriptPubKey;
-    final int value = (prevTxOutput.value * 100000000).toInt();
+    final scriptPubKey = outputForChaining.scriptPubKey;
+    final int value = (outputForChaining.value * 100000000).toInt();
     final String txid = prevDecodedTransaction.txid;
-    final int vout = prevTxOutput.n;
+    final int vout = outputForChaining.n;
 
     final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
 
