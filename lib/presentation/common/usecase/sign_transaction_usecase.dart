@@ -67,23 +67,37 @@ class SignTransactionUseCase {
         final vout0 = prevDecodedTransaction.vout[0];
         final vout1 = prevDecodedTransaction.vout[1];
         utxosToSign = [
-          Utxo(
-              txid: prevDecodedTransaction.txid,
-              vout: vout0.n,
-              height: null,
-              value: (vout0.value * 100000000).toInt(),
-              address: vout1.scriptPubKey.address!),
+          // Utxo(
+          //     txid: prevDecodedTransaction.txid,
+          //     vout: vout0.n,
+          //     height: null,
+          //     value: (vout0.value * 100000000).toInt(),
+          //     address: vout1.scriptPubKey.address!),
           Utxo(
               txid: prevDecodedTransaction.txid,
               vout: vout1.n,
               height: null,
               value: (vout1.value * 100000000).toInt(),
               address: vout1.scriptPubKey.address!)
+
         ];
       } else {
         // otherwise, fetch the utxos for the source address
-        utxosToSign = await utxoRepository.getUnspentForAddress(source);
+        List<Utxo> utxos = await utxoRepository.getUnspentForAddress(source);
+        final utxo = utxos.first;
+        utxosToSign = [
+            Utxo(
+              txid: utxo.txid,
+              vout: utxo.vout,
+              height: utxo.height,
+              value: utxo.value,
+              address: utxo.address)
+        ];
       }
+      /**
+       * utxosToSign
+       * List (2 items)
+       */
       final Map<String, Utxo> utxoMap = {for (var e in utxosToSign) e.txid: e};
       String? privKey = addressPrivKey;
 

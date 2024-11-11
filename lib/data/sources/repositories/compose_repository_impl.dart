@@ -321,9 +321,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
     // if the previous sent asset is btc, then the first output represents the change send to the destination
     // if the previous sent asset is not btc, then the second output represents the change send to the destination
-    final prevOutputIndex = previousSentAsset == 'BTC' ? 0 : 1;
+    // final prevOutputIndex = previousSentAsset == 'BTC'/ ? 0 : 1;
 
-    final prevTxOutput = prevDecodedTransaction.vout[prevOutputIndex];
+    final prevTxOutput = prevDecodedTransaction.vout[1];
     final scriptPubKey = prevTxOutput.scriptPubKey;
     final int value = (prevTxOutput.value * 100000000).toInt();
     final String txid = prevDecodedTransaction.txid;
