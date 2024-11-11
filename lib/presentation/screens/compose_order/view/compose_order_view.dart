@@ -78,19 +78,14 @@ class ComposeOrderPageWrapper extends StatelessWidget {
               child: BlocProvider(
                 create: (context) => OpenOrderFormBloc(
                     composeRepository: GetIt.I.get<ComposeRepository>(),
-                    onSubmitSuccess: (submit) {},
-                    onFormSubmitted: (SubmitArgs args) {
+                    onSubmitSuccess: (success) {
                       context
                           .read<ComposeOrderBloc>()
-                          .add(ComposeTransactionEvent(
-                              sourceAddress: currentAddress,
-                              params: ComposeOrderEventParams(
-                                feeRate: args.feeRateSatsVByte,
-                                giveAsset: args.giveAsset,
-                                giveQuantity: args.giveQuantity,
-                                getAsset: args.getAsset,
-                                getQuantity: args.getQuantity,
-                              )));
+                          .add(ComposeResponseReceived(
+                            response: success.response,
+                            virtualSize: success.virtualSize,
+                            feeRate: success.feeRate,
+                          ));
                     },
                     onFormCancelled: () {
                       // TODO: could move this up the tree

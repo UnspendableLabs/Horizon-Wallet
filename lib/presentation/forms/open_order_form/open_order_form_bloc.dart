@@ -324,7 +324,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   final currentAddress;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final void Function() onFormCancelled;
-  final void Function(SubmitArgs) onFormSubmitted;
   final void Function(OnSubmitSuccessArgs) onSubmitSuccess;
 
   final ComposeTransactionUseCase composeTransactionUseCase;
@@ -339,7 +338,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.onFormCancelled,
-    required this.onFormSubmitted,
     String? initialGiveAsset,
     int? initialGiveQuantity,
   }) : super(FormStateModel(
@@ -594,12 +592,10 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
 
-      onFormSubmitted(SubmitArgs(
-        getAsset: getAsset,
-        getQuantity: getQuantity,
-        giveAsset: giveAsset,
-        giveQuantity: giveQuantity,
-        feeRateSatsVByte: _getFeeRate(),
+      onSubmitSuccess(OnSubmitSuccessArgs(
+        response: composed,
+        virtualSize: virtualSize,
+        feeRate: feeRate,
       ));
     } on ComposeTransactionException catch (e, _) {
       emit(state.copyWith(
