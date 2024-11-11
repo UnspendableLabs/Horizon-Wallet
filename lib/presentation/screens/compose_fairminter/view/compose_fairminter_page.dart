@@ -209,8 +209,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         subAsset = fullAssetName.split('.')[1];
       }
 
-      print('parent: $parent');
-      print('subAsset: $subAsset');
       context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeFairminterEventParams(
@@ -246,6 +244,16 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         label: "Select an asset",
         items: assets
             .where((asset) => asset.locked == false)
+            .where((asset) {
+              if (asset.assetLongname == null || asset.assetLongname!.isEmpty) {
+                return true;
+              }
+              final subassetPart = asset.assetLongname!.split('.')[1];
+              if (subassetPart.length > 20) {
+                return false;
+              }
+              return RegExp(r'^[A-Z]+$').hasMatch(subassetPart);
+            })
             .map((asset) => DropdownMenuItem(
                 value: asset,
                 child:

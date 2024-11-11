@@ -208,12 +208,12 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('fairmint broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_fairmint');
+
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_fairmint');
         },
         onError: (msg) {
           emit(state.copyWith(

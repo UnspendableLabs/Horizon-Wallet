@@ -322,12 +322,12 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('send broadcasted txHash: $txHash');
+          analyticsService.trackEvent('broadcast_tx_send');
+
           emit(state.copyWith(
               submitState: SubmitSuccess(
                   transactionHex: txHex,
                   sourceAddress: compose.params.source)));
-
-          analyticsService.trackEvent('broadcast_tx_send');
         },
         onError: (msg) {
           emit(state.copyWith(
