@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import './open_order_form_bloc.dart';
 
 class OpenOrderForm extends StatelessWidget {
   final BalanceRepository balanceRepository;
   final AssetRepository assetRepository;
   final String currentAddress;
+  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
 
   final String? initialGiveAsset;
   final int? initialGiveQuantity;
@@ -24,6 +28,7 @@ class OpenOrderForm extends StatelessWidget {
       required this.assetRepository,
       required this.balanceRepository,
       required this.currentAddress,
+      required this.getFeeEstimatesUseCase,
       this.initialGiveAsset,
       this.initialGiveQuantity,
       this.initialGetAsset,
@@ -34,6 +39,11 @@ class OpenOrderForm extends StatelessWidget {
     return BlocProvider(
       create: (context) {
         return OpenOrderFormBloc(
+            onFormCancelled: () {
+              // TODO: could move this up the tree
+              Navigator.of(context).pop();
+            },
+            getFeeEstimatesUseCase: getFeeEstimatesUseCase,
             assetRepository: assetRepository,
             balanceRepository: balanceRepository,
             currentAddress: currentAddress)
@@ -59,8 +69,6 @@ class OpenOrderForm extends StatelessWidget {
 }
 
 class OpenOrderForm_ extends StatefulWidget {
-  OpenOrderForm_({super.key});
-
   @override
   State<OpenOrderForm_> createState() => _OpenOrderForm();
 }
@@ -92,32 +100,33 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OpenOrderFormBloc, FormStateModel>(
-      listener: (context, state) {
-        if (_giveAssetController.text != state.giveAsset.value) {
-          _giveAssetController.text = state.giveAsset.value;
-        }
+    return BlocConsumer<OpenOrderFormBloc, FormStateModel>(
+        listener: (context, state) {
+      if (_giveAssetController.text != state.giveAsset.value) {
+        _giveAssetController.text = state.giveAsset.value;
+      }
 
-        if (_giveQuantityController.text != state.giveQuantity.value) {
-          _giveQuantityController.text = state.giveQuantity.value;
-        }
-        if (_getQuantityController.text != state.getQuantity.value) {
-          _getQuantityController.text = state.getQuantity.value;
-        }
+      if (_giveQuantityController.text != state.giveQuantity.value) {
+        _giveQuantityController.text = state.giveQuantity.value;
+      }
+      if (_getQuantityController.text != state.getQuantity.value) {
+        _getQuantityController.text = state.getQuantity.value;
+      }
 
-        if (_getAssetController.text != state.getAsset.value) {
-          _getAssetController.text = state.getAsset.value;
-        }
+      if (_getAssetController.text != state.getAsset.value) {
+        _getAssetController.text = state.getAsset.value;
+      }
 
-        if (state.submissionStatus.isSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Dispenser Created Successfully')));
-        } else if (state.submissionStatus.isFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(state.errorMessage ?? 'Submission Failed')));
-        }
-      },
-      child: Padding(
+
+      if (state.submissionStatus.isSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Dispenser Created Successfully')));
+      } else if (state.submissionStatus.isFailure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.errorMessage ?? 'Submission Failed')));
+      }
+    }, builder: (context, state) {
+      return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,11 +162,53 @@ class _OpenOrderForm extends State<OpenOrderForm_> {
                     child: GetAssetInputField(controller: _getAssetController))
               ],
             ),
-            SubmitButton(),
+            const HorizonUI.HorizonDivider(),
+            FeeSelectionV2(
+              value: state.feeOption,
+              feeEstimates: switch (state.feeEstimates) {
+                Success(data: var feeEstimates) =>
+                  FeeEstimateSuccess(feeEstimates: feeEstimates),
+                _ => FeeEstimateLoading()
+              },
+              onFieldSubmitted: () {},
+
+              // state.feeState.maybeWhen(
+              //   success: (feeEstimates) =>
+              //       FeeEstimateSuccess(feeEstimates: feeEstimates),
+              //   orElse: () => FeeEstimateLoading(),
+              // ),
+              onSelected: (feeOption) {},
+              layout: MediaQuery.of(context).size.width > 768
+                  ? FeeSelectionLayout.row
+                  : FeeSelectionLayout.column,
+            ),
+            const HorizonUI.HorizonDivider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                HorizonUI.HorizonCancelButton(
+                  onPressed: () {
+                    context.read<OpenOrderFormBloc>().add(FormCancelled());
+                  },
+                  buttonText: 'CANCEL',
+                ),
+                HorizonUI.HorizonContinueButton(
+                  loading: state.submissionStatus.isInProgress,
+                  onPressed: state.submissionStatus.isInProgress
+                      ? () {}
+                      : () {
+                          context
+                              .read<OpenOrderFormBloc>()
+                              .add(FormSubmitted());
+                        },
+                  buttonText: 'CONTINUE',
+                ),
+              ],
+            ),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
@@ -310,26 +361,6 @@ class GetQuantityInputField extends StatelessWidget {
               ? TextInputType.numberWithOptions(decimal: true)
               : TextInputType.number,
         );
-      },
-    );
-  }
-}
-
-class SubmitButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      buildWhen: (previous, current) =>
-          previous.submissionStatus != current.submissionStatus,
-      builder: (context, state) {
-        return state.submissionStatus.isInProgress
-            ? CircularProgressIndicator()
-            : ElevatedButton(
-                onPressed: () {
-                  context.read<OpenOrderFormBloc>().add(FormSubmitted());
-                },
-                child: Text('Submit'),
-              );
       },
     );
   }

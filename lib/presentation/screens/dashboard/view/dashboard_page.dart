@@ -33,6 +33,7 @@ import 'package:horizon/presentation/screens/compose_fairmint/view/compose_fairm
 import 'package:horizon/presentation/screens/compose_fairminter/view/compose_fairminter_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import 'package:horizon/presentation/screens/compose_order/view/compose_order_view.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
@@ -46,8 +47,9 @@ import 'package:horizon/presentation/screens/dashboard/view/balances_display.dar
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
-import 'package:horizon/presentation/screens/open_order/view/open_order_view.dart';
+
 
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -457,9 +459,12 @@ class OrderButtonMenu extends StatelessWidget {
                       context: context,
                       body: HorizonUI.HorizonDialog(
                         title: "Open Buy Order",
-                        body: OpenOrderWizard(
+                        body: ComposeOrderPageWrapper(
                           currentAddress: currentAddress,
-                          balanceRepository: GetIt.I<BalanceRepository>(),
+                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+
+                          // balanceRepository: GetIt.I<BalanceRepository>(),
                           assetRepository: GetIt.I<AssetRepository>(),
                         ),
                       ),
@@ -1155,16 +1160,17 @@ class DashboardPageState extends State<DashboardPage> {
       context: context,
       body: HorizonUI.HorizonDialog(
         title: "Open Buy Order",
-        body: OpenOrderWizard(
-          currentAddress: widget.currentAddress?.address ??
-              widget.currentImportedAddress!.address,
-          balanceRepository: GetIt.I<BalanceRepository>(),
-          assetRepository: GetIt.I<AssetRepository>(),
-          initialGiveQuantity: giveQuantity,
-          initialGiveAsset: giveAsset,
-          initialGetQuantity: getQuantity,
-          initialGetAsset: getAsset,
-        ),
+        body: Text("foo"),
+        // body: OpenOrderWizard(
+        //   currentAddress: widget.currentAddress?.address ??
+        //       widget.currentImportedAddress!.address,
+        //   balanceRepository: GetIt.I<BalanceRepository>(),
+        //   assetRepository: GetIt.I<AssetRepository>(),
+        //   initialGiveQuantity: giveQuantity,
+        //   initialGiveAsset: giveAsset,
+        //   initialGetQuantity: getQuantity,
+        //   initialGetAsset: getAsset,
+        // ),
       ),
     );
   }

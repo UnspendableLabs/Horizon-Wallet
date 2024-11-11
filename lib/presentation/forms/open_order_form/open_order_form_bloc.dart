@@ -10,6 +10,10 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 
 enum GiveAssetValidationError { empty }
 
@@ -185,9 +189,14 @@ class GetQuantityChanged extends FormEvent {
 
 class FormSubmitted extends FormEvent {}
 
+class FormCancelled extends FormEvent {}
+
 // State
 
 class FormStateModel extends Equatable {
+  final RemoteData<FeeEstimates> feeEstimates;
+  final FeeOption feeOption;
+
   final RemoteData<List<Balance>> giveAssets;
   final RemoteData<List<Asset>> getAssets;
   final GiveAssetInput giveAsset;
@@ -200,6 +209,8 @@ class FormStateModel extends Equatable {
   final String? errorMessage;
 
   const FormStateModel({
+    required this.feeEstimates,
+    required this.feeOption,
     required this.giveAssets,
     required this.getAssets,
     this.giveAsset = const GiveAssetInput.pure(),
@@ -223,6 +234,8 @@ class FormStateModel extends Equatable {
     FormzSubmissionStatus? submissionStatus,
     String? errorMessage,
     RemoteData<Asset>? getAssetValidationStatus,
+    FeeOption? feeOption,
+    RemoteData<FeeEstimates>? feeEstimates,
   }) {
     return FormStateModel(
       giveAssets: giveAssets ?? this.giveAssets,
@@ -235,7 +248,9 @@ class FormStateModel extends Equatable {
           getAssetValidationStatus ?? this.getAssetValidationStatus,
       // price: price ?? this.price,
       submissionStatus: submissionStatus ?? this.submissionStatus,
-      errorMessage: errorMessage,
+      errorMessage: errorMessage ?? this.errorMessage,
+      feeEstimates: feeEstimates ?? this.feeEstimates,
+      feeOption: feeOption ?? this.feeOption,
     );
   }
 
@@ -257,17 +272,24 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   final BalanceRepository balanceRepository;
   final AssetRepository assetRepository;
   final currentAddress;
+  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final void Function() onFormCancelled;
 
   OpenOrderFormBloc({
     required this.assetRepository,
     required this.balanceRepository,
     required this.currentAddress,
+    required this.getFeeEstimatesUseCase,
+    required this.onFormCancelled,
     String? initialGiveAsset,
     int? initialGiveQuantity,
   }) : super(FormStateModel(
-            giveAssets: NotAsked(),
-            getAssets: NotAsked(),
-            getAssetValidationStatus: NotAsked())) {
+          giveAssets: NotAsked(),
+          getAssets: NotAsked(),
+          getAssetValidationStatus: NotAsked(),
+          feeEstimates: NotAsked(),
+          feeOption: Medium(),
+        )) {
     on<LoadGiveAssets>(_onLoadGiveAssets);
     on<GiveAssetChanged>(_onGiveAssetChanged);
     on<GetAssetChanged>(_onGetAssetChanged,
@@ -276,21 +298,26 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     on<GiveQuantityChanged>(_onGiveQuantityChanged);
 
     on<FormSubmitted>(_onFormSubmitted);
+    on<FormCancelled>(_onFormCancelled);
     on<InitializeForm>(_onInitializeForm);
   }
   Future<void> _onInitializeForm(
     InitializeForm event,
     Emitter<FormStateModel> emit,
   ) async {
-    emit(state.copyWith(giveAssets: Loading()));
+    emit(state.copyWith(giveAssets: Loading(), feeEstimates: Loading()));
 
     try {
-      final balances =
-          await balanceRepository.getBalancesForAddress(currentAddress);
+      final [balances as List<Balance>, feeEstimates as FeeEstimates] =
+          await Future.wait([
+        balanceRepository.getBalancesForAddress(currentAddress),
+        _fetchFeeEstimates(),
+      ]);
 
       if (event.params == null) {
-        print("parsms is null");
-        emit(state.copyWith(giveAssets: Success(balances)));
+        emit(state.copyWith(
+            giveAssets: Success(balances),
+            feeEstimates: Success(feeEstimates)));
       } else {
         final InitializeParams params = event.params!;
 
@@ -304,6 +331,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           // Case: No balance for the initial asset
           emit(state.copyWith(
             giveAssets: Success(balances),
+            feeEstimates: Success(feeEstimates),
             errorMessage:
                 'No balance available for the initial asset ${params.initialGiveAsset}',
           ));
@@ -322,6 +350,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           emit(state.copyWith(
             giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
             giveAssets: Success(balances),
+            feeEstimates: Success(feeEstimates),
             giveQuantity: GiveQuantityInput.dirty(
               initialGiveQuantityNormalized.toString(),
               balance: balanceForAsset.quantity,
@@ -335,6 +364,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           emit(state.copyWith(
             giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
             giveAssets: Success(balances),
+            feeEstimates: Success(feeEstimates),
             giveQuantity: GiveQuantityInput.dirty(
               initialGiveQuantityNormalized.toString(),
               balance: balanceForAsset.quantity,
@@ -485,8 +515,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         ? (double.parse(state.giveQuantity.value) * 100000000).round()
         : int.parse(state.giveQuantity.value));
 
-
-   // Denormalized values ready to be submitted
+    // Denormalized values ready to be submitted
     final Map<String, dynamic> submissionData = {
       "get_asset": getAsset,
       "get_quantity": getQuantity,
@@ -510,6 +539,28 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       ));
     }
   }
+
+  void _onFormCancelled(FormCancelled event, Emitter<FormStateModel> emit) {
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.initial));
+    onFormCancelled();
+  }
+
+
+  Future<FeeEstimates> _fetchFeeEstimates() async {
+    try {
+      return await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+    } catch (e) {
+      throw FetchFeeEstimatesException(e.toString());
+    }
+  }
+}
+
+class FetchFeeEstimatesException implements Exception {
+  final String message;
+  FetchFeeEstimatesException(this.message);
+
+  @override
+  String toString() => 'FetchFeeEstimatesException: $message';
 }
 
 EventTransformer<T> debounce<T>(Duration duration) {
