@@ -99,6 +99,34 @@ class _OpenOrderForm extends State<OpenOrderForm> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Get the current state from the bloc and initialize the controllers
+    final state = context.read<OpenOrderFormBloc>().state;
+    _initializeControllersFromState(state);
+  }
+
+  void _initializeControllersFromState(FormStateModel state) {
+    // Set controller values if they differ from the current state
+    if (_giveAssetController.text != state.giveAsset.value) {
+      _giveAssetController.text = state.giveAsset.value;
+    }
+
+    if (_giveQuantityController.text != state.giveQuantity.value) {
+      _giveQuantityController.text = state.giveQuantity.value;
+    }
+
+    if (_getQuantityController.text != state.getQuantity.value) {
+      _getQuantityController.text = state.getQuantity.value;
+    }
+
+    if (_getAssetController.text != state.getAsset.value) {
+      _getAssetController.text = state.getAsset.value;
+    }
+  }
+
+  @override
   void dispose() {
     // TODO: implement dispose
     _giveAssetController.dispose();
@@ -239,9 +267,9 @@ class GiveAssetInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      buildWhen: (previous, current) =>
-          previous.giveAssets != current.giveAssets ||
-          previous.giveAsset != current.giveAsset,
+      // buildWhen: (previous, current) =>
+      //     previous.giveAssets != current.giveAssets ||
+      //     previous.giveAsset != current.giveAsset,
       builder: (context, state) {
         if (state.giveAssets is Loading) {
           return Center(child: CircularProgressIndicator());
@@ -285,9 +313,9 @@ class GetAssetInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      buildWhen: (previous, current) =>
-          previous.getAsset != current.getAsset ||
-          previous.getAssetValidationStatus != current.getAssetValidationStatus,
+      // buildWhen: (previous, current) =>
+      //     previous.getAsset != current.getAsset ||
+      //     previous.getAssetValidationStatus != current.getAssetValidationStatus,
       builder: (context, state) {
         return TextField(
           controller: controller,
@@ -323,9 +351,9 @@ class GiveQuantityInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      buildWhen: (previous, current) =>
-          previous.giveQuantity != current.giveQuantity ||
-          previous.giveAsset != current.giveAsset,
+      // buildWhen: (previous, current) =>
+      //     previous.giveQuantity != current.giveQuantity ||
+      //     previous.giveAsset != current.giveAsset,
       builder: (context, state) {
         final isDivisible = state.giveQuantity.isDivisible; //
         final isAssetSelected = state.giveAsset.value.isNotEmpty;
@@ -362,9 +390,9 @@ class GetQuantityInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      buildWhen: (previous, current) =>
-          previous.getQuantity != current.getQuantity ||
-          previous.getAsset != previous.getAsset,
+      // buildWhen: (previous, current) =>
+      //     previous.getQuantity != current.getQuantity ||
+      //     previous.getAsset != previous.getAsset,
       builder: (context, state) {
         final isDivisible = state.getQuantity.isDivisible; //
         final isAssetSelected = state.getAsset.value.isNotEmpty;

@@ -592,11 +592,16 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
 
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.success,
+      ));
+
       onSubmitSuccess(OnSubmitSuccessArgs(
         response: composed,
         virtualSize: virtualSize,
         feeRate: feeRate,
       ));
+
     } on ComposeTransactionException catch (e, _) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,

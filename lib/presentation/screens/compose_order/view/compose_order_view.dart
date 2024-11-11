@@ -179,6 +179,10 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
         composeTransaction: composeTransaction, fee: fee));
   }
 
+  void onConfirmationBack() {
+    context.read<ComposeOrderBloc>().add(ConfirmationBackButtonPressed());
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeOrderBloc, ComposeOrderState>(
@@ -232,7 +236,9 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
                       ),
                     ];
                   },
-                  onBack: () {},
+                  onBack: () {
+                    onConfirmationBack();
+                  },
                   onContinue: (composeTransaction, fee, formKey) => {
                         onConfirmationContinue(
                             composeTransaction, fee, formKey),

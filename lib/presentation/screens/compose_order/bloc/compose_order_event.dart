@@ -10,9 +10,10 @@ class ComposeResponseReceived extends ComposeOrderEvent {
   final int feeRate;
 
   ComposeResponseReceived({
-    required this.response, 
+    required this.response,
     required this.virtualSize,
     required this.feeRate,
-
-    });
+  });
 }
+
+class ConfirmationBackButtonPressed extends ComposeOrderEvent {}

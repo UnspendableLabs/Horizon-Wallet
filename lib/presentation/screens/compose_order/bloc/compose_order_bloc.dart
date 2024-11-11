@@ -56,6 +56,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
           feeState: const FeeState.initial(),
         )) {
     on<ComposeResponseReceived>(_handleComposeResponseReceived);
+    on<ConfirmationBackButtonPressed>(_handleConfirmationBackButtonPressed);
   }
 
   @override
@@ -83,6 +84,11 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
       virtualSize: event.virtualSize.virtualSize,
       adjustedVirtualSize: event.virtualSize.adjustedVirtualSize,
     )));
+  }
+
+  void _handleConfirmationBackButtonPressed(
+      ConfirmationBackButtonPressed event, emit) async {
+    emit(state.copyWith(submitState: const SubmitInitial()));
   }
 
   @override
