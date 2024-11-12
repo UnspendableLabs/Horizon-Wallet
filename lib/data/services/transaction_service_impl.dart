@@ -201,7 +201,7 @@ class TransactionServiceImpl implements TransactionService {
 
     final network = _getNetwork();
 
-    // add the
+    // second,add the output to send the btc to the destination address
     dynamic destinationSigner =
         ecpairFactory.fromPrivateKey(destinationPrivKeyJS, network);
     bitcoinjs.Payment destinationScript = bitcoinjs.p2wpkh(
@@ -211,6 +211,7 @@ class TransactionServiceImpl implements TransactionService {
     psbt.addOutput(({'script': destinationScript.output, 'value': btcQuantity})
         .jsify() as bitcoinjs.TxOutput);
 
+    // next add the inputs
     dynamic sourceSigner =
         ecpairFactory.fromPrivateKey(sourcePrivKeyJS, network);
     bitcoinjs.Payment sourceScript = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
@@ -221,7 +222,7 @@ class TransactionServiceImpl implements TransactionService {
     // Keep track of used UTXOs by their txid
     Set<String> usedTxIds = {};
 
-    // First, add inputs from the original transaction
+    // First, add all inputs from the original transaction (the counterparty api requires the vins from the composed transaction)
     for (var i = 0; i < transaction.ins.toDart.length; i++) {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
@@ -238,7 +239,7 @@ class TransactionServiceImpl implements TransactionService {
       }
     }
 
-    // Then add additional UTXOs if needed, skipping any that were already used
+    // Then add additional UTXOs as inputs if needed, skipping any that were already used. We add UTXOs until we have enough to cover the btc + fee value.
     int currentInputIndex = transaction.ins.toDart.length;
     for (var utxo in utxos) {
       if (inputSetValue >= targetValue) break;

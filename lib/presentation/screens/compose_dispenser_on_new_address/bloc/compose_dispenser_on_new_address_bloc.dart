@@ -185,7 +185,11 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           await balanceRepository.getBalancesForAddress(newAddress.address);
 
       // the point of this flow is to open a dispenser on an unused address
-      if (newAddressBalances.isNotEmpty) {
+      // if no balances are found, the balances repository returns only a BTC balance of 0
+      if (newAddressBalances.length > 1 ||
+          (newAddressBalances.length == 1 &&
+              newAddressBalances.first.asset == 'BTC' &&
+              newAddressBalances.first.quantity > 0)) {
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 const ComposeDispenserOnNewAddressState.error(
