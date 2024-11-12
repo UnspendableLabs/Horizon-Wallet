@@ -79,6 +79,21 @@ class InfoVerboseMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: FairminterUnpackedVerboseMapper.toDomain(u),
         ),
+      api.OrderInfoVerbose(
+        unpackedData: var u
+      ) =>
+        TransactionInfoOrder(
+          btcAmountNormalized: info.btcAmountNormalized,
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: OrderUnpackedVerboseMapper.toDomain(u),
+        ),
       _ => TransactionInfo(
           btcAmountNormalized: info.btcAmountNormalized,
           hash: "",

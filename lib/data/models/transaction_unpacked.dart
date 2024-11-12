@@ -101,3 +101,24 @@ class FairminterUnpackedVerboseMapper {
     );
   }
 }
+
+
+class OrderUnpackedVerboseMapper {
+  static OrderUnpacked toDomain(api.OrderUnpackedVerbose u) {
+    return OrderUnpacked(
+      giveAsset: u.giveAsset,
+      giveQuantity: u.giveQuantity,
+      getAsset: u.getAsset,
+      getQuantity: u.getQuantity,
+      expiration: u.expiration,
+      feeRequired: u.feeRequired,
+      status: u.status,
+      giveQuantityNormalized: u.giveQuantityNormalized,
+      getQuantityNormalized: u.getQuantityNormalized,
+      feeRequiredNormalized: u.feeRequiredNormalized,
+      // giveAssetInfo: AssetInfoMapper.toDomain(u.giveAssetInfo),
+      // getAssetInfo: AssetInfoMapper.toDomain(u.getAssetInfo),
+    );
+  }
+}
+

@@ -214,8 +214,8 @@ class OrderUnpacked extends TransactionUnpacked {
   final String giveQuantityNormalized;
   final String getQuantityNormalized;
   final String feeRequiredNormalized;
-  final AssetInfo giveAssetInfo;
-  final AssetInfo getAssetInfo;
+  // final AssetInfo giveAssetInfo;
+  // final AssetInfo getAssetInfo;
 
   const OrderUnpacked({
     required this.giveAsset,
@@ -228,8 +228,8 @@ class OrderUnpacked extends TransactionUnpacked {
     required this.giveQuantityNormalized,
     required this.getQuantityNormalized,
     required this.feeRequiredNormalized,
-    required this.giveAssetInfo,
-    required this.getAssetInfo,
+    // required this.giveAssetInfo,
+    // required this.getAssetInfo,
   }) : super(messageType: "order");
 
   @override
@@ -245,7 +245,7 @@ class OrderUnpacked extends TransactionUnpacked {
         giveQuantityNormalized,
         getQuantityNormalized,
         feeRequiredNormalized,
-        giveAssetInfo,
-        getAssetInfo,
+        // giveAssetInfo,
+        // getAssetInfo,
       ];
 }
