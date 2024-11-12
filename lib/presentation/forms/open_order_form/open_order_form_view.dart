@@ -212,7 +212,7 @@ class GiveAssetInputField extends StatelessWidget {
           final giveAssets = (state.giveAssets as Success<List<Balance>>).data;
           final hasError =
               !state.giveAsset.isPure && state.giveAsset.error != null;
-          final errorMessage = 'Please select an asset';
+          final errorMessage = 'Required';
 
           return HorizonUI.HorizonDropdownMenu<String>(
             enabled: true,
@@ -253,20 +253,28 @@ class GetAssetInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      buildWhen: (previous, current) =>
-          previous.getAsset != current.getAsset ||
-          previous.getAssetValidationStatus != current.getAssetValidationStatus,
+      // buildWhen: (previous, current) =>
+      //     previous.getAsset != current.getAsset ||
+      //     previous.getAssetValidationStatus != current.getAssetValidationStatus,
       builder: (context, state) {
+        final hasError =
+            (!state.getAsset.isPure && state.getAsset.isNotValid) ||
+                state.getAssetValidationStatus is Failure;
+
+        final error = switch (state.getAsset.error) {
+          GetAssetValidationError.required => "Required",
+          _ when state.getAssetValidationStatus is Failure => "Asset not found",
+          _ => null
+        };
+
         return TextField(
           controller: controller,
           onChanged: (value) =>
               context.read<OpenOrderFormBloc>().add(GetAssetChanged(value)),
           decoration: InputDecoration(
               labelText: 'Get Asset',
-              helperText: " ",
-              errorText: state.getAssetValidationStatus is Failure
-                  ? 'Asset not found'
-                  : null,
+              errorText: hasError ? error : null,
+              helperText: hasError ? null : ' ',
               suffixIcon: switch (state.getAssetValidationStatus) {
                 Loading() => Container(
                     margin: EdgeInsets.all(8.0),
@@ -351,13 +359,19 @@ class GetQuantityInputField extends StatelessWidget {
         final hasError =
             !state.getQuantity.isPure && state.getQuantity.isNotValid;
 
+        final error = switch (state.getQuantity.error) {
+          GetQuantityValidationError.invalid => "Asset isn't divisible",
+          GetQuantityValidationError.required => "Required",
+          _ => null
+        };
+
         return TextField(
           controller: controller,
           onChanged: (value) =>
               context.read<OpenOrderFormBloc>().add(GetQuantityChanged(value)),
           decoration: InputDecoration(
             labelText: 'Get Quantity',
-            errorText: hasError ? 'Invalid quantity' : null,
+            errorText: hasError ? error : null,
             helperText: hasError ? null : ' ',
             // errorText: state.quantity.invalid ? 'Invalid quantity' : null,
           ),

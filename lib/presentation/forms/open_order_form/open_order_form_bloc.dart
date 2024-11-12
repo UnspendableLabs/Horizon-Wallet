@@ -31,7 +31,7 @@ class GiveAssetInput extends FormzInput<String, GiveAssetValidationError> {
   }
 }
 
-enum GetAssetValidationError { empty }
+enum GetAssetValidationError { required }
 
 class GetAssetInput extends FormzInput<String, GetAssetValidationError> {
   const GetAssetInput.pure() : super.pure('');
@@ -39,7 +39,7 @@ class GetAssetInput extends FormzInput<String, GetAssetValidationError> {
 
   @override
   GetAssetValidationError? validator(String value) {
-    return value.isNotEmpty ? null : GetAssetValidationError.empty;
+    return value.isNotEmpty ? null : GetAssetValidationError.required;
   }
 }
 
@@ -75,10 +75,9 @@ class GiveQuantityInput
       return GiveQuantityValidationError.required;
     }
 
-
     final quantity = isDivisible
         ? (double.tryParse(value)! * 100000000)
-        : int.tryParse(value); 
+        : int.tryParse(value);
 
     if (quantity == null || quantity <= 0) {
       return GiveQuantityValidationError.invalid;
@@ -90,7 +89,7 @@ class GiveQuantityInput
   }
 }
 
-enum GetQuantityValidationError { invalid }
+enum GetQuantityValidationError { invalid, required }
 
 class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
   final bool isDivisible;
@@ -102,7 +101,9 @@ class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
 
   @override
   GetQuantityValidationError? validator(String value) {
-    if (value.isEmpty) return GetQuantityValidationError.invalid;
+    if (value == null || value.isEmpty) {
+      return GetQuantityValidationError.required;
+    }
 
     final quantity = isDivisible
         ? (double.tryParse(value)! * 100000000)
@@ -437,7 +438,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
             getAssetValidationStatus: Loading(),
           ));
 
-
           try {
             final asset =
                 await assetRepository.getAssetVerbose(params.initialGetAsset);
@@ -484,7 +484,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     emit(state.copyWith(
       giveQuantity: giveQuantity,
       giveAsset: giveAssetInput,
-      getAsset: const GetAssetInput.pure(),
       errorMessage: null,
     ));
   }
@@ -493,7 +492,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       GetAssetChanged event, Emitter<FormStateModel> emit) async {
     final getAssetInput = GetAssetInput.dirty(event.getAssetId);
     emit(state.copyWith(
-      getQuantity: const GetQuantityInput.pure(),
       getAsset: getAssetInput,
       getAssetValidationStatus: Loading(),
     ));
@@ -518,9 +516,11 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   void _onGetQuantityChanged(
       GetQuantityChanged event, Emitter<FormStateModel> emit) {
-    final isDivisible = state.getAssetValidationStatus is Success<Asset> &&
-        (state.getAssetValidationStatus as Success<Asset>).data.divisible ==
-            true;
+    final isDivisible = switch (state.getAssetValidationStatus) {
+      Success(data: var asset) => asset.divisible!,
+      _ =>
+        true, // default to true ( i.e. let user specify decimal if no asset selected)
+    };
 
     final input = GetQuantityInput.dirty(event.value, isDivisible: isDivisible);
     emit(state.copyWith(getQuantity: input, errorMessage: null));
@@ -556,10 +556,41 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   Future<void> _onFormSubmitted(
       FormSubmitted event, Emitter<FormStateModel> emit) async {
+    final giveAssetInput = GiveAssetInput.dirty(state.giveAsset.value);
+    final getAssetInput = GetAssetInput.dirty(state.getAsset.value);
+    final giveQuantityInput = GiveQuantityInput.dirty(
+      state.giveQuantity.value,
+      balance: _getBalanceForAsset(state.giveAsset.value)?.quantity,
+      isDivisible: state.giveQuantity.isDivisible,
+    );
+    final getQuantityInput = GetQuantityInput.dirty(
+      state.getQuantity.value,
+      isDivisible: state.getQuantity.isDivisible,
+    );
+
+
+    emit(state.copyWith(
+      giveAsset: giveAssetInput,
+      getAsset: getAssetInput,
+      giveQuantity: giveQuantityInput,
+      getQuantity: getQuantityInput,
+    ));
+
+    if (!Formz.validate([
+      giveAssetInput,
+      getAssetInput,
+      giveQuantityInput,
+      getQuantityInput,
+    ])) {
+      emit(state.copyWith(submissionStatus: FormzSubmissionStatus.failure));
+      return;
+    }
+
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
     try {
       final feeRate = _getFeeRate();
+
       final String getAsset = state.getAsset.value;
       final String giveAsset = state.giveAsset.value;
       final int getQuantity = (state.getQuantity.isDivisible

@@ -206,7 +206,7 @@ void main() {
     act: (bloc) => bloc.add(const GetAssetChanged('ASSET2')),
     expect: () => [
       isA<FormStateModel>()
-          .having((state) => state.getQuantity.value, 'getQuantity.value', '')
+          .having((state) => state.getQuantity.value, 'getQuantity.value', '50')
           .having((state) => state.getAsset.value, 'getAsset.value', 'ASSET2')
           .having((state) => state.getAssetValidationStatus,
               'getAssetValidationStatus', isA<Loading>()),
