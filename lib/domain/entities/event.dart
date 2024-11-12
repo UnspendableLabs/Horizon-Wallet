@@ -966,3 +966,116 @@ class VerboseRefillDispenserEvent extends VerboseEvent {
     required this.params,
   });
 }
+
+class OpenOrderParams {
+  final int blockIndex;
+  final int expiration;
+  final int expireIndex;
+  final int feeProvided;
+  final int feeProvidedRemaining;
+  final int feeRequired;
+  final int feeRequiredRemaining;
+  final String getAsset;
+  final int getQuantity;
+  final int getRemaining;
+  final String giveAsset;
+  final int giveQuantity;
+  final int giveRemaining;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  // final int blockTime;
+
+  OpenOrderParams({
+    required this.blockIndex,
+    required this.expiration,
+    required this.expireIndex,
+    required this.feeProvided,
+    required this.feeProvidedRemaining,
+    required this.feeRequired,
+    required this.feeRequiredRemaining,
+    required this.getAsset,
+    required this.getQuantity,
+    required this.getRemaining,
+    required this.giveAsset,
+    required this.giveQuantity,
+    required this.giveRemaining,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    // required this.blockTime,
+  });
+}
+
+class OpenOrderEvent extends Event {
+  final OpenOrderParams params;
+
+  const OpenOrderEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseOpenOrderParams extends OpenOrderParams {
+  final String giveQuantityNormalized;
+  final String getQuantityNormalized;
+  final String getRemainingNormalized;
+  final String giveRemainingNormalized;
+  final String feeProvidedNormalized;
+  final String feeRequiredNormalized;
+  final String feeRequiredRemainingNormalized;
+  final String feeProvidedRemainingNormalized;
+  // final AssetInfo giveAssetInfo;
+  // final AssetInfo getAssetInfo;
+
+  VerboseOpenOrderParams({
+    required super.blockIndex,
+    required super.expiration,
+    required super.expireIndex,
+    required super.feeProvided,
+    required super.feeProvidedRemaining,
+    required super.feeRequired,
+    required super.feeRequiredRemaining,
+    required super.getAsset,
+    required super.getQuantity,
+    required super.getRemaining,
+    required super.giveAsset,
+    required super.giveQuantity,
+    required super.giveRemaining,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    // required super.blockTime,
+    required this.giveQuantityNormalized,
+    required this.getQuantityNormalized,
+    required this.getRemainingNormalized,
+    required this.giveRemainingNormalized,
+    required this.feeProvidedNormalized,
+    required this.feeRequiredNormalized,
+    required this.feeRequiredRemainingNormalized,
+    required this.feeProvidedRemainingNormalized,
+    // required this.giveAssetInfo,
+    // required this.getAssetInfo,
+  });
+}
+
+class VerboseOpenOrderEvent extends VerboseEvent {
+  final VerboseOpenOrderParams params;
+
+  const VerboseOpenOrderEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}

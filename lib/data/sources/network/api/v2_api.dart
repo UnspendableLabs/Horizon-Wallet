@@ -4,6 +4,7 @@ import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
+import 'package:horizon/data/models/compose_order.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/fairminter.dart';
@@ -263,6 +264,8 @@ class Event {
         return NewFairmintEvent.fromJson(json);
       case 'NEW_FAIRMINTER':
         return NewFairminterEvent.fromJson(json);
+      case "OPEN_ORDER":
+        return OpenOrderEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -930,6 +933,139 @@ class VerboseOpenDispenserParams extends OpenDispenserParams {
       _$VerboseOpenDispenserParamsFromJson(json);
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OpenOrderEvent extends Event {
+  final OpenOrderParams params;
+
+  OpenOrderEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory OpenOrderEvent.fromJson(Map<String, dynamic> json) =>
+      _$OpenOrderEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OpenOrderEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OpenOrderParams {
+  final int blockIndex;
+  final int expiration;
+  final int expireIndex;
+  final int feeProvided;
+  final int feeProvidedRemaining;
+  final int feeRequired;
+  final int feeRequiredRemaining;
+  final String getAsset;
+  final int getQuantity;
+  final int getRemaining;
+  final String giveAsset;
+  final int giveQuantity;
+  final int giveRemaining;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+
+  OpenOrderParams({
+    required this.blockIndex,
+    required this.expiration,
+    required this.expireIndex,
+    required this.feeProvided,
+    required this.feeProvidedRemaining,
+    required this.feeRequired,
+    required this.feeRequiredRemaining,
+    required this.getAsset,
+    required this.getQuantity,
+    required this.getRemaining,
+    required this.giveAsset,
+    required this.giveQuantity,
+    required this.giveRemaining,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory OpenOrderParams.fromJson(Map<String, dynamic> json) =>
+      _$OpenOrderParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OpenOrderParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOpenOrderEvent extends VerboseEvent {
+  final VerboseOpenOrderParams params;
+
+  VerboseOpenOrderEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseOpenOrderEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOpenOrderEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOpenOrderEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOpenOrderParams extends OpenOrderParams {
+  final String giveQuantityNormalized;
+  final String getQuantityNormalized;
+  final String getRemainingNormalized;
+  final String giveRemainingNormalized;
+  final String feeProvidedNormalized;
+  final String feeRequiredNormalized;
+  final String feeRequiredRemainingNormalized;
+  final String feeProvidedRemainingNormalized;
+  final AssetInfoModel giveAssetInfo;
+  final AssetInfoModel getAssetInfo;
+
+  VerboseOpenOrderParams({
+    required super.blockIndex,
+    required super.expiration,
+    required super.expireIndex,
+    required super.feeProvided,
+    required super.feeProvidedRemaining,
+    required super.feeRequired,
+    required super.feeRequiredRemaining,
+    required super.getAsset,
+    required super.getQuantity,
+    required super.getRemaining,
+    required super.giveAsset,
+    required super.giveQuantity,
+    required super.giveRemaining,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.giveQuantityNormalized,
+    required this.getQuantityNormalized,
+    required this.getRemainingNormalized,
+    required this.giveRemainingNormalized,
+    required this.feeProvidedNormalized,
+    required this.feeRequiredNormalized,
+    required this.feeRequiredRemainingNormalized,
+    required this.feeProvidedRemainingNormalized,
+    required this.giveAssetInfo,
+    required this.getAssetInfo,
+  });
+
+  factory VerboseOpenOrderParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOpenOrderParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseOpenOrderParamsToJson(this);
+}
+
 // {
 //     "event_index": 17758284,
 //     "event": "REFILL_DISPENSER",
@@ -1405,6 +1541,8 @@ class VerboseEvent extends Event {
         return VerboseNewFairmintEvent.fromJson(json);
       case 'NEW_FAIRMINTER':
         return VerboseNewFairminterEvent.fromJson(json);
+      case "OPEN_ORDER":
+        return VerboseOpenOrderEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -2406,6 +2544,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return FairmintUnpackedVerbose.fromJson(json);
       case "fairminter":
         return FairminterUnpackedVerbose.fromJson(json);
+      case "order":
+        return OrderUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -2741,6 +2881,8 @@ class InfoVerbose extends Info {
         return FairmintInfoVerbose.fromJson(json);
       case "fairminter":
         return FairminterInfoVerbose.fromJson(json);
+      case "order":
+        return OrderInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -2978,6 +3120,80 @@ class DispenseInfoVerbose extends InfoVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$DispenseInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String giveAsset;
+  final int giveQuantity;
+  final String getAsset;
+  final int getQuantity;
+  final int expiration;
+  final int feeRequired;
+  final String status;
+  final String giveQuantityNormalized;
+  final String getQuantityNormalized;
+  final String feeRequiredNormalized;
+  // final AssetInfoModel giveAssetInfo;
+  // final AssetInfoModel getAssetInfo;
+
+  const OrderUnpackedVerbose({
+    required this.giveAsset,
+    required this.giveQuantity,
+    required this.getAsset,
+    required this.getQuantity,
+    required this.expiration,
+    required this.feeRequired,
+    required this.status,
+    required this.giveQuantityNormalized,
+    required this.getQuantityNormalized,
+    required this.feeRequiredNormalized,
+    // required this.giveAssetInfo,
+    // required this.getAssetInfo,
+  }) : super(messageType: "order");
+
+  factory OrderUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return OrderUnpackedVerbose(
+      giveAsset: messageData["give_asset"],
+      giveQuantity: messageData["give_quantity"],
+      getAsset: messageData["get_asset"],
+      getQuantity: messageData["get_quantity"],
+      expiration: messageData["expiration"],
+      feeRequired: messageData["fee_required"],
+      status: messageData["status"],
+      giveQuantityNormalized: messageData["give_quantity_normalized"],
+      getQuantityNormalized: messageData["get_quantity_normalized"],
+      feeRequiredNormalized: messageData["fee_required_normalized"],
+      // giveAssetInfo: AssetInfoModel.fromJson(messageData["give_asset_info"]),
+      // getAssetInfo: AssetInfoModel.fromJson(messageData["get_asset_info"]),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => _$OrderUnpackedVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderInfoVerbose extends InfoVerbose {
+  final OrderUnpackedVerbose unpackedData;
+  const OrderInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory OrderInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$OrderInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$OrderInfoVerboseToJson(this);
 }
 
 // {
@@ -3351,6 +3567,21 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
   ]);
 
+  @GET("/addresses/{address}/compose/order?verbose=true")
+  Future<Response<ComposeOrderResponseModel>> composeOrder(
+    @Path("address") String address,
+    @Query("give_asset") String giveAsset,
+    @Query("give_quantity") int giveQuantity,
+    @Query("get_asset") String getAsset,
+    @Query("get_quantity") int getQuantity,
+    @Query("expiration") int expiration,
+    @Query("fee_required") int feeRequired, [
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
   @GET("/addresses/{address}/dispensers")
   Future<Response<List<Dispenser>>> getDispenserByAddress(
     @Path("address") String address, [
@@ -3569,7 +3800,11 @@ abstract class V2Api {
   Future<Response<Asset>> getAsset(@Path("asset") String asset);
 
   @GET("/assets/{asset}?verbose=true")
-  Future<Response<AssetVerbose>> getAssetVerbose(@Path("asset") String asset);
+  Future<Response<AssetVerbose>> getAssetVerbose(
+    @Path("asset") String asset, [
+    @DioOptions() Options? options,
+  ]);
+
   @GET("/addresses/{address}/balances/{asset}?verbose=true")
   Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
     @Path("address") String address,

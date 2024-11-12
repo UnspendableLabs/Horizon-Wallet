@@ -939,6 +939,159 @@ Map<String, dynamic> _$VerboseOpenDispenserParamsToJson(
       'satoshirate_normalized': instance.satoshirateNormalized,
     };
 
+OpenOrderEvent _$OpenOrderEventFromJson(Map<String, dynamic> json) =>
+    OpenOrderEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: OpenOrderParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OpenOrderEventToJson(OpenOrderEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+OpenOrderParams _$OpenOrderParamsFromJson(Map<String, dynamic> json) =>
+    OpenOrderParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      expiration: (json['expiration'] as num).toInt(),
+      expireIndex: (json['expire_index'] as num).toInt(),
+      feeProvided: (json['fee_provided'] as num).toInt(),
+      feeProvidedRemaining: (json['fee_provided_remaining'] as num).toInt(),
+      feeRequired: (json['fee_required'] as num).toInt(),
+      feeRequiredRemaining: (json['fee_required_remaining'] as num).toInt(),
+      getAsset: json['get_asset'] as String,
+      getQuantity: (json['get_quantity'] as num).toInt(),
+      getRemaining: (json['get_remaining'] as num).toInt(),
+      giveAsset: json['give_asset'] as String,
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$OpenOrderParamsToJson(OpenOrderParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'expiration': instance.expiration,
+      'expire_index': instance.expireIndex,
+      'fee_provided': instance.feeProvided,
+      'fee_provided_remaining': instance.feeProvidedRemaining,
+      'fee_required': instance.feeRequired,
+      'fee_required_remaining': instance.feeRequiredRemaining,
+      'get_asset': instance.getAsset,
+      'get_quantity': instance.getQuantity,
+      'get_remaining': instance.getRemaining,
+      'give_asset': instance.giveAsset,
+      'give_quantity': instance.giveQuantity,
+      'give_remaining': instance.giveRemaining,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+VerboseOpenOrderEvent _$VerboseOpenOrderEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOpenOrderEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseOpenOrderParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOpenOrderEventToJson(
+        VerboseOpenOrderEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseOpenOrderParams _$VerboseOpenOrderParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOpenOrderParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      expiration: (json['expiration'] as num).toInt(),
+      expireIndex: (json['expire_index'] as num).toInt(),
+      feeProvided: (json['fee_provided'] as num).toInt(),
+      feeProvidedRemaining: (json['fee_provided_remaining'] as num).toInt(),
+      feeRequired: (json['fee_required'] as num).toInt(),
+      feeRequiredRemaining: (json['fee_required_remaining'] as num).toInt(),
+      getAsset: json['get_asset'] as String,
+      getQuantity: (json['get_quantity'] as num).toInt(),
+      getRemaining: (json['get_remaining'] as num).toInt(),
+      giveAsset: json['give_asset'] as String,
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      getQuantityNormalized: json['get_quantity_normalized'] as String,
+      getRemainingNormalized: json['get_remaining_normalized'] as String,
+      giveRemainingNormalized: json['give_remaining_normalized'] as String,
+      feeProvidedNormalized: json['fee_provided_normalized'] as String,
+      feeRequiredNormalized: json['fee_required_normalized'] as String,
+      feeRequiredRemainingNormalized:
+          json['fee_required_remaining_normalized'] as String,
+      feeProvidedRemainingNormalized:
+          json['fee_provided_remaining_normalized'] as String,
+      giveAssetInfo: AssetInfoModel.fromJson(
+          json['give_asset_info'] as Map<String, dynamic>),
+      getAssetInfo: AssetInfoModel.fromJson(
+          json['get_asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOpenOrderParamsToJson(
+        VerboseOpenOrderParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'expiration': instance.expiration,
+      'expire_index': instance.expireIndex,
+      'fee_provided': instance.feeProvided,
+      'fee_provided_remaining': instance.feeProvidedRemaining,
+      'fee_required': instance.feeRequired,
+      'fee_required_remaining': instance.feeRequiredRemaining,
+      'get_asset': instance.getAsset,
+      'get_quantity': instance.getQuantity,
+      'get_remaining': instance.getRemaining,
+      'give_asset': instance.giveAsset,
+      'give_quantity': instance.giveQuantity,
+      'give_remaining': instance.giveRemaining,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'give_quantity_normalized': instance.giveQuantityNormalized,
+      'get_quantity_normalized': instance.getQuantityNormalized,
+      'get_remaining_normalized': instance.getRemainingNormalized,
+      'give_remaining_normalized': instance.giveRemainingNormalized,
+      'fee_provided_normalized': instance.feeProvidedNormalized,
+      'fee_required_normalized': instance.feeRequiredNormalized,
+      'fee_required_remaining_normalized':
+          instance.feeRequiredRemainingNormalized,
+      'fee_provided_remaining_normalized':
+          instance.feeProvidedRemainingNormalized,
+      'give_asset_info': instance.giveAssetInfo,
+      'get_asset_info': instance.getAssetInfo,
+    };
+
 DispenserUpdateEvent _$DispenserUpdateEventFromJson(
         Map<String, dynamic> json) =>
     DispenserUpdateEvent(
@@ -2427,6 +2580,61 @@ Map<String, dynamic> _$DispenseInfoVerboseToJson(
       'unpacked_data': instance.unpackedData,
     };
 
+OrderUnpackedVerbose _$OrderUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    OrderUnpackedVerbose(
+      giveAsset: json['give_asset'] as String,
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      getAsset: json['get_asset'] as String,
+      getQuantity: (json['get_quantity'] as num).toInt(),
+      expiration: (json['expiration'] as num).toInt(),
+      feeRequired: (json['fee_required'] as num).toInt(),
+      status: json['status'] as String,
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      getQuantityNormalized: json['get_quantity_normalized'] as String,
+      feeRequiredNormalized: json['fee_required_normalized'] as String,
+    );
+
+Map<String, dynamic> _$OrderUnpackedVerboseToJson(
+        OrderUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'give_asset': instance.giveAsset,
+      'give_quantity': instance.giveQuantity,
+      'get_asset': instance.getAsset,
+      'get_quantity': instance.getQuantity,
+      'expiration': instance.expiration,
+      'fee_required': instance.feeRequired,
+      'status': instance.status,
+      'give_quantity_normalized': instance.giveQuantityNormalized,
+      'get_quantity_normalized': instance.getQuantityNormalized,
+      'fee_required_normalized': instance.feeRequiredNormalized,
+    };
+
+OrderInfoVerbose _$OrderInfoVerboseFromJson(Map<String, dynamic> json) =>
+    OrderInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      unpackedData: OrderUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OrderInfoVerboseToJson(OrderInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),
       height: (json['height'] as num).toInt(),
@@ -3878,6 +4086,61 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<ComposeOrderResponseModel>> composeOrder(
+    String address,
+    String giveAsset,
+    int giveQuantity,
+    String getAsset,
+    int getQuantity,
+    int expiration,
+    int feeRequired, [
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'give_asset': giveAsset,
+      r'give_quantity': giveQuantity,
+      r'get_asset': getAsset,
+      r'get_quantity': getQuantity,
+      r'expiration': expiration,
+      r'fee_required': feeRequired,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeOrderResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/order?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeOrderResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeOrderResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<Dispenser>>> getDispenserByAddress(
     String address, [
     String? status,
@@ -4420,28 +4683,25 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<AssetVerbose>> getAssetVerbose(String asset) async {
+  Future<Response<AssetVerbose>> getAssetVerbose(
+    String asset, [
+    Options? options,
+  ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<AssetVerbose>>(Options(
+    final newOptions = newRequestOptions(options);
+    newOptions.extra.addAll(_extra);
+    newOptions.headers.addAll(_dio.options.headers);
+    newOptions.headers.addAll(_headers);
+    final _result = await _dio.fetch<Map<String, dynamic>>(newOptions.copyWith(
       method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-            .compose(
-              _dio.options,
-              '/assets/${asset}?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
+      baseUrl: baseUrl ?? _dio.options.baseUrl,
+      queryParameters: queryParameters,
+      path: '/assets/${asset}?verbose=true',
+    )..data = _data);
     final _value = Response<AssetVerbose>.fromJson(
       _result.data!,
       (json) => AssetVerbose.fromJson(json as Map<String, dynamic>),
@@ -4510,6 +4770,31 @@ class _V2Api implements V2Api {
       (json) => NodeInfoModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
+  }
+
+  RequestOptions newRequestOptions(Object? options) {
+    if (options is RequestOptions) {
+      return options;
+    }
+    if (options is Options) {
+      return RequestOptions(
+        method: options.method,
+        sendTimeout: options.sendTimeout,
+        receiveTimeout: options.receiveTimeout,
+        extra: options.extra,
+        headers: options.headers,
+        responseType: options.responseType,
+        contentType: options.contentType.toString(),
+        validateStatus: options.validateStatus,
+        receiveDataWhenStatusError: options.receiveDataWhenStatusError,
+        followRedirects: options.followRedirects,
+        maxRedirects: options.maxRedirects,
+        requestEncoder: options.requestEncoder,
+        responseDecoder: options.responseDecoder,
+        path: '',
+      );
+    }
+    return RequestOptions(path: '');
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
