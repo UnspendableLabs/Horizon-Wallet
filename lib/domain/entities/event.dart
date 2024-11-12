@@ -985,7 +985,7 @@ class OpenOrderParams {
   final String status;
   final String txHash;
   final int txIndex;
-  final int blockTime;
+  // final int blockTime;
 
   OpenOrderParams({
     required this.blockIndex,
@@ -1005,7 +1005,7 @@ class OpenOrderParams {
     required this.status,
     required this.txHash,
     required this.txIndex,
-    required this.blockTime,
+    // required this.blockTime,
   });
 }
 
@@ -1052,7 +1052,7 @@ class VerboseOpenOrderParams extends OpenOrderParams {
     required super.status,
     required super.txHash,
     required super.txIndex,
-    required super.blockTime,
+    // required super.blockTime,
     required this.giveQuantityNormalized,
     required this.getQuantityNormalized,
     required this.getRemainingNormalized,

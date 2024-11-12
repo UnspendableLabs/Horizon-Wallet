@@ -221,6 +221,10 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildNewFairmintTitle(params),
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
+      VerboseOpenOrderEvent(params: var params) => SelectableText(
+          "Open Order: ${params.giveQuantityNormalized} ${params.giveAsset} /  ${params.getQuantityNormalized} ${params.getAsset} "),
+      VerboseNewFairminterEvent(params: var params) =>
+        _buildNewFairminterTitle(params),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -331,6 +335,11 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var unpackedData,
       ) =>
         SelectableText("New Fairminter for ${unpackedData.asset}"),
+      TransactionInfoOrder(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText(
+            "Open Order: ${unpackedData.giveQuantityNormalized} ${unpackedData.giveAsset} /  ${unpackedData.getQuantityNormalized} ${unpackedData.getAsset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -348,6 +357,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoFairmint() => const Icon(Icons.money, color: Colors.grey),
       TransactionInfoFairminter() =>
         const Icon(Icons.print, color: Colors.grey),
+      TransactionInfoOrder() => const Icon(Icons.toc, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -393,21 +403,7 @@ class ActivityFeedListItem extends StatelessWidget {
             }
           ],
         ),
-      VerboseResetIssuanceEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseEnhancedSendEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseDispenseEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseOpenDispenserEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseRefillDispenserEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseDispenserUpdateEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseNewFairmintEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseNewFairminterEvent(txHash: var hash) =>
+      VerboseEvent(txHash: var hash) =>
         TxHashDisplay(hash: hash, uriType: URIType.hoex),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
@@ -416,22 +412,9 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
     return switch (info) {
-      // local can only ever be a send
-      TransactionInfoEnhancedSend() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoIssuance() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoDispenser() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoDispense() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
-      TransactionInfoFairmint() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoFairminter() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      _ => const Icon(Icons.error),
+      _ => TxHashDisplay(hash: info.hash, uriType: URIType.hoex)
     };
   }
 
@@ -488,6 +471,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.money, color: Colors.grey),
       VerboseNewFairminterEvent(params: var _) =>
         const Icon(Icons.print, color: Colors.grey),
+      VerboseOpenOrderEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

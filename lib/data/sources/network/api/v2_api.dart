@@ -970,7 +970,6 @@ class OpenOrderParams {
   final String status;
   final String txHash;
   final int txIndex;
-  final int blockTime;
 
   OpenOrderParams({
     required this.blockIndex,
@@ -990,7 +989,6 @@ class OpenOrderParams {
     required this.status,
     required this.txHash,
     required this.txIndex,
-    required this.blockTime,
   });
 
   factory OpenOrderParams.fromJson(Map<String, dynamic> json) =>
@@ -1049,7 +1047,6 @@ class VerboseOpenOrderParams extends OpenOrderParams {
     required super.status,
     required super.txHash,
     required super.txIndex,
-    required super.blockTime,
     required this.giveQuantityNormalized,
     required this.getQuantityNormalized,
     required this.getRemainingNormalized,

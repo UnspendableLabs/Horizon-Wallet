@@ -1,7 +1,9 @@
 import 'package:horizon/presentation/forms/open_order_form/open_order_form_view.dart';
+import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
@@ -186,7 +188,27 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeOrderBloc, ComposeOrderState>(
-        listener: (context, state) {},
+        listener: (context, state) {
+
+        switch (state.submitState) {
+          case SubmitSuccess(transactionHex: var txHash):
+            widget.dashboardActivityFeedBloc.add(const Load());
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: 'Copy',
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: txHash));
+                  },
+                ),
+                content: Text(txHash),
+                behavior: SnackBarBehavior.floating));
+          case _:
+            break;
+        }
+
+        },
         builder: (context, state) {
           return switch (state.submitState) {
             SubmitInitial(error: var error) => OpenOrderForm(
@@ -269,7 +291,8 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
 
                 },
               ),
-            _ => Text("some other form state")
+            _ => SizedBox.shrink(),
+                      
           };
         });
   }

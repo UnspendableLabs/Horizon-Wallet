@@ -531,6 +531,7 @@ class DashboardActivityFeedBloc
             transactions: transactions));
       }
     } catch (e) {
+      rethrow;
       emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
     } finally {
       _isLoading = false;

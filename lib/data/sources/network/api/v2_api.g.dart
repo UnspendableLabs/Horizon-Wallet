@@ -976,7 +976,6 @@ OpenOrderParams _$OpenOrderParamsFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
     );
 
 Map<String, dynamic> _$OpenOrderParamsToJson(OpenOrderParams instance) =>
@@ -998,7 +997,6 @@ Map<String, dynamic> _$OpenOrderParamsToJson(OpenOrderParams instance) =>
       'status': instance.status,
       'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
-      'block_time': instance.blockTime,
     };
 
 VerboseOpenOrderEvent _$VerboseOpenOrderEventFromJson(
@@ -1044,7 +1042,6 @@ VerboseOpenOrderParams _$VerboseOpenOrderParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
       giveQuantityNormalized: json['give_quantity_normalized'] as String,
       getQuantityNormalized: json['get_quantity_normalized'] as String,
       getRemainingNormalized: json['get_remaining_normalized'] as String,
@@ -1081,7 +1078,6 @@ Map<String, dynamic> _$VerboseOpenOrderParamsToJson(
       'status': instance.status,
       'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
-      'block_time': instance.blockTime,
       'give_quantity_normalized': instance.giveQuantityNormalized,
       'get_quantity_normalized': instance.getQuantityNormalized,
       'get_remaining_normalized': instance.getRemainingNormalized,

@@ -566,7 +566,7 @@ class VerboseOpenOrderParamsMapper {
       status: apiParams.status,
       txHash: apiParams.txHash,
       txIndex: apiParams.txIndex,
-      blockTime: apiParams.blockTime,
+      // blockTime: apiParams.blockTime,
       giveQuantityNormalized: apiParams.giveQuantityNormalized,
       getQuantityNormalized: apiParams.getQuantityNormalized,
       getRemainingNormalized: apiParams.getRemainingNormalized,
