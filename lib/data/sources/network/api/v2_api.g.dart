@@ -4141,6 +4141,51 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<ComposeCancelResponseModel>> composeCancel(
+    String address,
+    String giveAsset, [
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'offer_hash': giveAsset,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeCancelResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/cancel?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeCancelResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeCancelResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<Dispenser>>> getDispenserByAddress(
     String address, [
     String? status,
@@ -4774,7 +4819,7 @@ class _V2Api implements V2Api {
 
   RequestOptions newRequestOptions(Object? options) {
     if (options is RequestOptions) {
-      return options;
+      return options as RequestOptions;
     }
     if (options is Options) {
       return RequestOptions(
