@@ -13,6 +13,7 @@ import 'package:horizon/domain/entities/compose_fairminter.dart'
     as compose_fairminter;
 import 'package:horizon/domain/entities/compose_dispense.dart'
     as compose_dispense;
+import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -377,6 +378,42 @@ class ComposeRepositoryImpl extends ComposeRepository {
           escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
         ),
         name: txVerbose.name);
+  }
+
+  @override
+  Future<compose_order.ComposeOrderResponse> composeOrder(int fee,
+      List<Utxo> inputsSet, compose_order.ComposeOrderParams params) async {
+    return await _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final giveQuantity = params.giveQuantity;
+        final giveAsset = params.giveAsset;
+        final getQuantity = params.getQuantity;
+        final getAsset = params.getAsset;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeOrder(
+            source,
+            giveAsset,
+            giveQuantity,
+            getAsset,
+            getQuantity,
+            4 * 2016, // Two months,
+            0, // fee required
+            true, //  allow unconfirmed
+            fee, //exect fee
+            inputsSetString);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose order');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
   }
 }
 

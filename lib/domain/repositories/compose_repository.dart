@@ -5,6 +5,8 @@ import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
+import 'package:horizon/domain/entities/compose_order.dart';
+
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
@@ -27,4 +29,6 @@ abstract class ComposeRepository {
 
   Future<ComposeDispenserResponseVerbose> composeDispenserChain(
       int fee, DecodedTx prevDecodedTransaction, ComposeDispenserParams params);
+  Future<ComposeOrderResponse> composeOrder(
+      int fee, List<Utxo> inputsSet, ComposeOrderParams params);
 }

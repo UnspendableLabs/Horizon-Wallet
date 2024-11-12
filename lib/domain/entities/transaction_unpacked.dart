@@ -201,3 +201,50 @@ class FairminterUnpackedVerbose extends TransactionUnpacked {
   const FairminterUnpackedVerbose({required this.asset})
       : super(messageType: "fairminter");
 }
+
+class OrderUnpacked extends TransactionUnpacked {
+  final String giveAsset;
+  final int giveQuantity;
+  final String getAsset;
+  final int getQuantity;
+  final int expiration;
+  final int feeRequired;
+  final String status;
+  final String giveQuantityNormalized;
+  final String getQuantityNormalized;
+  final String feeRequiredNormalized;
+  // final AssetInfo giveAssetInfo;
+  // final AssetInfo getAssetInfo;
+
+  const OrderUnpacked({
+    required this.giveAsset,
+    required this.giveQuantity,
+    required this.getAsset,
+    required this.getQuantity,
+    required this.expiration,
+    required this.feeRequired,
+    required this.status,
+    required this.giveQuantityNormalized,
+    required this.getQuantityNormalized,
+    required this.feeRequiredNormalized,
+    // required this.giveAssetInfo,
+    // required this.getAssetInfo,
+  }) : super(messageType: "order");
+
+  @override
+  List<Object?> get props => [
+        messageType,
+        giveAsset,
+        giveQuantity,
+        getAsset,
+        getQuantity,
+        expiration,
+        feeRequired,
+        status,
+        giveQuantityNormalized,
+        getQuantityNormalized,
+        feeRequiredNormalized,
+        // giveAssetInfo,
+        // getAssetInfo,
+      ];
+}

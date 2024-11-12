@@ -26,6 +26,12 @@ final DEFAULT_WHITELIST = [
   "DISPENSER_UPDATE",
   "NEW_FAIRMINT",
   "NEW_FAIRMINTER",
+  "OPEN_ORDER",
+  "ORDER_MATCH",
+  "ORDER_UPDATE",
+  "ORDER_FILLED",
+  "CANCEL_ORDER",
+  "ORDER_EXPIRATION"
 ];
 
 class DashboardActivityFeedBloc
@@ -530,6 +536,7 @@ class DashboardActivityFeedBloc
             transactions: transactions));
       }
     } catch (e) {
+      rethrow;
       emit(DashboardActivityFeedStateCompleteError(error: e.toString()));
     } finally {
       _isLoading = false;
