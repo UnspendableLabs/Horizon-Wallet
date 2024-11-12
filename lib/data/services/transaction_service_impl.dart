@@ -89,8 +89,6 @@ class TransactionServiceImpl implements TransactionService {
 
     psbt.signAllInputs(signer);
 
-    print('psbt.finalizeAllInputs();');
-    // print(psbt.finalizeAllInputs());
     psbt.finalizeAllInputs();
 
     bitcoinjs.Transaction tx = psbt.extractTransaction();
@@ -178,24 +176,8 @@ class TransactionServiceImpl implements TransactionService {
     return script.toDart.isNotEmpty && script.toDart[0] == 0x6a;
   }
 
-  // @override
-  // Future<String> constructTransaction(
-  //     {required String unsignedTransaction, required String sourceAddress, required List<Utxo> utxos}) async {
-  //   bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(unsignedTransaction);
-  //   print('INS');
-  //   print(transaction.ins);
-  //   print('OUTS');
-  //   print(transaction.outs);
-
-  //   print(transaction.hasWitnesses());
-
-  //   // transaction.addInput(JSUint8Array.from(Uint8List.fromList(hex.decode(utxoMap.keys.first)).toJS), 0);
-
-  //   return transaction.toHex();
-  // }
-
   @override
-  Future<String> constructTransaction(
+  Future<String> constructAndSignNewTransaction(
       {required String unsignedTransaction,
       required String sourceAddress,
       required List<Utxo> utxos,
@@ -208,10 +190,9 @@ class TransactionServiceImpl implements TransactionService {
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
-    // for (var i = 0; i < transaction.outs.toDart.length; i++) {
+    // first add the OP_RETURN output
     bitcoinjs.TxOutput output = transaction.outs.toDart[0];
     psbt.addOutput(output);
-    // }
 
     Buffer sourcePrivKeyJS =
         Buffer.from(Uint8List.fromList(hex.decode(sourcePrivKey)).toJS);
@@ -220,21 +201,20 @@ class TransactionServiceImpl implements TransactionService {
 
     final network = _getNetwork();
 
-    dynamic sourceSigner =
-        ecpairFactory.fromPrivateKey(sourcePrivKeyJS, network);
-
-    bitcoinjs.Payment sourceScript = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
-        pubkey: sourceSigner.publicKey, network: _getNetwork()));
+    // add the
     dynamic destinationSigner =
         ecpairFactory.fromPrivateKey(destinationPrivKeyJS, network);
-
-    // pubKey of the destination address
     bitcoinjs.Payment destinationScript = bitcoinjs.p2wpkh(
         bitcoinjs.PaymentOptions(
             pubkey: destinationSigner.publicKey, network: _getNetwork()));
+
     psbt.addOutput(({'script': destinationScript.output, 'value': btcQuantity})
         .jsify() as bitcoinjs.TxOutput);
 
+    dynamic sourceSigner =
+        ecpairFactory.fromPrivateKey(sourcePrivKeyJS, network);
+    bitcoinjs.Payment sourceScript = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
+        pubkey: sourceSigner.publicKey, network: network));
     final targetValue = output.value + btcQuantity + fee;
     int inputSetValue = 0;
 

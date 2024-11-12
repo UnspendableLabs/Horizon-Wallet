@@ -198,11 +198,6 @@ void main() {
       analyticsService: mockAnalyticsService,
       composeRepository: mockComposeRepository,
       writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
-      accountRepository: mockAccountRepository,
-      addressRepository: mockAddressRepository,
-      walletRepository: mockWalletRepository,
-      encryptionService: mockEncryptionService,
-      addressService: mockAddressService,
     );
 
     mockDashboardActivityFeedBloc = MockDashboardActivityFeedBloc();

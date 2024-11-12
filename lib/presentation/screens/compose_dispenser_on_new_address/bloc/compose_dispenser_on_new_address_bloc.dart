@@ -5,6 +5,8 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -16,6 +18,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
 
@@ -35,6 +38,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignTransactionUseCase signTransactionUseCase;
   final TransactionService transactionService;
+  final FetchDispenseFormDataUseCase fetchDispenseFormDataUseCase;
 
   ComposeDispenserOnNewAddressBloc({
     required this.accountRepository,
@@ -48,11 +52,34 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.composeTransactionUseCase,
     required this.signTransactionUseCase,
     required this.transactionService,
+    required this.fetchDispenseFormDataUseCase,
   }) : super(const ComposeDispenserOnNewAddressStateBase(
           composeDispenserOnNewAddressState:
               ComposeDispenserOnNewAddressState.collectPassword(loading: false),
           feeState: FeeState.initial(),
         )) {
+    on<FetchFormData>((event, emit) async {
+      emit(state.copyWith(feeState: const FeeState.loading()));
+
+      try {
+        final (balances, feeEstimates) =
+            await fetchDispenseFormDataUseCase.call(event.originalAddress);
+
+        // if the current address does not have any open dispensers, then we can proceed with the normal flow
+        emit(state.copyWith(
+          feeState: FeeState.success(feeEstimates),
+        ));
+      } on FetchFeeEstimatesException catch (e) {
+        emit(state.copyWith(
+          feeState: FeeState.error(e.message),
+        ));
+      } catch (e) {
+        emit(state.copyWith(
+          feeState:
+              FeeState.error('An unexpected error occurred: ${e.toString()}'),
+        ));
+      }
+    });
     on<ComposeTransactions>((event, emit) async {
       /**
        * The steps for chaining transactions are:
@@ -164,7 +191,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
 
         final assetSend = await composeTransactionUseCase
             .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: 3,
+          feeRate: _getFeeRate(FeeOption.Slow()),
           source: source,
           params: ComposeSendParams(
             source: source,
@@ -186,7 +213,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         };
 
         final signedConstructedAssetSend =
-            await transactionService.constructTransaction(
+            await transactionService.constructAndSignNewTransaction(
           unsignedTransaction: assetSend.$1.rawtransaction,
           sourceAddress: source,
           utxos: utxos,
@@ -294,5 +321,15 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
                     'Error broadcasting transactions: ${e.toString()}')));
       }
     });
+  }
+
+  int _getFeeRate(FeeOption.FeeOption feeOption) {
+    FeeEstimates feeEstimates = state.feeState.feeEstimates;
+    return switch (feeOption) {
+      FeeOption.Fast() => feeEstimates.fast,
+      FeeOption.Medium() => feeEstimates.medium,
+      FeeOption.Slow() => feeEstimates.slow,
+      FeeOption.Custom(fee: var fee) => fee,
+    };
   }
 }

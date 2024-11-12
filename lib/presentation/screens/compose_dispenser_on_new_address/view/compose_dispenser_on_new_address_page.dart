@@ -16,6 +16,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
@@ -60,7 +61,9 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
         signTransactionUseCase: GetIt.I.get<SignTransactionUseCase>(),
         transactionService: GetIt.I.get<TransactionService>(),
-      ),
+        fetchDispenseFormDataUseCase:
+            GetIt.I.get<FetchDispenseFormDataUseCase>(),
+      )..add(FetchFormData(originalAddress: originalAddress)),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
         asset: asset,
