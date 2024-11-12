@@ -223,6 +223,14 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildNewFairminterTitle(params),
       VerboseOpenOrderEvent(params: var params) => SelectableText(
           "Open Order: ${params.giveQuantityNormalized} ${params.giveAsset} /  ${params.getQuantityNormalized} ${params.getAsset} "),
+      VerboseOrderMatchEvent(params: var params) => SelectableText(
+          "Order Match: ${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}"),
+      VerboseOrderUpdateEvent(params: var _) => SelectableText("Order Update"),
+      VerboseOrderFilledEvent(params: var _) => SelectableText("Order Filled"),
+      VerboseCancelOrderEvent(params: var params) =>
+        SelectableText("Order Cancelled ${params.offerHash}"),
+      VerboseOrderExpirationEvent(params: var params) =>
+        SelectableText("Order Expiration: ${params.orderHash}"),
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
       _ => SelectableText(
@@ -472,6 +480,16 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseNewFairminterEvent(params: var _) =>
         const Icon(Icons.print, color: Colors.grey),
       VerboseOpenOrderEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderMatchEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderUpdateEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderFilledEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseCancelOrderEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderExpirationEvent(params: var _) =>
         const Icon(Icons.toc, color: Colors.grey),
       _ => const Icon(Icons.error),
     };

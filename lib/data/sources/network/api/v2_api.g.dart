@@ -1092,6 +1092,482 @@ Map<String, dynamic> _$VerboseOpenOrderParamsToJson(
       'get_asset_info': instance.getAssetInfo,
     };
 
+OrderMatchEvent _$OrderMatchEventFromJson(Map<String, dynamic> json) =>
+    OrderMatchEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: OrderMatchParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OrderMatchEventToJson(OrderMatchEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+OrderMatchParams _$OrderMatchParamsFromJson(Map<String, dynamic> json) =>
+    OrderMatchParams(
+      backwardAsset: json['backward_asset'] as String,
+      backwardQuantity: (json['backward_quantity'] as num).toInt(),
+      blockIndex: (json['block_index'] as num).toInt(),
+      feePaid: (json['fee_paid'] as num).toInt(),
+      forwardAsset: json['forward_asset'] as String,
+      forwardQuantity: (json['forward_quantity'] as num).toInt(),
+      id: json['id'] as String,
+      matchExpireIndex: (json['match_expire_index'] as num).toInt(),
+      status: json['status'] as String,
+      tx0Address: json['tx0_address'] as String,
+      tx0BlockIndex: (json['tx0_block_index'] as num).toInt(),
+      tx0Expiration: (json['tx0_expiration'] as num).toInt(),
+      tx0Hash: json['tx0_hash'] as String,
+      tx0Index: (json['tx0_index'] as num).toInt(),
+      tx1Address: json['tx1_address'] as String,
+      tx1BlockIndex: (json['tx1_block_index'] as num).toInt(),
+      tx1Expiration: (json['tx1_expiration'] as num).toInt(),
+      tx1Hash: json['tx1_hash'] as String,
+      tx1Index: (json['tx1_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$OrderMatchParamsToJson(OrderMatchParams instance) =>
+    <String, dynamic>{
+      'backward_asset': instance.backwardAsset,
+      'backward_quantity': instance.backwardQuantity,
+      'block_index': instance.blockIndex,
+      'fee_paid': instance.feePaid,
+      'forward_asset': instance.forwardAsset,
+      'forward_quantity': instance.forwardQuantity,
+      'id': instance.id,
+      'match_expire_index': instance.matchExpireIndex,
+      'status': instance.status,
+      'tx0_address': instance.tx0Address,
+      'tx0_block_index': instance.tx0BlockIndex,
+      'tx0_expiration': instance.tx0Expiration,
+      'tx0_hash': instance.tx0Hash,
+      'tx0_index': instance.tx0Index,
+      'tx1_address': instance.tx1Address,
+      'tx1_block_index': instance.tx1BlockIndex,
+      'tx1_expiration': instance.tx1Expiration,
+      'tx1_hash': instance.tx1Hash,
+      'tx1_index': instance.tx1Index,
+    };
+
+VerboseOrderMatchEvent _$VerboseOrderMatchEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderMatchEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseOrderMatchParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOrderMatchEventToJson(
+        VerboseOrderMatchEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseOrderMatchParams _$VerboseOrderMatchParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderMatchParams(
+      backwardAsset: json['backward_asset'] as String,
+      backwardQuantity: (json['backward_quantity'] as num).toInt(),
+      blockIndex: (json['block_index'] as num).toInt(),
+      feePaid: (json['fee_paid'] as num).toInt(),
+      forwardAsset: json['forward_asset'] as String,
+      forwardQuantity: (json['forward_quantity'] as num).toInt(),
+      id: json['id'] as String,
+      matchExpireIndex: (json['match_expire_index'] as num).toInt(),
+      status: json['status'] as String,
+      tx0Address: json['tx0_address'] as String,
+      tx0BlockIndex: (json['tx0_block_index'] as num).toInt(),
+      tx0Expiration: (json['tx0_expiration'] as num).toInt(),
+      tx0Hash: json['tx0_hash'] as String,
+      tx0Index: (json['tx0_index'] as num).toInt(),
+      tx1Address: json['tx1_address'] as String,
+      tx1BlockIndex: (json['tx1_block_index'] as num).toInt(),
+      tx1Expiration: (json['tx1_expiration'] as num).toInt(),
+      tx1Hash: json['tx1_hash'] as String,
+      tx1Index: (json['tx1_index'] as num).toInt(),
+      forwardQuantityNormalized: json['forward_quantity_normalized'] as String,
+      backwardQuantityNormalized:
+          json['backward_quantity_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+      forwardAssetInfo: AssetInfoModel.fromJson(
+          json['forward_asset_info'] as Map<String, dynamic>),
+      backwardAssetInfo: AssetInfoModel.fromJson(
+          json['backward_asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOrderMatchParamsToJson(
+        VerboseOrderMatchParams instance) =>
+    <String, dynamic>{
+      'backward_asset': instance.backwardAsset,
+      'backward_quantity': instance.backwardQuantity,
+      'block_index': instance.blockIndex,
+      'fee_paid': instance.feePaid,
+      'forward_asset': instance.forwardAsset,
+      'forward_quantity': instance.forwardQuantity,
+      'id': instance.id,
+      'match_expire_index': instance.matchExpireIndex,
+      'status': instance.status,
+      'tx0_address': instance.tx0Address,
+      'tx0_block_index': instance.tx0BlockIndex,
+      'tx0_expiration': instance.tx0Expiration,
+      'tx0_hash': instance.tx0Hash,
+      'tx0_index': instance.tx0Index,
+      'tx1_address': instance.tx1Address,
+      'tx1_block_index': instance.tx1BlockIndex,
+      'tx1_expiration': instance.tx1Expiration,
+      'tx1_hash': instance.tx1Hash,
+      'tx1_index': instance.tx1Index,
+      'forward_quantity_normalized': instance.forwardQuantityNormalized,
+      'backward_quantity_normalized': instance.backwardQuantityNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
+      'forward_asset_info': instance.forwardAssetInfo,
+      'backward_asset_info': instance.backwardAssetInfo,
+    };
+
+OrderUpdateEvent _$OrderUpdateEventFromJson(Map<String, dynamic> json) =>
+    OrderUpdateEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          OrderUpdateParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OrderUpdateEventToJson(OrderUpdateEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+OrderUpdateParams _$OrderUpdateParamsFromJson(Map<String, dynamic> json) =>
+    OrderUpdateParams(
+      feeProvidedRemaining: (json['fee_provided_remaining'] as num).toInt(),
+      feeRequiredRemaining: (json['fee_required_remaining'] as num).toInt(),
+      getRemaining: (json['get_remaining'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+    );
+
+Map<String, dynamic> _$OrderUpdateParamsToJson(OrderUpdateParams instance) =>
+    <String, dynamic>{
+      'fee_provided_remaining': instance.feeProvidedRemaining,
+      'fee_required_remaining': instance.feeRequiredRemaining,
+      'get_remaining': instance.getRemaining,
+      'give_remaining': instance.giveRemaining,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+    };
+
+VerboseOrderUpdateEvent _$VerboseOrderUpdateEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderUpdateEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseOrderUpdateParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOrderUpdateEventToJson(
+        VerboseOrderUpdateEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseOrderUpdateParams _$VerboseOrderUpdateParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderUpdateParams(
+      feeProvidedRemaining: (json['fee_provided_remaining'] as num).toInt(),
+      feeRequiredRemaining: (json['fee_required_remaining'] as num).toInt(),
+      getRemaining: (json['get_remaining'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      feeProvidedRemainingNormalized:
+          json['fee_provided_remaining_normalized'] as String,
+      feeRequiredRemainingNormalized:
+          json['fee_required_remaining_normalized'] as String,
+      getRemainingNormalized: json['get_remaining_normalized'] as String,
+      giveRemainingNormalized: json['give_remaining_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseOrderUpdateParamsToJson(
+        VerboseOrderUpdateParams instance) =>
+    <String, dynamic>{
+      'fee_provided_remaining': instance.feeProvidedRemaining,
+      'fee_required_remaining': instance.feeRequiredRemaining,
+      'get_remaining': instance.getRemaining,
+      'give_remaining': instance.giveRemaining,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'fee_provided_remaining_normalized':
+          instance.feeProvidedRemainingNormalized,
+      'fee_required_remaining_normalized':
+          instance.feeRequiredRemainingNormalized,
+      'get_remaining_normalized': instance.getRemainingNormalized,
+      'give_remaining_normalized': instance.giveRemainingNormalized,
+    };
+
+OrderFilledEvent _$OrderFilledEventFromJson(Map<String, dynamic> json) =>
+    OrderFilledEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          OrderFilledParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OrderFilledEventToJson(OrderFilledEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+OrderFilledParams _$OrderFilledParamsFromJson(Map<String, dynamic> json) =>
+    OrderFilledParams(
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+    );
+
+Map<String, dynamic> _$OrderFilledParamsToJson(OrderFilledParams instance) =>
+    <String, dynamic>{
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+    };
+
+VerboseOrderFilledEvent _$VerboseOrderFilledEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderFilledEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseOrderFilledParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOrderFilledEventToJson(
+        VerboseOrderFilledEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseOrderFilledParams _$VerboseOrderFilledParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderFilledParams(
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+    );
+
+Map<String, dynamic> _$VerboseOrderFilledParamsToJson(
+        VerboseOrderFilledParams instance) =>
+    <String, dynamic>{
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+    };
+
+CancelOrderEvent _$CancelOrderEventFromJson(Map<String, dynamic> json) =>
+    CancelOrderEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          CancelOrderParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$CancelOrderEventToJson(CancelOrderEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+CancelOrderParams _$CancelOrderParamsFromJson(Map<String, dynamic> json) =>
+    CancelOrderParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      offerHash: json['offer_hash'] as String,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$CancelOrderParamsToJson(CancelOrderParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'offer_hash': instance.offerHash,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+VerboseCancelOrderEvent _$VerboseCancelOrderEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseCancelOrderEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseCancelOrderParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseCancelOrderEventToJson(
+        VerboseCancelOrderEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseCancelOrderParams _$VerboseCancelOrderParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseCancelOrderParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      offerHash: json['offer_hash'] as String,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$VerboseCancelOrderParamsToJson(
+        VerboseCancelOrderParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'offer_hash': instance.offerHash,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
+OrderExpirationEvent _$OrderExpirationEventFromJson(
+        Map<String, dynamic> json) =>
+    OrderExpirationEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: OrderExpirationParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OrderExpirationEventToJson(
+        OrderExpirationEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+OrderExpirationParams _$OrderExpirationParamsFromJson(
+        Map<String, dynamic> json) =>
+    OrderExpirationParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      orderHash: json['order_hash'] as String,
+      source: json['source'] as String,
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$OrderExpirationParamsToJson(
+        OrderExpirationParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'order_hash': instance.orderHash,
+      'source': instance.source,
+      'block_time': instance.blockTime,
+    };
+
+VerboseOrderExpirationEvent _$VerboseOrderExpirationEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderExpirationEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseOrderExpirationParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOrderExpirationEventToJson(
+        VerboseOrderExpirationEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseOrderExpirationParams _$VerboseOrderExpirationParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOrderExpirationParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      orderHash: json['order_hash'] as String,
+      source: json['source'] as String,
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$VerboseOrderExpirationParamsToJson(
+        VerboseOrderExpirationParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'order_hash': instance.orderHash,
+      'source': instance.source,
+      'block_time': instance.blockTime,
+    };
+
 DispenserUpdateEvent _$DispenserUpdateEventFromJson(
         Map<String, dynamic> json) =>
     DispenserUpdateEvent(
@@ -4774,7 +5250,7 @@ class _V2Api implements V2Api {
 
   RequestOptions newRequestOptions(Object? options) {
     if (options is RequestOptions) {
-      return options;
+      return options as RequestOptions;
     }
     if (options is Options) {
       return RequestOptions(
