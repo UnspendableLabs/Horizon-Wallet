@@ -111,20 +111,6 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "give_quantity_normalized": unpacked.giveQuantityNormalized,
             "get_quantity_normalized": unpacked.getQuantityNormalized,
             "fee_required_normalized": unpacked.feeRequiredNormalized,
-            // "give_asset_info": {
-            //   "asset_longname": unpacked.giveAssetInfo.assetLongname,
-            //   "description": unpacked.giveAssetInfo.description,
-            //   "issuer": unpacked.giveAssetInfo.issuer,
-            //   "divisible": unpacked.giveAssetInfo.divisible,
-            //   "locked": unpacked.giveAssetInfo.locked,
-            // },
-            // "get_asset_info": {
-            //   "asset_longname": unpacked.getAssetInfo.assetLongname,
-            //   "description": unpacked.getAssetInfo.description,
-            //   "issuer": unpacked.getAssetInfo.issuer,
-            //   "divisible": unpacked.getAssetInfo.divisible,
-            //   "locked": unpacked.getAssetInfo.locked,
-            // }
           }
         }),
       _ => null
@@ -226,6 +212,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        OrderUnpacked() => TransactionInfoOrder(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -302,6 +299,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         FairmintUnpackedVerbose() => TransactionInfoFairmint(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        OrderUnpacked() => TransactionInfoOrder(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

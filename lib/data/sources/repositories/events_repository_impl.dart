@@ -54,6 +54,10 @@ class VerboseEventMapper {
       case "NEW_FAIRMINTER":
         return VerboseNewFairminterEventMapper.toDomain(
             apiEvent as api.VerboseNewFairminterEvent);
+      case "OPEN_ORDER":
+        return VerboseOpenOrderEventMapper.toDomain(
+            apiEvent as api.VerboseOpenOrderEvent);
+
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
       //       apiEvent as api.VerboseNewTransactionEvent);
@@ -524,6 +528,53 @@ class VerboseRefillDispenserParamsMapper {
       dispenseQuantityNormalized: apiParams.dispenseQuantityNormalized,
       // assetInfo: AssetInfoMapper.toDomain(
       //     apiParams.assetInfo), // Assuming AssetInfoMapper exists
+    );
+  }
+}
+
+class VerboseOpenOrderEventMapper {
+  static VerboseOpenOrderEvent toDomain(api.VerboseOpenOrderEvent apiEvent) {
+    return VerboseOpenOrderEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "OPEN_ORDER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseOpenOrderParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseOpenOrderParamsMapper {
+  static VerboseOpenOrderParams toDomain(api.VerboseOpenOrderParams apiParams) {
+    return VerboseOpenOrderParams(
+      blockIndex: apiParams.blockIndex,
+      expiration: apiParams.expiration,
+      expireIndex: apiParams.expireIndex,
+      feeProvided: apiParams.feeProvided,
+      feeProvidedRemaining: apiParams.feeProvidedRemaining,
+      feeRequired: apiParams.feeRequired,
+      feeRequiredRemaining: apiParams.feeRequiredRemaining,
+      getAsset: apiParams.getAsset,
+      getQuantity: apiParams.getQuantity,
+      getRemaining: apiParams.getRemaining,
+      giveAsset: apiParams.giveAsset,
+      giveQuantity: apiParams.giveQuantity,
+      giveRemaining: apiParams.giveRemaining,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      blockTime: apiParams.blockTime,
+      giveQuantityNormalized: apiParams.giveQuantityNormalized,
+      getQuantityNormalized: apiParams.getQuantityNormalized,
+      getRemainingNormalized: apiParams.getRemainingNormalized,
+      giveRemainingNormalized: apiParams.giveRemainingNormalized,
+      feeProvidedNormalized: apiParams.feeProvidedNormalized,
+      feeRequiredNormalized: apiParams.feeRequiredNormalized,
+      feeRequiredRemainingNormalized: apiParams.feeRequiredRemainingNormalized,
+      feeProvidedRemainingNormalized: apiParams.feeProvidedRemainingNormalized,
     );
   }
 }

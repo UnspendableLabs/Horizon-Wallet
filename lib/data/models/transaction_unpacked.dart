@@ -22,6 +22,9 @@ class UnpackedVerboseMapper {
       case "fairminter":
         return FairminterUnpackedVerboseMapper.toDomain(
             u as api.FairminterUnpackedVerbose);
+      case "order":
+        return OrderUnpackedVerboseMapper.toDomain(
+            u as api.OrderUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -102,7 +105,6 @@ class FairminterUnpackedVerboseMapper {
   }
 }
 
-
 class OrderUnpackedVerboseMapper {
   static OrderUnpacked toDomain(api.OrderUnpackedVerbose u) {
     return OrderUnpacked(
@@ -121,4 +123,3 @@ class OrderUnpackedVerboseMapper {
     );
   }
 }
-

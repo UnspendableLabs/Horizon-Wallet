@@ -939,6 +939,163 @@ Map<String, dynamic> _$VerboseOpenDispenserParamsToJson(
       'satoshirate_normalized': instance.satoshirateNormalized,
     };
 
+OpenOrderEvent _$OpenOrderEventFromJson(Map<String, dynamic> json) =>
+    OpenOrderEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: OpenOrderParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OpenOrderEventToJson(OpenOrderEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+OpenOrderParams _$OpenOrderParamsFromJson(Map<String, dynamic> json) =>
+    OpenOrderParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      expiration: (json['expiration'] as num).toInt(),
+      expireIndex: (json['expire_index'] as num).toInt(),
+      feeProvided: (json['fee_provided'] as num).toInt(),
+      feeProvidedRemaining: (json['fee_provided_remaining'] as num).toInt(),
+      feeRequired: (json['fee_required'] as num).toInt(),
+      feeRequiredRemaining: (json['fee_required_remaining'] as num).toInt(),
+      getAsset: json['get_asset'] as String,
+      getQuantity: (json['get_quantity'] as num).toInt(),
+      getRemaining: (json['get_remaining'] as num).toInt(),
+      giveAsset: json['give_asset'] as String,
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$OpenOrderParamsToJson(OpenOrderParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'expiration': instance.expiration,
+      'expire_index': instance.expireIndex,
+      'fee_provided': instance.feeProvided,
+      'fee_provided_remaining': instance.feeProvidedRemaining,
+      'fee_required': instance.feeRequired,
+      'fee_required_remaining': instance.feeRequiredRemaining,
+      'get_asset': instance.getAsset,
+      'get_quantity': instance.getQuantity,
+      'get_remaining': instance.getRemaining,
+      'give_asset': instance.giveAsset,
+      'give_quantity': instance.giveQuantity,
+      'give_remaining': instance.giveRemaining,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseOpenOrderEvent _$VerboseOpenOrderEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOpenOrderEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseOpenOrderParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOpenOrderEventToJson(
+        VerboseOpenOrderEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseOpenOrderParams _$VerboseOpenOrderParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseOpenOrderParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      expiration: (json['expiration'] as num).toInt(),
+      expireIndex: (json['expire_index'] as num).toInt(),
+      feeProvided: (json['fee_provided'] as num).toInt(),
+      feeProvidedRemaining: (json['fee_provided_remaining'] as num).toInt(),
+      feeRequired: (json['fee_required'] as num).toInt(),
+      feeRequiredRemaining: (json['fee_required_remaining'] as num).toInt(),
+      getAsset: json['get_asset'] as String,
+      getQuantity: (json['get_quantity'] as num).toInt(),
+      getRemaining: (json['get_remaining'] as num).toInt(),
+      giveAsset: json['give_asset'] as String,
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      giveRemaining: (json['give_remaining'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      getQuantityNormalized: json['get_quantity_normalized'] as String,
+      getRemainingNormalized: json['get_remaining_normalized'] as String,
+      giveRemainingNormalized: json['give_remaining_normalized'] as String,
+      feeProvidedNormalized: json['fee_provided_normalized'] as String,
+      feeRequiredNormalized: json['fee_required_normalized'] as String,
+      feeRequiredRemainingNormalized:
+          json['fee_required_remaining_normalized'] as String,
+      feeProvidedRemainingNormalized:
+          json['fee_provided_remaining_normalized'] as String,
+      giveAssetInfo: AssetInfoModel.fromJson(
+          json['give_asset_info'] as Map<String, dynamic>),
+      getAssetInfo: AssetInfoModel.fromJson(
+          json['get_asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseOpenOrderParamsToJson(
+        VerboseOpenOrderParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'expiration': instance.expiration,
+      'expire_index': instance.expireIndex,
+      'fee_provided': instance.feeProvided,
+      'fee_provided_remaining': instance.feeProvidedRemaining,
+      'fee_required': instance.feeRequired,
+      'fee_required_remaining': instance.feeRequiredRemaining,
+      'get_asset': instance.getAsset,
+      'get_quantity': instance.getQuantity,
+      'get_remaining': instance.getRemaining,
+      'give_asset': instance.giveAsset,
+      'give_quantity': instance.giveQuantity,
+      'give_remaining': instance.giveRemaining,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'give_quantity_normalized': instance.giveQuantityNormalized,
+      'get_quantity_normalized': instance.getQuantityNormalized,
+      'get_remaining_normalized': instance.getRemainingNormalized,
+      'give_remaining_normalized': instance.giveRemainingNormalized,
+      'fee_provided_normalized': instance.feeProvidedNormalized,
+      'fee_required_normalized': instance.feeRequiredNormalized,
+      'fee_required_remaining_normalized':
+          instance.feeRequiredRemainingNormalized,
+      'fee_provided_remaining_normalized':
+          instance.feeProvidedRemainingNormalized,
+      'give_asset_info': instance.giveAssetInfo,
+      'get_asset_info': instance.getAssetInfo,
+    };
+
 DispenserUpdateEvent _$DispenserUpdateEventFromJson(
         Map<String, dynamic> json) =>
     DispenserUpdateEvent(
@@ -2440,10 +2597,6 @@ OrderUnpackedVerbose _$OrderUnpackedVerboseFromJson(
       giveQuantityNormalized: json['give_quantity_normalized'] as String,
       getQuantityNormalized: json['get_quantity_normalized'] as String,
       feeRequiredNormalized: json['fee_required_normalized'] as String,
-      giveAssetInfo: AssetInfoModel.fromJson(
-          json['give_asset_info'] as Map<String, dynamic>),
-      getAssetInfo: AssetInfoModel.fromJson(
-          json['get_asset_info'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$OrderUnpackedVerboseToJson(
@@ -2459,8 +2612,6 @@ Map<String, dynamic> _$OrderUnpackedVerboseToJson(
       'give_quantity_normalized': instance.giveQuantityNormalized,
       'get_quantity_normalized': instance.getQuantityNormalized,
       'fee_required_normalized': instance.feeRequiredNormalized,
-      'give_asset_info': instance.giveAssetInfo,
-      'get_asset_info': instance.getAssetInfo,
     };
 
 OrderInfoVerbose _$OrderInfoVerboseFromJson(Map<String, dynamic> json) =>

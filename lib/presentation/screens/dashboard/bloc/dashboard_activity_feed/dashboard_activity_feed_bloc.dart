@@ -26,6 +26,7 @@ final DEFAULT_WHITELIST = [
   "DISPENSER_UPDATE",
   "NEW_FAIRMINT",
   "NEW_FAIRMINTER",
+  "OPEN_ORDER"
 ];
 
 class DashboardActivityFeedBloc
