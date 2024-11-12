@@ -103,7 +103,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       final Account newAccount = Account(
         accountIndex: newAccountIndex.toString(),
         walletUuid: wallet.uuid,
-        name: 'Account $newAccountIndex',
+        name: 'Dispenser for ${event.asset}',
         uuid: uuid.v4(),
         purpose: highestIndexAccount.purpose,
         coinType: highestIndexAccount.coinType,
@@ -164,7 +164,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
 
         final assetSend = await composeTransactionUseCase
             .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: event.feeRate,
+          feeRate: 3,
           source: source,
           params: ComposeSendParams(
             source: source,
@@ -225,16 +225,31 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           addressPrivKey: newAddressPrivKey,
         );
 
-        await accountRepository.insert(state.newAccount!);
-        await addressRepository.insert(state.newAddress!);
+        final decodedSignedComposeDispenserChain = await bitcoindService
+            .decoderawtransaction(signedComposeDispenserChain);
 
-        print('AFTER INSERT');
+        // await accountRepository.insert(state.newAccount!);
+        // await addressRepository.insert(state.newAddress!);
 
-        Future.delayed(const Duration(seconds: 10));
-        await bitcoindService.sendrawtransaction(signedConstructedAssetSend);
+        // print('AFTER INSERT');
 
-        Future.delayed(const Duration(seconds: 10));
-        await bitcoindService.sendrawtransaction(signedComposeDispenserChain);
+        // Future.delayed(const Duration(seconds: 10));
+        // await bitcoindService.sendrawtransaction(signedConstructedAssetSend);
+
+        // Future.delayed(const Duration(seconds: 10));
+        // await bitcoindService.sendrawtransaction(signedComposeDispenserChain);
+
+        emit(state.copyWith(
+            signedDispenser: signedComposeDispenserChain,
+            signedAssetSend: signedConstructedAssetSend,
+            composeDispenserOnNewAddressState:
+                ComposeDispenserOnNewAddressState.confirm(
+                    composeSendTransaction: assetSend.$1,
+                    composeDispenserTransaction: composeDispenserChain,
+                    newAccountName: state.newAccount!.name,
+                    newAddress: state.newAddress!.address,
+                    btcQuantity: feeToCoverDispenser,
+                    feeRate: event.feeRate)));
 
         print(signedComposeDispenserChain);
       } on SignTransactionException catch (e) {
@@ -254,25 +269,30 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       emit(state.copyWith(
           composeDispenserOnNewAddressState:
               const ComposeDispenserOnNewAddressState.loading()));
-      print('DO WE GET HERE???');
-      await accountRepository.insert(state.newAccount!);
-      await addressRepository.insert(state.newAddress!);
+      try {
+        print('DO WE GET HERE???');
+        await accountRepository.insert(state.newAccount!);
+        await addressRepository.insert(state.newAddress!);
 
-      print('AFTER INSERT');
+        print('AFTER INSERT');
 
-      await bitcoindService.sendrawtransaction(state.signedBtcSend!);
+        Future.delayed(const Duration(seconds: 10));
+        await bitcoindService.sendrawtransaction(state.signedAssetSend!);
 
-      Future.delayed(const Duration(seconds: 10));
-      await bitcoindService.sendrawtransaction(state.signedAssetSend!);
+        Future.delayed(const Duration(seconds: 10));
+        await bitcoindService.sendrawtransaction(state.signedDispenser!);
 
-      Future.delayed(const Duration(seconds: 10));
-      await bitcoindService.sendrawtransaction(state.signedDispenser!);
+        print('AFTER SEND');
 
-      print('AFTER SEND');
-
-      emit(state.copyWith(
-          composeDispenserOnNewAddressState:
-              const ComposeDispenserOnNewAddressState.success()));
+        emit(state.copyWith(
+            composeDispenserOnNewAddressState:
+                const ComposeDispenserOnNewAddressState.success()));
+      } catch (e) {
+        emit(state.copyWith(
+            composeDispenserOnNewAddressState:
+                ComposeDispenserOnNewAddressState.error(
+                    'Error broadcasting transactions: ${e.toString()}')));
+      }
     });
   }
 }

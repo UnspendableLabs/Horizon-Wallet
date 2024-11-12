@@ -20,7 +20,6 @@ mixin _$ComposeDispenserOnNewAddressStateBase {
   String get password => throw _privateConstructorUsedError;
   Account? get newAccount => throw _privateConstructorUsedError;
   Address? get newAddress => throw _privateConstructorUsedError;
-  String? get signedBtcSend => throw _privateConstructorUsedError;
   String? get signedAssetSend => throw _privateConstructorUsedError;
   String? get signedDispenser => throw _privateConstructorUsedError;
   dynamic get composeDispenserOnNewAddressState =>
@@ -45,7 +44,6 @@ abstract class $ComposeDispenserOnNewAddressStateBaseCopyWith<$Res> {
       String password,
       Account? newAccount,
       Address? newAddress,
-      String? signedBtcSend,
       String? signedAssetSend,
       String? signedDispenser,
       dynamic composeDispenserOnNewAddressState});
@@ -69,7 +67,6 @@ class _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
     Object? password = null,
     Object? newAccount = freezed,
     Object? newAddress = freezed,
-    Object? signedBtcSend = freezed,
     Object? signedAssetSend = freezed,
     Object? signedDispenser = freezed,
     Object? composeDispenserOnNewAddressState = freezed,
@@ -91,10 +88,6 @@ class _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
           ? _value.newAddress
           : newAddress // ignore: cast_nullable_to_non_nullable
               as Address?,
-      signedBtcSend: freezed == signedBtcSend
-          ? _value.signedBtcSend
-          : signedBtcSend // ignore: cast_nullable_to_non_nullable
-              as String?,
       signedAssetSend: freezed == signedAssetSend
           ? _value.signedAssetSend
           : signedAssetSend // ignore: cast_nullable_to_non_nullable
@@ -126,7 +119,6 @@ abstract class _$$ComposeDispenserOnNewAddressStateBaseImplCopyWith<$Res>
       String password,
       Account? newAccount,
       Address? newAddress,
-      String? signedBtcSend,
       String? signedAssetSend,
       String? signedDispenser,
       dynamic composeDispenserOnNewAddressState});
@@ -149,7 +141,6 @@ class __$$ComposeDispenserOnNewAddressStateBaseImplCopyWithImpl<$Res>
     Object? password = null,
     Object? newAccount = freezed,
     Object? newAddress = freezed,
-    Object? signedBtcSend = freezed,
     Object? signedAssetSend = freezed,
     Object? signedDispenser = freezed,
     Object? composeDispenserOnNewAddressState = freezed,
@@ -168,10 +159,6 @@ class __$$ComposeDispenserOnNewAddressStateBaseImplCopyWithImpl<$Res>
           ? _value.newAddress
           : newAddress // ignore: cast_nullable_to_non_nullable
               as Address?,
-      signedBtcSend: freezed == signedBtcSend
-          ? _value.signedBtcSend
-          : signedBtcSend // ignore: cast_nullable_to_non_nullable
-              as String?,
       signedAssetSend: freezed == signedAssetSend
           ? _value.signedAssetSend
           : signedAssetSend // ignore: cast_nullable_to_non_nullable
@@ -197,7 +184,6 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
       this.password = '',
       this.newAccount = null,
       this.newAddress = null,
-      this.signedBtcSend = null,
       this.signedAssetSend = null,
       this.signedDispenser = null,
       this.composeDispenserOnNewAddressState =
@@ -217,9 +203,6 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
   final Address? newAddress;
   @override
   @JsonKey()
-  final String? signedBtcSend;
-  @override
-  @JsonKey()
   final String? signedAssetSend;
   @override
   @JsonKey()
@@ -230,7 +213,7 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
 
   @override
   String toString() {
-    return 'ComposeDispenserOnNewAddressStateBase(feeState: $feeState, password: $password, newAccount: $newAccount, newAddress: $newAddress, signedBtcSend: $signedBtcSend, signedAssetSend: $signedAssetSend, signedDispenser: $signedDispenser, composeDispenserOnNewAddressState: $composeDispenserOnNewAddressState)';
+    return 'ComposeDispenserOnNewAddressStateBase(feeState: $feeState, password: $password, newAccount: $newAccount, newAddress: $newAddress, signedAssetSend: $signedAssetSend, signedDispenser: $signedDispenser, composeDispenserOnNewAddressState: $composeDispenserOnNewAddressState)';
   }
 
   @override
@@ -245,8 +228,6 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
                 other.newAccount == newAccount) &&
             (identical(other.newAddress, newAddress) ||
                 other.newAddress == newAddress) &&
-            (identical(other.signedBtcSend, signedBtcSend) ||
-                other.signedBtcSend == signedBtcSend) &&
             (identical(other.signedAssetSend, signedAssetSend) ||
                 other.signedAssetSend == signedAssetSend) &&
             (identical(other.signedDispenser, signedDispenser) ||
@@ -263,7 +244,6 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
       password,
       newAccount,
       newAddress,
-      signedBtcSend,
       signedAssetSend,
       signedDispenser,
       const DeepCollectionEquality().hash(composeDispenserOnNewAddressState));
@@ -284,7 +264,6 @@ abstract class _ComposeDispenserOnNewAddressStateBase
           final String password,
           final Account? newAccount,
           final Address? newAddress,
-          final String? signedBtcSend,
           final String? signedAssetSend,
           final String? signedDispenser,
           final dynamic composeDispenserOnNewAddressState}) =
@@ -298,8 +277,6 @@ abstract class _ComposeDispenserOnNewAddressStateBase
   Account? get newAccount;
   @override
   Address? get newAddress;
-  @override
-  String? get signedBtcSend;
   @override
   String? get signedAssetSend;
   @override
@@ -322,10 +299,10 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
     required TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)
+            int btcQuantity,
+            int feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -339,10 +316,10 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
     TResult? Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -356,10 +333,10 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
     TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -495,10 +472,10 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
     required TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)
+            int btcQuantity,
+            int feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -515,10 +492,10 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
     TResult? Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -535,10 +512,10 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
     TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -675,10 +652,10 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
     required TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)
+            int btcQuantity,
+            int feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -695,10 +672,10 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
     TResult? Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -715,10 +692,10 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
     TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -816,10 +793,10 @@ abstract class _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
   $Res call(
       {String newAccountName,
       String newAddress,
-      T composeSendTransaction1,
-      T composeSendTransaction2,
+      T composeSendTransaction,
       T composeDispenserTransaction,
-      int fee});
+      int btcQuantity,
+      int feeRate});
 }
 
 /// @nodoc
@@ -838,10 +815,10 @@ class __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl<T, $Res>
   $Res call({
     Object? newAccountName = null,
     Object? newAddress = null,
-    Object? composeSendTransaction1 = freezed,
-    Object? composeSendTransaction2 = freezed,
+    Object? composeSendTransaction = freezed,
     Object? composeDispenserTransaction = freezed,
-    Object? fee = null,
+    Object? btcQuantity = null,
+    Object? feeRate = null,
   }) {
     return _then(_$ComposeDispenserOnNewAddressStateConfirmImpl<T>(
       newAccountName: null == newAccountName
@@ -852,21 +829,21 @@ class __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl<T, $Res>
           ? _value.newAddress
           : newAddress // ignore: cast_nullable_to_non_nullable
               as String,
-      composeSendTransaction1: freezed == composeSendTransaction1
-          ? _value.composeSendTransaction1
-          : composeSendTransaction1 // ignore: cast_nullable_to_non_nullable
-              as T,
-      composeSendTransaction2: freezed == composeSendTransaction2
-          ? _value.composeSendTransaction2
-          : composeSendTransaction2 // ignore: cast_nullable_to_non_nullable
+      composeSendTransaction: freezed == composeSendTransaction
+          ? _value.composeSendTransaction
+          : composeSendTransaction // ignore: cast_nullable_to_non_nullable
               as T,
       composeDispenserTransaction: freezed == composeDispenserTransaction
           ? _value.composeDispenserTransaction
           : composeDispenserTransaction // ignore: cast_nullable_to_non_nullable
               as T,
-      fee: null == fee
-          ? _value.fee
-          : fee // ignore: cast_nullable_to_non_nullable
+      btcQuantity: null == btcQuantity
+          ? _value.btcQuantity
+          : btcQuantity // ignore: cast_nullable_to_non_nullable
+              as int,
+      feeRate: null == feeRate
+          ? _value.feeRate
+          : feeRate // ignore: cast_nullable_to_non_nullable
               as int,
     ));
   }
@@ -879,27 +856,27 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
   const _$ComposeDispenserOnNewAddressStateConfirmImpl(
       {required this.newAccountName,
       required this.newAddress,
-      required this.composeSendTransaction1,
-      required this.composeSendTransaction2,
+      required this.composeSendTransaction,
       required this.composeDispenserTransaction,
-      required this.fee});
+      required this.btcQuantity,
+      required this.feeRate});
 
   @override
   final String newAccountName;
   @override
   final String newAddress;
   @override
-  final T composeSendTransaction1;
-  @override
-  final T composeSendTransaction2;
+  final T composeSendTransaction;
   @override
   final T composeDispenserTransaction;
   @override
-  final int fee;
+  final int btcQuantity;
+  @override
+  final int feeRate;
 
   @override
   String toString() {
-    return 'ComposeDispenserOnNewAddressState<$T>.confirm(newAccountName: $newAccountName, newAddress: $newAddress, composeSendTransaction1: $composeSendTransaction1, composeSendTransaction2: $composeSendTransaction2, composeDispenserTransaction: $composeDispenserTransaction, fee: $fee)';
+    return 'ComposeDispenserOnNewAddressState<$T>.confirm(newAccountName: $newAccountName, newAddress: $newAddress, composeSendTransaction: $composeSendTransaction, composeDispenserTransaction: $composeDispenserTransaction, btcQuantity: $btcQuantity, feeRate: $feeRate)';
   }
 
   @override
@@ -911,14 +888,14 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
                 other.newAccountName == newAccountName) &&
             (identical(other.newAddress, newAddress) ||
                 other.newAddress == newAddress) &&
-            const DeepCollectionEquality().equals(
-                other.composeSendTransaction1, composeSendTransaction1) &&
-            const DeepCollectionEquality().equals(
-                other.composeSendTransaction2, composeSendTransaction2) &&
+            const DeepCollectionEquality()
+                .equals(other.composeSendTransaction, composeSendTransaction) &&
             const DeepCollectionEquality().equals(
                 other.composeDispenserTransaction,
                 composeDispenserTransaction) &&
-            (identical(other.fee, fee) || other.fee == fee));
+            (identical(other.btcQuantity, btcQuantity) ||
+                other.btcQuantity == btcQuantity) &&
+            (identical(other.feeRate, feeRate) || other.feeRate == feeRate));
   }
 
   @override
@@ -926,10 +903,10 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
       runtimeType,
       newAccountName,
       newAddress,
-      const DeepCollectionEquality().hash(composeSendTransaction1),
-      const DeepCollectionEquality().hash(composeSendTransaction2),
+      const DeepCollectionEquality().hash(composeSendTransaction),
       const DeepCollectionEquality().hash(composeDispenserTransaction),
-      fee);
+      btcQuantity,
+      feeRate);
 
   @JsonKey(ignore: true)
   @override
@@ -949,17 +926,17 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
     required TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)
+            int btcQuantity,
+            int feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
     required TResult Function() success,
   }) {
-    return confirm(newAccountName, newAddress, composeSendTransaction1,
-        composeSendTransaction2, composeDispenserTransaction, fee);
+    return confirm(newAccountName, newAddress, composeSendTransaction,
+        composeDispenserTransaction, btcQuantity, feeRate);
   }
 
   @override
@@ -970,17 +947,17 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
     TResult? Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
     TResult? Function()? success,
   }) {
-    return confirm?.call(newAccountName, newAddress, composeSendTransaction1,
-        composeSendTransaction2, composeDispenserTransaction, fee);
+    return confirm?.call(newAccountName, newAddress, composeSendTransaction,
+        composeDispenserTransaction, btcQuantity, feeRate);
   }
 
   @override
@@ -991,10 +968,10 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
     TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -1002,8 +979,8 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
     required TResult orElse(),
   }) {
     if (confirm != null) {
-      return confirm(newAccountName, newAddress, composeSendTransaction1,
-          composeSendTransaction2, composeDispenserTransaction, fee);
+      return confirm(newAccountName, newAddress, composeSendTransaction,
+          composeDispenserTransaction, btcQuantity, feeRate);
     }
     return orElse();
   }
@@ -1080,18 +1057,18 @@ abstract class _ComposeDispenserOnNewAddressStateConfirm<T>
   const factory _ComposeDispenserOnNewAddressStateConfirm(
           {required final String newAccountName,
           required final String newAddress,
-          required final T composeSendTransaction1,
-          required final T composeSendTransaction2,
+          required final T composeSendTransaction,
           required final T composeDispenserTransaction,
-          required final int fee}) =
+          required final int btcQuantity,
+          required final int feeRate}) =
       _$ComposeDispenserOnNewAddressStateConfirmImpl<T>;
 
   String get newAccountName;
   String get newAddress;
-  T get composeSendTransaction1;
-  T get composeSendTransaction2;
+  T get composeSendTransaction;
   T get composeDispenserTransaction;
-  int get fee;
+  int get btcQuantity;
+  int get feeRate;
   @JsonKey(ignore: true)
   _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
           _$ComposeDispenserOnNewAddressStateConfirmImpl<T>>
@@ -1175,10 +1152,10 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
     required TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)
+            int btcQuantity,
+            int feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -1195,10 +1172,10 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
     TResult? Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -1215,10 +1192,10 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
     TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -1405,10 +1382,10 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
     required TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)
+            int btcQuantity,
+            int feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -1425,10 +1402,10 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
     TResult? Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -1445,10 +1422,10 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
     TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -1593,10 +1570,10 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
     required TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)
+            int btcQuantity,
+            int feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -1613,10 +1590,10 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
     TResult? Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -1633,10 +1610,10 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
     TResult Function(
             String newAccountName,
             String newAddress,
-            T composeSendTransaction1,
-            T composeSendTransaction2,
+            T composeSendTransaction,
             T composeDispenserTransaction,
-            int fee)?
+            int btcQuantity,
+            int feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,

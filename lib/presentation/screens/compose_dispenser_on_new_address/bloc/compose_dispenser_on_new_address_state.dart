@@ -13,7 +13,6 @@ class ComposeDispenserOnNewAddressStateBase
     @Default('') String password,
     @Default(null) Account? newAccount,
     @Default(null) Address? newAddress,
-    @Default(null) String? signedBtcSend,
     @Default(null) String? signedAssetSend,
     @Default(null) String? signedDispenser,
     @Default(ComposeDispenserOnNewAddressState.initial())
@@ -31,11 +30,10 @@ class ComposeDispenserOnNewAddressState<T>
   const factory ComposeDispenserOnNewAddressState.confirm({
     required String newAccountName,
     required String newAddress,
-    required T composeSendTransaction1,
-    required T composeSendTransaction2,
+    required T composeSendTransaction,
     required T composeDispenserTransaction,
-    required int fee,
-    // required int feeRate,
+    required int btcQuantity,
+    required int feeRate,
     // required int totalVirtualSize,
     // required int totalAdjustedVirtualSize,
   }) = _ComposeDispenserOnNewAddressStateConfirm;

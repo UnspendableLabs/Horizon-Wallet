@@ -184,179 +184,158 @@ class _ComposeDispenserOnNewAddressPageState
             confirm: (
               newAccountName,
               newAddress,
-              composeSendTransaction1,
-              composeSendTransaction2,
+              composeSendTransaction,
               composeDispenserTransaction,
-              fee,
+              btcQuantity,
+              feeRate,
             ) {
-              final send1Params =
-                  (composeSendTransaction1 as ComposeSendResponse).params;
-              final send2Params =
-                  (composeSendTransaction2 as ComposeSendResponse).params;
+              final sendParams =
+                  (composeSendTransaction as ComposeSendResponse).params;
               final dispenserParams = (composeDispenserTransaction
                       as ComposeDispenserResponseVerbose)
                   .params;
-              return Column(
-                children: [
-                  const Center(
-                    child: SelectableText(
-                      'New Address',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  HorizonUI.HorizonTextFormField(
-                    controller: TextEditingController(
-                        text: "$newAddress at new account $newAccountName"),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  const Center(
-                    child: SelectableText(
-                      'Confirm Compose Send Asset',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Source Address",
-                    controller: TextEditingController(text: send1Params.source),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Destination Address",
-                    controller:
-                        TextEditingController(text: send1Params.destination),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  Row(
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: HorizonUI.HorizonTextFormField(
-                          label: "Quantity",
-                          controller: TextEditingController(
-                              text: send1Params.quantityNormalized),
-                          enabled: false,
+                      const Center(
+                        child: SelectableText(
+                          'New Address',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 16.0), // Spacing between inputs
-                      Expanded(
-                        child: HorizonUI.HorizonTextFormField(
-                          label: "Asset",
-                          controller:
-                              TextEditingController(text: send1Params.asset),
-                          enabled: false,
+                      HorizonUI.HorizonTextFormField(
+                        controller: TextEditingController(
+                            text: "$newAddress at new account $newAccountName"),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      const Center(
+                        child: SelectableText(
+                          'Confirm Send',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Source Address",
+                        controller:
+                            TextEditingController(text: sendParams.source),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Destination Address",
+                        controller:
+                            TextEditingController(text: sendParams.destination),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HorizonUI.HorizonTextFormField(
+                              label: "Asset Quantity",
+                              controller: TextEditingController(
+                                  text: sendParams.quantityNormalized),
+                              enabled: false,
+                            ),
+                          ),
+                          const SizedBox(width: 16.0), // Spacing between inputs
+                          Expanded(
+                            child: HorizonUI.HorizonTextFormField(
+                              label: "Asset",
+                              controller:
+                                  TextEditingController(text: sendParams.asset),
+                              enabled: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: "BTC Quantity",
+                        controller: TextEditingController(
+                            text: btcQuantity.toStringAsFixed(8)),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Fee",
+                        controller: TextEditingController(
+                            text:
+                                "${composeSendTransaction.btcFee.toStringAsFixed(8)} sats (minimum fee)"),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      const Center(
+                        child: SelectableText(
+                          'Confirm Compose Dispenser',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Source Address",
+                        controller:
+                            TextEditingController(text: dispenserParams.source),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Asset",
+                        controller:
+                            TextEditingController(text: dispenserParams.asset),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Give Quantity",
+                        controller: TextEditingController(
+                            text: dispenserParams.giveQuantityNormalized),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Escrow Quantity",
+                        controller: TextEditingController(
+                            text: dispenserParams.escrowQuantityNormalized),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: 'Price Per Unit (BTC)',
+                        controller: TextEditingController(
+                            text: satoshisToBtc(dispenserParams.mainchainrate)
+                                .toStringAsFixed(8)),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      HorizonUI.HorizonTextFormField(
+                        label: "Fee",
+                        controller: TextEditingController(
+                          text:
+                              "${composeDispenserTransaction.btcFee.toStringAsFixed(8)} sats",
+                        ),
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 16.0),
+                      _buildBackContinueButtons(
+                          loading: false,
+                          onBack: () {
+                            Navigator.of(context).pop();
+                          },
+                          onContinue: () {
+                            context
+                                .read<ComposeDispenserOnNewAddressBloc>()
+                                .add(BroadcastTransactions());
+                          }),
                     ],
                   ),
-                  const SizedBox(height: 16.0),
-                  const Center(
-                    child: SelectableText(
-                      'Confirm Compose Send Asset',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Source Address",
-                    controller: TextEditingController(text: send2Params.source),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Destination Address",
-                    controller:
-                        TextEditingController(text: send2Params.destination),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: HorizonUI.HorizonTextFormField(
-                          label: "Quantity",
-                          controller: TextEditingController(
-                              text: send2Params.quantityNormalized),
-                          enabled: false,
-                        ),
-                      ),
-                      const SizedBox(width: 16.0), // Spacing between inputs
-                      Expanded(
-                        child: HorizonUI.HorizonTextFormField(
-                          label: "Asset",
-                          controller:
-                              TextEditingController(text: send2Params.asset),
-                          enabled: false,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16.0),
-                  const Center(
-                    child: SelectableText(
-                      'Confirm Compose Dispenser',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Source Address",
-                    controller:
-                        TextEditingController(text: dispenserParams.source),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Asset",
-                    controller:
-                        TextEditingController(text: dispenserParams.asset),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Give Quantity",
-                    controller: TextEditingController(
-                        text: dispenserParams.giveQuantityNormalized),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Escrow Quantity",
-                    controller: TextEditingController(
-                        text: dispenserParams.escrowQuantityNormalized),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonUI.HorizonTextFormField(
-                    label: 'Price Per Unit (BTC)',
-                    controller: TextEditingController(
-                        text: satoshisToBtc(dispenserParams.mainchainrate)
-                            .toStringAsFixed(8)),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  HorizonUI.HorizonTextFormField(
-                    label: "Fee ",
-                    controller: TextEditingController(
-                      text: "$fee sats",
-                    ),
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16.0),
-                  _buildBackContinueButtons(
-                      loading: false,
-                      onBack: () {
-                        Navigator.of(context).pop();
-                      },
-                      onContinue: () {
-                        context
-                            .read<ComposeDispenserOnNewAddressBloc>()
-                            .add(BroadcastTransactions());
-                      }),
-                ],
+                ),
               );
             },
             error: (error) => Center(
