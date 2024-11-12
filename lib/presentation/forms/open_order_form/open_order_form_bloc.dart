@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -23,7 +22,7 @@ enum GiveAssetValidationError { empty }
 
 class GiveAssetInput extends FormzInput<String, GiveAssetValidationError> {
   const GiveAssetInput.pure() : super.pure('');
-  const GiveAssetInput.dirty([String value = '']) : super.dirty(value);
+  const GiveAssetInput.dirty([super.value = '']) : super.dirty();
 
   @override
   GiveAssetValidationError? validator(String value) {
@@ -35,7 +34,7 @@ enum GetAssetValidationError { required }
 
 class GetAssetInput extends FormzInput<String, GetAssetValidationError> {
   const GetAssetInput.pure() : super.pure('');
-  const GetAssetInput.dirty([String value = '']) : super.dirty(value);
+  const GetAssetInput.dirty([super.value = '']) : super.dirty();
 
   @override
   GetAssetValidationError? validator(String value) {
@@ -47,7 +46,7 @@ enum PriceValidationError { invalid }
 
 class PriceInput extends FormzInput<String, PriceValidationError> {
   const PriceInput.pure() : super.pure('');
-  const PriceInput.dirty([String value = '']) : super.dirty(value);
+  const PriceInput.dirty([super.value = '']) : super.dirty();
 
   @override
   PriceValidationError? validator(String value) {
@@ -65,13 +64,13 @@ class GiveQuantityInput
 
   const GiveQuantityInput.pure({this.balance, this.isDivisible = false})
       : super.pure('');
-  const GiveQuantityInput.dirty(String value,
+  const GiveQuantityInput.dirty(super.value,
       {this.balance, this.isDivisible = false})
-      : super.dirty(value);
+      : super.dirty();
 
   @override
   GiveQuantityValidationError? validator(String value) {
-    if (value == null || value.isEmpty) {
+    if (value.isEmpty) {
       return GiveQuantityValidationError.required;
     }
 
@@ -96,12 +95,12 @@ class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
 
   const GetQuantityInput.pure({this.isDivisible = false}) : super.pure('');
 
-  const GetQuantityInput.dirty(String value, {this.isDivisible = false})
-      : super.dirty(value);
+  const GetQuantityInput.dirty(super.value, {this.isDivisible = false})
+      : super.dirty();
 
   @override
   GetQuantityValidationError? validator(String value) {
-    if (value == null || value.isEmpty) {
+    if (value.isEmpty) {
       return GetQuantityValidationError.required;
     }
 
@@ -541,8 +540,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     }
 
     final input = GiveQuantityInput.dirty(event.value,
-        balance: balance?.quantity,
-        isDivisible: balance?.assetInfo.divisible ?? false);
+        balance: balance.quantity,
+        isDivisible: balance.assetInfo.divisible ?? false);
 
     emit(state.copyWith(giveQuantity: input, errorMessage: null));
   }
@@ -567,7 +566,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       state.getQuantity.value,
       isDivisible: state.getQuantity.isDivisible,
     );
-
 
     emit(state.copyWith(
       giveAsset: giveAssetInput,
@@ -661,8 +659,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   int _getFeeRate() {
     return switch (state.feeEstimates) {
-      Success(data: var feeEstimates) => switch (
-            state.feeOption as FeeOption.FeeOption) {
+      Success(data: var feeEstimates) => switch (state.feeOption) {
           FeeOption.Fast() => feeEstimates.fast,
           FeeOption.Medium() => feeEstimates.medium,
           FeeOption.Slow() => feeEstimates.slow,

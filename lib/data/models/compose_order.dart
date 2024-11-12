@@ -1,5 +1,3 @@
-
-import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -41,7 +39,6 @@ class ComposeOrderResponseModel {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeOrderResponseParamsModel {
-
   final String source;
   final String giveAsset;
   final int giveQuantity;
@@ -59,8 +56,7 @@ class ComposeOrderResponseParamsModel {
       required this.getQuantityNormalized,
       required this.getAsset});
 
-  factory ComposeOrderResponseParamsModel.fromJson(
-          Map<String, dynamic> json) =>
+  factory ComposeOrderResponseParamsModel.fromJson(Map<String, dynamic> json) =>
       _$ComposeOrderResponseParamsModelFromJson(json);
 
   ComposeOrderResponseParams toDomain() => ComposeOrderResponseParams(

@@ -299,29 +299,28 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final bool isDense;
   final bool isExpanded;
   final String? Function(T?)? validator;
-  final AutovalidateMode autovalidateMode; 
+  final AutovalidateMode autovalidateMode;
   final String? errorText;
   final String? helperText;
-  const HorizonDropdownMenu({
-    super.key,
-    required this.items,
-    required this.onChanged,
-    this.label,
-    this.controller,
-    this.selectedValue,
-    this.icon,
-    this.borderRadius,
-    this.enabled = true,
-    this.displayStringForOption,
-    this.id,
-    this.selectedItemBuilder,
-    this.isDense = true,
-    this.isExpanded = false,
-    this.validator,
-    this.autovalidateMode = AutovalidateMode.disabled,
-    this.errorText,
-    this.helperText
-  });
+  const HorizonDropdownMenu(
+      {super.key,
+      required this.items,
+      required this.onChanged,
+      this.label,
+      this.controller,
+      this.selectedValue,
+      this.icon,
+      this.borderRadius,
+      this.enabled = true,
+      this.displayStringForOption,
+      this.id,
+      this.selectedItemBuilder,
+      this.isDense = true,
+      this.isExpanded = false,
+      this.validator,
+      this.autovalidateMode = AutovalidateMode.disabled,
+      this.errorText,
+      this.helperText});
 
   @override
   Widget build(BuildContext context) {

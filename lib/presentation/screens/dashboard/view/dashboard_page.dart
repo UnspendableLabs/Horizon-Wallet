@@ -459,7 +459,8 @@ class OrderButtonMenu extends StatelessWidget {
                       body: HorizonUI.HorizonDialog(
                         title: "Open Order",
                         body: ComposeOrderPageWrapper(
-                          composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
+                          composeTransactionUseCase:
+                              GetIt.I<ComposeTransactionUseCase>(),
                           currentAddress: currentAddress,
                           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                           getFeeEstimatesUseCase:
@@ -1167,7 +1168,7 @@ class DashboardPageState extends State<DashboardPage> {
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
           getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
           composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
-                   
+
           // balanceRepository: GetIt.I<BalanceRepository>(),
           assetRepository: GetIt.I<AssetRepository>(),
           initialGiveAsset: giveAsset,

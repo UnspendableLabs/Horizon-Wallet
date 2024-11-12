@@ -18,21 +18,17 @@ import 'package:horizon/domain/services/analytics_service.dart';
 
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
-import 'package:horizon/common/fn.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/forms/open_order_form/open_order_form_bloc.dart';
-import 'package:flow_builder/flow_builder.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/forms/open_order_form/open_order_form_bloc.dart';
 
 class ComposeOrderPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -159,22 +155,6 @@ class ComposeOrderPage extends StatefulWidget {
 }
 
 class ComposeOrderPageState extends State<ComposeOrderPage> {
-  void onFormSubmitted(SubmitArgs composeOrderArgs) {
-    // send message to parent block
-
-    context.read<ComposeOrderBloc>().add(ComposeTransactionEvent(
-        sourceAddress: widget.address,
-        params: ComposeOrderEventParams(
-          feeRate: composeOrderArgs.feeRateSatsVByte,
-          giveAsset: composeOrderArgs.giveAsset,
-          giveQuantity: composeOrderArgs.giveQuantity,
-          getAsset: composeOrderArgs.getAsset,
-          getQuantity: composeOrderArgs.getQuantity,
-        )));
-
-    // context.read<ComposeOrderBloc>().add(SubmitOrder(order: order));
-  }
-
   void onConfirmationContinue(ComposeOrderResponse composeTransaction, int fee,
       GlobalKey<FormState> formKey) {
     context.read<ComposeOrderBloc>().add(FinalizeTransactionEvent(
@@ -189,111 +169,100 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeOrderBloc, ComposeOrderState>(
         listener: (context, state) {
-
-        switch (state.submitState) {
-          case SubmitSuccess(transactionHex: var txHash):
-            widget.dashboardActivityFeedBloc.add(const Load());
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                duration: const Duration(seconds: 5),
-                action: SnackBarAction(
-                  label: 'Copy',
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: txHash));
-                  },
-                ),
-                content: Text(txHash),
-                behavior: SnackBarBehavior.floating));
-          case _:
-            break;
-        }
-
-        },
-        builder: (context, state) {
-          return switch (state.submitState) {
-            SubmitInitial(error: var error) => OpenOrderForm(
-                submissionError: error,
+      switch (state.submitState) {
+        case SubmitSuccess(transactionHex: var txHash):
+          widget.dashboardActivityFeedBloc.add(const Load());
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Copy',
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: txHash));
+                },
               ),
-            SubmitComposingTransaction(
-              composeTransaction: var composeTransaction,
-              fee: var fee,
-              feeRate: var feeRate,
-              virtualSize: var virtualSize,
-              adjustedVirtualSize: var adjustedVirtualSize,
-            ) =>
-              ComposeBaseConfirmationPage(
-                  composeTransaction: composeTransaction,
-                  fee: fee,
-                  feeRate: feeRate,
-                  virtualSize: virtualSize,
-                  adjustedVirtualSize: adjustedVirtualSize,
-                  buildConfirmationFormFields: (composeTransaction, formKey) {
-                    final params =
-                        (composeTransaction as ComposeOrderResponse).params;
+              content: Text(txHash),
+              behavior: SnackBarBehavior.floating));
+        case _:
+          break;
+      }
+    }, builder: (context, state) {
+      return switch (state.submitState) {
+        SubmitInitial(error: var error) => OpenOrderForm(
+            submissionError: error,
+          ),
+        SubmitComposingTransaction(
+          composeTransaction: var composeTransaction,
+          fee: var fee,
+          feeRate: var feeRate,
+          virtualSize: var virtualSize,
+          adjustedVirtualSize: var adjustedVirtualSize,
+        ) =>
+          ComposeBaseConfirmationPage(
+              composeTransaction: composeTransaction,
+              fee: fee,
+              feeRate: feeRate,
+              virtualSize: virtualSize,
+              adjustedVirtualSize: adjustedVirtualSize,
+              buildConfirmationFormFields: (composeTransaction, formKey) {
+                final params =
+                    (composeTransaction as ComposeOrderResponse).params;
 
-                    return [
-                      HorizonUI.HorizonTextFormField(
-                        label: "Give Asset",
-                        controller:
-                            TextEditingController(text: params.giveAsset),
-                        enabled: false,
-                      ),
-                      HorizonUI.HorizonTextFormField(
-                        label: "Give Quantity",
-                        controller: TextEditingController(
-                            text: params.giveQuantityNormalized),
-                        enabled: false,
-                      ),
-                      HorizonUI.HorizonTextFormField(
-                        label: "Get Asset",
-                        controller:
-                            TextEditingController(text: params.getAsset),
-                        enabled: false,
-                      ),
-                      HorizonUI.HorizonTextFormField(
-                        label: "Get Quantity",
-                        controller: TextEditingController(
-                            text: params.getQuantityNormalized),
-                        enabled: false,
-                      ),
-                    ];
-                  },
-                  onBack: () {
-                    onConfirmationBack();
-                  },
-                  onContinue: (composeTransaction, fee, formKey) => {
-                        onConfirmationContinue(
-                            composeTransaction, fee, formKey),
-                      }
-                  // .onConfirmationContinue(composeTransaction, fee, formKey),
+                return [
+                  HorizonUI.HorizonTextFormField(
+                    label: "Give Asset",
+                    controller: TextEditingController(text: params.giveAsset),
+                    enabled: false,
                   ),
-            SubmitFinalizing(
-              composeTransaction: var composeTransaction,
-              fee: var fee,
-              error: var error,
-              loading: var loading
-            ) =>
-              ComposeBaseFinalizePage(
-                state: state,
-                composeTransaction: composeTransaction,
-                fee: fee,
-                error: error,
-                loading: loading,
-                onSubmit: (password, formKey) {
-                  context.read<ComposeOrderBloc>().add(
-                      SignAndBroadcastTransactionEvent(password: password));
-                },
-                onCancel: () {
-
-                  // for now we just go all the way back to step 1
-                  onConfirmationBack();
-
-
-                },
-              ),
-            _ => SizedBox.shrink(),
-                      
-          };
-        });
+                  HorizonUI.HorizonTextFormField(
+                    label: "Give Quantity",
+                    controller: TextEditingController(
+                        text: params.giveQuantityNormalized),
+                    enabled: false,
+                  ),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Get Asset",
+                    controller: TextEditingController(text: params.getAsset),
+                    enabled: false,
+                  ),
+                  HorizonUI.HorizonTextFormField(
+                    label: "Get Quantity",
+                    controller: TextEditingController(
+                        text: params.getQuantityNormalized),
+                    enabled: false,
+                  ),
+                ];
+              },
+              onBack: () {
+                onConfirmationBack();
+              },
+              onContinue: (composeTransaction, fee, formKey) => {
+                    onConfirmationContinue(composeTransaction, fee, formKey),
+                  }),
+        SubmitFinalizing(
+          composeTransaction: var composeTransaction,
+          fee: var fee,
+          error: var error,
+          loading: var loading
+        ) =>
+          ComposeBaseFinalizePage(
+            state: state,
+            composeTransaction: composeTransaction,
+            fee: fee,
+            error: error,
+            loading: loading,
+            onSubmit: (password, formKey) {
+              context
+                  .read<ComposeOrderBloc>()
+                  .add(SignAndBroadcastTransactionEvent(password: password));
+            },
+            onCancel: () {
+              // for now we just go all the way back to step 1
+              onConfirmationBack();
+            },
+          ),
+        _ => const SizedBox.shrink(),
+      };
+    });
   }
 }

@@ -63,7 +63,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _giveAssetController.dispose();
     _giveQuantityController.dispose();
     _getQuantityController.dispose();
@@ -103,8 +102,8 @@ class _OpenOrderForm extends State<OpenOrderForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
               child: Text("Sell",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
@@ -114,12 +113,12 @@ class _OpenOrderForm extends State<OpenOrderForm> {
                     child: GiveQuantityInputField(
                         controller: _giveQuantityController)),
                 const SizedBox(width: 16),
-                Expanded(child: GiveAssetInputField()),
+                const Expanded(child: GiveAssetInputField()),
               ],
             ),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
               child: Text("Buy",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
@@ -143,14 +142,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
                 _ => FeeEstimateLoading()
               },
               onFieldSubmitted: () {},
-
-              // TODO: replicate this functionality
-
-              // state.feeState.maybeWhen(
-              //   success: (feeEstimates) =>
-              //       FeeEstimateSuccess(feeEstimates: feeEstimates),
-              //   orElse: () => FeeEstimateLoading(),
-              // ),
               onSelected: (feeOption) {
                 context
                     .read<OpenOrderFormBloc>()
@@ -199,6 +190,8 @@ class _OpenOrderForm extends State<OpenOrderForm> {
 }
 
 class GiveAssetInputField extends StatelessWidget {
+  const GiveAssetInputField({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
@@ -207,12 +200,12 @@ class GiveAssetInputField extends StatelessWidget {
       //     previous.giveAsset != current.giveAsset,
       builder: (context, state) {
         if (state.giveAssets is Loading) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (state.giveAssets is Success<List<Balance>>) {
           final giveAssets = (state.giveAssets as Success<List<Balance>>).data;
           final hasError =
               !state.giveAsset.isPure && state.giveAsset.error != null;
-          final errorMessage = 'Required';
+          const errorMessage = 'Required';
 
           return HorizonUI.HorizonDropdownMenu<String>(
             enabled: true,
@@ -235,10 +228,10 @@ class GiveAssetInputField extends StatelessWidget {
             helperText: hasError ? null : ' ',
           );
         } else if (state.giveAssets is Failure) {
-          return Text('Failed to load assets',
+          return const Text('Failed to load assets',
               style: TextStyle(color: Colors.red));
         } else {
-          return Text("not asked");
+          return const Text("not asked");
         }
       },
     );
@@ -277,14 +270,14 @@ class GetAssetInputField extends StatelessWidget {
               helperText: hasError ? null : ' ',
               suffixIcon: switch (state.getAssetValidationStatus) {
                 Loading() => Container(
-                    margin: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(strokeWidth: 2)),
+                    margin: const EdgeInsets.all(8.0),
+                    child: const CircularProgressIndicator(strokeWidth: 2)),
                 Success() => const Icon(
                     Icons.check,
                     color: Colors.green,
                     size: 20, // Adjust size as needed
                   ),
-                _ => SizedBox.shrink()
+                _ => const SizedBox.shrink()
               }),
         );
       },
@@ -327,7 +320,7 @@ class GiveQuantityInputField extends StatelessWidget {
             helperText: hasError ? null : ' ',
           ),
           keyboardType: isDivisible
-              ? TextInputType.numberWithOptions(decimal: true)
+              ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.number,
           inputFormatters: [
             if (isDivisible)
@@ -376,7 +369,7 @@ class GetQuantityInputField extends StatelessWidget {
             // errorText: state.quantity.invalid ? 'Invalid quantity' : null,
           ),
           keyboardType: isDivisible
-              ? TextInputType.numberWithOptions(decimal: true)
+              ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.number,
           inputFormatters: [
             if (isDivisible)

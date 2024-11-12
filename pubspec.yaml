@@ -82,7 +82,6 @@ dependencies:
   posthog_flutter: ^4.5.0
   simple_rc4: ^0.3.0
   formz: ^0.8.0
-  flow_builder: ^0.1.0
 
 
 dev_dependencies:

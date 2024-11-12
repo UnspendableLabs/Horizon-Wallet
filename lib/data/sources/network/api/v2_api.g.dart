@@ -4774,7 +4774,7 @@ class _V2Api implements V2Api {
 
   RequestOptions newRequestOptions(Object? options) {
     if (options is RequestOptions) {
-      return options as RequestOptions;
+      return options;
     }
     if (options is Options) {
       return RequestOptions(

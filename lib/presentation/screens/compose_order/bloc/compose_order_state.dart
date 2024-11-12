@@ -23,4 +23,3 @@ class ComposeOrderState with _$ComposeOrderState, ComposeStateBase {
         submitState: const SubmitInitial(),
       );
 }
-

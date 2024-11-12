@@ -1,5 +1,4 @@
 import "package:equatable/equatable.dart";
-import "package:horizon/domain/entities/asset_info.dart";
 
 class TransactionUnpacked extends Equatable {
   final String messageType;

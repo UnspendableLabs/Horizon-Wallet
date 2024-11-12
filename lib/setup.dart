@@ -104,9 +104,6 @@ import 'dart:convert';
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
-
-  logger.Logger.level = logger.Level.debug;
-  
   injector.registerSingleton<Logger>(LoggerImpl(logger.Logger()));
 
   Config config = ConfigImpl();
@@ -129,7 +126,7 @@ Future<void> setup() async {
       String password = config.counterpartyApiPassword;
       String basicAuth =
           'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-      options.headers['Authorizationa'] = basicAuth;
+      options.headers['Authorization'] = basicAuth;
       return handler.next(options);
     },
   ));
@@ -140,10 +137,10 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
-      // retryableExtraStatuses: {400}, // to handle backend bug with compose
+      retryableExtraStatuses: {400}, // to handle backend bug with compose
       retryDelays: const [
         // set delays between retries (optional)
         Duration(seconds: 1), // wait 1 sec before first retry
@@ -166,7 +163,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,

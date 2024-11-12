@@ -1062,6 +1062,7 @@ class VerboseOpenOrderParams extends OpenOrderParams {
   factory VerboseOpenOrderParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseOpenOrderParamsFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$VerboseOpenOrderParamsToJson(this);
 }
 
@@ -3170,6 +3171,7 @@ class OrderUnpackedVerbose extends TransactionUnpackedVerbose {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() => _$OrderUnpackedVerboseToJson(this);
 }
 
