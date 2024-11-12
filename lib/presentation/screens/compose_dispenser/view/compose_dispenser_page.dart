@@ -211,7 +211,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
       int mainchainrate =
           (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
-      print('MAINCHAINRATE: $mainchainrate');
+
       if (isCreateNewAddressFlow) {
         context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(
               originalAddress: widget.address,

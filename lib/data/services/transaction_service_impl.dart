@@ -264,6 +264,7 @@ class TransactionServiceImpl implements TransactionService {
       currentInputIndex++;
     }
 
+    // if we don't have enough inputs to cover the btc + fee value, throw an error
     if (inputSetValue < targetValue) {
       throw Exception(
           'Insufficient funds: available $inputSetValue, needed $targetValue');
@@ -271,7 +272,7 @@ class TransactionServiceImpl implements TransactionService {
 
     // change output will be targetValue - inputSetValue goes to the source address
 
-    // After your existing outputs, add the OP_RETURN output for change
+    // Add the for change
     int changeAmount = inputSetValue - targetValue;
 
     // Create payment for source address (where change goes)
@@ -282,9 +283,7 @@ class TransactionServiceImpl implements TransactionService {
     psbt.addOutput(({'script': changeScript.output, 'value': changeAmount})
         .jsify() as bitcoinjs.TxOutput);
 
-    print('psbt.finalizeAllInputs();');
     psbt.signAllInputs(sourceSigner);
-    // print(psbt.finalizeAllInputs());
     psbt.finalizeAllInputs();
 
     bitcoinjs.Transaction tx = psbt.extractTransaction();

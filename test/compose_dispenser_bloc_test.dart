@@ -164,11 +164,6 @@ void main() {
     mockAddressService = MockAddressService();
 
     composeDispenserBloc = ComposeDispenserBloc(
-      accountRepository: mockAccountRepository,
-      addressRepository: mockAddressRepository,
-      walletRepository: mockWalletRepository,
-      encryptionService: mockEncryptionService,
-      addressService: mockAddressService,
       fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       composeRepository: mockComposeRepository,
@@ -199,10 +194,13 @@ void main() {
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
           submitState: const SubmitInitial(),
+          dispensersState: const DispenserState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
+          dispensersState: const DispenserState.warning(),
+          submitState: const SubmitInitial(),
         ),
       ],
     );
@@ -263,11 +261,14 @@ void main() {
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
           submitState: const SubmitInitial(),
+          dispensersState: const DispenserState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.error(
               'An unexpected error occurred: Exception: Unexpected'),
           balancesState: const BalancesState.error(
+              'An unexpected error occurred: Exception: Unexpected'),
+          dispensersState: const DispenserState.error(
               'An unexpected error occurred: Exception: Unexpected'),
         ),
       ],

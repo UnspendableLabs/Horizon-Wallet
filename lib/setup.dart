@@ -138,7 +138,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -164,7 +164,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -382,16 +382,9 @@ Future<void> setup() async {
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
   ));
 
-  injector.registerSingleton<SignTransactionUseCase>(SignTransactionUseCase(
-    addressRepository: GetIt.I.get<AddressRepository>(),
-    importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-    accountRepository: GetIt.I.get<AccountRepository>(),
-    walletRepository: GetIt.I.get<WalletRepository>(),
-    encryptionService: GetIt.I.get<EncryptionService>(),
-    addressService: GetIt.I.get<AddressService>(),
+  injector.registerSingleton<SignChainedTransactionUseCase>(
+      SignChainedTransactionUseCase(
     transactionService: GetIt.I.get<TransactionService>(),
-    importedAddressService: GetIt.I.get<ImportedAddressService>(),
-    utxoRepository: GetIt.I.get<UtxoRepository>(),
   ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());

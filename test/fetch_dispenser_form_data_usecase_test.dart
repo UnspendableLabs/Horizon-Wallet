@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -61,6 +63,29 @@ void main() {
       ),
     ];
 
+    final dispensers = [
+      Dispenser(
+        asset: 'ASSET',
+        assetInfo: assetInfo,
+        txIndex: 0,
+        txHash: '0x123',
+        blockIndex: 0,
+        source: 'source',
+        giveQuantity: 1000,
+        escrowQuantity: 1000,
+        status: 0,
+        giveQuantityNormalized: '0.00001000',
+        escrowQuantityNormalized: '0.00001000',
+        satoshirateNormalized: '0.00001000',
+        origin: 'origin',
+        dispenseCount: 0,
+        confirmed: true,
+        giveRemaining: 1000,
+        giveRemainingNormalized: '0.00001000',
+        satoshirate: 1000,
+      ),
+    ];
+
     const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
 
     when(() => mockBalanceRepository.getBalancesForAddress(address.address))
@@ -69,12 +94,16 @@ void main() {
     when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
         .thenAnswer((_) async => feeEstimates);
 
+    when(() => mockDispenserRepository.getDispensersByAddress(address.address))
+        .thenAnswer((_) => TaskEither.right(dispensers));
+
     // Act
     final result = await useCase.call(address.address);
 
     // Assert
     expect(result.$1, balances);
     expect(result.$2, feeEstimates);
+    expect(result.$3, dispensers);
   });
 
   test('should throw FetchBalancesException when balance fetch fails',
@@ -135,6 +164,32 @@ void main() {
     expect(
       () => useCase.call(address.address),
       throwsA(isA<FetchFeeEstimatesException>()),
+    );
+  });
+
+  test('should throw FetchDispenserException when dispenser fetch fails',
+      () async {
+    // Arrange
+    const address = Address(
+      accountUuid: 'test-account-uuid',
+      address: 'test-address',
+      index: 0,
+    );
+
+    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
+        .thenAnswer((_) async => []);
+
+    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+        .thenAnswer(
+            (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
+
+    when(() => mockDispenserRepository.getDispensersByAddress(address.address))
+        .thenThrow(Exception('Dispenser error'));
+
+    // Act & Assert
+    expect(
+      () => useCase.call(address.address),
+      throwsA(isA<FetchDispenserException>()),
     );
   });
 }

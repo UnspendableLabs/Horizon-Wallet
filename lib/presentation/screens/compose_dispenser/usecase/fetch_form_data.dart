@@ -30,7 +30,6 @@ class FetchDispenserFormDataUseCase {
       final balances = futures[0] as List<Balance>;
       final feeEstimates = futures[1] as FeeEstimates;
       final dispenser = futures[2] as List<Dispenser>;
-      print(dispenser);
 
       return (balances, feeEstimates, dispenser);
     } on FetchBalancesException catch (e) {

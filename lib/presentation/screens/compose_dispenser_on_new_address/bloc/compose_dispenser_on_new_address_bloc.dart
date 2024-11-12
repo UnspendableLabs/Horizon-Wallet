@@ -23,8 +23,8 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
 
-// this number should cover the adjust vsize of 3 transactions: 2 sends and 1 dispenser. a similar send will hae an adjusted vsize of ~166 and a similar dispenser will have an adjusted vsize of ~193. so send1 + send2 + dispenser + plenty of wiggle room = 1000
-const int ADJUSTED_VIRTUAL_SIZE = 1000;
+// similar dispenser adjusted vsize is ~193, we add plenty of wiggle room
+const int ADJUSTED_VIRTUAL_SIZE = 300;
 
 class ComposeDispenserOnNewAddressBloc extends Bloc<
     ComposeDispenserOnNewAddressEvent, ComposeDispenserOnNewAddressStateBase> {
@@ -38,7 +38,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
   final ComposeTransactionUseCase composeTransactionUseCase;
-  final SignTransactionUseCase signTransactionUseCase;
+  final SignChainedTransactionUseCase signChainedTransactionUseCase;
   final TransactionService transactionService;
   final FetchDispenseFormDataUseCase fetchDispenseFormDataUseCase;
 
@@ -53,7 +53,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.utxoRepository,
     required this.balanceRepository,
     required this.composeTransactionUseCase,
-    required this.signTransactionUseCase,
+    required this.signChainedTransactionUseCase,
     required this.transactionService,
     required this.fetchDispenseFormDataUseCase,
   }) : super(const ComposeDispenserOnNewAddressStateBase(
@@ -236,13 +236,14 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             .escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
         final mainchainrate = event.mainchainrate;
 
-        final feeToCoverDispenser =
-            event.feeRate * 300; // estimated fee to cover the dispenser
+        final feeToCoverDispenser = event.feeRate *
+            ADJUSTED_VIRTUAL_SIZE; // estimated fee to cover the dispenser
 
         // 2. compose the asset send
         final assetSend = await composeTransactionUseCase
             .call<ComposeSendParams, ComposeSendResponse>(
-          feeRate: _getFeeRate(FeeOption.Slow()),
+          feeRate: _getFeeRate(FeeOption
+              .Slow()), // first tx is sent with slow fee and the next tx will adjust the fee for both
           source: source,
           params: ComposeSendParams(
             source: source,
@@ -287,7 +288,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         );
 
         // 5. sign the dispenser
-        final signedComposeDispenserChain = await signTransactionUseCase.call(
+        final signedComposeDispenserChain =
+            await signChainedTransactionUseCase.call(
           source: destination,
           rawtransaction: composeDispenserChain.rawtransaction,
           password: event.password,

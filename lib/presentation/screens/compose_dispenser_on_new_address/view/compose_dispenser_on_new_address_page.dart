@@ -61,7 +61,8 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         utxoRepository: GetIt.I.get<UtxoRepository>(),
         balanceRepository: GetIt.I.get<BalanceRepository>(),
         composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
-        signTransactionUseCase: GetIt.I.get<SignTransactionUseCase>(),
+        signChainedTransactionUseCase:
+            GetIt.I.get<SignChainedTransactionUseCase>(),
         transactionService: GetIt.I.get<TransactionService>(),
         fetchDispenseFormDataUseCase:
             GetIt.I.get<FetchDispenseFormDataUseCase>(),
@@ -112,7 +113,6 @@ class _ComposeDispenserOnNewAddressPageState
   @override
   void initState() {
     super.initState();
-    // context.read<ComposeDispenserOnNewAddressBloc>().add(FetchFormData());
   }
 
   @override
@@ -249,7 +249,7 @@ class _ComposeDispenserOnNewAddressPageState
                               enabled: false,
                             ),
                           ),
-                          const SizedBox(width: 16.0), // Spacing between inputs
+                          const SizedBox(width: 16.0),
                           Expanded(
                             child: HorizonUI.HorizonTextFormField(
                               label: "Asset",
@@ -355,26 +355,6 @@ class _ComposeDispenserOnNewAddressPageState
 
   void _handleContinue() {
     if (passwordFormKey.currentState!.validate()) {
-      // Decimal giveInput = Decimal.parse(widget.giveQuantity);
-      // Decimal escrowInput = Decimal.parse(widget.escrowQuantity);
-      // Decimal mainchainrateBtc = Decimal.parse(widget.mainchainrate); // Price in BTC
-
-      // int giveQuantity;
-      // int escrowQuantity;
-
-      // // Handle divisibility for the give quantity
-      // if (widget.divisible) {
-      //   giveQuantity = (giveInput * Decimal.fromInt(100000000)).toBigInt().toInt();
-      //   escrowQuantity = (escrowInput * Decimal.fromInt(100000000)).toBigInt().toInt();
-      // } else {
-      //   giveQuantity = giveInput.toBigInt().toInt();
-      //   escrowQuantity = escrowInput.toBigInt().toInt();
-      // }
-
-      // int mainchainrate = (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
-
-      // // Dispatch the event with the calculated values
-
       context.read<ComposeDispenserOnNewAddressBloc>().add(ComposeTransactions(
             password: passwordController.text,
             originalAddress: widget.originalAddress,

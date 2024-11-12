@@ -68,9 +68,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
     on<ChooseWorkFlow>(_onChooseWorkFlow);
     on<ConfirmTransactionOnNewAddress>(_onConfirmTransactionOnNewAddress);
-    // on<CollectPassword>(_onCollectPassword);
-    // on<ConfirmCreateNewAddressFlow>(_onConfirmCreateNewAddressFlow);
-    // on<CancelCreateNewAddressFlow>(_onCancelCreateNewAddressFlow);
   }
 
   _onChangeEscrowQuantity(ChangeEscrowQuantity event, emit) {

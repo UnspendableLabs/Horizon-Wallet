@@ -632,7 +632,7 @@ class MyApp extends StatelessWidget {
             return MaterialApp.router(
               theme: lightTheme,
               darkTheme: darkTheme,
-              themeMode: ThemeMode.light,
+              themeMode: themeMode,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,
               routeInformationProvider:

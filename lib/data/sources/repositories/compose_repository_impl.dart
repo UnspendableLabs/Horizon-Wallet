@@ -310,56 +310,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_send.ComposeSendResponse> composeSendChain(
-      int fee,
-      DecodedTx prevDecodedTransaction,
-      String previousSentAsset,
-      compose_send.ComposeSendParams params) async {
-    final source = params.source;
-    final destination = params.destination;
-    final asset = params.asset;
-    final quantity = params.quantity;
-
-    // if the previous sent asset is btc, then the first output represents the change send to the destination
-    // if the previous sent asset is not btc, then the second output represents the change send to the destination
-    // final prevOutputIndex = previousSentAsset == 'BTC'/ ? 0 : 1;
-
-    final prevTxOutput = prevDecodedTransaction.vout[1];
-    final scriptPubKey = prevTxOutput.scriptPubKey;
-    final int value = (prevTxOutput.value * 100000000).toInt();
-    final String txid = prevDecodedTransaction.txid;
-    final int vout = prevTxOutput.n;
-
-    // for chaining transactions, the backend can't validate the utxos, so we need to give the backend the necessary information
-    final newSendInput = '$txid:$vout:$value:${scriptPubKey.hex}';
-
-    final response = await api.composeSendVerbose(source, destination, asset,
-        quantity, true, fee, null, newSendInput, false, true);
-
-    if (response.result == null) {
-      throw Exception('Failed to compose send');
-    }
-
-    final txVerbose = response.result!;
-    return compose_send.ComposeSendResponse(
-        params: compose_send.ComposeSendResponseParams(
-          source: txVerbose.params.source,
-          destination: txVerbose.params.destination,
-          asset: txVerbose.params.asset,
-          quantity: txVerbose.params.quantity,
-          useEnhancedSend: txVerbose.params.useEnhancedSend,
-          assetInfo: asset_info.AssetInfo(
-              assetLongname: txVerbose.params.assetInfo.assetLongname,
-              description: txVerbose.params.assetInfo.description,
-              divisible: txVerbose.params.assetInfo.divisible),
-          quantityNormalized: txVerbose.params.quantityNormalized,
-        ),
-        btcFee: txVerbose.btcFee,
-        rawtransaction: txVerbose.rawtransaction,
-        name: txVerbose.name);
-  }
-
-  @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
       composeDispenserChain(int fee, DecodedTx prevDecodedTransaction,
           compose_dispenser.ComposeDispenserParams params) async {
@@ -377,12 +327,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
       throw Exception('Output for chaining not found');
     }
 
-    // the second output represents the change send to the destination
     final scriptPubKey = outputForChaining.scriptPubKey;
-    final int value = (outputForChaining.value * 100000000).toInt();
+    final int value =
+        (outputForChaining.value * 100000000).toInt(); // convert to sats
     final String txid = prevDecodedTransaction.txid;
     final int vout = outputForChaining.n;
 
+    // since this utxo hasn't been confirmed yet, we need to add all the necessary info for value and scriptPubKey
     final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
 
     final response = await api.composeDispenserVerbose(
