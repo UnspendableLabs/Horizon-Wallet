@@ -1140,7 +1140,7 @@ class DashboardPageState extends State<DashboardPage> {
           _handleDispenseAction(address),
       URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
           _handleFairmintAction(fairminterTxHash),
-      URLAction.OrderAction(
+      URLAction.OpenOrderAction(
         giveQuantity: var giveQuantity,
         giveAsset: var giveAsset,
         getQuantity: var getQuantity,

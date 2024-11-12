@@ -19,13 +19,13 @@ class ActionRepositoryImpl implements ActionRepository {
       ["dispense", String address] => DispenseAction(address),
       ["fairmint", String fairminterTxHash] => FairmintAction(fairminterTxHash),
       [
-        "order",
+        "open_order",
         String giveAsset,
         String giveQuantity,
         String getAsset,
         String getQuantity,
       ] =>
-        OrderAction(
+        OpenOrderAction(
             giveQuantity: int.tryParse(giveQuantity)!,
             giveAsset: giveAsset,
             getQuantity: int.tryParse(getQuantity)!,

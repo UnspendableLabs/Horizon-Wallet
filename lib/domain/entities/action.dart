@@ -16,15 +16,15 @@ class FairmintAction extends Action {
   FairmintAction(this.fairminterTxHash);
 }
 
-class OrderAction extends Action {
+class OpenOrderAction extends Action {
   @override
-  String get action => 'order';
+  String get action => 'open-order';
   final int giveQuantity;
   final String giveAsset;
   final int getQuantity;
   final String getAsset;
 
-  OrderAction(
+  OpenOrderAction(
       {required this.giveQuantity,
       required this.giveAsset,
       required this.getQuantity,
