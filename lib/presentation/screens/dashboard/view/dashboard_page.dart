@@ -471,22 +471,22 @@ class OrderButtonMenu extends StatelessWidget {
                       ),
                     );
                   }),
-              PopupMenuItem(
-                child: const Text("Cancel Order"),
-                onTap: () {
-                  HorizonUI.HorizonDialog.show(
-                      context: context,
-                      body: HorizonUI.HorizonDialog(
-                        title: "Close Dispenser",
-                        body: CloseDispenserPageWrapper(
-                          currentAddress: currentAddress,
-                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                        ),
-                        includeBackButton: false,
-                        includeCloseButton: true,
-                      ));
-                },
-              ),
+              // PopupMenuItem(
+              //   child: const Text("Cancel Order"),
+              //   onTap: () {
+              //     HorizonUI.HorizonDialog.show(
+              //         context: context,
+              //         body: HorizonUI.HorizonDialog(
+              //           title: "Close Dispenser",
+              //           body: CloseDispenserPageWrapper(
+              //             currentAddress: currentAddress,
+              //             dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+              //           ),
+              //           includeBackButton: false,
+              //           includeCloseButton: true,
+              //         ));
+              //   },
+              // ),
             ],
             child: Container(
               decoration: BoxDecoration(
