@@ -33,7 +33,12 @@ final DEFAULT_WHITELIST = [
   "DISPENSER_UPDATE",
   "NEW_FAIRMINT",
   "NEW_FAIRMINTER",
-  "OPEN_ORDER"
+  "OPEN_ORDER",
+  "ORDER_MATCH",
+  "ORDER_UPDATE",
+  "ORDER_FILLED",
+  "CANCEL_ORDER",
+  "ORDER_EXPIRATION"
 ];
 
 extension DateTimeExtension on DateTime {

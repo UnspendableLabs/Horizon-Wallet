@@ -1079,3 +1079,324 @@ class VerboseOpenOrderEvent extends VerboseEvent {
     required this.params,
   });
 }
+
+
+
+// OrderMatch Event
+class OrderMatchParams {
+  final String backwardAsset;
+  final int backwardQuantity;
+  final int blockIndex;
+  final int feePaid;
+  final String forwardAsset;
+  final int forwardQuantity;
+  final String id;
+  final int matchExpireIndex;
+  final String status;
+  final String tx0Address;
+  final int tx0BlockIndex;
+  final int tx0Expiration;
+  final String tx0Hash;
+  final int tx0Index;
+  final String tx1Address;
+  final int tx1BlockIndex;
+  final int tx1Expiration;
+  final String tx1Hash;
+  final int tx1Index;
+
+  OrderMatchParams({
+    required this.backwardAsset,
+    required this.backwardQuantity,
+    required this.blockIndex,
+    required this.feePaid,
+    required this.forwardAsset,
+    required this.forwardQuantity,
+    required this.id,
+    required this.matchExpireIndex,
+    required this.status,
+    required this.tx0Address,
+    required this.tx0BlockIndex,
+    required this.tx0Expiration,
+    required this.tx0Hash,
+    required this.tx0Index,
+    required this.tx1Address,
+    required this.tx1BlockIndex,
+    required this.tx1Expiration,
+    required this.tx1Hash,
+    required this.tx1Index,
+  });
+}
+
+class OrderMatchEvent extends Event {
+  final OrderMatchParams params;
+
+  const OrderMatchEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseOrderMatchParams extends OrderMatchParams {
+  final String forwardQuantityNormalized;
+  final String backwardQuantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseOrderMatchParams({
+    required super.backwardAsset,
+    required super.backwardQuantity,
+    required super.blockIndex,
+    required super.feePaid,
+    required super.forwardAsset,
+    required super.forwardQuantity,
+    required super.id,
+    required super.matchExpireIndex,
+    required super.status,
+    required super.tx0Address,
+    required super.tx0BlockIndex,
+    required super.tx0Expiration,
+    required super.tx0Hash,
+    required super.tx0Index,
+    required super.tx1Address,
+    required super.tx1BlockIndex,
+    required super.tx1Expiration,
+    required super.tx1Hash,
+    required super.tx1Index,
+    required this.forwardQuantityNormalized,
+    required this.backwardQuantityNormalized,
+    required this.feePaidNormalized,
+  });
+}
+
+class VerboseOrderMatchEvent extends VerboseEvent {
+  final VerboseOrderMatchParams params;
+
+  const VerboseOrderMatchEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+// OrderUpdate Event
+class OrderUpdateParams {
+  final int feeProvidedRemaining;
+  final int feeRequiredRemaining;
+  final int getRemaining;
+  final int giveRemaining;
+  final String status;
+  final String txHash;
+
+  OrderUpdateParams({
+    required this.feeProvidedRemaining,
+    required this.feeRequiredRemaining,
+    required this.getRemaining,
+    required this.giveRemaining,
+    required this.status,
+    required this.txHash,
+  });
+}
+
+class OrderUpdateEvent extends Event {
+  final OrderUpdateParams params;
+
+  const OrderUpdateEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseOrderUpdateParams extends OrderUpdateParams {
+  final String feeProvidedRemainingNormalized;
+  final String feeRequiredRemainingNormalized;
+
+  VerboseOrderUpdateParams({
+    required super.feeProvidedRemaining,
+    required super.feeRequiredRemaining,
+    required super.getRemaining,
+    required super.giveRemaining,
+    required super.status,
+    required super.txHash,
+    required this.feeProvidedRemainingNormalized,
+    required this.feeRequiredRemainingNormalized,
+  });
+}
+
+class VerboseOrderUpdateEvent extends VerboseEvent {
+  final VerboseOrderUpdateParams params;
+
+  const VerboseOrderUpdateEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+// OrderFilled Event
+class OrderFilledParams {
+  final String status;
+  final String txHash;
+
+  OrderFilledParams({
+    required this.status,
+    required this.txHash,
+  });
+}
+
+class OrderFilledEvent extends Event {
+  final OrderFilledParams params;
+
+  const OrderFilledEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseOrderFilledParams extends OrderFilledParams {
+  VerboseOrderFilledParams({
+    required super.status,
+    required super.txHash,
+  });
+}
+
+class VerboseOrderFilledEvent extends VerboseEvent {
+  final VerboseOrderFilledParams params;
+
+  const VerboseOrderFilledEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+// CancelOrder Event
+class CancelOrderParams {
+  final int blockIndex;
+  final String offerHash;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+
+  CancelOrderParams({
+    required this.blockIndex,
+    required this.offerHash,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+}
+
+class CancelOrderEvent extends Event {
+  final CancelOrderParams params;
+
+  const CancelOrderEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseCancelOrderParams extends CancelOrderParams {
+  VerboseCancelOrderParams({
+    required super.blockIndex,
+    required super.offerHash,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+  });
+}
+
+class VerboseCancelOrderEvent extends VerboseEvent {
+  final VerboseCancelOrderParams params;
+
+  const VerboseCancelOrderEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+// OrderExpiration Event
+class OrderExpirationParams {
+  final int blockIndex;
+  final String orderHash;
+  final String source;
+  final int blockTime;
+
+  OrderExpirationParams({
+    required this.blockIndex,
+    required this.orderHash,
+    required this.source,
+    required this.blockTime,
+  });
+}
+
+class OrderExpirationEvent extends Event {
+  final OrderExpirationParams params;
+
+  const OrderExpirationEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseOrderExpirationParams extends OrderExpirationParams {
+  VerboseOrderExpirationParams({
+    required super.blockIndex,
+    required super.orderHash,
+    required super.source,
+    required super.blockTime,
+  });
+}
+
+class VerboseOrderExpirationEvent extends VerboseEvent {
+  final VerboseOrderExpirationParams params;
+
+  const VerboseOrderExpirationEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+

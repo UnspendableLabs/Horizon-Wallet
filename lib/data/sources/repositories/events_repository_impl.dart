@@ -57,6 +57,21 @@ class VerboseEventMapper {
       case "OPEN_ORDER":
         return VerboseOpenOrderEventMapper.toDomain(
             apiEvent as api.VerboseOpenOrderEvent);
+      case "ORDER_MATCH":
+        return VerboseOrderMatchEventMapper.toDomain(
+            apiEvent as api.VerboseOrderMatchEvent);
+      case "ORDER_UPDATE":
+        return VerboseOrderUpdateEventMapper.toDomain(
+            apiEvent as api.VerboseOrderUpdateEvent);
+      case "ORDER_FILLED":
+        return VerboseOrderFilledEventMapper.toDomain(
+            apiEvent as api.VerboseOrderFilledEvent);
+      case "CANCEL_ORDER":
+        return VerboseCancelOrderEventMapper.toDomain(
+            apiEvent as api.VerboseCancelOrderEvent);
+      case "ORDER_EXPIRATION":
+        return VerboseOrderExpirationEventMapper.toDomain(
+            apiEvent as api.VerboseOrderExpirationEvent);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -575,6 +590,162 @@ class VerboseOpenOrderParamsMapper {
       feeRequiredNormalized: apiParams.feeRequiredNormalized,
       feeRequiredRemainingNormalized: apiParams.feeRequiredRemainingNormalized,
       feeProvidedRemainingNormalized: apiParams.feeProvidedRemainingNormalized,
+    );
+  }
+}
+
+class VerboseOrderMatchEventMapper {
+  static VerboseOrderMatchEvent toDomain(api.VerboseOrderMatchEvent apiEvent) {
+    return VerboseOrderMatchEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "ORDER_MATCH",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseOrderMatchParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseOrderMatchParamsMapper {
+  static VerboseOrderMatchParams toDomain(
+      api.VerboseOrderMatchParams apiParams) {
+    return VerboseOrderMatchParams(
+      backwardAsset: apiParams.backwardAsset,
+      backwardQuantity: apiParams.backwardQuantity,
+      blockIndex: apiParams.blockIndex,
+      feePaid: apiParams.feePaid,
+      forwardAsset: apiParams.forwardAsset,
+      forwardQuantity: apiParams.forwardQuantity,
+      id: apiParams.id,
+      matchExpireIndex: apiParams.matchExpireIndex,
+      status: apiParams.status,
+      tx0Address: apiParams.tx0Address,
+      tx0BlockIndex: apiParams.tx0BlockIndex,
+      tx0Expiration: apiParams.tx0Expiration,
+      tx0Hash: apiParams.tx0Hash,
+      tx0Index: apiParams.tx0Index,
+      tx1Address: apiParams.tx1Address,
+      tx1BlockIndex: apiParams.tx1BlockIndex,
+      tx1Expiration: apiParams.tx1Expiration,
+      tx1Hash: apiParams.tx1Hash,
+      tx1Index: apiParams.tx1Index,
+      forwardQuantityNormalized: apiParams.forwardQuantityNormalized,
+      backwardQuantityNormalized: apiParams.backwardQuantityNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class VerboseOrderUpdateEventMapper {
+  static VerboseOrderUpdateEvent toDomain(
+      api.VerboseOrderUpdateEvent apiEvent) {
+    return VerboseOrderUpdateEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "ORDER_UPDATE",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseOrderUpdateParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseOrderUpdateParamsMapper {
+  static VerboseOrderUpdateParams toDomain(
+      api.VerboseOrderUpdateParams apiParams) {
+    return VerboseOrderUpdateParams(
+      feeProvidedRemaining: apiParams.feeProvidedRemaining,
+      feeRequiredRemaining: apiParams.feeRequiredRemaining,
+      getRemaining: apiParams.getRemaining,
+      giveRemaining: apiParams.giveRemaining,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      feeProvidedRemainingNormalized: apiParams.feeProvidedRemainingNormalized,
+      feeRequiredRemainingNormalized: apiParams.feeRequiredRemainingNormalized,
+    );
+  }
+}
+
+class VerboseOrderFilledEventMapper {
+  static VerboseOrderFilledEvent toDomain(
+      api.VerboseOrderFilledEvent apiEvent) {
+    return VerboseOrderFilledEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "ORDER_FILLED",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseOrderFilledParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseOrderFilledParamsMapper {
+  static VerboseOrderFilledParams toDomain(
+      api.VerboseOrderFilledParams apiParams) {
+    return VerboseOrderFilledParams(
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+    );
+  }
+}
+
+class VerboseCancelOrderEventMapper {
+  static VerboseCancelOrderEvent toDomain(
+      api.VerboseCancelOrderEvent apiEvent) {
+    return VerboseCancelOrderEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "CANCEL_ORDER",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseCancelOrderParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseCancelOrderParamsMapper {
+  static VerboseCancelOrderParams toDomain(
+      api.VerboseCancelOrderParams apiParams) {
+    return VerboseCancelOrderParams(
+      blockIndex: apiParams.blockIndex,
+      offerHash: apiParams.offerHash,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+    );
+  }
+}
+
+class VerboseOrderExpirationEventMapper {
+  static VerboseOrderExpirationEvent toDomain(
+      api.VerboseOrderExpirationEvent apiEvent) {
+    return VerboseOrderExpirationEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "ORDER_EXPIRATION",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash!,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseOrderExpirationParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseOrderExpirationParamsMapper {
+  static VerboseOrderExpirationParams toDomain(
+      api.VerboseOrderExpirationParams apiParams) {
+    return VerboseOrderExpirationParams(
+      blockIndex: apiParams.blockIndex,
+      orderHash: apiParams.orderHash,
+      source: apiParams.source,
+      blockTime: apiParams.blockTime,
     );
   }
 }
