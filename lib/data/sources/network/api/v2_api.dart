@@ -2407,6 +2407,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return FairmintUnpackedVerbose.fromJson(json);
       case "fairminter":
         return FairminterUnpackedVerbose.fromJson(json);
+      case "order":
+        return OrderUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -2742,6 +2744,8 @@ class InfoVerbose extends Info {
         return FairmintInfoVerbose.fromJson(json);
       case "fairminter":
         return FairminterInfoVerbose.fromJson(json);
+      case "order":
+        return OrderInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -2980,6 +2984,82 @@ class DispenseInfoVerbose extends InfoVerbose {
   @override
   Map<String, dynamic> toJson() => _$DispenseInfoVerboseToJson(this);
 }
+
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String giveAsset;
+  final int giveQuantity;
+  final String getAsset;
+  final int getQuantity;
+  final int expiration;
+  final int feeRequired;
+  final String status;
+  final String giveQuantityNormalized;
+  final String getQuantityNormalized;
+  final String feeRequiredNormalized;
+  final AssetInfoModel giveAssetInfo;
+  final AssetInfoModel getAssetInfo;
+
+  const OrderUnpackedVerbose({
+    required this.giveAsset,
+    required this.giveQuantity,
+    required this.getAsset,
+    required this.getQuantity,
+    required this.expiration,
+    required this.feeRequired,
+    required this.status,
+    required this.giveQuantityNormalized,
+    required this.getQuantityNormalized,
+    required this.feeRequiredNormalized,
+    required this.giveAssetInfo,
+    required this.getAssetInfo,
+  }) : super(messageType: "order");
+
+  factory OrderUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return OrderUnpackedVerbose(
+      giveAsset: messageData["give_asset"],
+      giveQuantity: messageData["give_quantity"],
+      getAsset: messageData["get_asset"],
+      getQuantity: messageData["get_quantity"],
+      expiration: messageData["expiration"],
+      feeRequired: messageData["fee_required"],
+      status: messageData["status"],
+      giveQuantityNormalized: messageData["give_quantity_normalized"],
+      getQuantityNormalized: messageData["get_quantity_normalized"],
+      feeRequiredNormalized: messageData["fee_required_normalized"],
+      giveAssetInfo: AssetInfoModel.fromJson(messageData["give_asset_info"]),
+      getAssetInfo: AssetInfoModel.fromJson(messageData["get_asset_info"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() => _$OrderUnpackedVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderInfoVerbose extends InfoVerbose {
+  final OrderUnpackedVerbose unpackedData;
+  const OrderInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory OrderInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$OrderInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$OrderInfoVerboseToJson(this);
+}
+
+
 
 // {
 //      "vout": 6,

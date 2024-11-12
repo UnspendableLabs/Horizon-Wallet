@@ -2427,6 +2427,67 @@ Map<String, dynamic> _$DispenseInfoVerboseToJson(
       'unpacked_data': instance.unpackedData,
     };
 
+OrderUnpackedVerbose _$OrderUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    OrderUnpackedVerbose(
+      giveAsset: json['give_asset'] as String,
+      giveQuantity: (json['give_quantity'] as num).toInt(),
+      getAsset: json['get_asset'] as String,
+      getQuantity: (json['get_quantity'] as num).toInt(),
+      expiration: (json['expiration'] as num).toInt(),
+      feeRequired: (json['fee_required'] as num).toInt(),
+      status: json['status'] as String,
+      giveQuantityNormalized: json['give_quantity_normalized'] as String,
+      getQuantityNormalized: json['get_quantity_normalized'] as String,
+      feeRequiredNormalized: json['fee_required_normalized'] as String,
+      giveAssetInfo: AssetInfoModel.fromJson(
+          json['give_asset_info'] as Map<String, dynamic>),
+      getAssetInfo: AssetInfoModel.fromJson(
+          json['get_asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OrderUnpackedVerboseToJson(
+        OrderUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'give_asset': instance.giveAsset,
+      'give_quantity': instance.giveQuantity,
+      'get_asset': instance.getAsset,
+      'get_quantity': instance.getQuantity,
+      'expiration': instance.expiration,
+      'fee_required': instance.feeRequired,
+      'status': instance.status,
+      'give_quantity_normalized': instance.giveQuantityNormalized,
+      'get_quantity_normalized': instance.getQuantityNormalized,
+      'fee_required_normalized': instance.feeRequiredNormalized,
+      'give_asset_info': instance.giveAssetInfo,
+      'get_asset_info': instance.getAssetInfo,
+    };
+
+OrderInfoVerbose _$OrderInfoVerboseFromJson(Map<String, dynamic> json) =>
+    OrderInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      unpackedData: OrderUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$OrderInfoVerboseToJson(OrderInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),
       height: (json['height'] as num).toInt(),
