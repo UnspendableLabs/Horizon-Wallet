@@ -328,7 +328,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             giveQuantity,
             getAsset,
             getQuantity,
-            100, // expiration
+            4 * 2016, // Two months,
             0, // fee required
             true, //  allow unconfirmed
             fee, //exect fee
