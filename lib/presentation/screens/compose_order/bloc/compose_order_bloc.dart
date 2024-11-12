@@ -126,6 +126,8 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
+
+
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           analyticsService.trackEvent('broadcast_tx_order');
