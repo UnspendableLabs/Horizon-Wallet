@@ -96,3 +96,7 @@ Account getHighestIndexAccount(List<Account> accounts) {
 
   return highestAccount;
 }
+
+bool addressIsSegwit(String sourceAddress) {
+  return sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
+}

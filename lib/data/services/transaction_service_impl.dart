@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:convert/convert.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
@@ -13,10 +14,6 @@ import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/domain/repositories/config_repository.dart';
-
-bool addressIsSegwit(String sourceAddress) {
-  return sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
-}
 
 class TransactionServiceImpl implements TransactionService {
   final Config config;

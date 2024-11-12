@@ -17,6 +17,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
@@ -66,6 +67,8 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         transactionService: GetIt.I.get<TransactionService>(),
         fetchDispenseFormDataUseCase:
             GetIt.I.get<FetchDispenseFormDataUseCase>(),
+        writeLocalTransactionUseCase:
+            GetIt.I.get<WriteLocalTransactionUseCase>(),
       )..add(FetchFormData(originalAddress: originalAddress)),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
@@ -272,7 +275,7 @@ class _ComposeDispenserOnNewAddressPageState
                         label: "Fee",
                         controller: TextEditingController(
                             text:
-                                "${composeSendTransaction.btcFee.toStringAsFixed(8)} sats (minimum fee)"),
+                                "${composeSendTransaction.btcFee.toStringAsFixed(8)} sats"),
                         enabled: false,
                       ),
                       const SizedBox(height: 16.0),

@@ -19,6 +19,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
@@ -41,6 +42,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final SignChainedTransactionUseCase signChainedTransactionUseCase;
   final TransactionService transactionService;
   final FetchDispenseFormDataUseCase fetchDispenseFormDataUseCase;
+  final WriteLocalTransactionUseCase writeLocalTransactionUseCase;
 
   ComposeDispenserOnNewAddressBloc({
     required this.accountRepository,
@@ -56,6 +58,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.signChainedTransactionUseCase,
     required this.transactionService,
     required this.fetchDispenseFormDataUseCase,
+    required this.writeLocalTransactionUseCase,
   }) : super(const ComposeDispenserOnNewAddressStateBase(
           composeDispenserOnNewAddressState:
               ComposeDispenserOnNewAddressState.collectPassword(loading: false),
@@ -329,11 +332,22 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         await accountRepository.insert(state.newAccount!);
         await addressRepository.insert(state.newAddress!);
 
-        Future.delayed(const Duration(seconds: 10));
-        await bitcoindService.sendrawtransaction(state.signedAssetSend!);
+        Future.delayed(const Duration(seconds: 1));
+        final sendTxHash =
+            await bitcoindService.sendrawtransaction(state.signedAssetSend!);
 
         Future.delayed(const Duration(seconds: 10));
-        await bitcoindService.sendrawtransaction(state.signedDispenser!);
+        final dispenserTxHash =
+            await bitcoindService.sendrawtransaction(state.signedDispenser!);
+
+        await writeLocalTransactionUseCase.call(
+          state.signedAssetSend!,
+          sendTxHash,
+        );
+        await writeLocalTransactionUseCase.call(
+          state.signedDispenser!,
+          dispenserTxHash,
+        );
 
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
