@@ -307,7 +307,7 @@ class GiveQuantityInputField extends StatelessWidget {
         final errorMessage = switch (state.giveQuantity.error) {
           GiveQuantityValidationError.exceedsBalance =>
             'Quantity exceeds available balance',
-          GiveQuantityValidationError.invalid => "Asset isn't divisible",
+          GiveQuantityValidationError.invalid => isDivisible ? "Asset isn't divisible" : "Invalid",
           GiveQuantityValidationError.required => "Required",
           _ => null
         };
@@ -321,12 +321,11 @@ class GiveQuantityInputField extends StatelessWidget {
             errorText: hasError ? errorMessage : null,
             helperText: hasError ? null : ' ',
           ),
-          keyboardType: isDivisible
-              ? const TextInputType.numberWithOptions(decimal: true)
-              : TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: false),
           inputFormatters: [
             if (isDivisible)
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+              DecimalTextInputFormatter(decimalRange: 8)
             else
               FilteringTextInputFormatter.digitsOnly,
           ],
@@ -350,12 +349,11 @@ class GetQuantityInputField extends StatelessWidget {
       //     previous.getAsset != previous.getAsset,
       builder: (context, state) {
         final isDivisible = state.getQuantity.isDivisible; //
-        final isAssetSelected = state.getAsset.value.isNotEmpty;
         final hasError =
             !state.getQuantity.isPure && state.getQuantity.isNotValid;
 
         final error = switch (state.getQuantity.error) {
-          GetQuantityValidationError.invalid => "Asset isn't divisible",
+          GetQuantityValidationError.invalid => isDivisible ? "Asset isn't divisible" : "Invalid",
           GetQuantityValidationError.required => "Required",
           _ => null
         };
@@ -370,17 +368,56 @@ class GetQuantityInputField extends StatelessWidget {
             helperText: hasError ? null : ' ',
             // errorText: state.quantity.invalid ? 'Invalid quantity' : null,
           ),
-          keyboardType: isDivisible
-              ? const TextInputType.numberWithOptions(decimal: true)
-              : TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: false),
           inputFormatters: [
             if (isDivisible)
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+              DecimalTextInputFormatter(decimalRange: 8)
             else
               FilteringTextInputFormatter.digitsOnly,
           ],
         );
       },
+    );
+  }
+}
+
+class DecimalTextInputFormatter extends TextInputFormatter {
+  DecimalTextInputFormatter({required this.decimalRange})
+      : assert(decimalRange > 0);
+
+  final int decimalRange;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Only allow digits and at most one decimal point
+    final RegExp regExp = RegExp(r'^\d*\.?\d*$');
+    if (!regExp.hasMatch(newValue.text)) {
+      return oldValue;
+    }
+
+    String newText = newValue.text;
+    TextSelection newSelection = newValue.selection;
+
+    // Check if the new value has more than one decimal point
+    if (newText.split('.').length > 2) {
+      return oldValue; // Return the old value if there's more than one decimal point
+    }
+
+    if (newText.contains('.')) {
+      String decimalPart = newText.substring(newText.indexOf('.') + 1);
+      if (decimalPart.length > decimalRange) {
+        newText = newText.substring(0, newText.indexOf('.') + decimalRange + 1);
+        newSelection = TextSelection.collapsed(offset: newText.length);
+      }
+    }
+
+    return TextEditingValue(
+      text: newText,
+      selection: newSelection,
     );
   }
 }

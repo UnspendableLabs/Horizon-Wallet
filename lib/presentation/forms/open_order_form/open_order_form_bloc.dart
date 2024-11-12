@@ -74,21 +74,25 @@ class GiveQuantityInput
       return GiveQuantityValidationError.required;
     }
 
-    final quantity = isDivisible
-        ? (double.tryParse(value)! * 100000000)
-        : int.tryParse(value);
+    try {
+      final quantity = isDivisible
+          ? (double.tryParse(value)! * 100000000)
+          : int.tryParse(value);
 
-    if (quantity == null || quantity <= 0) {
+      if (quantity == null || quantity <= 0) {
+        return GiveQuantityValidationError.invalid;
+      }
+      if (balance != null && quantity > balance!) {
+        return GiveQuantityValidationError.exceedsBalance;
+      }
+      return null;
+    } catch (e) {
       return GiveQuantityValidationError.invalid;
     }
-    if (balance != null && quantity > balance!) {
-      return GiveQuantityValidationError.exceedsBalance;
-    }
-    return null;
   }
 }
 
-enum GetQuantityValidationError { invalid, required }
+enum GetQuantityValidationError { invalid, required  }
 
 class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
   final bool isDivisible;
@@ -104,14 +108,18 @@ class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
       return GetQuantityValidationError.required;
     }
 
-    final quantity = isDivisible
-        ? (double.tryParse(value)! * 100000000)
-        : int.tryParse(value);
+    try {
+      final quantity = isDivisible
+          ? (double.tryParse(value)! * 100000000)
+          : int.tryParse(value);
 
-    if (quantity == null || quantity <= 0) {
+      if (quantity == null || quantity <= 0) {
+        return GetQuantityValidationError.invalid;
+      }
+      return null;
+    } catch (e) {
       return GetQuantityValidationError.invalid;
     }
-    return null;
   }
 }
 
