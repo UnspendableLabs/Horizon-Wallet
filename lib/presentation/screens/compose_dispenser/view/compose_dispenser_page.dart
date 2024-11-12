@@ -87,7 +87,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   String? asset;
   Balance? balance_;
   bool _submitted = false;
-  bool hideSubmitButtons = true;
+  bool hideSubmitButtons = false;
   bool isCreateNewAddressFlow = false;
 
   @override
@@ -110,6 +110,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   Widget build(BuildContext context) {
     return BlocListener<ComposeDispenserBloc, ComposeDispenserState>(
       listener: (context, state) {
+        setState(() {
+          hideSubmitButtons = _shouldHideSubmitButtons(state.dispensersState);
+        });
+
         state.dispensersState.maybeWhen(
           // if the current address has open dispensers and the user chooses to open on a new address, proceed to the new address flow
           closeDialogAndOpenNewAddress: (originalAddress, divisible, asset,
@@ -710,6 +714,14 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     context
         .read<ComposeDispenserBloc>()
         .add(FetchFormData(currentAddress: widget.address));
+  }
+
+  bool _shouldHideSubmitButtons(DispenserState dispenserState) {
+    return dispenserState.maybeWhen(
+      loading: () => true,
+      warning: () => true,
+      orElse: () => false,
+    );
   }
 }
 

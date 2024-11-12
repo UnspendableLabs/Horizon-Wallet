@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'package:mocktail/mocktail.dart';
@@ -69,16 +64,6 @@ class MockUtxoRepository extends Mock implements UtxoRepository {}
 
 class MockDashboardActivityFeedBloc extends Mock
     implements DashboardActivityFeedBloc {}
-
-class MockAccountRepository extends Mock implements AccountRepository {}
-
-class MockAddressRepository extends Mock implements AddressRepository {}
-
-class MockWalletRepository extends Mock implements WalletRepository {}
-
-class MockEncryptionService extends Mock implements EncryptionService {}
-
-class MockAddressService extends Mock implements AddressService {}
 
 class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
@@ -161,11 +146,6 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockUtxoRepository mockUtxoRepository;
-  late MockAccountRepository mockAccountRepository;
-  late MockAddressRepository mockAddressRepository;
-  late MockWalletRepository mockWalletRepository;
-  late MockEncryptionService mockEncryptionService;
-  late MockAddressService mockAddressService;
 
   setUpAll(() {
     registerFallbackValue(FakeAddress().address);
@@ -184,11 +164,6 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockComposeRepository = MockComposeRepository();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
-    mockAccountRepository = MockAccountRepository();
-    mockAddressRepository = MockAddressRepository();
-    mockWalletRepository = MockWalletRepository();
-    mockEncryptionService = MockEncryptionService();
-    mockAddressService = MockAddressService();
 
     composeDispenserBloc = ComposeDispenserBloc(
       signAndBroadcastTransactionUseCase:
@@ -214,54 +189,42 @@ void main() {
           .thenAnswer((_) async => (
                 [
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET1_DIVISIBLE',
-                      quantity: 100000000,
-                      quantityNormalized: '1.0',
-                      assetInfo: FakeAssetInfo(
-                          divisible: true, assetLongname: "ASSET1_DIVISIBLE")),
+                    address: "test-address",
+                    asset: 'ASSET1_DIVISIBLE',
+                    quantity: 100000000,
+                    quantityNormalized: '1.0',
+                    assetInfo: FakeAssetInfo(
+                        divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
+                  ),
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET2_NOT_DIVISIBLE',
-                      quantity: 10,
-                      quantityNormalized: '10',
-                      assetInfo: FakeAssetInfo(
-                          divisible: false,
-                          assetLongname: "ASSET2_NOT_DIVISIBLE")),
+                    address: "test-address",
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    quantity: 10,
+                    quantityNormalized: '10',
+                    assetInfo: FakeAssetInfo(
+                        divisible: false,
+                        assetLongname: "ASSET2_NOT_DIVISIBLE"),
+                  ),
                 ],
                 const FeeEstimates(fast: 10, medium: 5, slow: 2),
-                [
-                  Dispenser(
-                    txIndex: 0,
-                    txHash: 'test-tx-hash',
-                    blockIndex: 0,
-                    source: 'test-source',
-                    asset: 'ASSET1_DIVISIBLE',
-                    giveQuantity: 100000000,
-                    giveQuantityNormalized: '1.0',
-                    escrowQuantity: 100000000,
-                    escrowQuantityNormalized: '1.0',
-                    satoshirate: 100000000,
-                    satoshirateNormalized: '1.0',
-                    status: 0,
-                    giveRemaining: 100000000,
-                    giveRemainingNormalized: '1.0',
-                    origin: 'test-origin',
-                    dispenseCount: 0,
-                    confirmed: true,
-                    assetInfo: const AssetInfo(
-                        divisible: true,
-                        assetLongname: "ASSET1_DIVISIBLE",
-                        description: "ASSET_DESCRIPTION"),
-                  )
-                ]
+                <Dispenser>[],
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
           .thenAnswer((_) async {});
-
       when(() => mockAnalyticsService.trackEvent(any()))
           .thenAnswer((_) async {});
+
+      // Instantiate ComposeDispenserBloc with mocks
+      final composeDispenserBloc = ComposeDispenserBloc(
+        fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
+        composeTransactionUseCase: mockComposeTransactionUseCase,
+        composeRepository: mockComposeRepository,
+        analyticsService: mockAnalyticsService,
+        signAndBroadcastTransactionUseCase:
+            mockSignAndBroadcastTransactionUseCase,
+        writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      );
 
       // Build the widget tree
       await tester.pumpWidget(
@@ -283,10 +246,14 @@ void main() {
         ),
       );
 
+      // Dispatch the FetchFormData event
       composeDispenserBloc
           .add(FetchFormData(currentAddress: FakeAddress().address));
 
+      // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
+
+      // Verify that the widgets are present
       expect(find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')),
           findsOneWidget);
       expect(find.byKey(const Key('escrow_quantity_input_ASSET1_DIVISIBLE')),
@@ -313,57 +280,42 @@ void main() {
           .thenAnswer((_) async => (
                 [
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET1_DIVISIBLE',
-                      quantity: 100000000,
-                      quantityNormalized: '1.0',
-                      assetInfo: const AssetInfo(
-                          divisible: true,
-                          assetLongname: "ASSET1_DIVISIBLE",
-                          description: "ASSET_DESCRIPTION")),
+                    address: "test-address",
+                    asset: 'ASSET1_DIVISIBLE',
+                    quantity: 100000000,
+                    quantityNormalized: '1.0',
+                    assetInfo: FakeAssetInfo(
+                        divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
+                  ),
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET2_NOT_DIVISIBLE',
-                      quantity: 10,
-                      quantityNormalized: '10',
-                      assetInfo: const AssetInfo(
-                          divisible: false,
-                          assetLongname: "ASSET2_NOT_DIVISIBLE",
-                          description: "ASSET_DESCRIPTION")),
+                    address: "test-address",
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    quantity: 10,
+                    quantityNormalized: '10',
+                    assetInfo: FakeAssetInfo(
+                        divisible: false,
+                        assetLongname: "ASSET2_NOT_DIVISIBLE"),
+                  ),
                 ],
                 const FeeEstimates(fast: 10, medium: 5, slow: 2),
-                [
-                  Dispenser(
-                    txIndex: 0,
-                    txHash: 'test-tx-hash',
-                    blockIndex: 0,
-                    source: 'test-source',
-                    asset: 'ASSET1_DIVISIBLE',
-                    giveQuantity: 100000000,
-                    giveQuantityNormalized: '1.0',
-                    escrowQuantity: 100000000,
-                    escrowQuantityNormalized: '1.0',
-                    satoshirate: 100000000,
-                    satoshirateNormalized: '1.0',
-                    status: 0,
-                    giveRemaining: 100000000,
-                    giveRemainingNormalized: '1.0',
-                    origin: 'test-origin',
-                    dispenseCount: 0,
-                    confirmed: true,
-                    assetInfo: const AssetInfo(
-                        divisible: true,
-                        assetLongname: "ASSET1_DIVISIBLE",
-                        description: "ASSET_DESCRIPTION"),
-                  )
-                ]
+                <Dispenser>[],
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
           .thenAnswer((_) async {});
-
       when(() => mockAnalyticsService.trackEvent(any()))
           .thenAnswer((_) async {});
+
+      // Instantiate ComposeDispenserBloc with mocks
+      final composeDispenserBloc = ComposeDispenserBloc(
+        fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
+        composeTransactionUseCase: mockComposeTransactionUseCase,
+        composeRepository: mockComposeRepository,
+        analyticsService: mockAnalyticsService,
+        signAndBroadcastTransactionUseCase:
+            mockSignAndBroadcastTransactionUseCase,
+        writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      );
 
       // Build the widget tree
       await tester.pumpWidget(
@@ -385,11 +337,14 @@ void main() {
         ),
       );
 
+      // Dispatch the FetchFormData event
       composeDispenserBloc
           .add(FetchFormData(currentAddress: FakeAddress().address));
 
+      // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
+      // Test with divisible asset
       await tester.enterText(
           find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')),
           '0.25');
@@ -401,21 +356,25 @@ void main() {
           '0.5');
       await tester.pumpAndSettle();
       expect(find.text('0.5'), findsOneWidget); // Ensure input was accepted
-      await tester.pumpAndSettle();
 
-      final assetDropdown = find.byKey(const Key("asset_dropdown"));
+      // Change to non-divisible asset
+      final assetDropdown = find.byKey(const Key('asset_dropdown'));
       await tester.tap(assetDropdown);
       await tester.pumpAndSettle();
       await tester.tap(find.text('ASSET2_NOT_DIVISIBLE').last);
       await tester.pumpAndSettle();
-      // verify that we have selected "ASSET2_NOT_DIVISIBLE
+
+      // Verify that 'ASSET2_NOT_DIVISIBLE' is selected
       expect(find.text('ASSET2_NOT_DIVISIBLE'), findsWidgets);
 
+      // Test with non-divisible asset
       await tester.enterText(
           find.byKey(const Key('give_quantity_input_ASSET2_NOT_DIVISIBLE')),
           '0.25');
       await tester.pumpAndSettle();
       expect(find.text('0.25'), findsNothing);
+      expect(find.text('025'),
+          findsOneWidget); // Non-divisible assets should not accept decimals
 
       await tester.enterText(
           find.byKey(const Key('escrow_quantity_input_ASSET2_NOT_DIVISIBLE')),
@@ -426,11 +385,13 @@ void main() {
       expect(find.text('025'), findsOneWidget); // Ensure input was accepted
       expect(find.text('05'), findsOneWidget); // Ensure input was accepted
 
+      // Switch back to the divisible asset
       await tester.tap(assetDropdown);
       await tester.pumpAndSettle();
       await tester.tap(find.text('ASSET1_DIVISIBLE').last);
       await tester.pumpAndSettle();
 
+      // Confirm that inputs accept decimals again
       await tester.enterText(
           find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')),
           '0.25');
@@ -442,8 +403,6 @@ void main() {
           '0.5');
       await tester.pumpAndSettle();
       expect(find.text('0.5'), findsOneWidget); // Ensure input was accepted
-
-      await tester.pumpAndSettle();
     });
 
     testWidgets('respects asset balance', (WidgetTester tester) async {
@@ -452,57 +411,42 @@ void main() {
           .thenAnswer((_) async => (
                 [
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET1_DIVISIBLE',
-                      quantity: 100000000,
-                      quantityNormalized: '1.0',
-                      assetInfo: const AssetInfo(
-                          divisible: true,
-                          assetLongname: "ASSET1_DIVISIBLE",
-                          description: "ASSET_DESCRIPTION")),
+                    address: "test-address",
+                    asset: 'ASSET1_DIVISIBLE',
+                    quantity: 100000000,
+                    quantityNormalized: '1.0',
+                    assetInfo: FakeAssetInfo(
+                        divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
+                  ),
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET2_NOT_DIVISIBLE',
-                      quantity: 10,
-                      quantityNormalized: '10',
-                      assetInfo: const AssetInfo(
-                          divisible: false,
-                          assetLongname: "ASSET2_NOT_DIVISIBLE",
-                          description: "ASSET_DESCRIPTION")),
+                    address: "test-address",
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    quantity: 10,
+                    quantityNormalized: '10',
+                    assetInfo: FakeAssetInfo(
+                        divisible: false,
+                        assetLongname: "ASSET2_NOT_DIVISIBLE"),
+                  ),
                 ],
                 const FeeEstimates(fast: 10, medium: 5, slow: 2),
-                [
-                  Dispenser(
-                    txIndex: 0,
-                    txHash: 'test-tx-hash',
-                    blockIndex: 0,
-                    source: 'test-source',
-                    asset: 'ASSET1_DIVISIBLE',
-                    giveQuantity: 100000000,
-                    giveQuantityNormalized: '1.0',
-                    escrowQuantity: 100000000,
-                    escrowQuantityNormalized: '1.0',
-                    satoshirate: 100000000,
-                    satoshirateNormalized: '1.0',
-                    status: 0,
-                    giveRemaining: 100000000,
-                    giveRemainingNormalized: '1.0',
-                    origin: 'test-origin',
-                    dispenseCount: 0,
-                    confirmed: true,
-                    assetInfo: const AssetInfo(
-                        divisible: true,
-                        assetLongname: "ASSET1_DIVISIBLE",
-                        description: "ASSET_DESCRIPTION"),
-                  )
-                ]
+                <Dispenser>[],
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
           .thenAnswer((_) async {});
-
       when(() => mockAnalyticsService.trackEvent(any()))
           .thenAnswer((_) async {});
+
+      // Instantiate ComposeDispenserBloc with mocks
+      final composeDispenserBloc = ComposeDispenserBloc(
+        fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
+        composeTransactionUseCase: mockComposeTransactionUseCase,
+        composeRepository: mockComposeRepository,
+        analyticsService: mockAnalyticsService,
+        signAndBroadcastTransactionUseCase:
+            mockSignAndBroadcastTransactionUseCase,
+        writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      );
 
       // Build the widget tree
       await tester.pumpWidget(
@@ -524,9 +468,11 @@ void main() {
         ),
       );
 
+      // Dispatch the FetchFormData event
       composeDispenserBloc
           .add(FetchFormData(currentAddress: FakeAddress().address));
 
+      // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -560,48 +506,42 @@ void main() {
           .thenAnswer((_) async => (
                 [
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET1_DIVISIBLE',
-                      quantity: 100000000,
-                      quantityNormalized: '1.0',
-                      assetInfo: const AssetInfo(
-                          divisible: true,
-                          assetLongname: "ASSET1_DIVISIBLE",
-                          description: "ASSET_DESCRIPTION")),
+                    address: "test-address",
+                    asset: 'ASSET1_DIVISIBLE',
+                    quantity: 100000000,
+                    quantityNormalized: '1.0',
+                    assetInfo: FakeAssetInfo(
+                        divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
+                  ),
+                  Balance(
+                    address: "test-address",
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    quantity: 10,
+                    quantityNormalized: '10',
+                    assetInfo: FakeAssetInfo(
+                        divisible: false,
+                        assetLongname: "ASSET2_NOT_DIVISIBLE"),
+                  ),
                 ],
                 const FeeEstimates(fast: 10, medium: 5, slow: 2),
-                [
-                  Dispenser(
-                    txIndex: 0,
-                    txHash: 'test-tx-hash',
-                    blockIndex: 0,
-                    source: 'test-source',
-                    asset: 'ASSET1_DIVISIBLE',
-                    giveQuantity: 100000000,
-                    giveQuantityNormalized: '1.0',
-                    escrowQuantity: 100000000,
-                    escrowQuantityNormalized: '1.0',
-                    satoshirate: 100000000,
-                    satoshirateNormalized: '1.0',
-                    status: 0,
-                    giveRemaining: 100000000,
-                    giveRemainingNormalized: '1.0',
-                    origin: 'test-origin',
-                    dispenseCount: 0,
-                    confirmed: true,
-                    assetInfo: const AssetInfo(
-                        divisible: true,
-                        assetLongname: "ASSET1_DIVISIBLE",
-                        description: "ASSET_DESCRIPTION"),
-                  )
-                ]
+                <Dispenser>[],
               ));
 
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
           .thenAnswer((_) async {});
-
       when(() => mockAnalyticsService.trackEvent(any()))
           .thenAnswer((_) async {});
+
+      // Instantiate ComposeDispenserBloc with mocks
+      final composeDispenserBloc = ComposeDispenserBloc(
+        fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
+        composeTransactionUseCase: mockComposeTransactionUseCase,
+        composeRepository: mockComposeRepository,
+        analyticsService: mockAnalyticsService,
+        signAndBroadcastTransactionUseCase:
+            mockSignAndBroadcastTransactionUseCase,
+        writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      );
 
       // Build the widget tree
       await tester.pumpWidget(
@@ -623,9 +563,11 @@ void main() {
         ),
       );
 
+      // Dispatch the FetchFormData event
       composeDispenserBloc
           .add(FetchFormData(currentAddress: FakeAddress().address));
 
+      // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -653,14 +595,6 @@ void main() {
         (WidgetTester tester) async {
       // Mock dependencies
 
-      final composeDispenserParams = ComposeDispenserParams(
-        source: "test_address",
-        asset: 'ASSET1_DIVISIBLE',
-        giveQuantity: 100000000,
-        escrowQuantity: 100000000,
-        mainchainrate: 10000,
-      );
-
       const composeDispenserResponse = ComposeDispenserResponseVerbose(
           rawtransaction: "test-raw-tx",
           name: "test-name",
@@ -680,45 +614,30 @@ void main() {
             status: 0,
           ));
 
+      // Mock dependencies
       when(() => mockFetchDispenserFormDataUseCase.call(any()))
           .thenAnswer((_) async => (
                 [
                   Balance(
-                      address: "test-address",
-                      asset: 'ASSET1_DIVISIBLE',
-                      quantity: 100000000,
-                      quantityNormalized: '1.0',
-                      assetInfo: const AssetInfo(
-                          divisible: true,
-                          assetLongname: "ASSET1_DIVISIBLE",
-                          description: "ASSET_DESCRIPTION")),
+                    address: "test-address",
+                    asset: 'ASSET1_DIVISIBLE',
+                    quantity: 100000000,
+                    quantityNormalized: '1.0',
+                    assetInfo: FakeAssetInfo(
+                        divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
+                  ),
+                  Balance(
+                    address: "test-address",
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    quantity: 10,
+                    quantityNormalized: '10',
+                    assetInfo: FakeAssetInfo(
+                        divisible: false,
+                        assetLongname: "ASSET2_NOT_DIVISIBLE"),
+                  ),
                 ],
                 const FeeEstimates(fast: 10, medium: 5, slow: 2),
-                [
-                  Dispenser(
-                    txIndex: 0,
-                    txHash: 'test-tx-hash',
-                    blockIndex: 0,
-                    source: 'test-source',
-                    asset: 'ASSET1_DIVISIBLE',
-                    giveQuantity: 100000000,
-                    giveQuantityNormalized: '1.0',
-                    escrowQuantity: 100000000,
-                    escrowQuantityNormalized: '1.0',
-                    satoshirate: 100000000,
-                    satoshirateNormalized: '1.0',
-                    status: 0,
-                    giveRemaining: 100000000,
-                    giveRemainingNormalized: '1.0',
-                    origin: 'test-origin',
-                    dispenseCount: 0,
-                    confirmed: true,
-                    assetInfo: const AssetInfo(
-                        divisible: true,
-                        assetLongname: "ASSET1_DIVISIBLE",
-                        description: "ASSET_DESCRIPTION"),
-                  )
-                ]
+                <Dispenser>[],
               ));
 
       when(() => mockComposeTransactionUseCase
@@ -730,29 +649,50 @@ void main() {
             composeDispenserResponse,
             FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500)
           ));
+      when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
+          .thenAnswer((_) async {});
+      when(() => mockAnalyticsService.trackEvent(any()))
+          .thenAnswer((_) async {});
 
+      // Instantiate ComposeDispenserBloc with mocks
+      final composeDispenserBloc = ComposeDispenserBloc(
+        fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
+        composeTransactionUseCase: mockComposeTransactionUseCase,
+        composeRepository: mockComposeRepository,
+        analyticsService: mockAnalyticsService,
+        signAndBroadcastTransactionUseCase:
+            mockSignAndBroadcastTransactionUseCase,
+        writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      );
+
+      // Build the widget tree
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: MultiBlocProvider(
-              providers: [
-                BlocProvider<ComposeDispenserBloc>.value(
-                    value: composeDispenserBloc),
-                BlocProvider<DashboardActivityFeedBloc>.value(
-                    value: mockDashboardActivityFeedBloc),
-              ],
-              child: ComposeDispenserPage(
-                address: FakeAddress().address,
-                dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
+            body: MediaQuery(
+              data: const MediaQueryData(size: Size(800, 1280)),
+              child: MultiBlocProvider(
+                providers: [
+                  BlocProvider<ComposeDispenserBloc>.value(
+                      value: composeDispenserBloc),
+                  BlocProvider<DashboardActivityFeedBloc>.value(
+                      value: mockDashboardActivityFeedBloc),
+                ],
+                child: ComposeDispenserPage(
+                  address: FakeAddress().address,
+                  dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
+                ),
               ),
             ),
           ),
         ),
       );
 
+      // Dispatch the FetchFormData event
       composeDispenserBloc
           .add(FetchFormData(currentAddress: FakeAddress().address));
 
+      // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
       await tester.enterText(
