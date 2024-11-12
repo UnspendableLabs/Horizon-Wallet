@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/repositories/asset_repository.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:flutter/services.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import './open_order_form_bloc.dart';
 
 class OpenOrderForm extends StatefulWidget {
@@ -300,13 +297,17 @@ class GiveQuantityInputField extends StatelessWidget {
       //     previous.giveAsset != current.giveAsset,
       builder: (context, state) {
         final isDivisible = state.giveQuantity.isDivisible; //
-        final isAssetSelected = state.giveAsset.value.isNotEmpty;
+        // final isAssetSelected = state.giveAsset.value.isNotEmpty;
         final hasError =
             !state.giveQuantity.isPure && state.giveQuantity.isNotValid;
-        final errorMessage = state.giveQuantity.error ==
-                GiveQuantityValidationError.exceedsBalance
-            ? 'Quantity exceeds available balance'
-            : 'Invalid quantity';
+
+        final errorMessage = switch (state.giveQuantity.error) {
+          GiveQuantityValidationError.exceedsBalance =>
+            'Quantity exceeds available balance',
+          GiveQuantityValidationError.invalid => "Asset isn't divisible",
+          GiveQuantityValidationError.required => "Required",
+          _ => null
+        };
 
         return TextField(
           controller: controller,
@@ -320,7 +321,13 @@ class GiveQuantityInputField extends StatelessWidget {
           keyboardType: isDivisible
               ? TextInputType.numberWithOptions(decimal: true)
               : TextInputType.number,
-          enabled: isAssetSelected,
+          inputFormatters: [
+            if (isDivisible)
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+            else
+              FilteringTextInputFormatter.digitsOnly,
+          ],
+          // enabled: isAssetSelected,
         );
       },
     );
@@ -357,6 +364,12 @@ class GetQuantityInputField extends StatelessWidget {
           keyboardType: isDivisible
               ? TextInputType.numberWithOptions(decimal: true)
               : TextInputType.number,
+          inputFormatters: [
+            if (isDivisible)
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+            else
+              FilteringTextInputFormatter.digitsOnly,
+          ],
         );
       },
     );

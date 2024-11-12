@@ -56,7 +56,7 @@ class PriceInput extends FormzInput<String, PriceValidationError> {
   }
 }
 
-enum GiveQuantityValidationError { invalid, exceedsBalance }
+enum GiveQuantityValidationError { invalid, exceedsBalance, required }
 
 class GiveQuantityInput
     extends FormzInput<String, GiveQuantityValidationError> {
@@ -72,19 +72,18 @@ class GiveQuantityInput
   @override
   GiveQuantityValidationError? validator(String value) {
     if (value == null || value.isEmpty) {
-      return GiveQuantityValidationError.invalid;
+      return GiveQuantityValidationError.required;
     }
+
 
     final quantity = isDivisible
         ? (double.tryParse(value)! * 100000000)
-        : int.tryParse(value);
+        : int.tryParse(value); 
 
     if (quantity == null || quantity <= 0) {
-      print("quantity was null orless than 0");
       return GiveQuantityValidationError.invalid;
     }
     if (balance != null && quantity > balance!) {
-      print("balance was null");
       return GiveQuantityValidationError.exceedsBalance;
     }
     return null;
@@ -152,8 +151,6 @@ class InitializeForm extends FormEvent {
         params?.initialGiveAsset
       ];
 }
-
-class LoadGiveAssets extends FormEvent {}
 
 class GiveAssetChanged extends FormEvent {
   final String giveAssetId;
@@ -347,10 +344,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           feeEstimates: NotAsked(),
           feeOption: Medium(),
         )) {
-    on<LoadGiveAssets>(_onLoadGiveAssets);
     on<GiveAssetChanged>(_onGiveAssetChanged);
-    on<GetAssetChanged>(_onGetAssetChanged,
-        transformer: debounce(const Duration(milliseconds: 300)));
+    on<GetAssetChanged>(_onGetAssetChanged, transformer: restartable());
     on<GetQuantityChanged>(_onGetQuantityChanged);
     on<GiveQuantityChanged>(_onGiveQuantityChanged);
     on<FeeOptionChanged>(_onFeeOptionChanged);
@@ -366,14 +361,16 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   ) async {
     emit(state.copyWith(giveAssets: Loading(), feeEstimates: Loading()));
 
-    print("event.parnsm ${event.params}");
-
     try {
-      final [balances as List<Balance>, feeEstimates as FeeEstimates] =
+      final [balances_ as List<Balance>, feeEstimates as FeeEstimates] =
           await Future.wait([
         balanceRepository.getBalancesForAddress(currentAddress),
         _fetchFeeEstimates(),
       ]);
+
+      final balances = balances_
+          .where((balance) => balance.asset.toUpperCase() != "BTC")
+          .toList();
 
       if (event.params == null) {
         emit(state.copyWith(
@@ -440,6 +437,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
             getAssetValidationStatus: Loading(),
           ));
 
+
           try {
             final asset =
                 await assetRepository.getAssetVerbose(params.initialGetAsset);
@@ -472,32 +470,19 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     }
   }
 
-  Future<void> _onLoadGiveAssets(
-    LoadGiveAssets event,
-    Emitter<FormStateModel> emit,
-  ) async {
-    emit(state.copyWith(giveAssets: Loading(), errorMessage: null));
-
-    try {
-      final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress);
-
-      final balances =
-          balances_.where((balance) => balance.asset != "BTC").toList();
-
-      emit(state.copyWith(giveAssets: Success(balances)));
-    } catch (e) {
-      emit(state.copyWith(
-        giveAssets: Failure('Failed to load give assets'),
-      ));
-    }
-  }
-
   void _onGiveAssetChanged(
       GiveAssetChanged event, Emitter<FormStateModel> emit) {
     final giveAssetInput = GiveAssetInput.dirty(event.giveAssetId);
+
+    final balance = _getBalanceForAsset(event.giveAssetId);
+
+    final giveQuantity = GiveQuantityInput.dirty(
+      state.giveQuantity.value,
+      isDivisible: balance?.assetInfo.divisible ?? false,
+    );
+
     emit(state.copyWith(
-      giveQuantity: const GiveQuantityInput.pure(),
+      giveQuantity: giveQuantity,
       giveAsset: giveAssetInput,
       getAsset: const GetAssetInput.pure(),
       errorMessage: null,
@@ -544,6 +529,16 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   void _onGiveQuantityChanged(
       GiveQuantityChanged event, Emitter<FormStateModel> emit) {
     final balance = _getBalanceForAsset(state.giveAsset.value);
+
+    if (balance == null) {
+      // if we don't have a balance we permit divisibility
+      final input = GiveQuantityInput.dirty(event.value, isDivisible: true);
+
+      emit(state.copyWith(
+        giveQuantity: input,
+      ));
+      return;
+    }
 
     final input = GiveQuantityInput.dirty(event.value,
         balance: balance?.quantity,
@@ -601,7 +596,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         virtualSize: virtualSize,
         feeRate: feeRate,
       ));
-
     } on ComposeTransactionException catch (e, _) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
@@ -635,7 +629,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   }
 
   int _getFeeRate() {
-    print("_getFeeRate feeOption ${state.feeOption}");
     return switch (state.feeEstimates) {
       Success(data: var feeEstimates) => switch (
             state.feeOption as FeeOption.FeeOption) {
@@ -651,7 +644,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   Balance? _getBalanceForAsset(String assetId) {
     return switch (state.giveAssets) {
       Success(data: var data) =>
-        data.firstWhere((balance) => balance.asset == assetId),
+        data.firstWhereOrNull((balance) => balance.asset == assetId),
       _ => null,
     };
   }

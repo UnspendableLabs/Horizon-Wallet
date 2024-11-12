@@ -141,8 +141,12 @@ void main() {
   });
 
   blocTest<OpenOrderFormBloc, FormStateModel>(
-    'emits [Loading(), Success()] when LoadGiveAssets is added and repository returns balances',
+    'emits [Loading(), Success()] when InitializeForm is added and repository returns balances',
     build: () {
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => FeeEstimates(fast: 50, medium: 30, slow: 10));
+
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
           FakeBalance(
@@ -161,7 +165,7 @@ void main() {
       );
       return bloc;
     },
-    act: (bloc) => bloc.add(LoadGiveAssets()),
+    act: (bloc) => bloc.add(InitializeForm()),
     expect: () => [
       isA<FormStateModel>().having(
         (s) => s.giveAssets,
@@ -177,48 +181,7 @@ void main() {
     },
   );
 
-  blocTest<OpenOrderFormBloc, FormStateModel>(
-    'emits [Loading(), Failure()] when LoadGiveAssets is added and repository throws an exception',
-    build: () {
-      when(() => balanceRepository.getBalancesForAddress(any()))
-          .thenThrow(Exception('Error'));
-      return bloc;
-    },
-    act: (bloc) => bloc.add(LoadGiveAssets()),
-    expect: () => [
-      isA<FormStateModel>().having(
-        (s) => s.giveAssets,
-        'giveAssets',
-        isA<Loading<List<Balance>>>(),
-      ),
-      isA<FormStateModel>().having(
-          (s) => s.giveAssets, 'giveAssets', isA<Failure<List<Balance>>>()),
-    ],
-    verify: (_) {
-      verify(() => balanceRepository.getBalancesForAddress(testAddress))
-          .called(1);
-    },
-  );
 
-  blocTest<OpenOrderFormBloc, FormStateModel>(
-    'updates giveAsset and resets giveQuantity and getAsset when GiveAssetChanged is added',
-    build: () => bloc,
-    seed: () {
-      // Setting initial state with giveAsset and giveAssets
-      return bloc.state.copyWith(
-        giveAsset: const GiveAssetInput.dirty('ASSET1'),
-        giveQuantity: const GiveQuantityInput.dirty('50'),
-      );
-    },
-    act: (bloc) => bloc.add(const GiveAssetChanged('ASSET2')),
-    expect: () => [
-      isA<FormStateModel>()
-          .having((state) => state.giveAsset.value, 'giveAsset.value', 'ASSET2')
-          .having((state) => state.giveQuantity.value, 'giveQuantity.value', '')
-          .having((state) => state.getAsset.value, 'getAsset.value', '')
-          .having((state) => state.errorMessage, 'errorMessage', isNull),
-    ],
-  );
 
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'emits Loading and then Success when GetAssetChanged is added and asset exists',
@@ -561,5 +524,4 @@ void main() {
           )).called(1);
     },
   );
-
 }
