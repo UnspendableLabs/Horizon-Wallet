@@ -270,7 +270,9 @@ class GetAssetInputField extends StatelessWidget {
               helperText: hasError ? null : ' ',
               suffixIcon: switch (state.getAssetValidationStatus) {
                 Loading() => Container(
-                    margin: const EdgeInsets.all(8.0),
+                    height: 10,
+                    width: 10,
+                    margin: const EdgeInsets.all(12.0),
                     child: const CircularProgressIndicator(strokeWidth: 2)),
                 Success() => const Icon(
                     Icons.check,
