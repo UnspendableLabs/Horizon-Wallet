@@ -266,39 +266,22 @@ class Event {
         return NewFairminterEvent.fromJson(json);
       case "OPEN_ORDER":
         return OpenOrderEvent.fromJson(json);
+      case "ORDER_MATCH":
+        return OrderMatchEvent.fromJson(json);
+      case "ORDER_UPDATE":
+        return OrderUpdateEvent.fromJson(json);
+      case "ORDER_CANCEL":
+        return CancelOrderEvent.fromJson(json);
+      case "ORDER_EXPIRATION":
+        return OrderExpirationEvent.fromJson(json);
+      case "ORDER_FILLED":
+        return OrderFilledEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
   }
 }
 
-// {
-//    "event_index": 5348402,
-//    "event": "ASSET_ISSUANCE",
-//    "params": {
-//      "asset": "A12445442962327434604",
-//      "asset_longname": null,
-//      "block_index": 2867711,
-//      "call_date": 0,
-//      "call_price": 0,
-//      "callable": false,
-//      "description": "",
-//      "divisible": true,
-//      "fee_paid": 0,
-//      "issuer": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
-//      "locked": false,
-//      "quantity": 10,
-//      "reset": false,
-//      "source": "tb1qmlykf0ej29ane2874y38c46kezr7jywrw6jqr9",
-//      "status": "valid",
-//      "transfer": false,
-//      "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
-//      "tx_index": 37585
-//    },
-//    "tx_hash": "8da5c658e8de942ca8352d318d5e9c41b7e9233d508fe3d38036376c99930067",
-//    "block_index": 2867711,
-//    "confirmed": true
-//  },
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class EnhancedSendParams {
@@ -1066,6 +1049,437 @@ class VerboseOpenOrderParams extends OpenOrderParams {
   Map<String, dynamic> toJson() => _$VerboseOpenOrderParamsToJson(this);
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderMatchEvent extends Event {
+  final OrderMatchParams params;
+
+  const OrderMatchEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory OrderMatchEvent.fromJson(Map<String, dynamic> json) =>
+      _$OrderMatchEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderMatchEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderMatchParams {
+  final String backwardAsset;
+  final int backwardQuantity;
+  final int blockIndex;
+  final int feePaid;
+  final String forwardAsset;
+  final int forwardQuantity;
+  final String id;
+  final int matchExpireIndex;
+  final String status;
+  final String tx0Address;
+  final int tx0BlockIndex;
+  final int tx0Expiration;
+  final String tx0Hash;
+  final int tx0Index;
+  final String tx1Address;
+  final int tx1BlockIndex;
+  final int tx1Expiration;
+  final String tx1Hash;
+  final int tx1Index;
+
+  OrderMatchParams({
+    required this.backwardAsset,
+    required this.backwardQuantity,
+    required this.blockIndex,
+    required this.feePaid,
+    required this.forwardAsset,
+    required this.forwardQuantity,
+    required this.id,
+    required this.matchExpireIndex,
+    required this.status,
+    required this.tx0Address,
+    required this.tx0BlockIndex,
+    required this.tx0Expiration,
+    required this.tx0Hash,
+    required this.tx0Index,
+    required this.tx1Address,
+    required this.tx1BlockIndex,
+    required this.tx1Expiration,
+    required this.tx1Hash,
+    required this.tx1Index,
+  });
+
+  factory OrderMatchParams.fromJson(Map<String, dynamic> json) =>
+      _$OrderMatchParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderMatchParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderMatchEvent extends VerboseEvent {
+  final VerboseOrderMatchParams params;
+
+  VerboseOrderMatchEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseOrderMatchEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderMatchEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderMatchEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderMatchParams extends OrderMatchParams {
+  final String forwardQuantityNormalized;
+  final String backwardQuantityNormalized;
+  final String feePaidNormalized;
+  final AssetInfoModel forwardAssetInfo;
+  final AssetInfoModel backwardAssetInfo;
+
+  VerboseOrderMatchParams({
+    required super.backwardAsset,
+    required super.backwardQuantity,
+    required super.blockIndex,
+    required super.feePaid,
+    required super.forwardAsset,
+    required super.forwardQuantity,
+    required super.id,
+    required super.matchExpireIndex,
+    required super.status,
+    required super.tx0Address,
+    required super.tx0BlockIndex,
+    required super.tx0Expiration,
+    required super.tx0Hash,
+    required super.tx0Index,
+    required super.tx1Address,
+    required super.tx1BlockIndex,
+    required super.tx1Expiration,
+    required super.tx1Hash,
+    required super.tx1Index,
+    required this.forwardQuantityNormalized,
+    required this.backwardQuantityNormalized,
+    required this.feePaidNormalized,
+    required this.forwardAssetInfo,
+    required this.backwardAssetInfo,
+  });
+
+  factory VerboseOrderMatchParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderMatchParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderMatchParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderUpdateEvent extends Event {
+  final OrderUpdateParams params;
+
+  const OrderUpdateEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory OrderUpdateEvent.fromJson(Map<String, dynamic> json) =>
+      _$OrderUpdateEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderUpdateEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderUpdateParams {
+  final int feeProvidedRemaining;
+  final int feeRequiredRemaining;
+  final int getRemaining;
+  final int giveRemaining;
+  final String status;
+  final String txHash;
+
+  OrderUpdateParams({
+    required this.feeProvidedRemaining,
+    required this.feeRequiredRemaining,
+    required this.getRemaining,
+    required this.giveRemaining,
+    required this.status,
+    required this.txHash,
+  });
+
+  factory OrderUpdateParams.fromJson(Map<String, dynamic> json) =>
+      _$OrderUpdateParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderUpdateParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderUpdateEvent extends VerboseEvent {
+  final VerboseOrderUpdateParams params;
+
+  VerboseOrderUpdateEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseOrderUpdateEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderUpdateEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderUpdateEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderUpdateParams extends OrderUpdateParams {
+  final String feeProvidedRemainingNormalized;
+  final String feeRequiredRemainingNormalized;
+  final String getRemainingNormalized;
+  final String giveRemainingNormalized;
+
+  VerboseOrderUpdateParams({
+    required super.feeProvidedRemaining,
+    required super.feeRequiredRemaining,
+    required super.getRemaining,
+    required super.giveRemaining,
+    required super.status,
+    required super.txHash,
+    required this.feeProvidedRemainingNormalized,
+    required this.feeRequiredRemainingNormalized,
+    required this.getRemainingNormalized,
+    required this.giveRemainingNormalized,
+  });
+
+  factory VerboseOrderUpdateParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderUpdateParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderUpdateParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderFilledEvent extends Event {
+  final OrderFilledParams params;
+
+  const OrderFilledEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory OrderFilledEvent.fromJson(Map<String, dynamic> json) =>
+      _$OrderFilledEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderFilledEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderFilledParams {
+  final String status;
+  final String txHash;
+
+  OrderFilledParams({
+    required this.status,
+    required this.txHash,
+  });
+
+  factory OrderFilledParams.fromJson(Map<String, dynamic> json) =>
+      _$OrderFilledParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderFilledParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderFilledEvent extends VerboseEvent {
+  final VerboseOrderFilledParams params;
+
+  VerboseOrderFilledEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseOrderFilledEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderFilledEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderFilledEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderFilledParams extends OrderFilledParams {
+  VerboseOrderFilledParams({
+    required super.status,
+    required super.txHash,
+  });
+
+  factory VerboseOrderFilledParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderFilledParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderFilledParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CancelOrderEvent extends Event {
+  final CancelOrderParams params;
+
+  const CancelOrderEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory CancelOrderEvent.fromJson(Map<String, dynamic> json) =>
+      _$CancelOrderEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CancelOrderEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CancelOrderParams {
+  final int blockIndex;
+  final String offerHash;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+
+  CancelOrderParams({
+    required this.blockIndex,
+    required this.offerHash,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory CancelOrderParams.fromJson(Map<String, dynamic> json) =>
+      _$CancelOrderParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CancelOrderParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseCancelOrderEvent extends VerboseEvent {
+  final VerboseCancelOrderParams params;
+
+  VerboseCancelOrderEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseCancelOrderEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseCancelOrderEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseCancelOrderEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseCancelOrderParams extends CancelOrderParams {
+  VerboseCancelOrderParams({
+    required super.blockIndex,
+    required super.offerHash,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+  });
+
+  factory VerboseCancelOrderParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseCancelOrderParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseCancelOrderParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderExpirationEvent extends Event {
+  final OrderExpirationParams params;
+
+  const OrderExpirationEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory OrderExpirationEvent.fromJson(Map<String, dynamic> json) =>
+      _$OrderExpirationEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderExpirationEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderExpirationParams {
+  final int blockIndex;
+  final String orderHash;
+  final String source;
+  final int blockTime;
+
+  OrderExpirationParams({
+    required this.blockIndex,
+    required this.orderHash,
+    required this.source,
+    required this.blockTime,
+  });
+
+  factory OrderExpirationParams.fromJson(Map<String, dynamic> json) =>
+      _$OrderExpirationParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OrderExpirationParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderExpirationEvent extends VerboseEvent {
+  final VerboseOrderExpirationParams params;
+
+  VerboseOrderExpirationEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseOrderExpirationEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderExpirationEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderExpirationEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseOrderExpirationParams extends OrderExpirationParams {
+  VerboseOrderExpirationParams({
+    required super.blockIndex,
+    required super.orderHash,
+    required super.source,
+    required super.blockTime,
+  });
+
+  factory VerboseOrderExpirationParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseOrderExpirationParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseOrderExpirationParamsToJson(this);
+}
+
 // {
 //     "event_index": 17758284,
 //     "event": "REFILL_DISPENSER",
@@ -1543,6 +1957,17 @@ class VerboseEvent extends Event {
         return VerboseNewFairminterEvent.fromJson(json);
       case "OPEN_ORDER":
         return VerboseOpenOrderEvent.fromJson(json);
+      case "ORDER_MATCH":
+        return VerboseOrderMatchEvent.fromJson(json);
+      case "ORDER_UPDATE":
+        return VerboseOrderUpdateEvent.fromJson(json);
+      case "ORDER_CANCEL":
+        return VerboseCancelOrderEvent.fromJson(json);
+      case "ORDER_EXPIRATION":
+        return VerboseOrderExpirationEvent.fromJson(json);
+      case "ORDER_FILLED":
+        return VerboseOrderFilledEvent.fromJson(json);
+
       default:
         return _$VerboseEventFromJson(json);
     }
