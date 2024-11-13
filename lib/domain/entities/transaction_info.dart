@@ -391,3 +391,45 @@ class TransactionInfoOrder extends TransactionInfo {
     );
   }
 }
+
+class TransactionInfoCancel extends TransactionInfo {
+  final CancelUnpacked unpackedData;
+  const TransactionInfoCancel({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required this.unpackedData,
+    required super.btcAmountNormalized,
+    // required super.unpackedData,
+  });
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+  @override
+  TransactionInfoCancel copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    CancelUnpacked? unpackedData,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoCancel(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      unpackedData: unpackedData ?? this.unpackedData,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+    );
+  }
+}

@@ -1,0 +1,37 @@
+import "./compose_response.dart";
+import "./compose_fn.dart";
+
+class ComposeCancelParams extends ComposeParams {
+  final String source;
+  final String offerHash;
+
+  ComposeCancelParams({
+    required this.source,
+    required this.offerHash,
+  });
+
+  @override
+  List<Object> get props => [offerHash];
+}
+
+class ComposeCancelResponse implements ComposeResponse {
+  @override
+  final String rawtransaction;
+  @override
+  final int btcFee;
+
+  final ComposeCancelResponseParams params;
+
+  const ComposeCancelResponse({
+    required this.rawtransaction,
+    required this.btcFee,
+    required this.params,
+  });
+}
+
+class ComposeCancelResponseParams {
+  final String source;
+  final String offerHash;
+
+  ComposeCancelResponseParams({required this.source, required this.offerHash});
+}

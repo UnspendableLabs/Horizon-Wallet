@@ -34,6 +34,7 @@ import 'package:horizon/presentation/screens/compose_fairminter/view/compose_fai
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/compose_order/view/compose_order_view.dart';
+import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
@@ -459,6 +460,27 @@ class OrderButtonMenu extends StatelessWidget {
                       body: HorizonUI.HorizonDialog(
                         title: "Open Order",
                         body: ComposeOrderPageWrapper(
+                          composeTransactionUseCase:
+                              GetIt.I<ComposeTransactionUseCase>(),
+                          currentAddress: currentAddress,
+                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          getFeeEstimatesUseCase:
+                              GetIt.I<GetFeeEstimatesUseCase>(),
+
+                          // balanceRepository: GetIt.I<BalanceRepository>(),
+                          assetRepository: GetIt.I<AssetRepository>(),
+                        ),
+                      ),
+                    );
+                  }),
+              PopupMenuItem(
+                  child: const Text("Cancel Order"),
+                  onTap: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Cancel Order",
+                        body: ComposeCancelPageWrapper(
                           composeTransactionUseCase:
                               GetIt.I<ComposeTransactionUseCase>(),
                           currentAddress: currentAddress,

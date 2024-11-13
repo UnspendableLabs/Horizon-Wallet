@@ -5,14 +5,17 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import "package:equatable/equatable.dart";
 
 class ActivityFeedItem extends Equatable {
-  final String hash;
+  final String id;
+  final String? hash;
   final Event? event;
   final TransactionInfo? info;
   final BitcoinTx? bitcoinTx;
   int? confirmations;
 
   ActivityFeedItem(
-      {required this.hash,
+      {
+        required this.id,
+        required this.hash,
       this.event,
       this.info,
       this.bitcoinTx,

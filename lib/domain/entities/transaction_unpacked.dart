@@ -248,3 +248,16 @@ class OrderUnpacked extends TransactionUnpacked {
         // getAssetInfo,
       ];
 }
+
+class CancelUnpacked extends TransactionUnpacked {
+  final String orderHash;
+  final String status;
+
+  const CancelUnpacked({
+    required this.orderHash,
+    required this.status,
+  }) : super(messageType: "cancel");
+
+  @override
+  List<Object?> get props => [orderHash, status];
+}

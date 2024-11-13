@@ -1287,8 +1287,6 @@ VerboseOrderUpdateEvent _$VerboseOrderUpdateEventFromJson(
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       blockTime: (json['block_time'] as num?)?.toInt(),
-      params: VerboseOrderUpdateParams.fromJson(
-          json['params'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$VerboseOrderUpdateEventToJson(
@@ -1299,7 +1297,6 @@ Map<String, dynamic> _$VerboseOrderUpdateEventToJson(
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
       'block_time': instance.blockTime,
-      'params': instance.params,
     };
 
 VerboseOrderUpdateParams _$VerboseOrderUpdateParamsFromJson(
@@ -3111,6 +3108,45 @@ Map<String, dynamic> _$OrderInfoVerboseToJson(OrderInfoVerbose instance) =>
       'unpacked_data': instance.unpackedData,
     };
 
+CancelInfoVerbose _$CancelInfoVerboseFromJson(Map<String, dynamic> json) =>
+    CancelInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      unpackedData: CancelUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$CancelInfoVerboseToJson(CancelInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+CancelUnpackedVerbose _$CancelUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    CancelUnpackedVerbose(
+      offerHash: json['offer_hash'] as String,
+      status: json['status'] as String,
+    );
+
+Map<String, dynamic> _$CancelUnpackedVerboseToJson(
+        CancelUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'offer_hash': instance.offerHash,
+      'status': instance.status,
+    };
+
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),
       height: (json['height'] as num).toInt(),
@@ -4650,6 +4686,51 @@ class _V2Api implements V2Api {
       _result.data!,
       (json) =>
           ComposeOrderResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeCancelResponseModel>> composeCancel(
+    String address,
+    String giveAsset, [
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'offer_hash': giveAsset,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeCancelResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/cancel?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeCancelResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeCancelResponseModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }
