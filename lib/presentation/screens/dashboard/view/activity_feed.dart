@@ -225,8 +225,7 @@ class ActivityFeedListItem extends StatelessWidget {
           "Open Order: ${params.giveQuantityNormalized} ${params.giveAsset} /  ${params.getQuantityNormalized} ${params.getAsset} "),
       VerboseOrderMatchEvent(params: var params) => SelectableText(
           "Order Match: ${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}"),
-      VerboseOrderUpdateEvent() =>
-        const SelectableText("Order Update"),
+      VerboseOrderUpdateEvent() => const SelectableText("Order Update"),
       VerboseOrderFilledEvent(params: var _) =>
         const SelectableText("Order Filled"),
       VerboseCancelOrderEvent(params: var params) =>
@@ -415,6 +414,13 @@ class ActivityFeedListItem extends StatelessWidget {
             }
           ],
         ),
+      VerboseOrderExpirationEvent(params: var params) => Row(
+          children: [
+            Text("order hash:"),
+            SizedBox(width: 10.0),
+            TxHashDisplay(hash: params.orderHash, uriType: URIType.hoex)
+          ],
+        ),
       VerboseEvent(txHash: var hash) => hash != null
           ? TxHashDisplay(hash: hash, uriType: URIType.hoex)
           : const SizedBox.shrink(),
@@ -488,8 +494,7 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toc, color: Colors.grey),
       VerboseOrderMatchEvent(params: var _) =>
         const Icon(Icons.toc, color: Colors.grey),
-      VerboseOrderUpdateEvent() =>
-        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderUpdateEvent() => const Icon(Icons.toc, color: Colors.grey),
       VerboseOrderFilledEvent(params: var _) =>
         const Icon(Icons.toc, color: Colors.grey),
       VerboseCancelOrderEvent(params: var _) =>

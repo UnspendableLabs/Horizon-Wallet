@@ -488,7 +488,7 @@ class DashboardActivityFeedBloc
 
         for (final tx in counterpartyMempool) {
           mempoolActivityFeedItems.add(ActivityFeedItem(
-              id: event.txHash ?? event.hashCode.toString(),
+              id: tx.txHash ?? tx.hashCode.toString(),
               hash: tx.txHash,
               event: tx));
         }
