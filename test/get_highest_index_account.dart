@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 
 Account createTestAccount({
   required String accountIndex,

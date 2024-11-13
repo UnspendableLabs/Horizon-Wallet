@@ -183,6 +183,32 @@ void main() {
       'emits loading and then success states when data is fetched successfully',
       build: () {
         when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
+            (_) async => (mockBalances, mockFeeEstimates, <Dispenser>[]));
+        return composeDispenserBloc;
+      },
+      act: (bloc) {
+        bloc.add(FetchFormData(currentAddress: mockAddress));
+      },
+      expect: () => [
+        composeDispenserBloc.state.copyWith(
+          feeState: const FeeState.loading(),
+          balancesState: const BalancesState.loading(),
+          submitState: const SubmitInitial(),
+          dispensersState: const DispenserState.loading(),
+        ),
+        composeDispenserBloc.state.copyWith(
+          balancesState: BalancesState.success(mockBalances),
+          feeState: const FeeState.success(mockFeeEstimates),
+          dispensersState: const DispenserState.successNormalFlow(),
+          submitState: const SubmitInitial(),
+        ),
+      ],
+    );
+
+    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+      'emits dispenser warning state when dispenser already exists at the current address',
+      build: () {
+        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
             (_) async => (mockBalances, mockFeeEstimates, mockDispenser));
         return composeDispenserBloc;
       },

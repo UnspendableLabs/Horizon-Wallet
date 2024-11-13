@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_event.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_state.dart';
