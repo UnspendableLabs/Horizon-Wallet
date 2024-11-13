@@ -3108,6 +3108,45 @@ Map<String, dynamic> _$OrderInfoVerboseToJson(OrderInfoVerbose instance) =>
       'unpacked_data': instance.unpackedData,
     };
 
+CancelInfoVerbose _$CancelInfoVerboseFromJson(Map<String, dynamic> json) =>
+    CancelInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      unpackedData: CancelUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$CancelInfoVerboseToJson(CancelInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+CancelUnpackedVerbose _$CancelUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    CancelUnpackedVerbose(
+      offerHash: json['offer_hash'] as String,
+      status: json['status'] as String,
+    );
+
+Map<String, dynamic> _$CancelUnpackedVerboseToJson(
+        CancelUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'offer_hash': instance.offerHash,
+      'status': instance.status,
+    };
+
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),
       height: (json['height'] as num).toInt(),

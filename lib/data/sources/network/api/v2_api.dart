@@ -2977,6 +2977,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return FairminterUnpackedVerbose.fromJson(json);
       case "order":
         return OrderUnpackedVerbose.fromJson(json);
+      case "cancel":
+        return CancelUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -3314,6 +3316,8 @@ class InfoVerbose extends Info {
         return FairminterInfoVerbose.fromJson(json);
       case "order":
         return OrderInfoVerbose.fromJson(json);
+      case "cancel":
+        return CancelInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -3625,6 +3629,49 @@ class OrderInfoVerbose extends InfoVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$OrderInfoVerboseToJson(this);
+}
+
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CancelInfoVerbose extends InfoVerbose {
+  final CancelUnpackedVerbose unpackedData;
+
+  const CancelInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    required super.btcAmountNormalized,
+    super.decodedTx,
+    required this.unpackedData,
+  });
+  factory CancelInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$CancelInfoVerboseFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$CancelInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CancelUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String offerHash;
+  final String status;
+  const CancelUnpackedVerbose({
+    required this.offerHash,
+    required this.status,
+  }) : super(messageType: "cancel");
+
+  factory CancelUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return CancelUnpackedVerbose(
+      offerHash: messageData["offer_hash"],
+      status: messageData["status"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => _$CancelUnpackedVerboseToJson(this);
 }
 
 // {

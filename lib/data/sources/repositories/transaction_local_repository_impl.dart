@@ -113,6 +113,14 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "fee_required_normalized": unpacked.feeRequiredNormalized,
           }
         }),
+      TransactionInfoCancel(unpackedData: CancelUnpacked unpacked) =>
+        jsonEncode({
+          "message_type": "cancel",
+          "message_data": {
+            "offer_hash": unpacked.orderHash,
+            "status": unpacked.status,
+          }
+        }),
       _ => null
     };
 
@@ -223,6 +231,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        CancelUnpacked() => TransactionInfoCancel(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -310,6 +329,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         OrderUnpacked() => TransactionInfoOrder(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        CancelUnpacked() => TransactionInfoCancel(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
