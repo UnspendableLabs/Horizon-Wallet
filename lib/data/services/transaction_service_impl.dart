@@ -240,7 +240,6 @@ class TransactionServiceImpl implements TransactionService {
     }
 
     // Then add additional UTXOs as inputs if needed, skipping any that were already used. We add UTXOs until we have enough to cover the btc + fee value.
-    utxos.shuffle();
     int currentInputIndex = transaction.ins.toDart.length;
     for (var utxo in utxos) {
       if (inputSetValue >= targetValue) break;
@@ -278,7 +277,7 @@ class TransactionServiceImpl implements TransactionService {
 
     // Create payment for source address (where change goes)
     bitcoinjs.Payment changeScript = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
-        pubkey: sourceSigner.publicKey, network: _getNetwork()));
+        pubkey: sourceSigner.publicKey, network: network));
 
     // Add change output
     psbt.addOutput(({'script': changeScript.output, 'value': changeAmount})
