@@ -271,7 +271,7 @@ class Event {
         return OrderMatchEvent.fromJson(json);
       case "ORDER_UPDATE":
         return OrderUpdateEvent.fromJson(json);
-      case "ORDER_CANCEL":
+      case "CANCEL_ORDER":
         return CancelOrderEvent.fromJson(json);
       case "ORDER_EXPIRATION":
         return OrderExpirationEvent.fromJson(json);
@@ -1222,7 +1222,7 @@ class OrderUpdateParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseOrderUpdateEvent extends VerboseEvent {
-  final VerboseOrderUpdateParams params;
+  // final VerboseOrderUpdateParams params;
 
   VerboseOrderUpdateEvent({
     required super.eventIndex,
@@ -1230,7 +1230,7 @@ class VerboseOrderUpdateEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     required super.blockTime,
-    required this.params,
+    // required this.params,
   });
 
   factory VerboseOrderUpdateEvent.fromJson(Map<String, dynamic> json) =>
@@ -1966,7 +1966,7 @@ class VerboseEvent extends Event {
         return VerboseOrderMatchEvent.fromJson(json);
       case "ORDER_UPDATE":
         return VerboseOrderUpdateEvent.fromJson(json);
-      case "ORDER_CANCEL":
+      case "CANCEL_ORDER":
         return VerboseCancelOrderEvent.fromJson(json);
       case "ORDER_EXPIRATION":
         return VerboseOrderExpirationEvent.fromJson(json);

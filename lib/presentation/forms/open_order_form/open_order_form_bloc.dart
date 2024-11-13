@@ -9,7 +9,6 @@ import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
-import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
@@ -57,8 +56,8 @@ class PriceInput extends FormzInput<String, PriceValidationError> {
 
 enum GiveQuantityValidationError { invalid, exceedsBalance, required }
 
-class GiveQuantityInput
-    extends FormzInput<String, GiveQuantityValidationError> {
+class GiveQuantityInput extends FormzInput<String, GiveQuantityValidationError>
+    with EquatableMixin {
   final int? balance;
   final bool isDivisible;
 
@@ -67,6 +66,9 @@ class GiveQuantityInput
   const GiveQuantityInput.dirty(super.value,
       {this.balance, this.isDivisible = false})
       : super.dirty();
+
+  @override
+  List<Object?> get props => [value, isPure, error, balance, isDivisible];
 
   @override
   GiveQuantityValidationError? validator(String value) {
@@ -82,9 +84,11 @@ class GiveQuantityInput
       if (quantity == null || quantity <= 0) {
         return GiveQuantityValidationError.invalid;
       }
+
       if (balance != null && quantity > balance!) {
         return GiveQuantityValidationError.exceedsBalance;
       }
+
       return null;
     } catch (e) {
       return GiveQuantityValidationError.invalid;
@@ -94,13 +98,17 @@ class GiveQuantityInput
 
 enum GetQuantityValidationError { invalid, required }
 
-class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
+class GetQuantityInput extends FormzInput<String, GetQuantityValidationError>
+    with EquatableMixin {
   final bool isDivisible;
 
   const GetQuantityInput.pure({this.isDivisible = false}) : super.pure('');
 
   const GetQuantityInput.dirty(super.value, {this.isDivisible = false})
       : super.dirty();
+
+  @override
+  List<Object?> get props => [value, isPure, error, isDivisible];
 
   @override
   GetQuantityValidationError? validator(String value) {
@@ -195,6 +203,14 @@ class GetQuantityChanged extends FormEvent {
   @override
   List<Object?> get props => [value];
 }
+
+class GiveAssetBlurred extends FormEvent {}
+
+class GetAssetBlurred extends FormEvent {}
+
+class GiveQuantityBlurred extends FormEvent {}
+
+class GetQuantityBlurred extends FormEvent {}
 
 class FeeOptionChanged extends FormEvent {
   final FeeOption.FeeOption feeOption;
@@ -353,9 +369,12 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           feeOption: Medium(),
         )) {
     on<GiveAssetChanged>(_onGiveAssetChanged);
-    on<GetAssetChanged>(_onGetAssetChanged, transformer: restartable());
+    on<GetAssetChanged>(_onGetAssetChanged);
+    on<GetAssetBlurred>(_onGetAssetBlurred);
     on<GetQuantityChanged>(_onGetQuantityChanged);
+    on<GetQuantityBlurred>(_onGetQuantityBlurred); //
     on<GiveQuantityChanged>(_onGiveQuantityChanged);
+    on<GiveQuantityBlurred>(_onGiveQuantityBlurred);
     on<FeeOptionChanged>(_onFeeOptionChanged);
 
     on<FormSubmitted>(_onFormSubmitted);
@@ -363,6 +382,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     on<InitializeForm>(_onInitializeForm);
     on<SubmissionFailed>(_onSubmissionFailed);
   }
+
   Future<void> _onInitializeForm(
     InitializeForm event,
     Emitter<FormStateModel> emit,
@@ -500,10 +520,18 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     final getAssetInput = GetAssetInput.dirty(event.getAssetId);
     emit(state.copyWith(
       getAsset: getAssetInput,
+      getAssetValidationStatus: NotAsked(),
+    ));
+  }
+
+  void _onGetAssetBlurred(
+      GetAssetBlurred event, Emitter<FormStateModel> emit) async {
+    emit(state.copyWith(
       getAssetValidationStatus: Loading(),
     ));
+
     try {
-      final asset = await assetRepository.getAssetVerbose(event.getAssetId);
+      final asset = await assetRepository.getAssetVerbose(state.getAsset.value);
 
       final getQuantityInput = GetQuantityInput.dirty(
         state.getQuantity.value,
@@ -523,33 +551,62 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   void _onGetQuantityChanged(
       GetQuantityChanged event, Emitter<FormStateModel> emit) {
+    // assume it's divisble until we blur
+    final input = GetQuantityInput.dirty(event.value, isDivisible: true);
+    emit(state.copyWith(getQuantity: input, errorMessage: null));
+  }
+
+  void _onGetQuantityBlurred(
+      GetQuantityBlurred event, Emitter<FormStateModel> emit) {
+    final value = state.getQuantity.value;
+
     final isDivisible = switch (state.getAssetValidationStatus) {
       Success(data: var asset) => asset.divisible!,
       _ =>
         true, // default to true ( i.e. let user specify decimal if no asset selected)
     };
 
-    final input = GetQuantityInput.dirty(event.value, isDivisible: isDivisible);
+    final input = GetQuantityInput.dirty(value, isDivisible: isDivisible);
     emit(state.copyWith(getQuantity: input, errorMessage: null));
   }
 
   void _onGiveQuantityChanged(
       GiveQuantityChanged event, Emitter<FormStateModel> emit) {
+    // permit divisiblity until blur
+    final input = GiveQuantityInput.dirty(event.value, isDivisible: true);
+    emit(state.copyWith(giveQuantity: input, errorMessage: null));
+  }
+
+  void _onGiveQuantityBlurred(
+    GiveQuantityBlurred event,
+    Emitter<FormStateModel> emit,
+  ) {
+
+    final value = state.giveQuantity.value;
+
     final balance = _getBalanceForAsset(state.giveAsset.value);
+
 
     if (balance == null) {
       // if we don't have a balance we permit divisibility
-      final input = GiveQuantityInput.dirty(event.value, isDivisible: true);
+      final input = GiveQuantityInput.dirty(
+        value,
+        isDivisible: true,
+      );
 
       emit(state.copyWith(
         giveQuantity: input,
       ));
+
       return;
     }
 
-    final input = GiveQuantityInput.dirty(event.value,
-        balance: balance.quantity,
-        isDivisible: balance.assetInfo.divisible ?? false);
+    final input = GiveQuantityInput.dirty(
+      value,
+      balance: balance.quantity,
+      isDivisible: balance.assetInfo.divisible,
+    );
+
 
     emit(state.copyWith(giveQuantity: input, errorMessage: null));
   }

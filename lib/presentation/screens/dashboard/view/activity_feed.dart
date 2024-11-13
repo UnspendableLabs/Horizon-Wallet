@@ -225,12 +225,13 @@ class ActivityFeedListItem extends StatelessWidget {
           "Open Order: ${params.giveQuantityNormalized} ${params.giveAsset} /  ${params.getQuantityNormalized} ${params.getAsset} "),
       VerboseOrderMatchEvent(params: var params) => SelectableText(
           "Order Match: ${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}"),
-      VerboseOrderUpdateEvent(params: var _) => const SelectableText("Order Update"),
-      VerboseOrderFilledEvent(params: var _) => const SelectableText("Order Filled"),
+      VerboseOrderUpdateEvent() => const SelectableText("Order Update"),
+      VerboseOrderFilledEvent(params: var _) =>
+        const SelectableText("Order Filled"),
       VerboseCancelOrderEvent(params: var params) =>
-        SelectableText("Order Cancelled ${params.offerHash}"),
+        SelectableText("Order Cancelled"),
       VerboseOrderExpirationEvent(params: var params) =>
-        SelectableText("Order Expiration: ${params.orderHash}"),
+        SelectableText("Order Expiration"),
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
       _ => SelectableText(
@@ -388,7 +389,9 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (event) {
       VerboseAssetIssuanceEvent(txHash: var hash, params: var params) => Row(
           children: [
-            TxHashDisplay(hash: hash, uriType: URIType.hoex),
+            hash != null
+                ? TxHashDisplay(hash: hash, uriType: URIType.hoex)
+                : const SizedBox.shrink(),
             switch (params.status) {
               EventStatusValid() => const SizedBox.shrink(),
               EventStatusInvalid(reason: var reason) => Padding(
@@ -411,8 +414,16 @@ class ActivityFeedListItem extends StatelessWidget {
             }
           ],
         ),
-      VerboseEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseOrderExpirationEvent(params: var params) => Row(
+          children: [
+            Text("order hash:"),
+            SizedBox(width: 10.0),
+            TxHashDisplay(hash: params.orderHash, uriType: URIType.hoex)
+          ],
+        ),
+      VerboseEvent(txHash: var hash) => hash != null
+          ? TxHashDisplay(hash: hash, uriType: URIType.hoex)
+          : const SizedBox.shrink(),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -483,8 +494,7 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toc, color: Colors.grey),
       VerboseOrderMatchEvent(params: var _) =>
         const Icon(Icons.toc, color: Colors.grey),
-      VerboseOrderUpdateEvent(params: var _) =>
-        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderUpdateEvent() => const Icon(Icons.toc, color: Colors.grey),
       VerboseOrderFilledEvent(params: var _) =>
         const Icon(Icons.toc, color: Colors.grey),
       VerboseCancelOrderEvent(params: var _) =>
@@ -668,7 +678,7 @@ class DashboardActivityFeedScreenState
 
       final List<Widget> widgets = displayedTransactions
           .map((transaction) => ActivityFeedListItem(
-                key: ValueKey(transaction.hash),
+                key: ValueKey(transaction.id),
                 item: transaction,
                 addresses: widget.addresses,
                 isMobile: isMobile,
