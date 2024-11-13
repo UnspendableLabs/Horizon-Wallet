@@ -69,7 +69,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
             GetIt.I.get<FetchDispenseFormDataUseCase>(),
         writeLocalTransactionUseCase:
             GetIt.I.get<WriteLocalTransactionUseCase>(),
-      )..add(FetchFormData(originalAddress: originalAddress)),
+      )..add(FormOpened(originalAddress: originalAddress)),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
         asset: asset,
@@ -208,16 +208,16 @@ class _ComposeDispenserOnNewAddressPageState
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Center(
+                      Center(
                         child: SelectableText(
-                          'New Address',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                          'New Address $newAddress',
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
                       HorizonUI.HorizonTextFormField(
                         controller: TextEditingController(
-                            text: "$newAddress at new account $newAccountName"),
+                            text: "at new account \"$newAccountName\""),
                         enabled: false,
                       ),
                       const SizedBox(height: 16.0),
@@ -267,7 +267,7 @@ class _ComposeDispenserOnNewAddressPageState
                       HorizonUI.HorizonTextFormField(
                         label: "BTC Quantity",
                         controller: TextEditingController(
-                            text: btcQuantity.toStringAsFixed(8)),
+                            text: (btcQuantity / 100000000).toStringAsFixed(8)),
                         enabled: false,
                       ),
                       const SizedBox(height: 16.0),
@@ -339,7 +339,7 @@ class _ComposeDispenserOnNewAddressPageState
                           onContinue: () {
                             context
                                 .read<ComposeDispenserOnNewAddressBloc>()
-                                .add(BroadcastTransactions());
+                                .add(SubmitPressed());
                           }),
                     ],
                   ),
@@ -358,7 +358,7 @@ class _ComposeDispenserOnNewAddressPageState
 
   void _handleContinue() {
     if (passwordFormKey.currentState!.validate()) {
-      context.read<ComposeDispenserOnNewAddressBloc>().add(ComposeTransactions(
+      context.read<ComposeDispenserOnNewAddressBloc>().add(PasswordEntered(
             password: passwordController.text,
             originalAddress: widget.originalAddress,
             divisible: widget.divisible,

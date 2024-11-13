@@ -109,10 +109,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     return BlocListener<ComposeDispenserBloc, ComposeDispenserState>(
       listener: (context, state) {
         setState(() {
-          hideSubmitButtons = _shouldHideSubmitButtons(state.dispensersState);
+          hideSubmitButtons = _shouldHideSubmitButtons(state.dialogState);
         });
 
-        state.dispensersState.maybeWhen(
+        state.dialogState.maybeWhen(
           // if the current address has open dispensers and the user chooses to open on a new address, proceed to the new address flow
           closeDialogAndOpenNewAddress: (originalAddress, divisible, asset,
               giveQuantity, escrowQuantity, mainchainrate, feeRate) {
@@ -558,7 +558,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return [
-      state.dispensersState.maybeWhen(orElse: () {
+      state.dialogState.maybeWhen(orElse: () {
         return const SizedBox.shrink();
       }, successNormalFlow: () {
         return Column(
@@ -715,8 +715,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         .add(FetchFormData(currentAddress: widget.address));
   }
 
-  bool _shouldHideSubmitButtons(DispenserState dispenserState) {
-    return dispenserState.maybeWhen(
+  bool _shouldHideSubmitButtons(DialogState dialogState) {
+    return dialogState.maybeWhen(
       loading: () => true,
       warning: () => true,
       orElse: () => false,

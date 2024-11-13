@@ -174,7 +174,7 @@ class TransactionServiceImpl implements TransactionService {
   }
 
   @override
-  Future<String> constructAndSignNewTransaction(
+  Future<String> constructChainAndSignTransaction(
       {required String unsignedTransaction,
       required String sourceAddress,
       required List<Utxo> utxos,
@@ -182,6 +182,9 @@ class TransactionServiceImpl implements TransactionService {
       required String sourcePrivKey,
       required String destinationPrivKey,
       required int fee}) async {
+    if (!addressIsSegwit(sourceAddress)) {
+      throw Exception('Cannot chain transaction with a legacy address');
+    }
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
@@ -237,6 +240,7 @@ class TransactionServiceImpl implements TransactionService {
     }
 
     // Then add additional UTXOs as inputs if needed, skipping any that were already used. We add UTXOs until we have enough to cover the btc + fee value.
+    utxos.shuffle();
     int currentInputIndex = transaction.ins.toDart.length;
     for (var utxo in utxos) {
       if (inputSetValue >= targetValue) break;

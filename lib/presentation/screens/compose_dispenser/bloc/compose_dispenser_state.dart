@@ -17,7 +17,7 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
     required SubmitState submitState,
 
     // Dispenser-specific properties
-    required DispenserState dispensersState,
+    required DialogState dialogState,
     String? assetName,
     String? openAddress,
     required String giveQuantity,
@@ -35,19 +35,18 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
         escrowQuantity: '',
         mainchainrate: '',
         status: 0,
-        dispensersState: const DispenserState.initial(),
+        dialogState: const DialogState.initial(),
       );
 }
 
 @freezed
-class DispenserState with _$DispenserState {
-  const factory DispenserState.initial() = _DispenserInitial;
-  const factory DispenserState.loading() = _DispenserLoading;
-  const factory DispenserState.successNormalFlow() =
-      _DispenserSuccessNormalFlow;
-  const factory DispenserState.successCreateNewAddressFlow() =
+class DialogState with _$DialogState {
+  const factory DialogState.initial() = _DispenserInitial;
+  const factory DialogState.loading() = _DispenserLoading;
+  const factory DialogState.successNormalFlow() = _DispenserSuccessNormalFlow;
+  const factory DialogState.successCreateNewAddressFlow() =
       _DispenserSuccessCreateNewAddressFlow;
-  const factory DispenserState.closeDialogAndOpenNewAddress(
+  const factory DialogState.closeDialogAndOpenNewAddress(
       {required String originalAddress,
       required bool divisible,
       required String asset,
@@ -56,7 +55,7 @@ class DispenserState with _$DispenserState {
       required int mainchainrate,
       required int feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
 
-  const factory DispenserState.warning() = _DispenserWarning;
+  const factory DialogState.warning() = _DispenserWarning;
 
-  const factory DispenserState.error(String error) = _DispenserError;
+  const factory DialogState.error(String error) = _DispenserError;
 }

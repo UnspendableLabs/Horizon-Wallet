@@ -22,7 +22,7 @@ mixin _$ComposeDispenserState {
   FeeOption get feeOption => throw _privateConstructorUsedError;
   SubmitState get submitState =>
       throw _privateConstructorUsedError; // Dispenser-specific properties
-  DispenserState get dispensersState => throw _privateConstructorUsedError;
+  DialogState get dialogState => throw _privateConstructorUsedError;
   String? get assetName => throw _privateConstructorUsedError;
   String? get openAddress => throw _privateConstructorUsedError;
   String get giveQuantity => throw _privateConstructorUsedError;
@@ -46,7 +46,7 @@ abstract class $ComposeDispenserStateCopyWith<$Res> {
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
-      DispenserState dispensersState,
+      DialogState dialogState,
       String? assetName,
       String? openAddress,
       String giveQuantity,
@@ -56,7 +56,7 @@ abstract class $ComposeDispenserStateCopyWith<$Res> {
 
   $FeeStateCopyWith<$Res> get feeState;
   $BalancesStateCopyWith<$Res> get balancesState;
-  $DispenserStateCopyWith<$Res> get dispensersState;
+  $DialogStateCopyWith<$Res> get dialogState;
 }
 
 /// @nodoc
@@ -77,7 +77,7 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
-    Object? dispensersState = null,
+    Object? dialogState = null,
     Object? assetName = freezed,
     Object? openAddress = freezed,
     Object? giveQuantity = null,
@@ -102,10 +102,10 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
-      dispensersState: null == dispensersState
-          ? _value.dispensersState
-          : dispensersState // ignore: cast_nullable_to_non_nullable
-              as DispenserState,
+      dialogState: null == dialogState
+          ? _value.dialogState
+          : dialogState // ignore: cast_nullable_to_non_nullable
+              as DialogState,
       assetName: freezed == assetName
           ? _value.assetName
           : assetName // ignore: cast_nullable_to_non_nullable
@@ -151,9 +151,9 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
 
   @override
   @pragma('vm:prefer-inline')
-  $DispenserStateCopyWith<$Res> get dispensersState {
-    return $DispenserStateCopyWith<$Res>(_value.dispensersState, (value) {
-      return _then(_value.copyWith(dispensersState: value) as $Val);
+  $DialogStateCopyWith<$Res> get dialogState {
+    return $DialogStateCopyWith<$Res>(_value.dialogState, (value) {
+      return _then(_value.copyWith(dialogState: value) as $Val);
     });
   }
 }
@@ -172,7 +172,7 @@ abstract class _$$ComposeDispenserStateImplCopyWith<$Res>
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
-      DispenserState dispensersState,
+      DialogState dialogState,
       String? assetName,
       String? openAddress,
       String giveQuantity,
@@ -185,7 +185,7 @@ abstract class _$$ComposeDispenserStateImplCopyWith<$Res>
   @override
   $BalancesStateCopyWith<$Res> get balancesState;
   @override
-  $DispenserStateCopyWith<$Res> get dispensersState;
+  $DialogStateCopyWith<$Res> get dialogState;
 }
 
 /// @nodoc
@@ -204,7 +204,7 @@ class __$$ComposeDispenserStateImplCopyWithImpl<$Res>
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
-    Object? dispensersState = null,
+    Object? dialogState = null,
     Object? assetName = freezed,
     Object? openAddress = freezed,
     Object? giveQuantity = null,
@@ -229,10 +229,10 @@ class __$$ComposeDispenserStateImplCopyWithImpl<$Res>
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
-      dispensersState: null == dispensersState
-          ? _value.dispensersState
-          : dispensersState // ignore: cast_nullable_to_non_nullable
-              as DispenserState,
+      dialogState: null == dialogState
+          ? _value.dialogState
+          : dialogState // ignore: cast_nullable_to_non_nullable
+              as DialogState,
       assetName: freezed == assetName
           ? _value.assetName
           : assetName // ignore: cast_nullable_to_non_nullable
@@ -269,7 +269,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
       required this.balancesState,
       required this.feeOption,
       required this.submitState,
-      required this.dispensersState,
+      required this.dialogState,
       this.assetName,
       this.openAddress,
       required this.giveQuantity,
@@ -289,7 +289,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
   final SubmitState submitState;
 // Dispenser-specific properties
   @override
-  final DispenserState dispensersState;
+  final DialogState dialogState;
   @override
   final String? assetName;
   @override
@@ -305,7 +305,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
 
   @override
   String toString() {
-    return 'ComposeDispenserState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, dispensersState: $dispensersState, assetName: $assetName, openAddress: $openAddress, giveQuantity: $giveQuantity, escrowQuantity: $escrowQuantity, mainchainrate: $mainchainrate, status: $status)';
+    return 'ComposeDispenserState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, dialogState: $dialogState, assetName: $assetName, openAddress: $openAddress, giveQuantity: $giveQuantity, escrowQuantity: $escrowQuantity, mainchainrate: $mainchainrate, status: $status)';
   }
 
   @override
@@ -321,8 +321,8 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
                 other.feeOption == feeOption) &&
             (identical(other.submitState, submitState) ||
                 other.submitState == submitState) &&
-            (identical(other.dispensersState, dispensersState) ||
-                other.dispensersState == dispensersState) &&
+            (identical(other.dialogState, dialogState) ||
+                other.dialogState == dialogState) &&
             (identical(other.assetName, assetName) ||
                 other.assetName == assetName) &&
             (identical(other.openAddress, openAddress) ||
@@ -343,7 +343,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
       balancesState,
       feeOption,
       submitState,
-      dispensersState,
+      dialogState,
       assetName,
       openAddress,
       giveQuantity,
@@ -365,7 +365,7 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
       required final BalancesState balancesState,
       required final FeeOption feeOption,
       required final SubmitState submitState,
-      required final DispenserState dispensersState,
+      required final DialogState dialogState,
       final String? assetName,
       final String? openAddress,
       required final String giveQuantity,
@@ -383,7 +383,7 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
   @override
   SubmitState get submitState;
   @override // Dispenser-specific properties
-  DispenserState get dispensersState;
+  DialogState get dialogState;
   @override
   String? get assetName;
   @override
@@ -403,7 +403,7 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
 }
 
 /// @nodoc
-mixin _$DispenserState {
+mixin _$DialogState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
@@ -506,16 +506,16 @@ mixin _$DispenserState {
 }
 
 /// @nodoc
-abstract class $DispenserStateCopyWith<$Res> {
-  factory $DispenserStateCopyWith(
-          DispenserState value, $Res Function(DispenserState) then) =
-      _$DispenserStateCopyWithImpl<$Res, DispenserState>;
+abstract class $DialogStateCopyWith<$Res> {
+  factory $DialogStateCopyWith(
+          DialogState value, $Res Function(DialogState) then) =
+      _$DialogStateCopyWithImpl<$Res, DialogState>;
 }
 
 /// @nodoc
-class _$DispenserStateCopyWithImpl<$Res, $Val extends DispenserState>
-    implements $DispenserStateCopyWith<$Res> {
-  _$DispenserStateCopyWithImpl(this._value, this._then);
+class _$DialogStateCopyWithImpl<$Res, $Val extends DialogState>
+    implements $DialogStateCopyWith<$Res> {
+  _$DialogStateCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
@@ -532,7 +532,7 @@ abstract class _$$DispenserInitialImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$DispenserInitialImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserInitialImpl>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserInitialImpl>
     implements _$$DispenserInitialImplCopyWith<$Res> {
   __$$DispenserInitialImplCopyWithImpl(_$DispenserInitialImpl _value,
       $Res Function(_$DispenserInitialImpl) _then)
@@ -546,7 +546,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
 
   @override
   String toString() {
-    return 'DispenserState.initial()';
+    return 'DialogState.initial()';
   }
 
   @override
@@ -682,7 +682,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
   }
 }
 
-abstract class _DispenserInitial implements DispenserState {
+abstract class _DispenserInitial implements DialogState {
   const factory _DispenserInitial() = _$DispenserInitialImpl;
 }
 
@@ -695,7 +695,7 @@ abstract class _$$DispenserLoadingImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$DispenserLoadingImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserLoadingImpl>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserLoadingImpl>
     implements _$$DispenserLoadingImplCopyWith<$Res> {
   __$$DispenserLoadingImplCopyWithImpl(_$DispenserLoadingImpl _value,
       $Res Function(_$DispenserLoadingImpl) _then)
@@ -709,7 +709,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
 
   @override
   String toString() {
-    return 'DispenserState.loading()';
+    return 'DialogState.loading()';
   }
 
   @override
@@ -845,7 +845,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
   }
 }
 
-abstract class _DispenserLoading implements DispenserState {
+abstract class _DispenserLoading implements DialogState {
   const factory _DispenserLoading() = _$DispenserLoadingImpl;
 }
 
@@ -859,7 +859,7 @@ abstract class _$$DispenserSuccessNormalFlowImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$DispenserSuccessNormalFlowImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserSuccessNormalFlowImpl>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserSuccessNormalFlowImpl>
     implements _$$DispenserSuccessNormalFlowImplCopyWith<$Res> {
   __$$DispenserSuccessNormalFlowImplCopyWithImpl(
       _$DispenserSuccessNormalFlowImpl _value,
@@ -874,7 +874,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
 
   @override
   String toString() {
-    return 'DispenserState.successNormalFlow()';
+    return 'DialogState.successNormalFlow()';
   }
 
   @override
@@ -1011,7 +1011,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
   }
 }
 
-abstract class _DispenserSuccessNormalFlow implements DispenserState {
+abstract class _DispenserSuccessNormalFlow implements DialogState {
   const factory _DispenserSuccessNormalFlow() =
       _$DispenserSuccessNormalFlowImpl;
 }
@@ -1026,7 +1026,7 @@ abstract class _$$DispenserSuccessCreateNewAddressFlowImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res,
+    extends _$DialogStateCopyWithImpl<$Res,
         _$DispenserSuccessCreateNewAddressFlowImpl>
     implements _$$DispenserSuccessCreateNewAddressFlowImplCopyWith<$Res> {
   __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl(
@@ -1043,7 +1043,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
 
   @override
   String toString() {
-    return 'DispenserState.successCreateNewAddressFlow()';
+    return 'DialogState.successCreateNewAddressFlow()';
   }
 
   @override
@@ -1180,7 +1180,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
   }
 }
 
-abstract class _DispenserSuccessCreateNewAddressFlow implements DispenserState {
+abstract class _DispenserSuccessCreateNewAddressFlow implements DialogState {
   const factory _DispenserSuccessCreateNewAddressFlow() =
       _$DispenserSuccessCreateNewAddressFlowImpl;
 }
@@ -1204,7 +1204,7 @@ abstract class _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res,
+    extends _$DialogStateCopyWithImpl<$Res,
         _$DispenserCloseDialogAndOpenNewAddressImpl>
     implements _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<$Res> {
   __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl(
@@ -1286,7 +1286,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
 
   @override
   String toString() {
-    return 'DispenserState.closeDialogAndOpenNewAddress(originalAddress: $originalAddress, divisible: $divisible, asset: $asset, giveQuantity: $giveQuantity, escrowQuantity: $escrowQuantity, mainchainrate: $mainchainrate, feeRate: $feeRate)';
+    return 'DialogState.closeDialogAndOpenNewAddress(originalAddress: $originalAddress, divisible: $divisible, asset: $asset, giveQuantity: $giveQuantity, escrowQuantity: $escrowQuantity, mainchainrate: $mainchainrate, feeRate: $feeRate)';
   }
 
   @override
@@ -1447,8 +1447,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
   }
 }
 
-abstract class _DispenserCloseDialogAndOpenNewAddress
-    implements DispenserState {
+abstract class _DispenserCloseDialogAndOpenNewAddress implements DialogState {
   const factory _DispenserCloseDialogAndOpenNewAddress(
           {required final String originalAddress,
           required final bool divisible,
@@ -1481,7 +1480,7 @@ abstract class _$$DispenserWarningImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$DispenserWarningImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserWarningImpl>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserWarningImpl>
     implements _$$DispenserWarningImplCopyWith<$Res> {
   __$$DispenserWarningImplCopyWithImpl(_$DispenserWarningImpl _value,
       $Res Function(_$DispenserWarningImpl) _then)
@@ -1495,7 +1494,7 @@ class _$DispenserWarningImpl implements _DispenserWarning {
 
   @override
   String toString() {
-    return 'DispenserState.warning()';
+    return 'DialogState.warning()';
   }
 
   @override
@@ -1631,7 +1630,7 @@ class _$DispenserWarningImpl implements _DispenserWarning {
   }
 }
 
-abstract class _DispenserWarning implements DispenserState {
+abstract class _DispenserWarning implements DialogState {
   const factory _DispenserWarning() = _$DispenserWarningImpl;
 }
 
@@ -1646,7 +1645,7 @@ abstract class _$$DispenserErrorImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$DispenserErrorImplCopyWithImpl<$Res>
-    extends _$DispenserStateCopyWithImpl<$Res, _$DispenserErrorImpl>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserErrorImpl>
     implements _$$DispenserErrorImplCopyWith<$Res> {
   __$$DispenserErrorImplCopyWithImpl(
       _$DispenserErrorImpl _value, $Res Function(_$DispenserErrorImpl) _then)
@@ -1676,7 +1675,7 @@ class _$DispenserErrorImpl implements _DispenserError {
 
   @override
   String toString() {
-    return 'DispenserState.error(error: $error)';
+    return 'DialogState.error(error: $error)';
   }
 
   @override
@@ -1821,7 +1820,7 @@ class _$DispenserErrorImpl implements _DispenserError {
   }
 }
 
-abstract class _DispenserError implements DispenserState {
+abstract class _DispenserError implements DialogState {
   const factory _DispenserError(final String error) = _$DispenserErrorImpl;
 
   String get error;

@@ -21,7 +21,7 @@ abstract class TransactionService {
     required String rawtransaction,
   });
 
-  Future<String> constructAndSignNewTransaction(
+  Future<String> constructChainAndSignTransaction(
       {required String unsignedTransaction,
       required String sourceAddress,
       required List<Utxo> utxos,

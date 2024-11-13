@@ -24,6 +24,7 @@ class SignChainedTransactionUseCase {
     required String addressPrivKey,
   }) async {
     try {
+      // TODO: construct and pass utxoMap outside of this usecase and pass it in as a parameter
       final vout = prevDecodedTransaction.vout
           .firstWhere((vout) => vout.scriptPubKey.address == source);
       final utxosToSign = [

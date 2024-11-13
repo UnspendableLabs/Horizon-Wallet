@@ -31,10 +31,6 @@ extension type Transaction._(JSObject _) implements JSObject {
   external String toHex();
   external int virtualSize();
   external bool hasWitnesses();
-
-  external int addInput(JSUint8Array hash, int index,
-      [int? sequence, JSUint8Array? scriptSig]);
-  external int addOutput(JSUint8Array scriptPubKey, int value);
 }
 
 extension type Psbt._(JSObject _) implements JSObject {
@@ -49,8 +45,6 @@ extension type Psbt._(JSObject _) implements JSObject {
   external void finalizeAllInputs();
 
   external Transaction extractTransaction();
-
-  external void signInput(int index, JSObject signer);
 }
 
 extension type Payment._(JSObject _) implements JSObject {
