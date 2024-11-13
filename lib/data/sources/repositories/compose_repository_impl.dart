@@ -14,6 +14,7 @@ import 'package:horizon/domain/entities/compose_fairminter.dart'
 import 'package:horizon/domain/entities/compose_dispense.dart'
     as compose_dispense;
 import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
+import 'package:horizon/domain/entities/compose_cancel.dart' as compose_cancel;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -408,6 +409,34 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose order');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+  
+  @override
+  Future<compose_cancel.ComposeCancelResponse> composeCancel(int fee,
+      List<Utxo> inputsSet, compose_cancel.ComposeCancelParams params) async {
+    return await _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final offerHash = params.offerHash;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeCancel(
+            source,
+            offerHash,
+            true, //  allow unconfirmed
+            fee, //exect fee
+            inputsSetString);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose cancel');
         }
 
         return response.result!.toDomain();
