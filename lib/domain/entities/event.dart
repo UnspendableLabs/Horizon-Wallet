@@ -1203,7 +1203,7 @@ class OrderUpdateParams {
 }
 
 class OrderUpdateEvent extends Event {
-  final OrderUpdateParams params;
+  // final OrderUpdateParams params;
 
   const OrderUpdateEvent({
     required super.state,
@@ -1211,7 +1211,7 @@ class OrderUpdateEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
-    required this.params,
+    // required this.params,
   });
 }
 
@@ -1232,7 +1232,7 @@ class VerboseOrderUpdateParams extends OrderUpdateParams {
 }
 
 class VerboseOrderUpdateEvent extends VerboseEvent {
-  final VerboseOrderUpdateParams params;
+  // final VerboseOrderUpdateParams params;
 
   const VerboseOrderUpdateEvent({
     required super.state,
@@ -1241,7 +1241,8 @@ class VerboseOrderUpdateEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     required super.blockTime,
-    required this.params,
+
+    // required this.params,
   });
 }
 

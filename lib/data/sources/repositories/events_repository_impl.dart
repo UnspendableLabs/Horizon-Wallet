@@ -648,7 +648,7 @@ class VerboseOrderUpdateEventMapper {
       txHash: apiEvent.txHash,
       blockIndex: apiEvent.blockIndex,
       blockTime: apiEvent.blockTime,
-      params: VerboseOrderUpdateParamsMapper.toDomain(apiEvent.params),
+      // params: VerboseOrderUpdateParamsMapper.toDomain(apiEvent.params),
     );
   }
 }

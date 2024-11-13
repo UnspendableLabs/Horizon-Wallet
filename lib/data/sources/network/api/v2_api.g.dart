@@ -1287,8 +1287,6 @@ VerboseOrderUpdateEvent _$VerboseOrderUpdateEventFromJson(
       txHash: json['tx_hash'] as String?,
       blockIndex: (json['block_index'] as num?)?.toInt(),
       blockTime: (json['block_time'] as num?)?.toInt(),
-      params: VerboseOrderUpdateParams.fromJson(
-          json['params'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$VerboseOrderUpdateEventToJson(
@@ -1299,7 +1297,6 @@ Map<String, dynamic> _$VerboseOrderUpdateEventToJson(
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
       'block_time': instance.blockTime,
-      'params': instance.params,
     };
 
 VerboseOrderUpdateParams _$VerboseOrderUpdateParamsFromJson(
