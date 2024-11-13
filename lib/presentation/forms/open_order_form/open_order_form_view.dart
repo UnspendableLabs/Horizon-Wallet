@@ -24,6 +24,10 @@ class _OpenOrderForm extends State<OpenOrderForm> {
   late TextEditingController _giveAssetController;
   late TextEditingController _getAssetController;
 
+  late FocusNode _giveQuantityFocusNode;
+  late FocusNode _getQuantityFocusNode;
+  late FocusNode _getAssetFocusNode;
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +35,28 @@ class _OpenOrderForm extends State<OpenOrderForm> {
     _giveQuantityController = TextEditingController();
     _getQuantityController = TextEditingController();
     _getAssetController = TextEditingController();
+
+    _giveQuantityFocusNode = FocusNode();
+    _getQuantityFocusNode = FocusNode();
+    _getAssetFocusNode = FocusNode();
+
+    _giveQuantityFocusNode.addListener(() {
+      if (!_giveQuantityFocusNode.hasFocus) {
+        context.read<OpenOrderFormBloc>().add(GiveQuantityBlurred());
+      }
+    });
+
+    _getQuantityFocusNode.addListener(() {
+      if (!_getQuantityFocusNode.hasFocus) {
+        context.read<OpenOrderFormBloc>().add(GetQuantityBlurred());
+      }
+    });
+
+    _getAssetFocusNode.addListener(() {
+      if (!_getAssetFocusNode.hasFocus) {
+        context.read<OpenOrderFormBloc>().add(GetAssetBlurred());
+      }
+    });
   }
 
   @override
@@ -67,6 +93,10 @@ class _OpenOrderForm extends State<OpenOrderForm> {
     _giveQuantityController.dispose();
     _getQuantityController.dispose();
     _getAssetController.dispose();
+
+    _giveQuantityFocusNode.dispose();
+    _getQuantityFocusNode.dispose();
+    _getAssetFocusNode.dispose();
     super.dispose();
   }
 
@@ -111,6 +141,7 @@ class _OpenOrderForm extends State<OpenOrderForm> {
               children: [
                 Expanded(
                     child: GiveQuantityInputField(
+                        focusNode: _giveQuantityFocusNode,
                         controller: _giveQuantityController)),
                 const SizedBox(width: 16),
                 const Expanded(child: GiveAssetInputField()),
@@ -126,11 +157,14 @@ class _OpenOrderForm extends State<OpenOrderForm> {
               children: [
                 Expanded(
                     child: GetQuantityInputField(
+                  focusNode: _getQuantityFocusNode,
                   controller: _getQuantityController,
                 )),
                 const SizedBox(width: 16),
                 Expanded(
-                    child: GetAssetInputField(controller: _getAssetController))
+                    child: GetAssetInputField(
+                        controller: _getAssetController,
+                        focusNode: _getAssetFocusNode))
               ],
             ),
             const HorizonUI.HorizonDivider(),
@@ -239,9 +273,11 @@ class GiveAssetInputField extends StatelessWidget {
 }
 
 class GetAssetInputField extends StatelessWidget {
-  TextEditingController controller;
+  final TextEditingController controller;
+  final FocusNode focusNode;
 
-  GetAssetInputField({super.key, required this.controller});
+  const GetAssetInputField(
+      {super.key, required this.controller, required this.focusNode});
 
   @override
   Widget build(BuildContext context) {
@@ -262,6 +298,7 @@ class GetAssetInputField extends StatelessWidget {
 
         return TextField(
           controller: controller,
+          focusNode: focusNode,
           onChanged: (value) =>
               context.read<OpenOrderFormBloc>().add(GetAssetChanged(value)),
           decoration: InputDecoration(
@@ -289,47 +326,46 @@ class GetAssetInputField extends StatelessWidget {
 
 class GiveQuantityInputField extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode focusNode;
 
-  const GiveQuantityInputField({super.key, required this.controller});
+  const GiveQuantityInputField(
+      {super.key, required this.controller, required this.focusNode});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      // buildWhen: (previous, current) =>
-      //     previous.giveQuantity != current.giveQuantity ||
-      //     previous.giveAsset != current.giveAsset,
+      buildWhen: (previous, current) =>
+          previous.giveQuantity != current.giveQuantity ||
+          previous.giveAsset != current.giveAsset,
       builder: (context, state) {
         final isDivisible = state.giveQuantity.isDivisible; //
         // final isAssetSelected = state.giveAsset.value.isNotEmpty;
-        final hasError =
-            !state.giveQuantity.isPure && state.giveQuantity.isNotValid;
+        final showError = !state.giveQuantity.isPure &&
+            state.giveQuantity.isNotValid &&
+            !focusNode.hasFocus;
 
         final errorMessage = switch (state.giveQuantity.error) {
           GiveQuantityValidationError.exceedsBalance =>
             'Quantity exceeds available balance',
           GiveQuantityValidationError.invalid =>
-            isDivisible ? "Asset isn't divisible" : "Invalid",
+            isDivisible ? "invalid" : "Asset isn't divisible",
           GiveQuantityValidationError.required => "Required",
-          _ => null
+          _ => "none"
         };
 
         return TextField(
           controller: controller,
+          focusNode: focusNode,
           onChanged: (value) =>
               context.read<OpenOrderFormBloc>().add(GiveQuantityChanged(value)),
           decoration: InputDecoration(
             labelText: 'Give Quantity',
-            errorText: hasError ? errorMessage : null,
-            helperText: hasError ? null : ' ',
+            errorText: showError ? errorMessage : null,
+            helperText: showError ? null : ' ',
           ),
           keyboardType: const TextInputType.numberWithOptions(
               decimal: true, signed: false),
-          inputFormatters: [
-            if (isDivisible)
-              DecimalTextInputFormatter(decimalRange: 8)
-            else
-              FilteringTextInputFormatter.digitsOnly,
-          ],
+          inputFormatters: [DecimalTextInputFormatter(decimalRange: 8)],
           // enabled: isAssetSelected,
         );
       },
@@ -339,8 +375,10 @@ class GiveQuantityInputField extends StatelessWidget {
 
 class GetQuantityInputField extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode focusNode;
 
-  const GetQuantityInputField({super.key, required this.controller});
+  const GetQuantityInputField(
+      {super.key, required this.controller, required this.focusNode});
 
   @override
   Widget build(BuildContext context) {
@@ -350,34 +388,31 @@ class GetQuantityInputField extends StatelessWidget {
       //     previous.getAsset != previous.getAsset,
       builder: (context, state) {
         final isDivisible = state.getQuantity.isDivisible; //
-        final hasError =
-            !state.getQuantity.isPure && state.getQuantity.isNotValid;
+        final showError = !state.getQuantity.isPure &&
+            state.getQuantity.isNotValid &&
+            !focusNode.hasFocus;
 
         final error = switch (state.getQuantity.error) {
           GetQuantityValidationError.invalid =>
-            isDivisible ? "Asset isn't divisible" : "Invalid",
+            isDivisible ? "invalid" : "Asset isn't divisible",
           GetQuantityValidationError.required => "Required",
           _ => null
         };
 
         return TextField(
           controller: controller,
+          focusNode: focusNode,
           onChanged: (value) =>
               context.read<OpenOrderFormBloc>().add(GetQuantityChanged(value)),
           decoration: InputDecoration(
             labelText: 'Get Quantity',
-            errorText: hasError ? error : null,
-            helperText: hasError ? null : ' ',
+            errorText: showError ? error : null,
+            helperText: showError ? null : ' ',
             // errorText: state.quantity.invalid ? 'Invalid quantity' : null,
           ),
           keyboardType: const TextInputType.numberWithOptions(
               decimal: true, signed: false),
-          inputFormatters: [
-            if (isDivisible)
-              DecimalTextInputFormatter(decimalRange: 8)
-            else
-              FilteringTextInputFormatter.digitsOnly,
-          ],
+          inputFormatters: [DecimalTextInputFormatter(decimalRange: 8)],
         );
       },
     );
