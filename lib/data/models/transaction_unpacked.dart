@@ -25,6 +25,9 @@ class UnpackedVerboseMapper {
       case "order":
         return OrderUnpackedVerboseMapper.toDomain(
             u as api.OrderUnpackedVerbose);
+      case "cancel":
+        return CancelUnpackedVerboseMapper.toDomain(
+        u as api.CancelUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -120,6 +123,15 @@ class OrderUnpackedVerboseMapper {
       feeRequiredNormalized: u.feeRequiredNormalized,
       // giveAssetInfo: AssetInfoMapper.toDomain(u.giveAssetInfo),
       // getAssetInfo: AssetInfoMapper.toDomain(u.getAssetInfo),
+    );
+  }
+}
+
+class CancelUnpackedVerboseMapper {
+  static CancelUnpacked toDomain(api.CancelUnpackedVerbose u) {
+    return CancelUnpacked(
+      orderHash: u.offerHash,
+      status: u.status,
     );
   }
 }

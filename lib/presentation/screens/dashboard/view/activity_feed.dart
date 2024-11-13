@@ -349,6 +349,10 @@ class ActivityFeedListItem extends StatelessWidget {
       ) =>
         SelectableText(
             "Open Order: ${unpackedData.giveQuantityNormalized} ${unpackedData.giveAsset} /  ${unpackedData.getQuantityNormalized} ${unpackedData.getAsset}"),
+      TransactionInfoCancel(
+        unpackedData: var _,
+      ) =>
+        SelectableText("Cancel Order"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -367,6 +371,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoFairminter() =>
         const Icon(Icons.print, color: Colors.grey),
       TransactionInfoOrder() => const Icon(Icons.toc, color: Colors.grey),
+      TransactionInfoCancel() => const Icon(Icons.toc, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -431,6 +436,13 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
     return switch (info) {
+      TransactionInfoCancel(unpackedData: var unpackedData) => Row(
+          children: [
+            Text("order hash:"),
+            SizedBox(width: 10.0),
+            TxHashDisplay(hash: unpackedData.orderHash, uriType: URIType.hoex)
+          ],
+        ),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
       _ => TxHashDisplay(hash: info.hash, uriType: URIType.hoex)
