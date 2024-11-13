@@ -27,7 +27,7 @@ class Event extends Equatable {
 
   final int? eventIndex;
   final String event;
-  final String txHash;
+  final String? txHash;
   final int? blockIndex;
   // final bool confirmed;
 
