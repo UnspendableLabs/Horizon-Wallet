@@ -145,7 +145,7 @@ void main() {
     build: () {
       when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
           .thenAnswer(
-              (_) async => FeeEstimates(fast: 50, medium: 30, slow: 10));
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -165,7 +165,7 @@ void main() {
       );
       return bloc;
     },
-    act: (bloc) => bloc.add(InitializeForm()),
+    act: (bloc) => bloc.add(const InitializeForm()),
     expect: () => [
       isA<FormStateModel>().having(
         (s) => s.giveAssets,
@@ -180,8 +180,6 @@ void main() {
           .called(1);
     },
   );
-
-
 
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'emits Loading and then Success when GetAssetChanged is added and asset exists',
@@ -441,7 +439,7 @@ void main() {
     build: () {
       when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
           .thenAnswer(
-              (_) async => FeeEstimates(fast: 50, medium: 30, slow: 10));
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => composeTransactionUseCase
                   .call<ComposeOrderParams, ComposeOrderResponse>(
@@ -457,7 +455,7 @@ void main() {
                 composeFn: any(named: 'composeFn'),
               ))
           .thenAnswer(
-              (_) async => (FakeComposeOrderResponse(), VirtualSize(100, 100)));
+              (_) async => (FakeComposeOrderResponse(), const VirtualSize(100, 100)));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -491,7 +489,7 @@ void main() {
         getQuantity: const GetQuantityInput.dirty('2.5', isDivisible: true),
         submissionStatus: FormzSubmissionStatus.initial,
         feeOption: FeeOption.Medium(),
-        feeEstimates: Success(FeeEstimates(fast: 50, medium: 30, slow: 10)),
+        feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
       );
     },
     act: (bloc) => bloc.add(FormSubmitted()),

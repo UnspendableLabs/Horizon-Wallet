@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/asset_info.dart';
+import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
@@ -281,7 +282,6 @@ class Event {
     }
   }
 }
-
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class EnhancedSendParams {
@@ -1174,6 +1174,7 @@ class VerboseOrderMatchParams extends OrderMatchParams {
   factory VerboseOrderMatchParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseOrderMatchParamsFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$VerboseOrderMatchParamsToJson(this);
 }
 
@@ -1261,6 +1262,7 @@ class VerboseOrderUpdateParams extends OrderUpdateParams {
   factory VerboseOrderUpdateParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseOrderUpdateParamsFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$VerboseOrderUpdateParamsToJson(this);
 }
 
@@ -1327,6 +1329,7 @@ class VerboseOrderFilledParams extends OrderFilledParams {
   factory VerboseOrderFilledParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseOrderFilledParamsFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$VerboseOrderFilledParamsToJson(this);
 }
 
@@ -1405,6 +1408,7 @@ class VerboseCancelOrderParams extends CancelOrderParams {
   factory VerboseCancelOrderParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseCancelOrderParamsFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$VerboseCancelOrderParamsToJson(this);
 }
 
@@ -1477,6 +1481,7 @@ class VerboseOrderExpirationParams extends OrderExpirationParams {
   factory VerboseOrderExpirationParams.fromJson(Map<String, dynamic> json) =>
       _$VerboseOrderExpirationParamsFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$VerboseOrderExpirationParamsToJson(this);
 }
 
@@ -2486,7 +2491,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
   final ComposeDispenserVerboseParams params;
   final int btcIn;
   final int btcOut;
-  final int btcChange;
+  final int? btcChange;
   final int btcFee;
   final String data;
 
@@ -3665,6 +3670,11 @@ abstract class V2Api {
   Future<Response<String>> createTransaction(
     @Query("signedhex") String signedhex,
   );
+
+  @GET("/bitcoin/transactions/decode")
+  Future<Response<DecodedTxModel>> decodeTransaction(
+    @Query("rawtx") String rawtx,
+  );
   //     Get Balances by address
   @GET("/addresses/{address}/balances")
   Future<Response<List<Balance>>> getBalancesByAddress(
@@ -3892,6 +3902,8 @@ abstract class V2Api {
     @Query("exact_fee") int? fee,
     @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
+    @Query("validate") bool? validate,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/sends")
@@ -3990,6 +4002,8 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("unconfirmed") bool? unconfirmed,
+    @Query("validate") bool? validate,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/compose/order?verbose=true")

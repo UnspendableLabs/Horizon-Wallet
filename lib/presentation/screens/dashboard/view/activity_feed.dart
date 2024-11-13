@@ -225,8 +225,8 @@ class ActivityFeedListItem extends StatelessWidget {
           "Open Order: ${params.giveQuantityNormalized} ${params.giveAsset} /  ${params.getQuantityNormalized} ${params.getAsset} "),
       VerboseOrderMatchEvent(params: var params) => SelectableText(
           "Order Match: ${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}"),
-      VerboseOrderUpdateEvent(params: var _) => SelectableText("Order Update"),
-      VerboseOrderFilledEvent(params: var _) => SelectableText("Order Filled"),
+      VerboseOrderUpdateEvent(params: var _) => const SelectableText("Order Update"),
+      VerboseOrderFilledEvent(params: var _) => const SelectableText("Order Filled"),
       VerboseCancelOrderEvent(params: var params) =>
         SelectableText("Order Cancelled ${params.offerHash}"),
       VerboseOrderExpirationEvent(params: var params) =>

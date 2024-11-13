@@ -2458,7 +2458,7 @@ ComposeDispenserVerbose _$ComposeDispenserVerboseFromJson(
           json['params'] as Map<String, dynamic>),
       btcIn: (json['btc_in'] as num).toInt(),
       btcOut: (json['btc_out'] as num).toInt(),
-      btcChange: (json['btc_change'] as num).toInt(),
+      btcChange: (json['btc_change'] as num?)?.toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
       data: json['data'] as String,
     );
@@ -3205,6 +3205,36 @@ class _V2Api implements V2Api {
     final _value = Response<String>.fromJson(
       _result.data!,
       (json) => json as String,
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<DecodedTxModel>> decodeTransaction(String rawtx) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'rawtx': rawtx};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<DecodedTxModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/bitcoin/transactions/decode',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<DecodedTxModel>.fromJson(
+      _result.data!,
+      (json) => DecodedTxModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }
@@ -4089,6 +4119,8 @@ class _V2Api implements V2Api {
     int? fee,
     int? feePerKB,
     String? inputsSet,
+    bool? validate,
+    bool? disableUtxoLocks,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -4099,6 +4131,8 @@ class _V2Api implements V2Api {
       r'exact_fee': fee,
       r'fee_per_kb': feePerKB,
       r'inputs_set': inputsSet,
+      r'validate': validate,
+      r'disable_utxo_locks': disableUtxoLocks,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -4519,6 +4553,8 @@ class _V2Api implements V2Api {
     int? exactFee,
     String? inputsSet,
     bool? unconfirmed,
+    bool? validate,
+    bool? disableUtxoLocks,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -4533,6 +4569,8 @@ class _V2Api implements V2Api {
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
       r'unconfirmed': unconfirmed,
+      r'validate': validate,
+      r'disable_utxo_locks': disableUtxoLocks,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -5250,7 +5288,7 @@ class _V2Api implements V2Api {
 
   RequestOptions newRequestOptions(Object? options) {
     if (options is RequestOptions) {
-      return options as RequestOptions;
+      return options;
     }
     if (options is Options) {
       return RequestOptions(

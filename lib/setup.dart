@@ -81,6 +81,7 @@ import 'package:horizon/data/sources/network/mempool_space_client.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -324,7 +325,8 @@ Future<void> setup() async {
   injector.registerSingleton<FetchDispenserFormDataUseCase>(
       FetchDispenserFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>()));
+          balanceRepository: injector.get<BalanceRepository>(),
+          dispenserRepository: injector.get<DispenserRepository>()));
 
   injector.registerSingleton<FetchDispenseFormDataUseCase>(
       FetchDispenseFormDataUseCase(
@@ -378,6 +380,11 @@ Future<void> setup() async {
       WriteLocalTransactionUseCase(
     transactionRepository: GetIt.I.get<TransactionRepository>(),
     transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
+  ));
+
+  injector.registerSingleton<SignChainedTransactionUseCase>(
+      SignChainedTransactionUseCase(
+    transactionService: GetIt.I.get<TransactionService>(),
   ));
 
   injector.registerSingleton<ActionRepository>(ActionRepositoryImpl());

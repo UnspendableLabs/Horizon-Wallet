@@ -52,27 +52,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
       throw Exception("invariant: accounts are null");
     }
 
-    Account? currentHighestIndexAccount = shell.state.maybeWhen(
-        success: (state) {
-          // Find the account with the highest hardened account index
-          Account? highestAccount;
-          int maxIndex = -1;
-
-          for (var account in state.accounts) {
-            int currentIndex =
-                int.parse(account.accountIndex.replaceAll("'", ""));
-            if (currentIndex > maxIndex) {
-              maxIndex = currentIndex;
-              highestAccount = account;
-            }
-          }
-          return highestAccount;
-        },
-        orElse: () => null);
-
-    if (currentHighestIndexAccount == null) {
-      throw Exception("invariant: account is null");
-    }
+    Account currentHighestIndexAccount = shell.state.maybeWhen(
+        success: (state) => getHighestIndexAccount(state.accounts),
+        orElse: () => throw Exception("invariant: account is null"));
 
     int newAccountIndex =
         int.parse(currentHighestIndexAccount.accountIndex.replaceAll("'", "")) +

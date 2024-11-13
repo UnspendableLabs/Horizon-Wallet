@@ -307,7 +307,8 @@ class GiveQuantityInputField extends StatelessWidget {
         final errorMessage = switch (state.giveQuantity.error) {
           GiveQuantityValidationError.exceedsBalance =>
             'Quantity exceeds available balance',
-          GiveQuantityValidationError.invalid => isDivisible ? "Asset isn't divisible" : "Invalid",
+          GiveQuantityValidationError.invalid =>
+            isDivisible ? "Asset isn't divisible" : "Invalid",
           GiveQuantityValidationError.required => "Required",
           _ => null
         };
@@ -353,7 +354,8 @@ class GetQuantityInputField extends StatelessWidget {
             !state.getQuantity.isPure && state.getQuantity.isNotValid;
 
         final error = switch (state.getQuantity.error) {
-          GetQuantityValidationError.invalid => isDivisible ? "Asset isn't divisible" : "Invalid",
+          GetQuantityValidationError.invalid =>
+            isDivisible ? "Asset isn't divisible" : "Invalid",
           GetQuantityValidationError.required => "Required",
           _ => null
         };

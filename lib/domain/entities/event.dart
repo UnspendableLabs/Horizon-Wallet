@@ -1080,8 +1080,6 @@ class VerboseOpenOrderEvent extends VerboseEvent {
   });
 }
 
-
-
 // OrderMatch Event
 class OrderMatchParams {
   final String backwardAsset;
@@ -1399,4 +1397,3 @@ class VerboseOrderExpirationEvent extends VerboseEvent {
     required this.params,
   });
 }
-

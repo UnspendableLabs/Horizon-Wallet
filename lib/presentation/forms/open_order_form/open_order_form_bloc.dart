@@ -92,7 +92,7 @@ class GiveQuantityInput
   }
 }
 
-enum GetQuantityValidationError { invalid, required  }
+enum GetQuantityValidationError { invalid, required }
 
 class GetQuantityInput extends FormzInput<String, GetQuantityValidationError> {
   final bool isDivisible;

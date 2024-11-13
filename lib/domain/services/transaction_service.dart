@@ -20,4 +20,13 @@ abstract class TransactionService {
   int countSigOps({
     required String rawtransaction,
   });
+
+  Future<String> constructAndSignNewTransaction(
+      {required String unsignedTransaction,
+      required String sourceAddress,
+      required List<Utxo> utxos,
+      required int btcQuantity,
+      required String sourcePrivKey,
+      required String destinationPrivKey,
+      required int fee});
 }

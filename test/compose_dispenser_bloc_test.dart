@@ -1,5 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
@@ -34,6 +40,16 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
 class MockWriteLocalTransactionUseCase extends Mock
     implements WriteLocalTransactionUseCase {}
 
+class MockAccountRepository extends Mock implements AccountRepository {}
+
+class MockAddressRepository extends Mock implements AddressRepository {}
+
+class MockWalletRepository extends Mock implements WalletRepository {}
+
+class MockEncryptionService extends Mock implements EncryptionService {}
+
+class MockAddressService extends Mock implements AddressService {}
+
 class MockComposeDispenserResponseParams extends Mock
     implements ComposeDispenserResponseVerboseParams {
   @override
@@ -51,6 +67,8 @@ class MockComposeDispenserResponseVerbose extends Mock
 }
 
 class MockBalance extends Mock implements Balance {}
+
+class MockDispenser extends Mock implements Dispenser {}
 
 class MockComposeDispenserEventParams extends Mock
     implements ComposeDispenserEventParams {}
@@ -85,10 +103,16 @@ void main() {
   late MockSignAndBroadcastTransactionUseCase
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
+  late MockAccountRepository mockAccountRepository;
+  late MockAddressRepository mockAddressRepository;
+  late MockWalletRepository mockWalletRepository;
+  late MockEncryptionService mockEncryptionService;
+  late MockAddressService mockAddressService;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockAddress = FakeAddress().address;
   final mockBalances = [MockBalance()];
+  final mockDispenser = [MockDispenser()];
   final mockComposeDispenserResponseVerbose =
       MockComposeDispenserResponseVerbose();
 
@@ -133,6 +157,11 @@ void main() {
     mockSignAndBroadcastTransactionUseCase =
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockAccountRepository = MockAccountRepository();
+    mockAddressRepository = MockAddressRepository();
+    mockWalletRepository = MockWalletRepository();
+    mockEncryptionService = MockEncryptionService();
+    mockAddressService = MockAddressService();
 
     composeDispenserBloc = ComposeDispenserBloc(
       fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
@@ -153,8 +182,8 @@ void main() {
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any()))
-            .thenAnswer((_) async => (mockBalances, mockFeeEstimates));
+        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
+            (_) async => (mockBalances, mockFeeEstimates, mockDispenser));
         return composeDispenserBloc;
       },
       act: (bloc) {
@@ -165,10 +194,13 @@ void main() {
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
           submitState: const SubmitInitial(),
+          dispensersState: const DispenserState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
+          dispensersState: const DispenserState.warning(),
+          submitState: const SubmitInitial(),
         ),
       ],
     );
@@ -229,11 +261,14 @@ void main() {
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
           submitState: const SubmitInitial(),
+          dispensersState: const DispenserState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.error(
               'An unexpected error occurred: Exception: Unexpected'),
           balancesState: const BalancesState.error(
+              'An unexpected error occurred: Exception: Unexpected'),
+          dispensersState: const DispenserState.error(
               'An unexpected error occurred: Exception: Unexpected'),
         ),
       ],
