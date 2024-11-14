@@ -91,6 +91,12 @@ class ConfigImpl implements Config {
   }
 
   @override
+  bool get isWebExtension {
+    return const bool.fromEnvironment('HORIZON_IS_EXTENSION',
+        defaultValue: false);
+  }
+
+  @override
   String toString() {
     return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase, horizonExplorerBase: $horizonExplorerBase, btcExplorerBase: $btcExplorerBase, isDatabaseViewerEnabled: $isDatabaseViewerEnabled)';
   }

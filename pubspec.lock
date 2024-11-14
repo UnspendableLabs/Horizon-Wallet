@@ -214,6 +214,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  chrome_extension:
+    dependency: "direct main"
+    description:
+      name: chrome_extension
+      sha256: f756c36d84a1acef5240b53376de2547479a643ae4a7289f2ce210d3b07ed235
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0"
   cli_util:
     dependency: transitive
     description:
@@ -1108,6 +1116,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0+1"
+  process_runner:
+    dependency: "direct main"
+    description:
+      name: process_runner
+      sha256: "4763f660895a1aea3c097bba3204794094b828cb9a279a65a2506a9b93d47d12"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.0"
   protobuf:
     dependency: transitive
     description:

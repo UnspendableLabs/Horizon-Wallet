@@ -16,8 +16,6 @@ class ActionRepositoryImpl implements ActionRepository {
         str.split(',').map((element) => Uri.decodeComponent(element)).toList();
 
     return switch (arr) {
-      ["dispense", String address] => DispenseAction(address),
-      ["fairmint", String fairminterTxHash] => FairmintAction(fairminterTxHash),
       [
         "open_order",
         String giveAsset,
@@ -29,7 +27,20 @@ class ActionRepositoryImpl implements ActionRepository {
             giveQuantity: int.tryParse(giveQuantity)!,
             giveAsset: giveAsset,
             getQuantity: int.tryParse(getQuantity)!,
-            getAsset: getAsset),
+            getAsset: getAsset,
+            caller: CallerType.app),
+      ["dispense", String address] => DispenseAction(address, CallerType.app),
+      ["dispense:ext", String address] =>
+        DispenseAction(address, CallerType.extension),
+      ["fairmint", String fairminterTxHash] =>
+        FairmintAction(fairminterTxHash, CallerType.app),
+      ["fairmint:ext", String fairminterTxHash] =>
+        FairmintAction(fairminterTxHash, CallerType.extension),
+      ["getAddresses:ext", String tabId, String requestId] =>
+        RPCGetAddressesAction(
+            int.tryParse(tabId)!, requestId), // TODO:be more paranoid
+      ["signPsbt:ext", String tabId, String requestId, String psbt] =>
+        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt),
       _ => throw Exception()
     };
   }
