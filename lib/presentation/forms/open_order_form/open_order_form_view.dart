@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
+import 'package:decimal/decimal.dart';
 
 import './open_order_form_bloc.dart';
 
@@ -166,6 +167,26 @@ class _OpenOrderForm extends State<OpenOrderForm> {
                         controller: _getAssetController,
                         focusNode: _getAssetFocusNode))
               ],
+            ),
+            const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 16.0),
+              child: Text("Price",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Price(
+                  giveQuantity: state.giveQuantity.isValid
+                      ? double.tryParse(state.giveQuantity.value)
+                      : null,
+                  getQuantity: state.getQuantity.isValid
+                      ? double.tryParse(state.getQuantity.value)
+                      : null,
+                  giveAsset: state.giveAsset.value,
+                  getAsset: state.getAssetValidationStatus is Success
+                      ? state.getAsset.value
+                      : null),
             ),
             const HorizonUI.HorizonDivider(),
             FeeSelectionV2(
@@ -456,5 +477,36 @@ class DecimalTextInputFormatter extends TextInputFormatter {
       text: newText,
       selection: newSelection,
     );
+  }
+}
+
+class Price extends StatelessWidget {
+  final double? giveQuantity;
+  final double? getQuantity;
+  final String? giveAsset;
+  final String? getAsset;
+
+  const Price(
+      {super.key,
+      this.giveQuantity,
+      this.getQuantity,
+      this.giveAsset,
+      this.getAsset});
+  @override
+  Widget build(BuildContext context) {
+    if (giveQuantity == null ||
+        getQuantity == null ||
+        giveAsset == null ||
+        getAsset == null) {
+      return const Text('-');
+    }
+
+    // Convert to Decimal for precise calculation and constrain to 8 decimal places
+    final giveDecimal = Decimal.parse(giveQuantity!.toString());
+    final getDecimal = Decimal.parse(getQuantity!.toString());
+    final price =
+        (giveDecimal / getDecimal).toDecimal(scaleOnInfinitePrecision: 8);
+
+    return Text('$price ${giveAsset!}/${getAsset!}');
   }
 }
