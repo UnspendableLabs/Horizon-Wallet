@@ -9,7 +9,7 @@ import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const TAG = "v1.3.5";
+const TAG = "v1.3.6";
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
