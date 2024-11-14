@@ -229,9 +229,9 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseOrderFilledEvent(params: var _) =>
         const SelectableText("Order Filled"),
       VerboseCancelOrderEvent(params: var params) =>
-        SelectableText("Order Cancelled"),
+        const SelectableText("Order Cancelled"),
       VerboseOrderExpirationEvent(params: var params) =>
-        SelectableText("Order Expiration"),
+        const SelectableText("Order Expiration"),
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
       _ => SelectableText(
@@ -352,7 +352,7 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoCancel(
         unpackedData: var _,
       ) =>
-        SelectableText("Cancel Order"),
+        const SelectableText("Cancel Order"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -421,8 +421,8 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       VerboseOrderExpirationEvent(params: var params) => Row(
           children: [
-            Text("order hash:"),
-            SizedBox(width: 10.0),
+            const Text("order hash:"),
+            const SizedBox(width: 10.0),
             TxHashDisplay(hash: params.orderHash, uriType: URIType.hoex)
           ],
         ),
@@ -438,8 +438,8 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (info) {
       TransactionInfoCancel(unpackedData: var unpackedData) => Row(
           children: [
-            Text("order hash:"),
-            SizedBox(width: 10.0),
+            const Text("order hash:"),
+            const SizedBox(width: 10.0),
             TxHashDisplay(hash: unpackedData.orderHash, uriType: URIType.hoex)
           ],
         ),
