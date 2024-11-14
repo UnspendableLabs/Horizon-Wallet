@@ -980,7 +980,7 @@ class AddressActions extends StatelessWidget {
               currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.toc,
-              text: "ORDER",
+              text: "Order",
               iconSize: 18.0,
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
@@ -1496,14 +1496,6 @@ class DashboardPageState extends State<DashboardPage> {
                                                 widget.accountUuid,
                                           );
                                         }),
-                                        Row(
-                                          children: [
-                                            Text(widget
-                                                    .currentAddress?.address ??
-                                                widget.currentImportedAddress!
-                                                    .address),
-                                          ],
-                                        ),
                                         SizedBox(
                                           height: 258,
                                           child: Container(
