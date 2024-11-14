@@ -92,17 +92,37 @@ class ComposeDispensePage extends StatefulWidget {
 class ComposeDispensePageState extends State<ComposeDispensePage> {
   TextEditingController dispenserController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
+  TextEditingController assetQuantityController = TextEditingController();
   TextEditingController openAddressController = TextEditingController();
-
   String? asset;
   Balance? balance_;
+  String? selectedDispenser;
+  double? btcToPay;
 
   @override
   void initState() {
     super.initState();
-    // TODO: not sure why we are doing this.
     openAddressController.text = widget.address;
     dispenserController.text = widget.initialDispenserAddress ?? "";
+    assetQuantityController.addListener(_updateBtcPayment);
+  }
+
+  void _updateBtcPayment() {
+    setState(() {
+      if (selectedDispenser != null && assetQuantityController.text.isNotEmpty) {
+        final state = context.read<ComposeDispenseBloc>().state;
+        state.dispensersState.maybeWhen(
+          success: (dispensers) {
+            final dispenser = dispensers.firstWhere(
+                (d) => d.asset == selectedDispenser);
+            final quantity = double.tryParse(assetQuantityController.text) ?? 0;
+            btcToPay = double.parse(dispenser.satoshirateNormalized) * quantity;
+            quantityController.text = btcToPay?.toStringAsFixed(8) ?? '';
+          },
+          orElse: () {},
+        );
+      }
+    });
   }
 
   @override
@@ -155,35 +175,67 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     return state.dispensersState.when(
       initial: () => Container(),
       loading: () => const Center(child: CircularProgressIndicator()),
-      success: (dispensers) => SizedBox(
-        height: 100,
-        child: ListView.builder(
-          itemCount: dispensers.length,
-          itemBuilder: (context, index) {
-            final dispenser = dispensers[index];
-            return SizedBox(
-                height: 50,
-                child: ListTile(
-                  title: SelectableText(
-                      "${dispenser.satoshirateNormalized} BTC/${dispenser.asset}"),
-                  trailing:
-                      Text("${dispenser.giveRemainingNormalized} Remaining"),
-                ));
-          },
-        ),
+      success: (dispensers) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Available Assets",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 200,
+            child: ListView.builder(
+              itemCount: dispensers.length,
+              itemBuilder: (context, index) {
+                final dispenser = dispensers[index];
+                return RadioListTile<String>(
+                  title: Text(dispenser.asset),
+                  subtitle: Text("Rate: ${dispenser.satoshirateNormalized} BTC/${dispenser.asset} - Available: ${dispenser.giveRemainingNormalized}"),
+                  value: dispenser.asset,
+                  groupValue: selectedDispenser,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedDispenser = value;
+                      assetQuantityController.clear();
+                      btcToPay = null;
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+          if (selectedDispenser != null) ...[
+            const SizedBox(height: 16),
+            HorizonUI.HorizonTextFormField(
+              controller: assetQuantityController,
+              label: 'Quantity of $selectedDispenser',
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [DecimalTextInputFormatter(decimalRange: 8)],
+            ),
+            if (btcToPay != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'You will pay: ${btcToPay?.toStringAsFixed(8)} BTC',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ],
+        ],
       ),
       error: (error) => Text('Error: $error'),
     );
   }
 
   Widget _buildQuantityInput(ComposeDispenseState state,
-      void Function() handleInitialSubmit, bool loading) {
+       bool loading,
+      GlobalKey<FormState> formKey) {
     return state.balancesState.maybeWhen(orElse: () {
       return _buildQuantityInputField(
           state,
           null,
-          // handleInitialSubmit,
-          loading);
+          loading,
+          formKey);
     }, success: (balances) {
       if (balances.isEmpty) {
         return const HorizonUI.HorizonTextFormField(
@@ -202,13 +254,13 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       return _buildQuantityInputField(
           state,
           balance,
-          // handleInitialSubmit,
-          loading);
+          loading,
+          formKey);
     });
   }
 
   Widget _buildQuantityInputField(ComposeDispenseState state, Balance? balance,
-      /* void Function() handleInitialSubmit, */ bool loading) {
+      bool loading, GlobalKey<FormState> formKey) {
     return Stack(
       children: [
         HorizonUI.HorizonTextFormField(
@@ -234,7 +286,11 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             });
             return null;
           },
+          onFieldSubmitted: (value) {
+            _handleInitialSubmit(formKey);
+          },
         ),
+
         state.balancesState.maybeWhen(orElse: () {
           return const SizedBox.shrink();
         }, success: (_) {
@@ -266,18 +322,16 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         label: "Source Address",
       ),
       const SizedBox(height: 16.0),
-      _buildDispenserInput(),
+      _buildDispenserInput(formKey),
       const SizedBox(height: 16.0),
       _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
-      _buildQuantityInput(state, () {
-        _handleInitialSubmit(formKey);
-      }, loading),
+      _buildQuantityInput(state, loading, formKey),
       const SizedBox(height: 16.0),
     ];
   }
 
-  Widget _buildDispenserInput() {
+  Widget _buildDispenserInput(GlobalKey<FormState> formKey) {
     return HorizonUI.HorizonTextFormField(
       key: const Key('dispense_dispenesr_input'),
       controller: dispenserController,
@@ -288,13 +342,14 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             .read<ComposeDispenseBloc>()
             .add(DispenserAddressChanged(address: value));
       },
-      // keyboardType: const TextInputType.numberWithOptions(
-      //     decimal: false, signed: false), // No decimal allowed
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Dispener Address is required';
         }
         return null;
+      },
+      onFieldSubmitted: (value) {
+        _handleInitialSubmit(formKey);
       },
     );
   }
