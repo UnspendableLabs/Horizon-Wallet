@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:convert/convert.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
@@ -14,6 +13,7 @@ import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 
 const DEFAULT_SEQUENCE = 0xffffffff;
 const SIGHASH_DEFAULT = 0x00;
@@ -207,7 +207,7 @@ class TransactionServiceImpl implements TransactionService {
   }
 
   @override
-  Future<String> constructAndSignNewTransaction(
+  Future<String> constructChainAndSignTransaction(
       {required String unsignedTransaction,
       required String sourceAddress,
       required List<Utxo> utxos,
@@ -215,6 +215,9 @@ class TransactionServiceImpl implements TransactionService {
       required String sourcePrivKey,
       required String destinationPrivKey,
       required int fee}) async {
+    if (!addressIsSegwit(sourceAddress)) {
+      throw Exception('Cannot chain transaction with a legacy address');
+    }
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
@@ -307,7 +310,7 @@ class TransactionServiceImpl implements TransactionService {
 
     // Create payment for source address (where change goes)
     bitcoinjs.Payment changeScript = bitcoinjs.p2wpkh(bitcoinjs.PaymentOptions(
-        pubkey: sourceSigner.publicKey, network: _getNetwork()));
+        pubkey: sourceSigner.publicKey, network: network));
 
     // Add change output
     psbt.addOutput(({'script': changeScript.output, 'value': changeAmount})

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
@@ -12,6 +11,7 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
@@ -82,7 +82,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   TextEditingController mainchainrateController = TextEditingController();
   TextEditingController openAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
 
   String? asset;
   Balance? balance_;
@@ -98,7 +97,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   @override
   void dispose() {
-    passwordController.dispose();
     giveQuantityController.dispose();
     escrowQuantityController.dispose();
     mainchainrateController.dispose();
@@ -111,10 +109,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     return BlocListener<ComposeDispenserBloc, ComposeDispenserState>(
       listener: (context, state) {
         setState(() {
-          hideSubmitButtons = _shouldHideSubmitButtons(state.dispensersState);
+          hideSubmitButtons = _shouldHideSubmitButtons(state.dialogState);
         });
 
-        state.dispensersState.maybeWhen(
+        state.dialogState.maybeWhen(
           // if the current address has open dispensers and the user chooses to open on a new address, proceed to the new address flow
           closeDialogAndOpenNewAddress: (originalAddress, divisible, asset,
               giveQuantity, escrowQuantity, mainchainrate, feeRate) {
@@ -560,7 +558,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return [
-      state.dispensersState.maybeWhen(orElse: () {
+      state.dialogState.maybeWhen(orElse: () {
         return const SizedBox.shrink();
       }, successNormalFlow: () {
         return Column(
@@ -717,8 +715,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         .add(FetchFormData(currentAddress: widget.address));
   }
 
-  bool _shouldHideSubmitButtons(DispenserState dispenserState) {
-    return dispenserState.maybeWhen(
+  bool _shouldHideSubmitButtons(DialogState dialogState) {
+    return dialogState.maybeWhen(
       loading: () => true,
       warning: () => true,
       orElse: () => false,

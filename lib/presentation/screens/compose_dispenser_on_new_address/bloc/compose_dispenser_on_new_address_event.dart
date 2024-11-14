@@ -1,12 +1,12 @@
 abstract class ComposeDispenserOnNewAddressEvent {}
 
-class FetchFormData extends ComposeDispenserOnNewAddressEvent {
+class FormOpened extends ComposeDispenserOnNewAddressEvent {
   final String originalAddress;
 
-  FetchFormData({required this.originalAddress});
+  FormOpened({required this.originalAddress});
 }
 
-class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
+class PasswordEntered extends ComposeDispenserOnNewAddressEvent {
   final String password;
   final String originalAddress;
   final bool divisible;
@@ -17,7 +17,7 @@ class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
   final int status;
   final int feeRate;
 
-  ComposeTransactions({
+  PasswordEntered({
     required this.password,
     required this.originalAddress,
     required this.divisible,
@@ -30,4 +30,4 @@ class ComposeTransactions extends ComposeDispenserOnNewAddressEvent {
   });
 }
 
-class BroadcastTransactions extends ComposeDispenserOnNewAddressEvent {}
+class SubmitPressed extends ComposeDispenserOnNewAddressEvent {}

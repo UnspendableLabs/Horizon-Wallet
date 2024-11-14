@@ -454,8 +454,8 @@ void main() {
                 ),
                 composeFn: any(named: 'composeFn'),
               ))
-          .thenAnswer(
-              (_) async => (FakeComposeOrderResponse(), const VirtualSize(100, 100)));
+          .thenAnswer((_) async =>
+              (FakeComposeOrderResponse(), const VirtualSize(100, 100)));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -489,7 +489,8 @@ void main() {
         getQuantity: const GetQuantityInput.dirty('2.5', isDivisible: true),
         submissionStatus: FormzSubmissionStatus.initial,
         feeOption: FeeOption.Medium(),
-        feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
+        feeEstimates:
+            Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
       );
     },
     act: (bloc) => bloc.add(FormSubmitted()),

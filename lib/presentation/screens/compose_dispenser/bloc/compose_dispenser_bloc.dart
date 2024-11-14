@@ -60,7 +60,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
           escrowQuantity: '',
           mainchainrate: '',
           status: 0,
-          dispensersState: const DispenserState.initial(),
+          dialogState: const DialogState.initial(),
         )) {
     // Event handlers specific to the dispenser
     on<ChangeAsset>(_onChangeAsset);
@@ -89,11 +89,11 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   _onChooseWorkFlow(ChooseWorkFlow event, emit) async {
     if (!event.isCreateNewAddress) {
       emit(state.copyWith(
-        dispensersState: const DispenserState.successNormalFlow(),
+        dialogState: const DialogState.successNormalFlow(),
       ));
     } else {
       emit(state.copyWith(
-        dispensersState: const DispenserState.successCreateNewAddressFlow(),
+        dialogState: const DialogState.successCreateNewAddressFlow(),
       ));
     }
   }
@@ -103,7 +103,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     final feeRate = _getFeeRate();
 
     emit(state.copyWith(
-      dispensersState: DispenserState.closeDialogAndOpenNewAddress(
+      dialogState: DialogState.closeDialogAndOpenNewAddress(
         originalAddress: event.originalAddress,
         divisible: event.divisible,
         asset: event.asset,
@@ -126,7 +126,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        dispensersState: const DispenserState.loading(),
+        dialogState: const DialogState.loading(),
         submitState: const SubmitInitial()));
 
     try {
@@ -138,14 +138,14 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         emit(state.copyWith(
           balancesState: BalancesState.success(balances),
           feeState: FeeState.success(feeEstimates),
-          dispensersState: const DispenserState.successNormalFlow(),
+          dialogState: const DialogState.successNormalFlow(),
         ));
       } else {
         //otherwise, allow the user to choose whether to proceed or open on a new address
         emit(state.copyWith(
           balancesState: BalancesState.success(balances),
           feeState: FeeState.success(feeEstimates),
-          dispensersState: const DispenserState.warning(),
+          dialogState: const DialogState.warning(),
         ));
       }
     } on FetchBalancesException catch (e) {
@@ -158,7 +158,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       ));
     } on FetchDispenserException catch (e) {
       emit(state.copyWith(
-        dispensersState: DispenserState.error(e.message),
+        dialogState: DialogState.error(e.message),
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -166,8 +166,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
             'An unexpected error occurred: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),
-        dispensersState: DispenserState.error(
-            'An unexpected error occurred: ${e.toString()}'),
+        dialogState:
+            DialogState.error('An unexpected error occurred: ${e.toString()}'),
       ));
     }
   }

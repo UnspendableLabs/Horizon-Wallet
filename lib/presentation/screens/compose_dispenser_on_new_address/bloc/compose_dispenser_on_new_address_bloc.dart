@@ -17,8 +17,9 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/sign_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
@@ -64,7 +65,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
               ComposeDispenserOnNewAddressState.collectPassword(loading: false),
           feeState: FeeState.initial(),
         )) {
-    on<FetchFormData>((event, emit) async {
+    on<FormOpened>((event, emit) async {
       emit(state.copyWith(feeState: const FeeState.loading()));
 
       try {
@@ -85,7 +86,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         ));
       }
     });
-    on<ComposeTransactions>((event, emit) async {
+    on<PasswordEntered>((event, emit) async {
       /**
        * The steps for chaining transactions are:
        *
@@ -262,7 +263,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
 
         // 3. re-construct the asset send
         final signedConstructedAssetSend =
-            await transactionService.constructAndSignNewTransaction(
+            await transactionService.constructChainAndSignTransaction(
           unsignedTransaction: assetSend.$1.rawtransaction,
           sourceAddress: source,
           utxos: utxos,
@@ -324,7 +325,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
                         : 'An unexpected error occurred: ${e.toString()}')));
       }
     });
-    on<BroadcastTransactions>((event, emit) async {
+    on<SubmitPressed>((event, emit) async {
       emit(state.copyWith(
           composeDispenserOnNewAddressState:
               const ComposeDispenserOnNewAddressState.loading()));

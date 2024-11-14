@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class AssetDropdownLoading extends StatelessWidget {
