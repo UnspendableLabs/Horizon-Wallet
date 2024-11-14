@@ -52,18 +52,22 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
   }) : super(ComposeDispenserState(
-            submitState: const SubmitInitial(),
-            feeOption: FeeOption.Medium(),
-            balancesState: const BalancesState.initial(),
-            feeState: const FeeState.initial(),
-            giveQuantity: '',
-            escrowQuantity: '',
-            mainchainrate: '',
-            status: 0)) {
+          submitState: const SubmitInitial(),
+          feeOption: FeeOption.Medium(),
+          balancesState: const BalancesState.initial(),
+          feeState: const FeeState.initial(),
+          giveQuantity: '',
+          escrowQuantity: '',
+          mainchainrate: '',
+          status: 0,
+          dialogState: const DialogState.initial(),
+        )) {
     // Event handlers specific to the dispenser
     on<ChangeAsset>(_onChangeAsset);
     on<ChangeGiveQuantity>(_onChangeGiveQuantity);
     on<ChangeEscrowQuantity>(_onChangeEscrowQuantity);
+    on<ChooseWorkFlow>(_onChooseWorkFlow);
+    on<ConfirmTransactionOnNewAddress>(_onConfirmTransactionOnNewAddress);
   }
 
   _onChangeEscrowQuantity(ChangeEscrowQuantity event, emit) {
@@ -82,6 +86,35 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     ));
   }
 
+  _onChooseWorkFlow(ChooseWorkFlow event, emit) async {
+    if (!event.isCreateNewAddress) {
+      emit(state.copyWith(
+        dialogState: const DialogState.successNormalFlow(),
+      ));
+    } else {
+      emit(state.copyWith(
+        dialogState: const DialogState.successCreateNewAddressFlow(),
+      ));
+    }
+  }
+
+  _onConfirmTransactionOnNewAddress(
+      ConfirmTransactionOnNewAddress event, emit) {
+    final feeRate = _getFeeRate();
+
+    emit(state.copyWith(
+      dialogState: DialogState.closeDialogAndOpenNewAddress(
+        originalAddress: event.originalAddress,
+        divisible: event.divisible,
+        asset: event.asset,
+        giveQuantity: event.giveQuantity,
+        escrowQuantity: event.escrowQuantity,
+        mainchainrate: event.mainchainrate,
+        feeRate: feeRate,
+      ),
+    ));
+  }
+
   @override
   void onChangeFeeOption(ChangeFeeOption event, emit) async {
     final value = event.value;
@@ -93,16 +126,28 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
+        dialogState: const DialogState.loading(),
         submitState: const SubmitInitial()));
 
     try {
-      final (balances, feeEstimates) =
+      final (balances, feeEstimates, dispensers) =
           await fetchDispenserFormDataUseCase.call(event.currentAddress!);
 
-      emit(state.copyWith(
-        balancesState: BalancesState.success(balances),
-        feeState: FeeState.success(feeEstimates),
-      ));
+      // if the current address does not have any open dispensers, then we can proceed with the normal flow
+      if (dispensers.isEmpty) {
+        emit(state.copyWith(
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          dialogState: const DialogState.successNormalFlow(),
+        ));
+      } else {
+        //otherwise, allow the user to choose whether to proceed or open on a new address
+        emit(state.copyWith(
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          dialogState: const DialogState.warning(),
+        ));
+      }
     } on FetchBalancesException catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(e.message),
@@ -111,12 +156,18 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
       ));
+    } on FetchDispenserException catch (e) {
+      emit(state.copyWith(
+        dialogState: DialogState.error(e.message),
+      ));
     } catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(
             'An unexpected error occurred: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),
+        dialogState:
+            DialogState.error('An unexpected error occurred: ${e.toString()}'),
       ));
     }
   }

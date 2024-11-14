@@ -11,4 +11,5 @@ abstract class Config {
   String get btcExplorerBase;
   bool get isDatabaseViewerEnabled;
   bool get isAnalyticsEnabled;
+  bool get isWebExtension;
 }

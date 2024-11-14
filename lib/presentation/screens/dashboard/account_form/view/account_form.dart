@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
@@ -52,27 +53,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
       throw Exception("invariant: accounts are null");
     }
 
-    Account? currentHighestIndexAccount = shell.state.maybeWhen(
-        success: (state) {
-          // Find the account with the highest hardened account index
-          Account? highestAccount;
-          int maxIndex = -1;
-
-          for (var account in state.accounts) {
-            int currentIndex =
-                int.parse(account.accountIndex.replaceAll("'", ""));
-            if (currentIndex > maxIndex) {
-              maxIndex = currentIndex;
-              highestAccount = account;
-            }
-          }
-          return highestAccount;
-        },
-        orElse: () => null);
-
-    if (currentHighestIndexAccount == null) {
-      throw Exception("invariant: account is null");
-    }
+    Account currentHighestIndexAccount = shell.state.maybeWhen(
+        success: (state) => getHighestIndexAccount(state.accounts),
+        orElse: () => throw Exception("invariant: account is null"));
 
     int newAccountIndex =
         int.parse(currentHighestIndexAccount.accountIndex.replaceAll("'", "")) +

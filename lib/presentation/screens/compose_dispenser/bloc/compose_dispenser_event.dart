@@ -18,3 +18,26 @@ class ChangeEscrowQuantity extends ComposeDispenserEvent {
   final String value;
   ChangeEscrowQuantity({required this.value});
 }
+
+class ChooseWorkFlow extends ComposeDispenserEvent {
+  final bool isCreateNewAddress;
+  ChooseWorkFlow({required this.isCreateNewAddress});
+}
+
+class ConfirmTransactionOnNewAddress extends ComposeDispenserEvent {
+  final String originalAddress;
+  final bool divisible;
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+
+  ConfirmTransactionOnNewAddress({
+    required this.originalAddress,
+    required this.divisible,
+    required this.asset,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+  });
+}

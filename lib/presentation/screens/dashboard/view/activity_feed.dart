@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/constants.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart';
@@ -221,6 +221,19 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildNewFairmintTitle(params),
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
+      VerboseOpenOrderEvent(params: var params) => SelectableText(
+          "Open Order: ${params.giveQuantityNormalized} ${params.giveAsset} /  ${params.getQuantityNormalized} ${params.getAsset} "),
+      VerboseOrderMatchEvent(params: var params) => SelectableText(
+          "Order Match: ${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}"),
+      VerboseOrderUpdateEvent() => const SelectableText("Order Update"),
+      VerboseOrderFilledEvent(params: var _) =>
+        const SelectableText("Order Filled"),
+      VerboseCancelOrderEvent(params: var params) =>
+        SelectableText("Order Cancelled"),
+      VerboseOrderExpirationEvent(params: var params) =>
+        SelectableText("Order Expiration"),
+      VerboseNewFairminterEvent(params: var params) =>
+        _buildNewFairminterTitle(params),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -331,6 +344,15 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var unpackedData,
       ) =>
         SelectableText("New Fairminter for ${unpackedData.asset}"),
+      TransactionInfoOrder(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText(
+            "Open Order: ${unpackedData.giveQuantityNormalized} ${unpackedData.giveAsset} /  ${unpackedData.getQuantityNormalized} ${unpackedData.getAsset}"),
+      TransactionInfoCancel(
+        unpackedData: var _,
+      ) =>
+        SelectableText("Cancel Order"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -348,6 +370,8 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoFairmint() => const Icon(Icons.money, color: Colors.grey),
       TransactionInfoFairminter() =>
         const Icon(Icons.print, color: Colors.grey),
+      TransactionInfoOrder() => const Icon(Icons.toc, color: Colors.grey),
+      TransactionInfoCancel() => const Icon(Icons.toc, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -370,7 +394,9 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (event) {
       VerboseAssetIssuanceEvent(txHash: var hash, params: var params) => Row(
           children: [
-            TxHashDisplay(hash: hash, uriType: URIType.hoex),
+            hash != null
+                ? TxHashDisplay(hash: hash, uriType: URIType.hoex)
+                : const SizedBox.shrink(),
             switch (params.status) {
               EventStatusValid() => const SizedBox.shrink(),
               EventStatusInvalid(reason: var reason) => Padding(
@@ -393,22 +419,16 @@ class ActivityFeedListItem extends StatelessWidget {
             }
           ],
         ),
-      VerboseResetIssuanceEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseEnhancedSendEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseDispenseEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseOpenDispenserEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseRefillDispenserEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseDispenserUpdateEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseNewFairmintEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
-      VerboseNewFairminterEvent(txHash: var hash) =>
-        TxHashDisplay(hash: hash, uriType: URIType.hoex),
+      VerboseOrderExpirationEvent(params: var params) => Row(
+          children: [
+            Text("order hash:"),
+            SizedBox(width: 10.0),
+            TxHashDisplay(hash: params.orderHash, uriType: URIType.hoex)
+          ],
+        ),
+      VerboseEvent(txHash: var hash) => hash != null
+          ? TxHashDisplay(hash: hash, uriType: URIType.hoex)
+          : const SizedBox.shrink(),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -416,22 +436,16 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTransactionInfoSubtitle(TransactionInfo info) {
     return switch (info) {
-      // local can only ever be a send
-      TransactionInfoEnhancedSend() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoIssuance() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoDispenser() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoDispense() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+      TransactionInfoCancel(unpackedData: var unpackedData) => Row(
+          children: [
+            Text("order hash:"),
+            SizedBox(width: 10.0),
+            TxHashDisplay(hash: unpackedData.orderHash, uriType: URIType.hoex)
+          ],
+        ),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
-      TransactionInfoFairmint() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      TransactionInfoFairminter() =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
-      _ => const Icon(Icons.error),
+      _ => TxHashDisplay(hash: info.hash, uriType: URIType.hoex)
     };
   }
 
@@ -488,6 +502,17 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.money, color: Colors.grey),
       VerboseNewFairminterEvent(params: var _) =>
         const Icon(Icons.print, color: Colors.grey),
+      VerboseOpenOrderEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderMatchEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderUpdateEvent() => const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderFilledEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseCancelOrderEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
+      VerboseOrderExpirationEvent(params: var _) =>
+        const Icon(Icons.toc, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
@@ -665,7 +690,7 @@ class DashboardActivityFeedScreenState
 
       final List<Widget> widgets = displayedTransactions
           .map((transaction) => ActivityFeedListItem(
-                key: ValueKey(transaction.hash),
+                key: ValueKey(transaction.id),
                 item: transaction,
                 addresses: widget.addresses,
                 isMobile: isMobile,

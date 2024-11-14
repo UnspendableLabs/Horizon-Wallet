@@ -22,6 +22,12 @@ class UnpackedVerboseMapper {
       case "fairminter":
         return FairminterUnpackedVerboseMapper.toDomain(
             u as api.FairminterUnpackedVerbose);
+      case "order":
+        return OrderUnpackedVerboseMapper.toDomain(
+            u as api.OrderUnpackedVerbose);
+      case "cancel":
+        return CancelUnpackedVerboseMapper.toDomain(
+        u as api.CancelUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -98,6 +104,34 @@ class FairminterUnpackedVerboseMapper {
   static FairminterUnpackedVerbose toDomain(api.FairminterUnpackedVerbose u) {
     return FairminterUnpackedVerbose(
       asset: u.asset,
+    );
+  }
+}
+
+class OrderUnpackedVerboseMapper {
+  static OrderUnpacked toDomain(api.OrderUnpackedVerbose u) {
+    return OrderUnpacked(
+      giveAsset: u.giveAsset,
+      giveQuantity: u.giveQuantity,
+      getAsset: u.getAsset,
+      getQuantity: u.getQuantity,
+      expiration: u.expiration,
+      feeRequired: u.feeRequired,
+      status: u.status,
+      giveQuantityNormalized: u.giveQuantityNormalized,
+      getQuantityNormalized: u.getQuantityNormalized,
+      feeRequiredNormalized: u.feeRequiredNormalized,
+      // giveAssetInfo: AssetInfoMapper.toDomain(u.giveAssetInfo),
+      // getAssetInfo: AssetInfoMapper.toDomain(u.getAssetInfo),
+    );
+  }
+}
+
+class CancelUnpackedVerboseMapper {
+  static CancelUnpacked toDomain(api.CancelUnpackedVerbose u) {
+    return CancelUnpacked(
+      orderHash: u.offerHash,
+      status: u.status,
     );
   }
 }

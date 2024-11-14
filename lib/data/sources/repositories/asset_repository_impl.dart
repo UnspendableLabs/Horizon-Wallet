@@ -1,14 +1,17 @@
 import 'package:horizon/domain/entities/asset.dart' as a;
 import 'package:horizon/domain/repositories/asset_repository.dart';
 
+import 'package:dio/dio.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 
 class AssetRepositoryImpl implements AssetRepository {
   final V2Api api;
   AssetRepositoryImpl({required this.api});
   @override
   Future<a.Asset> getAssetVerbose(String uuid) async {
-    final response = await api.getAssetVerbose(uuid);
+    final response =
+        await api.getAssetVerbose(uuid, Options()..disableRetry = true);
 
     if (response.result == null) {
       throw Exception('Asset not found');

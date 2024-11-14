@@ -1,5 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart'
     as compose_issuance;
 import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
@@ -11,6 +13,8 @@ import 'package:horizon/domain/entities/compose_fairminter.dart'
     as compose_fairminter;
 import 'package:horizon/domain/entities/compose_dispense.dart'
     as compose_dispense;
+import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
+import 'package:horizon/domain/entities/compose_cancel.dart' as compose_cancel;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -299,6 +303,140 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose fairminter');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_dispenser.ComposeDispenserResponseVerbose>
+      composeDispenserChain(int fee, DecodedTx prevDecodedTransaction,
+          compose_dispenser.ComposeDispenserParams params) async {
+    final source = params.source;
+    final asset = params.asset;
+    final giveQuantity = params.giveQuantity;
+    final escrowQuantity = params.escrowQuantity;
+    final mainchainrate = params.mainchainrate;
+    final status = params.status ?? 0;
+
+    final Vout? outputForChaining = prevDecodedTransaction.vout
+        .firstWhereOrNull((vout) => vout.scriptPubKey.address == params.source);
+
+    if (outputForChaining == null) {
+      throw Exception('Output for chaining not found');
+    }
+
+    final scriptPubKey = outputForChaining.scriptPubKey;
+    final int value =
+        (outputForChaining.value * 100000000).toInt(); // convert to sats
+    final String txid = prevDecodedTransaction.txid;
+    final int vout = outputForChaining.n;
+
+    // since this utxo hasn't been confirmed yet, we need to add all the necessary info for value and scriptPubKey
+    final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
+
+    final response = await api.composeDispenserVerbose(
+        source,
+        asset,
+        giveQuantity,
+        escrowQuantity,
+        mainchainrate,
+        status,
+        null,
+        null,
+        true,
+        fee,
+        newInputSet,
+        null,
+        false,
+        true);
+
+    if (response.result == null) {
+      throw Exception('Failed to compose send');
+    }
+
+    final txVerbose = response.result!;
+    return compose_dispenser.ComposeDispenserResponseVerbose(
+        rawtransaction: txVerbose.rawtransaction,
+        btcIn: txVerbose.btcIn,
+        btcOut: txVerbose.btcOut,
+        btcChange: txVerbose.btcChange,
+        btcFee: txVerbose.btcFee,
+        data: txVerbose.data,
+        params: compose_dispenser.ComposeDispenserResponseVerboseParams(
+          source: txVerbose.params.source,
+          asset: txVerbose.params.asset,
+          giveQuantity: txVerbose.params.giveQuantity,
+          escrowQuantity: txVerbose.params.escrowQuantity,
+          mainchainrate: txVerbose.params.mainchainrate,
+          status: txVerbose.params.status,
+          openAddress: txVerbose.params.openAddress,
+          oracleAddress: txVerbose.params.oracleAddress,
+          giveQuantityNormalized: txVerbose.params.giveQuantityNormalized,
+          escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
+        ),
+        name: txVerbose.name);
+  }
+
+  @override
+  Future<compose_order.ComposeOrderResponse> composeOrder(int fee,
+      List<Utxo> inputsSet, compose_order.ComposeOrderParams params) async {
+    return await _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final giveQuantity = params.giveQuantity;
+        final giveAsset = params.giveAsset;
+        final getQuantity = params.getQuantity;
+        final getAsset = params.getAsset;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeOrder(
+            source,
+            giveAsset,
+            giveQuantity,
+            getAsset,
+            getQuantity,
+            4 * 2016, // Two months,
+            0, // fee required
+            true, //  allow unconfirmed
+            fee, //exect fee
+            inputsSetString);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose order');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+  
+  @override
+  Future<compose_cancel.ComposeCancelResponse> composeCancel(int fee,
+      List<Utxo> inputsSet, compose_cancel.ComposeCancelParams params) async {
+    return await _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final offerHash = params.offerHash;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeCancel(
+            source,
+            offerHash,
+            true, //  allow unconfirmed
+            fee, //exect fee
+            inputsSetString);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose cancel');
         }
 
         return response.result!.toDomain();

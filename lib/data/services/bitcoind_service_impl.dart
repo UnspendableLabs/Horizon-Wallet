@@ -1,4 +1,6 @@
+import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import "package:horizon/data/sources/network/api/v2_api.dart" as v2_api;
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 
 class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
@@ -16,5 +18,11 @@ class BitcoindServiceCounterpartyProxyImpl implements BitcoindService {
   Future<int> estimateSmartFee({required int confirmationTarget}) async {
     v2_api.Response<int> res = await api.estimateSmartFee(confirmationTarget);
     return res.result!;
+  }
+
+  @override
+  Future<DecodedTx> decoderawtransaction(String raw) async {
+    v2_api.Response<DecodedTxModel> res = await api.decodeTransaction(raw);
+    return res.result!.toDomain();
   }
 }

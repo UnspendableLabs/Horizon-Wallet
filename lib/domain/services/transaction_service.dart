@@ -1,6 +1,11 @@
 import "package:horizon/domain/entities/utxo.dart";
 
 abstract class TransactionService {
+  String signPsbt(
+    String psbtHex,
+    String privateKey,
+  );
+
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
       String sourceAddress, Map<String, Utxo> utxoMap);
 
@@ -20,4 +25,13 @@ abstract class TransactionService {
   int countSigOps({
     required String rawtransaction,
   });
+
+  Future<String> constructChainAndSignTransaction(
+      {required String unsignedTransaction,
+      required String sourceAddress,
+      required List<Utxo> utxos,
+      required int btcQuantity,
+      required String sourcePrivKey,
+      required String destinationPrivKey,
+      required int fee});
 }

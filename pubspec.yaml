@@ -81,6 +81,9 @@ dependencies:
   dio_smart_retry: ^6.0.0
   posthog_flutter: ^4.5.0
   simple_rc4: ^0.3.0
+  formz: ^0.8.0
+  chrome_extension: ^0.4.0
+  process_runner: ^4.2.0
 
 
 dev_dependencies:
@@ -120,8 +123,6 @@ flutter:
   assets:
     - assets/logo-black.svg
     - assets/logo-white.svg
-    - assets/open-quote.svg
-    - assets/closed-quote.svg
     - assets/logo-blue-3d.png
     - fonts/
 

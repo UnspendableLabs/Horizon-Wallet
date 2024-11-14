@@ -214,6 +214,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  chrome_extension:
+    dependency: "direct main"
+    description:
+      name: chrome_extension
+      sha256: f756c36d84a1acef5240b53376de2547479a643ae4a7289f2ce210d3b07ed235
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0"
   cli_util:
     dependency: transitive
     description:
@@ -674,6 +682,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  formz:
+    dependency: "direct main"
+    description:
+      name: formz
+      sha256: "382c7be452ff76833f9efa0b2333fec3a576393f6d2c7801725bed502f3d40c3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.0"
   fpdart:
     dependency: "direct main"
     description:
@@ -1100,6 +1116,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0+1"
+  process_runner:
+    dependency: "direct main"
+    description:
+      name: process_runner
+      sha256: "4763f660895a1aea3c097bba3204794094b828cb9a279a65a2506a9b93d47d12"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.0"
   protobuf:
     dependency: transitive
     description:
@@ -1706,5 +1730,5 @@ packages:
     source: hosted
     version: "3.1.2"
 sdks:
-  dart: ">=3.4.3 <4.0.0"
+  dart: ">=3.5.0 <4.0.0"
   flutter: ">=3.22.0"

@@ -17,6 +17,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -33,6 +34,8 @@ import 'package:horizon/presentation/screens/compose_fairmint/view/compose_fairm
 import 'package:horizon/presentation/screens/compose_fairminter/view/compose_fairminter_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import 'package:horizon/presentation/screens/compose_order/view/compose_order_view.dart';
+import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
@@ -46,9 +49,104 @@ import 'package:horizon/presentation/screens/dashboard/view/balances_display.dar
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+
+import 'package:chrome_extension/tabs.dart';
+
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+
+import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
+import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
+
+import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
+
+class SignPsbtModal extends StatelessWidget {
+  final int tabId;
+  final String requestId;
+  final String unsignedPsbt;
+  final TransactionService transactionService;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final RPCSignPsbtSuccessCallback onSuccess;
+
+  const SignPsbtModal(
+      {super.key,
+      required this.unsignedPsbt,
+      required this.transactionService,
+      required this.walletRepository,
+      required this.encryptionService,
+      required this.addressService,
+      required this.tabId,
+      required this.requestId,
+      required this.onSuccess});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => SignPsbtBloc(
+        unsignedPsbt: unsignedPsbt,
+        transactionService: transactionService,
+        walletRepository: walletRepository,
+        encryptionService: encryptionService,
+        addressService: addressService,
+      ),
+      child: SignPsbtForm(
+        key: Key(unsignedPsbt),
+        onSuccess: (signedPsbtHex) {
+          onSuccess(RPCSignPsbtSuccessCallbackArgs(
+              tabId: tabId, requestId: requestId, signedPsbt: signedPsbtHex));
+        },
+      ),
+    );
+  }
+}
+
+class GetAddressesModal extends StatelessWidget {
+  final int tabId;
+  final String requestId;
+  final List<Account> accounts;
+  final AddressRepository addressRepository;
+  final ImportedAddressRepository importedAddressRepository;
+  final RPCGetAddressesSuccessCallback onSuccess;
+
+  const GetAddressesModal(
+      {super.key,
+      required this.tabId,
+      required this.requestId,
+      required this.accounts,
+      required this.addressRepository,
+      required this.importedAddressRepository,
+      required this.onSuccess});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => GetAddressesBloc(
+        accounts: accounts,
+        addressRepository: addressRepository,
+        importedAddressRepository: importedAddressRepository,
+      ),
+      child: GetAddressesForm(
+        accounts: accounts,
+        onSuccess: (addresses) {
+          onSuccess(RPCGetAddressesSuccessCallbackArgs(
+              tabId: tabId, requestId: requestId, addresses: addresses));
+        },
+      ),
+    );
+  }
+}
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -368,7 +466,7 @@ class AddressAction extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24.0),
               ),
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 6.0 : 10.0),
             ),
             onPressed: () {
               HorizonUI.HorizonDialog.show(context: context, body: dialog);
@@ -408,6 +506,145 @@ class AddressAction extends StatelessWidget {
                       ),
                     ],
                   ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OrderButtonMenu extends StatelessWidget {
+  final bool isDarkTheme;
+  final IconData icon;
+  final String text;
+  final double? iconSize;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final currentAddress;
+
+  const OrderButtonMenu(
+      {super.key,
+      required this.isDarkTheme,
+      required this.icon,
+      required this.text,
+      this.iconSize,
+      required this.dashboardActivityFeedBloc,
+      required this.currentAddress});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: SizedBox(
+          height: 65,
+          child: PopupMenuButton(
+            color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                  child: const Text("Open Order"),
+                  onTap: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Open Order",
+                        body: ComposeOrderPageWrapper(
+                          composeTransactionUseCase:
+                              GetIt.I<ComposeTransactionUseCase>(),
+                          currentAddress: currentAddress,
+                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          getFeeEstimatesUseCase:
+                              GetIt.I<GetFeeEstimatesUseCase>(),
+
+                          // balanceRepository: GetIt.I<BalanceRepository>(),
+                          assetRepository: GetIt.I<AssetRepository>(),
+                        ),
+                      ),
+                    );
+                  }),
+              PopupMenuItem(
+                  child: const Text("Cancel Order"),
+                  onTap: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Cancel Order",
+                        body: ComposeCancelPageWrapper(
+                          composeTransactionUseCase:
+                              GetIt.I<ComposeTransactionUseCase>(),
+                          currentAddress: currentAddress,
+                          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                          getFeeEstimatesUseCase:
+                              GetIt.I<GetFeeEstimatesUseCase>(),
+
+                          // balanceRepository: GetIt.I<BalanceRepository>(),
+                          assetRepository: GetIt.I<AssetRepository>(),
+                        ),
+                      ),
+                    );
+                  }),
+              // PopupMenuItem(
+              //   child: const Text("Cancel Order"),
+              //   onTap: () {
+              //     HorizonUI.HorizonDialog.show(
+              //         context: context,
+              //         body: HorizonUI.HorizonDialog(
+              //           title: "Close Dispenser",
+              //           body: CloseDispenserPageWrapper(
+              //             currentAddress: currentAddress,
+              //             dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+              //           ),
+              //           includeBackButton: false,
+              //           includeCloseButton: true,
+              //         ));
+              //   },
+              // ),
+            ],
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+                borderRadius: BorderRadius.circular(24.0),
+              ),
+              child: isMobile
+                  ? Icon(
+                      icon,
+                      size: iconSize ?? 24.0,
+                      color: isDarkTheme
+                          ? greyDashboardButtonTextDarkTheme
+                          : greyDashboardButtonTextLightTheme,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: iconSize ?? 24.0,
+                          color: isDarkTheme
+                              ? greyDashboardButtonTextDarkTheme
+                              : greyDashboardButtonTextLightTheme,
+                        ),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDarkTheme
+                                  ? greyDashboardButtonTextDarkTheme
+                                  : greyDashboardButtonTextLightTheme,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
@@ -693,7 +930,7 @@ class AddressActions extends StatelessWidget {
               ),
               icon: Icons.send,
               text: "SEND",
-              iconSize: 22.0,
+              iconSize: 18.0,
             ),
             AddressAction(
               isDarkTheme: isDarkTheme,
@@ -708,27 +945,29 @@ class AddressActions extends StatelessWidget {
               ),
               icon: Icons.add,
               text: "ISSUE",
+              iconSize: 18.0,
             ),
             AddressAction(
-                isDarkTheme: isDarkTheme,
-                dialog: HorizonUI.HorizonDialog(
-                  title: "Receive",
-                  body: QRCodeDialog(
-                    currentAddress: currentAddress,
-                    currentAccountUuid: currentAccountUuid,
-                  ),
-                  includeBackButton: false,
-                  includeCloseButton: true,
+              isDarkTheme: isDarkTheme,
+              dialog: HorizonUI.HorizonDialog(
+                title: "Receive",
+                body: QRCodeDialog(
+                  currentAddress: currentAddress,
+                  currentAccountUuid: currentAccountUuid,
                 ),
-                icon: Icons.qr_code,
-                text: "RECEIVE",
-                iconSize: 24.0),
+                includeBackButton: false,
+                includeCloseButton: true,
+              ),
+              icon: Icons.qr_code,
+              text: "RECEIVE",
+              iconSize: 18.0,
+            ),
             MintMenu(
               currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.print,
               text: "MINT",
-              iconSize: 24.0,
+              iconSize: 18.0,
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
             DispenserButtonMenu(
@@ -736,7 +975,15 @@ class AddressActions extends StatelessWidget {
               isDarkTheme: isDarkTheme,
               icon: Icons.more_vert,
               text: "DISPENSER",
-              iconSize: 24.0,
+              iconSize: 18.0,
+              dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+            ),
+            OrderButtonMenu(
+              currentAddress: currentAddress,
+              isDarkTheme: isDarkTheme,
+              icon: Icons.toc,
+              text: "Order",
+              iconSize: 18.0,
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
           ],
@@ -1009,8 +1256,54 @@ class DashboardPageState extends State<DashboardPage> {
           _handleDispenseAction(address),
       URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
           _handleFairmintAction(fairminterTxHash),
+      URLAction.OpenOrderAction(
+        giveQuantity: var giveQuantity,
+        giveAsset: var giveAsset,
+        getQuantity: var getQuantity,
+        getAsset: var getAsset
+      ) =>
+        () =>
+            _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
+      URLAction.RPCGetAddressesAction(
+        tabId: var tabId,
+        requestId: var requestId
+      ) =>
+        () => _handleRPCGetAddressesAction(tabId, requestId),
+      URLAction.RPCSignPsbtAction(
+        tabId: var tabId,
+        requestId: var requestId,
+        psbt: var psbt
+      ) =>
+        () => _handleRPCSignPsbtAction(tabId, requestId, psbt),
       _ => noop
     };
+  }
+
+  void _handleOrderAction(
+      int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
+    final dashboardActivityFeedBloc =
+        BlocProvider.of<DashboardActivityFeedBloc>(context);
+
+    HorizonUI.HorizonDialog.show(
+      context: context,
+      body: HorizonUI.HorizonDialog(
+        title: "Open Order",
+        body: ComposeOrderPageWrapper(
+          currentAddress: widget.currentAddress?.address ??
+              widget.currentImportedAddress!.address,
+          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+          getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+          composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
+
+          // balanceRepository: GetIt.I<BalanceRepository>(),
+          assetRepository: GetIt.I<AssetRepository>(),
+          initialGiveAsset: giveAsset,
+          initialGiveQuantity: giveQuantity,
+          initialGetAsset: getAsset,
+          initialGetQuantity: getQuantity,
+        ),
+      ),
+    );
   }
 
   void _handleDispenseAction(String address) {
@@ -1042,6 +1335,50 @@ class DashboardPageState extends State<DashboardPage> {
             currentAddress: widget.currentAddress?.address ??
                 widget.currentImportedAddress!.address,
           ),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCGetAddressesAction(int tabId, String requestId) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Get Addresses",
+          body: Builder(builder: (context) {
+            final shell = context.watch<ShellStateCubit>();
+            return shell.state.maybeWhen(
+                orElse: () => const SizedBox.shrink(),
+                success: (state) {
+                  return GetAddressesModal(
+                      tabId: tabId,
+                      requestId: requestId,
+                      accounts: state.accounts,
+                      addressRepository: GetIt.I<AddressRepository>(),
+                      importedAddressRepository:
+                          GetIt.I<ImportedAddressRepository>(),
+                      onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
+                });
+          }),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Sign Psbt",
+          body: SignPsbtModal(
+              tabId: tabId,
+              requestId: requestId,
+              unsignedPsbt: psbt,
+              transactionService: GetIt.I.get<TransactionService>(),
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              encryptionService: GetIt.I.get<EncryptionService>(),
+              addressService: GetIt.I.get<AddressService>(),
+              onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
           includeBackButton: false,
           includeCloseButton: true,
         ));

@@ -22,6 +22,7 @@ mixin _$ComposeDispenserState {
   FeeOption get feeOption => throw _privateConstructorUsedError;
   SubmitState get submitState =>
       throw _privateConstructorUsedError; // Dispenser-specific properties
+  DialogState get dialogState => throw _privateConstructorUsedError;
   String? get assetName => throw _privateConstructorUsedError;
   String? get openAddress => throw _privateConstructorUsedError;
   String get giveQuantity => throw _privateConstructorUsedError;
@@ -45,6 +46,7 @@ abstract class $ComposeDispenserStateCopyWith<$Res> {
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
+      DialogState dialogState,
       String? assetName,
       String? openAddress,
       String giveQuantity,
@@ -54,6 +56,7 @@ abstract class $ComposeDispenserStateCopyWith<$Res> {
 
   $FeeStateCopyWith<$Res> get feeState;
   $BalancesStateCopyWith<$Res> get balancesState;
+  $DialogStateCopyWith<$Res> get dialogState;
 }
 
 /// @nodoc
@@ -74,6 +77,7 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? dialogState = null,
     Object? assetName = freezed,
     Object? openAddress = freezed,
     Object? giveQuantity = null,
@@ -98,6 +102,10 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      dialogState: null == dialogState
+          ? _value.dialogState
+          : dialogState // ignore: cast_nullable_to_non_nullable
+              as DialogState,
       assetName: freezed == assetName
           ? _value.assetName
           : assetName // ignore: cast_nullable_to_non_nullable
@@ -140,6 +148,14 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
       return _then(_value.copyWith(balancesState: value) as $Val);
     });
   }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $DialogStateCopyWith<$Res> get dialogState {
+    return $DialogStateCopyWith<$Res>(_value.dialogState, (value) {
+      return _then(_value.copyWith(dialogState: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -156,6 +172,7 @@ abstract class _$$ComposeDispenserStateImplCopyWith<$Res>
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
+      DialogState dialogState,
       String? assetName,
       String? openAddress,
       String giveQuantity,
@@ -167,6 +184,8 @@ abstract class _$$ComposeDispenserStateImplCopyWith<$Res>
   $FeeStateCopyWith<$Res> get feeState;
   @override
   $BalancesStateCopyWith<$Res> get balancesState;
+  @override
+  $DialogStateCopyWith<$Res> get dialogState;
 }
 
 /// @nodoc
@@ -185,6 +204,7 @@ class __$$ComposeDispenserStateImplCopyWithImpl<$Res>
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? dialogState = null,
     Object? assetName = freezed,
     Object? openAddress = freezed,
     Object? giveQuantity = null,
@@ -209,6 +229,10 @@ class __$$ComposeDispenserStateImplCopyWithImpl<$Res>
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      dialogState: null == dialogState
+          ? _value.dialogState
+          : dialogState // ignore: cast_nullable_to_non_nullable
+              as DialogState,
       assetName: freezed == assetName
           ? _value.assetName
           : assetName // ignore: cast_nullable_to_non_nullable
@@ -245,6 +269,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
       required this.balancesState,
       required this.feeOption,
       required this.submitState,
+      required this.dialogState,
       this.assetName,
       this.openAddress,
       required this.giveQuantity,
@@ -264,6 +289,8 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
   final SubmitState submitState;
 // Dispenser-specific properties
   @override
+  final DialogState dialogState;
+  @override
   final String? assetName;
   @override
   final String? openAddress;
@@ -278,7 +305,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
 
   @override
   String toString() {
-    return 'ComposeDispenserState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, assetName: $assetName, openAddress: $openAddress, giveQuantity: $giveQuantity, escrowQuantity: $escrowQuantity, mainchainrate: $mainchainrate, status: $status)';
+    return 'ComposeDispenserState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, dialogState: $dialogState, assetName: $assetName, openAddress: $openAddress, giveQuantity: $giveQuantity, escrowQuantity: $escrowQuantity, mainchainrate: $mainchainrate, status: $status)';
   }
 
   @override
@@ -294,6 +321,8 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
                 other.feeOption == feeOption) &&
             (identical(other.submitState, submitState) ||
                 other.submitState == submitState) &&
+            (identical(other.dialogState, dialogState) ||
+                other.dialogState == dialogState) &&
             (identical(other.assetName, assetName) ||
                 other.assetName == assetName) &&
             (identical(other.openAddress, openAddress) ||
@@ -314,6 +343,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
       balancesState,
       feeOption,
       submitState,
+      dialogState,
       assetName,
       openAddress,
       giveQuantity,
@@ -335,6 +365,7 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
       required final BalancesState balancesState,
       required final FeeOption feeOption,
       required final SubmitState submitState,
+      required final DialogState dialogState,
       final String? assetName,
       final String? openAddress,
       required final String giveQuantity,
@@ -352,6 +383,8 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
   @override
   SubmitState get submitState;
   @override // Dispenser-specific properties
+  DialogState get dialogState;
+  @override
   String? get assetName;
   @override
   String? get openAddress;
@@ -367,4 +400,1431 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
   @JsonKey(ignore: true)
   _$$ComposeDispenserStateImplCopyWith<_$ComposeDispenserStateImpl>
       get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$DialogState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $DialogStateCopyWith<$Res> {
+  factory $DialogStateCopyWith(
+          DialogState value, $Res Function(DialogState) then) =
+      _$DialogStateCopyWithImpl<$Res, DialogState>;
+}
+
+/// @nodoc
+class _$DialogStateCopyWithImpl<$Res, $Val extends DialogState>
+    implements $DialogStateCopyWith<$Res> {
+  _$DialogStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$DispenserInitialImplCopyWith<$Res> {
+  factory _$$DispenserInitialImplCopyWith(_$DispenserInitialImpl value,
+          $Res Function(_$DispenserInitialImpl) then) =
+      __$$DispenserInitialImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserInitialImplCopyWithImpl<$Res>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserInitialImpl>
+    implements _$$DispenserInitialImplCopyWith<$Res> {
+  __$$DispenserInitialImplCopyWithImpl(_$DispenserInitialImpl _value,
+      $Res Function(_$DispenserInitialImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserInitialImpl implements _DispenserInitial {
+  const _$DispenserInitialImpl();
+
+  @override
+  String toString() {
+    return 'DialogState.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$DispenserInitialImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserInitial implements DialogState {
+  const factory _DispenserInitial() = _$DispenserInitialImpl;
+}
+
+/// @nodoc
+abstract class _$$DispenserLoadingImplCopyWith<$Res> {
+  factory _$$DispenserLoadingImplCopyWith(_$DispenserLoadingImpl value,
+          $Res Function(_$DispenserLoadingImpl) then) =
+      __$$DispenserLoadingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserLoadingImplCopyWithImpl<$Res>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserLoadingImpl>
+    implements _$$DispenserLoadingImplCopyWith<$Res> {
+  __$$DispenserLoadingImplCopyWithImpl(_$DispenserLoadingImpl _value,
+      $Res Function(_$DispenserLoadingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserLoadingImpl implements _DispenserLoading {
+  const _$DispenserLoadingImpl();
+
+  @override
+  String toString() {
+    return 'DialogState.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$DispenserLoadingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserLoading implements DialogState {
+  const factory _DispenserLoading() = _$DispenserLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$DispenserSuccessNormalFlowImplCopyWith<$Res> {
+  factory _$$DispenserSuccessNormalFlowImplCopyWith(
+          _$DispenserSuccessNormalFlowImpl value,
+          $Res Function(_$DispenserSuccessNormalFlowImpl) then) =
+      __$$DispenserSuccessNormalFlowImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserSuccessNormalFlowImplCopyWithImpl<$Res>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserSuccessNormalFlowImpl>
+    implements _$$DispenserSuccessNormalFlowImplCopyWith<$Res> {
+  __$$DispenserSuccessNormalFlowImplCopyWithImpl(
+      _$DispenserSuccessNormalFlowImpl _value,
+      $Res Function(_$DispenserSuccessNormalFlowImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
+  const _$DispenserSuccessNormalFlowImpl();
+
+  @override
+  String toString() {
+    return 'DialogState.successNormalFlow()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DispenserSuccessNormalFlowImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return successNormalFlow();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return successNormalFlow?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (successNormalFlow != null) {
+      return successNormalFlow();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return successNormalFlow(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return successNormalFlow?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (successNormalFlow != null) {
+      return successNormalFlow(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserSuccessNormalFlow implements DialogState {
+  const factory _DispenserSuccessNormalFlow() =
+      _$DispenserSuccessNormalFlowImpl;
+}
+
+/// @nodoc
+abstract class _$$DispenserSuccessCreateNewAddressFlowImplCopyWith<$Res> {
+  factory _$$DispenserSuccessCreateNewAddressFlowImplCopyWith(
+          _$DispenserSuccessCreateNewAddressFlowImpl value,
+          $Res Function(_$DispenserSuccessCreateNewAddressFlowImpl) then) =
+      __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl<$Res>
+    extends _$DialogStateCopyWithImpl<$Res,
+        _$DispenserSuccessCreateNewAddressFlowImpl>
+    implements _$$DispenserSuccessCreateNewAddressFlowImplCopyWith<$Res> {
+  __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl(
+      _$DispenserSuccessCreateNewAddressFlowImpl _value,
+      $Res Function(_$DispenserSuccessCreateNewAddressFlowImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserSuccessCreateNewAddressFlowImpl
+    implements _DispenserSuccessCreateNewAddressFlow {
+  const _$DispenserSuccessCreateNewAddressFlowImpl();
+
+  @override
+  String toString() {
+    return 'DialogState.successCreateNewAddressFlow()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DispenserSuccessCreateNewAddressFlowImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return successCreateNewAddressFlow();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return successCreateNewAddressFlow?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (successCreateNewAddressFlow != null) {
+      return successCreateNewAddressFlow();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return successCreateNewAddressFlow(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return successCreateNewAddressFlow?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (successCreateNewAddressFlow != null) {
+      return successCreateNewAddressFlow(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserSuccessCreateNewAddressFlow implements DialogState {
+  const factory _DispenserSuccessCreateNewAddressFlow() =
+      _$DispenserSuccessCreateNewAddressFlowImpl;
+}
+
+/// @nodoc
+abstract class _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<$Res> {
+  factory _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith(
+          _$DispenserCloseDialogAndOpenNewAddressImpl value,
+          $Res Function(_$DispenserCloseDialogAndOpenNewAddressImpl) then) =
+      __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call(
+      {String originalAddress,
+      bool divisible,
+      String asset,
+      int giveQuantity,
+      int escrowQuantity,
+      int mainchainrate,
+      int feeRate});
+}
+
+/// @nodoc
+class __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl<$Res>
+    extends _$DialogStateCopyWithImpl<$Res,
+        _$DispenserCloseDialogAndOpenNewAddressImpl>
+    implements _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<$Res> {
+  __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl(
+      _$DispenserCloseDialogAndOpenNewAddressImpl _value,
+      $Res Function(_$DispenserCloseDialogAndOpenNewAddressImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? originalAddress = null,
+    Object? divisible = null,
+    Object? asset = null,
+    Object? giveQuantity = null,
+    Object? escrowQuantity = null,
+    Object? mainchainrate = null,
+    Object? feeRate = null,
+  }) {
+    return _then(_$DispenserCloseDialogAndOpenNewAddressImpl(
+      originalAddress: null == originalAddress
+          ? _value.originalAddress
+          : originalAddress // ignore: cast_nullable_to_non_nullable
+              as String,
+      divisible: null == divisible
+          ? _value.divisible
+          : divisible // ignore: cast_nullable_to_non_nullable
+              as bool,
+      asset: null == asset
+          ? _value.asset
+          : asset // ignore: cast_nullable_to_non_nullable
+              as String,
+      giveQuantity: null == giveQuantity
+          ? _value.giveQuantity
+          : giveQuantity // ignore: cast_nullable_to_non_nullable
+              as int,
+      escrowQuantity: null == escrowQuantity
+          ? _value.escrowQuantity
+          : escrowQuantity // ignore: cast_nullable_to_non_nullable
+              as int,
+      mainchainrate: null == mainchainrate
+          ? _value.mainchainrate
+          : mainchainrate // ignore: cast_nullable_to_non_nullable
+              as int,
+      feeRate: null == feeRate
+          ? _value.feeRate
+          : feeRate // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$DispenserCloseDialogAndOpenNewAddressImpl
+    implements _DispenserCloseDialogAndOpenNewAddress {
+  const _$DispenserCloseDialogAndOpenNewAddressImpl(
+      {required this.originalAddress,
+      required this.divisible,
+      required this.asset,
+      required this.giveQuantity,
+      required this.escrowQuantity,
+      required this.mainchainrate,
+      required this.feeRate});
+
+  @override
+  final String originalAddress;
+  @override
+  final bool divisible;
+  @override
+  final String asset;
+  @override
+  final int giveQuantity;
+  @override
+  final int escrowQuantity;
+  @override
+  final int mainchainrate;
+  @override
+  final int feeRate;
+
+  @override
+  String toString() {
+    return 'DialogState.closeDialogAndOpenNewAddress(originalAddress: $originalAddress, divisible: $divisible, asset: $asset, giveQuantity: $giveQuantity, escrowQuantity: $escrowQuantity, mainchainrate: $mainchainrate, feeRate: $feeRate)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DispenserCloseDialogAndOpenNewAddressImpl &&
+            (identical(other.originalAddress, originalAddress) ||
+                other.originalAddress == originalAddress) &&
+            (identical(other.divisible, divisible) ||
+                other.divisible == divisible) &&
+            (identical(other.asset, asset) || other.asset == asset) &&
+            (identical(other.giveQuantity, giveQuantity) ||
+                other.giveQuantity == giveQuantity) &&
+            (identical(other.escrowQuantity, escrowQuantity) ||
+                other.escrowQuantity == escrowQuantity) &&
+            (identical(other.mainchainrate, mainchainrate) ||
+                other.mainchainrate == mainchainrate) &&
+            (identical(other.feeRate, feeRate) || other.feeRate == feeRate));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, originalAddress, divisible,
+      asset, giveQuantity, escrowQuantity, mainchainrate, feeRate);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<
+          _$DispenserCloseDialogAndOpenNewAddressImpl>
+      get copyWith => __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl<
+          _$DispenserCloseDialogAndOpenNewAddressImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return closeDialogAndOpenNewAddress(originalAddress, divisible, asset,
+        giveQuantity, escrowQuantity, mainchainrate, feeRate);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return closeDialogAndOpenNewAddress?.call(originalAddress, divisible, asset,
+        giveQuantity, escrowQuantity, mainchainrate, feeRate);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (closeDialogAndOpenNewAddress != null) {
+      return closeDialogAndOpenNewAddress(originalAddress, divisible, asset,
+          giveQuantity, escrowQuantity, mainchainrate, feeRate);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return closeDialogAndOpenNewAddress(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return closeDialogAndOpenNewAddress?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (closeDialogAndOpenNewAddress != null) {
+      return closeDialogAndOpenNewAddress(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserCloseDialogAndOpenNewAddress implements DialogState {
+  const factory _DispenserCloseDialogAndOpenNewAddress(
+          {required final String originalAddress,
+          required final bool divisible,
+          required final String asset,
+          required final int giveQuantity,
+          required final int escrowQuantity,
+          required final int mainchainrate,
+          required final int feeRate}) =
+      _$DispenserCloseDialogAndOpenNewAddressImpl;
+
+  String get originalAddress;
+  bool get divisible;
+  String get asset;
+  int get giveQuantity;
+  int get escrowQuantity;
+  int get mainchainrate;
+  int get feeRate;
+  @JsonKey(ignore: true)
+  _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<
+          _$DispenserCloseDialogAndOpenNewAddressImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$DispenserWarningImplCopyWith<$Res> {
+  factory _$$DispenserWarningImplCopyWith(_$DispenserWarningImpl value,
+          $Res Function(_$DispenserWarningImpl) then) =
+      __$$DispenserWarningImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DispenserWarningImplCopyWithImpl<$Res>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserWarningImpl>
+    implements _$$DispenserWarningImplCopyWith<$Res> {
+  __$$DispenserWarningImplCopyWithImpl(_$DispenserWarningImpl _value,
+      $Res Function(_$DispenserWarningImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DispenserWarningImpl implements _DispenserWarning {
+  const _$DispenserWarningImpl();
+
+  @override
+  String toString() {
+    return 'DialogState.warning()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$DispenserWarningImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return warning();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return warning?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (warning != null) {
+      return warning();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return warning(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return warning?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (warning != null) {
+      return warning(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserWarning implements DialogState {
+  const factory _DispenserWarning() = _$DispenserWarningImpl;
+}
+
+/// @nodoc
+abstract class _$$DispenserErrorImplCopyWith<$Res> {
+  factory _$$DispenserErrorImplCopyWith(_$DispenserErrorImpl value,
+          $Res Function(_$DispenserErrorImpl) then) =
+      __$$DispenserErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String error});
+}
+
+/// @nodoc
+class __$$DispenserErrorImplCopyWithImpl<$Res>
+    extends _$DialogStateCopyWithImpl<$Res, _$DispenserErrorImpl>
+    implements _$$DispenserErrorImplCopyWith<$Res> {
+  __$$DispenserErrorImplCopyWithImpl(
+      _$DispenserErrorImpl _value, $Res Function(_$DispenserErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$DispenserErrorImpl(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$DispenserErrorImpl implements _DispenserError {
+  const _$DispenserErrorImpl(this.error);
+
+  @override
+  final String error;
+
+  @override
+  String toString() {
+    return 'DialogState.error(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DispenserErrorImpl &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DispenserErrorImplCopyWith<_$DispenserErrorImpl> get copyWith =>
+      __$$DispenserErrorImplCopyWithImpl<_$DispenserErrorImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() successNormalFlow,
+    required TResult Function() successCreateNewAddressFlow,
+    required TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)
+        closeDialogAndOpenNewAddress,
+    required TResult Function() warning,
+    required TResult Function(String error) error,
+  }) {
+    return error(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? successNormalFlow,
+    TResult? Function()? successCreateNewAddressFlow,
+    TResult? Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function()? warning,
+    TResult? Function(String error)? error,
+  }) {
+    return error?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? successNormalFlow,
+    TResult Function()? successCreateNewAddressFlow,
+    TResult Function(
+            String originalAddress,
+            bool divisible,
+            String asset,
+            int giveQuantity,
+            int escrowQuantity,
+            int mainchainrate,
+            int feeRate)?
+        closeDialogAndOpenNewAddress,
+    TResult Function()? warning,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DispenserInitial value) initial,
+    required TResult Function(_DispenserLoading value) loading,
+    required TResult Function(_DispenserSuccessNormalFlow value)
+        successNormalFlow,
+    required TResult Function(_DispenserSuccessCreateNewAddressFlow value)
+        successCreateNewAddressFlow,
+    required TResult Function(_DispenserCloseDialogAndOpenNewAddress value)
+        closeDialogAndOpenNewAddress,
+    required TResult Function(_DispenserWarning value) warning,
+    required TResult Function(_DispenserError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DispenserInitial value)? initial,
+    TResult? Function(_DispenserLoading value)? loading,
+    TResult? Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult? Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult? Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult? Function(_DispenserWarning value)? warning,
+    TResult? Function(_DispenserError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DispenserInitial value)? initial,
+    TResult Function(_DispenserLoading value)? loading,
+    TResult Function(_DispenserSuccessNormalFlow value)? successNormalFlow,
+    TResult Function(_DispenserSuccessCreateNewAddressFlow value)?
+        successCreateNewAddressFlow,
+    TResult Function(_DispenserCloseDialogAndOpenNewAddress value)?
+        closeDialogAndOpenNewAddress,
+    TResult Function(_DispenserWarning value)? warning,
+    TResult Function(_DispenserError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DispenserError implements DialogState {
+  const factory _DispenserError(final String error) = _$DispenserErrorImpl;
+
+  String get error;
+  @JsonKey(ignore: true)
+  _$$DispenserErrorImplCopyWith<_$DispenserErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }

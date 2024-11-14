@@ -98,6 +98,29 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "asset": unpacked.asset,
           }
         }),
+      TransactionInfoOrder(unpackedData: OrderUnpacked unpacked) => jsonEncode({
+          "message_type": "order",
+          "message_data": {
+            "give_asset": unpacked.giveAsset,
+            "give_quantity": unpacked.giveQuantity,
+            "get_asset": unpacked.getAsset,
+            "get_quantity": unpacked.getQuantity,
+            "expiration": unpacked.expiration,
+            "fee_required": unpacked.feeRequired,
+            "status": unpacked.status,
+            "give_quantity_normalized": unpacked.giveQuantityNormalized,
+            "get_quantity_normalized": unpacked.getQuantityNormalized,
+            "fee_required_normalized": unpacked.feeRequiredNormalized,
+          }
+        }),
+      TransactionInfoCancel(unpackedData: CancelUnpacked unpacked) =>
+        jsonEncode({
+          "message_type": "cancel",
+          "message_data": {
+            "offer_hash": unpacked.orderHash,
+            "status": unpacked.status,
+          }
+        }),
       _ => null
     };
 
@@ -197,6 +220,28 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        OrderUnpacked() => TransactionInfoOrder(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        CancelUnpacked() => TransactionInfoCancel(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -283,7 +328,18 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
-        FairminterUnpackedVerbose() => TransactionInfoFairminter(
+        OrderUnpacked() => TransactionInfoOrder(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        CancelUnpacked() => TransactionInfoCancel(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

@@ -33,6 +33,12 @@ final DEFAULT_WHITELIST = [
   "DISPENSER_UPDATE",
   "NEW_FAIRMINT",
   "NEW_FAIRMINTER",
+  "OPEN_ORDER",
+  "ORDER_MATCH",
+  "ORDER_UPDATE",
+  "ORDER_FILLED",
+  "CANCEL_ORDER",
+  "ORDER_EXPIRATION"
 ];
 
 extension DateTimeExtension on DateTime {
@@ -637,14 +643,24 @@ void main() {
               DashboardActivityFeedStateLoading(),
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
-                  ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                  ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
-                  ActivityFeedItem(hash: "0003", info: mockedLocal[2]),
-                  ActivityFeedItem(hash: "0004", event: mockedRemote[0]),
                   ActivityFeedItem(
-                      hash: "0005", event: mockedRemote[1], confirmations: 100),
+                      id: "0001", hash: "0001", info: mockedLocal[0]),
                   ActivityFeedItem(
-                      hash: "0006", event: mockedRemote[2], confirmations: 100),
+                      id: "0002", hash: "0002", info: mockedLocal[1]),
+                  ActivityFeedItem(
+                      id: "0003", hash: "0003", info: mockedLocal[2]),
+                  ActivityFeedItem(
+                      id: "0004", hash: "0004", event: mockedRemote[0]),
+                  ActivityFeedItem(
+                      id: "0005",
+                      hash: "0005",
+                      event: mockedRemote[1],
+                      confirmations: 100),
+                  ActivityFeedItem(
+                      id: "0006",
+                      hash: "0006",
+                      event: mockedRemote[2],
+                      confirmations: 100),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -720,10 +736,17 @@ void main() {
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
                   ActivityFeedItem(
-                      hash: "0001", info: mockedLocal[0], confirmations: null),
-                  ActivityFeedItem(hash: "0002", event: mockedRemote[0]),
+                      id: "0001",
+                      hash: "0001",
+                      info: mockedLocal[0],
+                      confirmations: null),
                   ActivityFeedItem(
-                      hash: "0003", event: mockedRemote[1], confirmations: 100),
+                      id: "0002", hash: "0002", event: mockedRemote[0]),
+                  ActivityFeedItem(
+                      id: "0003",
+                      hash: "0003",
+                      event: mockedRemote[1],
+                      confirmations: 100),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -800,11 +823,15 @@ void main() {
               DashboardActivityFeedStateCompleteOk(
                 transactions: [
                   ActivityFeedItem(
+                    id: "0005",
                     hash: "0005",
                     event: mockedRemote[0],
                   ),
                   ActivityFeedItem(
-                      hash: "0004", event: mockedRemote[1], confirmations: 100),
+                      id: "0004",
+                      hash: "0004",
+                      event: mockedRemote[1],
+                      confirmations: 100),
                 ],
                 newTransactionCount: 0,
                 nextCursor: null,
@@ -869,10 +896,15 @@ void main() {
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
-                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                ActivityFeedItem(hash: "0002", event: mockedRemote[2]),
                 ActivityFeedItem(
-                    hash: "0003", event: mockedRemote[3], confirmations: 100),
+                    id: "0001", hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(
+                    id: "0002", hash: "0002", event: mockedRemote[2]),
+                ActivityFeedItem(
+                    id: "0003",
+                    hash: "0003",
+                    event: mockedRemote[3],
+                    confirmations: 100),
               ],
               newTransactionCount: 0,
               nextCursor:
@@ -963,9 +995,13 @@ void main() {
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
-                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
                 ActivityFeedItem(
-                    hash: "0002", event: mockedRemote[1], confirmations: 100),
+                    id: "0001", hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(
+                    id: "0002",
+                    hash: "0002",
+                    event: mockedRemote[1],
+                    confirmations: 100),
               ],
               newTransactionCount: 0,
               nextCursor: Cursor.fromInt(4),
@@ -1067,9 +1103,12 @@ void main() {
         },
         seed: () => DashboardActivityFeedStateCompleteOk(
               transactions: [
-                ActivityFeedItem(hash: "0001", info: mockedLocal[0]),
-                ActivityFeedItem(hash: "0002", info: mockedLocal[1]),
                 ActivityFeedItem(
+                    id: "0001", hash: "0001", info: mockedLocal[0]),
+                ActivityFeedItem(
+                    id: "0002", hash: "0002", info: mockedLocal[1]),
+                ActivityFeedItem(
+                    id: "0002",
                     hash: "0003", event: mockedRemote[2], confirmations: 95),
               ],
               newTransactionCount: 0,
@@ -1184,6 +1223,7 @@ void main() {
                 DashboardActivityFeedStateCompleteOk(
                   transactions: [
                     ActivityFeedItem(
+                         id: "btc_1",
                         hash: "btx_1", bitcoinTx: mockedBtcMempool[0]),
                   ],
                   newTransactionCount: 0,
@@ -1259,6 +1299,7 @@ void main() {
                 DashboardActivityFeedStateCompleteOk(
                   transactions: [
                     ActivityFeedItem(
+                       id: "btc_1",
                         hash: "btx_1",
                         bitcoinTx: mockedBtcConfirmed[0],
                         confirmations: 101),

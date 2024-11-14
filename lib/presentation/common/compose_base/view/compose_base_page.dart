@@ -25,6 +25,7 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
       onConfirmationContinue;
   final void Function(String, GlobalKey<FormState>) onFinalizeSubmit;
   final void Function() onFinalizeCancel;
+  final bool? hideSubmitButtons;
 
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
@@ -40,6 +41,7 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     required this.onConfirmationContinue,
     required this.onFinalizeSubmit,
     required this.onFinalizeCancel,
+    this.hideSubmitButtons = false,
   });
 
   @override
@@ -82,6 +84,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               onFeeChange: widget.onFeeChange,
               onCancel: widget.onInitialCancel,
               onSubmit: (formKey) => widget.onInitialSubmit(formKey),
+              hideSubmitButtons: widget.hideSubmitButtons ?? false,
             ),
           SubmitError(error: var msg) => Padding(
               padding: const EdgeInsets.all(8.0),
@@ -93,7 +96,6 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
             feeRate: var feeRate,
             virtualSize: var virtualSize,
             adjustedVirtualSize: var adjustedVirtualSize,
-            otherParams: var otherPArams
           ) =>
             ComposeBaseConfirmationPage(
               composeTransaction: composeTransaction,
@@ -144,7 +146,7 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
   final void Function(FeeOption) onFeeChange;
   final void Function() onCancel;
   final void Function(GlobalKey<FormState>) onSubmit;
-
+  final bool hideSubmitButtons;
   const ComposeBaseInitialPage({
     super.key,
     required this.state,
@@ -154,6 +156,7 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
     required this.onFeeChange,
     required this.onCancel,
     required this.onSubmit,
+    this.hideSubmitButtons = false,
   });
 
   @override
@@ -192,23 +195,24 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
               }
               return formWidget;
             }),
-            const HorizonUI.HorizonDivider(),
-            FeeSelectionV2(
-              value: widget.state.feeOption,
-              feeEstimates: widget.state.feeState.maybeWhen(
-                success: (feeEstimates) =>
-                    FeeEstimateSuccess(feeEstimates: feeEstimates),
-                orElse: () => FeeEstimateLoading(),
+            if (!widget.hideSubmitButtons) const HorizonUI.HorizonDivider(),
+            if (!widget.hideSubmitButtons)
+              FeeSelectionV2(
+                value: widget.state.feeOption,
+                feeEstimates: widget.state.feeState.maybeWhen(
+                  success: (feeEstimates) =>
+                      FeeEstimateSuccess(feeEstimates: feeEstimates),
+                  orElse: () => FeeEstimateLoading(),
+                ),
+                onSelected: widget.onFeeChange,
+                layout: MediaQuery.of(context).size.width > 768
+                    ? FeeSelectionLayout.row
+                    : FeeSelectionLayout.column,
+                onFieldSubmitted: () {
+                  widget.onSubmit(_formKey);
+                },
+                enabled: !widget.loading,
               ),
-              onSelected: widget.onFeeChange,
-              layout: MediaQuery.of(context).size.width > 768
-                  ? FeeSelectionLayout.row
-                  : FeeSelectionLayout.column,
-              onFieldSubmitted: () {
-                widget.onSubmit(_formKey);
-              },
-              enabled: !widget.loading,
-            ),
             if (widget.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -217,25 +221,26 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            const HorizonUI.HorizonDivider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                HorizonUI.HorizonCancelButton(
-                  onPressed: widget.onCancel,
-                  buttonText: 'CANCEL',
-                ),
-                HorizonUI.HorizonContinueButton(
-                  loading: widget.loading,
-                  onPressed: widget.loading
-                      ? () {}
-                      : () {
-                          widget.onSubmit(_formKey);
-                        },
-                  buttonText: 'CONTINUE',
-                ),
-              ],
-            ),
+            if (!widget.hideSubmitButtons) const HorizonUI.HorizonDivider(),
+            if (!widget.hideSubmitButtons)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  HorizonUI.HorizonCancelButton(
+                    onPressed: widget.onCancel,
+                    buttonText: 'CANCEL',
+                  ),
+                  HorizonUI.HorizonContinueButton(
+                    loading: widget.loading,
+                    onPressed: widget.loading
+                        ? () {}
+                        : () {
+                            widget.onSubmit(_formKey);
+                          },
+                    buttonText: 'CONTINUE',
+                  ),
+                ],
+              ),
           ],
         ),
       ),

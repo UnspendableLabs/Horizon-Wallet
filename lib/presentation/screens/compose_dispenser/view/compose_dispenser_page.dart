@@ -1,28 +1,29 @@
 import 'package:collection/collection.dart';
-import 'package:horizon/common/constants.dart';
-import 'package:horizon/common/format.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
-import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import 'package:horizon/presentation/common/shared_util.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/view/compose_dispenser_on_new_address_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -85,6 +86,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   String? asset;
   Balance? balance_;
   bool _submitted = false;
+  bool hideSubmitButtons = false;
+  bool isCreateNewAddressFlow = false;
 
   @override
   void initState() {
@@ -93,25 +96,76 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   }
 
   @override
+  void dispose() {
+    giveQuantityController.dispose();
+    escrowQuantityController.dispose();
+    mainchainrateController.dispose();
+    assetController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ComposeBasePage<ComposeDispenserBloc, ComposeDispenserState>(
-      dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-      onFeeChange: (fee) =>
-          context.read<ComposeDispenserBloc>().add(ChangeFeeOption(value: fee)),
-      buildInitialFormFields: (state, loading, formKey) =>
-          _buildInitialFormFields(state, loading, formKey),
-      onInitialCancel: () => _handleInitialCancel(),
-      onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-      buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-          _buildConfirmationDetails(composeTransaction),
-      onConfirmationBack: () => _onConfirmationBack(),
-      onConfirmationContinue: (composeTransaction, fee, formKey) {
-        _onConfirmationContinue(composeTransaction, fee, formKey);
+    return BlocListener<ComposeDispenserBloc, ComposeDispenserState>(
+      listener: (context, state) {
+        setState(() {
+          hideSubmitButtons = _shouldHideSubmitButtons(state.dialogState);
+        });
+
+        state.dialogState.maybeWhen(
+          // if the current address has open dispensers and the user chooses to open on a new address, proceed to the new address flow
+          closeDialogAndOpenNewAddress: (originalAddress, divisible, asset,
+              giveQuantity, escrowQuantity, mainchainrate, feeRate) {
+            // Close current dialog
+            Navigator.of(context).pop();
+
+            // Show new dialog
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: HorizonUI.HorizonDialog(
+                title: 'Create Dispenser on New Address',
+                includeBackButton: false,
+                includeCloseButton: true,
+                onBackButtonPressed: () {
+                  Navigator.of(context).pop();
+                },
+                body: ComposeDispenserOnNewAddressPageWrapper(
+                  originalAddress: originalAddress,
+                  divisible: divisible,
+                  asset: asset,
+                  giveQuantity: giveQuantity,
+                  escrowQuantity: escrowQuantity,
+                  mainchainrate: mainchainrate,
+                  dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+                  feeRate: feeRate,
+                ),
+              ),
+            );
+          },
+          orElse: () {},
+        );
       },
-      onFinalizeSubmit: (password, formKey) {
-        _onFinalizeSubmit(password, formKey);
-      },
-      onFinalizeCancel: () => _onFinalizeCancel(),
+      child: ComposeBasePage<ComposeDispenserBloc, ComposeDispenserState>(
+        hideSubmitButtons: hideSubmitButtons,
+        dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+        onFeeChange: (fee) => context
+            .read<ComposeDispenserBloc>()
+            .add(ChangeFeeOption(value: fee)),
+        buildInitialFormFields: (state, loading, formKey) =>
+            _buildInitialFormFields(state, loading, formKey),
+        onInitialCancel: () => _handleInitialCancel(),
+        onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
+        buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+            _buildConfirmationDetails(composeTransaction),
+        onConfirmationBack: () => _onConfirmationBack(),
+        onConfirmationContinue: (composeTransaction, fee, formKey) {
+          _onConfirmationContinue(composeTransaction, fee, formKey);
+        },
+        onFinalizeSubmit: (password, formKey) {
+          _onFinalizeSubmit(password, formKey);
+        },
+        onFinalizeCancel: () => _onFinalizeCancel(),
+      ),
     );
   }
 
@@ -124,10 +178,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      Decimal giveInput = Decimal.parse(giveQuantityController.text);
-      Decimal escrowInput = Decimal.parse(escrowQuantityController.text);
-      Decimal mainchainrateBtc =
-          Decimal.parse(mainchainrateController.text); // Price in BTC
       Balance? balance = balance_;
 
       if (asset == null) {
@@ -137,6 +187,11 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       if (balance == null) {
         throw Exception("No balance found for selected asset");
       }
+
+      Decimal giveInput = Decimal.parse(giveQuantityController.text);
+      Decimal escrowInput = Decimal.parse(escrowQuantityController.text);
+      Decimal mainchainrateBtc =
+          Decimal.parse(mainchainrateController.text); // Price in BTC
 
       int giveQuantity;
       int escrowQuantity;
@@ -155,7 +210,20 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       int mainchainrate =
           (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
 
+      if (isCreateNewAddressFlow) {
+        context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(
+              originalAddress: widget.address,
+              divisible: balance.assetInfo.divisible,
+              asset: asset!,
+              giveQuantity: giveQuantity,
+              escrowQuantity: escrowQuantity,
+              mainchainrate: mainchainrate,
+            ));
+        return;
+      }
+
       // Dispatch the event with the calculated values
+
       context.read<ComposeDispenserBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeDispenserEventParams(
@@ -169,7 +237,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     }
   }
 
-  Widget _buildAssetInput(ComposeDispenserState state, bool loading) {
+  Widget _buildAssetInput(ComposeDispenserState state, bool loading,
+      [String? label]) {
     return state.balancesState.maybeWhen(
         orElse: () => const AssetDropdownLoading(),
         success: (balances) {
@@ -195,6 +264,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             child: AssetDropdown(
               key: const Key('asset_dropdown'),
               loading: loading,
+              label: label,
               asset: asset ?? balances[0].asset,
               controller: assetController,
               balances: balances,
@@ -392,24 +462,156 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
+  Widget _displayDispensersWarning(ComposeDispenserState state, bool loading) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.orange),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: SelectableText(
+                  'Address currently has open dispensers. Creating multiple dispensers on the same address will result in a multidispense.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            'How would you like to proceed?',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8.0),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Stack buttons vertically if width is less than 400px
+              if (constraints.maxWidth < 400) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (addressIsSegwit(widget.address))
+                      _buildWarningButton(
+                        'Create Dispenser on a new address',
+                        true,
+                      ),
+                    const SizedBox(height: 8.0),
+                    _buildWarningButton(
+                      'Continue with existing address',
+                      false,
+                    ),
+                  ],
+                );
+              }
+              // Otherwise, show buttons side by side
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildWarningButton(
+                      'Create Dispenser on a new address',
+                      true,
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: _buildWarningButton(
+                      'Continue with existing address',
+                      false,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWarningButton(String label, bool isCreateNewAddress) {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          isCreateNewAddressFlow = isCreateNewAddress;
+          hideSubmitButtons = false;
+        });
+        context.read<ComposeDispenserBloc>().add(
+              ChooseWorkFlow(
+                isCreateNewAddress: isCreateNewAddress,
+              ),
+            );
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 12.0,
+        ),
+      ),
+      child: Text(label),
+    );
+  }
+
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return [
-      HorizonUI.HorizonTextFormField(
-        enabled: false,
-        controller: openAddressController,
-        label: "Open Address",
-      ),
-      const SizedBox(height: 16.0),
-      _buildAssetInput(state, loading),
-      const SizedBox(height: 16.0),
-      _buildGiveQuantityInput(state, () {
-        _handleInitialSubmit(formKey);
-      }, loading, formKey),
-      const SizedBox(height: 16.0),
-      _buildEscrowQuantityInput(state, loading, formKey),
-      const SizedBox(height: 16.0),
-      _buildPricePerUnitInput(loading, formKey),
+      state.dialogState.maybeWhen(orElse: () {
+        return const SizedBox.shrink();
+      }, successNormalFlow: () {
+        return Column(
+          children: [
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              controller: openAddressController,
+              label: "Open Address",
+            ),
+            const SizedBox(height: 16.0),
+            _buildAssetInput(state, loading),
+            const SizedBox(height: 16.0),
+            _buildGiveQuantityInput(state, () {
+              _handleInitialSubmit(formKey);
+            }, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildEscrowQuantityInput(state, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildPricePerUnitInput(loading, formKey),
+          ],
+        );
+      }, successCreateNewAddressFlow: () {
+        return Column(
+          children: [
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              label: "Open Address",
+              controller: TextEditingController(text: 'To be created'),
+            ),
+            const SizedBox(height: 16.0),
+            _buildAssetInput(state, loading, 'Asset to transfer'),
+            const SizedBox(height: 16.0),
+            _buildGiveQuantityInput(state, () {
+              _handleInitialSubmit(formKey);
+            }, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildEscrowQuantityInput(state, loading, formKey),
+            const SizedBox(height: 16.0),
+            _buildPricePerUnitInput(loading, formKey),
+          ],
+        );
+      }, warning: () {
+        return Column(
+          children: [
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              controller: openAddressController,
+              label: "Open Address",
+            ),
+            _displayDispensersWarning(state, loading),
+          ],
+        );
+      }),
     ];
   }
 
@@ -511,6 +713,14 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     context
         .read<ComposeDispenserBloc>()
         .add(FetchFormData(currentAddress: widget.address));
+  }
+
+  bool _shouldHideSubmitButtons(DialogState dialogState) {
+    return dialogState.maybeWhen(
+      loading: () => true,
+      warning: () => true,
+      orElse: () => false,
+    );
   }
 }
 

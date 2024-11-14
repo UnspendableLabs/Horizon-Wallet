@@ -300,25 +300,27 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final bool isExpanded;
   final String? Function(T?)? validator;
   final AutovalidateMode autovalidateMode;
-
-  const HorizonDropdownMenu({
-    super.key,
-    required this.items,
-    required this.onChanged,
-    this.label,
-    this.controller,
-    this.selectedValue,
-    this.icon,
-    this.borderRadius,
-    this.enabled = true,
-    this.displayStringForOption,
-    this.id,
-    this.selectedItemBuilder,
-    this.isDense = true,
-    this.isExpanded = false,
-    this.validator,
-    this.autovalidateMode = AutovalidateMode.disabled,
-  });
+  final String? errorText;
+  final String? helperText;
+  const HorizonDropdownMenu(
+      {super.key,
+      required this.items,
+      required this.onChanged,
+      this.label,
+      this.controller,
+      this.selectedValue,
+      this.icon,
+      this.borderRadius,
+      this.enabled = true,
+      this.displayStringForOption,
+      this.id,
+      this.selectedItemBuilder,
+      this.isDense = true,
+      this.isExpanded = false,
+      this.validator,
+      this.autovalidateMode = AutovalidateMode.disabled,
+      this.errorText,
+      this.helperText});
 
   @override
   Widget build(BuildContext context) {
@@ -331,13 +333,14 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
           decoration: InputDecoration(
             enabled: enabled,
             labelText: label,
+            errorText: errorText ?? state.errorText,
+            helperText: helperText,
             floatingLabelBehavior: FloatingLabelBehavior.never,
             contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide.none,
             ),
-            errorText: state.errorText,
           ),
           child: DropdownButtonHideUnderline(
             child: ButtonTheme(
