@@ -32,7 +32,7 @@ abstract class ComposeRepository {
       int fee, DecodedTx prevDecodedTransaction, ComposeDispenserParams params);
   Future<ComposeOrderResponse> composeOrder(
       int fee, List<Utxo> inputsSet, ComposeOrderParams params);
-  
+
   Future<ComposeCancelResponse> composeCancel(
       int fee, List<Utxo> inputsSet, ComposeCancelParams params);
 }

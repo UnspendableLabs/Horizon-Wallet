@@ -29,6 +29,7 @@ class OpenOrderAction extends Action {
   @override
   String get action => 'open-order';
 
+  @override
   final CallerType caller;
   final int giveQuantity;
   final String giveAsset;
@@ -36,14 +37,12 @@ class OpenOrderAction extends Action {
   final String getAsset;
 
   OpenOrderAction(
-      {
-        required this.caller,
-        required this.giveQuantity,
+      {required this.caller,
+      required this.giveQuantity,
       required this.giveAsset,
       required this.getQuantity,
       required this.getAsset});
 }
-
 
 abstract class RPCAction extends Action {
   final int tabId;

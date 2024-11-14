@@ -13,9 +13,8 @@ class ActivityFeedItem extends Equatable {
   int? confirmations;
 
   ActivityFeedItem(
-      {
-        required this.id,
-        required this.hash,
+      {required this.id,
+      required this.hash,
       this.event,
       this.info,
       this.bitcoinTx,

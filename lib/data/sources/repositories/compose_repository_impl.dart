@@ -416,7 +416,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
       inputsSet,
     );
   }
-  
+
   @override
   Future<compose_cancel.ComposeCancelResponse> composeCancel(int fee,
       List<Utxo> inputsSet, compose_cancel.ComposeCancelParams params) async {

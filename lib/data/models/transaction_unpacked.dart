@@ -27,7 +27,7 @@ class UnpackedVerboseMapper {
             u as api.OrderUnpackedVerbose);
       case "cancel":
         return CancelUnpackedVerboseMapper.toDomain(
-        u as api.CancelUnpackedVerbose);
+            u as api.CancelUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
