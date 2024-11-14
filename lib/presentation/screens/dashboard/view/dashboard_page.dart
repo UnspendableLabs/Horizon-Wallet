@@ -56,7 +56,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-import 'package:chrome_extension/tabs.dart';
 
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';

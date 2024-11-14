@@ -3631,7 +3631,6 @@ class OrderInfoVerbose extends InfoVerbose {
   Map<String, dynamic> toJson() => _$OrderInfoVerboseToJson(this);
 }
 
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CancelInfoVerbose extends InfoVerbose {
   final CancelUnpackedVerbose unpackedData;
@@ -4031,6 +4030,7 @@ abstract class V2Api {
     @Query("max_mint_per_tx") int? maxMintPerTx,
     @Query("hard_cap") int? hardCap,
     @Query("start_block") int? startBlock,
+    @Query("end_block") int? endBlock,
     @Query("exact_fee") int? fee,
     @Query("lock_quantity") bool? lockQuantity,
     @Query("inputs_set") String? inputsSet,

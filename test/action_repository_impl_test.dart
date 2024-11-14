@@ -30,7 +30,7 @@ void main() {
         },
       );
     });
-    
+
     test('should decode a valid dispense action from extension', () {
       // Arrange
       const encodedString = 'dispense:ext,0x123abc';
@@ -50,8 +50,6 @@ void main() {
         },
       );
     });
-
-
 
     test('should return an error for an invalid action type', () {
       // Arrange
@@ -123,7 +121,7 @@ void main() {
         },
       );
     });
-    
+
     test('should decode a valid fairmint action from extension', () {
       // Arrange
       const encodedString = 'fairmint:ext,0x123abc';
@@ -164,27 +162,27 @@ void main() {
         },
       );
     });
-  group(RPCSignPsbtAction, () {
-    test('should decode a valid RPCGetAddressesAction action', () {
-      // Arrange
-      const encodedString = 'signPsbt:ext,1,def,psbt-hex';
+    group(RPCSignPsbtAction, () {
+      test('should decode a valid RPCGetAddressesAction action', () {
+        // Arrange
+        const encodedString = 'signPsbt:ext,1,def,psbt-hex';
 
-      // Act
-      final result = actionRepository.fromString(encodedString);
+        // Act
+        final result = actionRepository.fromString(encodedString);
 
-      // Assert
-      expect(result.isRight(), true);
-      result.match(
-        (l) => fail('Expected Right but got Left: $l'),
-        (r) {
-          expect(r, isA<RPCSignPsbtAction>());
-          final action = r as RPCSignPsbtAction;
-          expect(action.tabId, 1);
-          expect(action.requestId, 'def');
-          expect(action.psbt, 'psbt-hex');
-        },
-      );
+        // Assert
+        expect(result.isRight(), true);
+        result.match(
+          (l) => fail('Expected Right but got Left: $l'),
+          (r) {
+            expect(r, isA<RPCSignPsbtAction>());
+            final action = r as RPCSignPsbtAction;
+            expect(action.tabId, 1);
+            expect(action.requestId, 'def');
+            expect(action.psbt, 'psbt-hex');
+          },
+        );
+      });
     });
-  });
   });
 }
