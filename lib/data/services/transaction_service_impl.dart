@@ -15,6 +15,17 @@ import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/domain/repositories/config_repository.dart';
 
+const DEFAULT_SEQUENCE = 0xffffffff;
+const SIGHASH_DEFAULT = 0x00;
+const SIGHASH_ALL = 0x01;
+const SIGHASH_NONE = 0x02;
+const SIGHASH_SINGLE = 0x03;
+const SIGHASH_ANYONECANPAY = 0x80;
+const SIGHASH_OUTPUT_MASK = 0x03;
+const SIGHASH_INPUT_MASK = 0x80;
+const ADVANCED_TRANSACTION_MARKER = 0x00;
+const ADVANCED_TRANSACTION_FLAG = 0x01;
+
 class TransactionServiceImpl implements TransactionService {
   final Config config;
 
@@ -23,6 +34,28 @@ class TransactionServiceImpl implements TransactionService {
   final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceImpl({required this.config});
+
+  @override
+  String signPsbt(String psbtHex, String privateKey) {
+    // We assume segwit for now
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
+
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+
+    final network = _getNetwork();
+
+    dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
+
+    psbt.signAllInputs(
+        signer,
+        [
+          (SIGHASH_SINGLE | SIGHASH_ANYONECANPAY).toJS,
+          (SIGHASH_ALL | SIGHASH_ANYONECANPAY).toJS
+        ].toJS);
+
+    return psbt.toHex();
+  }
 
   @override
   Future<String> signTransaction(String unsignedTransaction, String privateKey,

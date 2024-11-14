@@ -17,6 +17,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -54,6 +55,98 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+
+import 'package:chrome_extension/tabs.dart';
+
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+
+import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
+import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
+
+import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
+
+class SignPsbtModal extends StatelessWidget {
+  final int tabId;
+  final String requestId;
+  final String unsignedPsbt;
+  final TransactionService transactionService;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final RPCSignPsbtSuccessCallback onSuccess;
+
+  const SignPsbtModal(
+      {super.key,
+      required this.unsignedPsbt,
+      required this.transactionService,
+      required this.walletRepository,
+      required this.encryptionService,
+      required this.addressService,
+      required this.tabId,
+      required this.requestId,
+      required this.onSuccess});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => SignPsbtBloc(
+        unsignedPsbt: unsignedPsbt,
+        transactionService: transactionService,
+        walletRepository: walletRepository,
+        encryptionService: encryptionService,
+        addressService: addressService,
+      ),
+      child: SignPsbtForm(
+        key: Key(unsignedPsbt),
+        onSuccess: (signedPsbtHex) {
+          onSuccess(RPCSignPsbtSuccessCallbackArgs(
+              tabId: tabId, requestId: requestId, signedPsbt: signedPsbtHex));
+        },
+      ),
+    );
+  }
+}
+
+class GetAddressesModal extends StatelessWidget {
+  final int tabId;
+  final String requestId;
+  final List<Account> accounts;
+  final AddressRepository addressRepository;
+  final ImportedAddressRepository importedAddressRepository;
+  final RPCGetAddressesSuccessCallback onSuccess;
+
+  const GetAddressesModal(
+      {super.key,
+      required this.tabId,
+      required this.requestId,
+      required this.accounts,
+      required this.addressRepository,
+      required this.importedAddressRepository,
+      required this.onSuccess});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => GetAddressesBloc(
+        accounts: accounts,
+        addressRepository: addressRepository,
+        importedAddressRepository: importedAddressRepository,
+      ),
+      child: GetAddressesForm(
+        accounts: accounts,
+        onSuccess: (addresses) {
+          onSuccess(RPCGetAddressesSuccessCallbackArgs(
+              tabId: tabId, requestId: requestId, addresses: addresses));
+        },
+      ),
+    );
+  }
+}
 
 void showAccountList(BuildContext context, bool isDarkTheme) {
   const double pagePadding = 16.0;
@@ -1171,6 +1264,17 @@ class DashboardPageState extends State<DashboardPage> {
       ) =>
         () =>
             _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
+      URLAction.RPCGetAddressesAction(
+        tabId: var tabId,
+        requestId: var requestId
+      ) =>
+        () => _handleRPCGetAddressesAction(tabId, requestId),
+      URLAction.RPCSignPsbtAction(
+        tabId: var tabId,
+        requestId: var requestId,
+        psbt: var psbt
+      ) =>
+        () => _handleRPCSignPsbtAction(tabId, requestId, psbt),
       _ => noop
     };
   }
@@ -1231,6 +1335,50 @@ class DashboardPageState extends State<DashboardPage> {
             currentAddress: widget.currentAddress?.address ??
                 widget.currentImportedAddress!.address,
           ),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCGetAddressesAction(int tabId, String requestId) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Get Addresses",
+          body: Builder(builder: (context) {
+            final shell = context.watch<ShellStateCubit>();
+            return shell.state.maybeWhen(
+                orElse: () => const SizedBox.shrink(),
+                success: (state) {
+                  return GetAddressesModal(
+                      tabId: tabId,
+                      requestId: requestId,
+                      accounts: state.accounts,
+                      addressRepository: GetIt.I<AddressRepository>(),
+                      importedAddressRepository:
+                          GetIt.I<ImportedAddressRepository>(),
+                      onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
+                });
+          }),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Sign Psbt",
+          body: SignPsbtModal(
+              tabId: tabId,
+              requestId: requestId,
+              unsignedPsbt: psbt,
+              transactionService: GetIt.I.get<TransactionService>(),
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              encryptionService: GetIt.I.get<EncryptionService>(),
+              addressService: GetIt.I.get<AddressService>(),
+              onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
           includeBackButton: false,
           includeCloseButton: true,
         ));

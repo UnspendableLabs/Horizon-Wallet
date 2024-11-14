@@ -1,5 +1,5 @@
 <!doctype html>
-<html style="height: 600px; width: 600px">
+<html style="height: 600px; width: 400px">
   <head>
     <!--
     If you are serving your web app in a path other than the root, change the
@@ -28,12 +28,6 @@
 
     <link href="favicon.svg" rel="icon" />
 
-    <!-- Add SVG assets -->
-    <link rel="preload" href="../assets/logo-black.svg" as="image" />
-    <link rel="preload" href="../assets/logo-white.svg" as="image" />
-    <link rel="preload" href="../assets/open-quote.svg" as="image" />
-    <link rel="preload" href="../assets/closed-quote.svg" as="image" />
-
     <title>horizon</title>
     <link rel="manifest" href="manifest.json" />
 
@@ -48,7 +42,10 @@
     <script src="./assets/bip39.js" type="application/javascript"></script>
     <script src="./assets/bech32.js" type="application/javascript"></script>
     <script src="./assets/bitcoinjs.js" type="application/javascript"></script>
-    <script src="./assets/horizon_utils.js" type="application/javascript"></script>
+    <script
+      src="./assets/horizon_utils.js"
+      type="application/javascript"
+    ></script>
     <script>
       // The value below is injected by flutter build, do not touch.
       var serviceWorkerVersion = {{flutter_service_worker_version}};

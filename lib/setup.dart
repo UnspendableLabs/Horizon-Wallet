@@ -8,15 +8,18 @@ import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
+import 'package:chrome_extension/runtime.dart';
+import 'package:chrome_extension/tabs.dart';
+import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+import "package:horizon/domain/repositories/address_repository.dart";
+import 'package:horizon/data/sources/local/db_manager.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
-import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
@@ -28,7 +31,6 @@ import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
@@ -100,6 +102,7 @@ import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'dart:convert';
 
 Future<void> setup() async {
@@ -400,6 +403,49 @@ Future<void> setup() async {
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
   ));
+
+  injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {
+                  "id": args.requestId,
+                  "addresses": args.addresses.map((address) {
+                    return {
+                      "address": address.address,
+                      "type": address.address.startsWith("bc") ||
+                              address.address.startsWith("tb")
+                          ? "p2wpkh"
+                          : "p2pkh",
+                    };
+                  }).toList(),
+                },
+                null,
+              );
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+               RPCGetAddressesSuccessCallback called with:
+                  tabId: ${args.tabId}
+                  requestId: ${args.requestId}
+                  addresses: ${args.addresses}
+          """));
+
+  injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
+      () => config.isWebExtension
+          ? (args) {
+              chrome.tabs.sendMessage(
+                args.tabId,
+                {"id": args.requestId, "hex": args.signedPsbt},
+                null,
+              );
+            }
+          : (args) => GetIt.I<Logger>().debug("""
+               RPCGetSignPsbtCallback called with:
+                  tabId: ${args.tabId}
+                  requestId: ${args.requestId}
+                  signedPsbt: ${args.signedPsbt}
+          """));
 }
 
 class CustomDioException extends DioException {

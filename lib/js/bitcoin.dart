@@ -26,6 +26,7 @@ extension type TxOutput._(JSObject _) implements JSObject {
 
 extension type Transaction._(JSObject _) implements JSObject {
   external static Transaction fromHex(String hex);
+
   external JSArray<TxInput> ins;
   external JSArray<TxOutput> outs;
   external String toHex();
@@ -41,16 +42,22 @@ extension type Psbt._(JSObject _) implements JSObject {
   external Psbt();
 
   external static Psbt fromHex(String hex);
+  external String toHex();
 
   external Psbt addInput(TxInput input);
   external Psbt addOutput(TxOutput output);
 
-  external void signAllInputs(JSObject signer);
+  external void signAllInputs(JSObject signer,
+      [JSArray<JSNumber> sighashTypes]);
+  external void signAllInputsHD(JSObject signer);
+
+  external void signInput(int inputIndex, JSObject keyPair,
+      [JSArray<JSNumber> sighashTypes]);
+
   external void finalizeAllInputs();
 
   external Transaction extractTransaction();
 
-  external void signInput(int index, JSObject signer);
 }
 
 extension type Payment._(JSObject _) implements JSObject {
