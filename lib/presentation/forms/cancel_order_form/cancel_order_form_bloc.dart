@@ -1,7 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:collection/collection.dart';
-import 'package:horizon/domain/entities/asset.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -187,8 +184,6 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     InitializeForm event,
     Emitter<FormStateModel> emit,
   ) async {
-
-
     print("iniitialize?");
 
     emit(state.copyWith(feeEstimates: Loading()));
@@ -197,9 +192,9 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       final feeEstimates = await _fetchFeeEstimates();
       emit(state.copyWith(feeEstimates: Success(feeEstimates)));
       print("fee estiamtes $feeEstimates");
-    print("iniitialize success?");
+      print("iniitialize success?");
     } catch (e) {
-    print("iniitialize error?");
+      print("iniitialize error?");
       emit(state.copyWith(
         errorMessage: "Error initializing form",
       ));

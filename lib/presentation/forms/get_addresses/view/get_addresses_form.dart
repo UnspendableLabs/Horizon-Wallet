@@ -5,7 +5,6 @@ import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_state.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_event.dart';
 import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/address.dart';
 
 class GetAddressesForm extends StatelessWidget {

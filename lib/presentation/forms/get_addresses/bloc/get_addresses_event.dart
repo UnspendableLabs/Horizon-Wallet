@@ -15,6 +15,6 @@ class AddressSelectionModeChanged extends GetAddressesEvent {
 }
 
 class ImportedAddressSelected extends GetAddressesEvent {
-  final String  address;
+  final String address;
   ImportedAddressSelected(this.address);
 }

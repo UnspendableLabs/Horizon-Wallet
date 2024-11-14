@@ -581,11 +581,9 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     GiveQuantityBlurred event,
     Emitter<FormStateModel> emit,
   ) {
-
     final value = state.giveQuantity.value;
 
     final balance = _getBalanceForAsset(state.giveAsset.value);
-
 
     if (balance == null) {
       // if we don't have a balance we permit divisibility
@@ -606,7 +604,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       balance: balance.quantity,
       isDivisible: balance.assetInfo.divisible,
     );
-
 
     emit(state.copyWith(giveQuantity: input, errorMessage: null));
   }

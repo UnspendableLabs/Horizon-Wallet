@@ -671,7 +671,6 @@ void main() {
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
-
       await tester.enterText(
           find.byKey(const Key('price_per_unit_input')), '0.000005');
 
@@ -681,37 +680,42 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(
-          find.text(
-              'Price must exceed dust limit of 600 satoshis'),
+      expect(find.text('Price must exceed dust limit of 600 satoshis'),
           findsOneWidget);
     });
 
-    testWidgets('give_quantity <= escrow_quantity', (WidgetTester tester) async {
+    testWidgets('give_quantity <= escrow_quantity',
+        (WidgetTester tester) async {
       // Mock dependencies
-      when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer((_) async => (
-            [
-              Balance(
-                address: "test-address",
-                asset: 'ASSET1_DIVISIBLE',
-                quantity: 100000000,
-                quantityNormalized: '1.0',
-                assetInfo: FakeAssetInfo(divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
-              ),
-              Balance(
-                address: "test-address",
-                asset: 'ASSET2_NOT_DIVISIBLE',
-                quantity: 10,
-                quantityNormalized: '10',
-                assetInfo: FakeAssetInfo(divisible: false, assetLongname: "ASSET2_NOT_DIVISIBLE"),
-              ),
-            ],
-            const FeeEstimates(fast: 10, medium: 5, slow: 2),
-            <Dispenser>[],
-          ));
+      when(() => mockFetchDispenserFormDataUseCase.call(any()))
+          .thenAnswer((_) async => (
+                [
+                  Balance(
+                    address: "test-address",
+                    asset: 'ASSET1_DIVISIBLE',
+                    quantity: 100000000,
+                    quantityNormalized: '1.0',
+                    assetInfo: FakeAssetInfo(
+                        divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
+                  ),
+                  Balance(
+                    address: "test-address",
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    quantity: 10,
+                    quantityNormalized: '10',
+                    assetInfo: FakeAssetInfo(
+                        divisible: false,
+                        assetLongname: "ASSET2_NOT_DIVISIBLE"),
+                  ),
+                ],
+                const FeeEstimates(fast: 10, medium: 5, slow: 2),
+                <Dispenser>[],
+              ));
 
-      when(() => mockWriteLocalTransactionUseCase.call(any(), any())).thenAnswer((_) async {});
-      when(() => mockAnalyticsService.trackEvent(any())).thenAnswer((_) async {});
+      when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
+          .thenAnswer((_) async {});
+      when(() => mockAnalyticsService.trackEvent(any()))
+          .thenAnswer((_) async {});
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
@@ -719,7 +723,8 @@ void main() {
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
         analyticsService: mockAnalyticsService,
-        signAndBroadcastTransactionUseCase: mockSignAndBroadcastTransactionUseCase,
+        signAndBroadcastTransactionUseCase:
+            mockSignAndBroadcastTransactionUseCase,
         writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
       );
 
@@ -729,8 +734,10 @@ void main() {
           home: Scaffold(
             body: MultiBlocProvider(
               providers: [
-                BlocProvider<ComposeDispenserBloc>.value(value: composeDispenserBloc),
-                BlocProvider<DashboardActivityFeedBloc>.value(value: mockDashboardActivityFeedBloc),
+                BlocProvider<ComposeDispenserBloc>.value(
+                    value: composeDispenserBloc),
+                BlocProvider<DashboardActivityFeedBloc>.value(
+                    value: mockDashboardActivityFeedBloc),
               ],
               child: ComposeDispenserPage(
                 address: FakeAddress().address,
@@ -742,14 +749,18 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc.add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc
+          .add(FetchFormData(currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')), '1.1');
+      await tester.enterText(
+          find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')), '1.1');
 
-      await tester.enterText(find.byKey(const Key('escrow_quantity_input_ASSET1_DIVISIBLE')), '0.9');
+      await tester.enterText(
+          find.byKey(const Key('escrow_quantity_input_ASSET1_DIVISIBLE')),
+          '0.9');
 
       await tester.pumpAndSettle();
 
@@ -757,7 +768,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('escrow quantity must be greater than or equal to give quantity'), findsOneWidget);
+      expect(
+          find.text(
+              'escrow quantity must be greater than or equal to give quantity'),
+          findsOneWidget);
     });
   });
 

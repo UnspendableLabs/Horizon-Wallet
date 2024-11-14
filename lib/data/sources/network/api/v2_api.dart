@@ -3631,7 +3631,6 @@ class OrderInfoVerbose extends InfoVerbose {
   Map<String, dynamic> toJson() => _$OrderInfoVerboseToJson(this);
 }
 
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CancelInfoVerbose extends InfoVerbose {
   final CancelUnpackedVerbose unpackedData;
