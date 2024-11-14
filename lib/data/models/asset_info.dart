@@ -6,7 +6,7 @@ part 'asset_info.g.dart';
 class AssetInfoModel {
   final bool divisible;
   final String? assetLongname;
-  final String description;
+  final String? description;
   final bool locked;
   final String? issuer;
 
