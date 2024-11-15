@@ -631,6 +631,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         if (value == null || value.isEmpty) {
           return 'Per Unit Price is required';
         }
+        if (double.parse(value) < 0.000006) {
+          return 'Price must exceed dust limit of 600 satoshis';
+        }
         return null;
       },
       onFieldSubmitted: (value) {
